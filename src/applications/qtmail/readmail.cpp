@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "readmail_qt.h"
+#include "readmail.h"
 #include <QApplication>
 #include <qmailviewer.h>
 #include <qlabel.h>
@@ -27,7 +27,7 @@
 #include <qevent.h>
 #include <qimagereader.h>
 #include <qalgorithms.h>
-#include "qtmailwindow_qt.h"
+#include "qtmailwindow.h"
 #include <qmailaccount.h>
 #include <qmailcomposer.h>
 #include <qmailfolder.h>

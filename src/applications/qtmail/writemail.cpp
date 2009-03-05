@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "writemail_qt.h"
+#include "writemail.h"
 #include "selectcomposerwidget.h"
 #include <qmaillog.h>
 #include <QAction>
@@ -18,7 +18,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QSettings>
-#include <qtmailwindow_qt.h>
+#include <qtmailwindow.h>
 #include <QMenuBar>
 
 WriteMail::WriteMail(QWidget* parent)

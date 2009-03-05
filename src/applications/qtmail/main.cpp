@@ -10,7 +10,7 @@
 
 #include <QApplication>
 #include <qmailnamespace.h>
-#include "qtmailwindow_qt.h"
+#include "qtmailwindow.h"
 #include <QIcon>
 
 int main(int argc, char** argv)

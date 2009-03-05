@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "qtmailwindow_qt.h"
+#include "qtmailwindow.h"
 #include "statusdisplay_p.h"
 #include <qdatetime.h>
 #include <qtimer.h>
@@ -16,7 +16,7 @@
 #include <QStackedWidget>
 #include <qmailaccount.h>
 #include <QVBoxLayout>
-#include "emailclient_qt.h"
+#include "emailclient.h"
 #include <qmaillog.h>
 #include <QStatusBar>
 #include <QMenuBar>

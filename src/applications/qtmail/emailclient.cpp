@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "emailclient_qt.h"
+#include "emailclient.h"
 #include "selectfolder.h"
 #include "messagefolder.h"
 #include "messagestore.h"
@@ -35,10 +35,10 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSettings>
-#include "qtmailwindow_qt.h"
+#include "qtmailwindow.h"
 #include "searchview.h"
-#include "readmail_qt.h"
-#include "writemail_qt.h"
+#include "readmail.h"
+#include "writemail.h"
 #include <QMenuBar>
 #include <qmailnamespace.h>
 #include <QSplitter>
@@ -2128,5 +2128,5 @@ void EmailClient::synchronizeFolder()
     }
 }
 
-#include <emailclient_qt.moc>
+#include <emailclient.moc>
 
