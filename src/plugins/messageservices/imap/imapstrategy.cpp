@@ -307,7 +307,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     QMailFolderId mailboxId;
     QStringList uidList;
     QMailMessagePart::Location location;
-    int minimum;
+    int minimum = SectionProperties::All;
 
     FolderMap::ConstIterator selectionEnd = _folderItr.value().end();
     while (_selectionItr == selectionEnd) {

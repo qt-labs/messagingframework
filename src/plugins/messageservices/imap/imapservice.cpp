@@ -390,7 +390,7 @@ void ImapService::Source::idleChangeNotification()
     _idleMailCheckInProgress = true;
 
     emit _service->availabilityChanged(false);
-    synchronize(_service->accountId());
+    retrieveMessageList(_service->accountId(), QMailFolderId(), 1, QMailMessageSortKey());
 }
 
 void ImapService::Source::retrievalTerminated()

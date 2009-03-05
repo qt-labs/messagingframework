@@ -260,20 +260,7 @@ void ImapClient::idleContinuation(ImapCommand command, const QString &type)
         } else {
             qMailLog(IMAP) << "IDLE: event occurred";
             // An event occurred during idle 
-            QMailAccount account(_config.id());
-            if (account.status() & QMailAccount::Synchronized) {
-                // This account is no longer synchronized
-                account.setStatus(QMailAccount::Synchronized, false);
-                QMailStore::instance()->updateAccount(&account);
-
-                // TODO: it may be better to stop and reissue the idle command here?
-                /* 
-                _idleTimer.stop();
-                _idleProtocol.sendIdleDone();
-                */
-
-                emit idleChangeNotification();
-            }
+            emit idleChangeNotification();
         }
     }
 }
