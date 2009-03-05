@@ -728,10 +728,27 @@ template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
     server retrieve messages from external services.  The retrieval action object reports on
     the progress and outcome of its activities via the signals inherited from QMailServiceAction.
 
-    TODO - detailed description
+    A range of functions are available to support varying client operations:
 
-    Note: the slots exported by QMailRetrievalAction are expected to change in future releases, as 
-    the message server is extended to provide a finer-grained interface for message discovery and retrieval.
+    The retrieveFolderList() function allows a client to retrieve the list of folders available for an account.
+    The retrieveMessageList() function allows a client to retrieve the list of messages available for an account.
+
+    The retrieveMessages() function allows a client to retrieve the flags, meta data or content of a 
+    specific list of messages.
+
+    The retrieveMessageRange() functions allows a portion of a message's content to be retrieved, rather than
+    the entire content data.
+
+    The retrieveMessagePart() function allows a specific part of a multi-part message to be retrieved.
+    The retrieveMessagePartRange() function allows a portion of a specific part of a multi-part message to be retrieved.
+
+    The retrieveAll() function allows a client to retrieve the meta data for all messages currently
+    available for the specified account.  
+    The exportUpdates() function allows a client to push local changes such as message-read notifications
+    to the external server.
+
+    The synchronize() function allows a client to synchronize the local representation of an account
+    with that available at the external server.
 */
 
 /*!
@@ -739,6 +756,7 @@ template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
 
     This enum type is specify the form of retrieval that the message server should perform.
 
+    \value Flags        Changes to the state of the message should be retrieved.
     \value MetaData     Only the meta data of the message should be retrieved.
     \value Content      The entire content of the message should be retrieved.
 */
