@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icon">
+<file alias="new">pics/icons/14x14/new.png</file>
+<file alias="trash">pics/icons/16x16/trash.png</file>
+<file alias="messagingaccounts">pics/EMail_48.png</file>
+</qresource>
+</RCC>

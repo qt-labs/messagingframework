@@ -1,0 +1,167 @@
+/*!
+
+\page files.html
+
+\target top
+
+\title File System Standards
+
+\tableofcontents
+
+\section1 Introduction
+
+Qt Extended software is installed in the \c /opt/Qtopia directory of the
+target system. Within this directory, applications must follow the
+file placement standards described in this document.
+
+\section1 Definitions
+
+\table
+\header \o Term \o Definition
+\row
+\o <appname> 
+\o this is the application's executable file name. It should be globally
+    unique. Since this name is not intended to be seen or entered by the
+    end-user, long and complex names such as "abc-textedit-3" can be used.
+\row
+\o \i{language} 
+\o this is the ISO639 language code (e.g. "de" for German).
+\endtable
+
+\section1 File Name Standards
+
+\table 
+\header \o File Type \o Location
+\row
+\o Executable
+\o \c /opt/Qtopia/bin/<appname>/...
+\row 
+\o \o \bold{Description:} This is the executable program. \bold{Note:} It is
+not appropriate to use the same executable with arguments to
+modify it's behavior, since only one instance of each application
+will be run (additional attempts to run the application will merely raise
+the previous instance).
+\header \o \o
+\row
+\o Library
+\o \c /opt/Qtopia/lib/<appname>/...
+\row
+\o \o \bold{Description:} Applications may put libraries here as required
+\header \o \o
+\row
+\o Image
+\o \c /opt/Qtopia/pics/<appname>/*.{png,jpg,svg}
+\row
+\o \o \bold{Description:} Any image files the application needs to use should either be standard
+built-in images, or be files in this application-specific directory.
+The files can be referred to using QPixmap(":image/<name>")
+for pictures belonging to the current application or the global context, and using
+QPixmap(":image/<appname>/<name>") for pictures
+belonging to another application context.
+\header \o \o 
+\row
+\o Icon
+\o \c /opt/Qtopia/pics/<appname>/icons/<IconSize>x<IconSize>/*.{png,svg}
+\row
+\o \o  \bold{Description:} Any icon files the application needs to use should either be standard
+built-in icons, or be files in this application-specific directory.
+The files can be referred to using QIcon(":icon/\i{name}")
+for icons belonging to the current application or the global context, and using
+or QIcon(":icon/<appname>/<name>") for icons
+belonging to another application context.
+\header \o \o 
+\row
+\o Sound
+\o \c /opt/Qtopia/sounds/<appname>/...
+\row
+\o \o  \bold{Description:} Any sound files the application needs to use should either be standard
+built-in sounds, or be files in this application-specific directory.
+\header \o \o 
+\row
+\o Internationalization
+\o \c /opt/Qtopia/i18n/language/<appname>.qm
+\row
+\o \o  \bold{Description:} These files are translations of the software (see \l {Internationalization}{Internationalization}).
+\header \o \o 
+\row
+\o English Online Documentation
+\o \c /opt/Qtopia/help/html/<appname>-suffixes.html
+\row
+\o \o \bold{Description:} These files provide the English online documentation of the software (the
+\c{-suffixes} is optional). Note that on-line documentation can
+refer to images under the \c /opt/Qtopia/pics directory, so you can
+refer to icons and other images explicitly without duplicating the
+files.
+\header \o \o 
+\row
+\o Online Documentation
+\o \c /opt/Qtopia/help/language/html/<appname>-suffixes.html
+\row
+\o \o  \bold{Description:} These files are the online documentation of the software (the
+\c{-suffixes} is optional), in the language specified.
+The suffixes are the choice of the application developer,
+but Qt Extended will automatically connect the Help button in the
+window decorations to \c{<appname>-widgetname.html}
+if such a file exists, thereby allowing different application
+windows to have different associated help pages.
+\header \o \o
+\row
+\o Qt plug-ins
+\o \c /opt/Qtopia/qt_plugins/...
+\row
+\o \o  \bold{Description:} These directory contains Qt plug-ins such as the gfx drivers, 
+icon engines or file format plugins.
+\header \o \o 
+\row
+\o Mediaplayer Codecs
+\o \c /opt/Qtopia/plugins/codecs/...
+\row
+\o \o  \bold{Description:} Mediaplayer codecs are placed in this directory.
+\header \o \o 
+\row
+\o Font
+\o \c /opt/Qtopia/lib/fonts/...
+\row
+\o \o \bold{Description:} Font files are placed in this directory.
+\header \o \o 
+\row
+\o Input Method Plug-ins
+\o \c /opt/Qtopia/plugins/inputmethods/...
+\row
+\o \o  \bold{Description:} Input Method plug-ins are placed in this directory.
+\header \o \o 
+\row
+\o Network Setup
+\o \c /opt/Qtopia/plugins/network/...
+\row
+\o \o  \bold{Description:} Network setup modules are placed in this directory.
+\header \o \o 
+\row
+\o Configuration
+\o \c /opt/Qtopia/etc/default/..., \c $HOME/Settings/...
+\row
+\o \o  \bold{Description:} Configuration files are stored automatically in \c $HOME/Settings by using QSettings. 
+If default configuration files are required, they should created and installed
+in \c /opt/Qtopia/etc/default/... as read only. 
+\header \o \o
+\row
+\o Service declarations
+\o \c /opt/Qtopia/services/...
+\row
+\o \o  \bold{Description:} These service files are used to lookup service details and their providers.
+\header \o \o 
+\row
+\o Application Data
+\o \c $HOME/Application/<appname>/...
+\row
+\o \o \bold{Description:} Application specific data will be stored here, for example cache data.
+\header \o \o 
+\row
+\o Temporary Data
+\o \c /tmp/..., /tmp/qtopia-<QWS ID>/..., /tmp/qt-embedded-<QWS ID>/...
+\row
+\o \o \bold{Description:} All temporary files are expected to be stored under /tmp; typically /tmp is a RAM hosted partition on a device. In particular a directory such as \c /tmp/qtopia-0/ will be used by Qt Extended application for their temporary files.
+
+\bold{Note:} The \c ramfs file system should not be used for the /tmp partition as it often incorrectly reports the amount of free space. Instead of using \c ramfs use \c tempfs for a RAM hosted /tmp  partition.
+\endtable
+*/

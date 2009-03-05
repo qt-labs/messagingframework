@@ -1,0 +1,841 @@
+/*!
+
+\page networkservices.html
+
+\target top
+
+\title Network Services
+
+\tableofcontents
+
+\section1 Introduction
+
+Qt Extended Network Services are defined by files that
+allow the configuration of Linux system networking services. Once the Network Service is 
+defined the user customizes and starts the Network Service they require via using the \c{Internet} Settings application.
+
+\section1 How it Works
+
+\section2 Network configuration file format
+
+The Qt Extended network support can be configured via Network configuration files in 
+\c $HOME/Applications/Network/config. The structure and type of these configuration files
+determines the type of the network.
+
+The following keys are generic to all network types:
+
+\list
+ \o [Info]
+    The Info group provides a short summary of the network service.
+    \list
+        \o \c Name - the name presented to the user (translatable).
+        \o \c Type - the parameter determines which plugin should be loaded in order to read this configuration.
+                    The following types are currently known:
+                    \list
+                        \o lan -> LAN device (handled by (W)LAN plug-in \c $QPEDIR/src/plugins/network/lan )
+                        \o wlan -> wireless LAN device (handled by (W)LAN plug-in \c $QPEDIR/src/plugins/network/lan )
+                        \o pcmcialan -> PCMCIA LAN card is being used (handled by (W)LAN plug-in \c $QPEDIR/src/plugins/network/lan )
+                        \o pcmciawlan -> wireless PCMCIA LAN card is being used (handled by (W)LAN plug-in \c $QPEDIR/src/plugins/network/lan )
+                        \o dialup -> the dial-up plug-in (\c $QPEDIR/src/plugins/network/dialing)
+                        \o bluetooth -> the Bluetooth DUN plug-in ( \c $QPEDIR/src/plugins/network/bluetooth ) 
+                    \endlist
+        \o \c Help - long description of the service (translatable and user visible).
+        \o \c Visibility - set to "hidden" if this interface should be hidden from the user view (e.g. server connections)
+        \o \c CustomID - this id allows the mapping of a network configuration to a plug-in. This means this configuration
+                cannot be loaded by plug-in's which don't support the same custom ID. For more details refer to QtopiaNetworkFactoryIface::customID().
+    \endlist
+ \o [Properties]
+    The Properties group specifies parameters which are common to most plug-ins.
+    \list
+        \o \c DeviceName - this allows the explicit assignment of network interfaces to configurations. Using e.g., eth0 as
+                value for this field implies that \c eth0 is not to be used by other ethernet configurations and the current 
+                configuration will not be associated with any other interfaces. Leaving this value empty implies that
+                the configuration should choose the next best interface that matches this type. By default this value is empty.
+                This value is ignored by all network types which rely on dynamic creation of network device names such as the 
+                various dial-up and bluetooth interfaces.
+        \o \c DHCP - the interface is configured via DHCP (values = [y]/n)
+        \o \c IPADDR - the IP address to be used by the service (IPv4 or IPv6)
+        \o \c DNS_1 - primary DNS server (IPv4 or IPv6)
+        \o \c DNS_2 - secondary DNS server (IPv4 or IPv6)
+        \o \c BROADCAST - broadcast address (IPv4 or IPv6)
+        \o \c GATEWAY - gateway address (IPv4 or IPv6)
+        \o \c NETMASK - netmask (IPv4 or IPv6)
+        \o \c UserName - the login name if the service requires authentication
+        \o \c Password - the password if the service requires authentication
+        \o \c Autostart - the interface will be started during the Qt Extended startup period (values = y/n)
+    \endlist
+\endlist
+
+The \l {QtopiaNetworkInterface}{QtopiaNetworkInterface} class defines the general interface for plug-ins. The following
+plug-ins are provided by Qt Extended: 
+\list 1
+\o \c Dialup - allows the creation and configuration of network interfaces which require pppd
+\o \c (W)LAN  - allows the creation and configuration of Ethernet and WLAN interfaces
+\o \c Bluetooth DUN - allows the creation and configuration of ppp connections to devices which support Bluetooth Dialup Networking.
+\endlist
+
+
+\section2 Distribution specific configuration
+
+Unfortunately there is no common way how Linux distributions handle the configuration of network devices. 
+To accomodate for this case the Qt Extended network configuration is split into two parts. Each network plug-in 
+handles the generation of configuration parameters and then passes the information on to a network script 
+called \c{<type>-network}. This script must be implementated by device integrators in order to enable 
+Qt Extended to write its configuration to device specific configuration files. By default, Qt Extended provides 
+network script for busybox and SuSE v9.3 systems. If none of the provided scripts is suitable for the 
+target device the template scripts in the plug-in directories can be used as a starting point for new scripts. 
+
+The network scripts need root permissions. If Qt Extended is started without root permissions a combination of sudo and setuid
+bit must be used. 
+
+
+\section2 The Dialup Plug-in
+
+\section3 General dial-up configuration
+
+The Dialup plug-in: 
+\list
+    \o recognizes/configures the following types of modems for dialup/GPRS:
+    \list
+        \o internal modems in mobil phones (QtopiaNetwork::PhoneModem)
+        \o any arbitrary serial device attached to a device, e.g. /dev/ttySx (QtopiaNetwork::NamedModem)
+        \o PCMCIA modem cards (QtopiaNetwork::PCMCIA)
+    \endlist
+    \o configures PPPD peer files in \c /etc/ppp/peers/
+    \o controls the pppd process
+    \o is implemented in \c $QPEDIR/src/plugins/network/dialing/
+\endlist
+
+The Dialup plug-in makes use of keys in the Network Service configuration file.
+For further information refer to \link  http://www.tldp.org/HOWTO/PPP-HOWTO/ pppd \endlink 
+documentation or the \c pppd \c man page.
+
+\list
+ \o [Serial]
+    \list
+        \o \c GPRS - indicates the service uses a GPRS modem ( values = y/[n] )
+        \o \c APN - the Access Point Name for a GPRS service (GPRS only)
+        \o \c Phone - the phone number for dial-up connections (non-GPRS only)
+        \o \c Type - an internal configuration uses the internal modem as serial device. If the device is external, SerialDevice must be specified (values = [internal]/external)
+        \o \c SerialDevice - optional, the device, for example, \c /dev/ttyS2
+        \o \c Speed - the modem speed ( e.g. value = 115200 )
+        \o \c ATDial - dial string prefix ( values = [ATDT]/ATDP/user-defined )
+        \o \c ConnectDelay - wait for <number> seconds after the connect script finishes for a valid PPP packet from the peer 
+        \o \c Crtscts - sets the serial port to use hardware flow control (values = [y]/n)
+        \o \c DefaultRoute - pppd handles routing issues ( values = [y]/n )
+        \o \c PeerID - the peer name (generated by Qt Extended)
+        \o \c SilentDial - suppress any dial tone (non-GPRS only) (values = y/[n])
+        \o \c Timeout - the disconnect/idle timeout (in seconds) after which pppd automatically disconnects the connection ( values = [none]/<number> )
+        \o \c UsePeerDNS - asks the peer for up to 2 DNS server addresses (values = [y]/n)
+    \endlist
+\endlist
+
+In addition to the network configuration file each dial-up interface is associated with a couple of files which guide the dial-up process or give reports about the state of the connection.
+\list
+    \o the plug-in creates chat files (in \c{$HOME/Applications/Network/chat}) which control dial-up process for pppd. These chat scripts follow the chat syntax (see \c{man chat}) and are created during the configuration process of the interface. 
+    \o The pppd process writes its logging output to \c{/tmp/qtopia-0/qpe-pppd-log-<peerID>}.
+\endlist
+\section3 GPRS
+
+\section4 Introduction
+
+General Packet Radio Service (GPRS) is a GSM data transmission technique that transmits and receives data in packets rather than via a continuous
+channel. 
+
+Qt Extended uses the Dialup network plug-in to establishing a connection see : $QPEDIR/src/plugins/networking/dialing/
+
+In the ideal case
+\list 
+  \o The user runs the Internet application and configures a GPRS connection
+  \o The user selects the newly created GPRS connection and it starts dialing
+  \o GPRS is established and Internet traffic can occur
+\endlist
+
+
+\section4 GPRS startup procedure
+
+An outline of the mechanism to establish a GPRS connection is provided in the following section. 
+It is assumed that the application \c Setting->Internet has been used to create a valid GPRS configuration. 
+The following code walkthrough applies to connections which are established via the internal phone modem only. 
+Any other type of serial connection (e.g. via PCMCIA modem cards) does not use the Qt Extended phone library and 
+hence uses a slightly different approach.
+ 
+\list
+    \o The Qt Extended Network Server is a server task and is started during the startup phase of the Qt Extended server.
+    File location:  \c $QPEDIR/src/server/networkserver.cpp
+ 
+    \o The network server initiates all network devices for which it can find a valid configuration 
+    ( see \c{NetworkServer::updateNetwork()} ).
+    File location: $QPEDIR/src/server/networkserver.cpp
+
+    \o Each network interface is started via 
+    \code
+    QtopiaNetwork::startInterface( ifaceHandle, param )
+    \endcode 
+    which sends a QCop message on the QPE/Network channel. The param parameter is optional and can be used to 
+    pass additional startup parameter to the network plug-in. Note that not all network plug-ins support
+    additional parameter and will simply ignore them.
+
+    \o \c NetworkServer will receive this QCop msg and calls:
+    \code
+        QtopiaNetworkServer::activateInterface( appName, ifaceHandle, options )
+    \endcode
+    The appName represents the name of the application that requested the start of the interface. This information is used
+    for network session management.
+ 
+    \o Loads plug-in, tests the interface's availability and starts the interface:
+    \code 
+        QtopiaNetworkInterface* plugin = QtopiaNetwork::loadPlugin( ifaceHandle );
+        plugin->status()
+        plugin->start( param );
+    \endcode
+ 
+    \o \c{DialupImpl::start(...)} prepares the pppd command line options.
+    If the serial network device is the internal GSM modem, Qt Extended checks that the phone modem has
+    a valid GSM network registration and starts the connection by calling:
+    \code 
+        QDialOptions pppd; 
+        pppd.setIpModule( true );
+        pppd.setIpProgramName( "/sbin/sbin/pppd" );
+        
+        pppd.setIpConnectScript( connect-chat );
+        pppd.setIpDisconnectScript( disconnect-chat );
+        pppd.setIpDemandDialing( ... );
+        pppd.setIpArgs( pppdArgs );
+        ...
+        QPhoneCall dataCall = callManager->create("IP");
+        dataCall.dial( pppd );
+    \endcode
+
+    If the serial network device is an external device, the Dialup plug-in will directly
+    start pppd directly by calling 
+    \code
+        QProcess::execute(Qtopia::qtopiaDir()+"bin/ppp-network", pppdArgs)
+    \endcode
+    File location: $QPEDIR/src/plugins/network/dialing/dialup.cpp
+
+    \o \c phoneServer calls 
+    \code 
+        pppdManager->start( dataCall ) 
+    \endcode 
+     File location: \c $QPEDIR/src/libraries/qtopiaphone/qpppdmanager.cpp.
+\endlist
+For detailed description of \c pppd, please refer to \c {man pppd}.
+
+
+\section4 GPRS AT dial string
+
+By default the Dialup plug-in uses the following minimal dial string for GPRS connections:
+
+\code
+	dialstring = "AT+CGDCONT=1,\"IP\",\"" + <provider APN> + "\"" + " OK "
+	       "AT+CGATT=1 OK "
+	       "OK ATD*99***1#";
+\endcode
+
+This string is not necessarily suitable for all modems. If a GPRS data connection cannot be started this string has to be adjusted to the requirements of the particular modem. It may be necessary to contact the modem manufacturer to determine the dial string that should be used. The dialstring can be customized in \c{$QPEDIR/src/plugins/network/dialing/dialstring.cpp}.
+
+\section3 PPP network script
+
+The dial-up plug-in uses the system dependent configuration script \c ppp-network.
+This script must be provided by system integrators. Whenever the dial-up plug-in
+requests a system dependent operation it calls \c ppp-network. It must support 
+the following interface/command line options in order to allow interaction with Qt Extended: 
+
+\list
+    \o \c{start <pppd cmd args>}
+    
+    Starts pppd using the given cmd line arguments. This call requires installed peers files 
+    (see \c{install} option) and is called by Qt Extended whenever the user whishes to initiate 
+    the pppd connection.
+    
+    \o \c{stop <PPP-IFACE>}
+    
+    Stops the pppd process that is responsible for the given interface (e.g. ppp0)
+    
+    \o \c install
+
+    In general this option is called when the user makes some adjustments to the interface 
+    configuration. By using this option Qt Extended ensures that the underlying system configuration 
+    reflects these adjustments.
+    
+    \list
+        \o \c{peer <new peerfile>}
+        
+        Installs the given peer file to /etc/ppp/peers.
+            
+        \o \c{dns <DNS1> <DNS2>}
+        
+        DNS1 and DNS2 are installed as first and secondary DNS server. If no IP address is passed it 
+        is implied that DHCP must be used to obtain the DNS server addresses. This function called 
+        when a new interface comes online or when an explicit change of the default gateway has 
+        been requested.
+        
+    \endlist
+    
+    \o \c{cleanup}
+
+    \list
+        \o \c{peer <peerfile>}
+        
+            Deletes <peerfile>. 
+        \o \c dns
+        
+            Reverts any DNS changes.
+    \endlist
+
+    \o \c{route <PPP-IFACE>}
+
+    PPP_IFACE becomes the default gateway for packages. Any existing default 
+    route will be implicitly removed.
+\endlist
+
+\section2 The LAN Plug-in
+
+\section3 General LAN configuration
+
+The LAN plug-in: 
+\list
+    \o recognizes/configures the following types of Ethernet and WLAN adapter:
+    \list
+        \o builtin Ethernet or WLAN devices, e.g. PCI cards (default behavior if not specified otherwise)
+        \o PCMCIA network cards (QtopiaNetwork::PCMCIA)
+    \endlist
+    \o provides active scanning for WLAN networks ( requires Wireless Extension v14+ ) and roaming
+    \o provides WLAN signal source for VoIP implementations (see QSignalSource and QSignalSourceProvider)
+    \o supports WEP, WPA and WPA-EAP
+    \o is implemented in \c{$QPEDIR/src/plugins/network/lan/}
+\endlist
+
+If wireless support is not required the define \c{NO_WIRELESS_LAN} can be used to exclude the feature 
+(see \l {Hardware Configuration}{Hardware Configuration}).
+
+The (W)LAN plug-in makes use of the following keys in the Network Service configuration file. Please note that these
+entries are stored using QSettings' read/write array support (QSettings::beginReadArray()).
+
+\list
+    \o [WirelessNetworks]
+    \list 
+        \o \c ESSID 
+        \o \c WirelessMode - values = Ad-hoc|Master|[Managed]
+        \o \c PRIV_GENSTR - passphrase 
+        \o \c Encryption - values = none|[open]|shared|WPA-PSK
+        \o \c KeyLength - values = 64/[128]
+        \o \c SelectedKey - (values = PP-Passphrase/KO-key 0/K1/K2/K3)
+        \o \c WirelessKey_1
+        \o \c WirelessKey_2
+        \o \c WirelessKey_3
+        \o \c WirelessKey_4
+        \o \c AccessPoint - name of the wireless access point
+        \o \c CHANNEL - the channel number zero uses auto detection (values = 1..14/[0])
+        \o \c BitRate - the bit rate zero uses auto detection (values = 1...54/[0])
+        \o \c Nickname - wlan nickname
+        \o \c WPAEnterprise - values = [TLS]|TTLS|PEAP
+        \o \c PSKAlgorithm - values = [TKIP]|AES (used by WPA-PSK)
+        \o \c EAPAuthentication - values = [Any]|MD5|GTC|MSCHAPV2 ( TTLS & PEAP only )
+        \o \c EAPIdentity - pdentity for WPA-EAP encryption
+        \o \c EAPIdentityPassword - password for WPA-EAP ( TTLS & PEAP only )
+        \o \c EAPAnonIdentity - anonymous identity (TTLS & PEAP only )
+        \o \c EAPClientCert - client certificate for WPA-EAP ( TLS only )
+        \o \c EAPClientKey - client key file for WPA-EAP ( TLS only )
+        \o \c EAPClientKeyPassword - client key file password for WPA-EAP ( TLS only )
+        \o \c EAPServerCert - server certificate for WPA-EAP 
+    \endlist
+\endlist
+
+In addition to these fields the WirelessNetworks group can contain the following entries which are the same for all 
+wireless networks. There main purpose is to determine the roaming behavior.
+
+\list
+    \o [WirelessNetworks]
+    \list
+        \o \c Timeout - the connection to the current AP should be reavaluated after the set amount seconds given by this field.
+                    If this field is zero the device can not automatically reconnect to other networks if the current networks is out of reach
+                    ( defaults to zero ).
+        \o \c AutoConnect - This option requires a Timeout value >0 and instructs Qt Extended to automatically reconnect to a different
+                            network if the current network is out of reach or the link quality degrades too much.
+    \endlist
+\endlist
+
+\section3 (W)LAN network script
+
+The lan plug-in uses the system dependent network script \c lan-network.
+This script must be provided by system integrators. Whenever the lan plug-in
+requests a system dependent operation it calls \c ppp-network. It must support 
+the following interface/command line options in order to allow interaction with Qt Extended: 
+
+\list
+    \o \c{install <IFACE>}
+
+    IFACE is the name of the network interface. Typical interface names are wlan0 or eth1.
+    
+    This option is called when the user makes some adjustments to the interface 
+    configuration. By using this option Qt Extended ensures that the underlying system configuration 
+    reflects these adjustments. If a configuration for IFACE already exists, this command must 
+    override the existing values. This option is only called when the configuration changes. Therefore
+    it must store these values to the appropriate configuration files so that any following start command
+    for IFACE can be executed without further config changes.
+    
+    This parameter supports the following subparameter:
+    \list
+        \o \c{dns [DNS1 DNS2]}
+        
+        DNS1 and DNS2 are installed as first and secondary DNS server. If no IP address is passed it 
+        is implied that DHCP must be used to obtain the DNS server addresses. This function called 
+        when a new interface comes online or when an explicit change of the default gateway has 
+        been requested.
+        \o \c{dhcp}
+
+        The IP, subnet mask, broadcast address and the gateway must be obtained via dhcp. 
+        \o \c{static <IP> <subnet> <broadcast> <gateway>}
+
+        If no DHCP is used Qt Extended requires that the user enters the IP details manually. This parameter
+        writes the details out to the system configuration. 
+        
+        \o \c{wireless <PARAM>} 
+        
+       The \c wireless option is used to pass wireless LAN details. The parameter is made up of a 
+       combination of the following options:
+        \list
+            \o \c{-essid <ESSID>}
+
+            ESSID of the WLAN to be used.
+            
+            \o \c{-mode <Master|Managed|Ad-Hoc>}
+
+            This parameter specifies the mode of the WLAN connection.
+            
+            \o \c{-ap <MAC>}
+
+            MAC is the MacAddress of the access point that the user wants to connect to.
+            
+            \o \c{-bitrate <BITRATE>}
+            
+            BITRATE represents the bit rate which should be used for the connection. The unit for 
+            this value is MBit.
+            
+            \o \c{-nick <NICKNAME>}
+
+            NICKNAME is the nick name for the WLAN. 
+            
+            \o \c{-channel <CHANNEL>}
+
+            CHANNEL is used by Ad-Hoc networks or Master devices only. If CHANNEL is zero and automatic 
+            value is requested.
+            
+            \o \c{-keylength <128|64>}
+            
+            The length of the WEP key in bit. If the encryption mechanism is not WEP this parameter 
+            can be ignored.
+            
+            \o \c{-authmode <AUTHPARAM>}
+            
+            AUTHPARAM can be one of the following parameter:
+            \list a
+                \o \c{<open|shared> -multikey <DEFAULTKEY> <KEY1> <KEY2> <KEY3> <KEY4>}
+
+                The wireless lan uses KEY1 to KEY4 for open/shared WEP encryption. DEFAULTKEY is a 
+                value between 1 and 4.
+                
+                \o \c{<open|shared> -phrase <PASSPHRASE>}
+
+                The WLAN uses open/shared WEP encruption with a passphrase.
+                
+                \o \c{<none> -nokey}
+
+                The WLAN uses open/shared WEP encryption without any password.
+                
+                \o \c{<WPA-PSK> <PASSWORD> <TKIP|AES>}
+
+                The WLAN uses WPA-PSK as encryption. PASSWORD is used for the encryption 
+                algorithm. The last parameter determines what encryption algorithm is chosen. 
+                This determines whether WPA-PSK or WPA-PSK2 is used.
+
+                \o \c{<TLS> <IDENTITY> <CLIENT-KEY-PASSWORD> <CLIENT-KEY> <CLIENT-CERT> <SERVER-CERT>}
+
+                The WLAN uses WPA-EAP as encryption. The authentication is done via TLS.
+                \list I
+                    \o \c <IDENTITY> the RADIUS server identity
+                    \o \c <CLIENT-KEY> the file ( & path ) providing the client key (private key)
+                    \o \c <CLIENT-KEY-PASSWORD> the password for <CLIENT-KEY>
+                    \o \c <CLIENT-CERT> the client certificate for this identity
+                    \o \c <SERVER-CERT> validates the servers authenticity
+                \endlist
+
+                \o \c{<TTLS|PEAP> <IDENTITY> <PASSWORD> <SERVER-CERT> <AUTHENTICATION> <ANON-IDENTITY>}
+
+                The WLAN uses WPA-EAP as encryption. The authentication is done via either PEAP or TTLS.
+                \list I
+                    \o \c <IDENTITY> the RADIUS server identity
+                    \o \c <PASSWORD> the password for the identity as configured on the RADIUS server
+                    \o \c <SERVER-CERT> validates the servers authenticity
+                    \o \c <AUTHENTICATION> the inner authentication (phase 2) method. Possible values MD5|GTC|MSCHAPV2|Any.
+                    \o \c <ANON-IDENTITY> the anonymous identity (usually not needed)
+                \endlist
+
+            \endlist
+
+        \endlist
+    \endlist
+
+    
+    \o \c{stop <IFACE>}
+
+    This command stops the running interface with name IFACE.
+    
+    \o \c{start <IFACE>}
+
+    This command starts the actual interface. It cann be assumed the the neccessary configuration 
+    options for IFACE have been written to the appropriate files as the LAN plug-in always ensures 
+    that \c{install} has been called prior to \c{start}.
+
+    \o \c{cleanup}
+
+    This command is used when the user deletes a network interface. It may be used to cleanup some 
+    configuration files. However since the \c{install} option overides any existing configuration 
+    it is not absolutely necessary to provide an implementation for this command.
+
+    \o \c{route <IFACE> -gw <GATEWAY IP>}
+
+    IFACE becomes the default gateway for packages. Any existing default route
+    will be implicitly removed.
+\endlist
+
+\section2 The Bluetooth Dial-up Plug-in
+
+\section3 General DUN configuration
+
+The Bluetooth dial-up plug-in:
+\list
+    \o handles ppp interfaces established via Bluetooth connections
+    \o configures PPPD peer files in \c /etc/ppp/peers/
+    \o controls the pppd process
+    \o is implemented in \c $QPEDIR/src/plugins/network/bluetooth/
+\endlist
+
+Note that this plug-in only provides the client side of Bluetooth dial-up network. 
+the Qt Extended Bluetooth dial-up networking server is provides by a separate server task.
+
+\list
+ \o [Bluetooth]
+    \list
+        \o \c Profile - must be set to "DUN"
+    \endlist
+ \o [Serial]
+    \list
+        \o \c DialString - the main dial string (e.g. *99***1#). Qt Extended automatically prepends AT to this string.
+        \o \c ExtraDialString - additional AT commands which need to be executed prior to the main dial string (e.g. +CGDCONT=1,"ip","<APN>"). Qt Extended automatically prepends AT to this string.
+        \o \c PartnerDevice - the Bluetooth address of the device that provides the DUN server
+        \o \c PeerID - the peer name (generated by Qt Extended)
+        \o \c Speed - the modem speed ( e.g. value = 115200 )
+        \o \c Timeout - the disconnect/idle timeout (in seconds) after which pppd automatically disconnects the connection ( values = [none]/<number> )
+    \endlist
+\endlist
+
+\section3 Bluetooth dial-up network script
+
+The Bluetooth dial-up network script is called \c btdun-network and is almost identical to the \l{#ppp-network-script}{dialup network script}. 
+
+\section2 The Proxies page
+
+The Dialup and LAN plug-ins share a proxies page. The settings
+for this page are defined in the configuration as:
+
+\list
+ \o [Proxy]
+ \list
+    \o \c{Type} - 0 = No proxies, 1 = Automatic, 2 = Manual.
+    \o \c AutoConfig - the script for automatic proxy configuration
+    \o \c HttpHost - HTTP proxy server
+    \o \c HttpPort - socket to be used for HTTP connections via the proxy server
+    \o \c FtpHost - FTP proxy server
+    \o \c FtpPort - socket to be used for FTP connections via the proxy server
+    \o \c NoProxies - list of pages which don't require a proxy
+ \endlist
+\endlist
+
+\section1 Connectivity state of the device
+
+Applications which are interested in the state of network interfaces should use 
+\l{QtopiaNetwork}{QtopiaNetwork::online()}. If more detailed information are required an 
+application can use the QNetworkState or QNetworkDevice classes.
+
+In order to integrate new plugins into the QNetworkState/QNetworkDevice monitoring system a few requirements must be fulfilled. 
+Each interface must post its state transitions into the network value space. The network value space for a plugin can be found 
+under \c{/Network/Interfaces/<ident>}. \c{<ident>} is the hash value of the interface handle associated with the particular instance of the plugin. 
+The following entries must be published by the plugin:
+
+\list
+    \o \c UpdateTrigger - Changing this integer value triggers an update to subscribed clients.
+    \o \c Config - The full path (incl. filename) to the settings file for this interface.
+    \o \c NetDevice - The name of the *nix network interface. If the name is not known this value is empty.
+    \o \c State - This is the state of the network interface (see QtopiaNetworkInterface::Status).
+    \o \c Error - The latest error code of the interface (see QtopiaNetworkInterface::Error). 
+    \o \c ErrorString - A user visible error string which explains the last error. The string doesn't change if no further error occurs.
+\endlist
+
+\section1 WAP
+
+Qt Extended stores WAP settings in \c{$HOME/Applications/Network/wap}. 
+Every WAP related application must use these configuration settings.
+They have several groups, with the following keys:
+
+\list
+
+    \o [Info]
+        
+    The Info group provides a short summary of the WAP profile.
+    \list
+        \o \c Name - the user visible name of the WAP profile and is equivalent to the ISPName 
+        when set via OTA configuration (translatable)
+        \o \c DataAccount - the configration file of the preferred internet account for this WAP profile
+        \endlist
+
+        
+    \o [Browser]
+    
+    General settings for browser applications. Any custom implementation of 
+    a WAP browser must comply with these settings.
+    \list 
+        \o \c Cookies - determines how cookies are handled (values = [Reject]/Accept/Confirm)
+        \o \c ShowPictures - the WAP browser displays pictures (values = y/[n])
+    \endlist
+    
+    
+    \o [MMS]
+    
+    MMS server details
+    \list
+        \o \c AllowDeliveryReport - the reception of an MMS shall be reported (values = y/[n])
+        \o \c Expiry - the expiry time for a sent MMS in hours. Zero is equivalent to the maximum 
+        timeout (values = <number>)
+        \o \c Port - the MMS server port number (default 110)
+        \o \c Server - url of the MMS server
+        \o \c Visibility - every MMS should contain the sender ID (values = [default]/show/hidden)
+    \endlist
+
+    
+    \o [Wap]
+        
+    WAP server details
+    \list
+        \o \c Gateway - url of the WAP gateway
+        \o \c UserName - login name for the WAP gateway
+        \o \c Password - password for the WAP gateway
+        \o \c Port - the gateway port number
+        \o \c Bearer - (set via OTA configuration only)
+        \o \c AddressType - (set via OTA configuration only)
+        \o \c LoginType - (set via OTA configuration only)
+        \o \c ProxyService - (set via OTA configuration only)
+        \o \c HomePage - WAP homepage (set via OTA configuration only)
+    \endlist
+\endlist
+
+The QWapAccount class may be used as an alternative to directly reading the configuration files.
+
+\section2 OTA configuration
+
+Qt Extended can handle OTA network configuration messages. These messages contain details
+like WAP/MMS server and login details. Every received message is handled by 
+the \c Internet Settings application and will eventually be stored as a WAP/Internet
+configuration file.
+
+\section1 Session management
+
+The Qt Extended network server provides a session manager. This is used to ensure that
+a network interface is shutdown when there is no need for it. If an application
+starts a network interface the interface will remain active for the life time of the application.
+This means that network interfaces are stopped if an application crashes or quits.
+If two applications were to request the same interface the interface will stay active until the 
+last application closes.
+
+To cater for more flexibility the network server can extend the session life time beyond the 
+life time of applications. By default every interface which has been started manually will
+remain active until it is turned off by the user or the interface times out (e.g. timeout on pppd sessions).
+
+\section1 Troubleshooting
+
+\section2 Example connect,disconnect scripts
+
+The dial-up process uses chat files. These chat files may need some customization in order to work flawless
+with particular modems. The chat files are stored in \c{$HOME/Applications/Network/chat}. Each interface has a connect
+and a disconnect chat file. The following two chat files represent rather generic chat files for a GPRS connection.
+
+\list
+  \o Connect chat (\c{$HOME/Applications/Network/chat/connect-<peerID>})
+  \code
+      ABORT "NO CARRIER"
+      ABORT "NO DIALTONE"
+      ABORT BUSY
+      # Change the word internet to the name of your providers APN
+      "" "AT+CGDCONT=1,\"IP\",\"internet\""
+      OK "AT+CGATT=1"
+      OK "ATDT*99***1#"
+  \endcode
+  \o Disconnect Chat (\c{$HOME/Applications/Network/chat/disconnect-<peerID>})
+  \code
+      \d+++\d\c OK 
+      ATH0 OK
+  \endcode
+  \o If there are difficulties establishing the GPRS connection it may be helpful
+  to use an approach which would temporarily circumvent the Qt Extended network code. The following script could be used to
+  debug the connection process manually.
+  \code
+     #!/bin/sh
+     #
+     # Start a pppd session via GPRS
+     #
+     # Usage:
+     #       startpppd.sh [PPP peer to call]
+     # 
+
+     # The following notes apply to the pppd options used. See the pppd man page for more details 
+     #  ttyS0 : change to the device that modem is connected to
+     #  115200 : lower modem speed if required
+     #  noipdefault: pppd must not propose any IP address to the peer!
+     #  ipcp-accept-local : Accept peers idea of our local address
+     #  modem : use modem control lines; change modem to local if required
+     #  novj : Disable all compression
+     #  record /tmp/ppp-all-text.log : record all traffic to file shown
+     
+     set -x
+     
+     if [ -z "$1" ]; then
+     
+     /usr/sbin/pppd \
+         ttyS0 \
+         115200 \
+         connect 'chat -s -v -f connect-chat' \
+         disconnect 'chat -s -v -- -f disconnect-chat' \
+         crtscts \
+         defaultroute \
+         replacedefaultroute \
+         noipdefault \
+         ipcp-accept-local \
+         modem \
+         usepeerdns \
+         demand \
+         connect-delay 5000 \
+         idle 120 \
+         nodetach \
+         lcp-echo-failure 0 \
+         lcp-echo-interval 0 \
+         novj \
+         nobsdcomp \
+         novjccomp \
+         nopcomp \
+         noaccomp \
+         debug
+     else
+     # call the specified peer 
+     /usr/sbin/pppd call $1 \
+         connect 'chat -s -v -f connect-chat' \
+         disconnect 'chat -s -v -- -f disconnect-chat' \
+         record /tmp/ppp-all-text.log \
+         debug
+     fi
+  \endcode
+\endlist
+
+\section2 Enabling Debugging
+
+In order to activate the Qt Extended internal network logging facilities you may have to edit \c{$QPEDIR/etc/default/Trolltech/Log.conf} or \c{$HOME/Settings/Trolltech/Log.conf}. For network debugging you may enable Network and AtChat logging.
+
+\section2 Changing the GPRS Packet Size to Compensate for Poor Signal Quality
+
+By default a packet size of 1500 will be used by pppd for GPRS traffic. In cases of poor signal quality it may 
+be necessary to decrease the "mru" and "mtu" packet size being used by pppd, to for 512. See the 
+pppd man page for details on setting mru and mtu values.
+
+ 
+\section2 Configuration file elements to check/update
+
+\list 1
+  \o check that /etc/ppp/options does not have papcrypt enabled
+  \o check the password that may be specified : see  \c{/etc/ppp/chap-secrets} and \c{/etc/ppp/pap-secrets}
+  \o check the contents of \c{$HOME/Applications/Network/modules/DialUpGPRS*.conf}
+  \o check the contents of \c{/etc/ppp/peers/*GPRS*} 
+  \o check that \c{GPRSDialString()} in \c{$QPEDIR/src/plugins/networking/dialing/dialstring.cpp} suits your modem.  For example you may need to use either
+	\list 1
+            \o AT+CGDCONT=1,\"IP\" ...
+            \o AT+CGDCONT=1,\"PPP\" ... 
+	\endlist
+  \o update the /etc/ppp/options file to enable debugging and record ALL traffic. eg add
+    \code
+    debug 
+    record /tmp/ppp-all-text.log \endcode
+    
+   \o modify the connect-chat, disconnect-chat and startpppd.sh to suit your modem and internet provider : at least
+   \list
+        \o in connect-chat change internet to the name of your providers APN
+        \o in connect-chat change the GPRS init/dial string as required
+   \endlist
+\endlist
+
+\section2 Dialing with the example GPRS Dial script
+
+\list 1
+    \o Ensure that Qt Extended and pppd are not running
+    \o Start pppd via running startpppd.sh
+    \o Ping an non-local address : eg  
+	\code ping 216.239.39.99 \endcode
+    \o Confirm that pppd attempts to start the link and review the content
+of /tmp/ppp-all-text.log
+    \o If needed send the recorded traffic as setup in step 2 in a tar.gz to support
+\endlist
+
+\section2 Network testing
+
+The following can help to isolate any GPRS issues.
+
+Run the following commands to ping local and non-local resources:
+\code
+      ping <some IP address on your local network>
+
+      ping 66.102.7.99
+
+      ping <some host on your local network>
+
+      ping www.google.com
+\endcode
+
+It might be necessary to specify the network interface that the ping command should use.
+If you have more than one network interface and suspect routing issues use:
+
+\code
+      ping -I <iface-name> <host> 
+\endcode
+
+
+
+If one or less of the above tests fail then provide the output of the following commands :
+\code
+      /sbin/ifconfig -a
+
+      /sbin/ifstatus eth0
+
+      /sbin/route
+
+      cat /etc/resolv.conf
+
+      cat /etc/ppp/resolv.conf
+\endcode
+
+If you have a firewall in use, check that the route uses the correct gateway address and 
+that the firewall is not blocking IP traffic from the device. Lastly
+it may helpful to compare the results of running the above commands with results given by 
+running the same commands on a development machine.
+
+\section2 Requesting Support
+
+If support is needed please ensure that your support request contains the following items:
+
+\list 1
+    \o the peer file ( see \c{/etc/ppp/peers} )
+    \o the network configuration file ( \c{$HOME/Applications/Network/config/GPRS<peerID>.conf} )
+    \o the pppd log file ( \c{/tmp/qtopia-0/qpe-pppd-log-<peerID>} )
+    \o the connect and disconnect chat ( \c{$HOME/Applications/Network/chat/connect-<peerID>} )
+    \o all parameters passed to pppd (check debug output for network details). Note that network logging may have to be enabled.
+\endlist
+
+*/

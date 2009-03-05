@@ -1,0 +1,91 @@
+/*!
+
+\title MessageServer Daemon
+\page messageserver.html
+\tableofcontents
+
+\section1 Introduction
+
+The \i MessageServer application provides message transport services to Qt Extended client applications.  
+It can send and retrieve messages of various types, to and from external message service providers such as POP and IMAP servers, or local resources such as a SIM card.
+Protocol implementations are loaded from plugin libraries, so that the system can be extended with new services, without modification to the MessageServer application.
+ 
+The MessageServer application is a daemon managed by the QPE server; it is always running and available to client applications.  
+If the MessageServer experiences a fault and restarts, clients do not need to re-establish communication with the server process.
+
+\section1 Features 
+
+Messages provides the following features:
+
+\table
+\header \o Feature \o Description
+\row
+\o Send messages 
+\o Send messages via the transport mechanism defined for the associated account.
+\row
+\o Retrieve folder and message lists
+\o Report the list of folders and messages available at the server for an account.
+\row
+\o Retrieve messages
+\o Retrieve the content of specified messages from the originating server, either partially or completely.
+\row
+\o Search messages
+\o Search for messages via arbitrary criteria, performed at the originating server.
+\row
+\o Manage messages
+\o Move, copy and delete messages on the originating server.
+\row
+\o Status reporting
+\o Status and progress information is emitted during MessageServer operations, for the benefit of client applications.
+\endtable
+ 
+\section1 Accounts 
+ 
+MessageServer supports the following aspects of messaging accounts:
+
+\table
+\header \o Feature \o Description
+\row
+\o Unrestricted accounts 
+\o MessageServer supports any number of messaging accounts.
+\row
+\o Messaging types
+\o MessageServer supports accounts using the following messaging types:
+\list
+\o SMS
+\o MMS
+\o Email
+\o Instant Messaging servics
+\endlist
+\row
+\o Email protocols 
+\o The following email protocols are available:
+\list
+\o POP
+\o SMTP
+\o IMAP
+\endlist
+Other protocols can be supported by providing implementations as plugins.
+\row
+\o Instant Messaging protocols 
+\o The following Instant Messaging protocols are available:
+\list
+\o XMPP (Jabber)
+\endlist
+Other protocols can be supported by providing implementations as plugins.
+\endtable
+ 
+\section1 Interface
+
+MessageServer communicates with clients via a QtopiaChannel.  The recommended method of passing messages over this channel is for each client to instantiate an object of the QMailMessageServer class, which converts between IPC messages and local signals and slots.
+
+Some actions of the MessageServer process affect the Qt Extended Messaging Library data store directly.  A client can respond to these actions by connecting to the relevant signals of the QMailStore class, such as QMailStore::messagesAdded(), and QMailStore::messagesRemoved().
+
+\section1 Dependencies 
+MessageServer has the following dependencies:
+\list
+\o the \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
+\o the Qt Extended Collective Library
+\endlist
+
+*/

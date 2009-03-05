@@ -1,0 +1,263 @@
+/*!
+\page qt_extended_test_plan.html
+\title Qt Extended Test Plan
+
+\bold{Contents:}
+\tableofcontents
+
+\section1 Introduction
+The Test Plan defines the Quality Assurance procedures used to verify Qt Extended.
+
+\section2 Purpose
+The purpose of the Test Plan is to describe in full the tests that are to take place, as acceptance of the product. The plan contains the complete set of criteria and verification protocols, which are to be employed in confirming that the product integration is complete (i.e., the functionality of the system is confirmed).
+
+The intended readers for this document are:
+\list
+\o Project Management
+\o Programmer
+\o Tester
+\o Customers
+\endlist
+
+\section2 Scope
+The Test Plan applies to the current version of Qt Extended.
+
+\section2 Objectives
+The Test Plan is intended to provide the vehicle for customers to confirm the functionality and completeness of the product. It is expected that the satisfaction of the complete series of criteria contained in this plan will signify successful functionality of the integrated product.
+
+\section2 Goals
+The goal is to deliver a product with no open bugs with a severity level of 1 and a minimal number of open bugs with severity level 2.
+
+\section2 Document Overview
+
+\section3 Test Cases
+During the development process as well as during the release phase, Test Cases will be executed. The Test Cases are described in test documents which are (depending on the license type) part of the source package. Each Test Case also contains test specific criteria which decide upon Test Cases success of failure.
+
+\section3 Test Case result
+Each Test Case can have one of the following outcomes:
+\list
+\o \bold{Passed}: The Test Case is passed if the test specific test criteria are met;
+\o \bold{Failed}: This predicate is applicable if the test criteria are not met and a correction and/or workaround for the execution of the test cannot be given.
+\endlist
+
+\section3 Traceability of requirements with respect to testing
+For each requirement, in principle, one or more Test Cases will exist.
+
+\section3 Test Case documentation
+Each Test Case is written as either a Unit test in C++ code (using QTestLib) or as an Integration/System test written in QtScript (using QtUiTest). The test plan provides an extract of the information from the test sources, and extends this with information from e.g. the requirements database.
+
+Each Test Case described in the test plan contains the following fields:
+\table
+\header \o Field Name \o Description
+\row \o \bold{Requirement Summary} \o A summary of the requirement text. This information is extracted from the requirement database used for the development of Qt Extended.
+\row \o \bold{Tested Application} \o The application that is tested.
+\row \o \bold{Test Type} \o The type of test: Unit, Integration, System, Performance test. Additionally an indication can be given whether the test is a Manual or Automated test.
+\row \o \bold{File Name} \o A reference to the actual file that contains the test case. The <basedir> reference points to the root directory where the source package is installed.
+\endtable
+
+\section1 General Test Strategy
+
+\section2 Introduction
+Components can be tested by a combination of Unit, Integration and System tests.
+
+For a \bold {System test} the component is typically tested by launching the application in the test environment and by executing functionality of the component using the User Interface, and by verifying the outcome against an 'expected result'.
+
+In cases where manual verification is required the expected outcome is specified in the testcase.
+
+For an \bold {Integration test} the component is typically tested by launching the component (if it has a GUI), or by launching other applications that make use of the tested component, inside the test environment and by executing functionality of the component using the User Interface. Where applicable, parts of the system may be replaced by stubs to partially insulate the component from it's environment.
+
+A \bold {Unit test} is typically used to test a single class of a component. The class-under-test is typically insulated from its environment by creating a standalone instance in a separate process, but where needed the class can interact with the environment.
+
+Where possible all or parts of the test steps are automated, but in all cases there will be a manually executed 'Acceptance Test' for each GUI component in which the module will, at least, be verified against a standard checklist.
+
+\section2 Prioritization
+Tests are written on a highest priority first basis, and secondly on broad coverage.
+
+\section2 Coverage
+At this stage we are aiming towards full functional coverage. Long term the goal is towards 100% code coverage. Note that only a subset of all tests are provided in the source package, and that the Test Plan and Test Results only mention the results for the actually shipped tests. Future releases may gradually include more tests.
+
+\section2 Tested Configurations
+Qt Extended is tested in a number of configurations, both in a Virtual Framebuffer as well as on reference devices.
+The public configurations used for this release are:
+\list
+
+\include generated/testplan-configurations.qdocinc
+
+\endlist
+
+\section2 Test Execution
+All automated tests are executed in a continuous development environment, and typically test results are available for each change to the code.
+
+Manual tests are executed regularly, but certainly before each release.
+
+\section2 Test Reporting
+A \l{Qt Extended Test Results}{test report} is included as part of the online reference documentation that comes with each source package and contains results for both manual and automated tests.
+
+\section2 Test tools
+All tests are written with the use of QTestLib and/or \l{QtUiTest Manual}{QtUiTest}.
+
+Additional tools such as Valgrind may be used to do a deep analysis of test details/failures and tools such as LinkLint are used in the documentation process. These tools which will provide additional data used to improve the quality of the product but are not necessarily used in the Go/No-Go decision making process.
+
+\section2 Acceptance Test Checklist
+Each GUI component such as applications, games, settings and tools will need to be tested in a manual test. This test is in addition to any Manual/Automated tests that are testing specific parts of that component.
+
+The checklist for all GUI components is as follows:
+\list
+\o Check the Help file that is available for the component using the Help Browser: each major feature should be mentioned in the help.
+\o Execute as much as possible of the components features, and while doing so:
+\list
+\o Where applicable, check that the application can be ran both in Landscape and Portrait display modes.
+\o Check that the application can be used with different languages.
+\o Check that the application provides sufficient contrast to be usable by visually impaired people.
+\o Check that the application works both with Touchscreen and Keyboard based input devices.
+\o Check that the startup and overall performance of the application are sufficient.
+\o Check that the application displays a wait cursor or other 'busy' indicator for lenghty (> 0.5 sec) operations and gives the user a chance to abort the operation for actions that require > 4 seconds.
+\endlist
+\endlist
+
+\section2 Performance
+
+\section3 Goals
+The performance target is to produce a quality product with a performance that is competitive in the market. This is going to be achieved by first looking at the different areas that affect the performance of Qt Extended, on actual devices, and then trying to measure these values to find out where performance needs to be improved.
+
+The focus areas are:
+\list
+\o Binary sizes
+\o Functional Performance
+\o Application Startup times
+\o Startup times
+\o Memory usage
+\endlist
+
+\section3 Target Device (System)
+
+Qt Extended is developed and tested with the following device parameters in mind:
+\table 70%
+\header \o Property \o Target Value
+\row \o \bold{CPU} \o 200mhz ARM9
+\row \o \bold{RAM} \o 64MB
+\row \o \bold{ROM} \o 64MB
+\endtable
+
+Deployment on devices with lower performance characteristics should be possible, but may require tweaking of the system.
+
+\section3 Target Performance Values
+Based on the target system and our goal to have a fast and responsive system we have defined the goals below. These are our initial targets only. Once we have reached these targets we will continue to improve and create a new set of targets to aim for.
+
+\table 70%
+\header \o Target Type \o Target Value
+\row \o \bold{System Startup} \o The system must start in under 15 seconds (please note this does not include the OS startup time).
+\row \o \bold{Applications} \o A relatively complex application must be able to start in under 2 seconds.
+\row \o \bold{Multitasking} \o Three to four applications should be able to be run at any one time.
+\row \o \bold{UI} \o A 'wait' cursor will be shown for actions that take more than 0.4 seconds and a progressbar + cancel option will be shown for actions that take more than 4 seconds.
+\endtable
+
+\section1 General Environment Setup
+Qt Extended can be tested on devices as well as in a Virtual environment. Both cases have value and may provide data that would be hard or impossible to acquire 'on the other side'.
+
+\section2 Basic Environment Setup
+Once Qt Extended is installed in the Virtual environment or installed onto a device, no additional environment setup should be required that isn't already required by Qt Extended itself. It is important though that the environment is equal for each testrun, i.e. the same background processes are running for each test run, and that only background processes are running that are required.
+
+Certain aspects of Qt Extended can only be tested if associated hardware modules are available on the device/desktop machine on which the test is executed. For instance:
+\list
+\o Bluetooth
+\o Wireless
+\o TV
+\o Radio
+\o Telephony
+\endlist
+Please refer to the manuals that come with these items to setup correctly.
+
+\section3 Helix
+\list
+\o For streamed media testing, ensure the target device/machine has network capability. Nistnet can be used for network degradation testing. This can be found at
+\code
+      http://snad.ncsl.nist.gov/nistnet/
+\endcode
+\o Build Helix into Qt Extended using the options documented by \c{configure -help}.
+\o Download the Helix distributed test media files. These can be found under the Local Content Suite area at
+\code
+      https://helixcommunity.org/developers/testing/community_testing
+\endcode
+\o For individual codec testing, ensure the appropriate libraries are installed in
+\code
+      $QPEDIR/image/lib/helix
+\endcode
+For example:
+\list
+\o amrff.so
+\o amrn.so
+\o amrw.so
+\o d263.so
+\o h263render.so
+\o mp3fformat.so
+\o mp3render.so
+\o mp4arender.so
+\o mp4fformat.so
+\endlist
+\o Place the files from the content suite into the Documents directory on the device.
+\endlist
+
+\section3 GCF
+In most cases, a test setup consists of:
+\list
+\o A Mobile Station (MS): This can consist of either a:
+\list
+  \o Greenphone or other reference device with installed SIM card
+  \o QVFb with attached Wavecom (or eq.) modem with installed SIM
+  \o QVFb with running Phonesim
+\endlist
+\endlist
+
+Specific sub-domains for GCF testing are (but not limited to):
+\list
+\o \bold{GSM}: testing generally requires a GCF compliant telephony device.
+\o \bold{Messaging}: For SMS testing a device with the following specs is required:
+\list
+\o limited SIM storage, and
+\o available call management
+\endlist
+\o \bold{SIM toolkit}: Very basic testing (i.e. commands to and responses from the modem), in general, is tested via unit tests.
+\endlist
+
+IMPORTANT: Tests that are expected to make use of a device's Phone modem need to be executed in a 'safe' environment that reduce the risk of interfering with public phone networks.
+
+\section2 Testing Qt Extended in a Virtual environment
+To test Qt Extended in a virtual environment, Qt Extended needs to be built for the desktop which is accomplished by configuring with the \c -qvfb command line:
+\code
+    <source-path>/configure -device foo -qvfb -add-module qtuitest [extra-configure-options]
+    bin/qbuild
+    bin/qbuild image
+\endcode
+The \c{-add-module qtuitest} configure option is required to enable System testing if the device profile does not already enable the qtuitest module.
+
+Once Qt Extended is built it can be executed using 'runqtopia', and tests can be executed as described in detail in the \l{QtUiTest Manual}.
+
+\section2 Testing Qt Extended on a device
+To test Qt Extended on a device, Qt Extended needs to be built for that specific device:
+\code
+    <source-path>/configure -device foo -add-module qtuitest [extra-configure-options]
+    bin/qbuild
+    bin/qbuild image
+\endcode
+The \c{-add-module qtuitest} configure option is required to enable System testing if the device profile does not already enable the qtuitest module.
+
+After the build is finished the Qt Extended binaries then need to be copied over (flashed) onto the device. See the device manual for specific instructions on how to do this.
+
+Once Qt Extended is flashed onto the device it usually needs to be restarted to activate the new version, after which tests can be executed as described in detail in the \l{QtUiTest Manual}.
+
+Additional functionality that is required to run automated tests:
+\list
+\o Network (ethernet) connection: The test system communicates with a device through an ethernet socket connection. For this to work it is therefore required that an Ethernet/Usb/etc socket connection can be established between the device and the desktop machine on wich the test script is executed.
+\endlist
+
+\section1 Detailed Test Plan
+
+Tests are available for the following modules:
+
+\include generated/detailed_testplan.qdocinc
+
+All requirements can also be traced in the \l {Requirements Traceability Matrix}
+
+*/
+
