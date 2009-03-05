@@ -446,7 +446,7 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 
     Return true if an operation is initiated.
 
-    \sa retrieveAll(), updateMessagesFlags()
+    \sa retrieveAll()
 */
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
