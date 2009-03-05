@@ -194,7 +194,6 @@ void QMailMessageListModelPrivate::invalidateCache()
 /*!
   \class QMailMessageListModel 
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
   \preliminary
   \ingroup messaginglibrary 

@@ -11,7 +11,6 @@
 /*!
     \class QMailKeyArgument
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailKeyArgument class template defines a class representing a single criterion 
@@ -65,7 +64,6 @@
 /*!
     \class QMailKeyArgument::ValueList
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup messaginglibrary
 
     \brief The ValueList class provides a list of variant values that can be serialized to a stream, and compared.

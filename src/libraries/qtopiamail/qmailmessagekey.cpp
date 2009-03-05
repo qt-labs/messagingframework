@@ -22,7 +22,6 @@ using namespace QMailKey;
 /*!
     \class QMailMessageKey
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageKey class defines the parameters used for querying a subset of

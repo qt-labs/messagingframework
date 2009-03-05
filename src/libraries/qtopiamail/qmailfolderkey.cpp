@@ -19,7 +19,6 @@ using namespace QMailKey;
 /*!
     \class QMailFolderKey
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailFolderKey class defines the parameters used for querying a subset of

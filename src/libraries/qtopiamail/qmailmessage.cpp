@@ -1457,7 +1457,6 @@ template class QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>;
 /*!
     \class QMailMessageHeaderField
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageHeaderField class encapsulates the parsing of message header fields.
@@ -1774,7 +1773,6 @@ void QMailMessageHeaderField::deserialize(Stream &stream)
 /*!
     \class QMailMessageContentType
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageContentType class encapsulates the parsing of the RFC 2822
@@ -1969,7 +1967,6 @@ void QMailMessageContentType::setCharset(const QByteArray& charset)
 /*!
     \class QMailMessageContentDisposition
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageContentDisposition class encapsulates the parsing of the RFC 2822
@@ -2370,7 +2367,6 @@ template class QPrivatelyImplemented<QMailMessageHeaderPrivate>;
 /*!
     \class QMailMessageHeader
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \internal
 */
 
@@ -2820,7 +2816,6 @@ template class QPrivatelyImplemented<QMailMessageBodyPrivate>;
 /*!
     \class QMailMessageBody
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageBody class contains the body element of a message or message part.
@@ -3848,7 +3843,6 @@ template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
 /*!
     \class QMailMessagePartContainer
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessagePartContainer class provides access to a collection of message parts.
@@ -4364,7 +4358,6 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 /*!
     \class QMailMessagePart
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \preliminary
 
     \brief The QMailMessagePart class provides a convenient interface for working 
@@ -4392,7 +4385,6 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 /*!
     \class QMailMessagePart::Location
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \preliminary
 
     \brief The Location class contains a specification of the location of a message part
@@ -5388,7 +5380,6 @@ template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 /*!
     \class QMailMessageMetaData
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageMetaData class provides information about a message stored by Qtopia.
@@ -6338,7 +6329,6 @@ void QMailMessagePrivate::deserialize(Stream &stream)
 /*!
     \class QMailMessage
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessage class provides a convenient interface for working with messages.

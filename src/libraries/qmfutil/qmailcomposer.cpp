@@ -58,7 +58,6 @@ static QMailComposerInterface* mapping(const QString& key)
 /*!
     \class QMailComposerInterface
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup qmfutil
 
     \brief The QMailComposerInterface class defines the interface to objects that can compose a mail message.
@@ -189,7 +188,7 @@ void QMailComposerInterface::setBody( const QString& text, const QString &type )
     Q_UNUSED(type)
 }
 
-/*!
+/* !
     Adds \a item as an attachment to the message in the composer. The \a action parameter
     specifies what the composer should do with \a item.
 void QMailComposerInterface::attach( const QContent& item, QMailMessage::AttachmentsAction action )
@@ -350,7 +349,6 @@ void QMailComposerInterface::setMessageType( QMailMessage::MessageType type )
 /*!
     \class QMailComposerFactory
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup qmfutil
 
     \brief The QMailComposerFactory class creates objects implementing the QMailComposerInterface interface.

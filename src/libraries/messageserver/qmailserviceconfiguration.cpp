@@ -15,7 +15,6 @@
 /*!
     \class QMailServiceConfiguration
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \preliminary

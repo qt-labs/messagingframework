@@ -367,7 +367,6 @@ void QMailStoreAccountFilterPrivate::incrementConnectionCount(const char *signal
 /*!
     \class QMailStoreAccountFilter
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \preliminary

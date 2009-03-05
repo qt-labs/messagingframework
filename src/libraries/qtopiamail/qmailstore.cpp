@@ -16,7 +16,6 @@
 /*!
     \class QMailStore
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailStore class represents the main interface for storage and retrieval

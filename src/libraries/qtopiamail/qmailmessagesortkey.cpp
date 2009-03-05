@@ -14,7 +14,6 @@
 /*!
     \class QMailMessageSortKey
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageSortKey class defines the parameters used for sorting a subset of 
