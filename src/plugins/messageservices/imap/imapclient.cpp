@@ -645,28 +645,44 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         QMailMessage mail(uid, _config.id());
         if (mail.id().isValid()) {
             QString tempDir = QMail::tempPath() + QDir::separator();
-            QString partFileStr(tempDir + "mail-" + uid + "-part-" + section);
+            QString partName = "mail-" + uid + "-part-" + section;
+            QString partFileStr(tempDir + partName);
+
+            if (partial && section.isEmpty() && !partialLength.contains(partName)) {
+                uint retrievedSize = 0;
+                QFile contentFile(mail.contentIdentifier());
+                QFile partFile(partFileStr);
+                if (contentFile.exists())
+                    retrievedSize += contentFile.size();
+                if (partFile.exists())
+                    retrievedSize += partFile.size();
+                partialLength.insert(partName, retrievedSize);
+            }
+                                
             if (partial && size) {
                 if (!updatePartFile(partFileStr, chunkName)
                     || !QFile::remove(chunkName)
                     || !QFile::copy(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to store fetched data"));
+                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("1Unable to store fetched data"));
                     return;
                 }
                 fileName = chunkName;
             } else if (partial && !size) { // Complete part retrieved
+                partialLength.remove(partName);
                 if (!QFile::remove(chunkName)
                     || !QFile::rename(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to store fetched data"));
+                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("2Unable to store fetched data"));
                     return;
                 }
             }
                 
             // Update the relevant part
             QMailMessagePart &part = mail.partAt(partLocation);
-            if (section.isEmpty()) {
+            if (partial && section.isEmpty()) {
                 mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-                
+                if (partialLength[partName] >= mail.size()) {
+                    mail.setStatus(mail.status() | QMailMessage::Downloaded);
+                }
             } else if (part.multipartType() == QMailMessage::MultipartNone) {
                 // The body data is for this part only
                 if (part.hasBody()) {
