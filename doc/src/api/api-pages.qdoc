@@ -11,13 +11,10 @@
 /*!
 
 \page namespaces.html
-\title Qt Extended Namespaces
-\ingroup classlists
+\title Messaging Framework Namespaces
 
-This is a list of the main namespaces in Qt Extended. For a list of classes in
-Qt Extended, see \l{Class Index}.
+This is a list of the namespaces in Messaging Framework.
 
-MergeQtGroupHere
 \generatelist namespaces
 
 */
@@ -32,22 +29,11 @@ MergeQtGroupHere
 
 */
 
-
 /*!
 
-\page functions.html
+\page messaging-classes.html
 \target top
-\title Functions
-
-\generatelist functionindex
-
-*/
-
-/*!
-
-\page qtextended-classes.html
-\target top
-\title Qt Extended Class List
+\title Messaging Framework Class List
 
 \generatelist mainclasses
 
