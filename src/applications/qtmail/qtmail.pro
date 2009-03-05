@@ -21,13 +21,13 @@ HEADERS += foldermodel.h \
            messagelistview.h \
            messagestore.h \
            messagefolder.h \
-           emailclient_qt.h \
+           emailclient.h \
            selectfolder.h \
            statusdisplay_p.h \
            searchview.h \
-           readmail_qt.h \
-           writemail_qt.h \
-           qtmailwindow_qt.h \
+           readmail.h \
+           writemail.h \
+           qtmailwindow.h \
            selectcomposerwidget.h
 
 SOURCES += main.cpp \
@@ -39,13 +39,13 @@ SOURCES += main.cpp \
            messagelistview.cpp \
            messagestore.cpp \
            messagefolder.cpp \
-           emailclient_qt.cpp \
+           emailclient.cpp \
            selectfolder.cpp \
            statusdisplay.cpp \
            searchview.cpp \
-           readmail_qt.cpp \
-           writemail_qt.cpp \
-           qtmailwindow_qt.cpp \
+           readmail.cpp \
+           writemail.cpp \
+           qtmailwindow.cpp \
            selectcomposerwidget.cpp
 
 FORMS += searchviewbasephone.ui

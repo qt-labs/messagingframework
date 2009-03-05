@@ -33,5 +33,3 @@ void NewCountNotifier::notify(QMailMessage::MessageType, int)
 {
 }
 
-#include <newcountnotifier.moc>
-
