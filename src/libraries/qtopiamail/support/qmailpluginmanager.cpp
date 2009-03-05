@@ -9,6 +9,11 @@
 ****************************************************************************/
 
 #include "qmailpluginmanager.h"
+#include <QMap>
+#include <QPluginLoader>
+#include <QDir>
+#include <QtDebug>
+#include <qmailnamespace.h>
 
 /*!
   \class QMailPluginManager
@@ -68,49 +73,6 @@
 */
 
 
-#ifdef QMAIL_QTOPIA
-
-#include <QPluginManager>
-
-class QMailPluginManagerPrivate
-{
-public:
-    QMailPluginManagerPrivate(const QString& ident) : manager(ident) {}
-
-public:
-    QPluginManager manager;
-};
-
-QMailPluginManager::QMailPluginManager(const QString& identifier, QObject* parent)
-:
-    QObject(parent),
-    d(new QMailPluginManagerPrivate(identifier))
-{
-}
-
-QMailPluginManager::~QMailPluginManager()
-{
-    delete d;
-}
-
-
-QStringList QMailPluginManager::list() const
-{
-    return d->manager.list();
-}
-
-QObject* QMailPluginManager::instance(const QString& name)
-{
-    return d->manager.instance(name);
-}
-
-#else //QT_VERSION
-
-#include <QMap>
-#include <QPluginLoader>
-#include <QDir>
-#include <QtDebug>
-#include <qmailnamespace.h>
 
 class QMailPluginManagerPrivate
 {
@@ -179,4 +141,3 @@ QObject* QMailPluginManager::instance(const QString& name)
     d->pluginMap[name] = lib;
     return lib->instance();
 }
- #endif

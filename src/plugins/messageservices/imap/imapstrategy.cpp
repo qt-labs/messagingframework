@@ -11,11 +11,7 @@
 #include "imapstrategy.h"
 #include "imapclient.h"
 #include "imapconfiguration.h"
-#ifdef QMAIL_QTOPIA
-#include <private/longstream_p.h>
-#else
 #include <longstream_p.h>
-#endif
 #include <qobject.h>
 #include <qmaillog.h>
 #include <qmailaccount.h>

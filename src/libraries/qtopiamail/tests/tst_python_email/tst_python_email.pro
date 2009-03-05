@@ -1,8 +1,14 @@
 CONFIG += qtestlib
 TEMPLATE = app
+
 TARGET = tst_python_email
 target.path += $$QMF_INSTALL_ROOT/tests
-INSTALLS += target
+
+testdata.path = $$QMF_INSTALL_ROOT/tests/testdata 
+testdata.files = testdata/
+
+INSTALLS += target \
+            testdata
 
 DEPENDPATH += .
 INCLUDEPATH += . ../../ ../../support

@@ -8,12 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-// To detail string differences on comparison failure:
-#include "shared/string_difference.h"
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
 #include <QObject>
 #include <QTest>
 #include <qmailcodec.h>
@@ -51,11 +45,8 @@ private slots:
     void embedded_newlines();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_QMailCodec, QtopiaApplication )
-#else
 QTEST_MAIN(tst_QMailCodec)
-#endif
+
 #include "tst_qmailcodec.moc"
 
 

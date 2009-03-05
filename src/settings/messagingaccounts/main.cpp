@@ -7,16 +7,8 @@
 ** $QT_EXTENDED_DUAL_LICENSE$
 **
 ****************************************************************************/
+
 #include "accountsettings.h"
-
-#ifdef QMAIL_QTOPIA
-
-#include <qtopiaapplication.h>
-QTOPIA_ADD_APPLICATION(QTOPIA_TARGET,AccountSettings)
-QTOPIA_MAIN
-
-#else
-
 #include <QApplication>
 #include <qmailnamespace.h>
 #include <QIcon>
@@ -33,4 +25,3 @@ int main(int argc, char** argv)
     return app.exec();
 }
 
-#endif

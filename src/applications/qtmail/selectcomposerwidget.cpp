@@ -11,9 +11,6 @@
 #include "selectcomposerwidget.h"
 #include "qmailcomposer.h"
 #include <qmaillog.h>
-#ifdef QMAIL_QTOPIA
-#include <QtopiaItemDelegate>
-#endif
 #include <QKeyEvent>
 #include <qmailstore.h>
 #include <qmailaccount.h>
@@ -88,9 +85,6 @@ void SelectComposerWidget::init()
 {
     m_listWidget = new SelectListWidget(this);
     m_listWidget->setFrameStyle( QFrame::NoFrame );
-#ifdef QMAIL_QTOPIA
-    m_listWidget->setItemDelegate(new QtopiaItemDelegate);
-#endif
     connect(m_listWidget, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(accept(QListWidgetItem*)));
     connect(m_listWidget, SIGNAL(cancel()),this,SIGNAL(cancel()));
     QWidget::setFocusProxy(m_listWidget);

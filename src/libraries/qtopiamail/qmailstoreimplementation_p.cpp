@@ -48,23 +48,15 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
             foreach (const Segment& segment, segmentList) {
                 IDListType idSegment = ids.mid(segment.first, (segment.second - segment.first));
 
-#ifdef QMAIL_QTOPIA
-                QtopiaIpcEnvelope e("QPE/Qtopiamail",sig);
-#else
                 QCopAdaptor a("QPE/Qtopiamail");
                 QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-#endif
                 e << ::getpid();
                 e << idSegment; 
             }
         } else {
-#ifdef QMAIL_QTOPIA
-            QtopiaIpcEnvelope e("QPE/Qtopiamail",sig);
-#else
 
             QCopAdaptor a("QPE/Qtopiamail");
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-#endif
             e << ::getpid();
             e << ids;
         }
@@ -95,11 +87,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 {
     Q_ASSERT(q);
 
-#ifdef QMAIL_QTOPIA
-    QtopiaChannel* ipcChannel = new QtopiaChannel("QPE/Qtopiamail",this);
-#else
     QCopChannel* ipcChannel = new QCopChannel("QPE/Qtopiamail");
-#endif
 
     connect(ipcChannel,
             SIGNAL(received(QString,QByteArray)),
@@ -154,12 +142,8 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     notifyFlush();
 
     // Tell the recipients to process the notifications synchronously
-#ifdef QMAIL_QTOPIA
-    QtopiaIpcEnvelope e("QPE/Qtopiamail", "forceIpcFlush");
-#else
     QCopAdaptor a("QPE/Qtopiamail");
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
-#endif
     e << ::getpid();
 }
 

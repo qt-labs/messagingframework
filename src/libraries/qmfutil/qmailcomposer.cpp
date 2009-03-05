@@ -13,9 +13,6 @@
 #include <QIcon>
 #include <QMap>
 #include <QWidget>
-#ifdef QMAIL_QTOPIA
-#include <qcontent.h>
-#endif
 #include <qmaillog.h>
 #include <qmailpluginmanager.h>
 #include <qmailaccount.h>
@@ -192,19 +189,16 @@ void QMailComposerInterface::setBody( const QString& text, const QString &type )
     Q_UNUSED(type)
 }
 
-#ifdef QMAIL_QTOPIA
 /*!
     Adds \a item as an attachment to the message in the composer. The \a action parameter
     specifies what the composer should do with \a item.
-*/
 void QMailComposerInterface::attach( const QContent& item, QMailMessage::AttachmentsAction action )
 {
     // default implementation does nothing
     Q_UNUSED(item)
     Q_UNUSED(action)
 }
-
-#endif
+*/
 
 /*!
     Sets the composer to append \a signature to the body of the message, when creating a message.

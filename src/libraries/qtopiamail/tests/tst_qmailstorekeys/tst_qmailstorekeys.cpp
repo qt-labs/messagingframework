@@ -7,10 +7,7 @@
 ** $QT_EXTENDED_DUAL_LICENSE$
 **
 ****************************************************************************/
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
+
 #include <QObject>
 #include <QTest>
 #include <qmailstore.h>
@@ -108,11 +105,8 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_QMailStoreKeys, QtopiaApplication )
-#else
 QTEST_MAIN(tst_QMailStoreKeys)
-#endif
+
 #include "tst_qmailstorekeys.moc"
 
 tst_QMailStoreKeys::tst_QMailStoreKeys()
@@ -127,12 +121,6 @@ void tst_QMailStoreKeys::initTestCase()
 {
     // Instantiate the store to initialise the values of the status flags
     QMailStore::instance();
-
-#ifdef QMAIL_QTOPIA
-    QSettings log("Trolltech", "Log");
-    log.setValue("Messaging/Enabled", true);
-    log.sync();
-#endif
 
     // Create the data set we will test our keys upon
 

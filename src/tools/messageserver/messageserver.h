@@ -11,9 +11,6 @@
 #ifndef MESSAGESERVER_H
 #define MESSAGESERVER_H
 
-#ifdef QMAIL_QTOPIA
-#include <QUniqueId>
-#endif
 #include <qmailmessageserver.h>
 #include <QObject>
 #include <QSet>
@@ -60,11 +57,7 @@ private:
     MailMessageClient *client;
     QMailMessageCountMap messageCounts;
 
-#ifdef QMAIL_QTOPIA
-    QtopiaIpcAdaptor messageCountUpdate;
-#else
     QCopAdaptor messageCountUpdate;
-#endif
     QMap<NewCountNotifier*, QMailMessage::MessageType> actionType;
     int newMessageTotal;
 

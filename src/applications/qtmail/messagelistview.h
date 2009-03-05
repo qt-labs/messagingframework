@@ -118,14 +118,7 @@ private:
     QToolButton* mCloseFilterButton;
     QTabBar* mTabs;
     QPushButton* mMoreButton;
-#ifdef QMAIL_QTOPIA
-    QMailMessageDelegate* mDelegate;
-    QMailMessageListModel* mModel;
-#elif defined QTOPIA_HOME
-    QtopiaHomeMailMessageDelegate* mDelegate;
-#else
     MessageListModel* mModel;
-#endif
     QSortFilterProxyModel* mFilterModel;
     DisplayMode mDisplayMode;
     bool mMarkingMode;

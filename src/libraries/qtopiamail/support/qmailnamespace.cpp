@@ -18,6 +18,14 @@
 #include <QDir>
 #include <QDebug>
 #include <errno.h>
+#include <QDir>
+#include <QtDebug>
+#include <QMutex>
+#include <unistd.h>
+#include <stdlib.h>
+
+static const char* QMF_DATA_ENV="QMF_DATA";
+static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
 
 /*!
   \namespace QMail
@@ -151,70 +159,6 @@ bool QMail::fileUnlock(int id)
     return true;
 }
 
-#ifdef QMAIL_QTOPIA
-
-#include <QtGlobal>
-#include <qtopianamespace.h>
-#include <qtopiaapplication.h>
-#include <QtopiaSql>
-#include <QMimeType>
-
-void QMail::usleep(unsigned long usecs)
-{
-    Qtopia::usleep(usecs);
-}
-
-QSqlDatabase QMail::createDatabase()
-{
-    return QtopiaSql::instance()->applicationSpecificDatabase("qtopiamail");
-}
-
-QString QMail::dataPath()
-{
-    return Qtopia::applicationFileName("qtopiamail","");
-}
-
-QString QMail::tempPath()
-{
-    return Qtopia::applicationFileName("qtopiamail","temp");
-}
-
-QString QMail::pluginsPath()
-{
-    return QString();
-}
-
-QString QMail::sslCertsPath()
-{
-    return Qtopia::qtopiaDir() + "/etc/ssl/certs";
-}
-
-QString QMail::mimeTypeFromFileName(const QString& filename)
-{
-    QString mt = QMimeType(filename).id();
-    return mt;
-}
-
-QStringList QMail::extensionsForMimeType(const QString& mimeType)
-{
-    QMimeType mt(mimeType);
-    if(!mt.id().isEmpty())
-        return mt.extensions();
-    else
-        return QStringList();
-}
-
-#else //QT versions
-
-#include <QDir>
-#include <QtDebug>
-#include <QMutex>
-#include <unistd.h>
-#include <stdlib.h>
-
-
-static const char* QMF_DATA_ENV="QMF_DATA";
-static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
 
 QString QMail::dataPath()
 {
@@ -398,5 +342,3 @@ void QMail::usleep(unsigned long usecs)
         ::sleep( usecs / 1000000 );
     ::usleep( usecs % 1000000 );
 }
-
-#endif

@@ -10,9 +10,7 @@
 
 #include "smtpservice.h"
 #include "smtpsettings.h"
-#ifndef QMAIL_QTOPIA
 #include <QtPlugin>
-#endif
 
 namespace { const QString serviceKey("smtp"); }
 
@@ -184,11 +182,7 @@ QMailMessageServiceEditor *SmtpConfigurator::createEditor(QMailMessageServiceFac
     return 0;
 }
 
-#ifdef QMAIL_QTOPIA
-QTOPIA_EXPORT_PLUGIN( SmtpServicePlugin )
-#else
 Q_EXPORT_PLUGIN2(smtp,SmtpServicePlugin)
-#endif
 
 SmtpServicePlugin::SmtpServicePlugin()
     : QMailMessageServicePlugin()

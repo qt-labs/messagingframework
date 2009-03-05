@@ -9,17 +9,12 @@
 ****************************************************************************/
 
 #include "popservice.h"
-
 #include "popconfiguration.h"
 #include "popsettings.h"
-
 #include <QTimer>
-#ifndef QMAIL_QTOPIA
 #include <QtPlugin>
-#endif
 
 namespace { const QString serviceKey("pop3"); }
-
 
 class PopService::Source : public QMailMessageSource
 {
@@ -305,11 +300,7 @@ QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFact
     return 0;
 }
 
-#ifdef QMAIL_QTOPIA
-QTOPIA_EXPORT_PLUGIN(PopServicePlugin)
-#else
 Q_EXPORT_PLUGIN2(pop,PopServicePlugin)
-#endif
 
 PopServicePlugin::PopServicePlugin()
     : QMailMessageServicePlugin()

@@ -8,10 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
 #include <QObject>
 #include <QTest>
 #include <qmailaddress.h>
@@ -55,11 +51,7 @@ private slots:
     void dataStream();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_LongString, QtopiaApplication )
-#else
 QTEST_MAIN(tst_LongString)
-#endif
 #include "tst_longstring.moc"
 
 static void verifyIndexOf( const LongString& container, const QByteArray& content )

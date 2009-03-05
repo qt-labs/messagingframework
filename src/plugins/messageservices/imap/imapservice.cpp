@@ -12,11 +12,9 @@
 #include "imapsettings.h"
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
-#ifndef QMAIL_QTOPIA
 #include <QtPlugin>
-#endif
 #include <qmaillog.h>
-#include <qmailmessage.h>       
+#include <qmailmessage.h>
 
 namespace { const QString serviceKey("imap4"); }
 
@@ -520,11 +518,7 @@ QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFac
     return 0;
 }
 
-#ifdef QMAIL_QTOPIA
-QTOPIA_EXPORT_PLUGIN( ImapServicePlugin )
-#else
 Q_EXPORT_PLUGIN2(imap,ImapServicePlugin)
-#endif
 
 ImapServicePlugin::ImapServicePlugin()
     : QMailMessageServicePlugin()

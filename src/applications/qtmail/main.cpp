@@ -8,16 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-
-#include <qtopiaapplication.h>
-#include "qtmailwindow.h"
-
-QTOPIA_ADD_APPLICATION(QTOPIA_TARGET,QTMailWindow)
-QTOPIA_MAIN
-
-#else
-
 #include <QApplication>
 #include <qmailnamespace.h>
 #include "qtmailwindow_qt.h"
@@ -36,6 +26,4 @@ int main(int argc, char** argv)
 
     return app.exec();
 }
-
-#endif
 

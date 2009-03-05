@@ -9,31 +9,6 @@
 ****************************************************************************/
 
 #include "messageserver.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-
-#ifdef SINGLE_EXEC
-QTOPIA_ADD_APPLICATION(QTOPIA_TARGET,messageserver)
-#define MAIN_FUNC main_messageserver
-#else
-#define MAIN_FUNC main
-#endif
-
-QSXE_APP_KEY
-int MAIN_FUNC(int argc, char** argv)
-{
-    QSXE_SET_APP_KEY(argv[0])
-
-    QtopiaApplication app(argc, argv);
-
-    MessageServer server;
-
-    app.registerRunningTask("daemon");
-    return app.exec();
-}
-
-#else //QT VERSION
-
 #include <QApplication>
 #include <QDebug>
 #include <qmailnamespace.h>
@@ -52,6 +27,4 @@ int main(int argc, char** argv)
 
     return exitCode;
 }
-
-#endif
 

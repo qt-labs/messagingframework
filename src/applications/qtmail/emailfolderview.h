@@ -37,10 +37,6 @@ class EmailFolderDelegate : public FolderDelegate
     Q_OBJECT
 
 public:
-#ifdef QMAIL_QTOPIA
-    using QtopiaItemDelegate::drawDecoration;
-#endif
-
     EmailFolderDelegate(EmailFolderView *parent = 0);
 
     virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;

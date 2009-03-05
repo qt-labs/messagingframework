@@ -9,11 +9,7 @@
 ****************************************************************************/
 
 #include "qmailmessageservice.h"
-#ifdef QMAIL_QTOPIA
-#include <private/longstream_p.h>
-#else
 #include <longstream_p.h>
-#endif
 #include <QAbstractSocket>
 #include <QCoreApplication>
 #include <QList>

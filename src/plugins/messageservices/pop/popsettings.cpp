@@ -10,9 +10,6 @@
 
 #include "popsettings.h"
 #include "popconfiguration.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#endif
 #include <QLineEdit>
 #include <QMessageBox>
 #include <qmailaccount.h>
@@ -71,11 +68,6 @@ PopSettings::PopSettings()
     // These fields should not be autocapitalised
 
     mailPortInput->setValidator(new PortValidator(this));
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication::setInputMethodHint(mailUserInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(mailServerInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(mailPortInput, QtopiaApplication::Number);
-#endif
     mailPasswInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 
 #ifdef QT_NO_OPENSSL

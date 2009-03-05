@@ -13,11 +13,6 @@
 #include "qmailmessage.h"
 #include "qmailnamespace.h"
 
-#ifdef QMAIL_QTOPIA
-#include <qcollectivenamespace.h>
-#include <QContactModel>
-#endif
-
 struct CharacterProcessor
 {
     virtual ~CharacterProcessor();
@@ -181,11 +176,7 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
             _inAddress = false;
         }
         else if ( character == ':' && !_inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
-#ifdef QMAIL_QTOPIA
-            static const QString collectiveTag(QCollective::protocolIdentifier() + ':');
-#else
             static const QString collectiveTag;
-#endif
 
             // Don't parse as a group if we match the IM format
             // TODO: what if the group name actually matches the tag?
@@ -451,14 +442,6 @@ public:
     QList<QMailAddress> groupMembers() const;
 
     QString name() const;
-#ifdef QMAIL_QTOPIA
-    QString displayName() const;
-    QString displayName(QContactModel& fromModel) const;
-    QContact matchContact() const;
-    QContact matchContact(QContactModel& fromModel) const;
-    bool isChatAddress() const;
-    QString chatIdentifier() const;
-#endif
     bool isPhoneNumber() const;
     bool isEmailAddress() const;
 
@@ -483,9 +466,6 @@ private:
     void setComponents(const QString& nameText, const QString& addressText);
 
     mutable bool _searchCompleted;
-#ifdef QMAIL_QTOPIA
-    mutable QContact _contact;
-#endif
 };
 
 QMailAddressPrivate::QMailAddressPrivate()
@@ -673,163 +653,11 @@ QList<QMailAddress> QMailAddressPrivate::groupMembers() const
 // We need to keep a default copy of this, because constructing a new
 // one is expensive and sends multiple QCOP messages, whose responses it
 // will not survive to receive...
-#ifdef QMAIL_QTOPIA
-static QContactModel* contactModel = 0;
-#endif
 
 QString QMailAddressPrivate::name() const
 {
     return QMail::unquoteString(_name);
 }
-
-#ifdef QMAIL_QTOPIA
-
-QString QMailAddressPrivate::displayName() const
-{
-    if (!_searchCompleted)
-        matchContact();
-
-    QString result(_contact.label());
-    if (result.isEmpty())
-        result = name();
-
-    return result;
-}
-
-QString QMailAddressPrivate::displayName(QContactModel& fromModel) const
-{
-    QContact contact = matchContact(fromModel);
-
-    QString result(contact.label());
-    if (result.isEmpty())
-        result = name();
-
-    return result;
-}
-
-QContact QMailAddressPrivate::matchContact() const
-{
-    if (_searchCompleted == false)
-    {
-        // Note: this contact model ctor will send off QCOP requests for
-        // SIM contact info; that data is probably is not available to match against!
-        if (!contactModel) {
-            contactModel = new QContactModel();
-
-            // We need to use only the data sources that the Contacts app has selected
-            QSettings config( "Trolltech", "Contacts" );
-            config.beginGroup( "default" );
-            if (config.contains("SelectedSources/size")) {
-                int count = config.beginReadArray("SelectedSources");
-                QSet<QPimSource> set;
-                for (int i = 0; i < count; ++i) {
-                    config.setArrayIndex(i);
-                    QPimSource s;
-                    s.context = QUuid(config.value("context").toString());
-                    s.identity = config.value("identity").toString();
-                    set.insert(s);
-                }
-                config.endArray();
-                contactModel->setVisibleSources(set);
-            }
-        }
-
-        _contact = matchContact(*contactModel);
-        _searchCompleted = true;
-    }
-
-    return _contact;
-}
-
-QContact QMailAddressPrivate::matchContact(QContactModel& fromModel) const
-{
-    QContact contact;
-    bool attemptNameMatch(false);
-
-    if (isPhoneNumber()) {
-        // Match against phone numbers
-        contact = fromModel.matchPhoneNumber(_address);
-    } else if (isEmailAddress()) {
-        // Match against email addresses
-        contact = fromModel.matchEmailAddress(_address);
-    } else if (isChatAddress()) {
-        // Match against IM addresses
-        contact = fromModel.matchChatAddress(chatIdentifier());
-    } else {
-        attemptNameMatch = true;
-    }
-
-    if (!contact.uid().isNull())
-        return contact;
-
-    if (attemptNameMatch) {
-        // Assume this address is a person's name - try to find a contact with a similar name
-        
-        // We don't know if the name will have the same ordering of parts, so try to match 
-        // each name component individually, and select the contact with the most matching parts:
-        //   J. Random Hacker - 'J', 'Random', 'Hacker'
-        //   David St. Hubbins - 'David', 'St', 'Hubbins'
-        //   Nigel Incubator-Jones - 'Nigel', 'Incubator', 'Jones'
-        //   Andy van der Meyde - 'Andy', 'van', 'der', 'Meyde'
-
-        QString input(_name);
-        QStringList tokens = input.replace(QRegExp("\\W"), " ").split(" ", QString::SkipEmptyParts);
-
-        typedef QMap<QModelIndex, int> MatchMap;
-
-        MatchMap matches;
-        foreach (const QString &token, tokens) {
-            // Ideally we would also tokenize the contacts' relevant fields, but instead we
-            // will try partial matches on the label field (only for non-trivial tokens)
-            if (token.size() > 2) {
-                foreach (const QModelIndex &index, fromModel.match(QContactModel::Label, QVariant(token), Qt::MatchContains)) {
-                    matches[index] += 1;
-                }
-            }
-        }
-
-        if (!matches.isEmpty()) {
-            // Find the matches with maximum token matches
-            int maxMatchCount = 0;
-
-            QList<MatchMap::const_iterator> maxMatches;
-            MatchMap::const_iterator it = matches.begin(), end = matches.end();
-            for ( ; it != end; ++it) {
-                if (it.value() > maxMatchCount) {
-                    maxMatchCount = it.value();
-                    maxMatches.clear();
-                    maxMatches.append(it);
-                } else if (it.value() == maxMatchCount) {
-                    maxMatches.append(it);
-                }
-            }
-
-            if (maxMatches.count() > 1) {
-                // TODO: choose best option from amongst equal matches
-            }
-
-            return fromModel.contact(maxMatches.first().key());
-        }
-    }
-
-    return QContact();
-}
-
-
-bool QMailAddressPrivate::isChatAddress() const
-{
-    QString provider, identifier;
-    return QCollective::decodeUri(_address, provider, identifier);
-}
-
-QString QMailAddressPrivate::chatIdentifier() const
-{
-    QString provider, identifier;
-    QCollective::decodeUri(_address, provider, identifier);
-    return identifier;
-}
-
-#endif //QMAIL_QTOPIA
 
 bool QMailAddressPrivate::isPhoneNumber() const
 {
@@ -853,7 +681,7 @@ QString QMailAddressPrivate::minimalPhoneNumber() const
 
     // Convert any 'p' or 'x' to comma
     minimal.replace(QRegExp("[xpXP]"), ",");
-    
+
     // Ensure any permitted alphabetical chars are lower-case
     return minimal.toLower();
 }
@@ -930,9 +758,6 @@ template <typename Stream>
 void QMailAddressPrivate::deserialize(Stream &stream)
 {
     _searchCompleted = false;
-#ifdef QMAIL_QTOPIA
-    _contact = QContact();
-#endif
     stream >> _name >> _address >> _suffix >> _group;
 }
 
@@ -1042,90 +867,6 @@ QString QMailAddress::address() const
 {
     return d->_address;
 }
-
-#ifdef QMAIL_QTOPIA
-
-/*!
-    Returns a name to represent the address.  If the address matches that of a stored Contact then
-    the display name will be the contact's label.  If no matching Contact is found, the name component
-    of the address will be returned.
-
-    \sa matchContact()
-*/
-QString QMailAddress::displayName() const
-{
-    return d->displayName();
-}
-
-/*!
-    Returns a name to represent the address by querying the existing QContactModel \a fromModel.
-    If the address matches that of a stored Contact then the display name will be the contact's label.
-    If no matching Contact is found, the name component of the address will be returned.
-
-    \sa matchContact()
-*/
-
-QString QMailAddress::displayName(QContactModel& fromModel) const
-{
-    return d->displayName(fromModel);
-}
-
-/*!
-    Find the stored Contact whose email address or phone number matches the address component
-    of the address text. If no matching contact is found, an empty Contact is returned.
-
-    \sa displayName()
-    \sa matchesExistingContact()
-    \sa QContactModel::matchPhoneNumber()
-    \sa QContactModel::matchEmailAddress()
-*/
-QContact QMailAddress::matchContact() const
-{
-    return d->matchContact();
-}
-
-/*!
-    Returns true if there exists a stored Contact whose email address or phone number matches the address component of the address text; otherwise returns false.
-
-    \sa matchContact()
-*/
-bool QMailAddress::matchesExistingContact() const
-{
-    return !d->matchContact().uid().isNull();
-}
-
-/*!
-    Find the stored Contact whose email address or phone number matches the address component 
-    of the address text within the existing QContactModel \a fromModel. If no matching contact 
-    is found, a null Contact is returned. 
-
-    \sa displayName()
-    \sa QContactModel::matchPhoneNumber()
-    \sa QContactModel::matchEmailAddress()
-*/
-
-QContact QMailAddress::matchContact(QContactModel& fromModel) const
-{
-    return d->matchContact(fromModel);
-}
-
-/*!
-    Returns true if the address component has the form of an instant message address; otherwise returns false.
-
-    \sa isEmailAddress(), isPhoneNumber(), matchContact()
-*/
-bool QMailAddress::isChatAddress() const
-{
-    return d->isChatAddress();
-}
-
-/*! \internal */
-QString QMailAddress::chatIdentifier() const
-{
-    return d->chatIdentifier();
-}
-
-#endif //QMAIL_QTOPIA
 
 /*!
     Returns true if the address is that of a group.

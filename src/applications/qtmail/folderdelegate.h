@@ -12,28 +12,16 @@
 #define FOLDERDELEGATE_H
 
 #include "foldermodel.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaItemDelegate>
-#else
 #include <QItemDelegate>
-#endif
 
 class QAbstractItemView;
 class QScrollBar;
 
-#ifdef QMAIL_QTOPIA
-class FolderDelegate : public QtopiaItemDelegate
-#else
 class FolderDelegate : public QItemDelegate
-#endif
 {
     Q_OBJECT
 
 public:
-#ifdef QMAIL_QTOPIA
-    using QtopiaItemDelegate::drawDecoration;
-#endif
-
     FolderDelegate(QAbstractItemView *parent = 0);
     FolderDelegate(QWidget *parent = 0);
 

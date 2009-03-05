@@ -11,10 +11,6 @@
 #ifndef STATDISPLAY_H
 #define STATDISPLAY_H
 
-#ifdef QMAIL_QTOPIA
-#include <private/statusdisplay_p.h>
-#else
-
 #include <QProgressBar>
 
 // A QProgressBar and status label combined. No percentage is shown, as
@@ -57,6 +53,5 @@ private:
     bool suppressed;
 };
 
-#endif //QMAIL_QTOPIA
-
 #endif
+

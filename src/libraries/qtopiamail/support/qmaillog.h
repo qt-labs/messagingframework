@@ -11,13 +11,6 @@
 #ifndef QMAILLOG_H
 #define QMAILLOG_H
 
-#ifdef QMAIL_QTOPIA
-
-#include <qtopialog.h>
-#define qMailLog(a) qLog(a)
-
-#else
-
 #include "qmailglobal.h"
 #include <QtDebug>
 
@@ -101,5 +94,4 @@ QLOG_DISABLE(POP)
 QLOG_DISABLE(ImapData)
 QLOG_DISABLE(MessagingState)
 
-#endif
-#endif //QMAIL_QTOPIA
+#endif //QMAILLOG_H

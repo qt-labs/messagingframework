@@ -8,20 +8,13 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-// To detail string differences on comparison failure:
-#include "shared/string_difference.h"
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#include <QMimeType>
-#endif
 #include <QObject>
 #include <QTest>
 #include <qmailmessage.h>
 #include "../../../../../src/libraries/qtopiamail/longstring_p.h"
 #include <qmailnamespace.h>
 
-/* 
+/*
 Note: Any email addresses appearing in this test data must be example addresses,
 as defined by RFC 2606.  Therefore, they should use one of the following domains:
     *.example.{com|org|net}
@@ -39,7 +32,7 @@ as defined by RFC 2606.  Therefore, they should use one of the following domains
     This class tests that we can handle the mail objects used by the python email library test suite
 
     Where possible, tests are ported as directly as possible. Tests demonstrating interface
-    choices made in the python library are not ported.  Tests duplicating functions tested 
+    choices made in the python library are not ported.  Tests duplicating functions tested
     in other QMailMessage* tests are not ported, unless they exercise the test data files
     we have imported.
 */
@@ -152,11 +145,8 @@ private slots:
     void test_rfc2231_unencoded_then_encoded_segments();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_python_email, QtopiaApplication )
-#else
 QTEST_MAIN(tst_python_email)
-#endif
+
 #include "tst_python_email.moc"
 
 
@@ -170,11 +160,7 @@ tst_python_email::~tst_python_email()
 
 QString tst_python_email::path(const QString& filename)
 {
-#ifdef QMAIL_QTOPIA
-    QString path(QtopiaUnitTest::baseDataPath());
-#else
     QString path = "testdata";
-#endif
 
     if (!path.endsWith('/'))
         path.append('/');

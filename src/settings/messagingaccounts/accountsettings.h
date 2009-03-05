@@ -56,11 +56,7 @@ private:
 private:
     QMap<int,int> listToAccountIdx;
     QMailAccountListModel *accountModel;
-#ifdef QMAIL_QTOPIA
-    QSmoothList *accountView;
-#else
     QListView* accountView;
-#endif
     QMenu *context;
     QAction *addAccountAction;
     QAction *removeAccountAction;

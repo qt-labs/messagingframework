@@ -10,9 +10,6 @@
 
 #include "smtpsettings.h"
 #include "smtpconfiguration.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#endif
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QTextEdit>
@@ -134,13 +131,6 @@ SmtpSettings::SmtpSettings()
     // These fields should not be autocapitalised
 
     smtpPortInput->setValidator(new PortValidator(this));
-
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication::setInputMethodHint(smtpPortInput, QtopiaApplication::Number);
-    QtopiaApplication::setInputMethodHint(emailInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(smtpUsernameInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(smtpServerInput, QtopiaApplication::Named, uncapitalised);
-#endif
 
     smtpPasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 

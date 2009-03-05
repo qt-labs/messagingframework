@@ -10,11 +10,7 @@
 
 
 #include "servicehandler.h"
-#ifdef QMAIL_QTOPIA
-#include <private/longstream_p.h>
-#else
 #include <longstream_p.h>
-#endif
 #include <QDataStream>
 #include <QIODevice>
 #include <qmailmessageserver.h>

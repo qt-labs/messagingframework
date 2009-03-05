@@ -10,9 +10,5 @@
 
 #ifndef QMAILGLOBAL_H
 #define QMAILGLOBAL_H
-#ifdef QMAIL_QTOPIA
-# include "../qtopiabase/qtopiaglobal.h"
-#else
 #define QTOPIAMAIL_EXPORT __attribute__((visibility("default")))
-#endif
 #endif

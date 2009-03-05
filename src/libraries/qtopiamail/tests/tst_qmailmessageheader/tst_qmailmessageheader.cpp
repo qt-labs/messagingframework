@@ -8,11 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-// To detail string differences on comparison failure:
-#include "shared/string_difference.h"
-#include <QtopiaApplication>
-#endif
 #include <QObject>
 #include <QTest>
 #include <QDataStream>
@@ -169,11 +164,7 @@ private slots:
 
 int main(int argc, char *argv[])
 {
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication app(argc, argv);
-#else
     QApplication app(argc,argv);
-#endif
 
     tst_QMailMessageHeader dummy;
     tst_QMailMessageHeaderField messageHeader;

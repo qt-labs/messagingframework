@@ -8,12 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-// To detail string differences on comparison failure:
-#include "shared/string_difference.h"
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
 #include <QObject>
 #include <QTest>
 #include <qmailaddress.h>
@@ -111,11 +105,8 @@ private slots:
     void copyAndAssign();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_QMailMessage, QtopiaApplication )
-#else
 QTEST_MAIN(tst_QMailMessage)
-#endif
+
 #include "tst_qmailmessage.moc"
 
 static void testHeader(const QString& name, void (QMailMessage::*setter)(const QString&), QString (QMailMessage::*getter)() const, bool expandEncodedWords = false)

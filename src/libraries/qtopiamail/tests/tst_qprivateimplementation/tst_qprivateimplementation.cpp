@@ -9,10 +9,6 @@
 ****************************************************************************/
 
 #include "qprivateimplementationdef.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
 #include <QObject>
 #include <QString>
 #include <QTest>
@@ -199,11 +195,8 @@ private slots:
     void basicTest();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_QPrivateImplementation, QtopiaApplication )
-#else
 QTEST_MAIN(tst_QPrivateImplementation)
-#endif
+
 #include "tst_qprivateimplementation.moc"
 
 

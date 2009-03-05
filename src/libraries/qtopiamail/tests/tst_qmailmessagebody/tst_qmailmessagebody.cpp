@@ -8,12 +8,6 @@
 **
 ****************************************************************************/
 
-#ifdef QMAIL_QTOPIA
-// To detail string differences on comparison failure:
-#include "shared/string_difference.h"
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
 #include <QObject>
 #include <QTest>
 #include <qmailcodec.h>
@@ -70,11 +64,8 @@ private slots:
     void toFile();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN(tst_QMailMessageBody,QtopiaApplication)
-#else
 QTEST_MAIN(tst_QMailMessageBody)
-#endif
+
 #include "tst_qmailmessagebody.moc"
 
 static QByteArray encode(const QByteArray& input, QMailMessageBody::TransferEncoding encoding)
@@ -244,14 +235,14 @@ void tst_QMailMessageBody::fromQString_data()
 
     // Latin-1 Characters
     source = QString("Joh\361 D\366e");
-    QTest::newRow("Latin-1 - base64") 
+    QTest::newRow("Latin-1 - base64")
         << source
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::Base64
         << encode(source, "ISO-8859-1", QMailMessageBody::Base64)
         << source;
 
-    QTest::newRow("Latin-1 - QP") 
+    QTest::newRow("Latin-1 - QP")
         << source
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::QuotedPrintable
@@ -261,14 +252,14 @@ void tst_QMailMessageBody::fromQString_data()
     // Unicode Characters
     const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
     source = QString(chars, 4);
-    QTest::newRow("unicode - base64") 
+    QTest::newRow("unicode - base64")
         << source
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::Base64
         << encode(source, "UTF-8", QMailMessageBody::Base64)
         << source;
 
-    QTest::newRow("unicode - QP") 
+    QTest::newRow("unicode - QP")
         << source
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::QuotedPrintable
@@ -278,7 +269,7 @@ void tst_QMailMessageBody::fromQString_data()
 
 void tst_QMailMessageBody::fromQString()
 {
-    QFETCH( QString, input ); 
+    QFETCH( QString, input );
     QFETCH( QByteArray, type );
     QFETCH( QMailMessageBody::TransferEncoding, encoding );
 

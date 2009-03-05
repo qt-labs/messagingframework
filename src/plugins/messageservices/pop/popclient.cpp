@@ -11,13 +11,8 @@
 #include "popclient.h"
 #include "popauthenticator.h"
 #include "popconfiguration.h"
-#ifdef QMAIL_QTOPIA
-#include <private/longstream_p.h>
-#include <private/longstring_p.h>
-#else
 #include <longstream_p.h>
 #include <longstring_p.h>
-#endif
 #include <qmailstore.h>
 #include <qmailtransport.h>
 #include <qmaillog.h>

@@ -12,13 +12,7 @@
 #define IMAPPROTOCOL_H
 
 #include "imapmailboxproperties.h"
-
-#ifdef QMAIL_QTOPIA
-#include <private/longstream_p.h>
-#else
 #include <longstream_p.h>
-#endif
-
 #include <qobject.h>
 #include <qstring.h>
 #include <qstringlist.h>

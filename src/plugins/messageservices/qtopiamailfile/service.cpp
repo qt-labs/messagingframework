@@ -10,9 +10,7 @@
 
 #include "service.h"
 #include "settings.h"
-#ifndef QMAIL_QTOPIA
 #include <QtPlugin>
-#endif
 
 namespace { const QString serviceKey("qtopiamailfile"); }
 
@@ -55,11 +53,7 @@ QMailMessageServiceEditor *QtopiamailfileConfigurator::createEditor(QMailMessage
     return 0;
 }
 
-#ifdef QMAIL_QTOPIA
-QTOPIA_EXPORT_PLUGIN( QtopiamailfileServicePlugin )
-#else
 Q_EXPORT_PLUGIN2(qtopiamailfile,QtopiamailfileServicePlugin)
-#endif
 
 QtopiamailfileServicePlugin::QtopiamailfileServicePlugin()
     : QMailMessageServicePlugin()

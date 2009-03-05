@@ -9,29 +9,20 @@
 ****************************************************************************/
 
 #include "folderdelegate.h"
-
 #include <QAbstractItemView>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QScrollBar>
 
 FolderDelegate::FolderDelegate(QAbstractItemView *parent)
-#ifdef QMAIL_QTOPIA
-    : QtopiaItemDelegate(parent),
-#else
     : QItemDelegate(parent),
-#endif
       _parent(parent),
       _scrollBar(parent ? parent->verticalScrollBar() : 0)
 {
 }
 
 FolderDelegate::FolderDelegate(QWidget *parent)
-#ifdef QMAIL_QTOPIA
-    : QtopiaItemDelegate(parent),
-#else
     : QItemDelegate(parent),
-#endif
       _parent(parent),
       _scrollBar(0)
 {
@@ -40,11 +31,7 @@ FolderDelegate::FolderDelegate(QWidget *parent)
 void FolderDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     const_cast<FolderDelegate*>(this)->init(option, index);
-#ifdef QMAIL_QTOPIA
-    QtopiaItemDelegate::paint(painter, option, index);
-#else
     QItemDelegate::paint(painter, option, index);
-#endif
 }
 
 void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &originalRect, const QString &text) const
@@ -66,11 +53,7 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
 
     QRect textRect(rect);
     textRect.setWidth(rect.width() - tw);
-#ifdef QMAIL_QTOPIA
-    QtopiaItemDelegate::drawDisplay(painter, option, textRect, text);
-#else
     QItemDelegate::drawDisplay(painter, option, textRect, text);
-#endif
 
     if (tw) {
         static const int margin = 5;
@@ -104,11 +87,7 @@ void FolderDelegate::drawDecoration(QPainter *painter, const QStyleOptionViewIte
 QSize FolderDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     // Ensure that we use the full width for our item
-#ifdef QMAIL_QTOPIA
-    QSize base(QtopiaItemDelegate::sizeHint(option, index));
-#else
     QSize base(QItemDelegate::sizeHint(option,index));
-#endif
     return QSize(qMax(base.width(), option.rect.width()), base.height());
 }
 

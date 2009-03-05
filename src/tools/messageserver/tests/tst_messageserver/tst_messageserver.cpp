@@ -11,33 +11,22 @@
 #include <QProcess>
 #include <QTemporaryFile>
 #include <QTest>
-#ifdef QMAIL_QTOPIA
-#include <QValueSpace>
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#include <shared/util.h>
-#else
 #include <QDir>
 #include <QTimer>
 #include <errno.h>
 #include <qmailnamespace.h>
-#endif
 #include <stdio.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
 #include <imapconfiguration.h>
 #include <qmailserviceaction.h>
 #include <qmailstore.h>
-
 #include <messageserver.h>
-
 #include "benchmarkcontext.h"
 #include "qscopedconnection.h"
-
 #include <valgrind/callgrind.h>
 #include <valgrind/valgrind.h>
 
@@ -120,11 +109,7 @@ void tst_MessageServer::cleanupTestCase()
 
 void tst_MessageServer::init()
 {
-#ifdef QMAIL_QTOPIA
-    removePath(QDir::homePath() + "/Applications/qtopiamail");
-#else
     removePath(QMail::dataPath());
-#endif
 }
 
 void tst_MessageServer::cleanup()
@@ -646,11 +631,6 @@ int main(int argc, char** argv)
         This is because we intend to fork() later on and we don't want to
         have to process events for the sake of the child process.
     */
-#ifdef QMAIL_QTOPIA
-    if (!RUNNING_ON_VALGRIND) {
-        QtopiaUnitTest::ensureNotQwsServer(argc, argv);
-    }
-#endif
     QApplication app(argc, argv);
 
     QString home = QDir::homePath();

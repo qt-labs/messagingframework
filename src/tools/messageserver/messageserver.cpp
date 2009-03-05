@@ -15,12 +15,6 @@
 #include <qmailmessage.h>
 #include <qmailstore.h>
 #include <QDataStream>
-#ifdef QMAIL_QTOPIA
-#include <QMimeType>
-#include <QtopiaApplication>
-#include <QtopiaServiceRequest>
-#include <qnetworkstate.h>
-#endif
 #include <QTimer>
 #include <qmaillog.h>
 #include <qmailipc.h>
@@ -35,11 +29,7 @@ MessageServer::MessageServer(QObject *parent)
       completionAttempted(false)
 {
     qMailLog(Messaging) << "MessageServer ctor begin";
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication::loadTranslations("libqtopiamail");
-#else
     new QCopServer(this);
-#endif
 
     QMailMessageCountMap::iterator it = messageCounts.begin(), end = messageCounts.end();
     for ( ; it != end; ++it)
@@ -47,15 +37,7 @@ MessageServer::MessageServer(QObject *parent)
 
     QMailStore *store = QMailStore::instance();
     if (!store->initialized()) {
-#ifdef QMAIL_QTOPIA
-        // We can't do anything without the mail store...
-        QtopiaServiceRequest req("SystemMessages", "showDialog(QString,QString)");
-        req << tr("Messaging DB Invalid");
-        req << tr("Messaging cannot operate due to database incompatibilty!");
-        req.send();
-#else
         qFatal("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
-#endif
         // Do not close, however, or QPE will start another instance.
     } else {
         handler = new ServiceHandler(this);
@@ -142,12 +124,7 @@ MessageServer::MessageServer(QObject *parent)
         connect(client, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),
                 this, SLOT(acknowledgeNewMessages(QMailMessageTypeList)));
 
-#ifdef QMAIL_QTOPIA
-        QtopiaIpcAdaptor::connect
-#else
-        QCopAdaptor::connect
-#endif
-            (this, SIGNAL(messageCountUpdated()),
+        QCopAdaptor::connect(this, SIGNAL(messageCountUpdated()),
              &messageCountUpdate, MESSAGE(changeValue()));
     }
 }

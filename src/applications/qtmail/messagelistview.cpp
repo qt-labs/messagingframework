@@ -13,16 +13,7 @@
 #include <qmailfolder.h>
 #include <qmailfolderkey.h>
 #include <qmailmessagelistmodel.h>
-#ifdef QMAIL_QTOPIA
-#include <qmailmessagedelegate.h>
-#include <QSmoothList>
-#include <private/qtopiainputdialog_p.h>
-#else
 #include <QTreeView>
-#endif
-#ifdef QTOPIA_HOMEUI
-#include <private/homewidgets_p.h>
-#endif
 #include <QKeyEvent>
 #include <QLayout>
 #include <QLabel>
@@ -36,7 +27,6 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-#ifndef QMAIL_QTOPIA
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 class MessageListModel : public QMailMessageListModel
 {
@@ -71,6 +61,7 @@ QVariant MessageListModel::headerData(int section, Qt::Orientation o, int role) 
 
 int MessageListModel::columnCount(const QModelIndex & parent ) const
 {
+    Q_UNUSED(parent);
     return headers.count();
 }
 
@@ -123,43 +114,7 @@ bool MessageListModel::markingMode() const
     return m_markingMode;
 }
 
-#endif
-
-#ifdef QTOPIA_HOMEUI
-static const QMap<MessageListView::DisplayMode,QMailMessageKey>& keyMap()
-{
-    static QMap<MessageListView::DisplayMode, QMailMessageKey> map;
-
-    // IMAP folders are those with a parent account ID that is not invalid
-    static QMailFolderKey imapFolderKey(QMailFolderKey::ParentAccountId, QMailAccountId(), QMailDataComparator::NotEqual);
-
-    static QMailMessageKey inboxFolderKey(QMailMessageKey::ParentFolderId, QMailFolderId(QMailFolder::InboxFolder));
-    static QMailMessageKey outboxFolderKey(QMailMessageKey::ParentFolderId, QMailFolderId(QMailFolder::OutboxFolder));
-    static QMailMessageKey draftsFolderKey(QMailMessageKey::ParentFolderId, QMailFolderId(QMailFolder::DraftsFolder));
-    static QMailMessageKey sentFolderKey(QMailMessageKey::ParentFolderId, QMailFolderId(QMailFolder::SentFolder));
-    static QMailMessageKey trashFolderKey(QMailMessageKey::ParentFolderId, QMailFolderId(QMailFolder::TrashFolder));
-    static QMailMessageKey imapKey(QMailMessageKey::ParentFolderId, imapFolderKey);
-    static QMailMessageKey inboxWithImapKey(inboxFolderKey | imapKey);
-    static QMailMessageKey sentWithOutboxKey(outboxFolderKey | sentFolderKey);
-
-    if (map.isEmpty()) {
-        map.insert(MessageListView::DisplayMessages, (inboxWithImapKey | sentWithOutboxKey)); // received or sent
-        map.insert(MessageListView::DisplayReceived, inboxWithImapKey);
-        map.insert(MessageListView::DisplaySent, sentWithOutboxKey);
-        map.insert(MessageListView::DisplayDrafts, draftsFolderKey);
-        map.insert(MessageListView::DisplayTrash, trashFolderKey);
-        map.insert(MessageListView::DisplayFilter, QMailMessageKey()); // everything
-    }
-
-    return map;
-}
-#endif
-
-#ifdef QMAIL_QTOPIA
-class MessageList : public QSmoothList
-#else
 class MessageList : public QTreeView
-#endif
 {
     Q_OBJECT
 
@@ -181,11 +136,7 @@ protected:
 
 MessageList::MessageList(QWidget* parent)
 :
-#ifdef QMAIL_QTOPIA
-    QSmoothList(parent)
-#else
     QTreeView(parent)
-#endif
 {
 }
 
@@ -210,22 +161,14 @@ void MessageList::keyPressEvent(QKeyEvent* e)
         case Qt::Key_Backspace:
             emit backPressed();
         break;
-#ifdef QMAIL_QTOPIA
-        default: QSmoothList::keyPressEvent(e);
-#else
         default: QTreeView::keyPressEvent(e);
-#endif
     }
 }
 
 void MessageList::mouseReleaseEvent(QMouseEvent* e)
 {
     pos = e->pos();
-#ifdef QMAIL_QTOPIA
-    QSmoothList::mouseReleaseEvent(e);
-#else
     QTreeView::mouseReleaseEvent(e);
-#endif
 }
 
 
@@ -238,17 +181,7 @@ MessageListView::MessageListView(QWidget* parent)
     mCloseFilterButton(0),
     mTabs(new QTabBar(this)),
     mMoreButton(new QPushButton(this)),
-#ifdef QTOPIA_HOMEUI
-    mDelegate(new QtopiaHomeMailMessageDelegate(QtopiaHomeMailMessageDelegate::QtmailUnifiedMode, this)),
-#elif QMAIL_QTOPIA
-    mDelegate(new QMailMessageDelegate(QMailMessageDelegate::QtmailMode, this)),
-#endif
-
-#ifdef QMAIL_QTOPIA
-    mModel(new QMailMessageListModel),
-#else
     mModel(new MessageListModel(this)),
-#endif
     mFilterModel(new QSortFilterProxyModel(this)),
     mDisplayMode(DisplayMessages),
     mMarkingMode(false),
@@ -305,32 +238,14 @@ void MessageListView::init()
     mFilterModel->setSourceModel(mModel);
     mFilterModel->setFilterRole(QMailMessageListModel::MessageFilterTextRole);
     mFilterModel->setDynamicSortFilter(true);
-#ifdef QMAIL_QTOPIA
-    mMessageList->setEmptyText(tr("No Messages"));
-    mMessageList->setItemDelegate(mDelegate);
-#else
     mMessageList->setUniformRowHeights(true);
     mMessageList->setRootIsDecorated(false);
     mMessageList->header()->setDefaultSectionSize(180);
-#endif
     mMessageList->setModel(mFilterModel);
 
     mTabs->setFocusPolicy(Qt::NoFocus);
 
-#ifdef QTOPIA_HOMEUI
-    mTabs->addTab(tr("Messages"));
-    mTabs->addTab(tr("Received"));
-    mTabs->addTab(tr("Sent"));
-    mTabs->addTab(tr("Drafts"));
-    mTabs->addTab(tr("Trash"));
-#endif
-
     mCloseFilterButton = new QToolButton(this);
-#ifdef QTOPIA_HOMEUI
-    QPalette pal = mCloseFilterButton->palette();
-    pal.setBrush(QPalette::Button, QtopiaHome::standardColor(QtopiaHome::Green));
-    mCloseFilterButton->setPalette(pal);
-#endif
     mCloseFilterButton->setText(tr("Done"));
     mCloseFilterButton->setFocusPolicy(Qt::NoFocus);
 
@@ -339,13 +254,8 @@ void MessageListView::init()
 
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
             this, SLOT(indexClicked(QModelIndex)));
-#ifdef QMAIL_QTOPIA
-    connect(mMessageList, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-            this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
-#else
     connect(mMessageList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
             this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
-#endif
     connect(mMessageList, SIGNAL(backPressed()),
             this, SIGNAL(backPressed()));
 
@@ -523,13 +433,7 @@ void MessageListView::setMarkingMode(bool set)
 {
     if (mMarkingMode != set) {
         mMarkingMode = set;
-#ifdef QMAIL_QTOPIA
-        // Re-set the delegate to force a repaint of all items
-        mDelegate->setDisplaySelectionState(mMarkingMode);
-        mMessageList->setItemDelegate(mDelegate);
-#else
         mModel->setMarkingMode(set);
-#endif
         emit selectionChanged();
     }
 }
@@ -577,19 +481,6 @@ MessageListView::DisplayMode MessageListView::displayMode() const
 void MessageListView::setDisplayMode(const DisplayMode& m)
 {
     if(m == DisplayFilter) {
-#ifdef QTOPIA_HOMEUI
-        bool ok = false;
-        QString ret = QtopiaInputDialog::getText(this,
-                                                 tr("Search"),
-                                                 tr("Search"),
-                                                 QLineEdit::Normal,
-                                                 QtopiaApplication::Words,
-                                                 QString(), mFilterEdit->text(), &ok);
-        ok &= !ret.isEmpty();
-        if(!ok) return; //no search criteria, so ignore mode switch.
-        mDisplayMode = m;
-        mFilterEdit->setText(ret);
-#endif
         mFilterFrame->setVisible(true);
         mTabs->setVisible(false);
         mFilterEdit->setFocus();
@@ -600,13 +491,6 @@ void MessageListView::setDisplayMode(const DisplayMode& m)
         mTabs->setVisible(true);
         mTabs->setCurrentIndex(static_cast<int>(mDisplayMode));
     }
-
-#ifdef QTOPIA_HOMEUI
-    mModel->setKey(keyMap().value(mDisplayMode));
-    bool unified(mDisplayMode == DisplayMessages || mDisplayMode == DisplayFilter || mDisplayMode == DisplayTrash);
-    mDelegate->setDisplayMode(unified ? QtopiaHomeMailMessageDelegate::QtmailUnifiedMode
-                                      : QtopiaHomeMailMessageDelegate::QtmailMode);
-#endif
 }
 
 void MessageListView::closeFilterButtonClicked()
@@ -622,18 +506,10 @@ void MessageListView::tabSelected(int index)
 void MessageListView::modelChanged()
 {
     mMarkingMode = false;
-#ifdef QMAIL_QTOPIA
-    if (mFilterModel->rowCount() && (mMessageList->selectionMode() != QSmoothList::NoSelection)) {
-        mMessageList->setCurrentIndex(mFilterModel->index(0, 0));
-        emit selectionChanged();
-    } else {
-        mMessageList->clearSelection();
-    }
-#endif
 }
 
 void MessageListView::indexClicked(const QModelIndex& index)
-{ 
+{
     if (mMarkingMode) {
         bool checked(static_cast<Qt::CheckState>(index.data(Qt::CheckStateRole).toInt()) == Qt::Checked);
         mFilterModel->setData(index, static_cast<int>(checked ? Qt::Unchecked : Qt::Checked), Qt::CheckStateRole);
@@ -641,13 +517,6 @@ void MessageListView::indexClicked(const QModelIndex& index)
     } else {
         QMailMessageId id(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
         if (id.isValid()) {
-#ifdef QTOPIA_HOMEUI
-            QPoint pos = mMessageList->clickPos();
-            if (mDelegate->replyButtonRect(mMessageList->visualRect(index)).contains(pos)) {
-                emit resendRequested(QMailMessage(id), 0);
-                return;
-            }
-#endif
             emit clicked(id);
         }
     }

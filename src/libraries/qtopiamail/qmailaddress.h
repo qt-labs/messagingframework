@@ -11,9 +11,6 @@
 #define QMAILADDRESS_H
 
 #include "qmailglobal.h"
-#ifdef QMAIL_QTOPIA
-#include <QContact>
-#endif
 #include "qmailipc.h"
 #include <QList>
 #include <QSharedDataPointer>
@@ -38,15 +35,6 @@ public:
 
     bool isGroup() const;
     QList<QMailAddress> groupMembers() const;
-#ifdef QMAIL_QTOPIA
-    QString displayName() const;
-    QString displayName(QContactModel& fromModel) const;
-    QContact matchContact() const;
-    bool matchesExistingContact() const;
-    QContact matchContact(QContactModel& fromModel) const;
-    bool isChatAddress() const;
-    QString chatIdentifier() const;
-#endif
 
     bool isPhoneNumber() const;
     bool isEmailAddress() const;

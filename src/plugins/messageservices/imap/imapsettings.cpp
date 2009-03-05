@@ -10,9 +10,6 @@
 
 #include "imapsettings.h"
 #include "imapconfiguration.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#endif
 #include <QLineEdit>
 #include <QMessageBox>
 #include <qmailaccount.h>
@@ -70,11 +67,6 @@ ImapSettings::ImapSettings()
     const QString uncapitalised("email noautocapitalization");
 
     // These fields should not be autocapitalised
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication::setInputMethodHint(mailUserInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(mailServerInput, QtopiaApplication::Named, uncapitalised);
-    QtopiaApplication::setInputMethodHint(mailPortInput, QtopiaApplication::Number);
-#endif
     mailPortInput->setValidator(new PortValidator(this));
 
     mailPasswInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);

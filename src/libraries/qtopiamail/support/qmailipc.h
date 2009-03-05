@@ -1,14 +1,6 @@
 #ifndef QMAILIPC_H
 #define QMAILIPC_H
 
-#ifdef QMAIL_QTOPIA
-
-#include <QtopiaIpcAdaptor>
-#include <QtopiaIpcEnvelope>
-#include <qtopiaipcmarshal.h>
-
-#else
-
 #include "qcopadaptor.h"
 #include "qcopchannel.h"
 #include <QDataStream>
@@ -106,6 +98,5 @@ struct QMetaTypeRegister
     } \
     Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
 
-#endif //QMAIL_QTOPIA
 #endif //QMAILIPC_H
 

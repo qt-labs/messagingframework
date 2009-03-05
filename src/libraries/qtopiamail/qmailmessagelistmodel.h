@@ -66,9 +66,6 @@ private slots:
     void messagesAdded(const QMailMessageIdList& ids); 
     void messagesUpdated(const QMailMessageIdList& ids);
     void messagesRemoved(const QMailMessageIdList& ids);
-#ifdef QMAIL_QTOPIA
-    void contactModelReset();
-#endif
 
 private:
     void fullRefresh(bool modelChanged);

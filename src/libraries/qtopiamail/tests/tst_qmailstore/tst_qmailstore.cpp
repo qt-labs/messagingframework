@@ -7,10 +7,7 @@
 ** $QT_EXTENDED_DUAL_LICENSE$
 **
 ****************************************************************************/
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#include <shared/qtopiaunittest.h>
-#endif
+
 #include <QObject>
 #include <QTest>
 #include <QSqlQuery>
@@ -50,11 +47,8 @@ private slots:
     void removeMessage();
 };
 
-#ifdef QMAIL_QTOPIA
-QTEST_APP_MAIN( tst_QMailStore, QtopiaApplication )
-#else
 QTEST_MAIN(tst_QMailStore)
-#endif
+
 #include "tst_qmailstore.moc"
 
 tst_QMailStore::tst_QMailStore()
@@ -68,11 +62,6 @@ tst_QMailStore::~tst_QMailStore()
 void tst_QMailStore::initTestCase()
 {
     QMailStore::instance()->clearContent();
-#ifdef QMAIL_QTOPIA
-    QSettings log("Trolltech", "Log");
-    log.setValue("Messaging/Enabled", true);
-    log.sync();
-#endif
 }
 
 void tst_QMailStore::cleanup()

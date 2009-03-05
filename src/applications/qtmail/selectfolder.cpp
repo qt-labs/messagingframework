@@ -9,9 +9,6 @@
 ****************************************************************************/
 
 #include "selectfolder.h"
-#ifdef QMAIL_QTOPIA
-#include <QtopiaApplication>
-#endif
 #include <QListWidget>
 #include <QLayout>
 #include <qmailfolder.h>
@@ -21,9 +18,6 @@ SelectFolderDialog::SelectFolderDialog(const QMailFolderIdList &list, QWidget *p
     : QDialog( parent ),
       mFolderIds( list )
 {
-#ifdef QMAIL_QTOPIA
-    QtopiaApplication::setMenuLike( this, true );
-#endif
     setWindowTitle( tr( "Select folder" ) );
 
     mFolderList = new QListWidget( this );

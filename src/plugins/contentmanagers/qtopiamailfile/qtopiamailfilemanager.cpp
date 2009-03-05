@@ -19,10 +19,7 @@
 #include <sys/ipc.h>
 #include <unistd.h>
 #include <time.h>
-#ifndef QMAIL_QTOPIA
 #include <QtPlugin>
-#endif
-
 
 namespace {
 
@@ -432,11 +429,7 @@ void QtopiamailfileManager::removeParts(const QMailMessagePartContainer &contain
     }
 }
 
-#ifdef QMAIL_QTOPIA
-QTOPIA_EXPORT_PLUGIN( QtopiamailfileManagerPlugin )
-#else
 Q_EXPORT_PLUGIN2(qtopiamailfilemanager,QtopiamailfileManagerPlugin)
-#endif
 
 QtopiamailfileManagerPlugin::QtopiamailfileManagerPlugin()
     : QMailContentManagerPlugin()

@@ -88,11 +88,7 @@ signals:
     void protocolRequestCompleted(quint64);
 
 private:
-#ifdef QMAIL_QTOPIA
-    QtopiaIpcAdaptor* adaptor;
-#else
     QCopAdaptor* adaptor;
-#endif
 };
 
 #endif

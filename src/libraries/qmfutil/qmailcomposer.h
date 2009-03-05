@@ -18,9 +18,6 @@
 #include <qmailglobal.h>
 #include <qmailmessage.h>
 
-#ifdef QMAIL_QTOPIA
-class QContent;
-#endif
 class QMenu;
 class QMailAccount;
 
@@ -78,9 +75,7 @@ public slots:
     virtual void clear() = 0;
 
     virtual void setBody( const QString &text, const QString &type );
-#ifdef QMAIL_QTOPIA
-    virtual void attach( const QContent &lnk, QMailMessage::AttachmentsAction action = QMailMessage::LinkToAttachments );
-#endif
+    //virtual void attach( const QContent &lnk, QMailMessage::AttachmentsAction action = QMailMessage::LinkToAttachments );
 
     virtual void setSignature( const QString &sig );
 

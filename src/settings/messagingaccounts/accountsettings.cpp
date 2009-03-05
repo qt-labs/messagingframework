@@ -26,20 +26,9 @@
 #include <QTimer>
 #include <qmailipc.h>
 #include <QItemDelegate>
-#ifdef QMAIL_QTOPIA
-#include <QtopiaServiceRequest>
-#include <QSmoothList>
-#include <QtopiaApplication>
-#include <QtopiaItemDelegate>
-#include <QSoftMenuBar>
-#else
 #include <QListView>
 #include <QMenuBar>
 #include <QApplication>
-#endif
-#ifndef QTOPIA_NO_MMS
-#  include "mmseditaccount.h"
-#endif
 
 AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     : QDialog(parent, flags),
@@ -51,22 +40,14 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     QVBoxLayout *vb = new QVBoxLayout(this);
     vb->setContentsMargins(0, 0, 0, 0);
 
-#ifndef QMAIL_QTOPIA
     QMenuBar* menu = new QMenuBar(this);
     context = menu->addMenu("File");
     vb->addWidget(menu);
-#endif
 
     accountModel = new QMailAccountListModel();
     accountModel->setKey(QMailAccountKey::status(QMailAccount::UserEditable, QMailDataComparator::Includes));
     accountModel->setSortKey(QMailAccountSortKey::id(Qt::AscendingOrder));
-#ifdef QMAIL_QTOPIA
-    accountView = new QSmoothList(this);
-    accountView->setItemDelegate(new QtopiaItemDelegate);
-    context = QSoftMenuBar::menuFor(accountView);
-#else
     accountView = new QListView(this);
-#endif
 
     accountView->setModel(accountModel);
 
@@ -81,11 +62,9 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
     context->addAction(removeAccountAction);
 
-#ifndef QMAIL_QTOPIA
     QAction* exitAction = new QAction(tr("Quit"), this );
     connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     context->addAction(exitAction);
-#endif
 
     statusDisplay = new StatusDisplay(this);
     statusDisplay->setVisible(false);
@@ -211,20 +190,6 @@ void AccountSettings::updateActions()
 
 void AccountSettings::editAccount(QMailAccount *account)
 {
-#ifdef QMAIL_QTOPIA
-#ifndef QTOPIA_NO_COLLECTIVE
-    if (account->messageType() == QMailMessage::Instant) {
-        // Use the settings app to change configuration 
-        QtopiaServiceRequest serv("Launcher", "execute(QString)");
-        serv << "gtalksettings";
-        serv.send();
-
-        // If the configuration changes, the messageserver will report it
-        return;
-    }
-#endif
-#endif //QMAIL_QTOPIA
-
     QMailAccountConfiguration config;
     if (account->id().isValid()) {
         config = QMailAccountConfiguration(account->id());
@@ -236,25 +201,13 @@ void AccountSettings::editAccount(QMailAccount *account)
     QDialog *editAccountView;
     bool wasPreferred(account->status() & QMailAccount::PreferredSender);
 
-#ifndef QTOPIA_NO_MMS
-    if (account->messageType() == QMailMessage::Mms) {
-        MmsEditAccount *e = new MmsEditAccount(this);
-        e->setAccount(account, &config);
-        editAccountView = e;
-    } else
-#endif
-    {
-        EditAccount *e = new EditAccount(this, "EditAccount");
-        e->setAccount(account, &config);
-        editAccountView = e;
-    }
+    EditAccount *e = new EditAccount(this, "EditAccount");
+    e->setAccount(account, &config);
+    editAccountView = e;
 
-#ifdef QMAIL_QTOPIA
-    int ret = QtopiaApplication::execDialog(editAccountView);
-#else
     editAccountView->setMinimumSize(QSize(400,400));
     int ret = editAccountView->exec();
-#endif
+
     delete editAccountView;
 
     if (ret == QDialog::Accepted) {
@@ -274,11 +227,7 @@ void AccountSettings::editAccount(QMailAccount *account)
             QMailStore::instance()->updateAccount(account, &config);
         } else {
             QMailStore::instance()->addAccount(account, &config);
-#ifdef QMAIL_QTOPIA
-            accountView->setCurrentIndex(accountModel->index(accountModel->rowCount() - 1, 0), QSmoothList::ImmediateVisible);
-#else
             accountView->setCurrentIndex(accountModel->index(accountModel->rowCount() - 1, 0));
-#endif
         }
 
         if ((account->status() & QMailAccount::PreferredSender) && !wasPreferred) {

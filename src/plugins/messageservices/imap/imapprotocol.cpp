@@ -18,11 +18,7 @@
 #include <QApplication>
 #include <QTemporaryFile>
 #include <qmaillog.h>
-#ifdef QMAIL_QTOPIA
-#include <private/longstring_p.h>
-#else
 #include <longstring_p.h>
-#endif
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>

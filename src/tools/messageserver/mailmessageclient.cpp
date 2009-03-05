@@ -13,20 +13,12 @@
 static bool connectIpc( QObject *sender, const QByteArray& signal,
         QObject *receiver, const QByteArray& member)
 {
-#ifdef QMAIL_QTOPIA
-    return QtopiaIpcAdaptor::connect(sender,signal,receiver,member);
-#else
     return QCopAdaptor::connect(sender,signal,receiver,member);
-#endif
 }
 
 MailMessageClient::MailMessageClient(QObject* parent)
     : QObject(parent),
-#ifdef QMAIL_QTOPIA
-      adaptor(new QtopiaIpcAdaptor("QPE/QMailMessageServer", this))
-#else
       adaptor(new QCopAdaptor("QPE/QMailMessageServer",this))
-#endif
 {
     connectIpc(this, SIGNAL(newCountChanged(QMailMessageCountMap)),
                               adaptor, MESSAGE(newCountChanged(QMailMessageCountMap)));

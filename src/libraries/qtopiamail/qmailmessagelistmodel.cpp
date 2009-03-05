@@ -14,9 +14,6 @@
 #include <QIcon>
 #include <QDebug>
 #include <QCache>
-#ifdef QMAIL_QTOPIA
-#include <QContactModel>
-#endif
 #include <QtAlgorithms>
 
 static const int nameCacheSize = 50;
@@ -63,9 +60,6 @@ public:
     mutable bool init;
     mutable bool needSynchronize;
     QCache<QString,QString> nameCache;
-#ifdef QMAIL_QTOPIA
-    QContactModel contactModel;
-#endif
 };
 
 class LessThanFunctor
@@ -171,16 +165,7 @@ QString QMailMessageListModelPrivate::messageAddressText(const QMailMessageMetaD
     if ( incoming ) 
     {
         QMailAddress fromAddress(m.from());
-#ifdef QMAIL_QTOPIA
-        if(!nameCache.contains(fromAddress.toString()))
-        {
-            QString displayName = fromAddress.displayName(contactModel);
-            nameCache.insert(fromAddress.toString(), new QString(displayName));
-        }
-        return *nameCache.object(fromAddress.toString());
-#else
         return fromAddress.toString();
-#endif
 
     }
     else 
@@ -189,17 +174,7 @@ QString QMailMessageListModelPrivate::messageAddressText(const QMailMessageMetaD
         if (!toAddressList.isEmpty())
         {
             QMailAddress firstRecipient(toAddressList.first());
-#ifdef QMAIL_QTOPIA
-
-            if(!nameCache.contains(firstRecipient.toString()))
-            {
-                QString displayName = firstRecipient.displayName(contactModel);
-                nameCache.insert(firstRecipient.toString(), new QString(displayName));
-            }
-            QString text = *nameCache.object(firstRecipient.toString());
-#else
             QString text = firstRecipient.toString();
-#endif
             bool multipleRecipients(toAddressList.count() > 1);
             if(multipleRecipients)
                 text += ", ...";
@@ -302,12 +277,6 @@ QMailMessageListModel::QMailMessageListModel(QObject* parent)
             SIGNAL(messagesUpdated(QMailMessageIdList)),
             this,
             SLOT(messagesUpdated(QMailMessageIdList)));
-#ifdef QMAIL_QTOPIA
-    connect(&d->contactModel,
-            SIGNAL(modelReset()),
-            this,
-            SLOT(contactModelReset()));
-#endif
 }
 
 /*!
@@ -839,11 +808,3 @@ void QMailMessageListModel::fullRefresh(bool changed)
         emit modelChanged();
 }
 
-#ifdef QMAIL_QTOPIA
-/*! \internal */
-void QMailMessageListModel::contactModelReset()
-{
-    d->invalidateCache();
-    fullRefresh(false);
-}
-#endif

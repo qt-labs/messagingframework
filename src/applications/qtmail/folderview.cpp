@@ -12,18 +12,11 @@
 #include <QKeyEvent>
 
 FolderView::FolderView(QWidget *parent)
-#ifdef QMAIL_QTOPIA
-    : QSmoothList(parent)
-#else
     : QTreeView(parent)
-#endif
 {
     connect(this, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
     connect(this, SIGNAL(expanded(QModelIndex)), this, SLOT(itemExpanded(QModelIndex)));
     connect(this, SIGNAL(collapsed(QModelIndex)), this, SLOT(itemCollapsed(QModelIndex)));
-#ifdef QMAIL_QTOPIA
-    connect(this, SIGNAL(currentChanged(QModelIndex, QModelIndex)), this, SLOT(currentChanged(QModelIndex, QModelIndex)));
-#endif
 }
 
 FolderView::~FolderView()
@@ -238,10 +231,6 @@ bool FolderView::expandAccounts(QSet<QMailAccountId> &accountIds, FolderModel *m
 
 void FolderView::modelReset()
 {
-#ifdef QMAIL_QTOPIA
-    QSmoothList::modelReset();
-#endif
-
     if (FolderModel *folderModel = model()) {
         // Remove any items that are no longer in the model
         removeNonexistent(expandedAccounts, folderModel);
@@ -289,31 +278,19 @@ void FolderView::keyPressEvent(QKeyEvent *e)
         break;
 
     default:
-#ifdef QMAIL_QTOPIA
-        QSmoothList::keyPressEvent(e);
-#else
         QTreeView::keyPressEvent(e);
-#endif
     }
 }
 
 void FolderView::showEvent(QShowEvent *e)
 {
     setIgnoreMailStoreUpdates(false);
-#ifdef QMAIL_QTOPIA
-    QSmoothList::showEvent(e);
-#else
     QTreeView::showEvent(e);
-#endif
 }
 
 void FolderView::hideEvent(QHideEvent *e)
 {
     setIgnoreMailStoreUpdates(true);
-#ifdef QMAIL_QTOPIA
-    QSmoothList::hideEvent(e);
-#else
     QTreeView::hideEvent(e);
-#endif
 }
 

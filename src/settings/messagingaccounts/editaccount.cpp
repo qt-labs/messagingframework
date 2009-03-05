@@ -21,11 +21,7 @@
 #include <qmailaccount.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailmessageservice.h>
-#ifdef QMAIL_QTOPIA
-#include <qtopiaapplication.h>
-#else
 #include <QPushButton>
-#endif
 
 EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
     : QDialog(parent, fl),
@@ -35,9 +31,6 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
       effectingConstraints(false)
 {
     setObjectName(name);
-#ifdef QMAIL_QTOPIA
-    setLayoutDirection(qApp->layoutDirection());
-#endif
 
     QTabWidget* tabWidget = new QTabWidget;
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
@@ -77,9 +70,7 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
     mainlayout->addLayout(formLayout);
     mainlayout->addWidget(separator);
     mainlayout->addWidget(tabWidget);
-#ifndef QMAIL_QTOPIA
     mainlayout->setStretchFactor(tabWidget,1);
-#endif
 
     // Find all the email services available to us
     foreach (const QString &key, QMailMessageServiceFactory::keys(QMailMessageServiceFactory::Any)) {
@@ -103,7 +94,6 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
 
     tabChanged(0);
 
-#ifndef QMAIL_QTOPIA
     QHBoxLayout* bottomLayout = new QHBoxLayout(this);
     bottomLayout->addStretch();
     QPushButton* okButton = new QPushButton("Ok");
@@ -115,8 +105,6 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
     bottomLayout->setSpacing(4);
     bottomLayout->setMargin(6);
     mainlayout->addLayout(bottomLayout);
-#endif
-
 }
 
 void EditAccount::setAccount(QMailAccount *in, QMailAccountConfiguration* conf)

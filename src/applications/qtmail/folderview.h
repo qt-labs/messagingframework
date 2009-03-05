@@ -14,18 +14,9 @@
 #include "foldermodel.h"
 #include "folderdelegate.h"
 #include <QSet>
-#ifdef QMAIL_QTOPIA
-#include <QSmoothList>
-
-class FolderView : public QSmoothList
-#else
-
 #include <QTreeView>
 
 class FolderView : public QTreeView
-
-#endif //QMAIL_QTOPIA
-
 {
     Q_OBJECT
 

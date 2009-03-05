@@ -17,13 +17,7 @@
 #include <QComboBox>
 #include <qmailfolder.h>
 #include <qmailmessage.h>
-#ifdef QMAIL_QTOPIA
-#include <QContactSelector>
-#include <QSoftMenuBar>
-#include <QtopiaApplication>
-#else
 #include <QApplication>
-#endif
 
 SearchView::SearchView(QWidget* parent)
     : QDialog(parent)
@@ -43,20 +37,12 @@ SearchView::SearchView(QWidget* parent)
     searchFrame->setMaximumWidth(dw - qApp->style()->pixelMetric(QStyle::PM_SliderLength) + 4 );
     sv->setMaximumWidth(dw);
     setWindowTitle( tr("Search") );
-#ifdef QMAIL_QTOPIA
-    QMenu *searchContext = QSoftMenuBar::menuFor(this);
-    connect(searchContext, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
-#endif
     QIcon abicon(":icon/addressbook/AddressBook");
     pickAddressAction = new QAction(abicon,
                                     tr("From contacts",
                                        "Find email address "
                                        "from Contacts application"),
                                     this);
-#ifdef QMAIL_QTOPIA
-    searchContext->addAction(pickAddressAction);
-    QSoftMenuBar::setLabel(this, Qt::Key_Back, QSoftMenuBar::Finish);
-#endif
     connect(pickAddressAction, SIGNAL(triggered()),
             this, SLOT(pickAddressSlot()));
 
@@ -191,34 +177,4 @@ void SearchView::pickAddressSlot()
     QLineEdit *edit = fromLine;
     if (toLine->hasFocus())
         edit = toLine;
-#ifdef QMAIL_QTOPIA
-    QContactSelector selector;
-    selector.setObjectName("select-contact");
-
-    QContactModel model(&selector);
-
-    QSettings config( "Trolltech", "Contacts" );
-    config.beginGroup( "default" );
-    if (config.contains("SelectedSources/size")) {
-        int count = config.beginReadArray("SelectedSources");
-        QSet<QPimSource> set;
-        for(int i = 0; i < count; ++i) {
-            config.setArrayIndex(i);
-            QPimSource s;
-            s.context = QUuid(config.value("context").toString());
-            s.identity = config.value("identity").toString();
-            set.insert(s);
-        }
-        config.endArray();
-        model.setVisibleSources(set);
-    }
-
-    selector.setModel(&model);
-    selector.setAcceptTextEnabled(false);
-
-    if (QtopiaApplication::execDialog(&selector) == QDialog::Accepted) {
-        QContact contact(selector.selectedContact());
-        edit->setText(contact.defaultEmail());
-    }
-#endif
 }
