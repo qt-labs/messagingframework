@@ -2,108 +2,53 @@
 
 \page index.html
 
-\title Qt Extended Developer Resources
-
-\if defined(QTOPIA_INTERN_DOC)
-\bold{WARNING: This document is generated using a Qt depot and not suitable for release!}
-\endif
+\title Messaging Framework Developer Resources
 
 \table 100%
-\header \o Product Guide \o Using Qt Extended \o Support & QA \o General
+\header 
+\o Product Guide 
+\o General
+\o Support & QA 
 \row
 \o 
 \list
-\if defined(QTOPIA_OPENSOURCE)
-   \o \l {Qt Extended Release Notes (Open Source Edition)}{What's New?}
-\else
-   \o \l {Qt Extended Release Notes}{What's New?}
-\endif
+   \o \l {Messaging Framework Release Notes}{What's New?}
    \o \l {Functional Descriptions}{Functional Descriptions}
    \o \l {Tutorials}{Tutorials}
-   \o \l {http://www.trolltech.com/products/device-creation/whitepapers/}{Whitepapers}
 \endlist
 \o
 \list
-    \o \l {Porting Between Qtopia/Qt Extended Versions}{Porting Between Qtopia/Qt Extended Versions}
-    \o \l {Building and Compiling}
-    \o \l {Running Qt Extended}{Running Qt Extended} 
-    \o \l {Debugging Qt Extended Applications}{Debugging Qt Extended Applications}
-    \o \l {System Customization}{System Customization}
+    \o \l {About Qt Extended}
+    \o \l {Getting Started} 
+    \o \l {Dependencies and Prerequisites}
 \endlist
 \o
 \list
-    \o \l {How to Report a Bug in Qt Extended}{How to Report a Bug}
-    \o \l {http://www.trolltech.com/support-services/support}{Support Program}
-   \o \l {Qt Extended Test Plan}{Test Plan}
-   \o \l {Qt Extended Test Results}{Test Results}
-\endlist
-\o
-\list
-    \o \l {http://www.trolltech.com/products/device-creation/}{About Qt Extended}
-    \o \l {Getting Started}{Getting Started} 
-    \o \l {Dependencies and Prerequisites}{Dependencies and Prerequisites}
-    \o \l {Qt Extended Licensing}{Licensing} 
-    \o \l {Packages}{Packages} 
+   \o \l {How to Report a Bug}
+   \o \l {Test Plan}
+   \o \l {Test Results}
 \endlist
 
 \header 
 \o Product Specification
-\o Enablers
-\o Communications
-\o Content
+\o Using Messaging Framework 
+\o
 \row
 \o 
 \list
-   \o \l {Qt Extended Components}{Qt Extended Components }
    \o \l {Class Index}{Classes }
    \o \l {Grouped Classes}{Grouped Classes}
-   \o \l {Qt Extended Modules}{Classes by Module}
    \o \l {Qt Extended Class Inheritance Hierarchy}{Class Hierarchy}
    \o \l {Annotated Class List}{Annotated Classes }
-   \o \l {Tools}{Tools}
-   \o \l {Qt Extended Third-party}{Qt Extended Third-party}
 \endlist
 \o
 \list
-   \o \l {Qt Extended Data Linking (QDL)}{Data Linking}
-   \o \l {Qt Extended Data Sharing (QDS)}{Data Sharing}
-   \o \l {Database Policy}{Database Policy}
-   \o \l {Database Specification}{Database Specification}
-   \o \l {Location Services}
-   \o \l {Qt Extended IPC Layer}{Inter-process communication}
-   \o \l {QtopiaServerApplication#qt-extended-server-tasks}{Server Tasks}
-   \o \l {Services}{Services}
-   \o \l {Qt Extended Value Space}{Value Space}
-
+   \o \l {Messaging}{Introduction}
+   \o \l {Porting Between Messaging Framework Versions}
+   \o \l {Building and Compiling}
+   \o \l {Running Messaging Framework}{Running Messaging Framework} 
 \endlist
 \o
-\list
-   \o \l {Bluetooth Support}{Bluetooth Support}
-   \o \l {Infrared Support}{Infrared Support}
-   \o \l {Desktop Synchronization}
-   \o \l {Messaging}{Messaging}
-   \o \l {Network Services}{Network Services}
-   \o \l {Telephony}{Telephony}
-\endlist
-\o
-\list
-  \o \l {Categories}
-  \o \l {Document System}{Document System}
-  \o \l {Multimedia}{Multimedia}
-  \o \l {PIM Library}{PIM Library}
-  \o \l {Main Document Widget}{Document-oriented Applications}
-  \o \l {Qt Extended Resource System}{Resource System}
-  \o \l {Safe Execution Environment (SXE)}{Safe Execution Environment}
-  \o \l {User Interface}{User Interface}
-  \o \l {Qpk Packages}{Qpk Packages}
-  \o \l {Desktop File Standard}
-\endlist
-
-\header
-\o \l {http://www.trolltech.com/developer/faqs}{\underline FAQ}
-\o \l {http://qtextended.org}{\underline Community} 
-\o \l {Qt Extended Licensing}{\underline Licensing} 
-\o \l {http://www.trolltech.com/about/contact-us}{\underline{Contact Us}} 
  
 \endtable 
 

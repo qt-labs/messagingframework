@@ -1,0 +1,261 @@
+/*!
+
+\page messaging.html
+\target top
+\title Messages Client
+\tableofcontents
+
+\section1 Introduction
+
+The \i Messages client application enables the user to receive emails from multiple mail servers as well as SMS and MMS messages from other mobile phone devices. It also provides the ability to send emails, MMS or SMS messages to multiple people with or without attachments.
+ 
+\section1 Features 
+
+Messages provides the following features:
+
+\table
+\header \o Feature \o Description
+\row
+\o Send email 
+\o Compose and send an email. 
+\row
+\o  Send SMS / MMS 
+\o Send an SMS / MMS to another mobile phone. 
+\row
+\o  Receive email 
+\o Connect to a mail server and download emails to the device. 
+\row
+\o  Reply to messages 
+\o Reply to a message received via a Qt Extended device. 
+\row
+\o  View an embedded image 
+\o View a message with an image either attached or embedded. 
+\row
+\o  View specific messages 
+\o Filter the messages viewed. For example, view only messages in the current month. 
+\row
+\o  Search for a message 
+\o Search the contents of messages and retrieve valid messages.  
+\row
+\o  Multiple mail servers 
+\o View emails sent to multiple mail servers.
+ 
+For example view messages sent to both a work email address and a personal email address. 
+\row
+\o  Save attachments 
+\o Receive a message with an attachment save it in their documents for later viewing. 
+\endtable
+ 
+\section1  Accounts 
+ 
+The following account features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Accounts \o Allows creation of  an arbitrary number of mail accounts. 
+\row
+\o Email Protocols 
+\o The following email protocols are available:
+\list
+\o POP
+\o IMAP
+\o SMTP
+\endlist
+\row
+\o Message Protocols 
+\o The following email protocols are available:
+\list
+\o SMS
+\o MMS
+\endlist
+\row
+\o Delete \o  Allows a delay of server deletion of email until removed locally from trash. 
+\endtable
+ 
+\section1  Folders 
+ 
+The following folder features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Folders  \o supports both standard and virtual folders 
+\row
+\o Queries \o supports creaton of an arbitrary number of virtual folders by adding new queries 
+\row
+\o Search \o facilitates quick searches for email by using the search folder 
+\row
+\o Mail Account  \o each mail account is automatically assigned a virtual folder 
+\row
+\endtable
+ 
+\section2 Mail List (per folder) 
+ 
+The following mail list features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Mail view \o displays a short description of each mail consisting of status, address, subject and date. 
+\row
+\o  Mail sort  \o it is possible to select each header file for sorting in either ascending or descending order. 
+\row
+\o  Mail view update  \o the view is dynamically updated as folder or mail contents changes. 
+\row
+\o  Transfer  \o it is possible to select messages and to copy or move them to another folder. 
+\endtable
+
+\section2 Virtual Folder Queries and Search 
+ 
+The following virtual folder features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Folder properties \o defines the search criteria for mails that appear in a folder. 
+\row
+\o Search keys \o allows case-insensitive pattern matching with support for optional keys in the same field. 
+\row
+\o Virtual properties \o the same mail logically appears in several folders. 
+\endtable
+
+\section1  Message Properties 
+
+The following message properties can be handled: 
+\table
+\header \o  Property \o Description
+\row
+\o Date \o  this is converted to match your current time zone setting 
+\row
+\o Attachments \o these are only stored as files when you request it 
+\row
+\o Usability \o support exists for most messages conforming to RFC2822 and RFC2045-RFC2049 
+\endtable
+
+\section1 Viewing mail 
+ 
+The following features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o URL \o clicking on a URL in the mail prompts the application to attempt to open it in the default browser 
+\row
+\o Addresses \o used to compose messages but it is also be possible to add an address/phone number to the address book by clicking on it 
+\row
+\o Format \o quoted text is colored to distinguish it from the body text 
+\row
+\o Inline \o text and image attachments are shown in-line with images being scaled to the screen width 
+\row
+\o Attachments \o it is possible to install/remove mail attachments from the documents tab 
+\row
+\o Reply \o it is possible to reply to or forward the currently viewed message 
+\row
+\o Status \o it is possible to change the status of messages 
+\row
+\o Plain \o the mail is shown in plain mode where the original formatting is kept 
+\row
+\o Delete \o it is possible to delete the currently viewed message 
+\endtable
+
+\section1  Viewing MMS Messages 
+ 
+The following features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Media \o display of images and text and playing sounds. 
+\row
+\o SMIL \o display messages containing SMIL slide-show presentations. 
+\row
+\o Responding \o it is possible to reply to or forward the currently viewed message. 
+\row
+\o Delete \o it is possible to delete the currently viewed message 
+\endtable
+ 
+\section1 Writing Messages 
+ 
+The following features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Fields \o it is possible to add SMS \c /To/Cc/Bcc/From/Subject/body(text) and attach files to the mail 
+\row
+\o Modify \o it is possible to make changes as necessary to mails in the Drafts and \c Outbox folder
+\row
+\o Auto save \o modified drafts are automatically saved unless they are explicitly discarded 
+\row
+\o Store \o draft mails are stored in the Drafts folder and mails ready to send are stored in the \c Outbox folder 
+\endtable
+ 
+\section1  Writing MMS Messages 
+ 
+The following MMS-related features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Fields \o it is possible to specify \c{To/Cc/Bcc/subject}. It is possible to request delivery report and read reply. 
+\row
+\o Composing \o a standard slide show with SMIL presentation is supported by the MMS composer. One image, text field and audio file are allowed per page of the slide show. 
+\row
+\o Modify \o it is possible to make changes as necessary to mails in the drafts and \c Outbox folder 
+\row
+\o Auto save \o modified drafts are automatically saved unless they are explicitly discarded. 
+\row
+\o Store \o draft mails are stored in the \c Drafts folder and mails ready to send are stored in the \c Outbox folder. 
+\endtable
+ 
+\section1  Retrieving messages 
+ 
+The following message retrieval related features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Retrieve \o it is possible to check for new messages in either all accounts or to specify only one account to be checked 
+\row
+\o Complete messages \o messages not downloaded are individually completed 
+\row
+\o Overview \o all new/unseen mail-headers are always downloaded (unless excused in IMAP mailbox settings)
+\row
+\o Fast \o the current download list is sorted by the size of the mail (small goes first) 
+\row
+\o Logical \o viewing a mail or removing it causes it to be respectively pushed to the front or removed from the download list 
+\row
+\o Resume \o it is possible to cancel downloads and resume them later 
+\row
+\o Safe \o in case of a crash while downloading the client reverts to the state prior to the crash 
+\endtable
+ 
+\section1  Sending messages 
+ 
+The following message sending- related features are available: 
+\table
+\header \o Feature \o Description
+\row
+\o Send \o it is possible to send all queued messages in one go. 
+\row
+\o Authenticate \o POP or IMAP authentication is always attempted. 
+\row
+\o Fallback \o sending is attempted even if authentication fails (for whatever reasons). 
+\row
+\o Single \o it is possible to send a single mail instead of all the mails in the Outbox. 
+\row
+\o Safe \o in event of failure no mail in the transfer list is marked as sent. 
+\row
+\o Sent Folder \o all sent mails are automatically be moved to the Sent folder. 
+\row
+\o Flexible \o default SMTP account or reply-to field is used where the from address does not match. 
+\row
+\o Diverse \o it is possible to send a single message with both SMS and email addresses. 
+\endtable
+
+\section1 Requirements 
+Messages has the following requirements:
+\list
+\o Storage space : approximately 1.5 times the server mailbox size is required on a device 
+\endlist
+
+\section1 Dependencies 
+Messages has the following dependencies:
+\list
+\o the \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
+\o the Qt Extended SMIL Library
+\endlist
+
+*/

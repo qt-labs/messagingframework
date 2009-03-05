@@ -1,0 +1,75 @@
+/*!
+    \page groups.html
+
+    \title Grouped Classes
+
+    This page provides a way to navigate the Qt Extended classes by grouping
+    related classes together. Some classes may appear in more than one group.
+
+
+    \section1 UI Controls & Interaction
+
+    \table 100%
+    \header
+    \o Group
+    \o Description
+
+    \row
+    \o \l{Messaging Client Utility Classes}
+    \o Classes that provide GUI elements that assist with the development of messaging client applications.
+
+    \endtable
+
+
+
+    \section1 Media and Document Handling
+
+    \table 100%
+    \header
+    \o Group
+    \o Description
+
+    \row
+    \o \l{Messaging Classes}
+    \o Classes that provide support for manipulating messages.
+
+    \row
+    \o \l{Message Server Support Classes}
+    \o Classes that assist with building components that provide services for the message server.
+
+    \endtable
+
+*/
+
+/*!
+    \group messaginglibrary
+    \title Messaging Classes
+
+    These classes allow clients to work with mail messages, providing access to 
+    message creation, storage and display functionality.
+
+    Classes are also provided to assist with development of GUI clients that access 
+    messaging data, via the \l{Messaging Client Utility Classes}{Client Utility Classes},
+    and to assist with development of Message Server plugins via the
+    \l{Message Server Support Classes}{Server Support Classes}.
+
+    \sa {Qt Extended Messaging Library}
+*/
+
+/*!
+    \group libmessageserver
+    \title Message Server Support Classes
+
+    These classes provide assistance in developing GUI clients that access messaging data.
+
+    \sa {Message Server Support Library}, {Qt Extended Messaging Library}
+*/
+
+/*!
+    \group qmfutil
+    \title Messaging Client Utility Classes
+
+    These classes provide assistance in developing plugins for the \l{Message Server}{Message Server} daemon.
+
+    \sa {Messaging Client Utility Library}, {Qt Extended Messaging Library}
+*/

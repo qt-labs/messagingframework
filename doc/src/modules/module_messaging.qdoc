@@ -1,0 +1,160 @@
+/*!
+    \group QtMessagingModule
+    \title Qt Messaging Module
+    \previouspage QtMediaModule
+    \contentspage Qt Extended Modules
+    \nextpage QtPkgManagementModule
+
+    The Qt Messaging module offers messaging related services such as SMS and email support.
+    It is based on the \l {QtBaseModule}{Base module}.
+
+    The following configure line can be used to build the Base and Messaging
+    module only:
+    \code
+        ./configure -modules messaging -device xyz
+    \endcode
+    
+    Note that not specifying a device profile would result in the reference device being build.
+ 
+    \section1 Feature description
+
+    The Qt Extended Messaging module consists of three major components. The first part
+    is the \l{Qt Extended Messaging Library}{Messaging API} which connects the remaining
+    components. 
+    
+    The second major component is the messaging server which is responsible for the
+    handling of incoming and outgoing messages. It allows for various messaging types
+    to be supported via many protocols, by using plug-ins to interface between
+    the device and local or external messaging services.
+    
+    The last major component is the message application. It provides the user interface
+    and incorporates composer and viewer plug-ins. The plug-in system ensures the ability to 
+    integrate not yet known message types. 
+
+    \table 80%
+        \header
+        \o Feature
+        \o Details
+        \row
+        \o Messaging API
+        \o The \l {Qt Extended Messaging Library} provides a set of APIs that support 
+           the most common operations related to arbitrary messages such as
+           creation, modification, retrieval, storage and display of messages. 
+           It defines interfaces which enable the integration of new 
+           message types, allowing multiple applications to access the data
+           independent of its storage mechanism, and if necessary on a concurrent basis.
+
+           There are two companion libraries supporting  more specific messaging functionality:
+            \list
+                \o The \l{Message Server Support Library}{Server support library} contains classes which provide messaging functionality used only by the message server process, and by plugin components loaded into the message server.
+                \o The \l{Messaging Client Utility Library}{Client utility library} contains GUI components that assist with developing messaging client applications.
+            \endlist
+        \row
+        \o Message server
+        \o The \l {MessageServer Daemon}{Message server daemon} can send and
+        retrieve messages of various types from multiple sources such as POP and IMAP accounts 
+        or a local SIM card. Protocols for sending and receiving messages are loaded from
+        plugin libraries, allowing the server to be extended without source code modification.
+        The server forms the back-end of the Qt Extended Messaging framework.
+        \row
+        \o Messages client
+        \o The \l {Messages Client} interacts with the message server via the Messaging library.
+        It enables the user to interact with the message server. 
+        \l {Qt Extended Messaging Library#Message Composer and Viewer Plugins}{Composer and Viewer plug-ins}
+        are utilized to support multiple types of messages. Currently the following types
+        of messages can be composed/viewed:
+            \list
+                \o Emails
+                \o SMS
+                \o MMS
+                \o Voice/Video Messages
+                \o Instant messages (depends on \l {QtIPCommsModule}{IPComms} module)
+            \endlist
+    \endtable
+
+    \section1 Software components
+
+    The Messaging module includes the following software components:
+    \list
+        \o \c libraries/qtopiamail
+        \o \c libraries/messageserver
+        \o \c libraries/qmfutil
+        \o \c libraries/qtopiasmil
+        \o \c libraries/qtopiapim
+        \o \c tools/messageserver (MessageServer)
+        \o Messages client
+        \o Message composer plug-ins (see \c src/plugins/composers)
+        \o Message viewer plug-ins (see \c src/plugins/viewers)
+        \o Message service plug-ins (see \c src/plugins/messageservices)
+        \o Message content management plug-ins (see \c src/plugins/contentmanagers)
+    \endlist
+
+    The exact list of components included in this module can be found in \c $QPEDIR/src/module_messaging.pri.
+
+\if defined(QTOPIA_TEST)
+    \section1 Test Plan
+
+    The \l{Test Plan for module QtMessagingModule}{test plan} for the Messaging module summarizes the Quality 
+    Assurance procedures for this module. The results of these test are available \l {Qt Extended Test Results}{here}.
+\endif
+
+    \section1 Build instructions
+
+    Ensure that you are building with Qt 4.4 or higher and that your system environment variables for \c $QTDIR, \c $PATH and \c $LD_LIBRARY_PATH are 
+    setup correctly.
+
+    The Messaging module should be built in the following dependency order:
+    
+    \list
+        \o Libraries
+            \list
+            \o \c libraries/qtopiamail
+            \o \c libraries/messageserver
+            \endlist
+        \o Plugins
+            \list
+            \o \c plugins/contentmanagers/qtopiamailfile
+            \o \c plugins/messageservices/{imap,pop,smtp,qtopiamailfile}
+            \endlist
+        \o Tools
+            \list
+            \o \c tools/messageserver
+            \o \c settings/messsagingaccounts
+            \endlist
+        \o Tests
+            \list
+            \o \c libraries/qtopiamail/tests/tst_*
+            \o \c tools/messageserver/tests/tst_messageserver
+            \endlist
+    \endlist
+
+    To build each component run \c qmake followed by \c make in each respective directory. The resultant binaries may then be copied to a run directory.
+
+    An example layout:
+    \list
+    \o Create 
+        \list
+        \o \c bin 
+        \o \c lib 
+        \o \c plugins/contentmanagers
+        \o \c plugins/messageservices
+        \o \c tests 
+        \endlist
+    directories in your run directory 
+    \o Copy all tools into the \c bin directory, libraries into \c lib, plugins into respective \c plugin directories and tests into the the \c test directory.
+    For the tests, be sure to copy any \c testdata directories into \c tests.
+    \endlist
+
+    Ensure \c $LD_LIBRARY_PATH is set to include your \c lib directory
+
+    Ensure \c $QMF_PLUGINS and \c $QMF_DATA environment variables are set as needed before running. See below.
+
+    \section2 Notes on running
+
+    If the \c $QMF_PLUGINS environment variable is set the framework will search for plugin subdirectories in this path, otherwise default to the current directory.
+
+    If the \c $QMF_DATA environment variable is set the framework will store its data in this path, otherwise default to \c $HOME/.qmf. 
+
+    The following table contains all classes and services which are part of this module:
+*/
+

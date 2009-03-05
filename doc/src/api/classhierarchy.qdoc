@@ -1,0 +1,13 @@
+/*!
+\page classeshierarchy.html
+\target top
+\title Messaging Framework Class Inheritance Hierarchy
+
+This list shows the C++ class inheritance relations between the
+classes in the Messaging Framework API.
+
+The list is sorted alphabetically.
+
+\generatelist classhierarchy
+
+*/

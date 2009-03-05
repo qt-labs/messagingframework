@@ -5,6 +5,7 @@ imagedirs               = images
 
 headerdirs              = ../../src/libraries/qtopiamail \
                           ../../src/libraries/messageserver \
+                          ../../src/libraries/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
@@ -15,13 +16,20 @@ headerdirs              = ../../src/libraries/qtopiamail \
  
 sourcedirs              = ../../src/libraries/qtopiamail \
                           ../../src/libraries/messageserver \
+                          ../../src/libraries/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
                           ../../src/plugins/messageservices/qtopiamailfile \
                           ../../src/plugins/contentmanagers/qtopiamailfile \
                           ../../src/settings/messagingaccounts \
-                          ../../src/tools/messageserver
+                          ../../src/tools/messageserver \
+                          ../../examples/messagenavigator \
+                          ../../examples/messageviewer \
+                          ./api \
+                          ./examples \
+                          ./modules \
+                          .
 
 sources.fileextensions  = "*.qdoc *.cpp"
 
@@ -125,7 +133,7 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
 
 HTML.footer             = "<p /><address><hr /><div align=\"center\">\n" \
                           "<table width=\"100%\" cellspacing=\"0\" border=\"0\"><tr class=\"address\">\n" \
-                          "<td align=\"left\">Copyright &copy; $THISYEAR <a href=\"trolltech.html\">Trolltech</a></td>\n" \
-                          "<td align=\"right\"><div align=\"right\">TeamTest</div></td>\n" \
+                          "<td align=\"left\">Copyright &copy; $THISYEAR QtSoftware</td>\n" \
+                          "<td align=\"right\"><div align=\"right\">Messaging Framework</div></td>\n" \
                           "</tr></table></div></address>"
 
