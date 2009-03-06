@@ -15,7 +15,6 @@
 #include <QMainWindow>
 #include <QString>
 #include <qmailmessage.h>
-#include <detailspage_p.h>
 
 class QAction;
 class QContent;
