@@ -11,7 +11,7 @@
 #include <QObject>
 #include <QTest>
 #include <qmailaddress.h>
-#include "../../../../../src/libraries/qtopiamail/longstring_p.h"
+#include "longstring_p.h"
 #include <ctype.h>
 
 
