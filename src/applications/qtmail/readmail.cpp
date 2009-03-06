@@ -441,7 +441,7 @@ void ReadMail::updateButtons()
     bool incoming(mail.status() & QMailMessage::Incoming);
     bool sent(mail.status() & QMailMessage::Sent);
     bool outgoing(mail.status() & QMailMessage::Outgoing);
-    bool downloaded(mail.status() & QMailMessage::Downloaded);
+    bool downloaded(mail.status() & QMailMessage::ContentAvailable);
     bool removed(mail.status() & QMailMessage::Removed);
     bool system(mail.messageType() == QMailMessage::System);
     bool messageSent(sent || sending);
@@ -690,8 +690,8 @@ void ReadMail::updateReadStatus()
         if (newMessage)
             mail.setStatus(QMailMessage::New, false);
 
-        // Do not mark as read unless it has been downloaded
-        if (mail.status() & QMailMessage::Downloaded) {
+        // Do not mark as read unless it has been at least partially downloaded
+        if (mail.status() & QMailMessage::PartialContentAvailable) {
             firstRead = !(mail.status() & QMailMessage::Read);
             if (firstRead)
                 mail.setStatus(QMailMessage::Read, true);

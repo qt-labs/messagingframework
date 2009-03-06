@@ -1975,7 +1975,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 102)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 104)
+                                            << tableInfo("mailmessages", 105)
                                             << tableInfo("mailmessagecustom", 100)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("deletedmessages", 101)) ||

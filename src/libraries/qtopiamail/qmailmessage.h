@@ -295,6 +295,9 @@ public:
 
     virtual void removeHeaderField( const QString &id );
 
+    virtual bool contentAvailable() const = 0;
+    virtual bool partialContentAvailable() const = 0;
+
 protected:
     template<typename Subclass>
     QMailMessagePartContainer(Subclass* p);
@@ -406,6 +409,9 @@ public:
     QString referenceResolution() const;
     void setReferenceResolution(const QString &uri);
 
+    virtual bool contentAvailable() const;
+    virtual bool partialContentAvailable() const;
+
     QString writeBodyTo(const QString &path) const;
 
     virtual bool contentModified() const;
@@ -441,7 +447,7 @@ public:
     static const quint64 &Replied;
     static const quint64 &RepliedAll;
     static const quint64 &Forwarded;
-    static const quint64 &Downloaded;
+    static const quint64 &ContentAvailable;
     static const quint64 &Read;
     static const quint64 &Removed;
     static const quint64 &ReadElsewhere;
@@ -449,6 +455,8 @@ public:
     static const quint64 &New;
     static const quint64 &ReadReplyRequested;
     static const quint64 &Trash;
+    static const quint64 &PartialContentAvailable;
+    static const quint64 &HasAttachments;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);
@@ -511,6 +519,9 @@ public:
 
     virtual ResponseType responseType() const;
     virtual void setResponseType(ResponseType type);
+
+    virtual bool contentAvailable() const;
+    virtual bool partialContentAvailable() const;
 
     static quint64 statusMask(const QString &flagName);
 
@@ -610,6 +621,9 @@ public:
 
     virtual QString inReplyTo() const;
     virtual void setInReplyTo(const QString &s);
+
+    virtual bool contentAvailable() const;
+    virtual bool partialContentAvailable() const;
 
     virtual bool contentModified() const;
 

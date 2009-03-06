@@ -896,7 +896,7 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
     if (_transferState == Preview) {
         context->progressChanged(_progress++, _total);
 
-        if (((message.status() & QMailMessage::Downloaded) == 0) && (message.size() < _headerLimit)) {
+        if (((message.status() & QMailMessage::ContentAvailable) == 0) && (message.size() < _headerLimit)) {
             _completionList.append(message.id());
         }
     }
@@ -1835,8 +1835,11 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
         message.removeCustomField("qtopiamail-detached-filename");
     }
 
-    if (source.status() & QMailMessage::Downloaded) {
-        message.setStatus(QMailMessage::Downloaded, true);
+    if (source.status() & QMailMessage::ContentAvailable) {
+        message.setStatus(QMailMessage::ContentAvailable, true);
+    }
+    if (source.status() & QMailMessage::PartialContentAvailable) {
+        message.setStatus(QMailMessage::PartialContentAvailable, true);
     }
 }
 

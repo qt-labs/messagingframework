@@ -308,7 +308,7 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
             QMailMessageMetaData message(id);
 
             bool complete(false);
-            if (!(message.status() & QMailMessage::Downloaded)) {
+            if (!(message.status() & QMailMessage::ContentAvailable)) {
                 // Automatically download voicemail messages
                 if (message.content() == QMailMessage::VoicemailContent ||
                     message.content() == QMailMessage::VideomailContent) {
@@ -332,7 +332,7 @@ void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
         foreach (const QMailMessageId &id, ids) {
             if (completionList.contains(id)) {
                 QMailMessageMetaData message(id);
-                if ((message.status() & QMailMessage::Downloaded) || (message.status() & QMailMessage::Removed)) {
+                if ((message.status() & QMailMessage::ContentAvailable) || (message.status() & QMailMessage::Removed)) {
                     // This message has been completed (or removed)
                     completionList.remove(id);
                 }

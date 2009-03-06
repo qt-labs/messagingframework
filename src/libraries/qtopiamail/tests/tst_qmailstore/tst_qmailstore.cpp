@@ -756,7 +756,7 @@ void tst_QMailStore::updateMessage()
     // Verify mass update
     QMailMessageKey key1(QMailMessageKey::subject("(Deleted)"));
     QMailMessageKey key2(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
-    QMailMessageKey key3(QMailMessageKey::status(QMailMessage::Downloaded, QMailDataComparator::Includes));
+    QMailMessageKey key3(QMailMessageKey::status(QMailMessage::ContentAvailable, QMailDataComparator::Includes));
     QMailMessageKey key4(QMailMessageKey::customField("question"));
     QMailMessageKey key5(QMailMessageKey::customField("answer", "Fido"));
     QMailMessageKey key6(QMailMessageKey::customField("bicycle"));
@@ -799,7 +799,7 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->countMessages(key2), 0);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QVERIFY(QMailStore::instance()->updateMessagesMetaData(QMailMessageKey(), QMailMessage::Downloaded, true));
+    QVERIFY(QMailStore::instance()->updateMessagesMetaData(QMailMessageKey(), QMailMessage::ContentAvailable, true));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countMessages(key3), 2);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);

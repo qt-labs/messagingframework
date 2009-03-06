@@ -171,7 +171,8 @@ bool WriteMail::buildMail()
     mail.setContentScheme(existingScheme);
     mail.setContentIdentifier(existingIdentifier);
     mail.setStatus(QMailMessage::Outgoing, true);
-    mail.setStatus(QMailMessage::Downloaded, true);
+    mail.setStatus(QMailMessage::ContentAvailable, true);
+    mail.setStatus(QMailMessage::PartialContentAvailable, true);
     mail.setStatus(QMailMessage::Read,true);
     return true;
 }

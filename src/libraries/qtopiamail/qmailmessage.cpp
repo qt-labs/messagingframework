@@ -4218,6 +4218,9 @@ public:
     QString referenceResolution() const;
     void setReferenceResolution(const QString &uri);
 
+    bool contentAvailable() const;
+    bool partialContentAvailable() const;
+
     void output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const;
 
     bool contentModified() const;
@@ -4271,6 +4274,24 @@ QString QMailMessagePartPrivate::referenceResolution() const
 void QMailMessagePartPrivate::setReferenceResolution(const QString &uri)
 {
     _resolution = uri;
+}
+
+bool QMailMessagePartPrivate::contentAvailable() const
+{
+    QByteArray contentDisposition(headerField("Content-Disposition"));
+    if (!contentDisposition.isEmpty()) {
+        QMailMessageContentDisposition disposition(contentDisposition);
+        if (disposition.size() != -1) {
+            return (_body.length() >= disposition.size());
+        }
+    }
+
+    return false;
+}
+
+bool QMailMessagePartPrivate::partialContentAvailable() const
+{
+    return !_body.isEmpty();
 }
 
 void QMailMessagePartPrivate::output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
@@ -4988,6 +5009,22 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
     return filepath;
 }
 
+/*!
+    Returns true if the entire content of this part is available; otherwise returns false.
+*/
+bool QMailMessagePart::contentAvailable() const
+{
+    return impl(this)->contentAvailable();
+}
+
+/*!
+    Returns true if some portion of the content of this part is available; otherwise returns false.
+*/
+bool QMailMessagePart::partialContentAvailable() const
+{
+    return impl(this)->partialContentAvailable();
+}
+
 /*! \internal */
 void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool stripInternal) const
 {
@@ -5033,7 +5070,7 @@ static quint64 sentFlag = 0;
 static quint64 repliedFlag = 0;
 static quint64 repliedAllFlag = 0;
 static quint64 forwardedFlag = 0;
-static quint64 downloadedFlag = 0;
+static quint64 contentAvailableFlag = 0;
 static quint64 readFlag = 0;
 static quint64 removedFlag = 0;
 static quint64 readElsewhereFlag = 0;
@@ -5041,6 +5078,8 @@ static quint64 unloadedDataFlag = 0;
 static quint64 newFlag = 0;
 static quint64 readReplyRequestedFlag = 0;
 static quint64 trashFlag = 0;
+static quint64 partialContentAvailableFlag = 0;
+static quint64 hasAttachmentsFlag = 0;
 
 /*  QMailMessageMetaData */
 class QMailMessageMetaDataPrivate : public QPrivateImplementationBase
@@ -5150,7 +5189,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         repliedFlag = registerFlag("Replied");
         repliedAllFlag = registerFlag("RepliedAll");
         forwardedFlag = registerFlag("Forwarded");
-        downloadedFlag = registerFlag("Downloaded");
+        contentAvailableFlag = registerFlag("ContentAvailable");
         readFlag = registerFlag("Read");
         removedFlag = registerFlag("Removed");
         readElsewhereFlag = registerFlag("ReadElsewhere");
@@ -5158,6 +5197,8 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         newFlag = registerFlag("New");
         readReplyRequestedFlag = registerFlag("ReadReplyRequested");
         trashFlag = registerFlag("Trash");
+        partialContentAvailableFlag = registerFlag("PartialContentAvailable");
+        hasAttachmentsFlag = registerFlag("HasAttachments");
     }
 }
 
@@ -5466,12 +5507,14 @@ template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 */
 
 /*!
-    \variable QMailMessageMetaData::Downloaded
+    \variable QMailMessageMetaData::Attachments
 
     The status mask needed for testing the value of the registered status flag named 
-    \c "Downloaded" against the result of QMailMessage::status().
+    \c "Attachments" against the result of QMailMessage::status().
 
-    This flag indicates that the entire content of the message has been retrieved from the originating server.
+    This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.
+
+    \sa QMailMessageContentDisposition
 */
 
 /*!
@@ -5538,13 +5581,36 @@ template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
     This flag indicates that the message has been marked as trash, and should be considered logically deleted.
 */
 
+/*!
+    \variable QMailMessageMetaData::ContentAvailable
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "ContentAvailable" against the result of QMailMessage::status().
+
+    This flag indicates that the entire content of the message has been retrieved from the originating server,
+    excluding any sub-parts of the message.
+
+    \sa QMailMessagePartContainer::contentAvailable()
+*/
+
+/*!
+    \variable QMailMessageMetaData::PartialContentAvailable
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "PartialContentAvailable" against the result of QMailMessage::status().
+
+    This flag indicates that some portion of the  content of the message has been retrieved from the originating server.
+
+    \sa QMailMessagePartContainer::contentAvailable()
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
 const quint64 &QMailMessageMetaData::Replied = repliedFlag;
 const quint64 &QMailMessageMetaData::RepliedAll = repliedAllFlag;
 const quint64 &QMailMessageMetaData::Forwarded = forwardedFlag;
-const quint64 &QMailMessageMetaData::Downloaded = downloadedFlag;
+const quint64 &QMailMessageMetaData::ContentAvailable = contentAvailableFlag;
 const quint64 &QMailMessageMetaData::Read = readFlag;
 const quint64 &QMailMessageMetaData::Removed = removedFlag;
 const quint64 &QMailMessageMetaData::ReadElsewhere = readElsewhereFlag;
@@ -5552,6 +5618,8 @@ const quint64 &QMailMessageMetaData::UnloadedData = unloadedDataFlag;
 const quint64 &QMailMessageMetaData::New = newFlag;
 const quint64 &QMailMessageMetaData::ReadReplyRequested = readReplyRequestedFlag;
 const quint64 &QMailMessageMetaData::Trash = trashFlag;
+const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAvailableFlag;
+const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
 
 /*!
     Constructs an empty message meta data object.
@@ -5946,6 +6014,22 @@ QMailMessageMetaData::ResponseType QMailMessageMetaData::responseType() const
 void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType type)
 {
     impl(this)->setResponseType(type);
+}
+
+/*!
+    Returns true if the entire content of this message is available; otherwise returns false.
+*/
+bool QMailMessageMetaData::contentAvailable() const
+{
+    return (status() & QMailMessage::ContentAvailable);
+}
+
+/*!
+    Returns true if some portion of the content of this message is available; otherwise returns false.
+*/
+bool QMailMessageMetaData::partialContentAvailable() const
+{
+    return (status() & QMailMessage::PartialContentAvailable);
 }
 
 /*! \internal */
@@ -6655,6 +6739,18 @@ uint QMailMessage::indicativeSize() const
     }
 
     return 0;
+}
+
+/*! \reimp */
+bool QMailMessage::contentAvailable() const
+{
+    return QMailMessageMetaData::contentAvailable();
+}
+
+/*! \reimp */
+bool QMailMessage::partialContentAvailable() const
+{
+    return QMailMessageMetaData::partialContentAvailable();
 }
 
 // The QMMMetaData half of this object is implemented in a QMailMessageMetaDataPrivate object

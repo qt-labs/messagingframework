@@ -196,7 +196,7 @@ void Browser::displayPlainText(const QMailMessage* mail)
     QString bodyText;
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::Downloaded) &&
+        !(mail->status() & QMailMessage::PartialContentAvailable) &&
          (mail->multipartType() == QMailMessage::MultipartNone) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText += "\n" + tr("Awaiting download") + "\n";
@@ -409,7 +409,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     metadata.append(qMakePair(tr("Date"), mail->date().toLocalTime().toString(Qt::ISODate)));
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::Downloaded) &&
+        !(mail->status() & QMailMessage::PartialContentAvailable) &&
          (mail->multipartType() == QMailMessage::MultipartNone) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText = 
@@ -425,9 +425,6 @@ void Browser::displayHtml(const QMailMessage* mail)
             // TODO: what?
         }
     } else {
-        // See if this is a SMIL message
-        bool isSmil = false;
-
         if (mail->partCount() > 0) {
             if ( mail->multipartType() == QMailMessagePartContainer::MultipartAlternative ) {
                 int partIndex = -1;
@@ -821,37 +818,6 @@ QString Browser::buildParagraph(const QString& txt, const QString& prepend, bool
 
     QStringList p = input.split( " ", QString::SkipEmptyParts );
     return p.join(" ");
-}
-
-static bool overlappingRange(int pos, int len, const QPair<int, int>& locator)
-{
-    // Two ways to avoid overlap:
-    return !((locator.first >= (pos + len)) ||              // range starts after end
-             ((locator.first + locator.second - 1) < pos)); // range ends before beginning
-}
-
-// Determine whether the supplied pattern overlaps the nominated range in the supplied string
-static bool overlappingPattern(const QString& str, int pos, int len, QRegExp& pattern, QPair<int, int>& locator)
-{
-    // Have we exhausted instances of this pattern?
-    if (locator.first == -1)
-        return false;
-
-    // Ensure it isn't already overlapping
-    if (overlappingRange(pos, len, locator))
-        return true;
-
-    while ((locator.first != -1) && (locator.first < pos)) {
-        // We need to search forward to find potential overlaps
-        if ((locator.first = pattern.indexIn(str, locator.first + locator.second)) != -1) {
-            locator.second = pattern.cap(0).length();
-
-            if (overlappingRange(pos, len, locator))
-                return true;
-        }
-    }
-
-    return false;
 }
 
 /*  This one is called after Qt::escape, so if the email address is of type<some@rtg> we
