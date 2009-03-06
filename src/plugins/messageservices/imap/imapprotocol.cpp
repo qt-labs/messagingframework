@@ -1967,12 +1967,38 @@ QByteArray ImapProtocol::quoteString(const QByteArray& input)
     return quoteString(QString(input)).toAscii();
 }
 
+namespace {
+
+bool hasAttachments(const QMailMessagePartContainer &partContainer)
+{
+    for (uint i = 0; i < partContainer.partCount(); ++i) {
+        const QMailMessagePart &part(partContainer.partAt(i));
+
+        QMailMessageContentDisposition disposition(part.contentDisposition());
+        if (!disposition.isNull() && (disposition.type() == QMailMessageContentDisposition::Attachment)) {
+            return true;
+        } else if (part.multipartType() != QMailMessage::MultipartNone) {
+            if (hasAttachments(part))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+}
+
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure, bool partialMessage)
 {
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
         setMessageContentFromStructure( structure, &mail );
         mail.setStatus( QMailMessage::ContentAvailable, true );
+
+        // See if any of the parts are attachments
+        if (hasAttachments(mail)) {
+            mail.setStatus( QMailMessage::HasAttachments, true );
+        }
     } else {
         mail.setStatus( QMailMessage::ContentAvailable, !partialMessage );
     }
