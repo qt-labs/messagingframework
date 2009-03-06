@@ -155,7 +155,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \class QMailMessageServer
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailMessageServer class provides signals and slots which implement a convenient

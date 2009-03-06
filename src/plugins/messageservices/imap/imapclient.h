@@ -122,6 +122,7 @@ private:
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;
+    QMap<QString, uint> partialLength;
 };
 
 #endif

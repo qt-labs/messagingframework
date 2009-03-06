@@ -63,7 +63,6 @@ QMailMessageServicePlugin *mapping(const QString &key)
 /*!
     \class QMailMessageServiceFactory
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \brief The QMailMessageServiceFactory class creates objects implementing the QMailMessageService interface.
@@ -155,7 +154,6 @@ QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfig
 /*!
     \class QMailMessageServicePluginInterface
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \brief The QMailMessageServicePluginInterface class defines the interface to plugins that provide messaging services.
@@ -202,7 +200,6 @@ QMailMessageServiceConfigurator *QMailMessageServicePluginInterface::createServi
 /*!
     \class QMailMessageServicePlugin
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \brief The QMailMessageServicePlugin class defines a base class for implementing messaging service plugins.
@@ -365,7 +362,6 @@ QMailMessageSourcePrivate::QMailMessageSourcePrivate(QMailMessageService *servic
 /*!
     \class QMailMessageSource
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \brief The QMailMessageSource class defines the interface to objects that provide access to externally sourced 
@@ -446,7 +442,7 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 
     Return true if an operation is initiated.
 
-    \sa retrieveAll(), updateMessagesFlags()
+    \sa retrieveAll()
 */
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
@@ -883,7 +879,6 @@ QMailMessageSinkPrivate::QMailMessageSinkPrivate(QMailMessageService *service)
 /*!
     \class QMailMessageSink
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \brief The QMailMessageSink class defines the interface to objects that provide external message transmission
@@ -945,7 +940,6 @@ void QMailMessageSink::notImplemented()
 /*!
     \class QMailMessageService
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \preliminary
@@ -1132,7 +1126,6 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
 /*!
     \class QMailMessageServiceEditor
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \preliminary
@@ -1167,7 +1160,6 @@ QMailMessageServiceEditor::~QMailMessageServiceEditor()
 /*!
     \class QMailMessageServiceConfigurator
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup libmessageserver
 
     \preliminary

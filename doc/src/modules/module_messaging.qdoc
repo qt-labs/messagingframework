@@ -1,9 +1,6 @@
 /*!
     \group QtMessagingModule
     \title Qt Messaging Module
-    \previouspage QtMediaModule
-    \contentspage Qt Extended Modules
-    \nextpage QtPkgManagementModule
 
     The Qt Messaging module offers messaging related services such as SMS and email support.
     It is based on the \l {QtBaseModule}{Base module}.

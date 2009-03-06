@@ -75,7 +75,6 @@ private:
 /*!
     \class QMailAccountConfiguration::ServiceConfiguration
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The ServiceConfiguration class provides access to the configuration parameters 
@@ -229,7 +228,6 @@ QMailAccountConfiguration::ServiceConfiguration &QMailAccountConfigurationPrivat
 /*!
     \class QMailAccountConfiguration
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \brief The QMailAccountConfiguration class contains the configuration parameters of an account.

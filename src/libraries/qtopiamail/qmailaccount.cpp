@@ -133,7 +133,6 @@ private:
 /*!
     \class QMailAccount
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
 
     \preliminary
     \ingroup messaginglibrary

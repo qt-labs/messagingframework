@@ -11,7 +11,6 @@
 /* 
     TODO: Do we need these?
     \inpublicgroup QtMessagingModule
-    \inpublicgroup QtPimModule
     \ingroup messaginglibrary
 */
 

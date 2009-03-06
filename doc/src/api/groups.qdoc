@@ -69,7 +69,7 @@
     \group qmfutil
     \title Messaging Client Utility Classes
 
-    These classes provide assistance in developing plugins for the \l{Message Server}{Message Server} daemon.
+    These classes provide assistance in developing plugins for the \l{MessageServer Daemon}{Message Server} daemon.
 
     \sa {Messaging Client Utility Library}, {Qt Extended Messaging Library}
 */

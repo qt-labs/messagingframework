@@ -813,7 +813,7 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
     in the mail store but found to be no longer available should be marked with the 
     \l QMailMessage::Removed status flag.
 
-    \sa retrieveAll(), updateMessagesFlags()
+    \sa retrieveAll()
 */
 void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
@@ -861,6 +861,9 @@ void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId,
     Requests that the message server retrieve a subset of the message part that is indicated 
     by the location \a partLocation.  The messageserver should ensure that at least 
     \a minimum bytes are available from the mail store.
+    
+    The total size of the part on the server is given by QMailMessagePart::contentDisposition().size(),
+    the amount of the part available locally is given by QMailMessagePart::body().length().
 */
 void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
