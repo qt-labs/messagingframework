@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "emailcomposer_qt.h"
+#include "emailcomposer.h"
 #include <qmailmessage.h>
 #include <qmailglobal.h>
 #include <QAction>
@@ -773,4 +773,3 @@ QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { ret
 
 Q_EXPORT_PLUGIN( EmailComposerInterface)
 
-#include <emailcomposer_qt.moc>
