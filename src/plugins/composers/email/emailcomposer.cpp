@@ -108,13 +108,6 @@ void BodyTextEdit::keyPressEvent(QKeyEvent* e)
     QTextEdit::keyPressEvent( e );
 }
 
-static void addActionsFromWidget(QWidget* sourceWidget, QMenu* targetMenu)
-{
-    if(!sourceWidget) return;
-    foreach(QAction* a,sourceWidget->actions())
-        targetMenu->addAction(a);
-}
-
 void EmailComposerInterface::updateLabel()
 {
     static const bool keypadAbsent(style()->inherits("QThumbStyle"));
@@ -730,7 +723,7 @@ bool EmailComposerInterface::isDetailsOnlyMode() const
 //    return m_detailsWidget->isDetailsOnlyMode();
 }
 
-void EmailComposerInterface::setDetailsOnlyMode(bool val)
+void EmailComposerInterface::setDetailsOnlyMode(bool)
 {
     /*
     m_detailsWidget->setDetailsOnlyMode(val);
@@ -773,3 +766,4 @@ QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { ret
 
 Q_EXPORT_PLUGIN( EmailComposerInterface)
 
+#include <emailcomposer.moc>

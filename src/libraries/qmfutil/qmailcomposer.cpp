@@ -433,6 +433,7 @@ QIcon QMailComposerFactory::displayIcon(const QString &key, QMailMessage::Messag
 */
 QMailComposerInterface *QMailComposerFactory::create( const QString& key, QWidget *parent )
 {
+    Q_UNUSED(parent);
     return mapping(key);
 }
 

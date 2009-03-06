@@ -318,6 +318,7 @@ QString QMailViewerFactory::defaultKey(QMailMessage::ContentType type, Presentat
 */
 QMailViewerInterface *QMailViewerFactory::create(const QString &key, QWidget *parent)
 {
+    Q_UNUSED(parent);
     return mapping(key);
 }
 

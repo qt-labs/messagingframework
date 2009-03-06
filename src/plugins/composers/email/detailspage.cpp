@@ -65,13 +65,6 @@ void FromAddressComboBox::keyPressEvent(QKeyEvent *e)
 }
 
 
-static void addActionsFromWidget(QWidget* sourceWidget, QMenu* targetMenu)
-{
-    if(!sourceWidget) return;
-    foreach(QAction* a,sourceWidget->actions())
-        targetMenu->addAction(a);
-}
-
 DetailsPage::DetailsPage( QWidget *parent, const char *name )
     : QWidget( parent ), m_type( -1 ), m_previousAction(0)
 {

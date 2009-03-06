@@ -64,6 +64,7 @@ QWidget* GenericViewer::widget() const
 
 void GenericViewer::addActions(QMenu* menu) const
 {
+    Q_UNUSED(menu);
 }
 
 QString GenericViewer::key() const { return "GenericViewer"; }
