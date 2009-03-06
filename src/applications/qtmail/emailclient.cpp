@@ -32,6 +32,7 @@
 #include <QMessageBox>
 #include <QStack>
 #include <QStackedWidget>
+#include <QThread>
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSettings>
@@ -362,6 +363,16 @@ EmailFolderModel* MessageUiBase::createEmailFolderModel()
     return model;
 }
 
+class SleepFor : public QThread
+{
+public:
+    SleepFor(uint msecs)
+        : QThread()
+    {
+        msleep(msecs);
+    }
+};
+
 EmailClient::EmailClient( QWidget* parent )
     : MessageUiBase( parent ),
       filesRead(false),
@@ -379,11 +390,29 @@ EmailClient::EmailClient( QWidget* parent )
       m_messageServerProcess(0),
       retrievingFolders(false)
 {
-
-    if(!isMessageServerRunning() && !startMessageServer())
-        qFatal("Unable to start messageserver!");
-
     setObjectName( "EmailClient" );
+
+    if (!isMessageServerRunning() && !startMessageServer()) {
+        qFatal("Unable to start messageserver!");
+    } else {
+        QTime start(QTime::currentTime());
+        int wait = 0;
+
+        // We need to wait until the mail store is initialized
+        QMailStore* store = QMailStore::instance();
+        while (!store->initialized()) {
+            if (start.secsTo(QTime::currentTime()) > 5) {
+                // The mailstore isn't working - abort
+                qFatal("QMF database failed to initialize");
+            } else {
+                if (++wait == 5) {
+                    wait = 0;
+                    qWarning() << "Waiting for mail store initialization...";
+                }
+                SleepFor(200);
+            }
+        }
+    }
 
     init();
 
@@ -699,20 +728,6 @@ void EmailClient::delayedInit()
         return; // delayedInit already done
 
     QMailStore* store = QMailStore::instance();
-
-    if (!store->initialized()) {
-        // The mailstore isn't working - abort
-        QMessageBox::warning(0,
-                             tr("No Mail Store"),
-                             tr("Unable to initialize the Mail Store!\n\nMessages cannot continue and will now terminate."),
-                             QMessageBox::Ok);
-        qFatal("QMF database failed to initialize");
-
-
-        closeImmediately();
-        QTMailWindow::singleton()->close();
-        return;
-    }
 
     // Whenever these actions occur, we need to reload accounts that may have changed
     connect(store, SIGNAL(accountsAdded(QMailAccountIdList)), this, SLOT(accountsAdded(QMailAccountIdList)));
