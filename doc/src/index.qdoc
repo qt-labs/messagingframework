@@ -5,17 +5,11 @@
 \title Messaging Framework Developer Resources
 
 \table 100%
+
 \header 
-\o Product Guide 
 \o General
 \o Support & QA 
 \row
-\o 
-\list
-   \o \l {Messaging Framework Release Notes}{What's New?}
-   \o \l {Functional Descriptions}{Functional Descriptions}
-   \o \l {Tutorials}{Tutorials}
-\endlist
 \o
 \list
     \o \l {About Messaging Framework}
@@ -48,8 +42,8 @@
    \o \l {Porting Between Messaging Framework Versions}
    \o \l {Building and Compiling}
    \o \l {Running Messaging Framework}{Running Messaging Framework} 
+   \o \l {Tutorials}{Tutorials}
 \endlist
-\o
  
 \endtable 
 
