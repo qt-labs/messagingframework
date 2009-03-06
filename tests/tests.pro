@@ -1,6 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS = \
-      tst_messageserver \
       tst_python_email \
       tst_qmailaddress \
       tst_qmailcodec \
