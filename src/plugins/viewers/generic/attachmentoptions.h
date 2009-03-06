@@ -12,16 +12,12 @@
 #define ATTACHMENTOPTIONS_H
 
 #include <QByteArray>
-#include <QContent>
 #include <QDialog>
 #include <QList>
 #include <QSize>
 #include <QString>
 
-#include <qtopiaglobal.h>
-
 class QByteArray;
-class QContent;
 class QLabel;
 class QMailMessagePart;
 class QPushButton;
@@ -72,7 +68,7 @@ private:
     ContentClass _class;
     QString _decodedText;
     QByteArray _decodedData;
-    QList<QContent> _temporaries;
+    QStringList _temporaries;
 };
 
 #endif
