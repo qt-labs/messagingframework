@@ -1906,18 +1906,8 @@ int QMailStorePrivate::pathIdentifier(const QString &filePath)
 int QMailStorePrivate::databaseIdentifier(int n) const
 {
     int result = static_cast<int>(::ftok(database.databaseName().toAscii(), n));
-    if (result == -1) {
-        QString serverPath;
-        foreach(QString path, QCoreApplication::libraryPaths()) {
-            serverPath = path + QDir::separator() + "messageserver";
-            if (QFile::exists(serverPath)) {
-                result = static_cast<int>(::ftok(serverPath.toAscii(), n));
-                break;
-            }
-        }
-    }
     if (result == -1)
-        qFatal("Could not create database semaphore. Was the messageserver executable renamed?");
+        qFatal("Could not create database semaphore. Database could not be found.");
     return result;
 }
 
@@ -1933,17 +1923,16 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       lastQueryError(0),
       mutex(0)
 {
-    mutex = new ProcessMutex(databaseIdentifier(1));
-    readLock = new ProcessReadLock(databaseIdentifier(2));
-
-    MutexGuard guard(databaseMutex());
+    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
+    MutexGuard guard(creationMutex);
     if (guard.lock(1000)) {
-        if (contentMutex == 0) {
-            contentMutex = new ProcessMutex(pathIdentifier("."));
-        }
-
         //open the database
         database = QMail::createDatabase();
+    }
+    mutex = new ProcessMutex(databaseIdentifier(1));
+    readLock = new ProcessReadLock(databaseIdentifier(2));
+    if (contentMutex == 0) {
+        contentMutex = new ProcessMutex(databaseIdentifier(3));
     }
 }
 
