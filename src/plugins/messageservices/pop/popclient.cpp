@@ -839,6 +839,27 @@ void PopClient::uidlIntegrityCheck()
     }
 }
 
+namespace {
+
+bool hasAttachments(const QMailMessagePartContainer &partContainer)
+{
+    for (uint i = 0; i < partContainer.partCount(); ++i) {
+        const QMailMessagePart &part(partContainer.partAt(i));
+
+        QMailMessageContentDisposition disposition(part.contentDisposition());
+        if (!disposition.isNull() && (disposition.type() == QMailMessageContentDisposition::Attachment)) {
+            return true;
+        } else if (part.multipartType() != QMailMessage::MultipartNone) {
+            if (hasAttachments(part))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+}
+
 void PopClient::createMail()
 {
     QString detachedFile = dataStream->detach();
@@ -873,6 +894,13 @@ void PopClient::createMail()
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
     mail.setStatus(QMailMessage::ContentAvailable, isComplete);
     mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
+
+    if (isComplete && (mail.multipartType() != QMailMessage::MultipartNone)) {
+        // See if any of the parts are attachments
+        if (hasAttachments(mail)) {
+            mail.setStatus( QMailMessage::HasAttachments, true );
+        }
+    }
 
     classifier.classifyMessage(mail);
 

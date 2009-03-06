@@ -1993,11 +1993,14 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
         setMessageContentFromStructure( structure, &mail );
-        mail.setStatus( QMailMessage::ContentAvailable, true );
 
-        // See if any of the parts are attachments
-        if (hasAttachments(mail)) {
-            mail.setStatus( QMailMessage::HasAttachments, true );
+        if (mail.multipartType() != QMailMessage::MultipartNone) {
+            mail.setStatus( QMailMessage::ContentAvailable, true );
+
+            // See if any of the parts are attachments
+            if (hasAttachments(mail)) {
+                mail.setStatus( QMailMessage::HasAttachments, true );
+            }
         }
     } else {
         mail.setStatus( QMailMessage::ContentAvailable, !partialMessage );

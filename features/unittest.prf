@@ -1,0 +1,14 @@
+# For subdirs template, let `test' recurse...
+contains(TEMPLATE, subdirs) {
+    test.CONFIG = recursive
+    test.recurse = $$SUBDIRS
+    test.recurse_target = test
+}
+# ...otherwise, run the test
+else {
+    test.depends = $(QMAKE_TARGET)
+    test.path = $$OUT_PWD
+    test.commands = @$$OUT_PWD/$(QMAKE_TARGET) $(ARGS)
+}
+QMAKE_EXTRA_TARGETS += test
+

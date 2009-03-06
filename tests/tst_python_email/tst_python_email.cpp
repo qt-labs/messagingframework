@@ -11,8 +11,9 @@
 #include <QObject>
 #include <QTest>
 #include <qmailmessage.h>
-#include "../../../../../src/libraries/qtopiamail/longstring_p.h"
+#include "longstring_p.h"
 #include <qmailnamespace.h>
+#include <ctype.h>
 
 /*
 Note: Any email addresses appearing in this test data must be example addresses,
