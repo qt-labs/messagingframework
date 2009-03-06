@@ -91,7 +91,7 @@ API changes since the development preview release on 16/01/09:
 
 24. Added 'Flags' value to 'QMailRetrievalAction::RetrievalSpecification'.
 
-23. Changed 'QMailRetrievalAction::retrieveAll(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+25. Changed 'QMailRetrievalAction::retrieveAll(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
             'QMailRetrievalAction::retrieveAll(const QMailAccountId &)',
             'QMailRetrievalAction::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
             'QMailRetrievalAction::synchronize(const QMailAccountId &)',
@@ -99,4 +99,13 @@ API changes since the development preview release on 16/01/09:
             'QMailMessageServer::retrieveAll(const QMailAccountId &)' and 
             'QMailMessageServer::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
             'QMailMessageServer::synchronize(const QMailAccountId &)'.
+
+26. Renamed 'QMailMessageMetaData::Downloaded' to 'QMailMessageMetaData::ContentAvailable'.
+
+27. Added 'QMailMessageMetaData::PartialContentAvailable' and 'QMailMessageMetaData::HasAttachments'.
+
+28. Added 'QMailMessagePartContainer::contentAvailable() const',
+          'QMailMessagePartContainer::partialContentAvailable() const',
+          'QMailMessageMetaData::contentAvailable() const' and
+          'QMailMessageMetaData::partialContentAvailable() const'.
 

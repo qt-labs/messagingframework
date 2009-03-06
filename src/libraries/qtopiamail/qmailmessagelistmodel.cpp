@@ -424,7 +424,7 @@ QVariant QMailMessageListModel::data(const QModelIndex& index, int role) const
                 quint64 status = message.status();
                 if ( status & QMailMessage::Removed ) {
                     return removedIcon;
-                } else if ( status & QMailMessage::Downloaded ) {
+                } else if ( status & QMailMessage::PartialContentAvailable ) {
                     if ( status & QMailMessage::Read || status & QMailMessage::ReadElsewhere ) {
                         return readIcon;
                     } else {

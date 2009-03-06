@@ -520,9 +520,10 @@ void ImapClient::messageFetched(QMailMessage& mail)
     // Do we need to update the message from the existing data?
     QMailMessageMetaData existing(mail.serverUid(), _config.id());
     if (existing.id().isValid()) {
-        bool downloaded(mail.status() & QMailMessage::Downloaded);
         bool replied(mail.status() & QMailMessage::Replied);
         bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
+        bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
+        bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
 
         mail.setId(existing.id());
         mail.setStatus(existing.status());
@@ -534,9 +535,14 @@ void ImapClient::messageFetched(QMailMessage& mail)
         mail.setCustomFields(existing.customFields());
 
         // Preserve the status flags determined by the protocol
-        mail.setStatus(QMailMessage::Downloaded, downloaded);
         mail.setStatus(QMailMessage::Replied, replied);
         mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
+        if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
+            mail.setStatus(QMailMessage::ContentAvailable, true);
+        }
+        if ((mail.status() & QMailMessage::PartialContentAvailable) || partialContentAvailable) {
+            mail.setStatus(QMailMessage::PartialContentAvailable, true);
+        }
     } else {
         mail.setStatus(QMailMessage::Incoming, true);
         mail.setStatus(QMailMessage::New, true);
@@ -680,9 +686,14 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             QMailMessagePart &part = mail.partAt(partLocation);
             if (partial && section.isEmpty()) {
                 mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+
+                mail.setStatus(QMailMessage::PartialContentAvailable, true);
                 if (partialLength[partName] >= mail.size()) {
-                    mail.setStatus(mail.status() | QMailMessage::Downloaded);
+                    mail.setStatus(QMailMessage::ContentAvailable, true);
                 }
+
+                // If this message was previously marked read, that is no longer true
+                mail.setStatus(QMailMessage::Read, false);
             } else if (part.multipartType() == QMailMessage::MultipartNone) {
                 // The body data is for this part only
                 if (part.hasBody()) {

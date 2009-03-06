@@ -196,7 +196,7 @@ void Browser::displayPlainText(const QMailMessage* mail)
     QString bodyText;
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::Downloaded) &&
+        !(mail->status() & QMailMessage::PartialContentAvailable) &&
          (mail->multipartType() == QMailMessage::MultipartNone) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText += "\n" + tr("Awaiting download") + "\n";
@@ -409,7 +409,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     metadata.append(qMakePair(tr("Date"), mail->date().toLocalTime().toString(Qt::ISODate)));
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::Downloaded) &&
+        !(mail->status() & QMailMessage::PartialContentAvailable) &&
          (mail->multipartType() == QMailMessage::MultipartNone) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText = 

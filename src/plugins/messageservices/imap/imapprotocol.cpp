@@ -1972,14 +1972,22 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
         setMessageContentFromStructure( structure, &mail );
+        mail.setStatus( QMailMessage::ContentAvailable, true );
+    } else {
+        mail.setStatus( QMailMessage::ContentAvailable, !partialMessage );
     }
 
-    if (flags & MFlag_Seen)
-        mail.setStatus( QMailMessage::ReadElsewhere, true );
-    if (flags & MFlag_Answered)
-        mail.setStatus( QMailMessage::Replied, true );
+    if (mail.status() & QMailMessage::ContentAvailable) {
+        // ContentAvailable should also imply partial content available
+        mail.setStatus( QMailMessage::PartialContentAvailable, true );
+    }
 
-    mail.setStatus( QMailMessage::Downloaded, !partialMessage );
+    if (flags & MFlag_Seen) {
+        mail.setStatus( QMailMessage::ReadElsewhere, true );
+    }
+    if (flags & MFlag_Answered) {
+        mail.setStatus( QMailMessage::Replied, true );
+    }
 
     mail.setSize( size );
     mail.setServerUid( uid.trimmed() );

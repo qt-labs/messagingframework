@@ -871,7 +871,8 @@ void PopClient::createMail()
     mail.setParentFolderId(QMailFolderId(QMailFolder::InboxFolder));
 
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
-    mail.setStatus(QMailMessage::Downloaded, isComplete);
+    mail.setStatus(QMailMessage::ContentAvailable, isComplete);
+    mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
 
     classifier.classifyMessage(mail);
 
