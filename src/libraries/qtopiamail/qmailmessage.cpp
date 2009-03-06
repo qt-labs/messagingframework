@@ -5507,10 +5507,10 @@ template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 */
 
 /*!
-    \variable QMailMessageMetaData::Attachments
+    \variable QMailMessageMetaData::HasAttachments
 
     The status mask needed for testing the value of the registered status flag named 
-    \c "Attachments" against the result of QMailMessage::status().
+    \c "HasAttachments" against the result of QMailMessage::status().
 
     This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.
 
