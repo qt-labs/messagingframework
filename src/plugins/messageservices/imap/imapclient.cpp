@@ -685,8 +685,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             // Update the relevant part
             QMailMessagePart &part = mail.partAt(partLocation);
             if (partial && section.isEmpty()) {
+                partialLength.insert(partName, partialLength[partName] + size);
                 mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-
                 mail.setStatus(QMailMessage::PartialContentAvailable, true);
                 if (partialLength[partName] >= mail.size()) {
                     mail.setStatus(QMailMessage::ContentAvailable, true);
