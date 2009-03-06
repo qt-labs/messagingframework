@@ -75,7 +75,7 @@ or optionally remove unwanted tests from the qmf.pro.
 
 \section1 Running Messaging Framework 
 
-After \c make \c install has run, the following image layout should exist in your image directory:
+After \c make \c install has run, the following layout should exist in your image directory:
 
 \code
 bin
@@ -96,8 +96,8 @@ QMF_PLUGINS=<imagedir/plugins>
 Optionally set \c QMF_DATA to the location where you want the framework data files stored. If this is not set, the
 default of \c $HOME/.qmf will be used.
 
-\bold Note: When running the test application \c qtmail, if the messageserver is not already running it will be started as
-a child process of the application. If debug output to stout is required from messageserver, ensure it is running before
-qtmail is started.
+\bold Note: When running the test application \c qtmail, if the \c messageserver is not already running it will be started as
+a child process of the application. If debug to stdout is required from \c messageserver, ensure it is running separately 
+before running \c qtmail. 
 
 */
