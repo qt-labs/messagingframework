@@ -1,0 +1,29 @@
+/****************************************************************************
+**
+****************************************************************************/
+
+API changes since the development preview release on 16/01/09:
+
+1. Added 'QMailAutheticator' class.
+
+2. Added 'QMailServiceConfiguration::QMailServiceConfiguration(const QMailAccountConfiguration::ServiceConfiguration&)'.
+
+3. Added 'QMailServiceConfiguration::id() const'.
+
+4. Added 'QMailTransport::isEncrypted() const'.
+
+5. Changed 'QMailMessageSource::notImplemented()' from slot to function.
+
+6. Added 'QMailMessageSink::notImplemented()'.
+
+7. Added 'QMailMessageService::accountId() const'.
+
+8. Changed 'QMailMessageSource::retrieveMessagePart(const QMailMessageId &, const QMailMessagePart::Location &)' to
+           'QMailMessageSource::retrieveMessagePart(QMailMessagePart::Location &)' and 
+           'QMailMessageSource::retrieveMessagePartRange(const QMailMessageId &, const QMailMessagePart::Location &, uint)' to
+           'QMailMessageSource::retrieveMessagePartRange(QMailMessagePart::Location &, uint)'.
+
+9. Changed 'QMailMessageSource::retrieveAll(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+           'QMailMessageSource::retrieveAll(const QMailAccountId &)' and 
+           'QMailMessageSource::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+           'QMailMessageSource::synchronize(const QMailAccountId &)'.

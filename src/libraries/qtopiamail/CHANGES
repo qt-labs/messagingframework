@@ -1,0 +1,102 @@
+/****************************************************************************
+**
+****************************************************************************/
+
+API changes since the development preview release on 16/01/09:
+
+1. Added 'QMailAccountConfiguration::id() const'
+
+2. Added 'QMailMessagePart::Location::Location(const QString&)'
+
+3. Changed 'QMailMessagePart::Location::isValid() const' to
+           'QMailMessagePart::Location::isValid(bool = true) const'.
+
+4. Added 'QMailMessagePart::setReference(const QMailMessageId&, const QMailMessageContentType&, QMailMessageBody::TransferEncoding)' and
+         'QMailMessagePart::setReference(const QMailMessagePart::Location&, const QMailMessageContentType&, QMailMessageBody::TransferEncoding)'.
+
+5. Added 'QMailMessagePart::contentModified() const' and
+         'QMailMessagePart::setUnmodified()'.
+
+6. Changed 'QMailMessageMetaData::dataModified() const' from private to public accessibility.
+
+7. Renamed 'QMailMessageMetaData::committed()' to 
+           'QMailMessageMetaData::setUnmodified()'.
+
+8. Changed 'QMailMessage::contentModified() const' from private to public accessibility.
+
+9. Added 'QMailStore::ErrorCode' enum.
+
+10. Added 'QMailStore::lastError() const',
+          'QMailStore::errorOccurred(QMailStore::ErrorCode)' and
+          'QMailStore::emitErrorNotification(QMailStore::ErrorCode)'.
+
+11. Added 'QMailStoreImplmentation::lastError() const',
+          'QMailStoreImplmentation::setLastError() const' and
+          'QMailStoreImplementation::errorCode'.
+
+12. Changed 'QMailContentManager::add(QMailMessage*)',
+            'QMailContentManager::update(QMailMessage*)',
+            'QMailContentManager::remove(const QString&)' and
+            'QMailContentManager::load(const QString&, QMailMessage*)' 
+    to return QMailStore::ErrorCode instead of bool.
+
+13. Changed to use type-safe construction interface for 'QMailAccountKey',
+                                                        'QMailFolderKey' and
+                                                        'QMailMessageKey'.
+
+14. Changed to equivalent construction interface for 'QMailAccountSortKey',
+                                                     'QMailFolderSortKey' and
+                                                     'QMailMessageSortKey'.
+
+15. Removed 'QMailAccount::mailboxes() const',
+            'QMailAccount::mailbox(const QString &)',
+            'QMailAccount::serverUids() const',
+            'QMailAccount::serverUids(const QMailFolderId &) const',
+            'QMailAccount::serverUids(const QMailFolderId &, quint64, bool) const',
+            'QMailAccount::deletedMessages() const' and
+            'QMailAccount::deletedMessages(const QMailFolderId &) const'.
+
+16. Renamed 'QMailAccount::accountName() const' to 'QMailAccount::name() const',
+            'QMailAccount::setAccountName(const QString &)' to 'QMailAccount::setName(const QString &)' and
+            'QMailAccountKey::accountName()' to 'QMailAccountKey::name()'.
+
+17. Removed 'QMailAccount::displayName() const'.
+
+18. Renamed 'QMailFolder::name() const' to 'QMailFolder::path() const',
+            'QMailFolder::setName(const QString &)' to 'QMailFolder::setPath(const QString &)' and
+            'QMailFolderKey::name(...)' to 'QMailFolderKey::path(...)'.
+
+19. Renamed 'QMailFolder::parentId() const' to 'QMailFolder::parentFolderId() const',
+            'QMailFolder::setParentId(const QMailFolderId &)' to 'QMailFolder::setParentFolderId(const QMailFolderId &)' and
+            'QMailFolderKey::parentId(...)' to 'QMailFolderKey::parentFolderId(...)'.
+
+20. Added 'QMailMessageMetaData::receivedDate() const',
+          'QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &) const',
+          'QMailMessageKey::receptionTimeStamp(...)' and
+          'QMailMessageSortKey::receptionTimeStamp(...)'.
+
+21. Renamed 'QMailMessageSortKey::type(Qt::SortOrder)' to
+            'QMailMessageSortKey::messageType(Qt::SortOrder)'.
+
+22. Added 'QMailMessagePart::Location::setContainingMessageId(const QMailMessageId &)'.
+
+23. Changed 'QMailRetrievalAction::retrieveMessagePart(const QMailMessageId &, const QMailMessagePart::Location &)' to
+            'QMailRetrievalAction::retrieveMessagePart(QMailMessagePart::Location &)',
+            'QMailRetrievalAction::retrieveMessagePartRange(const QMailMessageId &, const QMailMessagePart::Location &, uint)' to
+            'QMailRetrievalAction::retrieveMessagePartRange(QMailMessagePart::Location &, uint)',
+            'QMailMessageServer::retrieveMessagePart(const QMailMessageId &, const QMailMessagePart::Location &)' to
+            'QMailMessageServer::retrieveMessagePart(QMailMessagePart::Location &)' and 
+            'QMailMessageServer::retrieveMessagePartRange(const QMailMessageId &, const QMailMessagePart::Location &, uint)' to
+            'QMailMessageServer::retrieveMessagePartRange(QMailMessagePart::Location &, uint)'.
+
+24. Added 'Flags' value to 'QMailRetrievalAction::RetrievalSpecification'.
+
+23. Changed 'QMailRetrievalAction::retrieveAll(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+            'QMailRetrievalAction::retrieveAll(const QMailAccountId &)',
+            'QMailRetrievalAction::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+            'QMailRetrievalAction::synchronize(const QMailAccountId &)',
+            'QMailMessageServer::retrieveAll(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+            'QMailMessageServer::retrieveAll(const QMailAccountId &)' and 
+            'QMailMessageServer::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
+            'QMailMessageServer::synchronize(const QMailAccountId &)'.
+
