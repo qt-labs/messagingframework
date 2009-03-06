@@ -196,8 +196,7 @@ void Browser::displayPlainText(const QMailMessage* mail)
     QString bodyText;
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::PartialContentAvailable) &&
-         (mail->multipartType() == QMailMessage::MultipartNone) ) {
+        !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText += "\n" + tr("Awaiting download") + "\n";
             bodyText += tr("Size of message") + ": " + describeMailSize(mail->size());
@@ -409,8 +408,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     metadata.append(qMakePair(tr("Date"), mail->date().toLocalTime().toString(Qt::ISODate)));
 
     if ( (mail->status() & QMailMessage::Incoming) && 
-        !(mail->status() & QMailMessage::PartialContentAvailable) &&
-         (mail->multipartType() == QMailMessage::MultipartNone) ) {
+        !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText = 
     "<b>WAITING_TEXT</b><br>"
@@ -486,15 +484,12 @@ void Browser::displayHtml(const QMailMessage* mail)
             // Assume this is appropriately formatted
             bodyText = mail->body().data();
         } else {
-            {
-                bodyText = formatText( mail->body().data() );
-            }
+            bodyText = formatText( mail->body().data() );
         }
     }
 
     // Form our parts into a displayable page
     QString pageData;
-
 
     if (mail->status() & QMailMessage::Removed) {
         QString noticeTemplate =
