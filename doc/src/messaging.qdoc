@@ -48,4 +48,56 @@ For detailed information refer to:
 \o \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
 \endlist
 
+\section1 Building and Compiling 
+
+To build the Qt Extended Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
+
+\code 
+qmake "QMF_INSTALL_ROOT=<image directory path>" "CONFIG+=debug" qmf.pro 
+\endcode
+
+Where \c <image \c directory \c path> is the location that \c make \c install will put the resultant binary files. It is optional but 
+desirable to set this variable as it is not possible to run the applications from within their directories due
+to dependencies. The debug paramater is also optional.
+
+Following this simply run:
+
+\code
+make
+make install
+\endcode
+
+It is also recommended to build in a separate path to the source tree. This is just a matter
+of running the above commands from within a separate build directory.
+
+\bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensue that valgrind development headers are installed,
+or optionally remove unwanted tests from the qmf.pro. 
+
+\section1 Running Messaging Framework 
+
+After \c make \c install has run, the following image layout should exist in your image directory:
+
+\code
+bin
+lib
+plugins
+tests
+\endcode
+
+The binary files \c messageserver and \c qtmail and \c messagingaccounts should be located in the \c bin directory.
+Set the following evironment variables prior to running these files:
+
+\code
+PATH=<imagedir/bin>:$PATH
+LD_LIBRARY_PATH=<imagedir/lib>:$LD_LIBRARY_PATH
+QMF_PLUGINS=<imagedir/plugins>
+\endcode
+
+Optionally set \c QMF_DATA to the location where you want the framework data files stored. If this is not set, the
+default of \c $HOME/.qmf will be used.
+
+\bold Note: When running the test application \c qtmail, if the messageserver is not already running it will be started as
+a child process of the application. If debug output to stout is required from messageserver, ensure it is running before
+qtmail is started.
+
 */

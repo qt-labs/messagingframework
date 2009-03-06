@@ -40,7 +40,7 @@
 \list
    \o \l {Messaging}{Introduction}
    \o \l {Porting Between Messaging Framework Versions}
-   \o \l {Building and Compiling}
+   \o \l {Building and Compiling}{Building and Compiling}
    \o \l {Running Messaging Framework}{Running Messaging Framework} 
    \o \l {Tutorials}{Tutorials}
 \endlist
