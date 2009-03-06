@@ -8,7 +8,7 @@
 **
 ****************************************************************************/
 
-#include "browser_qt.h"
+#include "browser.h"
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QStyle>

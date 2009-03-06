@@ -8,8 +8,8 @@
 **
 ****************************************************************************/
 
-#include "genericviewer_qt.h"
-#include "browser_qt.h"
+#include "genericviewer.h"
+#include "browser.h"
 #include <QAction>
 #include <QGridLayout>
 #include <QKeyEvent>
