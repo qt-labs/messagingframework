@@ -11,30 +11,26 @@
 
 #include "attachmentoptions.h"
 #include "browser.h"
+#include "qmailmessage.h"
 
 #include <QAction>
 #include <QByteArray>
-#include <QContent>
 #include <QDataStream>
+#include <QDir>
 #include <QFormLayout>
 #include <QImage>
 #include <QImageReader>
 #include <QLabel>
-#include <QMailMessage>
-#include <QMailMessagePart>
 #include <QMenu>
 #include <QMessageBox>
-#include <QMimeType>
 #include <QPushButton>
 #include <QScrollArea>
-#include <QSoftMenuBar>
 #include <QSize>
 #include <QString>
 #include <QStyle>
 #include <QTemporaryFile>
 #include <QTextBrowser>
 #include <QVBoxLayout>
-#include <QtopiaApplication>
 
 
 class TextDisplay : public QDialog
@@ -65,17 +61,15 @@ TextDisplay::TextDisplay(QWidget* parent)
     QVBoxLayout* vb = new QVBoxLayout(this);
     vb->addWidget(_browser);
 
-    QMenu* contextMenu = QSoftMenuBar::menuFor(this);
-
     QAction* toggleLineWrap = new QAction(tr("Wrap text"), this);
     toggleLineWrap->setCheckable(true);
     toggleLineWrap->setChecked(true);
     toggleLineWrap->setVisible(true);
 
     connect(toggleLineWrap, SIGNAL(triggered()), this, SLOT(toggleLineWrapMode()));
-    contextMenu->addAction(toggleLineWrap);
+    addAction(toggleLineWrap);
 
-    showMaximized();
+    setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 TextDisplay::~TextDisplay()
@@ -147,25 +141,23 @@ ImageDisplay::ImageDisplay(QWidget* parent)
     vb->setMargin(0);
     vb->setSpacing(0);
 
-    QMenu* contextMenu = QSoftMenuBar::menuFor(this);
-
     connect(_sizeToFit, SIGNAL(triggered()), this, SLOT(sizeToFit()));
     _sizeToFit->setVisible(true);
-    contextMenu->addAction(_sizeToFit);
+    addAction(_sizeToFit);
 
     connect(_sizeDefault, SIGNAL(triggered()), this, SLOT(sizeDefault()));
     _sizeDefault->setVisible(false);
-    contextMenu->addAction(_sizeDefault);
+    addAction(_sizeDefault);
 
     connect(_sizeActual, SIGNAL(triggered()), this, SLOT(sizeActual()));
     _sizeActual->setVisible(true);
-    contextMenu->addAction(_sizeActual);
+    addAction(_sizeActual);
 
     connect(_zoomToFit, SIGNAL(triggered()), this, SLOT(zoomToFit()));
     _zoomToFit->setVisible(false);
-    contextMenu->addAction(_zoomToFit);
+    addAction(_zoomToFit);
 
-    showMaximized();
+    setContextMenuPolicy(Qt::ActionsContextMenu);
 }
 
 ImageDisplay::~ImageDisplay()
@@ -321,14 +313,17 @@ AttachmentOptions::AttachmentOptions(QWidget* parent)
     vb->addWidget(_retrieve);
 
     layout->addRow(vb);
-
-    showMaximized();
 }
 
 AttachmentOptions::~AttachmentOptions()
 {
-    while (!_temporaries.isEmpty())
-        _temporaries.takeFirst().removeFiles();
+    while (!_temporaries.isEmpty()) {
+        QString fileName(_temporaries.takeFirst());
+        if (QFile::exists(fileName)) {
+            QFile::remove(fileName);
+        }
+    }
+
 }
 
 QSize AttachmentOptions::sizeHint() const
@@ -433,15 +428,19 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
             _view->setText(tr("View"));
             _view->setVisible(true);
         } else {
+#if 0
             // See if there is a viewer available for this type
             QMimeType mt(_part->contentType().content());
             if (!mt.id().isEmpty() && !QMimeType::applicationsFor(mt).isEmpty()) {
+#endif
                 _view->setText(tr("View"));
                 _view->setVisible(true);
+#if 0
             } else {
                 _viewer->setText("<i><small><center>" + tr("No viewer available") + "</center></small></i>");
                 _viewer->setVisible(true);
             }
+#endif
         }
     }
 
@@ -462,16 +461,19 @@ void AttachmentOptions::viewAttachment()
 
             TextDisplay display(this);
             display.setText(_decodedText, _part->contentType().subType());
-            QtopiaApplication::execDialog(&display);
+            display.exec();
         } else {
             if (_decodedData.isNull())
                 _decodedData = _part->body().data(QMailMessageBody::Decoded);
 
             ImageDisplay display(this);
             display.setImage(_decodedData);
-            QtopiaApplication::execDialog(&display);
+            display.exec();
         }
     } else {
+#if 1
+        qWarning() << "Cannot display message of type:" << _part->contentType().content();
+#else
         QMimeType mt(_part->contentType().content());
         if (!mt.id().isEmpty()) {
             if (_decodedData.isNull())
@@ -542,13 +544,15 @@ void AttachmentOptions::viewAttachment()
                            QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);
             mb.exec();
         }
+#endif
     }
 }
 
 void AttachmentOptions::saveAttachment()
 {
-    QString fileName(_part->writeBodyTo(Qtopia::documentDir()));
+    QString fileName(_part->writeBodyTo(QDir::currentPath()));
     if (!fileName.isEmpty()) {
+#if 0
         // Create a document object from the saved file
         QContent document(fileName);
 
@@ -562,8 +566,9 @@ void AttachmentOptions::saveAttachment()
         document.setName(_part->displayName());
         document.setRole(QContent::Document);
         document.commit();
+#endif
 
-        _document->setText("<i><small><center>" + tr("Added to Documents") + "</center></small></i>");
+        _document->setText("<i><small><center>" + tr("Saved in:") + QDir::currentPath() + "</center></small></i>");
         _document->setVisible(true);
         _save->setVisible(false);
     } else {

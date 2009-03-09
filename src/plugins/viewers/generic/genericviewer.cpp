@@ -10,6 +10,7 @@
 
 #include "genericviewer.h"
 #include "browser.h"
+#include "attachmentoptions.h"
 #include <QAction>
 #include <QGridLayout>
 #include <QKeyEvent>
@@ -45,7 +46,6 @@ GenericViewer::GenericViewer(QWidget* parent)
     browser->addAction(richTextModeAction);
     connect(richTextModeAction, SIGNAL(triggered(bool)),
             this, SLOT(triggered(bool)));
-
 }
 
 GenericViewer::~GenericViewer()
@@ -126,7 +126,6 @@ void GenericViewer::linkClicked(const QUrl& link)
     QString command = link.toString();
 
     if (command.startsWith("attachment")) {
-        /*
         QRegExp splitter("attachment;([^;]+)(?:;(\\d*))?");
         if (splitter.exactMatch(command)) {
             QString cmd = splitter.cap(1);
@@ -143,7 +142,6 @@ void GenericViewer::linkClicked(const QUrl& link)
                 return;
             }
         }
-        */
     } else if (command == "download") {
         emit completeMessage();
     }

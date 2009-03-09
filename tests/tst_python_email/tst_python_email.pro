@@ -10,13 +10,12 @@ testdata.files = testdata/
 INSTALLS += target \
             testdata
 
-BASE=$$PWD/../..
-QTOPIAMAIL=$$BASE/src/libraries/qtopiamail
+QTOPIAMAIL=../../src/libraries/qtopiamail
 
 DEPENDPATH += .
 INCLUDEPATH += . $$QTOPIAMAIL $$QTOPIAMAIL/support
 LIBS += -L$$QTOPIAMAIL -lqtopiamail
-QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qtopiamail
+QMAKE_LFLAGS += -Wl,-rpath,../../src/libraries/qtopiamail
 
 SOURCES += tst_python_email.cpp
 

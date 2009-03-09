@@ -33,10 +33,6 @@ Although this mechanism can be accessed by applications, it is currently recomme
 \row \o QMailViewerFactory \o Creates objects implementing the QMailViewerInterface interface
 \row \o QMailComposerInterface \o Defines the interface to objects that can compose a mail message
 \row \o QMailViewerInterface \o Defines the interface to objects that can display a mail message
-\row \o QMailComposerPlugin \o Defines a base class for implementing mail message composer plug-ins
-\row \o QMailViewerPlugin \o Defines a base class for implementing mail message viewer plug-ins
-\row \o QMailComposerPluginInterface \o Defines the interface to plug-ins that provide mail message composers
-\row \o QMailViewerPluginInterface \o Defines the interface to plug-ins that provide mail message viewers
 \endtable
 
 \section1 New Message Arrival Service

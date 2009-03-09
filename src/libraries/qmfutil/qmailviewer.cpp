@@ -271,9 +271,9 @@ void QMailViewerInterface::setResource(const QUrl& name, QVariant value)
 
     The QMailViewerInterface class describes the interface supported by classes that can be created
     by the QMailViewerFactory class.  To create a new class that can be created via the QMailViewerFactory,
-    implement a plug-in that derives from QMailViewerPlugin.
+    implement a plug-in that derives from QMailViewerInterface.
 
-    \sa QMailViewerInterface, QMailViewerPlugin
+    \sa QMailViewerInterface
 */
 
 /*!

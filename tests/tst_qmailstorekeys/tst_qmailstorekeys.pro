@@ -5,8 +5,7 @@ TARGET = tst_qmailstorekeys
 target.path += $$QMF_INSTALL_ROOT/tests
 INSTALLS += target
 
-BASE=$$PWD/../..
-QTOPIAMAIL=$$BASE/src/libraries/qtopiamail
+QTOPIAMAIL=../../src/libraries/qtopiamail
 
 DEPENDPATH += .
 INCLUDEPATH += . $$QTOPIAMAIL $$QTOPIAMAIL/support

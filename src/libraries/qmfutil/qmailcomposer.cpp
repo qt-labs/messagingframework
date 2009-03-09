@@ -359,9 +359,9 @@ void QMailComposerInterface::setMessageType( QMailMessage::MessageType type )
 
     The QMailComposerInterface class describes the interface supported by classes that can be created
     by the QMailComposerFactory class.  To create a new class that can be created via the QMailComposerFactory,
-    implement a plug-in that derives from QMailComposerPlugin.
+    implement a plug-in that derives from QMailComposerInterface.
 
-    \sa QMailComposerInterface, QMailComposerPlugin
+    \sa QMailComposerInterface
 */
 
 /*!
