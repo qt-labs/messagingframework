@@ -246,7 +246,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
             const QStringList &parameters(decomposeElements(details.at(1)));
             QStringList::const_iterator it = parameters.begin(), end = parameters.end();
             for ( ; it != end; ++it) {
-                if (it != end) {
+                if ((it != end) && (it + 1 != end)) {
                     disposition.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
                     ++it;
                 }
@@ -274,7 +274,7 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
     const QStringList &parameters(decomposeElements(details.at(2)));
     QStringList::const_iterator it = parameters.begin(), end = parameters.end();
     for ( ; it != end; ++it) {
-        if (it != end) {
+        if ((it != end) && (it + 1 != end)) {
             type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
             ++it;
         }
