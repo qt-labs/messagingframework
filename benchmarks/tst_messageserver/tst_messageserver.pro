@@ -5,7 +5,7 @@ target.path += $$QMF_INSTALL_ROOT/tests
 INSTALLS += target
 DEPENDPATH += . 3rdparty
 
-BASE=$$PWD/../..
+BASE=../../
 
 IMAP_PLUGIN=$$BASE/src/plugins/messageservices/imap/
 MESSAGE_SERVER=$$BASE/src/tools/messageserver
