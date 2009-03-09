@@ -13,6 +13,7 @@ SUBDIRS = src/libraries/qtopiamail \
           src/tools/messageserver \
           src/applications/qtmail \
           tests \
+          benchmarks \
 
 CONFIG += ordered
 
