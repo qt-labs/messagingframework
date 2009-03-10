@@ -226,7 +226,13 @@ void PopClient::sendCommand(const char *data, int len)
     out.writeRawData("\r\n", 2);
 
     if (len){
-        qMailLog(POP) << "SEND:" << data;
+        QString logData(data);
+        QRegExp passExp("^PASS\\s");
+        if (passExp.indexIn(logData) != -1) {
+            logData = logData.left(passExp.matchedLength()) + "<password hidden>";
+        }
+        
+        qMailLog(POP) << "SEND:" << logData;
     }
 }
 
