@@ -1678,7 +1678,12 @@ void ImapProtocol::sendData(const QString &cmd)
     out.writeRawData(output.data(), output.length());
     out.writeRawData("\r\n", 2);
 
-    qMailLog(IMAP) << objectName() << "SEND:" << qPrintable(cmd);
+    QString logCmd(cmd);
+    QRegExp loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s");
+    if (loginExp.indexIn(cmd) != -1) {
+        logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
+    }
+    qMailLog(IMAP) << objectName() << "SEND:" << qPrintable(logCmd);
 }
 
 QString ImapProtocol::sendCommand(const QString &cmd)
