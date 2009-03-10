@@ -62,7 +62,9 @@ private:
     qint64 pos;
     QChar c;
     int len;
+    uint appendedBytes;
     Status mStatus;
     static const unsigned long long minFree = 1024*100;
+    static const uint minCheck = 1024*10;
 };
 #endif

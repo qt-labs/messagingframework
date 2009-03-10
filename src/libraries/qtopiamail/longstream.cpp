@@ -27,6 +27,7 @@ LongStream::LongStream()
     ts = new QTextStream( tmpFile );
     ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
     len = 0;
+    appendedBytes = minCheck;
 }
 
 LongStream::~LongStream()
@@ -46,6 +47,7 @@ void LongStream::reset()
     ts = new QTextStream( tmpFile );
     ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
     len = 0;
+    appendedBytes = minCheck;
     c = QChar::Null;
     resetStatus();
 }
@@ -65,6 +67,7 @@ QString LongStream::detach()
     ts = new QTextStream( tmpFile );
     ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
     len = 0;
+    appendedBytes = minCheck;
     c = QChar::Null;
     resetStatus();
     return detachedName;
@@ -72,9 +75,13 @@ QString LongStream::detach()
 
 void LongStream::append(QString str)
 {
-    *ts << str << flush; //todo error checking - out of disk
+    *ts << str << flush;
     len += str.length();
-    updateStatus();
+    appendedBytes += str.length();
+    if (appendedBytes >= minCheck) {
+        appendedBytes = 0;
+        updateStatus();
+    }
 }
 
 int LongStream::length()
