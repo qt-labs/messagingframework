@@ -19,40 +19,7 @@
 #include <qmailtimestamp.h>
 #include <limits.h>
 
-static QString replyColor1, replyColor2;
-
-static int findReplyColors()
-{
-    QColor textColor(Qt::darkGreen);
-    QColor reply1(textColor), reply2(textColor);
-
-    int r, g, b;
-    textColor.getRgb(&r, &g, &b);
-
-    int range[3] = { 0 };
-    if (((r + g + b) / 3) > 127) {
-        // This is a light color - make the reply colors darker than this
-        range[0] = 0 - r;
-        range[1] = 0 - g;
-        range[2] = 0 - b;
-    } else {
-        // This is a dark color - make the reply colors lighter than this
-        range[0] = 255 - r;
-        range[1] = 255 - g;
-        range[2] = 255 - b;
-    }
-
-    reply1.setRgb(r + (range[0] * 1 / 2), g + (range[1] * 1 / 2), b + (range[2] * 1 / 2));
-    replyColor1 = reply1.name();
-
-    reply2.setRgb(r + (range[0] * 1 / 4), g + (range[1] * 1 / 4), b + (range[2] * 1 / 4));
-    replyColor2 = reply2.name();
-
-    return 0;
-}
-
-static int replyColorInit(findReplyColors());
-
+static QColor replyColor(Qt::darkGreen);
 
 Browser::Browser( QWidget *parent  )
     : QTextBrowser( parent ),
@@ -620,7 +587,7 @@ QString Browser::noBreakReplies(const QString& txt) const
             str += Qt::escape(*it) + "<br>";
         } else {
             const QString para("<font color=\"%1\">%2</font><br>");
-            str += para.arg(levelList % 2 ? replyColor1 : replyColor2).arg(Qt::escape(*it));
+            str += para.arg(replyColor.name()).arg(Qt::escape(*it));
         }
 
         it++;
@@ -786,7 +753,7 @@ QString Browser::handleReplies(const QString& txt) const
             QString segment = unwrap( *it, preString );
 
             const QString para("<font color=\"%1\">%2</font><br>");
-            str += para.arg(levelList[pos] % 2 ? replyColor1 : replyColor2).arg(pre + segment);
+            str += para.arg(replyColor.name()).arg(pre + segment);
         }
 
         lastLevel = levelList[pos];
