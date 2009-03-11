@@ -53,6 +53,8 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
 
     if (accountModel->rowCount())
         accountView->setCurrentIndex(accountModel->index(0, 0));
+    else //no accounts so automatically add
+        QTimer::singleShot(0,this,SLOT(addAccount()));
     vb->addWidget(accountView);
 
     addAccountAction = new QAction( QIcon(":icon/new"), tr("Add account..."), this );
