@@ -1959,6 +1959,12 @@ ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
 
 bool QMailStorePrivate::initStore()
 {
+    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
+    MutexGuard guard(creationMutex);
+    if (!guard.lock(1000)) {
+        return init;
+    }
+
     if (database.isOpenError()) {
         qMailLog(Messaging) << "Unable to open database in initStore!";
         return false;
@@ -1986,11 +1992,15 @@ bool QMailStorePrivate::initStore()
                                               << folderInfo(QMailFolder::TrashFolder, tr("Trash")))) {
             return false;
         }
-        
+
         if (!t.commit()) {
             qMailLog(Messaging) << "Could not commit setup operation to database";
             return false;
         }
+
+        QMailAccount::initStore();
+        QMailFolder::initStore();
+        QMailMessage::initStore();
     }
 
 #if defined(Q_USE_SQLITE)
