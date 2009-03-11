@@ -169,7 +169,7 @@ protected:
 class ImapFolderListStrategy : public ImapFetchSelectedMessagesStrategy
 {
 public:
-    ImapFolderListStrategy() {}
+    ImapFolderListStrategy() :_descending(false) {}
     virtual ~ImapFolderListStrategy() {}
 
     virtual void setBase(const QMailFolderId &folderId);
