@@ -2000,7 +2000,8 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         setMessageContentFromStructure( structure, &mail );
 
         if (mail.multipartType() != QMailMessage::MultipartNone) {
-            mail.setStatus( QMailMessage::ContentAvailable, true );
+            if (mail.multipartType() != QMailMessagePartContainer::MultipartAlternative)
+                mail.setStatus( QMailMessage::ContentAvailable, true );
 
             // See if any of the parts are attachments
             if (hasAttachments(mail)) {
