@@ -886,13 +886,7 @@ QMailStore* QMailStore::instance()
     static bool init = false;
     if (!init) {
         init = true;
-
-        if (QMailStoreInstance()->d->initStore()) {
-            // Some classes have initialization code dependent on the store:
-            QMailAccount::initStore();
-            QMailFolder::initStore();
-            QMailMessage::initStore();
-        }
+        QMailStoreInstance()->d->initStore();
     }
     return QMailStoreInstance();
 }

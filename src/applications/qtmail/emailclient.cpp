@@ -48,8 +48,6 @@
 static const int defaultWidth = 1024;
 static const int defaultHeight = 768;
 
-
-
 enum ActivityType {
     Inactive = 0,
     Retrieving = 1,
@@ -363,16 +361,6 @@ EmailFolderModel* MessageUiBase::createEmailFolderModel()
     return model;
 }
 
-class SleepFor : public QThread
-{
-public:
-    SleepFor(uint msecs)
-        : QThread()
-    {
-        msleep(msecs);
-    }
-};
-
 EmailClient::EmailClient( QWidget* parent )
     : MessageUiBase( parent ),
       filesRead(false),
@@ -392,27 +380,8 @@ EmailClient::EmailClient( QWidget* parent )
 {
     setObjectName( "EmailClient" );
 
-    if (!isMessageServerRunning() && !startMessageServer()) {
+    if (!isMessageServerRunning() && !startMessageServer())
         qFatal("Unable to start messageserver!");
-    } else {
-        QTime start(QTime::currentTime());
-        int wait = 0;
-
-        // We need to wait until the mail store is initialized
-        QMailStore* store = QMailStore::instance();
-        while (!store->initialized()) {
-            if (start.secsTo(QTime::currentTime()) > 5) {
-                // The mailstore isn't working - abort
-                qFatal("QMF database failed to initialize");
-            } else {
-                if (++wait == 5) {
-                    wait = 0;
-                    qWarning() << "Waiting for mail store initialization...";
-                }
-                SleepFor(200);
-            }
-        }
-    }
 
     init();
 

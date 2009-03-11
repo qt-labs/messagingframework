@@ -28,6 +28,22 @@
 #include <QHeaderView>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
+
+static QString dateString(const QDateTime& dt)
+{
+    QDateTime current = QDateTime::currentDateTime();
+    //today
+    if(dt.date() == current.date())
+        return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
+    //yesterday
+    else if(dt.daysTo(current) <= 1)
+        return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
+    //within 5 days
+    else if(dt.daysTo(current) <= 5)
+        return dt.toString("dddd h:mm:ss ap");
+    else return dt.toString("dd/MM/yy h:mm:ss ap");
+}
+
 class MessageListModel : public QMailMessageListModel
 {
 public:
@@ -85,7 +101,7 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
                 return message.from().toString();
             break;
             case 2:
-                return message.date().toString();
+                return dateString(message.date().toLocalTime());
             break;
             case 3:
                 return QString::number(message.size() / kilobyte,'f',1) + " KB";
