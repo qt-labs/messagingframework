@@ -21,6 +21,21 @@
 
 static QColor replyColor(Qt::darkGreen);
 
+static QString dateString(const QDateTime& dt)
+{
+    QDateTime current = QDateTime::currentDateTime();
+    //today
+    if(dt.date() == current.date())
+        return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
+    //yesterday
+    else if(dt.daysTo(current) <= 1)
+        return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
+    //within 5 days
+    else if(dt.daysTo(current) <= 5)
+        return dt.toString("dddd h:mm:ss ap");
+    else return dt.toString("dd/MM/yy h:mm:ss ap");
+}
+
 Browser::Browser( QWidget *parent  )
     : QTextBrowser( parent ),
       replySplitter( &Browser::handleReplies )
@@ -273,7 +288,7 @@ void Browser::displayPlainText(const QMailMessage* mail)
     }
 
     text += "\n" + tr("Date") + ": ";
-    text += mail->date().toLocalTime().toString(Qt::ISODate) + "\n";
+    text += dateString(mail->date().toLocalTime()) + "\n";
 
     if (mail->status() & QMailMessage::Removed) {
         if (!bodyText.isEmpty()) {
@@ -372,7 +387,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     if (!mail->replyTo().isNull())
         metadata.append(qMakePair(tr("Reply-To"), refMailTo( mail->replyTo() )));
 
-    metadata.append(qMakePair(tr("Date"), mail->date().toLocalTime().toString(Qt::ISODate)));
+    metadata.append(qMakePair(tr("Date"), dateString(mail->date().toLocalTime())));
 
     if ( (mail->status() & QMailMessage::Incoming) && 
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {

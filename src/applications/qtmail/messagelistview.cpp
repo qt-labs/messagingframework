@@ -41,7 +41,7 @@ static QString dateString(const QDateTime& dt)
     //within 5 days
     else if(dt.daysTo(current) <= 5)
         return dt.toString("dddd h:mm:ss ap");
-    else return dt.toString("dd/MM/yyyy h:mm:ss ap");
+    else return dt.toString("dd/MM/yy h:mm:ss ap");
 }
 
 class MessageListModel : public QMailMessageListModel
