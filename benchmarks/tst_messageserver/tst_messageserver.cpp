@@ -633,15 +633,6 @@ int main(int argc, char** argv)
     */
     QApplication app(argc, argv);
 
-    QString home = QDir::homePath();
-    /* Sanity check - make sure we're not using the real home directory */
-    QRegExp homeRegex("^/home/[^/]+/?$");
-    if (-1 != homeRegex.indexIn(home)) {
-        qFatal( "It looks like you are using your real home directory for this test - don't!\n"
-                "Set the HOME environment variable to a temporary directory or run this "
-                "test with `qbuild test'.");
-    }
-
     int iters = 1;
     bool verbose = false;
     for (int i = 0; i < argc; ++i) {

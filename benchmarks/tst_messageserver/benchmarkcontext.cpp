@@ -14,6 +14,8 @@
 #include "3rdparty/cycle_p.h"
 #include <valgrind/valgrind.h>
 
+#include <qmailnamespace.h>
+
 #include <QDebug>
 #include <QDir>
 #include <QTest>
@@ -22,7 +24,7 @@ class BenchmarkContextPrivate
 {
 public:
     bool xml;
-    qint64 homeUsage;
+    qint64 qmfUsage;
     QTime time;
 #ifdef HAVE_TICK_COUNTER
     CycleCounterTicks ticks;
@@ -33,7 +35,7 @@ BenchmarkContext::BenchmarkContext(bool xml)
     : d(new BenchmarkContextPrivate)
 {
     d->xml = xml;
-    d->homeUsage = TestFsUsage::usage(QDir::homePath());
+    d->qmfUsage = TestFsUsage::usage(QMail::dataPath());
 
 #ifdef HAVE_TICK_COUNTER
     d->ticks = getticks();
@@ -48,7 +50,7 @@ BenchmarkContext::BenchmarkContext(bool xml)
 BenchmarkContext::~BenchmarkContext()
 {
     if (!QTest::currentTestFailed()) {
-        qint64 newHomeUsage = TestFsUsage::usage(QDir::homePath());
+        qint64 newQmfUsage = TestFsUsage::usage(QMail::dataPath());
 #ifdef HAVE_TICK_COUNTER
         CycleCounterTicks newTicks = getticks();
 #endif
@@ -57,7 +59,7 @@ BenchmarkContext::~BenchmarkContext()
         int heapUsageUsable = TestMalloc::peakUsable()/1024;
         int ms = d->time.elapsed();
         quint64 cycles = quint64(elapsed(newTicks,d->ticks));
-        qint64 diskUsage = (newHomeUsage - d->homeUsage) / 1024;
+        qint64 diskUsage = (newQmfUsage - d->qmfUsage) / 1024;
         if (d->xml) {
             if (!RUNNING_ON_VALGRIND) {
                 fprintf(stdout, "<BenchmarkResult metric=\"heap_usage\" tag=\"%s_\" value=\"%d\" iterations=\"1\"/>\n", QTest::currentDataTag(), heapUsageTotal);
