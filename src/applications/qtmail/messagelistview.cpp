@@ -28,6 +28,8 @@
 #include <QHeaderView>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
+static const bool alternatingBackground = true;
+static const QColor newMessageColor(Qt::blue);
 
 static QString dateString(const QDateTime& dt)
 {
@@ -47,7 +49,7 @@ static QString dateString(const QDateTime& dt)
 class MessageListModel : public QMailMessageListModel
 {
 public:
-    MessageListModel(QObject* parent = 0);
+    MessageListModel(QWidget* parent );
     QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
@@ -57,7 +59,7 @@ private:
     bool m_markingMode;
 };
 
-MessageListModel::MessageListModel(QObject* parent)
+MessageListModel::MessageListModel(QWidget* parent)
 :
 QMailMessageListModel(parent),
 m_markingMode(false)
@@ -83,39 +85,97 @@ int MessageListModel::columnCount(const QModelIndex & parent ) const
 
 QVariant MessageListModel::data( const QModelIndex & index, int role) const
 {
-    static const float kilobyte = 1024.0;
     if(index.isValid())
     {
-    if(role == Qt::DisplayRole && index.isValid())
-    {
-        QMailMessageMetaData message(idFromIndex(index));
-        if(!message.id().isValid())
-            return QVariant();
-
-        switch(index.column())
+        if(role == Qt::DisplayRole && index.isValid())
         {
+            QMailMessageMetaData message(idFromIndex(index));
+            if(!message.id().isValid())
+                return QVariant();
+
+            switch(index.column())
+            {
             case 0:
                 return message.subject();
-            break;
             case 1:
                 return message.from().toString();
-            break;
             case 2:
                 return dateString(message.date().toLocalTime());
-            break;
             case 3:
+            {
+                static const float kilobyte = 1024.0;
                 return QString::number(message.size() / kilobyte,'f',1) + " KB";
+            }
             break;
+            }
         }
-    }
-    else if((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
-        return QVariant();
-    else if(role == Qt::CheckStateRole && !m_markingMode)
-    {
-        Qt::CheckState state = static_cast<Qt::CheckState>(QMailMessageListModel::data(index,role).toInt());
-        if(state == Qt::Unchecked)
+        else if((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
             return QVariant();
-    }
+        else if(role == Qt::CheckStateRole && !m_markingMode)
+        {
+            Qt::CheckState state = static_cast<Qt::CheckState>(QMailMessageListModel::data(index,role).toInt());
+            if(state == Qt::Unchecked)
+                return QVariant();
+        }
+        else if(role == Qt::DecorationRole)
+        {
+            static QIcon readIcon(":icon/flag_normal");
+            static QIcon unreadIcon(":icon/flag_unread");
+            static QIcon toGetIcon(":icon/flag_toget");
+            static QIcon toSendIcon(":icon/flag_tosend");
+            static QIcon unfinishedIcon(":icon/flag_unfinished");
+            static QIcon removedIcon(":icon/flag_removed");
+
+            QMailMessageMetaData message(idFromIndex(index));
+            if(!message.id().isValid())
+                return QVariant();
+
+            bool sent(message.status() & QMailMessage::Sent);
+            bool incoming(message.status() & QMailMessage::Incoming);
+
+            if (incoming){
+                quint64 status = message.status();
+                if ( status & QMailMessage::Removed ) {
+                    return removedIcon;
+                } else if ( status & QMailMessage::PartialContentAvailable ) {
+                    if ( status & QMailMessage::Read || status & QMailMessage::ReadElsewhere ) {
+                        return readIcon;
+                    } else {
+                        return unreadIcon;
+                    }
+                } else {
+                    return toGetIcon;
+                }
+            } else {
+                if (sent) {
+                    return readIcon;
+                } else if ( message.to().isEmpty() ) {
+                    // Not strictly true - there could be CC or BCC addressees
+                    return unfinishedIcon;
+                } else {
+                    return toSendIcon;
+                }
+            }
+        }
+        else if(role == Qt::ForegroundRole)
+        {
+            QMailMessageMetaData message(idFromIndex(index));
+            if(!message.id().isValid())
+                return QVariant();
+            quint64 status = message.status();
+            bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
+            if(status & QMailMessage::PartialContentAvailable && unread)
+                return newMessageColor;
+        }
+        else if(role == Qt::BackgroundRole && alternatingBackground)
+        {
+            bool oddrow = index.row() % 2;
+            if(oddrow)
+            {
+                QWidget* p = static_cast<QWidget*>(QObject::parent());
+                return p->palette().color(QPalette::AlternateBase);
+            }
+        }
     }
     return QMailMessageListModel::data(index,role);
 }
