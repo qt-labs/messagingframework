@@ -643,7 +643,7 @@ void EmailClient::initActions()
         fileMenu->addAction( settingsAction );
         fileMenu->addSeparator();
 
-        QAction* quitAction = fileMenu->addAction("Quit");
+        QAction* quitAction = fileMenu->addAction(QIcon(":icon/quit"),"Quit");
         connect(quitAction,SIGNAL(triggered(bool)),
                 this,SLOT(quit()));
         connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
