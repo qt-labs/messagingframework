@@ -38,14 +38,14 @@ public:
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
         connect(&_service->_client, SIGNAL(idleChangeNotification()), this, SLOT(queueMailCheck()));
-        connect(&intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
+        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
     }
     
     void setIntervalTimer(int interval)
     {
-        intervalTimer.stop();
+        _intervalTimer.stop();
         if (interval > 0)
-            intervalTimer.start(interval*1000*60); // interval minutes
+            _intervalTimer.start(interval*1000*60); // interval minutes
     }
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
@@ -83,7 +83,7 @@ private:
     bool _queuedMailCheckInProgress;
     bool _unavailable;
     bool _synchronizing;
-    QTimer intervalTimer;
+    QTimer _intervalTimer;
 
     void (ImapService::Source::*_actionCompletedSignal)(const QMailMessageIdList&);
 };

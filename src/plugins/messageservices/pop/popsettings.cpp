@@ -79,7 +79,7 @@ PopSettings::PopSettings()
 
 void PopSettings::intervalCheckChanged(int enabled)
 {
-    Q_UNUSED(enabled);
+    intervalPeriod->setEnabled(enabled);
 }
 
 void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)

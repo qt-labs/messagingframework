@@ -24,11 +24,22 @@ public:
     Source(PopService *service)
         : QMailMessageSource(service),
           _service(service),
-          _deleting(false)
+          _deleting(false),
+          _unavailable(false),
+          _mailCheckQueued(false),
+          _queuedMailCheckInProgress(false)
     {
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
+        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
+    }
+
+    void setIntervalTimer(int interval)
+    {
+        _intervalTimer.stop();
+        if (interval > 0)
+            _intervalTimer.start(interval*1000*60); // interval minutes
     }
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
@@ -48,10 +59,16 @@ public slots:
 
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
+    void retrievalTerminated();
+    void queueMailCheck();
 
 private:
     PopService *_service;
     bool _deleting;
+    bool _unavailable;
+    bool _mailCheckQueued;
+    bool _queuedMailCheckInProgress;
+    QTimer _intervalTimer;
 };
 
 bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -89,6 +106,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
 
     _service->_client.setOperation(QMailRetrievalAction::MetaData);
     _service->_client.newConnection();
+    _unavailable = true;
     return true;
 
     Q_UNUSED(minimum)
@@ -111,6 +129,7 @@ bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds, 
     _service->_client.setOperation(spec);
     _service->_client.setSelectedMails(selectionMap);
     _service->_client.newConnection();
+    _unavailable = true;
     return true;
 }
 
@@ -123,6 +142,7 @@ bool PopService::Source::retrieveAll(const QMailAccountId &accountId)
 
     _service->_client.setOperation(QMailRetrievalAction::MetaData);
     _service->_client.newConnection();
+    _unavailable = true;
     return true;
 }
 
@@ -164,6 +184,7 @@ bool PopService::Source::deleteMessages(const QMailMessageIdList &messageIds)
         _service->_client.setDeleteOperation();
         _service->_client.setSelectedMails(selectionMap);
         _service->_client.newConnection();
+        _unavailable = true;
         return true;
     }
 
@@ -186,12 +207,48 @@ void PopService::Source::messageActionCompleted(const QString &uid)
 
 void PopService::Source::retrievalCompleted()
 {
+    _unavailable = false;
+
+    if (_queuedMailCheckInProgress) {
+        _queuedMailCheckInProgress = false;
+        emit _service->availabilityChanged(true);
+    }
+
     emit _service->activityChanged(QMailServiceAction::Successful);
     emit _service->actionCompleted(true);
 
     _deleting = false;
+    
+    if (_mailCheckQueued) {
+        queueMailCheck();
+    }
 }
 
+void PopService::Source::queueMailCheck()
+{
+    if (_unavailable) {
+        _mailCheckQueued = true;
+        return;
+    }
+
+    _mailCheckQueued = false;
+    _queuedMailCheckInProgress = true;
+
+    emit _service->availabilityChanged(false);
+    synchronize(_service->accountId());
+}
+
+void PopService::Source::retrievalTerminated()
+{
+    _unavailable = false;
+    if (_queuedMailCheckInProgress) {
+        _queuedMailCheckInProgress = false;
+        emit _service->availabilityChanged(true);
+    }
+    
+    // Just give up if an error occurs
+    _mailCheckQueued = false;
+}
 
 PopService::PopService(const QMailAccountId &accountId)
     : QMailMessageService(),
@@ -205,6 +262,9 @@ PopService::PopService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
 
     _client.setAccount(accountId);
+    QMailAccountConfiguration accountCfg(accountId);
+    PopConfiguration popCfg(accountCfg);
+    _source->setIntervalTimer(popCfg.checkInterval());
 }
 
 PopService::~PopService()
@@ -241,18 +301,21 @@ bool PopService::cancelOperation()
 {
     _client.cancelTransfer();
     _client.closeConnection();
+    _source->retrievalTerminated();
     return true;
 }
 
 void PopService::errorOccurred(int code, const QString &text)
 {
     updateStatus(code, text, _client.account());
+    _source->retrievalTerminated();
     emit actionCompleted(false);
 }
 
 void PopService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
     updateStatus(code, text, _client.account());
+    _source->retrievalTerminated();
     emit actionCompleted(false);
 }
 
