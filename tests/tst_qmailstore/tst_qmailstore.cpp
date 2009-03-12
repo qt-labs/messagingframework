@@ -408,7 +408,7 @@ void tst_QMailStore::updateAccount()
     account1.setStatus(QMailAccount::SynchronizationEnabled, false);
     account1.setStatus(QMailAccount::Synchronized, true);
     account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(QMailFolder::SentFolder));
-    account1.setCustomField("answer", "Rover");
+    account1.setCustomField("answer", "Fido");
     account1.setCustomField("permanent", "true");
     account1.removeCustomField("temporary");
 
@@ -444,7 +444,7 @@ void tst_QMailStore::updateAccount()
     QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(QMailFolder::SentFolder));
     QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), folder.id());
     QCOMPARE(account2.customFields(), account1.customFields());
-    QCOMPARE(account2.customField("answer"), QString("Rover"));
+    QCOMPARE(account2.customField("answer"), QString("Fido"));
     QVERIFY(account2.customField("temporary").isNull());
 
     QMailAccountConfiguration config2(account1.id());
@@ -574,7 +574,7 @@ void tst_QMailStore::updateFolder()
     folder5.setPath("Not Folder 5");
     folder5.setStatus(QMailFolder::SynchronizationEnabled, false);
     folder5.setStatus(QMailFolder::Synchronized, true);
-    folder5.setCustomField("answer", "Rover");
+    folder5.setCustomField("answer", "Fido");
     folder5.setCustomField("permanent", "true");
     folder5.removeCustomField("temporary");
 
@@ -592,7 +592,7 @@ void tst_QMailStore::updateFolder()
     QCOMPARE(folder6.path(), folder5.path());
     QCOMPARE(folder6.status(), folder5.status());
     QCOMPARE(folder6.customFields(), folder5.customFields());
-    QCOMPARE(folder6.customField("answer"), QString("Rover"));
+    QCOMPARE(folder6.customField("answer"), QString("Fido"));
     QVERIFY(folder6.customField("temporary").isNull());
 }
 
@@ -708,7 +708,7 @@ void tst_QMailStore::updateMessage()
     message3.setInResponseTo(message1.id());
     message3.setResponseType(QMailMessage::Reply);
     message3.setCustomField("question", "What is your dog's name?");
-    message3.setCustomField("answer", "Rover");
+    message3.setCustomField("answer", "Fido");
     message3.setCustomField("tag", "Play");
 
     // Verify that addition is successful

@@ -174,7 +174,7 @@ void tst_QMailStoreKeys::initTestCase()
         account.setStatus(QMailAccount::CanRetrieve, true);
         account.setCustomField("verified", "true");
         account.setCustomField("question", "What is your dog's name?");
-        account.setCustomField("answer", "Rover");
+        account.setCustomField("answer", "Fido");
 
         QMailAccountConfiguration config;
         config.addServiceConfiguration("imap4");
