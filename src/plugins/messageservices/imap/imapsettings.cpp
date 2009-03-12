@@ -61,7 +61,6 @@ ImapSettings::ImapSettings()
     setupUi(this);
     setLayoutDirection(qApp->layoutDirection());
 
-    connect(pushCheckBox, SIGNAL(stateChanged(int)), this, SLOT(pushCheckChanged(int)));
     connect(intervalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(intervalCheckChanged(int)));
 
     const QString uncapitalised("email noautocapitalization");
@@ -83,12 +82,7 @@ ImapSettings::ImapSettings()
 
 void ImapSettings::intervalCheckChanged(int enabled)
 {
-    pushCheckBox->setEnabled(!enabled);
-}
-
-void ImapSettings::pushCheckChanged(int enabled)
-{
-    intervalCheckBox->setEnabled(!enabled);
+    intervalPeriod->setEnabled(enabled);
 }
 
 void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)

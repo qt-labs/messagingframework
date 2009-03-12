@@ -26,7 +26,6 @@ public:
 
 private slots:
     void intervalCheckChanged(int enabled);
-    void pushCheckChanged(int enabled);
 
 private:
     bool warningEmitted;
