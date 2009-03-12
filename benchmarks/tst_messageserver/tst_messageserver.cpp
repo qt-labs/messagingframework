@@ -133,10 +133,10 @@ void tst_MessageServer::removePath(QString const& path)
     if (!filename.isEmpty()) {
         bool ok;
         if (fi.isDir() && !fi.isSymLink()) {
-            ok = parent.rmdir(fileName);
+            ok = parent.rmdir(filename);
         }
         else {
-            ok = parent.remove(fileName);
+            ok = parent.remove(filename);
         }
         if (!ok) {
             qFatal("Could not delete %s", qPrintable(path));
