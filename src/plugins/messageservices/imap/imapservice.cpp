@@ -13,6 +13,7 @@
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include <QtPlugin>
+#include <QTimer>
 #include <qmaillog.h>
 #include <qmailmessage.h>
 
@@ -27,8 +28,8 @@ public:
     Source(ImapService *service)
         : QMailMessageSource(service),
           _service(service),
-          _idleMailCheckQueued(false),
-          _idleMailCheckInProgress(false),
+          _mailCheckQueued(false),
+          _queuedMailCheckInProgress(false),
           _unavailable(false),
           _synchronizing(false),
           _actionCompletedSignal(0)
@@ -36,7 +37,15 @@ public:
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
-        connect(&_service->_client, SIGNAL(idleChangeNotification()), this, SLOT(idleChangeNotification()));
+        connect(&_service->_client, SIGNAL(idleChangeNotification()), this, SLOT(queueMailCheck()));
+        connect(&intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
+    }
+    
+    void setIntervalTimer(int interval)
+    {
+        intervalTimer.stop();
+        if (interval > 0)
+            intervalTimer.start(interval*1000*60); // interval minutes
     }
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
@@ -64,16 +73,17 @@ public slots:
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
     void retrievalTerminated();
-    void idleChangeNotification();
+    void queueMailCheck();
 
 private:
     virtual bool setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&) = 0);
 
     ImapService *_service;
-    bool _idleMailCheckQueued;
-    bool _idleMailCheckInProgress;
+    bool _mailCheckQueued;
+    bool _queuedMailCheckInProgress;
     bool _unavailable;
     bool _synchronizing;
+    QTimer intervalTimer;
 
     void (ImapService::Source::*_actionCompletedSignal)(const QMailMessageIdList&);
 };
@@ -353,8 +363,8 @@ void ImapService::Source::retrievalCompleted()
 {
     _unavailable = false;
 
-    if (_idleMailCheckInProgress) {
-        _idleMailCheckInProgress = false;
+    if (_queuedMailCheckInProgress) {
+        _queuedMailCheckInProgress = false;
         emit _service->availabilityChanged(true);
     }
 
@@ -372,20 +382,20 @@ void ImapService::Source::retrievalCompleted()
         }
     }
 
-    if (_idleMailCheckQueued) {
-        idleChangeNotification();
+    if (_mailCheckQueued) {
+        queueMailCheck();
     }
 }
 
-void ImapService::Source::idleChangeNotification()
+void ImapService::Source::queueMailCheck()
 {
     if (_unavailable) {
-        _idleMailCheckQueued = true;
+        _mailCheckQueued = true;
         return;
     }
 
-    _idleMailCheckQueued = false;
-    _idleMailCheckInProgress = true;
+    _mailCheckQueued = false;
+    _queuedMailCheckInProgress = true;
 
     emit _service->availabilityChanged(false);
     retrieveMessageList(_service->accountId(), QMailFolderId(), 1, QMailMessageSortKey());
@@ -395,13 +405,13 @@ void ImapService::Source::retrievalTerminated()
 {
     _unavailable = false;
     _synchronizing = false;
-    if (_idleMailCheckInProgress) {
-        _idleMailCheckInProgress = false;
+    if (_queuedMailCheckInProgress) {
+        _queuedMailCheckInProgress = false;
         emit _service->availabilityChanged(true);
     }
     
     // Just give up if an error occurs
-    _idleMailCheckQueued = false;
+    _mailCheckQueued = false;
 }
 
 
@@ -418,8 +428,10 @@ ImapService::ImapService(const QMailAccountId &accountId)
 
     _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
-    if (ImapConfiguration(accountCfg).pushEnabled())
-        QTimer::singleShot(0, _source, SLOT(idleChangeNotification()));
+    ImapConfiguration imapCfg(accountCfg);
+    if (ImapConfiguration(imapCfg).pushEnabled())
+        QTimer::singleShot(0, _source, SLOT(queueMailCheck()));
+    _source->setIntervalTimer(imapCfg.checkInterval());
 }
 
 ImapService::~ImapService()
