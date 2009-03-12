@@ -47,6 +47,10 @@ void QTMailWindow::init()
     QMenuBar* mainMenuBar = new QMenuBar();
     setMenuBar(mainMenuBar);
     QMenu* file = mainMenuBar->addMenu("File");
+    QMenu* help = mainMenuBar->addMenu("Help");
+    QAction* aboutQt = help->addAction("About Qt");
+    connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
+
     m_contextMenu = file;
 
 
