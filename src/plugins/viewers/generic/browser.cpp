@@ -327,13 +327,17 @@ QString Browser::renderPart(const QMailMessagePart& part)
 
     QMailMessageContentType contentType = part.contentType();
     if ( contentType.type().toLower() == "text") { // No tr
-        QString partText = part.body().data();
-        if ( !partText.isEmpty() ) {
-            if ( contentType.subType().toLower() == "html" ) {
-                result = partText + "<br>";
-            } else {
-                result = formatText( partText );
+        if (part.hasBody()) {
+            QString partText = part.body().data();
+            if ( !partText.isEmpty() ) {
+                if ( contentType.subType().toLower() == "html" ) {
+                    result = partText + "<br>";
+                } else {
+                    result = formatText( partText );
+                }
             }
+        } else {
+            result = renderAttachment(part);
         }
     } else if ( contentType.type().toLower() == "image") { // No tr
         setPartResource(part);
