@@ -1991,20 +1991,6 @@ bool hasAttachments(const QMailMessagePartContainer &partContainer)
     return false;
 }
 
-bool hasOnlyInlineAndAttachmentParts(const QMailMessagePartContainer &partContainer)
-{
-    for (uint i = 0; i < partContainer.partCount(); ++i) {
-        const QMailMessagePart &part(partContainer.partAt(i));
-
-        QMailMessageContentDisposition disposition(part.contentDisposition());
-        if (disposition.isNull() || (disposition.type() == QMailMessageContentDisposition::None)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 }
 
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure, bool partialMessage)
@@ -2014,9 +2000,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         setMessageContentFromStructure( structure, &mail );
 
         if (mail.multipartType() != QMailMessage::MultipartNone) {
-            if (hasOnlyInlineAndAttachmentParts(mail)) {
-                mail.setStatus( QMailMessage::ContentAvailable, true );
-            }
+            mail.setStatus( QMailMessage::ContentAvailable, true );
 
             // See if any of the parts are attachments
             if (hasAttachments(mail)) {

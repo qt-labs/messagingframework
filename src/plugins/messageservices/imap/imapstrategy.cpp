@@ -188,9 +188,13 @@ void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString 
    Also implements logic to determine which messages or message part to operate 
    on next.
 */
-void ImapMessageListStrategy::setSelectedMails(const QMailMessageIdList& ids) 
+void ImapMessageListStrategy::clearSelection()
 {
     _selectionMap.clear();
+}
+
+void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids) 
+{
     if (ids.count() == 0)
         return;
 
@@ -207,10 +211,8 @@ void ImapMessageListStrategy::setSelectedMails(const QMailMessageIdList& ids)
     _selectionItr = _folderItr.value().begin();
 }
 
-void ImapMessageListStrategy::setSelectedSection(const QMailMessagePart::Location &location)
+void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Location &location)
 {
-    _selectionMap.clear();
-
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
         SectionProperties sectionProperties(metaData.id(), location);
@@ -328,7 +330,11 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         return false;
     }
 
-    while ((_selectionItr != selectionEnd) && (uidList.count() < maximum)) {
+    //TODO Leave parts to last to reduce roundtrips. Get all parts in one message in one roundtrip.
+    while ((_selectionItr != selectionEnd) 
+           && (uidList.count() < maximum)
+           && (!location.isValid())
+           && (minimum == SectionProperties::All)) {
         uidList.append(_selectionItr.key());
         location = _selectionItr.value()._location;
         minimum = _selectionItr.value()._minimum;
@@ -385,6 +391,14 @@ void ImapMessageListStrategy::completedAction(ImapStrategyContextBase *context)
    or message parts to retrieve, and logic to retrieve those messages
    or message parts and emit progress notifications.
 */
+void ImapFetchSelectedMessagesStrategy::clearSelection()
+{
+    ImapMessageListStrategy::clearSelection();
+    _totalRetrievalSize = 0;
+    _listSize = 0;
+    _retrievalSize.clear();
+}
+
 void ImapFetchSelectedMessagesStrategy::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
 {
     if (spec == QMailRetrievalAction::MetaData) {
@@ -394,19 +408,9 @@ void ImapFetchSelectedMessagesStrategy::setOperation(QMailRetrievalAction::Retri
     }
 }
 
-void ImapFetchSelectedMessagesStrategy::setSelectedMails(const QMailMessageIdList& ids) 
+void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageIdList& ids) 
 {
-    // We shouldn't have anything left in our retrieval list...
-    if (!_retrievalSize.isEmpty()) {
-        foreach (const QString& uid, _retrievalSize.keys())
-            qMailLog(IMAP) << "Message" << uid << "still in retrieve map...";
-
-        _retrievalSize.clear();
-    }
-
-    _totalRetrievalSize = 0;
-    _selectionMap.clear();
-    _listSize = ids.count();
+    _listSize += ids.count();
     if (_listSize == 0)
         return;
 
@@ -432,18 +436,9 @@ void ImapFetchSelectedMessagesStrategy::setSelectedMails(const QMailMessageIdLis
     _progressRetrievalSize = 0;
 }
 
-void ImapFetchSelectedMessagesStrategy::setSelectedSection(const QMailMessagePart::Location &location, int minimum)
+void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessagePart::Location &location, int minimum)
 {
-    // We shouldn't have anything left in our retrieval list...
-    if (!_retrievalSize.isEmpty()) {
-        foreach (const QString& uid, _retrievalSize.keys())
-            qMailLog(IMAP) << "Message" << uid << "still in retrieve map...";
-
-        _retrievalSize.clear();
-    }
-
-    _totalRetrievalSize = 0;
-    _selectionMap.clear();
+    _listSize += 1;
 
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
@@ -461,8 +456,6 @@ void ImapFetchSelectedMessagesStrategy::setSelectedSection(const QMailMessagePar
 
     _folderItr = _selectionMap.begin();
     _selectionItr = _folderItr.value().begin();
-
-    _listSize = 1;
 }
 
 void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *context)
@@ -777,6 +770,7 @@ void ImapSynchronizeBaseStrategy::transition(ImapStrategyContextBase *context, I
 void ImapSynchronizeBaseStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     _completionList.clear();
+    _completionSectionList.clear();
 
     ImapFolderListStrategy::handleLogin(context);
 }
@@ -864,9 +858,13 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
         _newUids = _newUids.mid(uidList.count());
     } else if (!selectNextMailbox(context)) {
         if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
-            if (!_completionList.isEmpty()) {
+            if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
                 // Fetch the messages that need completion
-                setSelectedMails(_completionList);
+                clearSelection();
+                selectedMailsAppend(_completionList);
+                foreach(QMailMessagePart::Location location, _completionSectionList) {
+                    selectedSectionsAppend(location);
+                }
                 messageAction(context);
             } else {
                 context->operationCompleted();
@@ -896,8 +894,32 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
     if (_transferState == Preview) {
         context->progressChanged(_progress++, _total);
 
-        if (((message.status() & QMailMessage::ContentAvailable) == 0) && (message.size() < _headerLimit)) {
+        if (message.size() < _headerLimit) {
             _completionList.append(message.id());
+        } else {
+            int bytesLeft = _headerLimit;
+            if (QMailMessage(message.id()).partCount() != message.partCount()) {
+                QMailMessage message2(message.id());
+                qWarning() << "messageFetched: partCount mismatch" << message2.partCount() << message.partCount();
+                qWarning() <<  "message1 subject" << message.subject() << "serverUid" << message.serverUid(); 
+                qWarning() <<  "message2 subject" << message2.subject() << "serverUid" << message2.serverUid(); 
+                return;
+            }
+            
+            for (uint i = 0; i < message.partCount(); ++i) {
+                QMailMessageContentDisposition disposition(message.partAt(i).contentDisposition());
+                
+                if (message.partAt(i).partialContentAvailable()) {
+                    break;
+                } else if (disposition.size() <= 0) {
+                    continue;
+                } else if (disposition.type() != QMailMessageContentDisposition::Inline) {
+                    continue;
+                } else if (bytesLeft >= disposition.size()) {
+                    _completionSectionList.append(message.partAt(i).location());
+                    bytesLeft -= disposition.size();
+                }
+            }
         }
     }
 }
@@ -1234,7 +1256,7 @@ static QStringList stripFolderPrefix(const QStringList &list)
    That is to detect changes to flags (unseen->seen) 
    and to detect deleted mails.
 */
-void ImapUpdateMessagesFlagsStrategy::setSelectedMails(const QMailMessageIdList &messageIds)
+void ImapUpdateMessagesFlagsStrategy::selectedMailsAppend(const QMailMessageIdList &messageIds)
 {
     _messageIds = messageIds;
 }
@@ -1392,6 +1414,7 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _transferState = List;
     _fillingGap = false;
     _completionList.clear();
+    _completionSectionList.clear();
     
     if (_folderId.isValid()) {
         if (_folderId == context->mailbox().id) {

@@ -123,12 +123,14 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
     }
 
     if (spec == QMailRetrievalAction::Flags) {
-        _service->_client.strategyContext()->updateMessagesFlagsStrategy.setSelectedMails(messageIds);
+        _service->_client.strategyContext()->updateMessagesFlagsStrategy.clearSelection();
+        _service->_client.strategyContext()->updateMessagesFlagsStrategy.selectedMailsAppend(messageIds);
         return setStrategy(&_service->_client.strategyContext()->updateMessagesFlagsStrategy);
     }
 
     _service->_client.strategyContext()->selectedStrategy.setOperation(spec);
-    _service->_client.strategyContext()->selectedStrategy.setSelectedMails(messageIds);
+    _service->_client.strategyContext()->selectedStrategy.clearSelection();
+    _service->_client.strategyContext()->selectedStrategy.selectedMailsAppend(messageIds);
     return setStrategy(&_service->_client.strategyContext()->selectedStrategy);
 }
 
@@ -148,7 +150,8 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
     }
 
     _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
-    _service->_client.strategyContext()->selectedStrategy.setSelectedSection(partLocation);
+    _service->_client.strategyContext()->selectedStrategy.clearSelection();
+    _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation);
     return setStrategy(&_service->_client.strategyContext()->selectedStrategy);
 }
 
@@ -172,7 +175,8 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
     location.setContainingMessageId(messageId);
 
     _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
-    _service->_client.strategyContext()->selectedStrategy.setSelectedSection(location, minimum);
+    _service->_client.strategyContext()->selectedStrategy.clearSelection();
+    _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(location, minimum);
     return setStrategy(&_service->_client.strategyContext()->selectedStrategy);
 }
 
@@ -196,7 +200,8 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
     }
 
     _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
-    _service->_client.strategyContext()->selectedStrategy.setSelectedSection(partLocation, minimum);
+    _service->_client.strategyContext()->selectedStrategy.clearSelection();
+    _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
     return setStrategy(&_service->_client.strategyContext()->selectedStrategy);
 }
 
@@ -221,7 +226,8 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
     }
 
     _service->_client.strategyContext()->exportUpdatesStrategy.setOperation(QMailRetrievalAction::Content);
-    _service->_client.strategyContext()->exportUpdatesStrategy.setSelectedMails(QMailMessageIdList());
+    _service->_client.strategyContext()->exportUpdatesStrategy.clearSelection();
+    _service->_client.strategyContext()->exportUpdatesStrategy.selectedMailsAppend(QMailMessageIdList());
     return setStrategy(&_service->_client.strategyContext()->exportUpdatesStrategy);
 }
 
@@ -250,7 +256,8 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &messageIds)
     if (imapCfg.canDeleteMail()) {
         // Delete the messages from the server
         _service->_client.strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(true);
-        _service->_client.strategyContext()->deleteMessagesStrategy.setSelectedMails(messageIds);
+        _service->_client.strategyContext()->deleteMessagesStrategy.clearSelection();
+        _service->_client.strategyContext()->deleteMessagesStrategy.selectedMailsAppend(messageIds);
         return setStrategy(&_service->_client.strategyContext()->deleteMessagesStrategy, &ImapService::Source::messagesDeleted);
     }
 
@@ -271,7 +278,8 @@ bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, con
 
     QMailFolder destination(destinationId);
     if (destination.parentAccountId() == _service->accountId()) {
-        _service->_client.strategyContext()->copyMessagesStrategy.setSelectedMails(messageIds);
+        _service->_client.strategyContext()->copyMessagesStrategy.clearSelection();
+        _service->_client.strategyContext()->copyMessagesStrategy.selectedMailsAppend(messageIds);
         _service->_client.strategyContext()->copyMessagesStrategy.setDestination(destinationId);
         return setStrategy(&_service->_client.strategyContext()->copyMessagesStrategy, &ImapService::Source::messagesCopied);
     }
@@ -293,7 +301,8 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
 
     QMailFolder destination(destinationId);
     if (destination.parentAccountId() == _service->accountId()) {
-        _service->_client.strategyContext()->moveMessagesStrategy.setSelectedMails(messageIds);
+        _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+        _service->_client.strategyContext()->moveMessagesStrategy.selectedMailsAppend(messageIds);
         _service->_client.strategyContext()->moveMessagesStrategy.setDestination(destinationId);
         return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, &ImapService::Source::messagesMoved);
     }
@@ -310,7 +319,8 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
         if (!serverMessages.isEmpty()) {
             // Delete the messages from the server
             _service->_client.strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(false);
-            _service->_client.strategyContext()->deleteMessagesStrategy.setSelectedMails(serverMessages);
+            _service->_client.strategyContext()->deleteMessagesStrategy.clearSelection();
+            _service->_client.strategyContext()->deleteMessagesStrategy.selectedMailsAppend(serverMessages);
             setStrategy(&_service->_client.strategyContext()->deleteMessagesStrategy);
         }
     }

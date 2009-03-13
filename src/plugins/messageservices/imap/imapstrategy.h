@@ -100,8 +100,9 @@ public:
     ImapMessageListStrategy() {}
     virtual ~ImapMessageListStrategy() {}
 
-    virtual void setSelectedMails(const QMailMessageIdList &ids);
-    virtual void setSelectedSection(const QMailMessagePart::Location &location);
+    virtual void clearSelection();
+    virtual void selectedMailsAppend(const QMailMessageIdList &ids);
+    virtual void selectedSectionsAppend(const QMailMessagePart::Location &location);
     
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -136,8 +137,9 @@ public:
     virtual ~ImapFetchSelectedMessagesStrategy() {}
     
     virtual void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
-    virtual void setSelectedMails(const QMailMessageIdList &ids);
-    virtual void setSelectedSection(const QMailMessagePart::Location &, int = -1);
+    virtual void clearSelection();
+    virtual void selectedMailsAppend(const QMailMessageIdList &ids);
+    virtual void selectedSectionsAppend(const QMailMessagePart::Location &, int = -1);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -235,6 +237,7 @@ protected:
     QStringList _newUids;
     QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
     QMailMessageIdList _completionList;
+    QList<QMailMessagePart::Location> _completionSectionList;
 
 private:
     uint _progress;
@@ -305,7 +308,7 @@ public:
     ImapUpdateMessagesFlagsStrategy() {}
     virtual ~ImapUpdateMessagesFlagsStrategy() {}
 
-    virtual void setSelectedMails(const QMailMessageIdList &messageIds);
+    virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);

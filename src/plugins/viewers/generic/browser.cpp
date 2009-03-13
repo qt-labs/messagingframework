@@ -245,7 +245,7 @@ void Browser::displayPlainText(const QMailMessage* mail)
             else {
                 // According to RFC 2046, any unrecognised type should be treated as 'mixed'
                 if (mail->multipartType() != QMailMessagePartContainer::MultipartMixed)
-                    qWarning() << "Unimplemented multipart type:" << mail->contentType().toString();
+                    qWarning() << "Generic viewer: Unimplemented multipart type:" << mail->contentType().toString();
 
                 // Render each succesive part to text, where possible
                 for ( uint i = 0; i < mail->partCount(); i++ ) {
@@ -357,7 +357,7 @@ QString Browser::renderAttachment(const QMailMessagePart& part)
 "<hr><b>ATTACHMENT_TEXT</b>: <a href=\"attachment;ATTACHMENT_ACTION;ATTACHMENT_NUMBER\">NAME_TEXT</a>DISPOSITION<br>";
 
     attachmentTemplate = replaceLast(attachmentTemplate, "ATTACHMENT_TEXT", tr("Attachment"));
-    attachmentTemplate = replaceLast(attachmentTemplate, "ATTACHMENT_ACTION", part.hasBody() ? "view" : "retrieve");
+    attachmentTemplate = replaceLast(attachmentTemplate, "ATTACHMENT_ACTION", part.contentAvailable() ? "view" : "retrieve");
     attachmentTemplate = replaceLast(attachmentTemplate, "ATTACHMENT_NUMBER", QString::number(part.partNumber()));
     attachmentTemplate = replaceLast(attachmentTemplate, "NAME_TEXT", partId);
     return replaceLast(attachmentTemplate, "DISPOSITION", part.hasBody() ? "" : tr(" (on server)"));
