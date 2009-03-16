@@ -26,10 +26,10 @@ static QString dateString(const QDateTime& dt)
     QDateTime current = QDateTime::currentDateTime();
     //today
     if(dt.date() == current.date())
-        return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
+        return QString(qApp->translate("Browser", "Today %1")).arg(dt.toString("h:mm:ss ap"));
     //yesterday
     else if(dt.daysTo(current) <= 1)
-        return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
+        return QString(qApp->translate("Browser", "Yesterday %1")).arg(dt.toString("h:mm:ss ap"));
     //within 5 days
     else if(dt.daysTo(current) <= 5)
         return dt.toString("dddd h:mm:ss ap");
@@ -459,11 +459,15 @@ void Browser::displayHtml(const QMailMessage* mail)
                 for ( uint i = 0; i < mail->partCount(); i++ ) {
                     const QMailMessagePart& part = mail->partAt(i);
 
-                    QMailMessageContentDisposition disposition = part.contentDisposition();
-                    if (!disposition.isNull() && disposition.type() == QMailMessageContentDisposition::Attachment)
-                        bodyText += renderAttachment(part);
-                    else
-                        bodyText += renderPart(part);
+                    bool displayAsAttachment(!part.partialContentAvailable());
+                    if (!displayAsAttachment) {
+                        QMailMessageContentDisposition disposition = part.contentDisposition();
+                        if (!disposition.isNull() && disposition.type() == QMailMessageContentDisposition::Attachment) {
+                            displayAsAttachment = true;
+                        }
+                    }
+
+                    bodyText += (displayAsAttachment ? renderAttachment(part) : renderPart(part));
                 }
             }
         } else if (mail->messageType() == QMailMessage::System) {
