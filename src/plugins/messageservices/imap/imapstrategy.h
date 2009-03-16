@@ -223,6 +223,7 @@ public:
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
+    virtual void recursivelyCompleteParts(const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void listCompleted(ImapStrategyContextBase *context);
     virtual bool selectNextMailbox(ImapStrategyContextBase *context);
@@ -300,6 +301,9 @@ class ImapExportUpdatesStrategy : public ImapSynchronizeAllStrategy
 public:
     ImapExportUpdatesStrategy();
     virtual ~ImapExportUpdatesStrategy() {}
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
 };
 
 class ImapUpdateMessagesFlagsStrategy : public ImapSynchronizeBaseStrategy

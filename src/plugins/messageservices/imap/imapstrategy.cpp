@@ -887,6 +887,33 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
     }
 }
 
+void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(const QMailMessagePartContainer &partContainer, 
+                                                           int &partsToRetrieve,
+                                                           int &bytesLeft)
+{
+    for (uint i = 0; i < partContainer.partCount(); ++i) {
+        const QMailMessagePart part(partContainer.partAt(i));
+        const QMailMessageContentDisposition disposition(part.contentDisposition());
+
+        if (partsToRetrieve > 10) {
+            break; // sanity check, prevent DOS
+        } else if (part.partCount() > 0) {
+            recursivelyCompleteParts(part, partsToRetrieve, bytesLeft);
+        } else if (part.partialContentAvailable()) {
+            continue;
+        } else if (disposition.size() <= 0) {
+            continue;
+        } else if ((disposition.type() != QMailMessageContentDisposition::Inline)
+                   && (QString(part.contentType().type()).toUpper() != "TEXT")) {
+            continue;
+        } else if (bytesLeft >= disposition.size()) {
+            _completionSectionList.append(part.location());
+            bytesLeft -= disposition.size();
+            ++partsToRetrieve;
+        }
+    }
+}
+
 void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapFolderListStrategy::messageFetched(context, message);
@@ -898,23 +925,8 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
             _completionList.append(message.id());
         } else {
             int bytesLeft = _headerLimit;
-
-            for (uint i = 0; i < message.partCount(); ++i) {
-                QMailMessageContentDisposition disposition(message.partAt(i).contentDisposition());
-             
-                if (i > 10) {
-                    break; // sanity check, prevent DOS
-                } else if (message.partAt(i).partialContentAvailable()) {
-                    break;
-                } else if (disposition.size() <= 0) {
-                    continue;
-                } else if (disposition.type() != QMailMessageContentDisposition::Inline) {
-                    continue;
-                } else if (bytesLeft >= disposition.size()) {
-                    _completionSectionList.append(message.partAt(i).location());
-                    bytesLeft -= disposition.size();
-                }
-            }
+            int partsToRetrieve = 1;
+            recursivelyCompleteParts(message, partsToRetrieve, bytesLeft);
         }
     }
 }
@@ -1227,6 +1239,20 @@ ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
     setOptions((Options)(ExportChanges));
 }
 
+void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    _completionList.clear();
+    _completionSectionList.clear();
+
+    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders();
+    _mailboxList = folderIds;
+    _transferState = List;
+    
+    if (!selectNextMailbox(context)) {
+        // No changes to export
+        completedAction(context);
+    }
+}
 
 static QStringList stripFolderPrefix(const QStringList &list)
 {
