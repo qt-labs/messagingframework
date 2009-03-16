@@ -1211,11 +1211,6 @@ void ImapSynchronizeAllStrategy::handleExpunge(ImapStrategyContextBase *context)
 
 void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
 {
-    if (!(_options & RetrieveMail)) {
-        context->operationCompleted();
-        return;
-    }
-    
     ImapSynchronizeBaseStrategy::fetchNextMailPreview(context);
 }
 
