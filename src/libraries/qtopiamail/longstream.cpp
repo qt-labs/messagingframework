@@ -19,13 +19,13 @@
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
 {
-    lastLine = QString::null;
     QString tmpName( LongStream::tempDir() + QLatin1String( "/qtopiamail" ) );
+
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
     tmpFile->open(); // todo error checking
     tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-    ts = new QTextStream( tmpFile );
-    ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
+
+    ts = new QDataStream( tmpFile );
     len = 0;
     appendedBytes = minCheck;
 }
@@ -39,15 +39,16 @@ LongStream::~LongStream()
 
 void LongStream::reset()
 {
-    lastLine = QString::null;
     delete ts;
+
     tmpFile->resize( 0 );
     tmpFile->close();
     tmpFile->open();
-    ts = new QTextStream( tmpFile );
-    ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
+
+    ts = new QDataStream( tmpFile );
     len = 0;
     appendedBytes = minCheck;
+
     c = QChar::Null;
     resetStatus();
 }
@@ -55,27 +56,33 @@ void LongStream::reset()
 QString LongStream::detach()
 {
     QString detachedName = fileName();
-    lastLine = QString::null;
+
     delete ts;
+
     tmpFile->setAutoRemove(false);
     tmpFile->close();
     delete tmpFile;
+
     QString tmpName( LongStream::tempDir() + QLatin1String( "/qtopiamail" ) );
+
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
     tmpFile->open();
     tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-    ts = new QTextStream( tmpFile );
-    ts->setCodec( "UTF-8" ); // Mail should be 7bit ascii
+
+    ts = new QDataStream( tmpFile );
     len = 0;
     appendedBytes = minCheck;
+
     c = QChar::Null;
     resetStatus();
+
     return detachedName;
 }
 
 void LongStream::append(QString str)
 {
-    *ts << str << flush;
+    ts->writeRawData(str.toAscii().constData(), str.length());
+
     len += str.length();
     appendedBytes += str.length();
     if (appendedBytes >= minCheck) {
@@ -96,69 +103,19 @@ QString LongStream::fileName()
 
 QString LongStream::readAll()
 {
-    return ts->readAll();
-}
+    QString result;
 
-// QTextStream is currently not memory-efficient enough for our purposes
-//#define USE_QTEXTSTREAM_READLINE
-
-QString LongStream::readLine()
-{
-#ifdef USE_QTEXTSTREAM_READLINE
-    return ts->readLine();
-#else
-    QString s;
-
-    // Don't return any of CR, LF, CRLF
-    if (!c.isNull() && (c != '\r') && (c != '\n'))
-        s += c;
-    while (!ts->atEnd() && (c != '\r') && (c != '\n')) {
-        *ts >> c;
-        if ((c == '\r') || (c == '\n'))
+    while (!ts->atEnd()) {
+        char buffer[1024];
+        int len = ts->readRawData(buffer, 1024);
+        if (len == -1) {
             break;
-        s += c;
+        } else {
+            result.append(QString::fromAscii(buffer, len));
+        }
     }
-    if ((!ts->atEnd()) && (c == '\r')) {
-        *ts >> c;
-        if (c == '\n')
-            *ts >> c;
-    } else if ((!ts->atEnd()) && (c == '\n')) {
-        *ts >> c;
-        /* LFCR is not a valid newline sequence...
-        if (c == '\r')
-            *ts >> c;
-        */
-    }
-    if (s.isNull() && !ts->atEnd())
-        return "";
-    return s;
-#endif
-}
 
-
-QString LongStream::first()
-{
-    ts->seek( 0 );
-
-    lastLine = readLine();
-    if (!lastLine.isEmpty())
-        lastLine += "\015\012";
-
-    return lastLine;
-}
-
-QString LongStream::next()
-{
-    lastLine = readLine();
-    if (!lastLine.isNull())
-        lastLine += "\015\012";
-
-    return lastLine;
-}
-
-QString LongStream::current()
-{
-    return lastLine;
+    return result;
 }
 
 LongStream::Status LongStream::status()
