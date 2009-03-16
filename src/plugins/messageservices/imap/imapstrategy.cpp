@@ -898,28 +898,20 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
             _completionList.append(message.id());
         } else {
             int bytesLeft = _headerLimit;
-            QMailMessage message2(message.id());
-            
-            if (message2.partCount() != message.partCount()) {
-                qWarning() << "messageFetched: partCount mismatch" << message2.partCount() << message.partCount();
-                qWarning() <<  "message1 subject" << message.subject() << "serverUid" << message.serverUid(); 
-                qWarning() <<  "message2 subject" << message2.subject() << "serverUid" << message2.serverUid(); 
-                return;
-            }
-            
-            for (uint i = 0; i < message2.partCount(); ++i) {
-                QMailMessageContentDisposition disposition(message2.partAt(i).contentDisposition());
+
+            for (uint i = 0; i < message.partCount(); ++i) {
+                QMailMessageContentDisposition disposition(message.partAt(i).contentDisposition());
              
                 if (i > 10) {
                     break; // sanity check, prevent DOS
-                } else if (message2.partAt(i).partialContentAvailable()) {
+                } else if (message.partAt(i).partialContentAvailable()) {
                     break;
                 } else if (disposition.size() <= 0) {
                     continue;
                 } else if (disposition.type() != QMailMessageContentDisposition::Inline) {
                     continue;
                 } else if (bytesLeft >= disposition.size()) {
-                    _completionSectionList.append(message2.partAt(i).location());
+                    _completionSectionList.append(message.partAt(i).location());
                     bytesLeft -= disposition.size();
                 }
             }
