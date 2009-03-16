@@ -35,6 +35,8 @@ sources.fileextensions  = "*.qdoc *.cpp"
 
 exampledirs             = ../../examples \
 
+indexes                 = ./qt.index
+
 outputdir               = html 
 
 extraimages.HTML        = qtlogo \
