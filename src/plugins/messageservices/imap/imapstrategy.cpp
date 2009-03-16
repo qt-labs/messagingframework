@@ -1228,11 +1228,8 @@ ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
     setOptions((Options)(RetrieveMail | ImportChanges));
 }
 
-/* A strategy to exports changes made on the client to
-   the server.
-   
-   That is to export flag changes (unseen -> seen) and
-   deletes.
+/* A strategy to exports changes made on the client to the server.
+   That is to export flag changes (unseen -> seen) and deletes.
 */
 ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 {
@@ -1244,8 +1241,7 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     _completionList.clear();
     _completionSectionList.clear();
 
-    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders();
-    _mailboxList = folderIds;
+    _mailboxList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(context->config().id()));
     _transferState = List;
     
     if (!selectNextMailbox(context)) {
