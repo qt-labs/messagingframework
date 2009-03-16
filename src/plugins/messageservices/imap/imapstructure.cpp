@@ -271,9 +271,8 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
     QStringList::const_iterator it = parameters.begin(), end = parameters.end();
-    for ( ; (it != end) && (it + 1 != end); ++it) {
+    for ( ; (it != end) && ((it + 1) != end); it += 2) {
         type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
-        ++it;
     }
 
     // [5]: content-encoding
@@ -356,12 +355,9 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
     if (details.count() > 1) {
         const QStringList parameters(decomposeElements(details.at(1)));
         QStringList::const_iterator it = parameters.begin(), end = parameters.end();
-        for ( ; it != end; ++it) {
-            if ((it + 1) != end) {
-                if ((*it).trimmed().toUpper() == "BOUNDARY") {
-                    container->setBoundary((*(it + 1)).toAscii());
-                }
-                ++it;
+        for ( ; (it != end) && ((it + 1) != end); it += 2) {
+            if ((*it).trimmed().toUpper() == "BOUNDARY") {
+                container->setBoundary((*(it + 1)).toAscii());
             }
         }
     }

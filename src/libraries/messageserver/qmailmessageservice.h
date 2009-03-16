@@ -233,6 +233,8 @@ private:
 
 class QTOPIAMAIL_EXPORT QMailMessageServiceEditor : public QWidget
 {
+    Q_OBJECT
+
 public:
     QMailMessageServiceEditor();
     virtual ~QMailMessageServiceEditor();

@@ -3396,8 +3396,12 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includ
             if (partBoundary.isEmpty()) {
                 QString subBoundary(_boundary);
                 int index = subBoundary.indexOf(':');
-                if (index != -1)
+                if (index != -1) {
                     subBoundary.insert(index, QString::number(part.partNumber()).prepend("-"));
+                } else {
+                    // Shouldn't happen...
+                    subBoundary.insert(0, QString::number(part.partNumber()).append(":"));
+                }
 
                 part.setBoundary(to7BitAscii(subBoundary));
             }
