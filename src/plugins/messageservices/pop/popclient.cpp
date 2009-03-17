@@ -182,7 +182,7 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
     }
 
 #ifndef QT_NO_OPENSSL
-    if ((popCfg.mailEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
+    if ((popCfg.mailEncryption() != QMailTransport::Encrypt_SSL) && (status == TLS)) {
         // We have entered TLS mode - restart the connection
         capabilities.clear();
         status = Init;
