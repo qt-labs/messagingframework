@@ -27,8 +27,8 @@
 #include <messageserver.h>
 #include "benchmarkcontext.h"
 #include "qscopedconnection.h"
-#include <valgrind/callgrind.h>
-#include <valgrind/valgrind.h>
+#include "3rdparty/callgrind_p.h"
+#include "3rdparty/valgrind_p.h"
 
 /*
     This file is $TROLLTECH_INTERNAL$
