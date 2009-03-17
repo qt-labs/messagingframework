@@ -666,7 +666,7 @@ void ServiceHandler::updateAction(quint64 action)
         mActionExpiry.append(action);
 
         // Update the expiry time for this action
-        mActiveActions[action].expiry.addMSecs(ExpiryPeriod);
+        mActiveActions[action].expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
     }
 }
 
