@@ -156,6 +156,8 @@ struct ElementDecomposer
             }
         } else if (c == '(') {
             if (it == begin) {
+                if (reportDepth > 0) return false;
+
                 ++reportDepth;
                 return true;
             }
@@ -245,9 +247,9 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
 
         if (details.count() > 1) {
             const QStringList parameters(decomposeElements(details.at(1)));
-            QStringList::const_iterator it = parameters.begin(), end = parameters.end();
             if (parameters.count() % 2)
-                qWarning() << "Incorrect fromDispositionDescription parameter count" << parameters.last();
+                qWarning() << "Incorrect fromDispositionDescription parameters:" << parameters;
+            QStringList::const_iterator it = parameters.begin(), end = parameters.end();
             for ( ; (it != end) && (it + 1 != end); ++it) {
                 disposition.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
                 ++it;
@@ -276,9 +278,9 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
 
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
-    QStringList::const_iterator it = parameters.begin(), end = parameters.end();
     if (parameters.count() % 2)
-        qWarning() << "Incorrect setBodyFromDescription parameter count" << parameters.last();
+        qWarning() << "Incorrect setBodyFromDescription parameters:" << parameters;
+    QStringList::const_iterator it = parameters.begin(), end = parameters.end();
     for ( ; (it != end) && ((it + 1) != end); it += 2) {
         type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
     }
