@@ -1228,6 +1228,19 @@ ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
     setOptions((Options)(RetrieveMail | ImportChanges));
 }
 
+static QStringList stripFolderPrefix(const QStringList &list)
+{
+    QStringList result;
+    foreach(const QString &uid, list) {
+        int index = 0;
+        if ((index = uid.lastIndexOf('|')) != -1)
+            result.append(uid.mid(index + 1));
+        else
+            result.append(uid);
+    }
+    return result;
+}
+
 /* A strategy to exports changes made on the client to the server.
    That is to export flag changes (unseen -> seen) and deletes.
 */
@@ -1238,13 +1251,21 @@ ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 
 void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
+    ImapConfiguration imapCfg(context->config());
     _completionList.clear();
     _completionSectionList.clear();
     _mailboxList.clear();
-
+    if (!imapCfg.canDeleteMail()) {
+        QMailAccountId id(context->config().id());
+        QString name(QMailAccount(id).name());
+        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is "
+            "disabled for account name" << name << "id" << id;
+    }
     QMailFolderIdList folders(context->client()->mailboxIds());
     foreach(QMailFolderId folderId, folders) {
-        QStringList deletedUids(context->client()->deletedMessages(folderId));
+        QStringList deletedUids;
+        if (imapCfg.canDeleteMail())
+            deletedUids = context->client()->deletedMessages(folderId);
         QStringList readElsewereUids(context->client()->serverUids(folderId, QMailMessage::ReadElsewhere));
         QStringList readUids(context->client()->serverUids(folderId, QMailMessage::Read));
         readUids = inFirstButNotSecond(readUids, readElsewereUids);
@@ -1259,17 +1280,58 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     }
 }
 
-static QStringList stripFolderPrefix(const QStringList &list)
+void ImapExportUpdatesStrategy::handleSelect(ImapStrategyContextBase *context)
 {
-    QStringList result;
-    foreach(const QString &uid, list) {
-        int index = 0;
-        if ((index = uid.lastIndexOf('|')) != -1)
-            result.append(uid.mid(index + 1));
-        else
-            result.append(uid);
+    _clientDeletedUids = QStringList();
+    _clientReadUids = QStringList();
+    _serverReportedUids = QStringList();
+    
+    // We have selected the current mailbox
+    if (_transferState == List) {
+        // We're searching mailboxes
+        if (context->mailbox().exists > 0) {
+            // Only interested in messages that are going to be operated on
+            ImapConfiguration imapCfg(context->config());
+            QMailFolderId folderId(_currentMailbox.id());
+            QStringList readElsewereUids(context->client()->serverUids(folderId, QMailMessage::ReadElsewhere));
+            
+            if (imapCfg.canDeleteMail())
+                _clientDeletedUids = context->client()->deletedMessages(folderId);
+            _clientReadUids = context->client()->serverUids(folderId, QMailMessage::Read);
+            _clientReadUids = inFirstButNotSecond(_clientReadUids, readElsewereUids);
+            if (_clientDeletedUids.isEmpty() && _clientReadUids.isEmpty()) {
+                processUidSearchResults(context);
+                return;
+            }
+            
+            QStringList changedUids = _clientDeletedUids + _clientReadUids;
+            QString uidList = "UID " + stripFolderPrefix(changedUids).join(",");
+            context->protocol().sendUidSearch(MFlag_All, uidList);
+        } else {
+            // No messages, so no need to perform search
+            processUidSearchResults(context);
+        }
+    } else {
+        ImapSynchronizeBaseStrategy::handleSelect(context);
     }
-    return result;
+}
+
+void ImapExportUpdatesStrategy::handleUidSearch(ImapStrategyContextBase *context)
+{
+    _serverReportedUids = context->mailbox().uidList;
+    processUidSearchResults(context);
+}
+
+void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase *context)
+{
+    // Messages marked deleted locally that the server reports exists
+    _removedUids = inFirstAndSecond(_clientDeletedUids, _serverReportedUids);
+    _expungeRequired = !_removedUids.isEmpty();
+
+    // Messages marked read locally that the server reports exists
+    _readUids = inFirstAndSecond(_clientReadUids, _serverReportedUids);
+
+    handleUidStore(context);
 }
 
 /* A strategy to update message flags for a list of messages.

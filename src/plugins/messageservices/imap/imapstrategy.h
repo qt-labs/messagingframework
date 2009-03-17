@@ -275,6 +275,11 @@ protected:
     virtual void handleExpunge(ImapStrategyContextBase *context);
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
 
+protected:
+    QStringList _readUids;
+    QStringList _removedUids;
+    bool _expungeRequired;
+
 private:
     Options _options;
 
@@ -283,10 +288,6 @@ private:
 
     QStringList _seenUids;
     QStringList _unseenUids;
-
-    QStringList _readUids;
-    QStringList _removedUids;
-    bool _expungeRequired;
 };
 
 class ImapRetrieveAllStrategy : public ImapSynchronizeAllStrategy
@@ -304,6 +305,13 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    QStringList _serverReportedUids;
+    QStringList _clientDeletedUids;
+    QStringList _clientReadUids;
 };
 
 class ImapUpdateMessagesFlagsStrategy : public ImapSynchronizeBaseStrategy
