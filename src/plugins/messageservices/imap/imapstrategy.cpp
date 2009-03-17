@@ -1240,8 +1240,17 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     _completionList.clear();
     _completionSectionList.clear();
+    _mailboxList.clear();
 
-    _mailboxList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(context->config().id()));
+    QMailFolderIdList folders(context->client()->mailboxIds());
+    foreach(QMailFolderId folderId, folders) {
+        QStringList deletedUids(context->client()->deletedMessages(folderId));
+        QStringList readElsewereUids(context->client()->serverUids(folderId, QMailMessage::ReadElsewhere));
+        QStringList readUids(context->client()->serverUids(folderId, QMailMessage::Read));
+        readUids = inFirstButNotSecond(readUids, readElsewereUids);
+        if (!deletedUids.isEmpty() || !readUids.isEmpty())
+            _mailboxList.append(folderId);
+    }
     _transferState = List;
     
     if (!selectNextMailbox(context)) {
