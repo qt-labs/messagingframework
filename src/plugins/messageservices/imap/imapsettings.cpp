@@ -98,6 +98,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
 #endif
         deleteCheckBox->setEnabled(true);
         thresholdCheckBox->setEnabled(true);
+        preferHtml->setChecked(false);
         pushCheckBox->setChecked(false);
         pushCheckBox->setEnabled(true);
         intervalCheckBox->setChecked(false);
@@ -117,6 +118,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
         deleteCheckBox->setChecked(imapConfig.canDeleteMail());
         maxSize->setValue(imapConfig.maxMailSize());
         thresholdCheckBox->setChecked(imapConfig.maxMailSize() != -1);
+        preferHtml->setChecked(imapConfig.preferredTextSubtype() == "html");
         pushCheckBox->setChecked(imapConfig.pushEnabled());
         intervalCheckBox->setChecked(imapConfig.checkInterval() > 0);
         intervalPeriod->setValue(qAbs(imapConfig.checkInterval()));
@@ -152,6 +154,7 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
 #endif
     imapConfig.setDeleteMail(deleteCheckBox->isChecked());
     imapConfig.setMaxMailSize(thresholdCheckBox->isChecked() ? maxSize->value() : -1);
+    imapConfig.setPreferredTextSubtype(preferHtml->isChecked() ? "html" : "plain");
     imapConfig.setAutoDownload(false);
     imapConfig.setPushEnabled(pushCheckBox->isChecked());
     imapConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));

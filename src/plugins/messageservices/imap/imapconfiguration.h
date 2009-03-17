@@ -40,6 +40,8 @@ public:
     bool isAutoDownload() const;
     int maxMailSize() const;
 
+    QString preferredTextSubtype() const;
+
     bool pushEnabled() const;
     QString baseFolder() const;
 
@@ -63,6 +65,8 @@ public:
     void setDeleteMail(bool b);
     void setAutoDownload(bool autodl);
     void setMaxMailSize(int i);
+
+    void setPreferredTextSubtype(const QString &str);
 
     void setPushEnabled(bool enabled);
     void setBaseFolder(const QString &s);

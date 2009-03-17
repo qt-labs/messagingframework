@@ -223,7 +223,7 @@ public:
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
-    virtual void recursivelyCompleteParts(const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
+    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void listCompleted(ImapStrategyContextBase *context);
     virtual bool selectNextMailbox(ImapStrategyContextBase *context);
