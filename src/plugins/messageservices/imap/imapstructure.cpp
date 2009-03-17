@@ -245,6 +245,8 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
         if (details.count() > 1) {
             const QStringList parameters(decomposeElements(details.at(1)));
             QStringList::const_iterator it = parameters.begin(), end = parameters.end();
+            if (parameters.count() % 2)
+                qWarning() << "Incorrect fromDispositionDescription parameter count" << parameters.last();
             for ( ; (it != end) && (it + 1 != end); ++it) {
                 disposition.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
                 ++it;
@@ -271,6 +273,8 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
     QStringList::const_iterator it = parameters.begin(), end = parameters.end();
+    if (parameters.count() % 2)
+        qWarning() << "Incorrect setBodyFromDescription parameter count" << parameters.last();
     for ( ; (it != end) && ((it + 1) != end); it += 2) {
         type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
     }
@@ -355,6 +359,8 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
     if (details.count() > 1) {
         const QStringList parameters(decomposeElements(details.at(1)));
         QStringList::const_iterator it = parameters.begin(), end = parameters.end();
+        if (parameters.count() % 2)
+            qWarning() << "Incorrect setMultipartFromDescription parameter count" << parameters.last();
         for ( ; (it != end) && ((it + 1) != end); it += 2) {
             if ((*it).trimmed().toUpper() == "BOUNDARY") {
                 container->setBoundary((*(it + 1)).toAscii());
