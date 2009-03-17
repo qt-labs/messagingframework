@@ -887,8 +887,9 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
     }
 }
 
-void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(const QMailMessagePartContainer &partContainer, 
-                                                           int &partsToRetrieve,
+void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
+                                                           const QMailMessagePartContainer &partContainer, 
+                                                           int &partsToRetrieve, 
                                                            int &bytesLeft)
 {
     for (uint i = 0; i < partContainer.partCount(); ++i) {
@@ -898,13 +899,40 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(const QMailMessagePar
         if (partsToRetrieve > 10) {
             break; // sanity check, prevent DOS
         } else if (part.partCount() > 0) {
-            recursivelyCompleteParts(part, partsToRetrieve, bytesLeft);
+            bool alternativeSelected(false);
+
+            if (part.multipartType() == QMailMessage::MultipartAlternative) {
+                // See if there is a preferred sub-part to retrieve
+                ImapConfiguration imapCfg(context->config());
+                QString preferred(imapCfg.preferredTextSubtype().toLower());
+
+                for (uint j = 0; j < part.partCount(); ++j) {
+                    const QMailMessagePart subpart(part.partAt(j));
+                    QMailMessageContentType contentType(subpart.contentType());
+                    if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
+                        alternativeSelected = true;
+
+                        const QMailMessageContentDisposition subdisposition(subpart.contentDisposition());
+                        if (bytesLeft > subdisposition.size()) {
+                            _completionSectionList.append(subpart.location());
+                            bytesLeft -= subdisposition.size();
+                            ++partsToRetrieve;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (!alternativeSelected) {
+                // Otherwise, consider the subparts individually
+                recursivelyCompleteParts(context, part, partsToRetrieve, bytesLeft);
+            }
         } else if (part.partialContentAvailable()) {
             continue;
         } else if (disposition.size() <= 0) {
             continue;
-        } else if ((disposition.type() != QMailMessageContentDisposition::Inline)
-                   && (QString(part.contentType().type()).toUpper() != "TEXT")) {
+        } else if ((disposition.type() != QMailMessageContentDisposition::Inline) && 
+                   (part.contentType().type().toLower() != "text")) {
             continue;
         } else if (bytesLeft >= disposition.size()) {
             _completionSectionList.append(part.location());
@@ -926,7 +954,7 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
         } else {
             int bytesLeft = _headerLimit;
             int partsToRetrieve = 1;
-            recursivelyCompleteParts(message, partsToRetrieve, bytesLeft);
+            recursivelyCompleteParts(context, message, partsToRetrieve, bytesLeft);
         }
     }
 }

@@ -61,6 +61,11 @@ int ImapConfiguration::maxMailSize() const
     return value("maxSize", "102400").toInt();
 }
 
+QString ImapConfiguration::preferredTextSubtype() const
+{
+    return value("textSubtype");
+}
+
 bool ImapConfiguration::pushEnabled() const
 {
     return (value("pushEnabled", "0").toInt() != 0);
@@ -129,6 +134,11 @@ void ImapConfigurationEditor::setAutoDownload(bool b)
 void ImapConfigurationEditor::setMaxMailSize(int i)
 {
     setValue("maxSize", QString::number(i));
+}
+
+void ImapConfigurationEditor::setPreferredTextSubtype(const QString &str)
+{
+    setValue("textSubtype", str);
 }
 
 void ImapConfigurationEditor::setPushEnabled(bool b)
