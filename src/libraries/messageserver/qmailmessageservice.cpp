@@ -769,7 +769,7 @@ void QMailMessageSource::deleteMessages()
 
     // Just remove these locally and store a deletion record for later synchronization
     QMailMessageKey idsKey(QMailMessageKey::id(d->_ids));
-    if (QMailStore::instance()->removeMessages(idsKey, messageRemovalOption())) {
+    if (!QMailStore::instance()->removeMessages(idsKey, messageRemovalOption())) {
         qMailLog(Messaging) << "Unable to remove messages!";
     } else {
         emit d->_service->progressChanged(total, total);
