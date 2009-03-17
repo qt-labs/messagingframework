@@ -238,7 +238,8 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
 
         if (value == "INLINE") {
             disposition.setType(QMailMessageContentDisposition::Inline);
-        } else if (value == "ATTACHMENT") {
+        } else {
+            // Anything else should be treated as attachment
             disposition.setType(QMailMessageContentDisposition::Attachment);
         }
 
@@ -252,6 +253,9 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
                 ++it;
             }            
         }
+    } else {
+        // Default to inline for no specification
+        disposition.setType(QMailMessageContentDisposition::Inline);
     }
 
     if (!size.isEmpty()) {
@@ -319,12 +323,14 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     ++next;
 
     // [6 + n + 2]: content-disposition
+    QString disposition;
     if (next < details.count()) {
-        const QString &disposition(details.at(next));
-
-        if (!disposition.isEmpty() && (disposition.trimmed().toUpper() != "NIL"))
-            part->setContentDisposition(fromDispositionDescription(disposition, size));
+        disposition = details.at(next);
+        if (disposition.trimmed().toUpper() == "NIL") {
+            disposition = QString();
+        }
     }
+    part->setContentDisposition(fromDispositionDescription(disposition, size));
     ++next;
 
     // [6 + n + 3]: content-language
