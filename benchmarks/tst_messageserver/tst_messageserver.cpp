@@ -440,6 +440,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << list
     ;
 
+#if VERY_PATIENT_TESTER
     list.clear();
     for (int i = 0; i < 10000; ++i)
         list << TestMail();
@@ -450,6 +451,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << 143
         << list
     ;
+#endif
 }
 
 void tst_MessageServer::removeMessages()
