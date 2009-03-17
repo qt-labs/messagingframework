@@ -22,6 +22,7 @@
 class QWidget;
 class QMailMessage;
 class QMailMessagePart;
+class QMailMessagePartContainer;
 
 class Browser: public QTextBrowser
 {
@@ -56,6 +57,7 @@ private:
     void setImageResource(const QUrl& name, const QByteArray& imageData);
     void setPartResource(const QMailMessagePart& part);
 
+    QString renderMultipart(const QMailMessagePartContainer& partContainer);
     QString renderPart(const QMailMessagePart& part);
     QString renderAttachment(const QMailMessagePart& part);
 

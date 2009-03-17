@@ -4282,6 +4282,9 @@ void QMailMessagePartPrivate::setReferenceResolution(const QString &uri)
 
 bool QMailMessagePartPrivate::contentAvailable() const
 {
+    if (_multipartType != QMailMessage::MultipartNone)
+        return true;
+
     QByteArray contentDisposition(headerField("Content-Disposition"));
     if (!contentDisposition.isEmpty()) {
         QMailMessageContentDisposition disposition(contentDisposition);
@@ -4295,7 +4298,7 @@ bool QMailMessagePartPrivate::contentAvailable() const
 
 bool QMailMessagePartPrivate::partialContentAvailable() const
 {
-    return !_body.isEmpty();
+    return ((_multipartType != QMailMessage::MultipartNone) || !_body.isEmpty());
 }
 
 void QMailMessagePartPrivate::output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
