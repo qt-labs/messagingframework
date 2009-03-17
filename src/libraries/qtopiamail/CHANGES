@@ -2,6 +2,10 @@
 **
 ****************************************************************************/
 
+API changes since the development preview release on 06/03/09:
+
+/***************************************************************************/
+
 API changes since the development preview release on 16/01/09:
 
 1. Added 'QMailAccountConfiguration::id() const'

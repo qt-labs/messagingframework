@@ -13,7 +13,35 @@
 #include "popconfiguration.h"
 
 #include <qmailauthenticator.h>
+#include <qmailtransport.h>
 
+
+bool PopAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+{
+#ifdef QT_NO_OPENSSL
+    return false;
+#else
+    PopConfiguration popCfg(svcCfg);
+    bool useTLS(popCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
+
+    if (!capabilities.contains("STLS")) {
+        if (useTLS) {
+            qWarning() << "Server does not support TLS - continuing unencrypted";
+        }
+    } else {
+        if (useTLS) {
+            return true;
+        } else {
+            if (!capabilities.contains("USER")) {
+                qWarning() << "Server does not support unencrypted USER - using encryption";
+                return true;
+            }
+        }
+    }
+
+    return QMailAuthenticator::useEncryption(svcCfg, capabilities);
+#endif
+}
 
 QList<QByteArray> PopAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {

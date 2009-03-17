@@ -29,6 +29,20 @@
 */
 
 /*!
+    Returns true if the protocol should immediately switch to using TLS encryption;
+    otherwise returns false.
+    The use of encryption may be preferred depending on the service whose configuration 
+    is described by \a svcCfg, and the service's reported \a capabilities.
+*/
+bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+{
+    return false;
+
+    Q_UNUSED(svcCfg)
+    Q_UNUSED(capabilities)
+}
+
+/*!
     Returns the authentication string that should be used to initiate an authentication
     attempt for the service whose configuration is described by \a svcCfg.  The preferred
     authentication method may depend upon the service's reported \a capabilities.

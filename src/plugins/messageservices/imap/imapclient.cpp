@@ -9,6 +9,7 @@
 ****************************************************************************/
 
 #include "imapclient.h"
+#include "imapauthenticator.h"
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include <longstream_p.h>
@@ -277,20 +278,15 @@ void ImapClient::idleCommandTransition(const ImapCommand command, const Operatio
         }
         case IMAP_Capability:
         {
-#ifndef QT_NO_OPENSSL
             if (!_idleProtocol.encrypted()) {
-                ImapConfiguration imapCfg(_config);
-                if (imapCfg.mailEncryption() == QMailTransport::Encrypt_TLS) {
-                    if (_idleProtocol.supportsCapability("STARTTLS")) {
-                        _idleProtocol.sendStartTLS();
-                        break;
-                    } else {
-                        qWarning() << "No TLS support - continuing unencrypted!";
-                    }
+                if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _idleProtocol.capabilities())) {
+                    // Switch to encrypted mode
+                    _idleProtocol.sendStartTLS();
+                    break;
                 }
             }
-#endif
 
+            // We are now connected
             _idleProtocol.sendLogin(_config);
             return;
         }
@@ -400,21 +396,17 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         
         case IMAP_Capability:
         {
-            ImapConfiguration imapCfg(_config);
-
-#ifndef QT_NO_OPENSSL
-            if (!_protocol.encrypted() && (imapCfg.mailEncryption() == QMailTransport::Encrypt_TLS)) {
-                if (_protocol.supportsCapability("STARTTLS")) {
+            if (!_protocol.encrypted()) {
+                if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _protocol.capabilities())) {
+                    // Switch to encrypted mode
                     emit updateStatus( tr("Starting TLS" ) );
                     _protocol.sendStartTLS();
                     break;
-                } else {
-                    // TODO: request user direction!!!
-                    qWarning() << "No TLS support - continuing unencrypted";
-                    emit updateStatus( tr("No TLS support - continuing unencrypted") );
                 }
             }
-#endif
+
+            // We are now connected
+            ImapConfiguration imapCfg(_config);
 
             if (!_idleProtocol.connected()
                 && _protocol.supportsCapability("IDLE")

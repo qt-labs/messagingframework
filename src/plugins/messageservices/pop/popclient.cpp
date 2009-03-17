@@ -499,17 +499,9 @@ void PopClient::nextAction()
     }
     case StartTLS:
     {
-#ifndef QT_NO_OPENSSL
-        PopConfiguration popCfg(config);
-        const bool useTLS(popCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
-#else
-        const bool useTLS(false);
-#endif
-
-        if (useTLS && !transport->isEncrypted()) {
-            if (!capabilities.contains("STLS")) {
-                qWarning() << "Server does not support TLS - continuing unencrypted";
-            } else {
+        if (!transport->isEncrypted()) {
+            if (PopAuthenticator::useEncryption(config.serviceConfiguration("pop3"), capabilities)) {
+                // Switch to TLS mode
                 nextStatus = TLS;
                 nextCommand = "STLS";
                 break;

@@ -14,7 +14,30 @@
 #include "imapconfiguration.h"
 
 #include <qmailauthenticator.h>
+#include <qmailtransport.h>
 
+
+bool ImapAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+{
+#ifdef QT_NO_OPENSSL
+    return false;
+#else
+    ImapConfiguration imapCfg(svcCfg);
+    bool useTLS(imapCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
+
+    if (!capabilities.contains("STARTTLS")) {
+        if (useTLS) {
+            qWarning() << "Server does not support TLS - continuing unencrypted";
+        }
+    } else {
+        if (useTLS) {
+            return true;
+        }
+    }
+
+    return QMailAuthenticator::useEncryption(svcCfg, capabilities);
+#endif
+}
 
 QByteArray ImapAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
