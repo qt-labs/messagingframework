@@ -41,16 +41,16 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
     header.append(tr("Storage"));
 
     for (int i = 0; i < ServiceTypesCount; ++i) {
-        layout[i] = new QVBoxLayout;
+        context[i] = new QVBoxLayout;
         editor[i] = 0;
         selector[i] = new QComboBox;
 
         QFormLayout* formLayout = new QFormLayout;
         formLayout->addRow(tr("Type"), selector[i]);
-        layout[i]->addLayout(formLayout);
+        context[i]->addLayout(formLayout);
 
         QWidget* tab = new QWidget;
-        tab->setLayout(layout[i]);
+        tab->setLayout(context[i]);
 
         tabWidget->addTab(tab, header[i]);
     }
@@ -94,7 +94,7 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
 
     tabChanged(0);
 
-    QHBoxLayout* bottomLayout = new QHBoxLayout(this);
+    QHBoxLayout* bottomLayout = new QHBoxLayout;
     bottomLayout->addStretch();
     QPushButton* okButton = new QPushButton("Ok");
     QPushButton* cancelButton = new QPushButton("Cancel");
@@ -240,7 +240,7 @@ void EditAccount::selectService(int type, int index)
         editor[type]->updateAccount(account, config);
 
         editor[type]->hide();
-        layout[type]->removeWidget(editor[type]);
+        context[type]->removeWidget(editor[type]);
         delete editor[type];
         editor[type] = 0;
     }
@@ -278,7 +278,7 @@ void EditAccount::selectService(int type, int index)
 
     if (editor[type]) {
         editor[type]->displayConfiguration(*account, *config);
-        layout[type]->addWidget(editor[type]);
+        context[type]->addWidget(editor[type]);
     }
 }
 

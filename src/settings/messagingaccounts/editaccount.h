@@ -54,7 +54,7 @@ private:
 
     enum { Incoming = 0, Outgoing = 1, Storage = 2, ServiceTypesCount = 3 };
 
-    QVBoxLayout* layout[ServiceTypesCount];
+    QVBoxLayout* context[ServiceTypesCount];
     QComboBox* selector[ServiceTypesCount];
     QMailMessageServiceEditor* editor[ServiceTypesCount];
     QStringList extantKeys[ServiceTypesCount];
