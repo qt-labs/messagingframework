@@ -40,8 +40,8 @@ static QString dateString(const QDateTime& dt)
     //yesterday
     else if(dt.daysTo(current) <= 1)
         return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
-    //within 5 days
-    else if(dt.daysTo(current) <= 5)
+    //within 7 days
+    else if(dt.daysTo(current) < 7)
         return dt.toString("dddd h:mm:ss ap");
     else return dt.toString("dd/MM/yy h:mm:ss ap");
 }
