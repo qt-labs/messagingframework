@@ -54,15 +54,12 @@ private slots:
     void cleanup();
 
     void completeRetrievalImap();
-    void completeRetrievalImap_impl();
     void completeRetrievalImap_data();
 
     void removeMessages();
-    void removeMessages_impl();
     void removeMessages_data();
 
     void replaceMessages();
-    void replaceMessages_impl();
     void replaceMessages_data();
 
 protected slots:
@@ -70,6 +67,10 @@ protected slots:
     void onProgressChanged(uint,uint);
 
 private:
+    void completeRetrievalImap_impl();
+    void removeMessages_impl();
+    void replaceMessages_impl();
+
     void compareMessages(QMailMessageIdList const&, TestMailList const&);
     void waitForActivity(QMailServiceAction*, QMailServiceAction::Activity, int);
     void addAccount(QMailAccount*, QString const&, QString const&, QString const&, QString const&, int);
