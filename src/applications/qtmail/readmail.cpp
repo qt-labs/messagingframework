@@ -656,24 +656,28 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
 
         QMailViewerInterface* view = QMailViewerFactory::create(key, views);
 
-        view->setObjectName("read-message");
-        view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
+        if (contentViews.values().contains(view)) {
+            // We already have this view created
+        } else {
+            view->setObjectName("read-message");
+            view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
 
-        connect(view, SIGNAL(replyToSender()), replyButton, SLOT(trigger()));
-        connect(view, SIGNAL(replyToAll()), replyAllAction, SLOT(trigger()));
-        connect(view, SIGNAL(completeMessage()), getThisMailButton, SLOT(trigger()));
-        connect(view, SIGNAL(forwardMessage()), forwardAction, SLOT(trigger()));
-        connect(view, SIGNAL(deleteMessage()), deleteButton, SLOT(trigger()));
-        connect(view, SIGNAL(saveSender()), storeButton, SLOT(trigger()));
-        connect(view, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
-        connect(view, SIGNAL(messageChanged(QMailMessageId)), this, SLOT(messageChanged(QMailMessageId)));
-        connect(view, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
-        connect(view, SIGNAL(sendMessage(QMailMessage)), this, SIGNAL(sendMessage(QMailMessage)));
-        connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));
+            connect(view, SIGNAL(replyToSender()), replyButton, SLOT(trigger()));
+            connect(view, SIGNAL(replyToAll()), replyAllAction, SLOT(trigger()));
+            connect(view, SIGNAL(completeMessage()), getThisMailButton, SLOT(trigger()));
+            connect(view, SIGNAL(forwardMessage()), forwardAction, SLOT(trigger()));
+            connect(view, SIGNAL(deleteMessage()), deleteButton, SLOT(trigger()));
+            connect(view, SIGNAL(saveSender()), storeButton, SLOT(trigger()));
+            connect(view, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
+            connect(view, SIGNAL(messageChanged(QMailMessageId)), this, SLOT(messageChanged(QMailMessageId)));
+            connect(view, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
+            connect(view, SIGNAL(sendMessage(QMailMessage)), this, SIGNAL(sendMessage(QMailMessage)));
+            connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));
 
-        QWidget* viewWidget = view->widget();
-        viewWidget->setGeometry(geometry());
-        views->addWidget(viewWidget);
+            QWidget* viewWidget = view->widget();
+            viewWidget->setGeometry(geometry());
+            views->addWidget(viewWidget);
+        }
 
         it = contentViews.insert(qMakePair(content, type), view);
     }
