@@ -45,6 +45,7 @@ private slots:
     void removeAccount();
     void removeFolder();
     void removeMessage();
+    void remove1000Messages();
 };
 
 QTEST_MAIN(tst_QMailStore)
@@ -1047,5 +1048,86 @@ void tst_QMailStore::removeMessage()
     QMailMessage message3(message1.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
     QVERIFY(!message3.id().isValid());
+}
+
+void tst_QMailStore::remove1000Messages()
+{
+    QMailAccount account;
+    account.setName("Account");
+
+    QCOMPARE(QMailStore::instance()->countAccounts(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!account.id().isValid());
+    QVERIFY(QMailStore::instance()->addAccount(&account, 0));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(account.id().isValid());
+    QCOMPARE(QMailStore::instance()->countAccounts(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder folder;
+    folder.setPath("Folder");
+
+    QCOMPARE(QMailStore::instance()->countFolders(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!folder.id().isValid());
+    QVERIFY(QMailStore::instance()->addFolder(&folder));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(folder.id().isValid());
+    QCOMPARE(QMailStore::instance()->countFolders(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    //without message removal record
+
+    static const int largeMessageCount = 1000;
+
+    for(int i = 0; i < largeMessageCount; ++i)
+    {
+        QMailMessage message1;
+        message1.setServerUid("Just some message");
+        message1.setParentAccountId(account.id());
+        message1.setParentFolderId(folder.id());
+        message1.setMessageType(QMailMessage::Sms);
+        message1.setSubject(QString("Message %1").arg(i));
+        message1.setTo(QMailAddress("alice@example.org"));
+        message1.setFrom(QMailAddress("bob@example.com"));
+        message1.setBody(QMailMessageBody::fromData(QString("Hi"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+        message1.setStatus(QMailMessage::Incoming, true);
+        message1.setStatus(QMailMessage::Read, true);
+        message1.setCustomField("question", "What is your dog's name?");
+        message1.setCustomField("answer", "Fido");
+        QVERIFY(QMailStore::instance()->addMessage(&message1));
+    }
+
+    QVERIFY(QMailStore::instance()->removeMessages(QMailMessageKey()));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QCOMPARE(QMailStore::instance()->countMessages(),0);
+
+
+    //with message removal record
+
+    for(int i = 0; i < largeMessageCount; ++i)
+    {
+        QMailMessage message1;
+        message1.setServerUid("Just some message");
+        message1.setParentAccountId(account.id());
+        message1.setParentFolderId(folder.id());
+        message1.setMessageType(QMailMessage::Sms);
+        message1.setSubject(QString("Message %1").arg(i));
+        message1.setTo(QMailAddress("alice@example.org"));
+        message1.setFrom(QMailAddress("bob@example.com"));
+        message1.setBody(QMailMessageBody::fromData(QString("Hi"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+        message1.setStatus(QMailMessage::Incoming, true);
+        message1.setStatus(QMailMessage::Read, true);
+        message1.setCustomField("question", "What is your dog's name?");
+        message1.setCustomField("answer", "Fido");
+        QVERIFY(QMailStore::instance()->addMessage(&message1));
+    }
+
+    QVERIFY(QMailStore::instance()->removeMessages(QMailMessageKey(),QMailStore::CreateRemovalRecord));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QCOMPARE(QMailStore::instance()->countMessages(),0);
+    QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),largeMessageCount);
+    QVERIFY(QMailStore::instance()->purgeMessageRemovalRecords(account.id()));
+    QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
 }
 
