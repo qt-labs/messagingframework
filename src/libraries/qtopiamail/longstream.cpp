@@ -8,6 +8,7 @@
 **
 ****************************************************************************/
 #include "longstream_p.h"
+#include "qmaillog.h"
 #include <QApplication>
 #include "qmailnamespace.h"
 #include <QIODevice>
@@ -184,7 +185,7 @@ void LongStream::cleanupTempFiles()
     QDir dir( LongStream::tempDir(), "qtopiamail.*" );
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
-        QFile file( LongStream::tempDir() + list.at(i) );
+        QFile file( LongStream::tempDir() + "/" + list.at(i) );
         if (file.exists())
             file.remove();
     }
