@@ -321,7 +321,7 @@ static QString replaceLast(const QString container, const QString& before, const
     return result;
 }
 
-QString Browser::renderPart(const QMailMessagePart& part)
+QString Browser::renderSimplePart(const QMailMessagePart& part)
 {
     QString result;
 
@@ -365,6 +365,27 @@ QString Browser::renderAttachment(const QMailMessagePart& part)
     return replaceLast(attachmentTemplate, "DISPOSITION", part.partialContentAvailable() ? "" : tr(" (on server)"));
 }
 
+QString Browser::renderPart(const QMailMessagePart& part)
+{
+    QString result;
+
+    if (part.multipartType() != QMailMessage::MultipartNone) {
+        result = renderMultipart(part);
+    } else {
+        bool displayAsAttachment(!part.partialContentAvailable());
+        if (!displayAsAttachment) {
+            QMailMessageContentDisposition disposition = part.contentDisposition();
+            if (!disposition.isNull() && disposition.type() == QMailMessageContentDisposition::Attachment) {
+                displayAsAttachment = true;
+            }
+        }
+
+        result = (displayAsAttachment ? renderAttachment(part) : renderSimplePart(part));
+    }
+
+    return result;
+}
+
 QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
 {
     QString result;
@@ -385,7 +406,7 @@ QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
         }
 
         if (partIndex != -1) {
-            result += renderPart(partContainer.partAt(partIndex));
+            result += renderSimplePart(partContainer.partAt(partIndex));
         } else {
             result += "\n<" + tr("No displayable part") + ">\n";
         }
@@ -404,14 +425,25 @@ QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
         }
 
         // Add any other parts as resources
+        QList<const QMailMessagePart*> absentParts;
         for (uint i = 0; i < partContainer.partCount(); ++i) {
             if (i != startIndex) {
-                setPartResource(partContainer.partAt(i));
+                const QMailMessagePart &part = partContainer.partAt(i);
+                if (part.partialContentAvailable()) {
+                    setPartResource(partContainer.partAt(i));
+                } else {
+                    absentParts.append(&part);
+                }
             }
         }
 
         // Render the start part
         result += renderPart(partContainer.partAt(startIndex));
+
+        // Show any unavailable parts as attachments
+        foreach (const QMailMessagePart *part, absentParts) {
+            result += renderAttachment(*part);
+        }
     } else {
         // According to RFC 2046, any unrecognised type should be treated as 'mixed'
         if (partContainer.multipartType() != QMailMessagePartContainer::MultipartMixed)
@@ -419,21 +451,7 @@ QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
 
         // Render each part successively according to its disposition
         for (uint i = 0; i < partContainer.partCount(); ++i) {
-            const QMailMessagePart& part = partContainer.partAt(i);
-
-            if (part.multipartType() != QMailMessage::MultipartNone) {
-                result += renderMultipart(part);
-            } else {
-                bool displayAsAttachment(!part.partialContentAvailable());
-                if (!displayAsAttachment) {
-                    QMailMessageContentDisposition disposition = part.contentDisposition();
-                    if (!disposition.isNull() && disposition.type() == QMailMessageContentDisposition::Attachment) {
-                        displayAsAttachment = true;
-                    }
-                }
-
-                result += (displayAsAttachment ? renderAttachment(part) : renderPart(part));
-            }
+            result += renderPart(partContainer.partAt(i));
         }
     }
 
@@ -474,10 +492,10 @@ void Browser::displayHtml(const QMailMessage* mail)
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText = 
-    "<b>WAITING_TEXT</b><br>"
-    "SIZE_TEXT<br>"
-    "<br>"
-    "<a href=\"download\">DOWNLOAD_TEXT</a>";
+"<b>WAITING_TEXT</b><br>"
+"SIZE_TEXT<br>"
+"<br>"
+"<a href=\"download\">DOWNLOAD_TEXT</a>";
 
             bodyText = replaceLast(bodyText, "WAITING_TEXT", tr("Awaiting download"));
             bodyText = replaceLast(bodyText, "SIZE_TEXT", tr("Size of message") + ": " + describeMailSize(mail->size()));
@@ -486,11 +504,10 @@ void Browser::displayHtml(const QMailMessage* mail)
             // TODO: what?
         }
     } else {
-    qDebug() << "rendering:" << mail->serverUid() << mail->contentIdentifier();
         if (mail->partCount() > 0) {
             bodyText = renderMultipart(*mail);
         } else if (mail->messageType() == QMailMessage::System) {
-            // Assume this is appropriately formatted
+            // Assume this is appropriately formatted for display
             bodyText = mail->body().data();
         } else {
             bodyText = formatText( mail->body().data() );
@@ -516,32 +533,43 @@ void Browser::displayHtml(const QMailMessage* mail)
     QColor c = palette().color(QPalette::Highlight);
 
     QString headerTemplate = \
-    "<div align=left> \
-    <table border=0 cellspacing=0 cellpadding=0 width=100\%>\
-    <tr>\
-    <td bgcolor=\"#000000\"> \
-       <table border=0 width=100\% cellspacing=1 cellpadding=4>\
-       <tr><td align=left bgcolor=\"" + palette().color(QPalette::Highlight).name() + "\"> \
-            <b><font color=LINK_COLOR>SUBJECT_TEXT</font></b>\
-       </td></tr>\
-       <tr><td bgcolor=\""+ palette().color(QPalette::Window).name() + "\">\
-       <table border=0>\
-          METADATA_TEXT\
-       </table>\
-       </td></tr>\
-       </table>\
-     </td>\
-     </tr>\
-     </div>\
-     <br>";
+"<div align=left>"
+    "<table border=0 cellspacing=0 cellpadding=0 width=100\%>"
+        "<tr>"
+            "<td bgcolor=\"#000000\">"
+                "<table border=0 width=100\% cellspacing=1 cellpadding=4>"
+                    "<tr>"
+                        "<td align=left bgcolor=\"HIGHLIGHT_COLOR\">"
+                            "<b><font color=\"LINK_COLOR\">SUBJECT_TEXT</font></b>"
+                        "</td>"
+                    "</tr>"
+                    "<tr>"
+                        "<td bgcolor=\"WINDOW_COLOR\">"
+                            "<table border=0>"
+                                "METADATA_TEXT"
+                            "</table>"
+                        "</td>"
+                    "</tr>"
+                "</table>"
+            "</td>"
+        "</tr>"
+    "</div>"
+"<br>";
 
-    QString linkColor = palette().color(QPalette::HighlightedText).name();
-    headerTemplate = replaceLast(headerTemplate, "LINK_COLOR", QString("\"%1\"").arg(linkColor));
+    headerTemplate = replaceLast(headerTemplate, "HIGHLIGHT_COLOR", palette().color(QPalette::Highlight).name());
+    headerTemplate = replaceLast(headerTemplate, "LINK_COLOR", palette().color(QPalette::HighlightedText).name());
     headerTemplate = replaceLast(headerTemplate, "SUBJECT_TEXT", Qt::escape(subjectText));
-
+    headerTemplate = replaceLast(headerTemplate, "WINDOW_COLOR", palette().color(QPalette::Window).name());
 
     QString itemTemplate =
-        "<tr><td align=left><b>ID_TEXT: </b></td><td width=100\%>CONTENT_TEXT</td></tr>";
+"<tr>"
+    "<td align=right>"
+        "<b>ID_TEXT: </b>"
+    "</td>"
+    "<td width=50\%>"
+        "CONTENT_TEXT"
+    "</td>"
+"</tr>";
 
     QString metadataText;
     foreach (const TextPair item, metadata) {
@@ -552,14 +580,21 @@ void Browser::displayHtml(const QMailMessage* mail)
 
     pageData += replaceLast(headerTemplate, "METADATA_TEXT", metadataText);
 
-
     QString bodyTemplate = 
-        "<div align=left>BODY_TEXT</div>";
+ "<div align=left>BODY_TEXT</div>";
 
     pageData += replaceLast(bodyTemplate, "BODY_TEXT", bodyText);
 
+    QString pageTemplate =
+"<table width=100\% height=100\% border=0 cellspacing=8 cellpadding=0>"
+    "<tr>"
+        "<td>"
+            "PAGE_DATA"
+        "</td>"
+    "</tr>"
+"</table>";
 
-    setHtml("<table width=100\% height=100\% border=0 cellspacing=8 cellpadding=0><tr><td>" + pageData + "</td></tr></table>");
+    setHtml(replaceLast(pageTemplate, "PAGE_DATA", pageData));
 }
 
 QString Browser::describeMailSize(uint bytes) const

@@ -57,9 +57,11 @@ private:
     void setImageResource(const QUrl& name, const QByteArray& imageData);
     void setPartResource(const QMailMessagePart& part);
 
-    QString renderMultipart(const QMailMessagePartContainer& partContainer);
-    QString renderPart(const QMailMessagePart& part);
+    QString renderSimplePart(const QMailMessagePart& part);
     QString renderAttachment(const QMailMessagePart& part);
+    QString renderPart(const QMailMessagePart& part);
+
+    QString renderMultipart(const QMailMessagePartContainer& partContainer);
 
     QString describeMailSize(uint bytes) const;
     QString formatText(const QString& txt) const;
