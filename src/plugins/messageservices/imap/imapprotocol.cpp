@@ -348,6 +348,7 @@ class UnconnectedState : public ImapState
 
 public:
     UnconnectedState() : ImapState(IMAP_Unconnected, "Unconnected") { setStatus(OpOk); }
+    virtual void init() { ImapState::init(); setStatus(OpOk); }
 };
 
 
@@ -1377,6 +1378,7 @@ public:
     void setStatus(OperationStatus status) const { return state()->setStatus(status); }
 
     ImapState* state() const { return mState; }
+    void reset();
     void setState(ImapState* s);
     void stateCompleted();
 
@@ -1388,7 +1390,13 @@ public:
 ImapContextFSM::ImapContextFSM(ImapProtocol *protocol)
     : ImapContext(protocol)
 { 
+    reset();
+}
+
+void ImapContextFSM::reset()
+{
     mState = &unconnectedState;  
+    mPendingStates.clear();
 }
 
 void ImapContextFSM::setState(ImapState* s)
@@ -1508,6 +1516,7 @@ void ImapProtocol::close()
     if (_transport)
         _transport->close();
     _stream.reset();
+    _fsm->reset();
 
     _mailbox = ImapMailboxProperties();
 }

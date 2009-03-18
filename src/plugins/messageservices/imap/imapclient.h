@@ -116,8 +116,11 @@ private:
     QTimer _inactiveTimer;
 
     ImapProtocol _idleProtocol;
-    QTimer _idleTimer;
-    int _retryDelay;
+    QMailFolder _idleFolder;
+    QTimer _idleTimer; // Send a DONE command every 29 minutes
+    QTimer _idleRecoveryTimer; // Check command hasn't hung
+    int _idleRetryDelay; // Try to restablish IDLE state
+    enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
     bool _waitingForIdle;
 
     QMailMessageClassifier _classifier;
