@@ -98,7 +98,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
 #endif
         deleteCheckBox->setEnabled(true);
         thresholdCheckBox->setEnabled(true);
-        preferHtml->setChecked(false);
+        preferHtml->setChecked(true);
         pushCheckBox->setChecked(false);
         pushCheckBox->setEnabled(true);
         intervalCheckBox->setChecked(false);
