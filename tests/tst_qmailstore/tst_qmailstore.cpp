@@ -775,7 +775,7 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->queryMessages(key2), QMailMessageIdList() << message1.id());
     QCOMPARE(QMailStore::instance()->queryMessages(key3), QMailMessageIdList());
     QCOMPARE(QMailStore::instance()->queryMessages(key4), QMailMessageIdList() << message1.id() << message3.id());
-    QCOMPARE(QMailStore::instance()->queryMessages(key5), QMailMessageIdList() << message1.id());
+    QCOMPARE(QMailStore::instance()->queryMessages(key5), QMailMessageIdList() << message1.id() << message3.id());
     QCOMPARE(QMailStore::instance()->queryMessages(key6), QMailMessageIdList());
     QCOMPARE(QMailStore::instance()->queryMessages(key7), QMailMessageIdList() << message1.id() << message3.id());
     QCOMPARE(QMailStore::instance()->queryMessages(key8), QMailMessageIdList() << message3.id());
