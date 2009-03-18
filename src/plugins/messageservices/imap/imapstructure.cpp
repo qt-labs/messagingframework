@@ -356,7 +356,7 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     ++next;
 }
 
-void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container)
+void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part)
 {
     QStringList details = decomposeElements(structure.last());
 
@@ -376,11 +376,35 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         }
     }
 
-    // TODO: can we use the following items?
+    if (part) {
+        // [2]: content-disposition
+        QString disposition;
+        if (details.count() > 2) {
+            disposition = details.at(2);
+            if (disposition.trimmed().toUpper() == "NIL") {
+                disposition = QString();
+            }
+        }
+        part->setContentDisposition(fromDispositionDescription(disposition, QString()));
 
-    // [2]: content-disposition
-    // [3]: content-language
-    // [4]: content-location
+        // [3]: content-language
+        if (details.count() > 3) {
+            const QString &language(details.at(3));
+
+            // TODO: this may need compression from multiple tokens to one?
+            if (!language.isEmpty() && (language.trimmed().toUpper() != "NIL"))
+                part->setContentLanguage(language);
+        }
+        
+        // [4]: content-location
+        if (details.count() > 4) {
+            const QString &location(details.at(4));
+
+            // TODO: this may need compression from multiple tokens to one?
+            if (!location.isEmpty() && (location.trimmed().toUpper() != "NIL"))
+                part->setContentLocation(location);
+        }
+    }
 
     // Create the other pieces described by the structure
     for (int i = 0; i < (structure.count() - 1); ++i) {
@@ -409,7 +433,7 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
                 }
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, part);
+                setMultipartFromDescription(structure, part, part);
             }
         }
     }
@@ -427,7 +451,7 @@ void setMessageContentFromStructure(const QStringList &structure, QMailMessagePa
                 setBodyFromDescription(decomposeElements(message), container);
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, container);
+                setMultipartFromDescription(structure, container, 0);
             }
         }
     }

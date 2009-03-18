@@ -39,7 +39,7 @@ struct SectionProperties {
     int _minimum;
 };
 
-typedef QMap<QString, SectionProperties > FolderMap;
+typedef QMultiMap<QString, SectionProperties> FolderMap;
 typedef QMap<QMailFolderId, FolderMap> SelectionMap;
 
 class QMailAccount;

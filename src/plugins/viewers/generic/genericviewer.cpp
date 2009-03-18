@@ -126,16 +126,16 @@ void GenericViewer::linkClicked(const QUrl& link)
     QString command = link.toString();
 
     if (command.startsWith("attachment")) {
-        QRegExp splitter("attachment;([^;]+)(?:;(\\d*))?");
+        QRegExp splitter("attachment;([^;]+)(?:;([\\d\\.]*))?");
         if (splitter.exactMatch(command)) {
             QString cmd = splitter.cap(1);
-            QString number = splitter.cap(2);
-            if (!number.isEmpty()) {
-                uint partNumber = number.toUInt();
+            QString location = splitter.cap(2);
+            if (!location.isEmpty()) {
+                QMailMessagePart::Location partLocation(location);
 
                 // Show the attachment dialog
                 AttachmentOptions options(widget());
-                options.setAttachment(message->partAt(partNumber));
+                options.setAttachment(message->partAt(partLocation));
 
                 connect(&options, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
                 options.exec();

@@ -5544,9 +5544,8 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Delete any custom fields associated with these messages
-        QString sql("DELETE FROM mailmessagecustom WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                            idValues,
+        QString sql("DELETE FROM mailmessagecustom");
+        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
                                             "deleteMessages delete mailmessagecustom query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5554,9 +5553,8 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Perform the message deletion
-        QString sql("DELETE FROM mailmessages WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QString sql("DELETE FROM mailmessages");
+        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
                                     "deleteMessages delete mailmessages query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5627,9 +5625,8 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
 
     {
         // Delete any custom fields associated with these folders
-        QString sql("DELETE FROM mailfoldercustom WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QString sql("DELETE FROM mailfoldercustom");
+        QSqlQuery query(simpleQuery(sql, Key(QMailFolderKey::id(deletedFolders)),
                                     "deleteFolders delete mailfoldercustom query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5637,9 +5634,8 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
 
     {
         // Perform the folder deletion
-        QString sql("DELETE FROM mailfolders WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QString sql("DELETE FROM mailfolders");
+        QSqlQuery query(simpleQuery(sql, Key(QMailFolderKey::id(deletedFolders)),
                                     "deleteFolders delete mailfolders query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
