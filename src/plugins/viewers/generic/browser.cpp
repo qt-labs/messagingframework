@@ -38,6 +38,11 @@ static QString dateString(const QDateTime& dt)
     }
 }
 
+static uint qHash(const QUrl &url)
+{
+    return qHash(url.toString());
+}
+
 Browser::Browser( QWidget *parent  )
     : QTextBrowser( parent ),
       replySplitter( &Browser::handleReplies )
@@ -57,7 +62,9 @@ void Browser::scrollBy(int dx, int dy)
 
 void Browser::setResource( const QUrl& name, QVariant var )
 {
-    resourceMap[name] = var;
+    if (!resourceMap.contains(name)) {
+        resourceMap.insert(name, var);
+    }
 }
 
 void Browser::clearResources()
@@ -80,12 +87,15 @@ QList<QString> Browser::embeddedNumbers() const
     return result;
 }
 
-void Browser::setTextResource(const QUrl& name, const QString& textData)
+void Browser::setTextResource(const QSet<QUrl>& names, const QString& textData)
 {
-    setResource(name, QVariant(textData));
+    QVariant data(textData);
+    foreach (const QUrl &url, names) {
+        setResource(url, data);
+    }
 }
 
-void Browser::setImageResource(const QUrl& name, const QByteArray& imageData)
+void Browser::setImageResource(const QSet<QUrl>& names, const QByteArray& imageData)
 {
     // Create a image from the data
     QDataStream imageStream(&const_cast<QByteArray&>(imageData), QIODevice::ReadOnly);
@@ -117,19 +127,36 @@ void Browser::setImageResource(const QUrl& name, const QByteArray& imageData)
             image = image.scaled(maxWidth, INT_MAX, Qt::KeepAspectRatio);
     }
 
-    setResource(name, QVariant(image));
+    QVariant data(image);
+    foreach (const QUrl &url, names) {
+        setResource(url, data);
+    }
 }
 
 void Browser::setPartResource(const QMailMessagePart& part)
 {
-    QString partId = Qt::escape(part.displayName());
-    QUrl url(partId);
+    QSet<QUrl> names;
 
-    if (!resourceMap.contains(url)) {
-        if (part.contentType().type().toLower() == "text")
-            setTextResource(url, part.body().data());
-        else if (part.contentType().type().toLower() == "image")
-            setImageResource(url, part.body().data(QMailMessageBody::Decoded));
+    QString name(part.displayName());
+    if (!name.isEmpty()) {
+        names.insert(QUrl(Qt::escape(name)));
+    }
+
+    name = part.contentID();
+    if (!name.isEmpty()) {
+        names.insert(QUrl("cid:" + name));
+        names.insert(QUrl("CID:" + name));
+    }
+
+    name = part.contentType().name();
+    if (!name.isEmpty()) {
+        names.insert(QUrl(Qt::escape(name)));
+    }
+
+    if (part.contentType().type().toLower() == "text") {
+        setTextResource(names, part.body().data());
+    } else if (part.contentType().type().toLower() == "image") {
+        setImageResource(names, part.body().data(QMailMessageBody::Decoded));
     }
 }
 

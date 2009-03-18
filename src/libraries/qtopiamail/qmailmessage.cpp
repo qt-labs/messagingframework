@@ -4734,18 +4734,37 @@ void QMailMessagePart::setReference(const QMailMessagePart::Location &location, 
 
 /*!
     Returns the Content-Id header field for the part, if present; otherwise returns an empty string.
+
+    If the header field content is surrounded by angle brackets, these are removed.
 */
 QString QMailMessagePart::contentID() const
 {
-    return headerFieldText("Content-ID");
+    QString result(headerFieldText("Content-ID"));
+    if (!result.isEmpty() && (result[0] == QChar('<')) && (result[result.length() - 1] == QChar('>'))) {
+        return result.mid(1, result.length() - 2);
+    }
+
+    return result;
 }
 
 /*!
     Sets the Content-Id header field for the part to contain \a id.
+
+    If \a id is not surrounded by angle brackets, these are added.
 */
 void QMailMessagePart::setContentID(const QString &id)
 {
-    setHeaderField("Content-ID", id);
+    QString str(id);
+    if (!str.isEmpty()) {
+        if (str[0] != QChar('<')) {
+            str.prepend('<');
+        }
+        if (str[str.length() - 1] != QChar('>')) {
+            str.append('>');
+        }
+    }
+
+    setHeaderField("Content-ID", str);
 }
 
 /*!

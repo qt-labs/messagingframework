@@ -14,6 +14,7 @@
 #include <QList>
 #include <qmailaddress.h>
 #include <QMap>
+#include <QSet>
 #include <QString>
 #include <QTextBrowser>
 #include <QUrl>
@@ -53,8 +54,8 @@ private:
     void displayPlainText(const QMailMessage* mail);
     void displayHtml(const QMailMessage* mail);
 
-    void setTextResource(const QUrl& name, const QString& textData);
-    void setImageResource(const QUrl& name, const QByteArray& imageData);
+    void setTextResource(const QSet<QUrl>& names, const QString& textData);
+    void setImageResource(const QSet<QUrl>& names, const QByteArray& imageData);
     void setPartResource(const QMailMessagePart& part);
 
     QString renderSimplePart(const QMailMessagePart& part);

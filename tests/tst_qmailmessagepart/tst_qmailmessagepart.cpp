@@ -89,8 +89,8 @@ void tst_QMailMessagePart::setContentID()
 {
     QMailMessagePart part;
 
-    QString id1("Some content-ID <x@yyyy>");
-    QString id2("Some other content-ID <y@yyyy>");
+    QString id1("Some content-ID x@yyyy");
+    QString id2("<Some other content-ID y@yyyy>");
 
     QCOMPARE( part.contentID(), QString() );
 
@@ -98,7 +98,7 @@ void tst_QMailMessagePart::setContentID()
     QCOMPARE( part.contentID(), id1 );
 
     part.setContentID(id2);
-    QCOMPARE( part.contentID(), id2 );
+    QCOMPARE( part.contentID(), id2.mid(1, id2.length() - 2) );
 }
 
 void tst_QMailMessagePart::contentLocation()
@@ -352,7 +352,7 @@ CRLF
 "--" BOUNDARY CRLF
 "Content-Type: text/plain; charset=us-ascii" CRLF
 "Content-Transfer-Encoding: 7bit" CRLF
-"Content-ID: P1" CRLF
+"Content-ID: <P1>" CRLF
 "Content-Location: After the header" CRLF
 "Content-Description: The first part" CRLF
 CRLF
