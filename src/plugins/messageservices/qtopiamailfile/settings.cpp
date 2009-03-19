@@ -62,7 +62,7 @@ bool QtopiamailfileSettings::updateAccount(QMailAccount *, QMailAccountConfigura
         config->addServiceConfiguration(serviceKey);
 
     QMailAccountConfiguration::ServiceConfiguration &svcCfg(config->serviceConfiguration(serviceKey));
-    svcCfg.setValue("version", "100");
+    svcCfg.setValue("version", "101");
     svcCfg.setValue("servicetype", "storage");
 
     svcCfg.setValue("basePath", locations[locationSelector->currentIndex()].second);

@@ -31,10 +31,12 @@ public:
     QMailStore::ErrorCode remove(const QString &identifier);
     QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message);
 
+    bool init();
     void clearContent();
 
     static const QString &messagesBodyPath(const QMailAccountId &accountId);
     static QString messageFilePath(const QString &fileName, const QMailAccountId &accountId);
+    static QString messagePartDirectory(const QString &fileName);
     static QString messagePartFilePath(const QMailMessagePart &part, const QString &fileName);
 
 protected slots:
@@ -45,7 +47,7 @@ private:
 
     bool addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing);
     bool loadParts(QMailMessage *message, QMailMessagePartContainer *container, const QString &fileName);
-    void removeParts(const QMailMessagePartContainer &container, const QString &fileName);
+    bool removeParts(const QString &fileName);
 };
 
 

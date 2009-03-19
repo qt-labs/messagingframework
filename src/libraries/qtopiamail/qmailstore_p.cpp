@@ -2010,6 +2010,11 @@ bool QMailStorePrivate::initStore()
     query.exec(QLatin1String("PRAGMA cache_size=50"));
 #endif
 
+    if (!QMailContentManagerFactory::init()) {
+        qMailLog(Messaging) << "Could not initialize content manager factory";
+        return false;
+    }
+
     // We are now correctly initialized
     init = true;
     return true;
