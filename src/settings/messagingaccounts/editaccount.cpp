@@ -141,6 +141,9 @@ void EditAccount::setAccount(QMailAccount *in, QMailAccountConfiguration* conf)
         }
     } else {
         setWindowTitle( tr("Create new account", "translation not longer than English") );
+
+        // We have a default selection for Storage
+        selectService(Storage, 0);
     }
 }
 
