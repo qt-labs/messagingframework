@@ -103,6 +103,52 @@ bool pathOnDefault(const QString &path)
     return path.startsWith(defaultPath());
 }
 
+bool migrateAccountToVersion101(const QMailAccountId &accountId)
+{
+    foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId))) {
+        const QMailMessage message(id);
+
+        if (message.multipartType() != QMailMessage::MultipartNone) {
+            // Any part files for this message need to be moved to the new location
+            QString fileName(message.contentIdentifier());
+
+            QFileInfo fi(fileName);
+            QDir path(fi.dir());
+            path.setNameFilters(QStringList() << (fi.fileName() + "-[0-9]*"));
+
+            QStringList entries(path.entryList());
+            if (!entries.isEmpty()) {
+                // Does the part directory exist?
+                QString partDirectory(QtopiamailfileManager::messagePartDirectory(fileName));
+                if (!QDir(partDirectory).exists()) {
+                    if (!QDir::root().mkpath(partDirectory)) {
+                        qMailLog(Messaging) << "Unable to create directory for message part content:" << partDirectory;
+                        return false;
+                    }
+                }
+
+                foreach (const QString &entry, entries) {
+                    QFile existing(path.filePath(entry));
+
+                    // We need to move this file to the subdirectory
+                    QString newName(partDirectory + '/');
+                    int index = entry.lastIndexOf('-');
+                    if (index != -1) {
+                        newName.append(entry.mid(index + 1));
+                    }
+
+                    if (!existing.rename(newName)) {
+                        qMailLog(Messaging) << "Unable to move part file to new name:" << newName;
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 }
 
 
@@ -175,7 +221,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
         }
 
         // Try to remove any parts that were created
-        removeParts(*message, message->contentIdentifier());
+        removeParts(message->contentIdentifier());
 
         return QMailStore::FrameworkFault;
     }
@@ -211,14 +257,14 @@ QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
 
     QFileInfo fi(identifier);
     QDir path(fi.dir());
-    path.setNameFilters(QStringList() << (fi.fileName() + '*'));
+    if (!path.remove(fi.fileName())) {
+        qMailLog(Messaging) << "Unable to remove content file:" << identifier;
+        result = QMailStore::FrameworkFault;
+    }
 
-    foreach (const QString &entry, path.entryList()) {
-        QString filePath(path.filePath(entry));
-        if (!QFile::remove(filePath)) {
-            qMailLog() << "Unable to remove content file:" << filePath;
-            result = QMailStore::FrameworkFault;
-        }
+    if (!removeParts(identifier)) {
+        qMailLog(Messaging) << "Unable to remove part content files for:" << identifier;
+        result = QMailStore::FrameworkFault;
     }
 
     return result;
@@ -247,6 +293,79 @@ QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMa
 
     *message = result;
     return QMailStore::NoError;
+}
+
+bool QtopiamailfileManager::init()
+{
+    // It used to be possible for accounts to not have a storage service configured.
+    // If so, add a configuration to those accounts for qtopiamailfile
+    foreach (const QMailAccountId &accountId, QMailStore::instance()->queryAccounts()) {
+        QMailAccountConfiguration config(accountId);
+
+        if (!config.services().contains(gKey)) {
+            bool storageConfigured(false);
+
+            // See if any of these services are for storage
+            foreach (const QString &service, config.services()) {
+                QMailAccountConfiguration::ServiceConfiguration &svcCfg(config.serviceConfiguration(service));
+
+                if (svcCfg.value("servicetype") == "storage") {
+                    storageConfigured = true;
+                    break;
+                }
+            }
+
+            if (!storageConfigured) {
+                // Add a configuration for our default service
+                config.addServiceConfiguration(gKey);
+
+                QMailAccountConfiguration::ServiceConfiguration &svcCfg(config.serviceConfiguration(gKey));
+                svcCfg.setValue("version", "100");
+                svcCfg.setValue("servicetype", "storage");
+
+                if (QMailStore::instance()->updateAccountConfiguration(&config)) {
+                    qMailLog(Messaging) << "Added storage configuration for account" << accountId;
+                } else {
+                    qWarning() << "Unable to add missing storage configuration for account:" << accountId;
+                    return false;
+                }
+            }
+        }
+    }
+
+    // Migrate any data in older formats
+    foreach (const QMailAccountId &accountId, QMailStore::instance()->queryAccounts()) {
+        QMailAccountConfiguration config(accountId);
+
+        if (config.services().contains(gKey)) {
+            // This account uses our content manager
+            QMailAccountConfiguration::ServiceConfiguration &svcCfg = config.serviceConfiguration(gKey);
+            int version = svcCfg.value("version").toInt();
+
+            if (version == 100) {
+                // Version 100 - part files are not in subdirectories
+                if (!migrateAccountToVersion101(accountId)) {
+                    qWarning() << "Unable to migrate account data to version 101 for account:" << accountId;
+                    return false;
+                }
+
+                version = 101;
+            }
+
+            if (svcCfg.value("version").toInt() != version) {
+                svcCfg.setValue("version", QString::number(version));
+
+                if (QMailStore::instance()->updateAccountConfiguration(&config)) {
+                    qMailLog(Messaging) << "Migrated content data for account" << accountId << "to version" << version;
+                } else {
+                    qWarning() << "Unable to update account configuration for account:" << accountId;
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 void QtopiamailfileManager::clearContent()
@@ -289,11 +408,25 @@ QString QtopiamailfileManager::messageFilePath(const QString &fileName, const QM
 
 QString QtopiamailfileManager::messagePartFilePath(const QMailMessagePart &part, const QString &fileName)
 {
-    return fileName + '-' + part.location().toString(false); 
+    return messagePartDirectory(fileName) + '/' + part.location().toString(false); 
+}
+
+QString QtopiamailfileManager::messagePartDirectory(const QString &fileName)
+{
+    return fileName + "-parts";
 }
 
 bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing)
 {
+    // Ensure that the part directory exists
+    QString partDirectory(messagePartDirectory(fileName));
+    if (!QDir(partDirectory).exists()) {
+        if (!QDir::root().mkpath(partDirectory)) {
+            qMailLog(Messaging) << "Unable to create directory for message part content:" << partDirectory;
+            return false;
+        }
+    }
+
     for (uint i = 0; i < container.partCount(); ++i) {
         const QMailMessagePart &part(container.partAt(i));
         QString loc = part.location().toString(false);
@@ -407,26 +540,31 @@ bool QtopiamailfileManager::loadParts(QMailMessage *message, QMailMessagePartCon
     return true;
 }
 
-void QtopiamailfileManager::removeParts(const QMailMessagePartContainer &container, const QString &fileName)
+bool QtopiamailfileManager::removeParts(const QString &fileName)
 {
-    for (uint i = 0; i < container.partCount(); ++i) {
-        const QMailMessagePart &part(container.partAt(i));
+    bool result(true);
 
-        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-            if (part.hasBody()) {
-                QString partFilePath(messagePartFilePath(part, fileName));
+    QString partDirectory(messagePartDirectory(fileName));
 
-                if (QFile::exists(partFilePath)) {
-                    if (!QFile::remove(partFilePath)){
-                        qMailLog(Messaging) << "Unable to remove message part content file:" << partFilePath;
-                    }
+    QDir dir(partDirectory);
+    if (dir.exists()) {
+        // Remove any files in this directory
+        foreach (const QString &entry, dir.entryList()) {
+            if ((entry != QLatin1String(".")) && (entry != QLatin1String(".."))) {
+                if (!dir.remove(entry)) {
+                    qMailLog(Messaging) << "Unable to remove part file:" << entry;
+                    result = false;
                 }
             }
-        } else {
-            // Remove any sub-parts of this part
-            removeParts(part, fileName);
+        }
+
+        if (!QDir::root().rmdir(dir.absolutePath())) {
+            qMailLog(Messaging) << "Unable to remove directory for message part content:" << partDirectory;
+            result = false;
         }
     }
+
+    return result;
 }
 
 Q_EXPORT_PLUGIN2(qtopiamailfilemanager,QtopiamailfileManagerPlugin)

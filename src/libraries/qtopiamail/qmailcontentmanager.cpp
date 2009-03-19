@@ -101,6 +101,19 @@ QMailContentManager *QMailContentManagerFactory::create(const QString &scheme)
 }
 
 /*!
+    Performs any initialization tasks for content managers known to the factory.
+    Returns false if any content managers are unable to perform initialiation tasks.
+*/
+bool QMailContentManagerFactory::init()
+{
+    foreach (QMailContentManager *manager, pluginMap().values())
+        if (!manager->init())
+            return false;
+
+    return true;
+}
+
+/*!
     Clears the content managed by all content managers known to the factory.
 */
 void QMailContentManagerFactory::clearContent()
@@ -248,6 +261,17 @@ QMailContentManager::QMailContentManager()
 /*! \internal */
 QMailContentManager::~QMailContentManager()
 {
+}
+
+/*!
+    Directs the content manager to perform any initialization tasks required.
+    The content manager should return false if unable to perform initialization tasks; otherwise return true.
+
+    This function is called by the mail store after it has been successfully initialized.
+*/
+bool QMailContentManager::init()
+{
+    return true;
 }
 
 /*!

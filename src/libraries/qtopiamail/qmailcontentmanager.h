@@ -29,6 +29,7 @@ public:
 
     static QMailContentManager *create(const QString &scheme);
 
+    static bool init();
     static void clearContent();
 };
 
@@ -71,6 +72,7 @@ public:
     virtual QMailStore::ErrorCode remove(const QString &identifier) = 0;
     virtual QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message) = 0;
 
+    virtual bool init();
     virtual void clearContent();
 };
 
