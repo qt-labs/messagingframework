@@ -1,0 +1,79 @@
+Source: qt4-messagingframework
+Section: libs
+Priority: optional
+Maintainer: Shane Bradley <shane.bradley@nokia.com>
+Build-Depends: cdbs, debhelper (>= 5), quilt, libqt4-dev (>= 4.5)
+Standards-Version: 3.7.3
+
+Package: libqmf0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+#Recommends: libqmf-plugins
+Description: Qt Messaging Framework library
+ The Qt Messaging Framework Library provides a set of APIs
+ that support the most common operations related
+ to arbitrary messages such as creation, modification,
+ retrieval, storage and display of messages. It
+ defines interfaces which enable the integration
+ of new message types. Therefore multiple applications
+ can access the data independ of their storage and if
+ necessary on a concurrent base.
+
+#Package: libqmf-dev
+#Section: libdevel
+#Architecture: any
+#Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
+#Recommends: libqmf-doc
+#Description: Qt Messaging Framework Library development files
+# Development files for Qt Messaging Framework Library.
+# .
+# The Qt Messaging Framework Library provides a set of APIs
+# that support the most common operations related
+# to arbitrary messages such as creation, modification,
+# retrieval, storage and display of messages. It
+# defines interfaces which enable the integration
+# of new message types. Therefore multiple applications
+# can access the data independ of their storage and if
+# necessary on a concurrent base.
+
+Package: libqmf0-dbg
+Section: libdevel
+Priority: extra
+Architecture: any
+Depends: libqmf0 (= ${binary:Version})
+Description: Qt Messaging Framework Library debug information.
+ Debug information of the Qt Messaging Framework Library.
+
+#Package: libqmf-doc
+#Section: doc
+#Architecture: any
+##Recommends: libqmf0, libqmf-dev
+#Description: Qt Messaging Framework Library documentation.
+# Documentation for the Qt Messaging Framework Library.
+
+Package: libqmf-plugins
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Plugins for Qt Messaging Framework Library and Messaging Server
+ Plugins library consist of set of plugins for
+ extending functionality of the Messagins Server.
+ .
+ Following protocols are supported:
+ * POP3
+ * IMAP
+ * SMTP
+ .
+ Default mail content manager is provided as a plugin also.
+
+Package: qmfserver
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: libqmf-plugins
+Description: The Qt Messaging Server
+ The Message server daemon can send and retrieve
+ messages of various types from multiple sources
+ such as POP and IMAP accounts or a local SIM card.
+ It forms the back-end of the Qtopia Messaging
+ framework.
