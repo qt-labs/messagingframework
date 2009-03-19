@@ -338,9 +338,10 @@ void ImapClient::idleTimeOut()
 }
 
 void ImapClient::commandCompleted(ImapCommand command, OperationStatus status)
-{    
+{
     checkCommandResponse(command, status);
-    commandTransition(command, status);
+    if (status == OpOk)
+        commandTransition(command, status);
 }
 
 void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus status)
@@ -421,7 +422,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 && _protocol.supportsCapability("IDLE")
                 && imapCfg.pushEnabled()) {
                 _waitingForIdle = true;
-                _idleRecoveryTimer.start(_idleRetryDelay*1000); // Detect an unresponsive server
+                _idleRecoveryTimer.start(4*_idleRetryDelay*1000); // Detect an unresponsive server, allow for 4 roundtrips
                 emit updateStatus( tr("Logging in idle connection" ) );
                 _idleProtocol.open(imapCfg);
             } else {
