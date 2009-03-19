@@ -1330,12 +1330,17 @@ void IdleState::continuationResponse(ImapContext *c, const QString &)
     c->continuation(command(), QString("idling"));
 }
 
-void IdleState::untaggedResponse(ImapContext *c, const QString &)
+void IdleState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    // There may be some benefit to parsing the untagged data in this state?
-
-    // Treat this event as a continuation point
-    c->continuation(command(), QString("event"));
+    QString str = line;
+    QRegExp idleResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    if ((idleResponsePattern.indexIn(str) == 0) 
+        && (idleResponsePattern.cap(1).compare("EXISTS", Qt::CaseInsensitive) == 0)) {
+        // Treat this event as a continuation point
+        c->continuation(command(), QString("event"));
+    }
+    
+    // If CONDSTORE is supported we should also check for FETCH responses to pick up flag changes
 }
 
 
