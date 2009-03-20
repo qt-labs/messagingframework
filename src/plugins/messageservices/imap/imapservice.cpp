@@ -37,7 +37,7 @@ public:
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
-        connect(&_service->_client, SIGNAL(idleChangeNotification()), this, SLOT(queueMailCheck()));
+        connect(&_service->_client, SIGNAL(idleNewMailNotification()), this, SLOT(queueMailCheck()));
         connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
     }
     

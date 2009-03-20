@@ -96,7 +96,7 @@ public:
     ImapProtocol();
     ~ImapProtocol();
 
-    bool open(const ImapConfiguration& config);
+    virtual bool open(const ImapConfiguration& config);
     void close();
     bool connected() const;
     bool encrypted() const;
