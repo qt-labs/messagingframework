@@ -367,6 +367,14 @@ private:
                                  QMailMessage *result, 
                                  ReadLock &);
 
+    AttemptResult attemptMessageMetaData(const QMailMessageId &id, 
+                                         QMailMessageMetaData *result, 
+                                         ReadLock &);
+
+    AttemptResult attemptMessageMetaData(const QString &uid, const QMailAccountId &accountId, 
+                                         QMailMessageMetaData *result, 
+                                         ReadLock &);
+
     AttemptResult attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option, 
                                           QMailMessageMetaDataList *result, 
                                           ReadLock &);
@@ -394,9 +402,14 @@ private:
     AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
                                            Transaction &t);
 
+    AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId, 
+                                   quint64 *result, 
+                                   ReadLock &);
+
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
     QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties = allMessageProperties());
+    QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageRemovalRecord extractMessageRemovalRecord(const QSqlRecord& r);
 
