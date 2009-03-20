@@ -404,7 +404,8 @@ private:
     virtual void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal, const QMailFolderIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids);
 
-    static const int headerCacheSize = 100;
+    static const int messageCacheSize = 100;
+    static const int uidCacheSize = 500;
     static const int folderCacheSize = 10;
     static const int accountCacheSize = 10;
     static const int lookAhead = 5;
@@ -422,30 +423,43 @@ private:
     static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 
 private:
-    template <typename T, typename ID> 
+    template <typename T, typename KeyType> 
     class Cache
     {
     public:
         Cache(unsigned int size = 10);
         ~Cache();
 
+        T lookup(const KeyType& key) const;
+        void insert(const KeyType& key, const T& item);
+        bool contains(const KeyType& key) const;
+        void remove(const KeyType& key);
+        void clear();
+
+    private:
+        QCache<KeyType,T> mCache;
+    };
+
+    template <typename T, typename ID> 
+    class IdCache : public Cache<T, quint64>
+    {
+    public:
+        IdCache(unsigned int size = 10) : Cache<T, quint64>(size) {}
+
         T lookup(const ID& id) const;
         void insert(const T& item);
         bool contains(const ID& id) const;
         void remove(const ID& id);
-        void clear();
-
-    private:
-        QCache<quint64,T> mCache;
     };
 
     mutable QSqlDatabase database;
     
     mutable QMailMessageIdList lastQueryMessageResult;
 
-    mutable Cache<QMailMessageMetaData, QMailMessageId> headerCache;
-    mutable Cache<QMailFolder, QMailFolderId> folderCache;
-    mutable Cache<QMailAccount, QMailAccountId> accountCache;
+    mutable IdCache<QMailMessageMetaData, QMailMessageId> messageCache;
+    mutable Cache<QMailMessageId, QPair<QMailAccountId, QString> > uidCache;
+    mutable IdCache<QMailFolder, QMailFolderId> folderCache;
+    mutable IdCache<QMailAccount, QMailAccountId> accountCache;
 
     mutable QList<const QMailMessageKey*> requiredTableKeys;
     mutable QList<const QMailMessageKey*> temporaryTableKeys;
@@ -477,50 +491,79 @@ ValueType QMailStorePrivate::extractValue(const QVariant &var, const ValueType &
 }
 
 
-template <typename T, typename ID> 
-QMailStorePrivate::Cache<T, ID>::Cache(unsigned int cacheSize)
+template <typename T, typename KeyType> 
+QMailStorePrivate::Cache<T, KeyType>::Cache(unsigned int cacheSize)
     : mCache(cacheSize)
 {
 }
 
-template <typename T, typename ID> 
-QMailStorePrivate::Cache<T, ID>::~Cache()
+template <typename T, typename KeyType> 
+QMailStorePrivate::Cache<T, KeyType>::~Cache()
 {
 }
 
-template <typename T, typename ID> 
-T QMailStorePrivate::Cache<T, ID>::lookup(const ID& id) const
+template <typename T, typename KeyType> 
+T QMailStorePrivate::Cache<T, KeyType>::lookup(const KeyType& key) const
 {
-    if (id.isValid())
-        if (T* cachedItem = mCache.object(id.toULongLong()))
-            return *cachedItem;
+    if (T* cachedItem = mCache.object(key))
+        return *cachedItem;
+
+    return T();
+}
+
+template <typename T, typename KeyType> 
+void QMailStorePrivate::Cache<T, KeyType>::insert(const KeyType& key, const T& item)
+{
+    mCache.insert(key,new T(item));
+}
+
+template <typename T, typename KeyType> 
+bool QMailStorePrivate::Cache<T, KeyType>::contains(const KeyType& key) const
+{
+    return mCache.contains(key);
+}
+
+template <typename T, typename KeyType> 
+void QMailStorePrivate::Cache<T, KeyType>::remove(const KeyType& key)
+{
+    mCache.remove(key);
+}
+
+template <typename T, typename KeyType> 
+void QMailStorePrivate::Cache<T, KeyType>::clear()
+{
+    mCache.clear();
+}
+
+
+template <typename T, typename ID> 
+T QMailStorePrivate::IdCache<T, ID>::lookup(const ID& id) const
+{
+    if (id.isValid()) {
+        return Cache<T, quint64>::lookup(id.toULongLong());
+    }
 
     return T();
 }
 
 template <typename T, typename ID> 
-void QMailStorePrivate::Cache<T, ID>::insert(const T& item)
+void QMailStorePrivate::IdCache<T, ID>::insert(const T& item)
 {
-    if (item.id().isValid())
-        mCache.insert(item.id().toULongLong(),new T(item));
+    if (item.id().isValid()) {
+        Cache<T, quint64>::insert(item.id().toULongLong(), item);
+    }
 }
 
 template <typename T, typename ID> 
-bool QMailStorePrivate::Cache<T, ID>::contains(const ID& id) const
+bool QMailStorePrivate::IdCache<T, ID>::contains(const ID& id) const
 {
-    return mCache.contains(id.toULongLong());
+    return Cache<T, quint64>::contains(id.toULongLong());
 }
 
 template <typename T, typename ID> 
-void QMailStorePrivate::Cache<T, ID>::remove(const ID& id)
+void QMailStorePrivate::IdCache<T, ID>::remove(const ID& id)
 {
-    mCache.remove(id.toULongLong());
-}
-
-template <typename T, typename ID> 
-void QMailStorePrivate::Cache<T, ID>::clear()
-{
-    mCache.clear();
+    Cache<T, quint64>::remove(id.toULongLong());
 }
 
 #endif
