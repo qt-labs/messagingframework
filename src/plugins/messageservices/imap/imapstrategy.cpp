@@ -1475,8 +1475,11 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QStringList reportedUids = _seenUids + _unseenUids;
 
     QStringList readElsewhereUids = context->client()->serverUids(_folderId, QMailMessage::ReadElsewhere);
+    readElsewhereUids = inFirstAndSecond(readElsewhereUids, _serverUids);
     QStringList unreadElsewhereUids = context->client()->serverUids(_folderId, QMailMessage::ReadElsewhere, false);
+    unreadElsewhereUids = inFirstAndSecond(unreadElsewhereUids, _serverUids);
     QStringList deletedUids = context->client()->deletedMessages(_folderId);
+    deletedUids = inFirstAndSecond(deletedUids, _serverUids);
 
     QStringList storedUids = readElsewhereUids + unreadElsewhereUids + deletedUids;
 
