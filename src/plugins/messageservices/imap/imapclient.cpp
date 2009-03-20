@@ -271,7 +271,8 @@ void ImapClient::idleCommandTransition(const ImapCommand command, const Operatio
 {
     if ( status != OpOk ) {
         idleTransportError();
-        commandCompleted(IMAP_Idle_Continuation, OpOk);
+        if (_waitingForIdle)
+            commandCompleted(IMAP_Idle_Continuation, OpOk);
         return;
     }
     
