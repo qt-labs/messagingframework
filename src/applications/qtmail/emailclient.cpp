@@ -341,6 +341,7 @@ MessageListView* MessageUiBase::createMessageListView()
     connect(view, SIGNAL(selectionChanged()), this, SLOT(messageSelectionChanged()) );
     connect(view, SIGNAL(resendRequested(QMailMessage,int)), this, SLOT(resend(QMailMessage,int)) );
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
+    connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );
 
     return view;
 }
@@ -1701,6 +1702,11 @@ void EmailClient::modify(const QMailMessage& message)
 
 void EmailClient::retrieveMoreMessages()
 {
+    if (isRetrieving()) {
+        qWarning() << "retrieveMoreMessages called while retrieval in progress";
+        return;
+    }
+    
     QMailFolderId folderId(messageListView()->folderId());
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
@@ -1723,6 +1729,21 @@ void EmailClient::retrieveMoreMessages()
     }
 }
 
+void EmailClient::retrieveVisibleMessagesFlags()
+{
+    if (isRetrieving()) {
+        qWarning() << "retrieveVisibleMessagesFlags called while retrieval in progress";
+        return;
+    }
+
+    QMailMessageIdList ids(messageListView()->visibleMessagesIds());
+        
+    if (ids.isEmpty())
+        return;
+    
+    setRetrievalInProgress(true);
+    retrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
+}
 
 void EmailClient::composeActivated()
 {

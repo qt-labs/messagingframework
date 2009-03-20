@@ -185,6 +185,7 @@ protected slots:
     void modify(const QMailMessage& message);
 
     void retrieveMoreMessages();
+    void retrieveVisibleMessagesFlags();
 
     bool removeMessage(const QMailMessageId& id, bool userRequest);
 

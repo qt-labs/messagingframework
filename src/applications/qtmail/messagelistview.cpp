@@ -202,10 +202,12 @@ public:
 
 signals:
     void backPressed();
+    void scrolled();
 
 protected:
     void keyPressEvent(QKeyEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
+    void scrollContentsBy(int dx, int dy);
 
     QPoint pos;
 };
@@ -247,6 +249,11 @@ void MessageList::mouseReleaseEvent(QMouseEvent* e)
     QTreeView::mouseReleaseEvent(e);
 }
 
+void MessageList::scrollContentsBy(int dx, int dy)
+{
+    QTreeView::scrollContentsBy(dx, dy);
+    emit scrolled();
+}
 
 MessageListView::MessageListView(QWidget* parent)
 :
@@ -354,6 +361,16 @@ void MessageListView::init()
             this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(mFilterModel, SIGNAL(layoutChanged()),
             this, SLOT(layoutChanged()));
+
+    mScrollTimer.setSingleShot(true);
+    connect(mMessageList, SIGNAL(scrolled()),
+            this, SLOT(reviewVisibleMessages()));
+    connect(&mScrollTimer, SIGNAL(timeout()),
+            this, SLOT(scrollTimeout()));
+    connect(mFilterModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
+    connect(mFilterModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
 
     QHBoxLayout* hLayout = new QHBoxLayout(mFilterFrame);
     hLayout->setContentsMargins(0,0,0,0);
@@ -630,6 +647,72 @@ void MessageListView::layoutChanged()
         mSelectedRowsRemoved = false;
         emit selectionChanged();
     }
+}
+
+void MessageListView::reviewVisibleMessages()
+{
+    const int maximumRefreshRate = 15; //seconds
+    
+    if (mScrollTimer.isActive())
+        return;
+
+    mPreviousVisibleItems = visibleMessagesIds();
+    emit visibleMessagesChanged();
+    
+    mScrollTimer.start(maximumRefreshRate*1000);
+}
+
+void MessageListView::scrollTimeout()
+{
+    QMailMessageIdList strictlyVisibleIds(visibleMessagesIds(false));
+    bool contained = true;
+    foreach(QMailMessageId id, strictlyVisibleIds) {
+        if (!mPreviousVisibleItems.contains(id)) {
+            contained = false;
+            break;
+        }
+    }
+    if (!contained) {
+        reviewVisibleMessages();
+    } else {
+        mPreviousVisibleItems.clear();
+    }
+}
+
+QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
+{
+    QMailMessageIdList visibleIds;
+    const int bufferWidth = 50;
+
+    QRect viewRect(mMessageList->viewport()->rect());
+    QModelIndex start(mMessageList->indexAt(QPoint(0,0)));
+    QModelIndex index = start;
+    while (index.isValid()) { // Add visible items
+        QRect indexRect(mMessageList->visualRect(index));
+        if (!indexRect.isValid() || (!viewRect.intersects(indexRect)))
+            break;
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexBelow(index);
+    }
+    if (!buffer)
+        return visibleIds;
+    
+    int i = bufferWidth;
+    while (index.isValid() && (i > 0)) { // Add succeeding items
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexBelow(index);
+        --i;
+    }
+    i = bufferWidth;
+    index = start;
+    if (index.isValid())
+        index = mMessageList->indexAbove(index);
+    while (index.isValid() && (i > 0)) { // Add preceding items
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexAbove(index);
+        --i;
+    }
+    return visibleIds;
 }
 
 bool MessageListView::eventFilter(QObject *, QEvent *event)
