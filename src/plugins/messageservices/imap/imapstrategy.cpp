@@ -1570,12 +1570,12 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
         if (context->mailbox().isSelected()) {
             uidNext = context->mailbox().uidNext;
             exists = context->mailbox().exists;
-            QMailFolder folder(context->mailbox().id);
             _lastUidNextMap.insert(_folderId, uidNext);
             _lastExistsMap.insert(_folderId, exists);
         }
-        if ((uidNext < 0) || (exists < 0) || (lastUidNext < 0) || (lastExists < 0))
+        if ((uidNext < 0) || (exists < 0) || (lastUidNext < 0) || (lastExists < 0)) {
             comparable = false;
+        }
         
         // We're searching mailboxes
         int start = context->mailbox().exists - _minimum + 1;
@@ -1621,10 +1621,10 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         if (!clientList.isEmpty() && !serverList.isEmpty()) {
             uint newestClient(clientList.last().toUInt(&ok1));
             uint oldestServer(serverList.first().toUInt(&ok2));
-            if (ok1 && ok2 && (newestClient < oldestServer)) {
+            if (ok1 && ok2 && (newestClient + 1 < oldestServer)) {
                 // There's a gap
                 _fillingGap = true;
-                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient).arg(serverList.last()));
+                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(serverList.last()));
                 return;
             }
         }
