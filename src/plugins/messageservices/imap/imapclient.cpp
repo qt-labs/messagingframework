@@ -1029,6 +1029,9 @@ void ImapClient::idling()
 
 void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 {
+    static int count(0);
+    ++count;
+    
     ImapConfiguration imapCfg(_config);
     if (!_protocol.supportsCapability("IDLE")
         || !imapCfg.pushEnabled()) {
@@ -1046,6 +1049,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
     foreach(QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
             IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id));
+            protocol->setObjectName(QString("J:%1").arg(count));
             _monitored.insert(id, protocol);
             connect(protocol, SIGNAL(idleNewMailNotification(QMailFolder&)),
                     this, SIGNAL(idleNewMailNotification()));
