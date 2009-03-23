@@ -377,7 +377,8 @@ EmailClient::EmailClient( QWidget* parent )
       preSearchWidgetId(-1),
       searchAction(0),
       m_messageServerProcess(0),
-      syncState(ListFolders)
+      syncState(ListFolders),
+      refreshVisibleQueued(false)
 {
     setObjectName( "EmailClient" );
 
@@ -988,6 +989,8 @@ void EmailClient::retrievalCompleted()
             clearStatusText();
 
         setRetrievalInProgress(false);
+        if (refreshVisibleQueued)
+            retrieveVisibleMessagesFlags();
     }
 }
 
@@ -1089,12 +1092,12 @@ void EmailClient::getNextNewMail()
     } else {
         // We have processed all accounts
         autoGetMail = false;
+        mailAccountId = QMailAccountId();
 
         if (primaryActivity == Retrieving)
             clearStatusText();
 
         setRetrievalInProgress(false);
-
     }
 }
 
@@ -1731,13 +1734,15 @@ void EmailClient::retrieveMoreMessages()
 
 void EmailClient::retrieveVisibleMessagesFlags()
 {
+    // This code to detect flag changes is required to address a limitation 
+    // of IMAP servers that do not support NOTIFY+CONDSTORE functionality.
     if (isRetrieving()) {
-        qWarning() << "retrieveVisibleMessagesFlags called while retrieval in progress";
+        refreshVisibleQueued = true;
         return;
     }
 
+    refreshVisibleQueued = false;
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
-        
     if (ids.isEmpty())
         return;
     

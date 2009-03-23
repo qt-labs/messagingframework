@@ -344,6 +344,7 @@ private:
     QProcess* m_messageServerProcess;
 
     SyncState syncState;
+    bool refreshVisibleQueued;
 };
 
 #endif

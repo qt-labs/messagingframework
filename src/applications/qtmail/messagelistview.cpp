@@ -287,6 +287,8 @@ QMailMessageKey MessageListView::key() const
 void MessageListView::setKey(const QMailMessageKey& key)
 {
     mModel->setKey(key);
+    mScrollTimer.stop();
+    QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
 }
 
 QMailMessageSortKey MessageListView::sortKey() const
