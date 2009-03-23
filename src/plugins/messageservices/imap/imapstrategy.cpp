@@ -1367,9 +1367,16 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
    That is to detect changes to flags (unseen->seen) 
    and to detect deleted mails.
 */
+void ImapUpdateMessagesFlagsStrategy::clearSelection()
+{
+    ImapMessageListStrategy::clearSelection();
+    _monitoredFoldersIds.clear();
+    _messageIds.clear();
+}
+
 void ImapUpdateMessagesFlagsStrategy::selectedMailsAppend(const QMailMessageIdList &messageIds)
 {
-    _messageIds = messageIds;
+    _messageIds += messageIds;
 }
 
 void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *context)
@@ -1379,7 +1386,7 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     _transferState = List;
     _searchState = Seen;
     if (!selectNextMailbox(context))
-        context->operationCompleted();
+        completedAction(context);
 }
 
 bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase *context)
@@ -1405,10 +1412,17 @@ bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase 
             _messageIds.removeAll(id);
         }
     }
-    if (_serverUids.isEmpty() || !folderId.isValid())
+    if (_serverUids.isEmpty() || !folderId.isValid()) {
+        // Only allow monitoring of one folder other than the inbox
+        if (_monitoredFoldersIds.count() > 1)
+            _monitoredFoldersIds.clear();
+        context->client()->monitor(_monitoredFoldersIds);
         return false;
+    }
 
     _folderId = folderId;
+    if (folderId != context->client()->mailboxId("INBOX"))
+        _monitoredFoldersIds << _folderId;
     context->protocol().sendSelect(QMailFolder(folderId));
     return true;
 }

@@ -320,6 +320,7 @@ public:
     ImapUpdateMessagesFlagsStrategy() {}
     virtual ~ImapUpdateMessagesFlagsStrategy() {}
 
+    virtual void clearSelection();      
     virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
 
 protected:
@@ -332,6 +333,7 @@ protected:
 private:
     QMailMessageIdList _messageIds;
     QMailFolderId _folderId;
+    QMailFolderIdList _monitoredFoldersIds;
     QStringList _serverUids;
     QString _filter;
     enum SearchState { Seen, Unseen };
