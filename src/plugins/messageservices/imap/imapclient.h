@@ -71,6 +71,7 @@ signals:
 
     void allMessagesReceived();
     void idleNewMailNotification();
+    void idleFlagsChangedNotification();
 
 public slots:
     void transportError(int, const QString &msg);

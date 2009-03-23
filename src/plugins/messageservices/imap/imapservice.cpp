@@ -29,6 +29,7 @@ public:
         : QMailMessageSource(service),
           _service(service),
           _mailCheckQueued(false),
+          _flagsCheckQueued(false),
           _queuedMailCheckInProgress(false),
           _unavailable(false),
           _synchronizing(false),
@@ -38,6 +39,7 @@ public:
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
         connect(&_service->_client, SIGNAL(idleNewMailNotification()), this, SLOT(queueMailCheck()));
+        connect(&_service->_client, SIGNAL(idleFlagsChangedNotification()), this, SLOT(queueFlagsChangedCheck()));
         connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
     }
     
@@ -74,12 +76,14 @@ public slots:
     void retrievalCompleted();
     void retrievalTerminated();
     void queueMailCheck();
-
+    void queueFlagsChangedCheck();
+    
 private:
     virtual bool setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&) = 0);
 
     ImapService *_service;
     bool _mailCheckQueued;
+    bool _flagsCheckQueued;
     bool _queuedMailCheckInProgress;
     bool _unavailable;
     bool _synchronizing;
@@ -396,6 +400,9 @@ void ImapService::Source::retrievalCompleted()
     if (_mailCheckQueued) {
         queueMailCheck();
     }
+    if (_flagsCheckQueued) {
+        queueFlagsChangedCheck();
+    }
 }
 
 void ImapService::Source::queueMailCheck()
@@ -412,6 +419,22 @@ void ImapService::Source::queueMailCheck()
     retrieveMessageList(_service->accountId(), QMailFolderId(), 1, QMailMessageSortKey());
 }
 
+void ImapService::Source::queueFlagsChangedCheck()
+{
+    if (_unavailable) {
+        _flagsCheckQueued = true;
+        return;
+    }
+    
+    _flagsCheckQueued = false;
+    _queuedMailCheckInProgress = true;
+
+    emit _service->availabilityChanged(false);
+    
+    // Check same messages as last time
+    setStrategy(&_service->_client.strategyContext()->updateMessagesFlagsStrategy);
+}
+
 void ImapService::Source::retrievalTerminated()
 {
     _unavailable = false;
@@ -423,6 +446,7 @@ void ImapService::Source::retrievalTerminated()
     
     // Just give up if an error occurs
     _mailCheckQueued = false;
+    _flagsCheckQueued = false;
 }
 
 

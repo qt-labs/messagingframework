@@ -1334,13 +1334,14 @@ void IdleState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str = line;
     QRegExp idleResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
-    if ((idleResponsePattern.indexIn(str) == 0) 
-        && (idleResponsePattern.cap(1).compare("EXISTS", Qt::CaseInsensitive) == 0)) {
+    if (idleResponsePattern.indexIn(str) == 0) {
         // Treat this event as a continuation point
-        c->continuation(command(), QString("event"));
+       if (idleResponsePattern.cap(1).compare("EXISTS", Qt::CaseInsensitive) == 0) {
+             c->continuation(command(), QString("newmail"));
+        } else if (idleResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0) {
+            c->continuation(command(), QString("flagschanged"));
+        }
     }
-    
-    // If CONDSTORE is supported we should also check for FETCH responses to pick up flag changes
 }
 
 

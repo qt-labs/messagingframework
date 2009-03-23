@@ -331,6 +331,7 @@ protected:
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
 private:
+    QMailMessageIdList _selectedMessageIds;
     QMailMessageIdList _messageIds;
     QMailFolderId _folderId;
     QMailFolderIdList _monitoredFoldersIds;

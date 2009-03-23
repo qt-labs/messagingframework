@@ -1371,12 +1371,12 @@ void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapMessageListStrategy::clearSelection();
     _monitoredFoldersIds.clear();
-    _messageIds.clear();
+    _selectedMessageIds.clear();
 }
 
 void ImapUpdateMessagesFlagsStrategy::selectedMailsAppend(const QMailMessageIdList &messageIds)
 {
-    _messageIds += messageIds;
+    _selectedMessageIds += messageIds;
 }
 
 void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *context)
@@ -1385,6 +1385,7 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     _folderId = QMailFolderId();
     _transferState = List;
     _searchState = Seen;
+    _messageIds = _selectedMessageIds;
     if (!selectNextMailbox(context))
         completedAction(context);
 }
@@ -1421,7 +1422,8 @@ bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase 
     }
 
     _folderId = folderId;
-    if (folderId != context->client()->mailboxId("INBOX"))
+    if (folderId != context->client()->mailboxId("INBOX")
+        && !_monitoredFoldersIds.contains(_folderId))
         _monitoredFoldersIds << _folderId;
     context->protocol().sendSelect(QMailFolder(folderId));
     return true;

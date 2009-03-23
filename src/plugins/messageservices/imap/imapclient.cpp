@@ -219,10 +219,16 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
             _idleRecoveryTimer.stop();
 
             handleIdling();
-        } else {
-            qMailLog(IMAP) << "IDLE: event occurred";
-            // An event occurred during idle 
+        } else if (type == QString("newmail")) {
+            qMailLog(IMAP) << "IDLE: new mail event occurred";
+            // A new mail event occurred during idle 
             emit idleNewMailNotification(_folder);
+        } else if (type == QString("flagschanged")) {
+            qMailLog(IMAP) << "IDLE: flags changed event occurred";
+            // A flags changed event occurred during idle 
+            emit idleFlagsChangedNotification(_folder);
+        } else {
+            qWarning("idleContinuation: unknown continuation event");
         }
     }
 }
@@ -376,6 +382,8 @@ ImapClient::ImapClient(QObject* parent)
 
     connect(_idleProtocol, SIGNAL(idleNewMailNotification(QMailFolder&)),
             this, SIGNAL(idleNewMailNotification()));
+    connect(_idleProtocol, SIGNAL(idleFlagsChangedNotification(QMailFolder&)),
+            this, SIGNAL(idleFlagsChangedNotification()));
     connect(_idleProtocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)));
     connect(_idleProtocol, SIGNAL(openRequest(IdleProtocol *)),
@@ -1053,6 +1061,8 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
             _monitored.insert(id, protocol);
             connect(protocol, SIGNAL(idleNewMailNotification(QMailFolder&)),
                     this, SIGNAL(idleNewMailNotification()));
+            connect(protocol, SIGNAL(idleFlagsChangedNotification(QMailFolder&)),
+                    this, SIGNAL(idleFlagsChangedNotification()));
             connect(protocol, SIGNAL(openRequest(IdleProtocol *)),
                     this, SLOT(idleOpenRequested(IdleProtocol *)));
             protocol->open(imapCfg);
