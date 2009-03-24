@@ -174,7 +174,7 @@ void tst_QMailStoreKeys::initTestCase()
         account.setStatus(QMailAccount::CanRetrieve, true);
         account.setCustomField("verified", "true");
         account.setCustomField("question", "What is your dog's name?");
-        account.setCustomField("answer", "Fido");
+        account.setCustomField("answer", "Lassie");
 
         QMailAccountConfiguration config;
         config.addServiceConfiguration("imap4");
@@ -792,8 +792,8 @@ void tst_QMailStoreKeys::accountCustomField()
     // Test for partial matches
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", "Fi", Includes)), accountSet() << accountId1);
     QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "Fi", Includes)), accountSet() << accountId2);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "over", Includes)), accountSet() << accountId2); 
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "over", Includes)), accountSet() << accountId1); 
+    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "assi", Includes)), accountSet() << accountId2); 
+    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "assi", Includes)), accountSet() << accountId1); 
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", "bicycle", Includes)), noAccounts);
     QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "bicycle", Includes)), accountSet() << accountId1 << accountId2);
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(""), Includes)), accountSet() << accountId1 << accountId2);
@@ -804,8 +804,8 @@ void tst_QMailStoreKeys::accountCustomField()
     // Test for partial match exclusion
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", "Fi", Excludes)), accountSet() << accountId2);
     QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "Fi", Excludes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "over", Excludes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "over", Excludes)), accountSet() << accountId2);
+    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "assi", Excludes)), accountSet() << accountId1);
+    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "assi", Excludes)), accountSet() << accountId2);
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", "bicycle", Excludes)), accountSet() << accountId1 << accountId2);
     QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "bicycle", Excludes)), noAccounts);
     QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(""), Excludes)), noAccounts);
