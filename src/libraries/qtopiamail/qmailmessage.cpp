@@ -35,7 +35,7 @@
 
 static const QByteArray internalPrefix()
 {
-    static const QByteArray prefix("X-qtopia-internal-");
+    static const QByteArray prefix("X-qtopiamail-internal-");
     return prefix;
 }
 
@@ -4285,15 +4285,12 @@ bool QMailMessagePartPrivate::contentAvailable() const
     if (_multipartType != QMailMessage::MultipartNone)
         return true;
 
-    QByteArray contentDisposition(headerField("Content-Disposition"));
-    if (!contentDisposition.isEmpty()) {
-        QMailMessageContentDisposition disposition(contentDisposition);
-        if (disposition.size() != -1) {
-            return (_body.length() >= disposition.size());
-        }
-    }
+    if (_body.isEmpty())
+        return false;
 
-    return false;
+    // Complete content is available only if the 'partial-content' header field is not present
+    QByteArray fieldName(internalPrefix() + "partial-content");
+    return (headerField(fieldName).isEmpty());
 }
 
 bool QMailMessagePartPrivate::partialContentAvailable() const
@@ -6765,6 +6762,22 @@ uint QMailMessage::indicativeSize() const
     }
 
     return 0;
+}
+
+/*!
+    Returns the size of the message content excluding any meta data, in bytes.
+*/  
+uint QMailMessage::contentSize() const
+{
+    return customField("qtopiamail-content-size").toUInt();
+}
+
+/*!
+    Sets the size of the message content excluding any meta data, in bytes.
+*/
+void QMailMessage::setContentSize(uint size)
+{
+    setCustomField("qtopiamail-content-size", QString::number(size));
 }
 
 /*! \reimp */
