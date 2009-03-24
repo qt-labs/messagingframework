@@ -79,7 +79,7 @@ public slots:
 
     void mailboxListed(QString &, QString &, QString &);
     void messageFetched(QMailMessage& mail);
-    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size, bool partial);
+    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void nonexistentUid(const QString &uid);
     void messageStored(const QString &);
     void messageCopied(const QString &, const QString &);
@@ -120,7 +120,6 @@ private:
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;
-    QMap<QString, uint> partialLength;
 
     QMap<QMailFolderId, IdleProtocol*> _monitored;
 };

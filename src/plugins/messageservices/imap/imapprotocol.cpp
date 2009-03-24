@@ -230,8 +230,8 @@ public:
     void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
     void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
 
-    void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure, bool partial) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure, partial); }
-    void createPart(const QString& uid, const QString &section, const QString &file, int size, bool partial) { mProtocol->createPart(uid, section, file, size, partial); }
+    void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
+    void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
 
 private:
     ImapProtocol *mProtocol;
@@ -992,37 +992,38 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
             
             // See what we can extract from the FETCH response
             fp.mNewMsgFlags = 0;
-            if (fp.mDataItems & F_Flags)
+            if (fp.mDataItems & F_Flags) {
                 parseFlags(str, fp.mNewMsgFlags);
+            }
 
             if (fp.mDataItems & F_Date) {
                 fp.mDate = extractDate(str);
             }
 
-            if (fp.mDataItems & F_Rfc822_Size)
+            if (fp.mDataItems & F_Rfc822_Size) {
                 fp.mNewMsgSize = extractSize(str);
+            }
 
             if (!c->literalResponseCompleted())
                 return;
 
             // All message data should be retrieved at this point - create new mail/part
-            if (fp.mDataItems & F_BodyStructure)
+            if (fp.mDataItems & F_BodyStructure) {
                 fp.mNewMsgStructure = extractStructure(str);
+            }
 
-            if (fp.mDataItems & F_Rfc822_Header) {
-                c->createMail(fp.mNewMsgUid, fp.mDate, fp.mNewMsgSize, fp.mNewMsgFlags, fp.mDetachedFile, fp.mNewMsgStructure, true);
-            } else if (fp.mDataItems & F_BodySection) {
+            if (fp.mDataItems & F_BodySection) {
                 if (fp.mDetachedFile.isEmpty()) {
                     // The buffer has not been detached to a file yet
                     fp.mDetachedSize = c->buffer().length();
                     fp.mDetachedFile = c->buffer().detach();
                 }
-                c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize, fp.mEnd > 0);
+                c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
             } else {
                 if (fp.mNewMsgSize == 0) {
                     fp.mNewMsgSize = fp.mDetachedSize;
                 }
-                c->createMail(fp.mNewMsgUid, fp.mDate, fp.mNewMsgSize, fp.mNewMsgFlags, fp.mDetachedFile, QStringList(), false);
+                c->createMail(fp.mNewMsgUid, fp.mDate, fp.mNewMsgSize, fp.mNewMsgFlags, fp.mDetachedFile, fp.mNewMsgStructure);
             }
         }
     } else {
@@ -2008,7 +2009,7 @@ bool hasAttachments(const QMailMessagePartContainer &partContainer)
 
 }
 
-void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure, bool partialMessage)
+void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
 {
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
@@ -2016,18 +2017,24 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
         if (mail.multipartType() != QMailMessage::MultipartNone) {
             mail.setStatus( QMailMessage::ContentAvailable, true );
+            mail.setSize( size );
 
             // See if any of the parts are attachments
             if (hasAttachments(mail)) {
                 mail.setStatus( QMailMessage::HasAttachments, true );
             }
         }
+
+        // If we're fetching the structure, this is the first we've seen of this message
+        mail.setStatus( QMailMessage::New, true );
     } else {
-        mail.setStatus( QMailMessage::ContentAvailable, !partialMessage );
+        // No structure - we're fetching the body of a message we already know about
+        mail.setStatus( QMailMessage::ContentAvailable, true );
+        mail.setStatus( QMailMessage::New, false );
     }
 
     if (mail.status() & QMailMessage::ContentAvailable) {
-        // ContentAvailable should also imply partial content available
+        // ContentAvailable must also imply partial content available
         mail.setStatus( QMailMessage::PartialContentAvailable, true );
     }
 
@@ -2038,6 +2045,9 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         mail.setStatus( QMailMessage::Replied, true );
     }
 
+    mail.setStatus( QMailMessage::Incoming, true );
+
+    mail.setMessageType( QMailMessage::Email );
     mail.setSize( size );
     mail.setServerUid( uid.trimmed() );
     mail.setReceivedDate( QMailTimeStamp( timeStamp ) );
@@ -2051,9 +2061,9 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     QFile::remove(detachedFile);
 }
 
-void ImapProtocol::createPart(const QString &uid, const QString &section, const QString &detachedFile, int size, bool partial)
+void ImapProtocol::createPart(const QString &uid, const QString &section, const QString &detachedFile, int size)
 {
-    emit dataFetched(uid, section, detachedFile, size, partial);
+    emit dataFetched(uid, section, detachedFile, size);
 
     // Remove the detached file if it is still present
     QFile::remove(detachedFile);

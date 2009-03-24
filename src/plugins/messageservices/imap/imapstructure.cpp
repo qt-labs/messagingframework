@@ -267,7 +267,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
     return disposition;
 }
 
-void setBodyFromDescription(const QStringList &details, QMailMessagePartContainer *container)
+void setBodyFromDescription(const QStringList &details, QMailMessagePartContainer *container, uint *size)
 {
     QMailMessageContentType type;
 
@@ -285,13 +285,21 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
         type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
     }
 
+    // [3]: content-ID
+    // [4]: content-description
+
     // [5]: content-encoding
     QMailMessageBody::TransferEncoding encoding(fromEncodingDescription(details.at(5)));
+
+    // [6]: size
+    if (size) {
+        *size = details.at(6).toUInt();
+    }
 
     container->setBody(QMailMessageBody::fromData(QByteArray(), type, encoding, QMailMessageBody::AlreadyEncoded));
 }
 
-void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part);
+void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size);
 
 void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
 {
@@ -356,7 +364,7 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     ++next;
 }
 
-void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part)
+void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part, uint *size)
 {
     QStringList details = decomposeElements(structure.last());
 
@@ -409,12 +417,18 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
     // Create the other pieces described by the structure
     for (int i = 0; i < (structure.count() - 1); ++i) {
         QMailMessagePart part;
-        setPartContentFromStructure(decomposeStructure(structure.at(i), 0), &part);
+        uint partSize = 0;
+
+        setPartContentFromStructure(decomposeStructure(structure.at(i), 0), &part, &partSize);
         container->appendPart(part);
+
+        if (size) {
+            *size += partSize;
+        }
     }
 }
 
-void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part)
+void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size)
 {
     if (!structure.isEmpty()) {
         // The last element is the message
@@ -425,7 +439,7 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
                 if (details.count() < 7) {
                     qWarning() << "Ill-formed part structure:" << details;
                 } else {
-                    setBodyFromDescription(details, part);
+                    setBodyFromDescription(details, part, size);
 
                     if (details.count() > 7) {
                         setPartFromDescription(details, part);
@@ -433,7 +447,7 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
                 }
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, part, part);
+                setMultipartFromDescription(structure, part, part, size);
             }
         }
     }
@@ -441,18 +455,21 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
 
 }
 
-void setMessageContentFromStructure(const QStringList &structure, QMailMessagePartContainer *container)
+void setMessageContentFromStructure(const QStringList &structure, QMailMessage *message)
 {
     if (!structure.isEmpty()) {
-        // The last element is the message
-        const QString &message = structure.last();
-        if (!message.isEmpty()) {
+        // The last element is the message description
+        const QString &description = structure.last();
+        if (!description.isEmpty()) {
+            uint size = 0;
             if (structure.count() == 1) {
-                setBodyFromDescription(decomposeElements(message), container);
+                setBodyFromDescription(decomposeElements(description), message, &size);
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, container, 0);
+                setMultipartFromDescription(structure, message, 0, &size);
             }
+
+            message->setContentSize(size);
         }
     }
 }

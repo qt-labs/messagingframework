@@ -143,7 +143,7 @@ public:
 signals:
     void mailboxListed(QString &flags, QString &delimiter, QString &name);
     void messageFetched(QMailMessage& mail);
-    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size, bool partial);
+    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void downloadSize(const QString &uid, int);
     void nonexistentUid(const QString& uid);
     void messageStored(const QString& uid);
@@ -183,8 +183,8 @@ private:
 
     bool checkSpace();
 
-    void createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure, bool partial);
-    void createPart(const QString &uid, const QString &section, const QString &file, int size, bool partial);
+    void createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure);
+    void createPart(const QString &uid, const QString &section, const QString &file, int size);
 
     void processResponse(QString line);
     void nextAction(const QString &line);

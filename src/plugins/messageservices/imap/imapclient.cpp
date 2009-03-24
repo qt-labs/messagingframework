@@ -622,40 +622,44 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
 
 void ImapClient::messageFetched(QMailMessage& mail)
 {
-    // Do we need to update the message from the existing data?
-    QMailMessageMetaData existing(mail.serverUid(), _config.id());
-    if (existing.id().isValid()) {
-        bool replied(mail.status() & QMailMessage::Replied);
-        bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
-        bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
-        bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
-
-        mail.setId(existing.id());
-        mail.setStatus(existing.status());
-        mail.setContent(existing.content());
-        mail.setReceivedDate(existing.receivedDate());
-        mail.setPreviousParentFolderId(existing.previousParentFolderId());
-        mail.setContentScheme(existing.contentScheme());
-        mail.setContentIdentifier(existing.contentIdentifier());
-        mail.setCustomFields(existing.customFields());
-
-        // Preserve the status flags determined by the protocol
-        mail.setStatus(QMailMessage::Replied, replied);
-        mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
-        if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
-            mail.setStatus(QMailMessage::ContentAvailable, true);
-        }
-        if ((mail.status() & QMailMessage::PartialContentAvailable) || partialContentAvailable) {
-            mail.setStatus(QMailMessage::PartialContentAvailable, true);
-        }
+    if (mail.status() & QMailMessage::New) {
+        mail.setParentAccountId(_config.id());
+        mail.setParentFolderId(_protocol.mailbox().id);
     } else {
-        mail.setStatus(QMailMessage::Incoming, true);
-        mail.setStatus(QMailMessage::New, true);
-    }
+        // We need to update the message from the existing data
+        QMailMessage existing(mail.serverUid(), _config.id());
+        if (existing.id().isValid()) {
+            // Record the status fields that may have been updated
+            bool replied(mail.status() & QMailMessage::Replied);
+            bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
+            bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
+            bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
 
-    mail.setMessageType(QMailMessage::Email);
-    mail.setParentAccountId(_config.id());
-    mail.setParentFolderId(_protocol.mailbox().id);
+            mail.setId(existing.id());
+            mail.setParentAccountId(existing.parentAccountId());
+            mail.setParentFolderId(existing.parentFolderId());
+            mail.setStatus(existing.status());
+            mail.setContent(existing.content());
+            mail.setReceivedDate(existing.receivedDate());
+            mail.setPreviousParentFolderId(existing.previousParentFolderId());
+            mail.setContentScheme(existing.contentScheme());
+            mail.setContentIdentifier(existing.contentIdentifier());
+            mail.setCustomFields(existing.customFields());
+            mail.setContentSize(existing.contentSize());
+
+            // Preserve the status flags determined by the protocol
+            mail.setStatus(QMailMessage::Replied, replied);
+            mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
+            if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
+                mail.setStatus(QMailMessage::ContentAvailable, true);
+            }
+            if ((mail.status() & QMailMessage::PartialContentAvailable) || partialContentAvailable) {
+                mail.setStatus(QMailMessage::PartialContentAvailable, true);
+            }
+        } else {
+            qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _config.id();
+        }
+    }
 
     _classifier.classifyMessage(mail);
 
@@ -671,6 +675,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
     if (part.multipartType() == QMailMessage::MultipartNone) {
         // The body data is for this part only
         part.setBody(QMailMessageBody::fromData(bodyData, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+        part.removeHeaderField("X-qtopiamail-internal-partial-content");
     } else {
         const QByteArray &boundary(part.contentType().boundary());
 
@@ -720,99 +725,159 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
     return true;
 }
 
-static bool updatePartFile(const QString &partFileStr, const QString &chunkFileStr)
+class TemporaryFile
 {
-    QFile partFile(partFileStr);
-    QFile chunkFile(chunkFileStr);
-    if (!partFile.exists()) {
-        if (!QFile::copy(chunkFileStr, partFileStr)) {
+    enum { AppendBufferSize = 4096 };
+
+    QString _fileName;
+
+public:
+    TemporaryFile(const QString &fileName) : _fileName(QMail::tempPath() + QDir::separator() + fileName) {}
+
+    QString fileName() const { return _fileName; }
+
+    bool write(const QMailMessageBody &body)
+    {
+        QFile file(_fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            qWarning() << "Unable to open file for writing:" << _fileName;
             return false;
         }
-    } else if (partFile.open(QIODevice::Append) 
-               && chunkFile.open(QIODevice::ReadOnly)) {
-            char buffer[4096];
+
+        // We need to write out the data still encoded - since we're deconstructing
+        // server-side data, the meaning of the parameter is reversed...
+        QMailMessageBody::EncodingFormat outputFormat(QMailMessageBody::Decoded);
+
+        QDataStream out(&file);
+        if (!body.toStream(out, outputFormat)) {
+            qWarning() << "Unable to write existing body to file:" << _fileName;
+            return false;
+        }
+
+        file.close();
+        return true;
+    }
+
+    bool appendAndReplace(const QString &fileName)
+    {
+        QFile existingFile(_fileName);
+        QFile dataFile(fileName);
+
+        if (!existingFile.exists()) {
+            if (!QFile::copy(fileName, _fileName)) {
+                return false;
+            }
+        } else if (existingFile.open(QIODevice::Append) && dataFile.open(QIODevice::ReadOnly)) {
+            char buffer[AppendBufferSize];
             qint64 readSize;
-            while (!chunkFile.atEnd()) {
-                readSize = chunkFile.read(buffer, 4096);
+            while (!dataFile.atEnd()) {
+                readSize = dataFile.read(buffer, AppendBufferSize);
                 if (readSize == -1)
                     return false;
-                if (partFile.write(buffer, readSize) != readSize)
+                if (existingFile.write(buffer, readSize) != readSize)
                     return false;
             }
-    } else {
-        return false;
+        } else {
+            return false;
+        }
+
+        if (!QFile::remove(fileName)) {
+            return false;
+        }
+        if (!QFile::rename(_fileName, fileName)) {
+            return false;
+        }
+
+        _fileName = fileName;
+        return true;
     }
-    return true;
-}
+};
 
-void ImapClient::dataFetched(const QString &uid, const QString &section, const QString &chunkName, int size, bool partial)
+void ImapClient::dataFetched(const QString &uid, const QString &section, const QString &fileName, int size)
 {
-    QMailMessagePart::Location partLocation;
-    if (!section.isEmpty())
-        partLocation = QMailMessagePart::Location(section);
-    QString fileName = chunkName;
+    static const QString tempDir = QMail::tempPath() + QDir::separator();
 
-    if (!uid.isEmpty() && (section.isEmpty() || partLocation.isValid(false))) {
-        QMailMessage mail(uid, _config.id());
-        if (mail.id().isValid()) {
-            QString tempDir = QMail::tempPath() + QDir::separator();
-            QString partName = "mail-" + uid + "-part-" + section;
-            QString partFileStr(tempDir + partName);
+    QMailMessage mail(uid, _config.id());
+    if (mail.id().isValid()) {
+        if (section.isEmpty()) {
+            // This is the body of the message, or a part thereof
+            uint existingSize = 0;
+            if (mail.hasBody()) {
+                existingSize = mail.body().length();
 
-            if (partial && section.isEmpty() && !partialLength.contains(partName)) {
-                uint retrievedSize = 0;
-                QFile contentFile(mail.contentIdentifier());
-                QFile partFile(partFileStr);
-                if (contentFile.exists())
-                    retrievedSize += contentFile.size();
-                if (partFile.exists())
-                    retrievedSize += partFile.size();
-                partialLength.insert(partName, retrievedSize);
-            }
-                                
-            if (partial && size) {
-                if (!updatePartFile(partFileStr, chunkName)
-                    || !QFile::remove(chunkName)
-                    || !QFile::copy(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("1Unable to store fetched data"));
+                // Write the existing data to a temporary file
+                TemporaryFile tempFile("mail-" + uid + "-body");
+                if (!tempFile.write(mail.body())) {
+                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
                     return;
                 }
-                fileName = chunkName;
-            } else if (partial && !size) { // Complete part retrieved
-                partialLength.remove(partName);
-                if (!QFile::remove(chunkName)
-                    || !QFile::rename(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("2Unable to store fetched data"));
+
+                if (!tempFile.appendAndReplace(fileName)) {
+                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
                     return;
+                } else {
+                    // The appended content file is now named 'fileName'
                 }
             }
-                
-            // Update the relevant part
+
+            // Set the content into the mail
+            mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+            mail.setStatus(QMailMessage::PartialContentAvailable, true);
+
+            const uint totalSize(existingSize + size);
+            if (totalSize >= mail.contentSize()) {
+                // We have all the data for this message body
+                mail.setStatus(QMailMessage::ContentAvailable, true);
+            } 
+
+            // If this message was previously marked read, that is no longer true
+            mail.setStatus(QMailMessage::Read, false);
+        } else {
+            // This is data for a sub-part of the message
+            QMailMessagePart::Location partLocation(section);
+            if (!partLocation.isValid(false)) {
+                qWarning() << "Unable to locate part for invalid section:" << section;
+                return;
+            }
+
             QMailMessagePart &part = mail.partAt(partLocation);
-            if (partial && section.isEmpty()) {
-                partialLength.insert(partName, partialLength[partName] + size);
-                mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-                mail.setStatus(QMailMessage::PartialContentAvailable, true);
-                if (partialLength[partName] >= mail.size()) {
-                    mail.setStatus(QMailMessage::ContentAvailable, true);
+
+            int existingSize = 0;
+            if (part.hasBody()) {
+                existingSize = part.body().length();
+
+                // Write the existing data to a temporary file
+                TemporaryFile tempFile("mail-" + uid + "-part-" + section);
+                if (!tempFile.write(part.body())) {
+                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
+                    return;
                 }
 
-                // If this message was previously marked read, that is no longer true
-                mail.setStatus(QMailMessage::Read, false);
-            } else if (part.multipartType() == QMailMessage::MultipartNone) {
-                // The body data is for this part only
-                if (part.hasBody()) {
-                    qWarning() << "Updating existing part body - uid:" << uid << "section:" << section;
+                if (!tempFile.appendAndReplace(fileName)) {
+                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
+                    return;
+                } else {
+                    // The appended content file is now named 'fileName'
                 }
+            } 
+
+            if (part.multipartType() == QMailMessage::MultipartNone) {
+                // The body data is for this part only
                 part.setBody(QMailMessageBody::fromFile(fileName, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
 
-                // Only use one detached file at a time
+                const int totalSize(existingSize + size);
+                if (totalSize >= part.contentDisposition().size()) {
+                    // We have all the data for this part
+                    part.removeHeaderField("X-qtopiamail-internal-partial-content");
+                } else {
+                    // We only have a portion of the part data
+                    part.setHeaderField("X-qtopiamail-internal-partial-content", "true");
+                }
+
+                // The file we wrote the content to is detached, and the mailstore can assume ownership
                 if (mail.customField("qtopiamail-detached-filename").isEmpty()) {
-                    // The file can be used directly if the transfer was not encoded
-                    if ((part.transferEncoding() != QMailMessageBody::Base64) && (part.transferEncoding() != QMailMessageBody::QuotedPrintable)) {
-                        // The file we wrote to is detached, and the mailstore can assume ownership
-                        mail.setCustomField("qtopiamail-detached-filename", fileName);
-                    }
+                    // Only use one detached file at a time
+                    mail.setCustomField("qtopiamail-detached-filename", fileName);
                 } 
             } else {
                 // Find the part bodies in the retrieved data
@@ -837,14 +902,14 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                     return;
                 }
 
-                // These updates are not supported by the file data
+                // These updates cannot be effected by storing the data file directly
                 if (!mail.customField("qtopiamail-detached-filename").isEmpty()) {
                     mail.removeCustomField("qtopiamail-detached-filename");
                 }
             }
-
-            _strategyContext->dataFetched(mail, uid, section);
         }
+
+        _strategyContext->dataFetched(mail, uid, section);
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
