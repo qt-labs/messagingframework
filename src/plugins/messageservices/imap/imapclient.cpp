@@ -359,8 +359,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(mailboxListed(QString&,QString&,QString&)) );
     connect(&_protocol, SIGNAL(messageFetched(QMailMessage&)),
             this, SLOT(messageFetched(QMailMessage&)) );
-    connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int, bool)),
-            this, SLOT(dataFetched(QString, QString, QString, int, bool)) );
+    connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
+            this, SLOT(dataFetched(QString, QString, QString, int)) );
     connect(&_protocol, SIGNAL(nonexistentUid(QString)),
             this, SLOT(nonexistentUid(QString)) );
     connect(&_protocol, SIGNAL(messageStored(QString)),
@@ -629,7 +629,7 @@ void ImapClient::messageFetched(QMailMessage& mail)
         mail.setParentFolderId(_protocol.mailbox().id);
     } else {
         // We need to update the message from the existing data
-        QMailMessage existing(mail.serverUid(), _config.id());
+        QMailMessageMetaData existing(mail.serverUid(), _config.id());
         if (existing.id().isValid()) {
             // Record the status fields that may have been updated
             bool replied(mail.status() & QMailMessage::Replied);
@@ -647,7 +647,6 @@ void ImapClient::messageFetched(QMailMessage& mail)
             mail.setContentScheme(existing.contentScheme());
             mail.setContentIdentifier(existing.contentIdentifier());
             mail.setCustomFields(existing.customFields());
-            mail.setContentSize(existing.contentSize());
 
             // Preserve the status flags determined by the protocol
             mail.setStatus(QMailMessage::Replied, replied);
