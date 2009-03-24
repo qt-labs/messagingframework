@@ -370,7 +370,7 @@ QString Browser::renderSimplePart(const QMailMessagePart& part)
         }
     } else if ( contentType.type().toLower() == "image") { // No tr
         setPartResource(part);
-        result = "<img src =\"" + partId + "\"></img>";
+        result = "<img src=\"" + partId + "\"></img>";
     } else {
         result = renderAttachment(part);
     }
@@ -399,7 +399,7 @@ QString Browser::renderPart(const QMailMessagePart& part)
     if (part.multipartType() != QMailMessage::MultipartNone) {
         result = renderMultipart(part);
     } else {
-        bool displayAsAttachment(!part.partialContentAvailable());
+        bool displayAsAttachment(!part.contentAvailable());
         if (!displayAsAttachment) {
             QMailMessageContentDisposition disposition = part.contentDisposition();
             if (!disposition.isNull() && disposition.type() == QMailMessageContentDisposition::Attachment) {
@@ -433,7 +433,7 @@ QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
         }
 
         if (partIndex != -1) {
-            result += renderSimplePart(partContainer.partAt(partIndex));
+            result += renderPart(partContainer.partAt(partIndex));
         } else {
             result += "\n<" + tr("No displayable part") + ">\n";
         }
@@ -525,7 +525,7 @@ void Browser::displayHtml(const QMailMessage* mail)
 "<a href=\"download\">DOWNLOAD_TEXT</a>";
 
             bodyText = replaceLast(bodyText, "WAITING_TEXT", tr("Awaiting download"));
-            bodyText = replaceLast(bodyText, "SIZE_TEXT", tr("Size of message") + ": " + describeMailSize(mail->size()));
+            bodyText = replaceLast(bodyText, "SIZE_TEXT", tr("Size of message content") + ": " + describeMailSize(mail->contentSize()));
             bodyText = replaceLast(bodyText, "DOWNLOAD_TEXT", tr("Download this message"));
         } else {
             // TODO: what?
@@ -538,6 +538,20 @@ void Browser::displayHtml(const QMailMessage* mail)
             bodyText = mail->body().data();
         } else {
             bodyText = formatText( mail->body().data() );
+
+            if (!mail->contentAvailable()) {
+                QString trailer =
+"<br>"
+"WAITING_TEXT<br>"
+"SIZE_TEXT<br>"
+"<a href=\"download\">DOWNLOAD_TEXT</a>";
+
+                trailer = replaceLast(trailer, "WAITING_TEXT", tr("More data available"));
+                trailer = replaceLast(trailer, "SIZE_TEXT", tr("Size") + ": " + describeMailSize(mail->body().length()) + tr(" of ") + describeMailSize(mail->contentSize()));
+                trailer = replaceLast(trailer, "DOWNLOAD_TEXT", tr("Retrieve more data"));
+
+                bodyText += trailer;
+            }
         }
     }
 
@@ -546,7 +560,9 @@ void Browser::displayHtml(const QMailMessage* mail)
 
     if (mail->status() & QMailMessage::Removed) {
         QString noticeTemplate =
-            "<div align=center>NOTICE_TEXT<br></div>";
+"<div align=center>"
+    "NOTICE_TEXT<br>"
+"</div>";
 
         QString notice = tr("Message deleted from server");
         if (!bodyText.isEmpty()) {
@@ -556,8 +572,6 @@ void Browser::displayHtml(const QMailMessage* mail)
 
         pageData += replaceLast(noticeTemplate, "NOTICE_TEXT", notice);
     }
-
-    QColor c = palette().color(QPalette::Highlight);
 
     QString headerTemplate = \
 "<div align=left>"

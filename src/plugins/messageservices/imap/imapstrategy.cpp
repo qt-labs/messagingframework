@@ -280,21 +280,16 @@ bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *
     if (!_retrieveUid.isEmpty()) {
         QMailMessage mail(_retrieveUid, context->config().id());
         if (mail.id().isValid()) {
-            QString sectionStr;
-            if (_msgSection.isValid(false)) {
-                sectionStr = _msgSection.toString(false);
-            }
-            // Update the relevant part
-            QString tempDir = QMail::tempPath() + QDir::separator();
-            QFile partFile(tempDir + "mail-" + _retrieveUid + "-part-" + sectionStr);
             _sectionStart = 0;
-            if (partFile.exists()) {
-                _sectionStart = partFile.size();
-            }
-            if (_sectionEnd < _sectionStart) {
-                qWarning() << "Cleaning up stale partFile" << partFile.fileName();
-                partFile.remove();
-                _sectionStart = 0;
+            if (_msgSection.isValid()) {
+                const QMailMessagePart &part(mail.partAt(_msgSection));
+                if (part.hasBody()) {
+                    _sectionStart = part.body().length();
+                }
+            } else {
+                if (mail.hasBody()) {
+                    _sectionStart = mail.body().length();
+                }
             }
             return true;
         }

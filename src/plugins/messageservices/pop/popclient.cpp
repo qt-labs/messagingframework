@@ -866,7 +866,7 @@ void PopClient::createMail()
 
     mail.setSize(mailSize);
     mail.setServerUid(messageUid);
-    mail.setCustomField( "X-qtopia-internal-filename", detachedFile );
+    mail.setCustomField( "qtopiamail-detached-filename", detachedFile );
 
     if (selectionMap.contains(mail.serverUid())) {
         // We need to update the message from the existing data

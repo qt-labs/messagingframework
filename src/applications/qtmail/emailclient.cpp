@@ -1054,7 +1054,12 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
 
     setRetrievalInProgress(true);
 
+#ifdef USE_PROGRESSIVE_DOWNLOADING
+    QMailMessage msg(message.id());
+    retrievalAction->retrieveMessageRange(message.id(), msg.body().length() + (5 * 1024));
+#else
     retrievalAction->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
+#endif
 }
 
 void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
@@ -1069,12 +1074,22 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
         QString msg(tr("Cannot retrieve message part without a valid message ID"));
         QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
     } else {
+#ifdef USE_PROGRESSIVE_DOWNLOADING
+        QMailMessage messsage(partLocation.containingMessageId());
+
+        mailAccountId = messsage.parentAccountId();
+        setRetrievalInProgress(true);
+
+        const QMailMessagePart &part(messsage.partAt(partLocation));
+        retrievalAction->retrieveMessagePartRange(partLocation, part.body().length() + (20 * 1024));
+#else
         QMailMessageMetaData metaData(partLocation.containingMessageId());
 
         mailAccountId = metaData.parentAccountId();
         setRetrievalInProgress(true);
 
         retrievalAction->retrieveMessagePart(partLocation);
+#endif
     }
 }
 

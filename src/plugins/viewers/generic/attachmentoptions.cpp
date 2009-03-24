@@ -387,34 +387,27 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
 
     bool isDocument = false;
     bool isDeleted = false;
-    bool isAvailable = _part->hasBody();
+    bool isAvailable = _part->partialContentAvailable();
+    bool isRetrievable = !_part->contentAvailable();
     int size = 0;
     QString sizeText;
 
     if (isAvailable) {
-        size = _part->contentDisposition().size();
-        if (size == -1) {
-            if (_class == Text) {
-                _decodedText = _part->body().data();
-                size = _decodedText.length();
-            } else {
-                _decodedData = _part->body().data(QMailMessageBody::Decoded);
-                size = _decodedData.length();
-            }
-        }
+        size = _part->body().length();
+        sizeText = humanReadable(size);
+        if (isRetrievable)
+            sizeText.append(tr(" of ") + humanReadable(_part->contentDisposition().size()));
     } else {
         // This part is not yet available
         _document->setText("<i><small><center>" + tr("Document not yet retrieved") + "</center></small></i>");
         size = _part->contentDisposition().size();
+        sizeText = humanReadable(size);
     }
 
     QString typeName = _part->contentType().content();
 
     _name->setText(_part->displayName());
     _type->setText(typeName);
-
-    if (sizeText.isEmpty())
-        sizeText = humanReadable(size);
     _size->setText(sizeText);
 
     _viewer->setVisible(false);
@@ -446,8 +439,8 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
 
     _sizeLabel->setVisible(!isDeleted && (size > 0));
     _size->setVisible(!isDeleted && (size > 0));
-    _save->setVisible(isAvailable && !isDocument && (size > 0));
-    _retrieve->setVisible(!isAvailable);
+    _save->setVisible(!isRetrievable && !isDocument && (size > 0));
+    _retrieve->setVisible(isRetrievable);
     _document->setVisible(isDocument);
 }
 

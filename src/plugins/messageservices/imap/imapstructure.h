@@ -14,12 +14,9 @@
 #include <qstring.h>
 #include <qstringlist.h>
 
-class QMailMessagePartContainer;
-class QString;
-class QStringList;
+class QMailMessage;
 
-
-void setMessageContentFromStructure(const QStringList &structure, QMailMessagePartContainer *container);
+void setMessageContentFromStructure(const QStringList &structure, QMailMessage *message);
 
 QStringList getMessageStructure(const QString &field);
 
