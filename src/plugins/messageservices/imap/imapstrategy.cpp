@@ -1390,26 +1390,27 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
 bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase *context)
 {
     QMailFolderId folderId;
-    QMutableListIterator<QMailMessageId> it(_messageIds);
+    QList<QMailMessageId> nextMessageIds;
+    QListIterator<QMailMessageId> it(_messageIds);
     _serverUids.clear();
     while (it.hasNext()) {
         QMailMessageId id(it.next());
         if (!id.isValid()) {
-            _messageIds.removeAll(id);
             continue;
         }
         QMailMessageMetaData metaData(id);
         if (!metaData.parentFolderId().isValid()) {
-            _messageIds.removeAll(id);
             continue;
         }
         if (!folderId.isValid())
             folderId = metaData.parentFolderId();
         if (metaData.parentFolderId() == folderId) {
             _serverUids.append(metaData.serverUid());
-            _messageIds.removeAll(id);
+            continue;
         }
+        nextMessageIds.append(id);
     }
+    _messageIds = nextMessageIds;
     if (_serverUids.isEmpty() || !folderId.isValid()) {
         // Only allow monitoring of one folder other than the inbox
         if (_monitoredFoldersIds.count() > 1)
