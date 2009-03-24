@@ -409,6 +409,8 @@ ImapClient::~ImapClient()
 
 void ImapClient::newConnection()
 {
+    if (_protocol.loggingOut())
+        _protocol.close();
     if (_protocol.inUse()) {
         _inactiveTimer.stop();
     } else {

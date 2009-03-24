@@ -90,6 +90,8 @@ void ImapStrategy::newConnection(ImapStrategyContextBase *context)
 
 void ImapStrategy::initialAction(ImapStrategyContextBase *context)
 {
+    if (context->protocol().loggingOut())
+        context->protocol().close();
     if (context->protocol().inUse()) {
         // We have effectively just completed authenticating
         transition(context, IMAP_Login, OpOk);

@@ -1542,6 +1542,11 @@ bool ImapProtocol::inUse() const
     return (_transport && _transport->inUse());
 }
 
+bool ImapProtocol::loggingOut() const
+{
+    return _fsm->state() == &_fsm->logoutState;
+}
+
 const QStringList &ImapProtocol::capabilities() const
 {
     return _capabilities;

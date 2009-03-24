@@ -101,6 +101,7 @@ public:
     bool connected() const;
     bool encrypted() const;
     bool inUse() const;
+    bool loggingOut() const;
 
     QString lastError() const { return _lastError; };
 
