@@ -331,16 +331,10 @@ QSize AttachmentOptions::sizeHint() const
     return _parentSize;
 }
 
-// This function is copied direct from QDocumentProperties; it would be nice to have a
-// merged version somewhere...
 static QString humanReadable(int size)
 {
-    if(size <= 0)
-        return QObject::tr("0 bytes");
-    else if(size == 1)
-        return QObject::tr("1 byte");
-    else if(size < 1024)
-        return QObject::tr("%1 bytes").arg(size);
+    if(size < 1024)
+        return QObject::tr("%n byte(s)", "", size);
     else if(size < (1024 * 1024))
         return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
     else if(size < (1024 * 1024 * 1024))

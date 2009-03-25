@@ -46,6 +46,19 @@ static QString dateString(const QDateTime& dt)
     else return dt.toString("dd/MM/yy h:mm:ss ap");
 }
 
+// Also in plugins/viewers/generic/attachment_options:
+static QString sizeString(uint size)
+{
+    if(size < 1024)
+        return QObject::tr("%n byte(s)", "", size);
+    else if(size < (1024 * 1024))
+        return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
+    else if(size < (1024 * 1024 * 1024))
+        return QObject::tr("%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
+    else
+        return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
+}
+
 class MessageListModel : public QMailMessageListModel
 {
 public:
@@ -98,14 +111,11 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
             case 0:
                 return message.subject();
             case 1:
-                return message.from().toString();
+                return message.from().name();
             case 2:
                 return dateString(message.date().toLocalTime());
             case 3:
-            {
-                static const float kilobyte = 1024.0;
-                return QString::number(message.size() / kilobyte,'f',1) + " KB";
-            }
+                return sizeString(message.size());
             break;
             }
         }
