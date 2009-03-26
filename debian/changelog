@@ -1,5 +1,12 @@
+qt4-messagingframework (2009W12-0maemo2) hardy; urgency=low
+
+  * Development package and QtMail application package were added.
+
+ -- Dmitry Zelenkovsky <ext-Dmitry.Zelenkovskyiy@nokia.com>  Tue, 24 Mar 2009 14:34:59 +0200
+
 qt4-messagingframework (2009W12-0maemo1) unstable; urgency=low
 
   * Initial release
 
  -- Shane Bradley <shane.bradley@nokia.com>  Thu, 19 Mar 2009 16:23:33 +1000
+

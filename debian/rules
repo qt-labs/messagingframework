@@ -23,5 +23,5 @@ DEB_DH_INSTALL_SOURCEDIR := debian/tmp
 
 common-configure-arch:: configure-stamp
 configure-stamp:
-	qmake QMAKE_CXXFLAGS_DEBUG="-g1 -O0"
+	qmake QMF_INSTALL_ROOT=/usr QMAKE_CXXFLAGS_DEBUG="-g1 -O0"
 	touch $@

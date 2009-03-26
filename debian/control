@@ -20,22 +20,22 @@ Description: Qt Messaging Framework library
  can access the data independ of their storage and if
  necessary on a concurrent base.
 
-#Package: libqmf-dev
-#Section: libdevel
-#Architecture: any
-#Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
-#Recommends: libqmf-doc
-#Description: Qt Messaging Framework Library development files
-# Development files for Qt Messaging Framework Library.
-# .
-# The Qt Messaging Framework Library provides a set of APIs
-# that support the most common operations related
-# to arbitrary messages such as creation, modification,
-# retrieval, storage and display of messages. It
-# defines interfaces which enable the integration
-# of new message types. Therefore multiple applications
-# can access the data independ of their storage and if
-# necessary on a concurrent base.
+Package: libqmf-dev
+Section: libdevel
+Architecture: any
+Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
+Recommends: libqmf-doc
+Description: Qt Messaging Framework Library development files
+ Development files for Qt Messaging Framework Library.
+ .
+ The Qt Messaging Framework Library provides a set of APIs
+ that support the most common operations related
+ to arbitrary messages such as creation, modification,
+ retrieval, storage and display of messages. It
+ defines interfaces which enable the integration
+ of new message types. Therefore multiple applications
+ can access the data independ of their storage and if
+ necessary on a concurrent base.
 
 Package: libqmf0-dbg
 Section: libdevel
@@ -48,7 +48,7 @@ Description: Qt Messaging Framework Library debug information.
 #Package: libqmf-doc
 #Section: doc
 #Architecture: any
-##Recommends: libqmf0, libqmf-dev
+#Recommends: libqmf0, libqmf-dev
 #Description: Qt Messaging Framework Library documentation.
 # Documentation for the Qt Messaging Framework Library.
 
@@ -77,3 +77,16 @@ Description: The Qt Messaging Server
  such as POP and IMAP accounts or a local SIM card.
  It forms the back-end of the Qtopia Messaging
  framework.
+
+Package: qmfmail
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, qmfserver (= ${binary:Version}), libqmf-plugins (= ${binary:Version})
+Description: The Qt Mail Application
+ The Messages client application enables the user
+ to receive emails from multiple mail servers as
+ well as SMS and MMS messages from other mobile
+ phone devices. It also provides the ability to send
+ emails, MMS or SMS messages to multiple people
+ with or without attachments.
+
+

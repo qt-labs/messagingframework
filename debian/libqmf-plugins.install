@@ -1,2 +1,3 @@
-plugins/contentmanagers/* usr/lib/contentmanagers
-plugins/messageservices/* usr/lib/messageservices
+usr/plugins/contentmanagers/*.so* usr/lib/qmf/contentmanagers
+usr/plugins/messageservices/*.so* usr/lib/qmf/messageservices
+
