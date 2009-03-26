@@ -1,0 +1,801 @@
+From 794b6d9c174c2c9ca77018636edc8f95856a4e27 Mon Sep 17 00:00:00 2001
+From: Shane Bradley <shane.bradley@nokia.com>
+Date: Thu, 26 Mar 2009 15:36:29 +1000
+Subject: [PATCH] Maemo changes
+
+---
+ .../messageserver/include/QMailAuthenticator       |    1 +
+ .../messageserver/include/QMailMessageClassifier   |    1 +
+ .../messageserver/include/QMailMessageService      |    1 +
+ .../include/QMailMessageServiceConfigurator        |    1 +
+ .../include/QMailMessageServiceEditor              |    1 +
+ .../include/QMailMessageServiceFactory             |    1 +
+ .../include/QMailMessageServicePlugin              |    1 +
+ .../messageserver/include/QMailMessageSink         |    1 +
+ .../messageserver/include/QMailMessageSource       |    1 +
+ .../include/QMailServiceConfiguration              |    1 +
+ src/libraries/messageserver/include/QMailTransport |    1 +
+ src/libraries/messageserver/messageserver.pro      |   19 ++++++++++++++++---
+ src/libraries/qmfutil/include/QMailComposerFactory |    1 +
+ .../qmfutil/include/QMailComposerInterface         |    1 +
+ src/libraries/qmfutil/include/QMailMessageDelegate |    1 +
+ src/libraries/qmfutil/include/QMailViewerFactory   |    1 +
+ src/libraries/qmfutil/include/QMailViewerInterface |    1 +
+ .../qmfutil/include/QtopiaHomeMailMessageDelegate  |    1 +
+ src/libraries/qmfutil/qmfutil.pro                  |   19 ++++++++++++++++---
+ src/libraries/qtopiamail/include/MailId            |    1 +
+ src/libraries/qtopiamail/include/QMailAccount      |    1 +
+ .../qtopiamail/include/QMailAccountConfiguration   |    1 +
+ src/libraries/qtopiamail/include/QMailAccountId    |    1 +
+ src/libraries/qtopiamail/include/QMailAccountKey   |    1 +
+ .../qtopiamail/include/QMailAccountListModel       |    1 +
+ .../qtopiamail/include/QMailAccountMessageSet      |    1 +
+ .../qtopiamail/include/QMailAccountSortKey         |    1 +
+ src/libraries/qtopiamail/include/QMailAddress      |    1 +
+ src/libraries/qtopiamail/include/QMailBase64Codec  |    1 +
+ src/libraries/qtopiamail/include/QMailCodec        |    1 +
+ .../qtopiamail/include/QMailContentManager         |    1 +
+ .../qtopiamail/include/QMailContentManagerFactory  |    1 +
+ .../qtopiamail/include/QMailContentManagerPlugin   |    1 +
+ .../qtopiamail/include/QMailFilterMessageSet       |    1 +
+ src/libraries/qtopiamail/include/QMailFolder       |    1 +
+ src/libraries/qtopiamail/include/QMailFolderId     |    1 +
+ src/libraries/qtopiamail/include/QMailFolderKey    |    1 +
+ .../qtopiamail/include/QMailFolderMessageSet       |    1 +
+ .../qtopiamail/include/QMailFolderSortKey          |    1 +
+ .../qtopiamail/include/QMailLineEndingCodec        |    1 +
+ src/libraries/qtopiamail/include/QMailMessage      |    1 +
+ src/libraries/qtopiamail/include/QMailMessageBody  |    1 +
+ .../include/QMailMessageContentDisposition         |    1 +
+ .../qtopiamail/include/QMailMessageContentType     |    1 +
+ .../qtopiamail/include/QMailMessageHeaderField     |    1 +
+ src/libraries/qtopiamail/include/QMailMessageId    |    1 +
+ src/libraries/qtopiamail/include/QMailMessageKey   |    1 +
+ .../qtopiamail/include/QMailMessageListModel       |    1 +
+ .../qtopiamail/include/QMailMessageMetaData        |    1 +
+ src/libraries/qtopiamail/include/QMailMessagePart  |    1 +
+ .../qtopiamail/include/QMailMessagePartContainer   |    1 +
+ .../qtopiamail/include/QMailMessageRemovalRecord   |    1 +
+ .../qtopiamail/include/QMailMessageServer          |    1 +
+ src/libraries/qtopiamail/include/QMailMessageSet   |    1 +
+ .../qtopiamail/include/QMailMessageSetContainer    |    1 +
+ .../qtopiamail/include/QMailMessageSetModel        |    1 +
+ .../qtopiamail/include/QMailMessageSortKey         |    1 +
+ .../qtopiamail/include/QMailNewEmailHandler        |    1 +
+ .../qtopiamail/include/QMailNewMessageHandler      |    1 +
+ .../qtopiamail/include/QMailPassThroughCodec       |    1 +
+ .../qtopiamail/include/QMailQuotedPrintableCodec   |    1 +
+ .../qtopiamail/include/QMailRetrievalAction        |    1 +
+ src/libraries/qtopiamail/include/QMailSearchAction |    1 +
+ .../qtopiamail/include/QMailServiceAction          |    1 +
+ .../qtopiamail/include/QMailStorageAction          |    1 +
+ src/libraries/qtopiamail/include/QMailStore        |    1 +
+ src/libraries/qtopiamail/include/QMailTimeStamp    |    1 +
+ .../qtopiamail/include/QMailTransmitAction         |    1 +
+ .../qtopiamail/include/QPrivatelyImplemented       |    1 +
+ .../qtopiamail/include/QPrivatelyNoncopyable       |    1 +
+ .../qtopiamail/include/ServiceConfiguration        |    1 +
+ src/libraries/qtopiamail/include/Status            |    1 +
+ src/libraries/qtopiamail/qtopiamail.pro            |   19 ++++++++++++++++---
+ src/libraries/qtopiamail/support/qmaillog.h        |   14 +++++++-------
+ .../qtopiamail/support/qmailnamespace.cpp          |    4 ++--
+ 75 files changed, 127 insertions(+), 18 deletions(-)
+ create mode 100644 src/libraries/messageserver/include/QMailAuthenticator
+ create mode 100644 src/libraries/messageserver/include/QMailMessageClassifier
+ create mode 100644 src/libraries/messageserver/include/QMailMessageService
+ create mode 100644 src/libraries/messageserver/include/QMailMessageServiceConfigurator
+ create mode 100644 src/libraries/messageserver/include/QMailMessageServiceEditor
+ create mode 100644 src/libraries/messageserver/include/QMailMessageServiceFactory
+ create mode 100644 src/libraries/messageserver/include/QMailMessageServicePlugin
+ create mode 100644 src/libraries/messageserver/include/QMailMessageSink
+ create mode 100644 src/libraries/messageserver/include/QMailMessageSource
+ create mode 100644 src/libraries/messageserver/include/QMailServiceConfiguration
+ create mode 100644 src/libraries/messageserver/include/QMailTransport
+ create mode 100644 src/libraries/qmfutil/include/QMailComposerFactory
+ create mode 100644 src/libraries/qmfutil/include/QMailComposerInterface
+ create mode 100644 src/libraries/qmfutil/include/QMailMessageDelegate
+ create mode 100644 src/libraries/qmfutil/include/QMailViewerFactory
+ create mode 100644 src/libraries/qmfutil/include/QMailViewerInterface
+ create mode 100644 src/libraries/qmfutil/include/QtopiaHomeMailMessageDelegate
+ create mode 100644 src/libraries/qtopiamail/include/MailId
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccount
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountConfiguration
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountId
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountListModel
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountMessageSet
+ create mode 100644 src/libraries/qtopiamail/include/QMailAccountSortKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailAddress
+ create mode 100644 src/libraries/qtopiamail/include/QMailBase64Codec
+ create mode 100644 src/libraries/qtopiamail/include/QMailCodec
+ create mode 100644 src/libraries/qtopiamail/include/QMailContentManager
+ create mode 100644 src/libraries/qtopiamail/include/QMailContentManagerFactory
+ create mode 100644 src/libraries/qtopiamail/include/QMailContentManagerPlugin
+ create mode 100644 src/libraries/qtopiamail/include/QMailFilterMessageSet
+ create mode 100644 src/libraries/qtopiamail/include/QMailFolder
+ create mode 100644 src/libraries/qtopiamail/include/QMailFolderId
+ create mode 100644 src/libraries/qtopiamail/include/QMailFolderKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailFolderMessageSet
+ create mode 100644 src/libraries/qtopiamail/include/QMailFolderSortKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailLineEndingCodec
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessage
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageBody
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageContentDisposition
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageContentType
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageHeaderField
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageId
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageListModel
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageMetaData
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessagePart
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessagePartContainer
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageRemovalRecord
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageServer
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageSet
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageSetContainer
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageSetModel
+ create mode 100644 src/libraries/qtopiamail/include/QMailMessageSortKey
+ create mode 100644 src/libraries/qtopiamail/include/QMailNewEmailHandler
+ create mode 100644 src/libraries/qtopiamail/include/QMailNewMessageHandler
+ create mode 100644 src/libraries/qtopiamail/include/QMailPassThroughCodec
+ create mode 100644 src/libraries/qtopiamail/include/QMailQuotedPrintableCodec
+ create mode 100644 src/libraries/qtopiamail/include/QMailRetrievalAction
+ create mode 100644 src/libraries/qtopiamail/include/QMailSearchAction
+ create mode 100644 src/libraries/qtopiamail/include/QMailServiceAction
+ create mode 100644 src/libraries/qtopiamail/include/QMailStorageAction
+ create mode 100644 src/libraries/qtopiamail/include/QMailStore
+ create mode 100644 src/libraries/qtopiamail/include/QMailTimeStamp
+ create mode 100644 src/libraries/qtopiamail/include/QMailTransmitAction
+ create mode 100644 src/libraries/qtopiamail/include/QPrivatelyImplemented
+ create mode 100644 src/libraries/qtopiamail/include/QPrivatelyNoncopyable
+ create mode 100644 src/libraries/qtopiamail/include/ServiceConfiguration
+ create mode 100644 src/libraries/qtopiamail/include/Status
+
+diff --git a/src/libraries/messageserver/include/QMailAuthenticator b/src/libraries/messageserver/include/QMailAuthenticator
+new file mode 100644
+index 0000000..a1c5ba5
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailAuthenticator
+@@ -0,0 +1 @@
++#include "qmailauthenticator.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageClassifier b/src/libraries/messageserver/include/QMailMessageClassifier
+new file mode 100644
+index 0000000..285ed1a
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageClassifier
+@@ -0,0 +1 @@
++#include "qmailmessageclassifier.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageService b/src/libraries/messageserver/include/QMailMessageService
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageService
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageServiceConfigurator b/src/libraries/messageserver/include/QMailMessageServiceConfigurator
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageServiceConfigurator
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageServiceEditor b/src/libraries/messageserver/include/QMailMessageServiceEditor
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageServiceEditor
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageServiceFactory b/src/libraries/messageserver/include/QMailMessageServiceFactory
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageServiceFactory
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageServicePlugin b/src/libraries/messageserver/include/QMailMessageServicePlugin
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageServicePlugin
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageSink b/src/libraries/messageserver/include/QMailMessageSink
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageSink
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailMessageSource b/src/libraries/messageserver/include/QMailMessageSource
+new file mode 100644
+index 0000000..8df572e
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailMessageSource
+@@ -0,0 +1 @@
++#include "qmailmessageservice.h"
+diff --git a/src/libraries/messageserver/include/QMailServiceConfiguration b/src/libraries/messageserver/include/QMailServiceConfiguration
+new file mode 100644
+index 0000000..c6f8a6c
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailServiceConfiguration
+@@ -0,0 +1 @@
++#include "qmailserviceconfiguration.h"
+diff --git a/src/libraries/messageserver/include/QMailTransport b/src/libraries/messageserver/include/QMailTransport
+new file mode 100644
+index 0000000..1b390c9
+--- /dev/null
++++ b/src/libraries/messageserver/include/QMailTransport
+@@ -0,0 +1 @@
++#include "qmailtransport.h"
+diff --git a/src/libraries/messageserver/messageserver.pro b/src/libraries/messageserver/messageserver.pro
+index 2b02a7b..1677d4d 100644
+--- a/src/libraries/messageserver/messageserver.pro
++++ b/src/libraries/messageserver/messageserver.pro
+@@ -1,12 +1,10 @@
+ TEMPLATE = lib 
+ 
+ TARGET = messageserver
+-target.path += $$QMF_INSTALL_ROOT/lib
+-INSTALLS += target
+ 
+ QT *= network
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ DEPENDPATH += .
+ 
+@@ -27,3 +25,18 @@ SOURCES += qmailauthenticator.cpp \
+            qmailserviceconfiguration.cpp \
+            qmailstoreaccountfilter.cpp \
+            qmailtransport.cpp
++
++target.path += $$QMF_INSTALL_ROOT/lib
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+diff --git a/src/libraries/qmfutil/include/QMailComposerFactory b/src/libraries/qmfutil/include/QMailComposerFactory
+new file mode 100644
+index 0000000..23b68f1
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QMailComposerFactory
+@@ -0,0 +1 @@
++#include "qmailcomposer.h"
+\ No newline at end of file
+diff --git a/src/libraries/qmfutil/include/QMailComposerInterface b/src/libraries/qmfutil/include/QMailComposerInterface
+new file mode 100644
+index 0000000..23b68f1
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QMailComposerInterface
+@@ -0,0 +1 @@
++#include "qmailcomposer.h"
+\ No newline at end of file
+diff --git a/src/libraries/qmfutil/include/QMailMessageDelegate b/src/libraries/qmfutil/include/QMailMessageDelegate
+new file mode 100644
+index 0000000..6d19eb2
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QMailMessageDelegate
+@@ -0,0 +1 @@
++#include "qmailmessagedelegate.h"
+\ No newline at end of file
+diff --git a/src/libraries/qmfutil/include/QMailViewerFactory b/src/libraries/qmfutil/include/QMailViewerFactory
+new file mode 100644
+index 0000000..81a8bde
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QMailViewerFactory
+@@ -0,0 +1 @@
++#include "qmailviewer.h"
+diff --git a/src/libraries/qmfutil/include/QMailViewerInterface b/src/libraries/qmfutil/include/QMailViewerInterface
+new file mode 100644
+index 0000000..dc9d052
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QMailViewerInterface
+@@ -0,0 +1 @@
++#include "qmailviewer.h"
+\ No newline at end of file
+diff --git a/src/libraries/qmfutil/include/QtopiaHomeMailMessageDelegate b/src/libraries/qmfutil/include/QtopiaHomeMailMessageDelegate
+new file mode 100644
+index 0000000..6d19eb2
+--- /dev/null
++++ b/src/libraries/qmfutil/include/QtopiaHomeMailMessageDelegate
+@@ -0,0 +1 @@
++#include "qmailmessagedelegate.h"
+\ No newline at end of file
+diff --git a/src/libraries/qmfutil/qmfutil.pro b/src/libraries/qmfutil/qmfutil.pro
+index c58af12..c01a180 100644
+--- a/src/libraries/qmfutil/qmfutil.pro
++++ b/src/libraries/qmfutil/qmfutil.pro
+@@ -1,10 +1,8 @@
+ TEMPLATE = lib 
+ 
+ TARGET = qmfutil 
+-target.path += $$QMF_INSTALL_ROOT/lib
+-INSTALLS += target
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ DEPENDPATH += .
+ 
+@@ -31,3 +29,18 @@ TRANSLATIONS += libqmfutil-ar.ts \
+                 libqmfutil-pt_BR.ts \
+                 libqmfutil-zh_CN.ts \
+                 libqmfutil-zh_TW.ts
++
++target.path += $$QMF_INSTALL_ROOT/lib
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+diff --git a/src/libraries/qtopiamail/include/MailId b/src/libraries/qtopiamail/include/MailId
+new file mode 100644
+index 0000000..e2db656
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/MailId
+@@ -0,0 +1 @@
++#include "qmailid.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccount b/src/libraries/qtopiamail/include/QMailAccount
+new file mode 100644
+index 0000000..e403614
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccount
+@@ -0,0 +1 @@
++#include "qmailaccount.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountConfiguration b/src/libraries/qtopiamail/include/QMailAccountConfiguration
+new file mode 100644
+index 0000000..0631517
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountConfiguration
+@@ -0,0 +1 @@
++#include "qmailaccountconfiguration.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountId b/src/libraries/qtopiamail/include/QMailAccountId
+new file mode 100644
+index 0000000..e2db656
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountId
+@@ -0,0 +1 @@
++#include "qmailid.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountKey b/src/libraries/qtopiamail/include/QMailAccountKey
+new file mode 100644
+index 0000000..1c39992
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountKey
+@@ -0,0 +1 @@
++#include "qmailaccountkey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountListModel b/src/libraries/qtopiamail/include/QMailAccountListModel
+new file mode 100644
+index 0000000..a9d6feb
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountListModel
+@@ -0,0 +1 @@
++#include "qmailaccountlistmodel.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountMessageSet b/src/libraries/qtopiamail/include/QMailAccountMessageSet
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountMessageSet
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAccountSortKey b/src/libraries/qtopiamail/include/QMailAccountSortKey
+new file mode 100644
+index 0000000..87a88f6
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAccountSortKey
+@@ -0,0 +1 @@
++#include "qmailaccountsortkey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailAddress b/src/libraries/qtopiamail/include/QMailAddress
+new file mode 100644
+index 0000000..80d6726
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailAddress
+@@ -0,0 +1 @@
++#include "qmailaddress.h"
+diff --git a/src/libraries/qtopiamail/include/QMailBase64Codec b/src/libraries/qtopiamail/include/QMailBase64Codec
+new file mode 100644
+index 0000000..1a908f2
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailBase64Codec
+@@ -0,0 +1 @@
++#include "qmailcodec.h"
+diff --git a/src/libraries/qtopiamail/include/QMailCodec b/src/libraries/qtopiamail/include/QMailCodec
+new file mode 100644
+index 0000000..1a908f2
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailCodec
+@@ -0,0 +1 @@
++#include "qmailcodec.h"
+diff --git a/src/libraries/qtopiamail/include/QMailContentManager b/src/libraries/qtopiamail/include/QMailContentManager
+new file mode 100644
+index 0000000..7c05cb5
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailContentManager
+@@ -0,0 +1 @@
++#include "qmailcontentmanager.h"
+diff --git a/src/libraries/qtopiamail/include/QMailContentManagerFactory b/src/libraries/qtopiamail/include/QMailContentManagerFactory
+new file mode 100644
+index 0000000..7c05cb5
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailContentManagerFactory
+@@ -0,0 +1 @@
++#include "qmailcontentmanager.h"
+diff --git a/src/libraries/qtopiamail/include/QMailContentManagerPlugin b/src/libraries/qtopiamail/include/QMailContentManagerPlugin
+new file mode 100644
+index 0000000..7c05cb5
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailContentManagerPlugin
+@@ -0,0 +1 @@
++#include "qmailcontentmanager.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFilterMessageSet b/src/libraries/qtopiamail/include/QMailFilterMessageSet
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFilterMessageSet
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFolder b/src/libraries/qtopiamail/include/QMailFolder
+new file mode 100644
+index 0000000..cae2455
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFolder
+@@ -0,0 +1 @@
++#include "qmailfolder.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFolderId b/src/libraries/qtopiamail/include/QMailFolderId
+new file mode 100644
+index 0000000..e2db656
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFolderId
+@@ -0,0 +1 @@
++#include "qmailid.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFolderKey b/src/libraries/qtopiamail/include/QMailFolderKey
+new file mode 100644
+index 0000000..5effe63
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFolderKey
+@@ -0,0 +1 @@
++#include "qmailfolderkey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFolderMessageSet b/src/libraries/qtopiamail/include/QMailFolderMessageSet
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFolderMessageSet
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailFolderSortKey b/src/libraries/qtopiamail/include/QMailFolderSortKey
+new file mode 100644
+index 0000000..231dba5
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailFolderSortKey
+@@ -0,0 +1 @@
++#include "qmailfoldersortkey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailLineEndingCodec b/src/libraries/qtopiamail/include/QMailLineEndingCodec
+new file mode 100644
+index 0000000..1a908f2
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailLineEndingCodec
+@@ -0,0 +1 @@
++#include "qmailcodec.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessage b/src/libraries/qtopiamail/include/QMailMessage
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessage
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageBody b/src/libraries/qtopiamail/include/QMailMessageBody
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageBody
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageContentDisposition b/src/libraries/qtopiamail/include/QMailMessageContentDisposition
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageContentDisposition
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageContentType b/src/libraries/qtopiamail/include/QMailMessageContentType
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageContentType
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageHeaderField b/src/libraries/qtopiamail/include/QMailMessageHeaderField
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageHeaderField
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageId b/src/libraries/qtopiamail/include/QMailMessageId
+new file mode 100644
+index 0000000..e2db656
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageId
+@@ -0,0 +1 @@
++#include "qmailid.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageKey b/src/libraries/qtopiamail/include/QMailMessageKey
+new file mode 100644
+index 0000000..06211f5
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageKey
+@@ -0,0 +1 @@
++#include "qmailmessagekey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageListModel b/src/libraries/qtopiamail/include/QMailMessageListModel
+new file mode 100644
+index 0000000..5eb664a
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageListModel
+@@ -0,0 +1 @@
++#include "qmailmessagelistmodel.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageMetaData b/src/libraries/qtopiamail/include/QMailMessageMetaData
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageMetaData
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessagePart b/src/libraries/qtopiamail/include/QMailMessagePart
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessagePart
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessagePartContainer b/src/libraries/qtopiamail/include/QMailMessagePartContainer
+new file mode 100644
+index 0000000..1f120e0
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessagePartContainer
+@@ -0,0 +1 @@
++#include "qmailmessage.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageRemovalRecord b/src/libraries/qtopiamail/include/QMailMessageRemovalRecord
+new file mode 100644
+index 0000000..737bd83
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageRemovalRecord
+@@ -0,0 +1 @@
++#include "qmailmessageremovalrecord.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageServer b/src/libraries/qtopiamail/include/QMailMessageServer
+new file mode 100644
+index 0000000..5398cdc
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageServer
+@@ -0,0 +1 @@
++#include "qmailmessageserver.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageSet b/src/libraries/qtopiamail/include/QMailMessageSet
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageSet
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageSetContainer b/src/libraries/qtopiamail/include/QMailMessageSetContainer
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageSetContainer
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageSetModel b/src/libraries/qtopiamail/include/QMailMessageSetModel
+new file mode 100644
+index 0000000..d8be240
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageSetModel
+@@ -0,0 +1 @@
++#include "qmailmessageset.h"
+diff --git a/src/libraries/qtopiamail/include/QMailMessageSortKey b/src/libraries/qtopiamail/include/QMailMessageSortKey
+new file mode 100644
+index 0000000..b6f0399
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailMessageSortKey
+@@ -0,0 +1 @@
++#include "qmailmessagesortkey.h"
+diff --git a/src/libraries/qtopiamail/include/QMailNewEmailHandler b/src/libraries/qtopiamail/include/QMailNewEmailHandler
+new file mode 100644
+index 0000000..61db895
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailNewEmailHandler
+@@ -0,0 +1 @@
++#include "qmailnewmessagehandler.h"
+diff --git a/src/libraries/qtopiamail/include/QMailNewMessageHandler b/src/libraries/qtopiamail/include/QMailNewMessageHandler
+new file mode 100644
+index 0000000..61db895
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailNewMessageHandler
+@@ -0,0 +1 @@
++#include "qmailnewmessagehandler.h"
+diff --git a/src/libraries/qtopiamail/include/QMailPassThroughCodec b/src/libraries/qtopiamail/include/QMailPassThroughCodec
+new file mode 100644
+index 0000000..1a908f2
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailPassThroughCodec
+@@ -0,0 +1 @@
++#include "qmailcodec.h"
+diff --git a/src/libraries/qtopiamail/include/QMailQuotedPrintableCodec b/src/libraries/qtopiamail/include/QMailQuotedPrintableCodec
+new file mode 100644
+index 0000000..1a908f2
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailQuotedPrintableCodec
+@@ -0,0 +1 @@
++#include "qmailcodec.h"
+diff --git a/src/libraries/qtopiamail/include/QMailRetrievalAction b/src/libraries/qtopiamail/include/QMailRetrievalAction
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailRetrievalAction
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/include/QMailSearchAction b/src/libraries/qtopiamail/include/QMailSearchAction
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailSearchAction
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/include/QMailServiceAction b/src/libraries/qtopiamail/include/QMailServiceAction
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailServiceAction
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/include/QMailStorageAction b/src/libraries/qtopiamail/include/QMailStorageAction
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailStorageAction
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/include/QMailStore b/src/libraries/qtopiamail/include/QMailStore
+new file mode 100644
+index 0000000..217a7a7
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailStore
+@@ -0,0 +1 @@
++#include "qmailstore.h"
+diff --git a/src/libraries/qtopiamail/include/QMailTimeStamp b/src/libraries/qtopiamail/include/QMailTimeStamp
+new file mode 100644
+index 0000000..07bfe99
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailTimeStamp
+@@ -0,0 +1 @@
++#include "qmailtimestamp.h"
+diff --git a/src/libraries/qtopiamail/include/QMailTransmitAction b/src/libraries/qtopiamail/include/QMailTransmitAction
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QMailTransmitAction
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/include/QPrivatelyImplemented b/src/libraries/qtopiamail/include/QPrivatelyImplemented
+new file mode 100644
+index 0000000..0b73b3b
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QPrivatelyImplemented
+@@ -0,0 +1 @@
++#include "qprivateimplementation.h"
+diff --git a/src/libraries/qtopiamail/include/QPrivatelyNoncopyable b/src/libraries/qtopiamail/include/QPrivatelyNoncopyable
+new file mode 100644
+index 0000000..0b73b3b
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/QPrivatelyNoncopyable
+@@ -0,0 +1 @@
++#include "qprivateimplementation.h"
+diff --git a/src/libraries/qtopiamail/include/ServiceConfiguration b/src/libraries/qtopiamail/include/ServiceConfiguration
+new file mode 100644
+index 0000000..0631517
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/ServiceConfiguration
+@@ -0,0 +1 @@
++#include "qmailaccountconfiguration.h"
+diff --git a/src/libraries/qtopiamail/include/Status b/src/libraries/qtopiamail/include/Status
+new file mode 100644
+index 0000000..cfbd6ca
+--- /dev/null
++++ b/src/libraries/qtopiamail/include/Status
+@@ -0,0 +1 @@
++#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
+index c715160..715a2a9 100644
+--- a/src/libraries/qtopiamail/qtopiamail.pro
++++ b/src/libraries/qtopiamail/qtopiamail.pro
+@@ -1,14 +1,12 @@
+ TEMPLATE = lib 
+ 
+ TARGET = qtopiamail
+-target.path += $$QMF_INSTALL_ROOT/lib 
+-INSTALLS += target
+ 
+ DEFINES += QT_BUILD_QCOP_LIB
+ 
+ QT *= sql network
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ INCLUDEPATH += support
+ 
+@@ -120,3 +118,18 @@ TRANSLATIONS += libqtopiamail-ar.ts \
+                 libqtopiamail-pt_BR.ts \
+                 libqtopiamail-zh_CN.ts \
+                 libqtopiamail-zh_TW.ts
++
++target.path += $$QMF_INSTALL_ROOT/lib 
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+diff --git a/src/libraries/qtopiamail/support/qmaillog.h b/src/libraries/qtopiamail/support/qmaillog.h
+index 9d61887..81373e8 100644
+--- a/src/libraries/qtopiamail/support/qmaillog.h
++++ b/src/libraries/qtopiamail/support/qmaillog.h
+@@ -86,12 +86,12 @@ public:
+ 
+ #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
+ 
+-QLOG_DISABLE() //uncategorized logging
+-QLOG_DISABLE(Messaging)
+-QLOG_DISABLE(IMAP)
+-QLOG_DISABLE(SMTP)
+-QLOG_DISABLE(POP)
+-QLOG_DISABLE(ImapData)
+-QLOG_DISABLE(MessagingState)
++QLOG_ENABLE() //uncategorized logging
++QLOG_ENABLE(Messaging)
++QLOG_ENABLE(IMAP)
++QLOG_ENABLE(SMTP)
++QLOG_ENABLE(POP)
++QLOG_ENABLE(ImapData)
++QLOG_ENABLE(MessagingState)
+ 
+ #endif //QMAILLOG_H
+diff --git a/src/libraries/qtopiamail/support/qmailnamespace.cpp b/src/libraries/qtopiamail/support/qmailnamespace.cpp
+index d63acdf..15935cf 100644
+--- a/src/libraries/qtopiamail/support/qmailnamespace.cpp
++++ b/src/libraries/qtopiamail/support/qmailnamespace.cpp
+@@ -178,8 +178,8 @@ QString QMail::pluginsPath()
+ {
+     static QString pluginsEnv(getenv(QMF_PLUGINS_ENV));
+     if(!pluginsEnv.isEmpty())
+-        return pluginsEnv + "/";
+-    //default to "." if no env set
++        return "/usr/lib/qmf/";
++    //default to "/usr/lib/qmf/" if no env set
+     return pluginsEnv;
+ }
+ 
+-- 
+1.5.6.1
+
