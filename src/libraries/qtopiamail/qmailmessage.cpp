@@ -2646,11 +2646,13 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
         {
             // We are dealing with unicode text data, which we want in unencoded form
             QTextStream out(&outFile);
+            out.setCodec(charset);
 
             // If the content is unencoded we can pass it back via a text stream
             if (!_encoded)
             {
                 QTextStream* in = _bodyData.textStream();
+                in->setCodec(charset);
                 QMailCodec::copy(out, *in);
                 result = (in->status() == QTextStream::Ok);
                 delete in;
@@ -2690,6 +2692,7 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
         {
             // This data must be unicode in the file
             QTextStream* in = _bodyData.textStream();
+            in->setCodec(charset);
             codec->encode(out, *in, charset);
             result = (in->status() == QTextStream::Ok);
             delete in;
@@ -2720,6 +2723,8 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         charset = "ISO-8859-1";
     }
 
+    out.setCodec(charset);
+
     QMailMessageBody::TransferEncoding te = _encoding;
 
     // If our data is not encoded, we don't need to decode
@@ -2735,6 +2740,7 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         { 
             // The data is already in unicode format
             QTextStream* in = _bodyData.textStream();
+            in->setCodec(charset);
             QMailCodec::copy(out, *in);
             result = (in->status() == QTextStream::Ok);
             delete in;

@@ -13,6 +13,7 @@
 #include <qmailcodec.h>
 #include <qmailmessage.h>
 #include <QTemporaryFile>
+#include <QTextCodec>
 #include <QDir>
 
 Q_DECLARE_METATYPE(QMailMessageBody::EncodingStatus)
@@ -489,6 +490,12 @@ void tst_QMailMessageBody::fromFile()
     QFETCH( QByteArray, type );
     QFETCH( QMailMessageBody::TransferEncoding, encoding );
     QFETCH( QMailMessageBody::EncodingStatus, status );
+    QFETCH( QByteArray, encoded );
+    QFETCH( QByteArray, bytearray_decoded );
+    QFETCH( QString, string_decoded );
+    QFETCH( QStringList, content_properties );
+
+    QMailMessageContentType contentType( type );
 
     QTemporaryFile file(QString("%1/%2").arg(QDir::tempPath()).arg(metaObject()->className()));
     QVERIFY( file.open() );
@@ -497,16 +504,16 @@ void tst_QMailMessageBody::fromFile()
     {
         {
             QTextStream out( &file );
+            out.setCodec( contentType.charset() );
             out << string_input;
         }
         file.close();
 
-        QMailMessageBody body = QMailMessageBody::fromFile( name, QMailMessageContentType( type ), encoding, status );
+        QMailMessageBody body = QMailMessageBody::fromFile( name, contentType, encoding, status );
         QCOMPARE( body.transferEncoding(), encoding );
-        QTEST( body.data( QMailMessageBody::Encoded ), "encoded" );
-        QTEST( body.data(), "string_decoded" );
+        QCOMPARE( body.data( QMailMessageBody::Encoded ), encoded );
+        QCOMPARE( body.data(), string_decoded );
 
-        QFETCH( QStringList, content_properties );
         QCOMPARE( body.contentType().type(), content_properties[0].toLatin1() );
         QCOMPARE( body.contentType().subType(), content_properties[1].toLatin1() );
         QCOMPARE( body.contentType().charset(), content_properties[2].toLatin1() );
@@ -519,12 +526,11 @@ void tst_QMailMessageBody::fromFile()
         }
         file.close();
 
-        QMailMessageBody body = QMailMessageBody::fromFile( name, QMailMessageContentType( type ), encoding, status );
+        QMailMessageBody body = QMailMessageBody::fromFile( name, contentType, encoding, status );
         QCOMPARE( body.transferEncoding(), encoding );
-        QTEST( body.data( QMailMessageBody::Encoded ), "encoded" );
-        QTEST( body.data( QMailMessageBody::Decoded ), "bytearray_decoded" );
+        QCOMPARE( body.data( QMailMessageBody::Encoded ), encoded );
+        QCOMPARE( body.data( QMailMessageBody::Decoded ), bytearray_decoded );
 
-        QFETCH( QStringList, content_properties );
         QCOMPARE( body.contentType().type(), content_properties[0].toLatin1() );
         QCOMPARE( body.contentType().subType(), content_properties[1].toLatin1() );
         QCOMPARE( body.contentType().charset(), content_properties[2].toLatin1() );
@@ -655,6 +661,7 @@ void tst_QMailMessageBody::toFile()
     {
         // Read the string from the file and compare
         QTextStream in( &file );
+        in.setCodec( contentType.charset() );
         QString data = in.readAll();
         QCOMPARE( data, string_input );
     }
