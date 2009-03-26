@@ -3389,7 +3389,6 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
         // Resolve from overloaded member functions:
         AttemptResult (QMailStorePrivate::*func)(const QMailMessageId&, QMailMessageMetaData*, ReadLock&) = &QMailStorePrivate::attemptMessageMetaData;
 
-        QMailMessageMetaData metaData;
         success = repeatedly<ReadAccess>(bind(func, const_cast<QMailStorePrivate*>(this), 
                                               cref(id), &metaData), 
                                          "messageMetaData(id)");
