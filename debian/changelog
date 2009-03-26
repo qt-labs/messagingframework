@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W12-0maemo3) unstable; urgency=low
+
+  * Move source changes to a separate patch.
+  * Fixes: NB#103702, NB#103707, NB#103923, NB#103716, NB#104197, NB#105396
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 26 Mar 2009 15:57:52 +1000
+
 qt4-messagingframework (2009W12-0maemo2) hardy; urgency=low
 
   * Development package and QtMail application package were added.
