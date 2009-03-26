@@ -70,8 +70,8 @@ signals:
     void messageActionCompleted(const QString &uid);
 
     void allMessagesReceived();
-    void idleNewMailNotification();
-    void idleFlagsChangedNotification();
+    void idleNewMailNotification(QMailFolderId);
+    void idleFlagsChangedNotification(QMailFolderId);
 
 public slots:
     void transportError(int, const QString &msg);

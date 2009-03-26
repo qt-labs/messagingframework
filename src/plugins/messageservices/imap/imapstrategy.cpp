@@ -1413,6 +1413,7 @@ bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase 
     _messageIds = nextMessageIds;
     if (_serverUids.isEmpty() || !folderId.isValid()) {
         // Only allow monitoring of one folder other than the inbox
+            
         if (_monitoredFoldersIds.count() > 1)
             _monitoredFoldersIds.clear();
         context->client()->monitor(_monitoredFoldersIds);
@@ -1591,6 +1592,12 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
             _lastExistsMap.insert(_folderId, exists);
         }
         if ((uidNext < 0) || (exists < 0) || (lastUidNext < 0) || (lastExists < 0)) {
+            comparable = false;
+        }
+        if (_minimum == 1) {
+            // The don't select an already selected folder optimization is causing a problem,
+            // we aren't picking up changes to uidNext or exists.
+            // Work around this for push email at least for now.
             comparable = false;
         }
         

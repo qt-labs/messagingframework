@@ -28,7 +28,6 @@ public:
     Source(ImapService *service)
         : QMailMessageSource(service),
           _service(service),
-          _mailCheckQueued(false),
           _flagsCheckQueued(false),
           _queuedMailCheckInProgress(false),
           _unavailable(false),
@@ -38,9 +37,9 @@ public:
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
-        connect(&_service->_client, SIGNAL(idleNewMailNotification()), this, SLOT(queueMailCheck()));
-        connect(&_service->_client, SIGNAL(idleFlagsChangedNotification()), this, SLOT(queueFlagsChangedCheck()));
-        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
+        connect(&_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
+        connect(&_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
+        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheckAll()));
     }
     
     void setIntervalTimer(int interval)
@@ -75,19 +74,20 @@ public slots:
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
     void retrievalTerminated();
-    void queueMailCheck();
+    void queueMailCheckAll();
+    void queueMailCheck(QMailFolderId folderId);
     void queueFlagsChangedCheck();
     
 private:
     virtual bool setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&) = 0);
 
     ImapService *_service;
-    bool _mailCheckQueued;
     bool _flagsCheckQueued;
     bool _queuedMailCheckInProgress;
     bool _unavailable;
     bool _synchronizing;
     QTimer _intervalTimer;
+    QList<QMailFolderId> _queuedFolders;
 
     void (ImapService::Source::*_actionCompletedSignal)(const QMailMessageIdList&);
 };
@@ -115,6 +115,8 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
         qWarning() << "IMAP Search sorting not yet implemented!";
     }
     
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setBase(folderId);
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setDescending(!folderId.isValid());
     _service->_client.strategyContext()->retrieveMessageListStrategy.setFolder(folderId, minimum);
     return setStrategy(&_service->_client.strategyContext()->retrieveMessageListStrategy);
 }
@@ -357,10 +359,10 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&))
 {
-    _service->_client.setStrategy(strategy);
-    _service->_client.newConnection();
     _actionCompletedSignal = signal;
     _unavailable = true;
+    _service->_client.setStrategy(strategy);
+    _service->_client.newConnection();
     return true;
 }
 
@@ -397,26 +399,34 @@ void ImapService::Source::retrievalCompleted()
         }
     }
 
-    if (_mailCheckQueued) {
-        queueMailCheck();
+    if (!_queuedFolders.isEmpty()) {
+        queueMailCheck(_queuedFolders.first());
     }
     if (_flagsCheckQueued) {
         queueFlagsChangedCheck();
     }
 }
 
-void ImapService::Source::queueMailCheck()
+void ImapService::Source::queueMailCheckAll()
+{
+    _flagsCheckQueued = true; //Also check for flag changes
+    queueMailCheck(QMailFolderId());
+}
+
+void ImapService::Source::queueMailCheck(QMailFolderId folderId)
 {
     if (_unavailable) {
-        _mailCheckQueued = true;
+        if (!_queuedFolders.contains(folderId)) {
+            _queuedFolders.append(folderId);
+        }
         return;
     }
 
-    _mailCheckQueued = false;
+    _queuedFolders.removeAll(folderId);
     _queuedMailCheckInProgress = true;
 
     emit _service->availabilityChanged(false);
-    retrieveMessageList(_service->accountId(), QMailFolderId(), 1, QMailMessageSortKey());
+    retrieveMessageList(_service->accountId(), folderId, 1, QMailMessageSortKey());
 }
 
 void ImapService::Source::queueFlagsChangedCheck()
@@ -445,7 +455,7 @@ void ImapService::Source::retrievalTerminated()
     }
     
     // Just give up if an error occurs
-    _mailCheckQueued = false;
+    _queuedFolders.clear();
     _flagsCheckQueued = false;
 }
 
@@ -465,7 +475,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
     QMailAccountConfiguration accountCfg(accountId);
     ImapConfiguration imapCfg(accountCfg);
     if (ImapConfiguration(imapCfg).pushEnabled())
-        QTimer::singleShot(0, _source, SLOT(queueMailCheck()));
+        QTimer::singleShot(0, _source, SLOT(queueMailCheckAll()));
     _source->setIntervalTimer(imapCfg.checkInterval());
 }
 
