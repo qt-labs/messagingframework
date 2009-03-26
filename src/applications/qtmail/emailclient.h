@@ -152,6 +152,8 @@ protected slots:
     void statusChanged(const QMailServiceAction::Status &status);
     void progressChanged(uint progress, uint total);
 
+    void flagRetrievalActivityChanged(QMailServiceAction::Activity activity);
+
     void transmitCompleted();
     void retrievalCompleted();
     void storageActionCompleted();
@@ -344,7 +346,9 @@ private:
     QProcess* m_messageServerProcess;
 
     SyncState syncState;
-    bool refreshVisibleQueued;
+
+    QMailRetrievalAction *flagRetrievalAction;
+    QSet<QMailMessageId> flagMessageIds;
 };
 
 #endif

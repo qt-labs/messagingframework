@@ -377,8 +377,7 @@ EmailClient::EmailClient( QWidget* parent )
       preSearchWidgetId(-1),
       searchAction(0),
       m_messageServerProcess(0),
-      syncState(ListFolders),
-      refreshVisibleQueued(false)
+      syncState(ListFolders)
 {
     setObjectName( "EmailClient" );
 
@@ -762,6 +761,9 @@ void EmailClient::init()
             connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
     }
 
+    // Use a separate action for flag updates, which are not directed by the user
+    flagRetrievalAction = new QMailRetrievalAction(this);
+    connect(flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
 
     // We need to load the settings in case they affect our service handlers
     readSettings();
@@ -989,8 +991,6 @@ void EmailClient::retrievalCompleted()
             clearStatusText();
 
         setRetrievalInProgress(false);
-        if (refreshVisibleQueued)
-            retrieveVisibleMessagesFlags();
     }
 }
 
@@ -1545,6 +1545,25 @@ void EmailClient::progressChanged(uint progress, uint total)
     emit updateProgress(progress, total);
 }
 
+void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity activity)
+{
+    if (QMailServiceAction *action = static_cast<QMailServiceAction*>(sender())) {
+        if (activity == QMailServiceAction::Failed) {
+            // Report failure
+            const QMailServiceAction::Status status(action->status());
+            qMailLog(Messaging) << "Failed to update message flags -" << status.text << "(" << status.errorCode << ")";
+        } else if (activity != QMailServiceAction::Successful) {
+            return;
+        }
+
+        // Are there pending message IDS to be checked?
+        if (!flagMessageIds.isEmpty()) {
+            flagRetrievalAction->retrieveMessages(flagMessageIds.toList(), QMailRetrievalAction::Flags);
+            flagMessageIds.clear();
+        }
+    }
+}
+
 void EmailClient::folderSelected(QMailMessageSet *item)
 {
     if (item) {
@@ -1575,7 +1594,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         setActionVisible(synchronizeAction, synchronizeAvailable);
 
         updateGetAccountButton();
-
 
         bool contentsChanged = (item->messageKey() != messageListView()->key());
         if (contentsChanged)
@@ -1751,18 +1769,17 @@ void EmailClient::retrieveVisibleMessagesFlags()
 {
     // This code to detect flag changes is required to address a limitation 
     // of IMAP servers that do not support NOTIFY+CONDSTORE functionality.
-    if (isRetrieving()) {
-        refreshVisibleQueued = true;
-        return;
-    }
-
-    refreshVisibleQueued = false;
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
     if (ids.isEmpty())
         return;
     
-    setRetrievalInProgress(true);
-    retrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
+    QMailServiceAction::Activity activity(flagRetrievalAction->activity());
+    if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
+        // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
+        flagMessageIds += ids.toSet();
+    } else {
+        flagRetrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
+    }
 }
 
 void EmailClient::composeActivated()
