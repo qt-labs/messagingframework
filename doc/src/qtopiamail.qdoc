@@ -151,13 +151,17 @@ On a device the Qt Extended Messaging library will only read and write the prima
 
 \section1 Performance Characteristics
 
-The performance of the Qt Extended Messaging library is tested using the reference \c{messageserver} implementation included with Qt Extended.  Various tasks are performed using different amounts and sizes of message to determine the effect these parameters have on the library's performance.  The results of these tests are available \l{Qt Extended Messaging Performance}{here}.
+The performance of the Qt Extended Messaging library is tested using the reference \c{messageserver} implementation included with Qt Extended.  
+Various tasks are performed using different amounts and sizes of message to determine the effect these parameters have on the library's performance.  
+Placeholder: The results of these tests would be available <here>, if those results were currently exported.
 
 \section1 Assumptions and Dependencies
 
 The Qt Extended Messaging library requires SQL support either through the included SQLite or through some other SQL engine.
 
 \section1 Examples
+
+The Qt Extended Messaging library contains some example programs that demonstrate how to use the library's functionality.
 
 \table
 \header \o Name \o Description

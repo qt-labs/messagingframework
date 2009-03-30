@@ -57,8 +57,8 @@ qmake "QMF_INSTALL_ROOT=<image directory path>" "CONFIG+=debug" qmf.pro
 \endcode
 
 Where \c <image \c directory \c path> is the location that \c make \c install will put the resultant binary files. It is optional but 
-desirable to set this variable as it is not possible to run the applications from within their directories due
-to dependencies. The debug paramater is also optional.
+desirable to set this variable as it is not possible to run the applications from within their build directories due
+to dependencies. The \c debug configuration parameter is also optional.
 
 Following this simply run:
 
@@ -70,12 +70,12 @@ make install
 It is also recommended to build in a separate path to the source tree. This is just a matter
 of running the above commands from within a separate build directory.
 
-\bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensue that valgrind development headers are installed,
+\bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensure that valgrind development headers are installed,
 or optionally remove unwanted tests from the qmf.pro. 
 
 \section1 Running Messaging Framework 
 
-After \c make \c install has run, the following layout should exist in your image directory:
+After \c{make install} has run, the following layout should exist in your image directory:
 
 \code
 bin
@@ -97,7 +97,45 @@ Optionally set \c QMF_DATA to the location where you want the framework data fil
 default of \c $HOME/.qmf will be used.
 
 \bold Note: When running the test application \c qtmail, if the \c messageserver is not already running it will be started as
-a child process of the application. If debug to stdout is required from \c messageserver, ensure it is running separately 
-before running \c qtmail. 
+a child process of the application, whose output is not visible.  If you prefer to see the output of the \c messageserver
+daemon, ensure it is running separately before running \c qtmail. 
+
+\section1 Testing the Messaging Framework
+
+The messaging framework includes a series of unit tests designed to ensure that it is functioning correctly 
+in an operating environment.  Unit tests are located in the \c tests top-level directory.
+
+To run the tests:
+
+\code 
+cd tests
+make test
+\endcode
+
+Normal \c make options control the operation of the testing - \c{-j} controls the number of concurrent tests invoked, \c{-k} instructs make to keep running in the event of a failure.
+
+\bold Note: some tests alter or remove data from the mailstore they operate against.  It is prudent to use a different value for the \c QMF_DATA environment variable when running tests than when operating normally.
+
+To run a single test, perform \c{make test} within the subdirectory of the relevant test program.  For example, to run just the \c tst_QMailCodec test:
+
+\code
+make -C tests/tst_qmailcodec test
+\endcode
+
+To run a single test suite, provide the name of the test suite in the \c ARGS variable:
+
+\code
+make -C test/tst_qmailcodec ARGS="encode" test
+\endcode
+
+To run a single test case, provide the name of the test case in the \c ARGS variable:
+
+\code
+make -C test/tst_qmailcodec ARGS="encode:'one padding byte'" test
+\endcode
+
+\section2 Test Results
+
+Placeholder: it should be possible to see the results produced by the QtSoftware continuous integration system <here>, if those results were exported yet...
 
 */

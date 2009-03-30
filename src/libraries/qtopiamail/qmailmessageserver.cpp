@@ -229,7 +229,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     an error that prevents an operation from being performed, the actionCompleted(bool) signal
     is emitted with the parameter \c false.
 
-    \sa QMailServiceAction, QMailMessage, QtopiaIpcAdaptor
+    \sa QMailServiceAction, QMailMessage
 */
 
 /*!

@@ -7,23 +7,6 @@
 \table 100%
 
 \header 
-\o General
-\o Support & QA 
-\row
-\o
-\list
-    \o \l {About Messaging Framework}
-    \o \l {Getting Started} 
-    \o \l {Dependencies and Prerequisites}
-\endlist
-\o
-\list
-   \o \l {How to Report a Bug}
-   \o \l {Test Plan}
-   \o \l {Test Results}
-\endlist
-
-\header 
 \o Product Specification
 \o Using Messaging Framework 
 \o
@@ -39,10 +22,10 @@
 \o
 \list
    \o \l {Messaging}{Introduction}
+   \o \l {Building and Compiling}{Building and Running}
+   \o \l {Testing the Messaging Framework}{Test Results}
    \o \l {Porting Between Messaging Framework Versions}
-   \o \l {Building and Compiling}{Building and Compiling}
-   \o \l {Running Messaging Framework}{Running Messaging Framework} 
-   \o \l {Tutorials}{Tutorials}
+   \o \l {Qt Extended Messaging Library#Examples}{Examples}
 \endlist
  
 \endtable 
