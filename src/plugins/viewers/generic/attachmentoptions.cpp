@@ -331,16 +331,10 @@ QSize AttachmentOptions::sizeHint() const
     return _parentSize;
 }
 
-// This function is copied direct from QDocumentProperties; it would be nice to have a
-// merged version somewhere...
 static QString humanReadable(int size)
 {
-    if(size <= 0)
-        return QObject::tr("0 bytes");
-    else if(size == 1)
-        return QObject::tr("1 byte");
-    else if(size < 1024)
-        return QObject::tr("%1 bytes").arg(size);
+    if(size < 1024)
+        return QObject::tr("%n byte(s)", "", size);
     else if(size < (1024 * 1024))
         return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
     else if(size < (1024 * 1024 * 1024))
@@ -387,34 +381,27 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
 
     bool isDocument = false;
     bool isDeleted = false;
-    bool isAvailable = _part->hasBody();
+    bool isAvailable = _part->partialContentAvailable();
+    bool isRetrievable = !_part->contentAvailable();
     int size = 0;
     QString sizeText;
 
     if (isAvailable) {
-        size = _part->contentDisposition().size();
-        if (size == -1) {
-            if (_class == Text) {
-                _decodedText = _part->body().data();
-                size = _decodedText.length();
-            } else {
-                _decodedData = _part->body().data(QMailMessageBody::Decoded);
-                size = _decodedData.length();
-            }
-        }
+        size = _part->body().length();
+        sizeText = humanReadable(size);
+        if (isRetrievable)
+            sizeText.append(tr(" of ") + humanReadable(_part->contentDisposition().size()));
     } else {
         // This part is not yet available
         _document->setText("<i><small><center>" + tr("Document not yet retrieved") + "</center></small></i>");
         size = _part->contentDisposition().size();
+        sizeText = humanReadable(size);
     }
 
     QString typeName = _part->contentType().content();
 
     _name->setText(_part->displayName());
     _type->setText(typeName);
-
-    if (sizeText.isEmpty())
-        sizeText = humanReadable(size);
     _size->setText(sizeText);
 
     _viewer->setVisible(false);
@@ -446,8 +433,8 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
 
     _sizeLabel->setVisible(!isDeleted && (size > 0));
     _size->setVisible(!isDeleted && (size > 0));
-    _save->setVisible(isAvailable && !isDocument && (size > 0));
-    _retrieve->setVisible(!isAvailable);
+    _save->setVisible(!isRetrievable && !isDocument && (size > 0));
+    _retrieve->setVisible(isRetrievable);
     _document->setVisible(isDocument);
 }
 

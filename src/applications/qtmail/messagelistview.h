@@ -12,6 +12,7 @@
 #define MESSAGELISTVIEW_H
 
 #include <QWidget>
+#include <QTimer>
 #include <qmailmessage.h>
 #include <qmailmessagekey.h>
 #include <qmailmessagesortkey.h>
@@ -84,6 +85,8 @@ public:
     bool ignoreUpdatesWhenHidden() const;
     void setIgnoreUpdatesWhenHidden(bool ignore);
 
+    QMailMessageIdList visibleMessagesIds(bool buffer = true) const;
+
 signals:
     void clicked(const QMailMessageId& id);
     void currentChanged(const QMailMessageId& oldId, const QMailMessageId& newId);
@@ -92,6 +95,7 @@ signals:
     void backPressed();
     void resendRequested(const QMailMessage&, int);
     void moreClicked();
+    void visibleMessagesChanged();
 
 protected slots:
     void indexClicked(const QModelIndex& index);
@@ -102,6 +106,8 @@ protected slots:
     void modelChanged();
     void rowsAboutToBeRemoved(const QModelIndex&, int, int);
     void layoutChanged();
+    void reviewVisibleMessages();
+    void scrollTimeout();
 
 protected:
     void showEvent(QShowEvent* e);
@@ -125,6 +131,8 @@ private:
     bool mIgnoreWhenHidden;
     bool mSelectedRowsRemoved;
     QMailFolderId mFolderId;
+    QTimer mScrollTimer;
+    QMailMessageIdList mPreviousVisibleItems;
 };
 
 #endif

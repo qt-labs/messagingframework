@@ -554,18 +554,19 @@ void QMailMessageListModel::messagesAdded(const QMailMessageIdList& ids)
     if(!d->init)
         return;
     
-    QMailMessageKey passKey = d->key & QMailMessageKey::id(ids);
-    QMailMessageIdList results = QMailStore::instance()->queryMessages(passKey);
+    QMailMessageKey idKey(QMailMessageKey::id(ids));
 
-    if(results.isEmpty())
+    QMailMessageIdList validIds = QMailStore::instance()->queryMessages(idKey & d->key);
+    if (validIds.isEmpty()) { 
         return;
-
-    if(results.count() > fullRefreshCutoff)
+    } else if (validIds.count() > fullRefreshCutoff) {
         fullRefresh(false);
+        return;
+    }
 
     if(!d->sortKey.isEmpty())
     { 
-        foreach(const QMailMessageId &id,results)
+        foreach(const QMailMessageId &id,validIds)
         {
             LessThanFunctor lessThan(d->sortKey);
 
@@ -587,8 +588,8 @@ void QMailMessageListModel::messagesAdded(const QMailMessageIdList& ids)
     {
         int index = d->itemList.count();
 
-        beginInsertRows(QModelIndex(),index,(index + results.count() - 1));
-        foreach(const QMailMessageId &id,results)
+        beginInsertRows(QModelIndex(),index,(index + validIds.count() - 1));
+        foreach(const QMailMessageId &id,validIds)
             d->itemList.append(QMailMessageListModelPrivate::Item(id));
         endInsertRows();
     }
@@ -613,8 +614,9 @@ void QMailMessageListModel::messagesUpdated(const QMailMessageIdList& ids)
     QMailMessageKey idKey(QMailMessageKey::id(ids));
 
     QMailMessageIdList validIds = QMailStore::instance()->queryMessages(idKey & d->key);
-    if(validIds.count() > fullRefreshCutoff)
-    {
+    if (validIds.isEmpty()) { 
+        return;
+    } else if (validIds.count() > fullRefreshCutoff) {
         fullRefresh(false);
         return;
     }

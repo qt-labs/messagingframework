@@ -19,6 +19,7 @@ class QAction;
 class QMailMessage;
 class QPushButton;
 class QToolButton;
+class AttachmentOptions;
 class Browser;
 
 // A generic viewer able to show email, SMS or basic MMS
@@ -51,6 +52,7 @@ public slots:
 
 protected slots:
     virtual void linkHighlighted(const QUrl& link);
+    virtual void dialogFinished(int);
 
 private:
     virtual void setPlainTextMode(bool plainTextMode);
@@ -60,6 +62,7 @@ private:
     Browser* browser;
     QAction* plainTextModeAction;
     QAction* richTextModeAction;
+    AttachmentOptions* attachmentDialog;
     const QMailMessage* message;
     bool plainTextMode;
     bool containsNumbers;

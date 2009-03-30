@@ -152,6 +152,8 @@ protected slots:
     void statusChanged(const QMailServiceAction::Status &status);
     void progressChanged(uint progress, uint total);
 
+    void flagRetrievalActivityChanged(QMailServiceAction::Activity activity);
+
     void transmitCompleted();
     void retrievalCompleted();
     void storageActionCompleted();
@@ -185,6 +187,7 @@ protected slots:
     void modify(const QMailMessage& message);
 
     void retrieveMoreMessages();
+    void retrieveVisibleMessagesFlags();
 
     bool removeMessage(const QMailMessageId& id, bool userRequest);
 
@@ -343,6 +346,9 @@ private:
     QProcess* m_messageServerProcess;
 
     SyncState syncState;
+
+    QMailRetrievalAction *flagRetrievalAction;
+    QSet<QMailMessageId> flagMessageIds;
 };
 
 #endif

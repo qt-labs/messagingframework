@@ -23,6 +23,7 @@
 GenericViewer::GenericViewer(QWidget* parent)
     : QMailViewerInterface(parent),
       browser(new Browser(parent)),
+      attachmentDialog(0),
       message(0),
       plainTextMode(false)
 {
@@ -82,6 +83,11 @@ QList<int> GenericViewer::types() const { return QList<int>() << QMailMessage::P
 
 bool GenericViewer::setMessage(const QMailMessage& mail)
 {
+    if (attachmentDialog) {
+        attachmentDialog->close();
+        attachmentDialog = 0;
+    }
+
     message = &mail;
 
     setPlainTextMode(plainTextMode);
@@ -96,6 +102,11 @@ void GenericViewer::setResource(const QUrl& name, QVariant var)
 
 void GenericViewer::clear()
 {
+    if (attachmentDialog) {
+        attachmentDialog->close();
+        attachmentDialog = 0;
+    }
+
     plainTextMode = false;
 
     browser->setPlainText("");
@@ -134,11 +145,14 @@ void GenericViewer::linkClicked(const QUrl& link)
                 QMailMessagePart::Location partLocation(location);
 
                 // Show the attachment dialog
-                AttachmentOptions options(widget());
-                options.setAttachment(message->partAt(partLocation));
+                attachmentDialog = new AttachmentOptions(widget());
+                attachmentDialog->setAttribute(Qt::WA_DeleteOnClose);
 
-                connect(&options, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
-                options.exec();
+                attachmentDialog->setAttachment(message->partAt(partLocation));
+                connect(attachmentDialog, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
+                connect(attachmentDialog, SIGNAL(finished(int)), this, SLOT(dialogFinished(int)));
+
+                attachmentDialog->exec();
                 return;
             }
         }
@@ -175,6 +189,11 @@ bool GenericViewer::eventFilter(QObject*, QEvent* event)
     }
 
     return false;
+}
+
+void GenericViewer::dialogFinished(int)
+{
+    attachmentDialog = 0;
 }
 
 Q_EXPORT_PLUGIN2(generic,GenericViewer)

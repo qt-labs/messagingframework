@@ -55,22 +55,25 @@ BenchmarkContext::~BenchmarkContext()
         CycleCounterTicks newTicks = getticks();
 #endif
 
-        int heapUsageTotal  = TestMalloc::peakTotal()/1024;
-        int heapUsageUsable = TestMalloc::peakUsable()/1024;
+        // Note, kilo means 1000, not 1024 !
+        int heapUsageTotal  = TestMalloc::peakTotal()/1000;
+        int heapUsageUsable = TestMalloc::peakUsable()/1000;
         int ms = d->time.elapsed();
 #ifdef HAVE_TICK_COUNTER
         quint64 cycles = quint64(elapsed(newTicks,d->ticks));
 #endif
-        qint64 diskUsage = (newQmfUsage - d->qmfUsage) / 1024;
+        qint64 diskUsage = (newQmfUsage - d->qmfUsage) / 1000;
         if (d->xml) {
             if (!RUNNING_ON_VALGRIND) {
-                fprintf(stdout, "<BenchmarkResult metric=\"heap_usage\" tag=\"%s_\" value=\"%d\" iterations=\"1\"/>\n", QTest::currentDataTag(), heapUsageTotal);
+                fprintf(stdout, "<BenchmarkResult metric=\"kilobytes heap usage\" tag=\"%s\" value=\"%d\" iterations=\"1\"/>\n", QTest::currentDataTag(), heapUsageTotal);
             }
-            fprintf(stdout, "<BenchmarkResult metric=\"disk_usage\" tag=\"%s_\" value=\"%lld\" iterations=\"1\"/>\n", QTest::currentDataTag(), diskUsage);
+            fprintf(stdout, "<BenchmarkResult metric=\"kilobytes disk usage\" tag=\"%s\" value=\"%lld\" iterations=\"1\"/>\n", QTest::currentDataTag(), diskUsage);
 #ifdef HAVE_TICK_COUNTER
-            fprintf(stdout, "<BenchmarkResult metric=\"cycles\" tag=\"%s_\" value=\"%llu\" iterations=\"1\"/>\n", QTest::currentDataTag(), cycles);
+            fprintf(stdout, "<BenchmarkResult metric=\"cycles\" tag=\"%s\" value=\"%llu\" iterations=\"1\"/>\n", QTest::currentDataTag(), cycles);
 #endif
-            fprintf(stdout, "<BenchmarkResult metric=\"walltime\" tag=\"%s_\" value=\"%d\" iterations=\"1\"/>\n", QTest::currentDataTag(), ms);
+            // `milliseconds walltime' would be better, but keep `walltime' for benchlib
+            // compatibility
+            fprintf(stdout, "<BenchmarkResult metric=\"walltime\" tag=\"%s\" value=\"%d\" iterations=\"1\"/>\n", QTest::currentDataTag(), ms);
             fflush(stdout);
         }
         else {

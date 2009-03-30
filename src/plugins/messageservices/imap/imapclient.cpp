@@ -144,15 +144,237 @@ namespace {
 
 }
 
+class IdleProtocol : public ImapProtocol {
+    Q_OBJECT
+
+public:
+    IdleProtocol(ImapClient *client, const QMailFolder &folder);
+    virtual ~IdleProtocol() {}
+
+    virtual void handleIdling() {}
+    virtual void handleInitialIdling();
+    virtual bool open(const ImapConfiguration& config);
+    int idleRetryDelay() { return _idleRetryDelay; }
+    
+signals:
+    void idleNewMailNotification(QMailFolderId);
+    void idleFlagsChangedNotification(QMailFolderId);
+    void openRequest(IdleProtocol*);
+    
+protected slots:
+    virtual void idleContinuation(ImapCommand, const QString &);
+    virtual void idleCommandTransition(ImapCommand, OperationStatus);
+    virtual void idleTimeOut();
+    virtual void idleTransportError();
+    virtual void idleErrorRecovery();
+
+protected:
+    ImapClient *_client;
+    QMailFolder _folder;
+    
+private:
+    QTimer _idleTimer; // Send a DONE command every 29 minutes
+    QTimer _idleRecoveryTimer; // Check command hasn't hung
+    int _idleRetryDelay; // Try to restablish IDLE state
+    enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
+    bool _initialIdling;
+};
+
+IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder)
+    :_idleRetryDelay(InitialIdleRetryDelay),
+     _initialIdling(true)
+{ 
+    _client = client;
+    _folder = folder;
+    connect(this, SIGNAL(continuationRequired(ImapCommand, QString)),
+            this, SLOT(idleContinuation(ImapCommand, QString)) );
+    connect(this, SIGNAL(completed(ImapCommand, OperationStatus)),
+            this, SLOT(idleCommandTransition(ImapCommand, OperationStatus)) );
+    connect(this, SIGNAL(connectionError(int,QString)),
+            this, SLOT(idleTransportError()) );
+    connect(this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)),
+            this, SLOT(idleTransportError()) );
+
+    _idleTimer.setSingleShot(true);
+    connect(&_idleTimer, SIGNAL(timeout()),
+            this, SLOT(idleTimeOut()));
+    _idleRecoveryTimer.setSingleShot(true);
+    connect(&_idleRecoveryTimer, SIGNAL(timeout()),
+            this, SLOT(idleErrorRecovery()));
+}
+
+bool IdleProtocol::open(const ImapConfiguration& config)
+{
+    _idleRecoveryTimer.start(_idleRetryDelay*1000);
+    return ImapProtocol::open(config);
+}
+
+void IdleProtocol::handleInitialIdling()
+{
+    emit idleNewMailNotification(_folder.id());
+}
+
+void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
+{
+    const int idleTimeout = 28*60*1000;
+
+    if (command == IMAP_Idle) {
+        if (type == QString("idling")) {
+            qMailLog(IMAP) << "IDLE: Idle connection established.";
+            
+            // We are now idling
+            _idleTimer.start(idleTimeout);
+            _idleRecoveryTimer.stop();
+
+            handleIdling();
+            if (_initialIdling) {
+                _initialIdling = false;
+                handleInitialIdling();
+            }
+        } else if (type == QString("newmail")) {
+            qMailLog(IMAP) << "IDLE: new mail event occurred";
+            // A new mail event occurred during idle 
+            emit idleNewMailNotification(_folder.id());
+        } else if (type == QString("flagschanged")) {
+            qMailLog(IMAP) << "IDLE: flags changed event occurred";
+            // A flags changed event occurred during idle 
+            emit idleFlagsChangedNotification(_folder.id());
+        } else {
+            qWarning("idleContinuation: unknown continuation event");
+        }
+    }
+}
+
+void IdleProtocol::idleCommandTransition(const ImapCommand command, const OperationStatus status)
+{
+    if ( status != OpOk ) {
+        idleTransportError();
+        handleIdling();
+        return;
+    }
+    
+    QMailAccountConfiguration config(_client->account());
+    switch( command ) {
+        case IMAP_Init:
+        {
+            sendCapability();
+            return;
+        }
+        case IMAP_Capability:
+        {
+            if (!encrypted()) {
+                if (ImapAuthenticator::useEncryption(config.serviceConfiguration("imap4"), capabilities())) {
+                    // Switch to encrypted mode
+                    sendStartTLS();
+                    break;
+                }
+            }
+
+            // We are now connected
+            sendLogin(config);
+            return;
+        }
+        case IMAP_StartTLS:
+        {
+            sendLogin(config);
+            break;
+        }
+        case IMAP_Login:
+        {
+            sendSelect(_folder);
+            return;
+        }
+        case IMAP_Select:
+        {
+            sendIdle();
+            return;
+        }
+        case IMAP_Idle:
+        {
+            // Restart idling (TODO: unless we're closing)
+            sendIdle();
+            return;
+        }
+        default:        //default = all critical messages
+        {
+            qMailLog(IMAP) << "IDLE: IMAP Idle unknown command response: " << command;
+            return;
+        }
+    }
+}
+
+void IdleProtocol::idleTimeOut()
+{
+    _idleRecoveryTimer.start(_idleRetryDelay*1000); // Detect an unresponsive server
+    _idleTimer.stop();
+    sendIdleDone();
+}
+
+void IdleProtocol::idleTransportError()
+{
+    qMailLog(IMAP) << "IDLE: An IMAP IDLE related error occurred.\n"
+                   << "An attempt to automatically recover is scheduled in" << _idleRetryDelay << "seconds.";
+
+    if (inUse())
+        close();
+    
+    _idleRecoveryTimer.stop();
+    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+}
+
+void IdleProtocol::idleErrorRecovery()
+{
+    const int oneHour = 60*60;
+    _idleRecoveryTimer.stop();
+    if (connected() && _idleTimer.isActive()) {
+        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery was successful. About to check for new mail.";
+        _idleRetryDelay = InitialIdleRetryDelay;
+        emit idleNewMailNotification(_folder.id()); // Check for new messages arriving while idle connection was down
+        emit idleFlagsChangedNotification(_folder.id());
+        return;
+    }
+    updateStatus(tr("Idle Error occurred"));
+    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+    _idleRetryDelay = qMin( oneHour, _idleRetryDelay*2 );
+    
+    emit openRequest(this);
+}
+
+class PrimaryIdleProtocol : public IdleProtocol {
+    Q_OBJECT
+
+public:
+    PrimaryIdleProtocol(ImapClient *client, const QMailFolder &folder) : IdleProtocol(client, folder) {};
+    virtual ~PrimaryIdleProtocol() {};
+
+    virtual void handleIdling() { _client->idling(); }
+    virtual void handleInitialIdling() {}
+
+private slots:
+    virtual void idleContinuation(ImapCommand, const QString &);
+};
+
+void PrimaryIdleProtocol::idleContinuation(ImapCommand command, const QString &type)
+{
+    if (!(_folder.id().isValid())
+        &&_client->mailboxId("INBOX").isValid()) {
+        _folder = QMailFolder(_client->mailboxId("INBOX"));
+    }
+    IdleProtocol::idleContinuation(command, type)       ;
+}
+
 ImapClient::ImapClient(QObject* parent)
     : QObject(parent),
-      _idleRetryDelay(InitialIdleRetryDelay),
       _waitingForIdle(false)
 {
     static int count(0);
     ++count;
-    _idleProtocol.setObjectName(QString("I:%1").arg(count));
-    _idleFolder = QMailFolder("INBOX"); // Folders may not have been listed on server
+    QMailFolder idleFolder("INBOX"); // Folders may not have been listed on server
+    if (mailboxId("INBOX").isValid()) {
+        idleFolder = QMailFolder(mailboxId("INBOX"));
+    }
+    _idleProtocol = new PrimaryIdleProtocol(this, idleFolder);
+    _idleProtocol->setObjectName(QString("I:%1").arg(count));
     _protocol.setObjectName(QString("%1").arg(count));
     _strategyContext = new ImapStrategyContext(this);
     _strategyContext->setStrategy(&_strategyContext->synchronizeAccountStrategy);
@@ -162,8 +384,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(mailboxListed(QString&,QString&,QString&)) );
     connect(&_protocol, SIGNAL(messageFetched(QMailMessage&)),
             this, SLOT(messageFetched(QMailMessage&)) );
-    connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int, bool)),
-            this, SLOT(dataFetched(QString, QString, QString, int, bool)) );
+    connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
+            this, SLOT(dataFetched(QString, QString, QString, int)) );
     connect(&_protocol, SIGNAL(nonexistentUid(QString)),
             this, SLOT(nonexistentUid(QString)) );
     connect(&_protocol, SIGNAL(messageStored(QString)),
@@ -183,23 +405,14 @@ ImapClient::ImapClient(QObject* parent)
     connect(&_inactiveTimer, SIGNAL(timeout()),
             this, SLOT(connectionInactive()));
 
-    connect(&_idleProtocol, SIGNAL(continuationRequired(ImapCommand, QString)),
-            this, SLOT(idleContinuation(ImapCommand, QString)) );
-    connect(&_idleProtocol, SIGNAL(completed(ImapCommand, OperationStatus)),
-            this, SLOT(idleCommandTransition(ImapCommand, OperationStatus)) );
-    connect(&_idleProtocol, SIGNAL(updateStatus(QString)),
+    connect(_idleProtocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
+            this, SIGNAL(idleNewMailNotification(QMailFolderId)));
+    connect(_idleProtocol, SIGNAL(idleFlagsChangedNotification(QMailFolderId)),
+            this, SIGNAL(idleFlagsChangedNotification(QMailFolderId)));
+    connect(_idleProtocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)));
-    connect(&_idleProtocol, SIGNAL(connectionError(int,QString)),
-            this, SLOT(idleTransportError()) );
-    connect(&_idleProtocol, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)),
-            this, SLOT(idleTransportError()) );
-
-    _idleTimer.setSingleShot(true);
-    connect(&_idleTimer, SIGNAL(timeout()),
-            this, SLOT(idleTimeOut()));
-    _idleRecoveryTimer.setSingleShot(true);
-    connect(&_idleRecoveryTimer, SIGNAL(timeout()),
-            this, SLOT(idleErrorRecovery()));
+    connect(_idleProtocol, SIGNAL(openRequest(IdleProtocol *)),
+            this, SLOT(idleOpenRequested(IdleProtocol *)));
 }
 
 ImapClient::~ImapClient()
@@ -207,13 +420,22 @@ ImapClient::~ImapClient()
     if (_protocol.inUse()) {
         _protocol.close();
     }
-    if (_idleProtocol.inUse()) {
-        _idleProtocol.close();
+    if (_idleProtocol->inUse()) {
+        _idleProtocol->close();
+        delete _idleProtocol;
+    }
+    foreach(QMailFolderId id, _monitored.keys()) {
+        IdleProtocol *protocol = _monitored.take(id);
+        if (protocol->inUse())
+            protocol->close();
+        delete protocol;
     }
 }
 
 void ImapClient::newConnection()
 {
+    if (_protocol.loggingOut())
+        _protocol.close();
     if (_protocol.inUse()) {
         _inactiveTimer.stop();
     } else {
@@ -245,102 +467,11 @@ void ImapClient::setStrategy(ImapStrategy *strategy)
     _strategyContext->setStrategy(strategy);
 }
 
-void ImapClient::idleContinuation(ImapCommand command, const QString &type)
-{
-    const int idleTimeout = 28*60*1000;
-
-    if (command == IMAP_Idle) {
-        if (type == QString("idling")) {
-            qMailLog(IMAP) << "IDLE: Idle connection established.";
-            
-            // We are now idling
-            _idleTimer.start(idleTimeout);
-            _idleRecoveryTimer.stop();
-
-            if (_waitingForIdle)
-                commandCompleted(IMAP_Idle_Continuation, OpOk);
-        } else {
-            qMailLog(IMAP) << "IDLE: event occurred";
-            // An event occurred during idle 
-            emit idleChangeNotification();
-        }
-    }
-}
-
-void ImapClient::idleCommandTransition(const ImapCommand command, const OperationStatus status)
-{
-    if ( status != OpOk ) {
-        idleTransportError();
-        commandCompleted(IMAP_Idle_Continuation, OpOk);
-        return;
-    }
-    
-    switch( command ) {
-        case IMAP_Init:
-        {
-            _idleProtocol.sendCapability();
-            return;
-        }
-        case IMAP_Capability:
-        {
-            if (!_idleProtocol.encrypted()) {
-                if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _idleProtocol.capabilities())) {
-                    // Switch to encrypted mode
-                    _idleProtocol.sendStartTLS();
-                    break;
-                }
-            }
-
-            // We are now connected
-            _idleProtocol.sendLogin(_config);
-            return;
-        }
-        case IMAP_StartTLS:
-        {
-            _idleProtocol.sendLogin(_config);
-            break;
-        }
-        case IMAP_Login:
-        {
-            // Find the inbox for this account
-            // TODO: the monitored folder should be configurable
-            QMailAccount account(_config.id());
-            if (mailboxId("INBOX").isValid()) {
-                _idleFolder = QMailFolder(mailboxId("INBOX"));
-            }
-            _idleProtocol.sendSelect(_idleFolder);
-            return;
-        }
-        case IMAP_Select:
-        {
-            _idleProtocol.sendIdle();
-            return;
-        }
-        case IMAP_Idle:
-        {
-            // Restart idling (TODO: unless we're closing)
-            _idleProtocol.sendIdle();
-            return;
-        }
-        default:        //default = all critical messages
-        {
-            qMailLog(IMAP) << "IDLE: IMAP Idle unknown command response: " << command;
-            return;
-        }
-    }
-}
-
-void ImapClient::idleTimeOut()
-{
-    _idleRecoveryTimer.start(_idleRetryDelay*1000); // Detect an unresponsive server
-    _idleTimer.stop();
-    _idleProtocol.sendIdleDone();
-}
-
 void ImapClient::commandCompleted(ImapCommand command, OperationStatus status)
-{    
+{
     checkCommandResponse(command, status);
-    commandTransition(command, status);
+    if (status == OpOk)
+        commandTransition(command, status);
 }
 
 void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus status)
@@ -417,16 +548,15 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             // We are now connected
             ImapConfiguration imapCfg(_config);
 
-            if (!_idleProtocol.connected()
+            if (!_idleProtocol->connected()
                 && _protocol.supportsCapability("IDLE")
                 && imapCfg.pushEnabled()) {
                 _waitingForIdle = true;
-                _idleRecoveryTimer.start(_idleRetryDelay*1000); // Detect an unresponsive server
                 emit updateStatus( tr("Logging in idle connection" ) );
-                _idleProtocol.open(imapCfg);
+                _idleProtocol->open(imapCfg);
             } else {
-                if (!imapCfg.pushEnabled() && _idleProtocol.connected())
-                    _idleProtocol.close();
+                if (!imapCfg.pushEnabled() && _idleProtocol->connected())
+                    _idleProtocol->close();
                 emit updateStatus( tr("Logging in" ) );
                 _protocol.sendLogin(_config);
             }
@@ -519,40 +649,43 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
 
 void ImapClient::messageFetched(QMailMessage& mail)
 {
-    // Do we need to update the message from the existing data?
-    QMailMessageMetaData existing(mail.serverUid(), _config.id());
-    if (existing.id().isValid()) {
-        bool replied(mail.status() & QMailMessage::Replied);
-        bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
-        bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
-        bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
-
-        mail.setId(existing.id());
-        mail.setStatus(existing.status());
-        mail.setContent(existing.content());
-        mail.setReceivedDate(existing.receivedDate());
-        mail.setPreviousParentFolderId(existing.previousParentFolderId());
-        mail.setContentScheme(existing.contentScheme());
-        mail.setContentIdentifier(existing.contentIdentifier());
-        mail.setCustomFields(existing.customFields());
-
-        // Preserve the status flags determined by the protocol
-        mail.setStatus(QMailMessage::Replied, replied);
-        mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
-        if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
-            mail.setStatus(QMailMessage::ContentAvailable, true);
-        }
-        if ((mail.status() & QMailMessage::PartialContentAvailable) || partialContentAvailable) {
-            mail.setStatus(QMailMessage::PartialContentAvailable, true);
-        }
+    if (mail.status() & QMailMessage::New) {
+        mail.setParentAccountId(_config.id());
+        mail.setParentFolderId(_protocol.mailbox().id);
     } else {
-        mail.setStatus(QMailMessage::Incoming, true);
-        mail.setStatus(QMailMessage::New, true);
-    }
+        // We need to update the message from the existing data
+        QMailMessageMetaData existing(mail.serverUid(), _config.id());
+        if (existing.id().isValid()) {
+            // Record the status fields that may have been updated
+            bool replied(mail.status() & QMailMessage::Replied);
+            bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
+            bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
+            bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
 
-    mail.setMessageType(QMailMessage::Email);
-    mail.setParentAccountId(_config.id());
-    mail.setParentFolderId(_protocol.mailbox().id);
+            mail.setId(existing.id());
+            mail.setParentAccountId(existing.parentAccountId());
+            mail.setParentFolderId(existing.parentFolderId());
+            mail.setStatus(existing.status());
+            mail.setContent(existing.content());
+            mail.setReceivedDate(existing.receivedDate());
+            mail.setPreviousParentFolderId(existing.previousParentFolderId());
+            mail.setContentScheme(existing.contentScheme());
+            mail.setContentIdentifier(existing.contentIdentifier());
+            mail.setCustomFields(existing.customFields());
+
+            // Preserve the status flags determined by the protocol
+            mail.setStatus(QMailMessage::Replied, replied);
+            mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
+            if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
+                mail.setStatus(QMailMessage::ContentAvailable, true);
+            }
+            if ((mail.status() & QMailMessage::PartialContentAvailable) || partialContentAvailable) {
+                mail.setStatus(QMailMessage::PartialContentAvailable, true);
+            }
+        } else {
+            qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _config.id();
+        }
+    }
 
     _classifier.classifyMessage(mail);
 
@@ -568,6 +701,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
     if (part.multipartType() == QMailMessage::MultipartNone) {
         // The body data is for this part only
         part.setBody(QMailMessageBody::fromData(bodyData, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+        part.removeHeaderField("X-qtopiamail-internal-partial-content");
     } else {
         const QByteArray &boundary(part.contentType().boundary());
 
@@ -617,99 +751,159 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
     return true;
 }
 
-static bool updatePartFile(const QString &partFileStr, const QString &chunkFileStr)
+class TemporaryFile
 {
-    QFile partFile(partFileStr);
-    QFile chunkFile(chunkFileStr);
-    if (!partFile.exists()) {
-        if (!QFile::copy(chunkFileStr, partFileStr)) {
+    enum { AppendBufferSize = 4096 };
+
+    QString _fileName;
+
+public:
+    TemporaryFile(const QString &fileName) : _fileName(QMail::tempPath() + QDir::separator() + fileName) {}
+
+    QString fileName() const { return _fileName; }
+
+    bool write(const QMailMessageBody &body)
+    {
+        QFile file(_fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            qWarning() << "Unable to open file for writing:" << _fileName;
             return false;
         }
-    } else if (partFile.open(QIODevice::Append) 
-               && chunkFile.open(QIODevice::ReadOnly)) {
-            char buffer[4096];
+
+        // We need to write out the data still encoded - since we're deconstructing
+        // server-side data, the meaning of the parameter is reversed...
+        QMailMessageBody::EncodingFormat outputFormat(QMailMessageBody::Decoded);
+
+        QDataStream out(&file);
+        if (!body.toStream(out, outputFormat)) {
+            qWarning() << "Unable to write existing body to file:" << _fileName;
+            return false;
+        }
+
+        file.close();
+        return true;
+    }
+
+    bool appendAndReplace(const QString &fileName)
+    {
+        QFile existingFile(_fileName);
+        QFile dataFile(fileName);
+
+        if (!existingFile.exists()) {
+            if (!QFile::copy(fileName, _fileName)) {
+                return false;
+            }
+        } else if (existingFile.open(QIODevice::Append) && dataFile.open(QIODevice::ReadOnly)) {
+            char buffer[AppendBufferSize];
             qint64 readSize;
-            while (!chunkFile.atEnd()) {
-                readSize = chunkFile.read(buffer, 4096);
+            while (!dataFile.atEnd()) {
+                readSize = dataFile.read(buffer, AppendBufferSize);
                 if (readSize == -1)
                     return false;
-                if (partFile.write(buffer, readSize) != readSize)
+                if (existingFile.write(buffer, readSize) != readSize)
                     return false;
             }
-    } else {
-        return false;
+        } else {
+            return false;
+        }
+
+        if (!QFile::remove(fileName)) {
+            return false;
+        }
+        if (!QFile::rename(_fileName, fileName)) {
+            return false;
+        }
+
+        _fileName = fileName;
+        return true;
     }
-    return true;
-}
+};
 
-void ImapClient::dataFetched(const QString &uid, const QString &section, const QString &chunkName, int size, bool partial)
+void ImapClient::dataFetched(const QString &uid, const QString &section, const QString &fileName, int size)
 {
-    QMailMessagePart::Location partLocation;
-    if (!section.isEmpty())
-        partLocation = QMailMessagePart::Location(section);
-    QString fileName = chunkName;
+    static const QString tempDir = QMail::tempPath() + QDir::separator();
 
-    if (!uid.isEmpty() && (section.isEmpty() || partLocation.isValid(false))) {
-        QMailMessage mail(uid, _config.id());
-        if (mail.id().isValid()) {
-            QString tempDir = QMail::tempPath() + QDir::separator();
-            QString partName = "mail-" + uid + "-part-" + section;
-            QString partFileStr(tempDir + partName);
+    QMailMessage mail(uid, _config.id());
+    if (mail.id().isValid()) {
+        if (section.isEmpty()) {
+            // This is the body of the message, or a part thereof
+            uint existingSize = 0;
+            if (mail.hasBody()) {
+                existingSize = mail.body().length();
 
-            if (partial && section.isEmpty() && !partialLength.contains(partName)) {
-                uint retrievedSize = 0;
-                QFile contentFile(mail.contentIdentifier());
-                QFile partFile(partFileStr);
-                if (contentFile.exists())
-                    retrievedSize += contentFile.size();
-                if (partFile.exists())
-                    retrievedSize += partFile.size();
-                partialLength.insert(partName, retrievedSize);
-            }
-                                
-            if (partial && size) {
-                if (!updatePartFile(partFileStr, chunkName)
-                    || !QFile::remove(chunkName)
-                    || !QFile::copy(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("1Unable to store fetched data"));
+                // Write the existing data to a temporary file
+                TemporaryFile tempFile("mail-" + uid + "-body");
+                if (!tempFile.write(mail.body())) {
+                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
                     return;
                 }
-                fileName = chunkName;
-            } else if (partial && !size) { // Complete part retrieved
-                partialLength.remove(partName);
-                if (!QFile::remove(chunkName)
-                    || !QFile::rename(partFileStr, chunkName)) {
-                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("2Unable to store fetched data"));
+
+                if (!tempFile.appendAndReplace(fileName)) {
+                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
                     return;
+                } else {
+                    // The appended content file is now named 'fileName'
                 }
             }
-                
-            // Update the relevant part
+
+            // Set the content into the mail
+            mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+            mail.setStatus(QMailMessage::PartialContentAvailable, true);
+
+            const uint totalSize(existingSize + size);
+            if (totalSize >= mail.contentSize()) {
+                // We have all the data for this message body
+                mail.setStatus(QMailMessage::ContentAvailable, true);
+            } 
+
+            // If this message was previously marked read, that is no longer true
+            mail.setStatus(QMailMessage::Read, false);
+        } else {
+            // This is data for a sub-part of the message
+            QMailMessagePart::Location partLocation(section);
+            if (!partLocation.isValid(false)) {
+                qWarning() << "Unable to locate part for invalid section:" << section;
+                return;
+            }
+
             QMailMessagePart &part = mail.partAt(partLocation);
-            if (partial && section.isEmpty()) {
-                partialLength.insert(partName, partialLength[partName] + size);
-                mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-                mail.setStatus(QMailMessage::PartialContentAvailable, true);
-                if (partialLength[partName] >= mail.size()) {
-                    mail.setStatus(QMailMessage::ContentAvailable, true);
+
+            int existingSize = 0;
+            if (part.hasBody()) {
+                existingSize = part.body().length();
+
+                // Write the existing data to a temporary file
+                TemporaryFile tempFile("mail-" + uid + "-part-" + section);
+                if (!tempFile.write(part.body())) {
+                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
+                    return;
                 }
 
-                // If this message was previously marked read, that is no longer true
-                mail.setStatus(QMailMessage::Read, false);
-            } else if (part.multipartType() == QMailMessage::MultipartNone) {
-                // The body data is for this part only
-                if (part.hasBody()) {
-                    qWarning() << "Updating existing part body - uid:" << uid << "section:" << section;
+                if (!tempFile.appendAndReplace(fileName)) {
+                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
+                    return;
+                } else {
+                    // The appended content file is now named 'fileName'
                 }
+            } 
+
+            if (part.multipartType() == QMailMessage::MultipartNone) {
+                // The body data is for this part only
                 part.setBody(QMailMessageBody::fromFile(fileName, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
 
-                // Only use one detached file at a time
+                const int totalSize(existingSize + size);
+                if (totalSize >= part.contentDisposition().size()) {
+                    // We have all the data for this part
+                    part.removeHeaderField("X-qtopiamail-internal-partial-content");
+                } else {
+                    // We only have a portion of the part data
+                    part.setHeaderField("X-qtopiamail-internal-partial-content", "true");
+                }
+
+                // The file we wrote the content to is detached, and the mailstore can assume ownership
                 if (mail.customField("qtopiamail-detached-filename").isEmpty()) {
-                    // The file can be used directly if the transfer was not encoded
-                    if ((part.transferEncoding() != QMailMessageBody::Base64) && (part.transferEncoding() != QMailMessageBody::QuotedPrintable)) {
-                        // The file we wrote to is detached, and the mailstore can assume ownership
-                        mail.setCustomField("qtopiamail-detached-filename", fileName);
-                    }
+                    // Only use one detached file at a time
+                    mail.setCustomField("qtopiamail-detached-filename", fileName);
                 } 
             } else {
                 // Find the part bodies in the retrieved data
@@ -734,14 +928,14 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                     return;
                 }
 
-                // These updates are not supported by the file data
+                // These updates cannot be effected by storing the data file directly
                 if (!mail.customField("qtopiamail-detached-filename").isEmpty()) {
                     mail.removeCustomField("qtopiamail-detached-filename");
                 }
             }
-
-            _strategyContext->dataFetched(mail, uid, section);
         }
+
+        _strategyContext->dataFetched(mail, uid, section);
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
@@ -791,43 +985,6 @@ void ImapClient::transportError(int code, const QString &msg)
 void ImapClient::transportError(QMailServiceAction::Status::ErrorCode code, const QString &msg)
 {
     operationFailed(code, msg);
-}
-
-void ImapClient::idleTransportError()
-{
-    qMailLog(IMAP) << "IDLE: An IMAP IDLE related error occurred.\n"
-                   << "An attempt to automatically recover is scheduled in" << _idleRetryDelay << "seconds.";
-
-    if (_idleProtocol.inUse())
-        _idleProtocol.close();
-    
-    _idleRecoveryTimer.stop();
-    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
-}
-
-void ImapClient::idleErrorRecovery()
-{
-    const int oneHour = 60*60;
-    _idleRecoveryTimer.stop();
-    if (_idleProtocol.connected() && _idleTimer.isActive()) {
-        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery was successful. About to check for new mail.";
-        _idleRetryDelay = InitialIdleRetryDelay;
-        emit idleChangeNotification(); // Check for new messages arriving while idle connection was down
-        return;
-    }
-    updateStatus(tr("Idle Error occurred"));
-    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
-    _idleRetryDelay = qMin( oneHour, _idleRetryDelay*2 );
-
-    if (_protocol.inUse()) { // Setting up new idle connection may be in progress
-        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
-            "busy. Retrying to establish IDLE state in" << _idleRetryDelay/2 << "seconds.";
-        return;
-    }
-    _protocol.close();
-    _idleProtocol.close();
-    qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
-    newConnection();
 }
 
 void ImapClient::closeConnection()
@@ -963,3 +1120,67 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 
+void ImapClient::idling()
+{
+    if (_waitingForIdle)
+        commandCompleted(IMAP_Idle_Continuation, OpOk);
+}
+
+void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
+{
+    static int count(0);
+    ++count;
+    
+    ImapConfiguration imapCfg(_config);
+    if (!_protocol.supportsCapability("IDLE")
+        || !imapCfg.pushEnabled()) {
+        return;
+    }
+                
+    foreach(QMailFolderId id, _monitored.keys()) {
+        if (!mailboxIds.contains(id)) {
+            IdleProtocol *protocol = _monitored.take(id);
+            protocol->close(); // Instead of closing could reuse below in some cases
+            delete protocol;
+        }
+    }
+    
+    foreach(QMailFolderId id, mailboxIds) {
+        if (!_monitored.contains(id)) {
+            IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id));
+            protocol->setObjectName(QString("J:%1").arg(count));
+            _monitored.insert(id, protocol);
+            connect(protocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
+                    this, SIGNAL(idleNewMailNotification(QMailFolderId)));
+            connect(protocol, SIGNAL(idleFlagsChangedNotification(QMailFolderId)),
+                    this, SIGNAL(idleFlagsChangedNotification(QMailFolderId)));
+            connect(protocol, SIGNAL(openRequest(IdleProtocol *)),
+                    this, SLOT(idleOpenRequested(IdleProtocol *)));
+            protocol->open(imapCfg);
+        }
+    }
+}
+
+void ImapClient::idleOpenRequested(IdleProtocol *protocol)
+{
+    if (protocol == _idleProtocol) {
+        if (_protocol.inUse()) { // Setting up new idle connection may be in progress
+            qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
+                "busy. Retrying to establish IDLE state in" << protocol->idleRetryDelay()/2 << "seconds.";
+            return;
+        }
+        _protocol.close();
+        _idleProtocol->close();
+        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
+        newConnection();
+    } else {
+        ImapConfiguration imapCfg(_config);
+        if (!_protocol.supportsCapability("IDLE")
+            || !imapCfg.pushEnabled()) {
+            return;
+        }
+        protocol->open(imapCfg);
+    }
+}
+
+#include "imapclient.moc"

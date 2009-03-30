@@ -81,6 +81,12 @@ QMailCodec::~QMailCodec()
 {
 }
 
+/*!
+    \fn QMailCodec::name() const
+
+    Returns a string that identifies the subclass of QMailCodec that this instance belongs to.
+*/
+
 static void enumerateCodecs()
 {
     static bool enumerated = false;
@@ -427,6 +433,12 @@ QMailBase64Codec::QMailBase64Codec(ContentType content, int maximumLineLength)
     _decodePaddingCount = 0;
 }
 
+/*! \reimp */
+QString QMailBase64Codec::name() const
+{
+    return "QMailBase64Codec";
+}
+
 /*! \internal */
 void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, int length, bool finalChunk)
 {
@@ -739,6 +751,12 @@ QMailQuotedPrintableCodec::QMailQuotedPrintableCodec(ContentType content, Confor
     _decodeLastChar = '\0';
 }
 
+/*! \reimp */
+QString QMailQuotedPrintableCodec::name() const
+{
+    return "QMailQuotedPrintableCodec";
+}
+
 /*! \internal */
 void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned char* it, int length, bool finalChunk)
 {
@@ -946,6 +964,12 @@ static void writeStream(QDataStream& out, const char* it, int length)
   \sa QMailCodec
 */
 
+/*! \reimp */
+QString QMailPassThroughCodec::name() const
+{
+    return "QMailPassThroughCodec";
+}
+
 /*! \internal */
 void QMailPassThroughCodec::encodeChunk(QDataStream& out, const unsigned char* it, int length, bool finalChunk)
 {
@@ -992,6 +1016,12 @@ void QMailPassThroughCodec::decodeChunk(QDataStream& out, const char* it, int le
 QMailLineEndingCodec::QMailLineEndingCodec()
     : _lastChar(0)
 {
+}
+
+/*! \reimp */
+QString QMailLineEndingCodec::name() const
+{
+    return "QMailLineEndingCodec";
 }
 
 /*! \internal */

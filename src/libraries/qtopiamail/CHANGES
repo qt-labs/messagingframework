@@ -7,6 +7,15 @@ API changes since the development preview release on 06/03/09:
 1. Added 'QMailContentManager::init()' and 
          'QMailContentManagerFactory::init()'.
 
+2. Added 'QMailMessage::contentSize() const' and 
+         'QMailMessage::setContentSize(uint)'.
+
+3. Added 'QMailCodec::name() const',
+         'QMailBase64Codec::name() const',
+         'QMailQuotedPrintableCodec::name() const',
+         'QMailPassThroughCodec::name() const' and
+         'QMailLineEndingCodec::name() const'.
+
 /***************************************************************************/
 
 API changes since the development preview release on 16/01/09:

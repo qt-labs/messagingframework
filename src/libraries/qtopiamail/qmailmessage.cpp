@@ -35,7 +35,7 @@
 
 static const QByteArray internalPrefix()
 {
-    static const QByteArray prefix("X-qtopia-internal-");
+    static const QByteArray prefix("X-qtopiamail-internal-");
     return prefix;
 }
 
@@ -2646,11 +2646,13 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
         {
             // We are dealing with unicode text data, which we want in unencoded form
             QTextStream out(&outFile);
+            out.setCodec(charset);
 
             // If the content is unencoded we can pass it back via a text stream
             if (!_encoded)
             {
                 QTextStream* in = _bodyData.textStream();
+                in->setCodec(charset);
                 QMailCodec::copy(out, *in);
                 result = (in->status() == QTextStream::Ok);
                 delete in;
@@ -2690,6 +2692,7 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
         {
             // This data must be unicode in the file
             QTextStream* in = _bodyData.textStream();
+            in->setCodec(charset);
             codec->encode(out, *in, charset);
             result = (in->status() == QTextStream::Ok);
             delete in;
@@ -2720,6 +2723,8 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         charset = "ISO-8859-1";
     }
 
+    out.setCodec(charset);
+
     QMailMessageBody::TransferEncoding te = _encoding;
 
     // If our data is not encoded, we don't need to decode
@@ -2735,6 +2740,7 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         { 
             // The data is already in unicode format
             QTextStream* in = _bodyData.textStream();
+            in->setCodec(charset);
             QMailCodec::copy(out, *in);
             result = (in->status() == QTextStream::Ok);
             delete in;
@@ -4285,15 +4291,12 @@ bool QMailMessagePartPrivate::contentAvailable() const
     if (_multipartType != QMailMessage::MultipartNone)
         return true;
 
-    QByteArray contentDisposition(headerField("Content-Disposition"));
-    if (!contentDisposition.isEmpty()) {
-        QMailMessageContentDisposition disposition(contentDisposition);
-        if (disposition.size() != -1) {
-            return (_body.length() >= disposition.size());
-        }
-    }
+    if (_body.isEmpty())
+        return false;
 
-    return false;
+    // Complete content is available only if the 'partial-content' header field is not present
+    QByteArray fieldName(internalPrefix() + "partial-content");
+    return (headerField(fieldName).isEmpty());
 }
 
 bool QMailMessagePartPrivate::partialContentAvailable() const
@@ -6765,6 +6768,22 @@ uint QMailMessage::indicativeSize() const
     }
 
     return 0;
+}
+
+/*!
+    Returns the size of the message content excluding any meta data, in bytes.
+*/  
+uint QMailMessage::contentSize() const
+{
+    return customField("qtopiamail-content-size").toUInt();
+}
+
+/*!
+    Sets the size of the message content excluding any meta data, in bytes.
+*/
+void QMailMessage::setContentSize(uint size)
+{
+    setCustomField("qtopiamail-content-size", QString::number(size));
 }
 
 /*! \reimp */

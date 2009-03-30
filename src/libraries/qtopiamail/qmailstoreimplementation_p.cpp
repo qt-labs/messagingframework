@@ -15,6 +15,12 @@
 
 namespace {
 
+// Events occurring within this period after a previous event begin batching
+const int preFlushTimeout = 250;
+
+// Events occurring within this period are batched
+const int flushTimeout = 1000;
+
 typedef QPair<int,int> Segment; //start,end - end non inclusive
 typedef QList<Segment> SegmentList;
 
@@ -98,7 +104,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
     connect(&flushTimer,
             SIGNAL(timeout()),
             this,
-            SLOT(notifyFlush()));
+            SLOT(flushNotifications()));
     connect(&queueTimer,
             SIGNAL(timeout()),
             this,
@@ -139,7 +145,7 @@ bool QMailStoreImplementationBase::asynchronousEmission() const
 void QMailStoreImplementationBase::flushIpcNotifications()
 {
     // We need to emit all pending IPC notifications
-    notifyFlush();
+    flushNotifications();
 
     // Tell the recipients to process the notifications synchronously
     QCopAdaptor a("QPE/Qtopiamail");
@@ -202,7 +208,13 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
 {
     static NotifyFunctionMap sig(initAccountFunctions());
 
-    if (preFlushTimer.isActive()) {
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
         QSet<QMailAccountId> idsSet = QSet<QMailAccountId>::fromList(ids);
         switch (changeType)
         {
@@ -222,27 +234,25 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
             qMailLog(Messaging) << "Unhandled account notification received";
             break;
         }
-
-        if (!flushTimer.isActive())
-            flushTimer.start(1000);
-
-        preFlushTimer.start(1000);
-        return;
+    } else {
+        flushNotifications();
+        emitIpcUpdates(ids, sig[changeType]);
+        
+        preFlushTimer.start(preFlushTimeout, this);
     }
-
-    preFlushTimer.start(1000);
-    
-    notifyFlush();
-    emitIpcUpdates(ids, sig[changeType]);
 }
 
 void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids)
 {
     static NotifyFunctionMap sig(initMessageFunctions());
 
-    // Use the preFlushTimer to activate buffering when multiple messages 
-    // arrive within one second of each other.
-    if (preFlushTimer.isActive()) {
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
         QSet<QMailMessageId> idsSet = QSet<QMailMessageId>::fromList(ids);
         switch (changeType)
         {
@@ -262,25 +272,25 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
             qMailLog(Messaging) << "Unhandled message notification received";
             break;
         }
-        
-        if (!flushTimer.isActive())
-            flushTimer.start(1000);
+    } else {
+        flushNotifications();
+        emitIpcUpdates(ids, sig[changeType]);
 
-        preFlushTimer.start(1000);
-        return;
+        preFlushTimer.start(preFlushTimeout, this);
     }
-
-    preFlushTimer.start(1000);
-    
-    notifyFlush();
-    emitIpcUpdates(ids, sig[changeType]);
 }
 
 void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids)
 {
     static NotifyFunctionMap sig(initFolderFunctions());
 
-    if (preFlushTimer.isActive()) {
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
         QSet<QMailFolderId> idsSet = QSet<QMailFolderId>::fromList(ids);
         switch (changeType)
         {
@@ -300,25 +310,25 @@ void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType ch
             qMailLog(Messaging) << "Unhandled folder notification received";
             break;
         }
+    } else {
+        flushNotifications();
+        emitIpcUpdates(ids, sig[changeType]);
 
-        if (!flushTimer.isActive())
-            flushTimer.start(1000);
-
-        preFlushTimer.start(1000);
-        return;
+        preFlushTimer.start(preFlushTimeout, this);
     }
-
-    preFlushTimer.start(1000);
-
-    notifyFlush();
-    emitIpcUpdates(ids, sig[changeType]);
 }
 
 void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids)
 {
     static NotifyFunctionMap sig(initMessageRemovalRecordFunctions());
 
-    if (preFlushTimer.isActive()) {
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
         QSet<QMailAccountId> idsSet = QSet<QMailAccountId>::fromList(ids);
         switch (changeType)
         {
@@ -332,18 +342,12 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
             qMailLog(Messaging) << "Unhandled message removal record notification received";
             break;
         }
+    } else {
+        flushNotifications();
+        emitIpcUpdates(ids, sig[changeType]);
 
-        if (!flushTimer.isActive())
-            flushTimer.start(1000);
-
-        preFlushTimer.start(1000);
-        return;
+        preFlushTimer.start(preFlushTimeout, this);
     }
-
-    preFlushTimer.start(1000);
-    
-    notifyFlush();
-    emitIpcUpdates(ids, sig[changeType]);
 }
 
 QString QMailStoreImplementationBase::accountAddedSig()
@@ -462,7 +466,7 @@ QMailStoreImplementationBase::MessageUpdateSignalMap QMailStoreImplementationBas
     return sig;
 }
 
-void QMailStoreImplementationBase::notifyFlush()
+void QMailStoreImplementationBase::flushNotifications()
 {
     static NotifyFunctionMap sigAccount(initAccountFunctions());
     static NotifyFunctionMap sigFolder(initFolderFunctions());

@@ -23,6 +23,8 @@ public:
 
     virtual ~QMailCodec();
 
+    virtual QString name() const = 0;
+
     // Stream conversion interface including character translation
     virtual void encode(QDataStream& out, QTextStream& in, const QString& charset = "UTF-8");
     virtual void decode(QTextStream& out, QDataStream& in, const QString& charset);
@@ -55,6 +57,8 @@ public:
 
     QMailBase64Codec(ContentType content, int maximumLineLength = -1);
 
+    virtual QString name() const;
+
 protected:
     virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk);
     virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk);
@@ -82,6 +86,8 @@ public:
 
     QMailQuotedPrintableCodec(ContentType content, ConformanceType conformance, int maximumLineLength = -1);
 
+    virtual QString name() const;
+
 protected:
     virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk);
     virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk);
@@ -100,6 +106,8 @@ private:
 
 class QTOPIAMAIL_EXPORT QMailPassThroughCodec : public QMailCodec
 {
+    virtual QString name() const;
+
 protected:
     virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk);
     virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk);
@@ -107,6 +115,8 @@ protected:
 
 class QTOPIAMAIL_EXPORT QMailLineEndingCodec : public QMailCodec
 {
+    virtual QString name() const;
+
 public:
     QMailLineEndingCodec();
 

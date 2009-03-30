@@ -46,6 +46,19 @@ static QString dateString(const QDateTime& dt)
     else return dt.toString("dd/MM/yy h:mm:ss ap");
 }
 
+// Also in plugins/viewers/generic/attachment_options:
+static QString sizeString(uint size)
+{
+    if(size < 1024)
+        return QObject::tr("%n byte(s)", "", size);
+    else if(size < (1024 * 1024))
+        return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
+    else if(size < (1024 * 1024 * 1024))
+        return QObject::tr("%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
+    else
+        return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
+}
+
 class MessageListModel : public QMailMessageListModel
 {
 public:
@@ -98,14 +111,11 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
             case 0:
                 return message.subject();
             case 1:
-                return message.from().toString();
+                return message.from().name();
             case 2:
                 return dateString(message.date().toLocalTime());
             case 3:
-            {
-                static const float kilobyte = 1024.0;
-                return QString::number(message.size() / kilobyte,'f',1) + " KB";
-            }
+                return sizeString(message.size());
             break;
             }
         }
@@ -202,10 +212,12 @@ public:
 
 signals:
     void backPressed();
+    void scrolled();
 
 protected:
     void keyPressEvent(QKeyEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
+    void scrollContentsBy(int dx, int dy);
 
     QPoint pos;
 };
@@ -247,6 +259,11 @@ void MessageList::mouseReleaseEvent(QMouseEvent* e)
     QTreeView::mouseReleaseEvent(e);
 }
 
+void MessageList::scrollContentsBy(int dx, int dy)
+{
+    QTreeView::scrollContentsBy(dx, dy);
+    emit scrolled();
+}
 
 MessageListView::MessageListView(QWidget* parent)
 :
@@ -280,6 +297,8 @@ QMailMessageKey MessageListView::key() const
 void MessageListView::setKey(const QMailMessageKey& key)
 {
     mModel->setKey(key);
+    mScrollTimer.stop();
+    QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
 }
 
 QMailMessageSortKey MessageListView::sortKey() const
@@ -354,6 +373,16 @@ void MessageListView::init()
             this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(mFilterModel, SIGNAL(layoutChanged()),
             this, SLOT(layoutChanged()));
+
+    mScrollTimer.setSingleShot(true);
+    connect(mMessageList, SIGNAL(scrolled()),
+            this, SLOT(reviewVisibleMessages()));
+    connect(&mScrollTimer, SIGNAL(timeout()),
+            this, SLOT(scrollTimeout()));
+    connect(mFilterModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
+    connect(mFilterModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
 
     QHBoxLayout* hLayout = new QHBoxLayout(mFilterFrame);
     hLayout->setContentsMargins(0,0,0,0);
@@ -630,6 +659,72 @@ void MessageListView::layoutChanged()
         mSelectedRowsRemoved = false;
         emit selectionChanged();
     }
+}
+
+void MessageListView::reviewVisibleMessages()
+{
+    const int maximumRefreshRate = 15; //seconds
+    
+    if (mScrollTimer.isActive())
+        return;
+
+    mPreviousVisibleItems = visibleMessagesIds();
+    emit visibleMessagesChanged();
+    
+    mScrollTimer.start(maximumRefreshRate*1000);
+}
+
+void MessageListView::scrollTimeout()
+{
+    QMailMessageIdList strictlyVisibleIds(visibleMessagesIds(false));
+    bool contained = true;
+    foreach(QMailMessageId id, strictlyVisibleIds) {
+        if (!mPreviousVisibleItems.contains(id)) {
+            contained = false;
+            break;
+        }
+    }
+    if (!contained) {
+        reviewVisibleMessages();
+    } else {
+        mPreviousVisibleItems.clear();
+    }
+}
+
+QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
+{
+    QMailMessageIdList visibleIds;
+    const int bufferWidth = 50;
+
+    QRect viewRect(mMessageList->viewport()->rect());
+    QModelIndex start(mMessageList->indexAt(QPoint(0,0)));
+    QModelIndex index = start;
+    while (index.isValid()) { // Add visible items
+        QRect indexRect(mMessageList->visualRect(index));
+        if (!indexRect.isValid() || (!viewRect.intersects(indexRect)))
+            break;
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexBelow(index);
+    }
+    if (!buffer)
+        return visibleIds;
+    
+    int i = bufferWidth;
+    while (index.isValid() && (i > 0)) { // Add succeeding items
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexBelow(index);
+        --i;
+    }
+    i = bufferWidth;
+    index = start;
+    if (index.isValid())
+        index = mMessageList->indexAbove(index);
+    while (index.isValid() && (i > 0)) { // Add preceding items
+        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        index = mMessageList->indexAbove(index);
+        --i;
+    }
+    return visibleIds;
 }
 
 bool MessageListView::eventFilter(QObject *, QEvent *event)

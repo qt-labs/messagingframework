@@ -341,6 +341,7 @@ MessageListView* MessageUiBase::createMessageListView()
     connect(view, SIGNAL(selectionChanged()), this, SLOT(messageSelectionChanged()) );
     connect(view, SIGNAL(resendRequested(QMailMessage,int)), this, SLOT(resend(QMailMessage,int)) );
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
+    connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );
 
     return view;
 }
@@ -760,6 +761,9 @@ void EmailClient::init()
             connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
     }
 
+    // Use a separate action for flag updates, which are not directed by the user
+    flagRetrievalAction = new QMailRetrievalAction(this);
+    connect(flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
 
     // We need to load the settings in case they affect our service handlers
     readSettings();
@@ -1050,7 +1054,12 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
 
     setRetrievalInProgress(true);
 
+#ifdef USE_PROGRESSIVE_DOWNLOADING
+    QMailMessage msg(message.id());
+    retrievalAction->retrieveMessageRange(message.id(), msg.body().length() + (5 * 1024));
+#else
     retrievalAction->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
+#endif
 }
 
 void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
@@ -1065,12 +1074,22 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
         QString msg(tr("Cannot retrieve message part without a valid message ID"));
         QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
     } else {
+#ifdef USE_PROGRESSIVE_DOWNLOADING
+        QMailMessage messsage(partLocation.containingMessageId());
+
+        mailAccountId = messsage.parentAccountId();
+        setRetrievalInProgress(true);
+
+        const QMailMessagePart &part(messsage.partAt(partLocation));
+        retrievalAction->retrieveMessagePartRange(partLocation, part.body().length() + (20 * 1024));
+#else
         QMailMessageMetaData metaData(partLocation.containingMessageId());
 
         mailAccountId = metaData.parentAccountId();
         setRetrievalInProgress(true);
 
         retrievalAction->retrieveMessagePart(partLocation);
+#endif
     }
 }
 
@@ -1088,12 +1107,12 @@ void EmailClient::getNextNewMail()
     } else {
         // We have processed all accounts
         autoGetMail = false;
+        mailAccountId = QMailAccountId();
 
         if (primaryActivity == Retrieving)
             clearStatusText();
 
         setRetrievalInProgress(false);
-
     }
 }
 
@@ -1526,6 +1545,25 @@ void EmailClient::progressChanged(uint progress, uint total)
     emit updateProgress(progress, total);
 }
 
+void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity activity)
+{
+    if (QMailServiceAction *action = static_cast<QMailServiceAction*>(sender())) {
+        if (activity == QMailServiceAction::Failed) {
+            // Report failure
+            const QMailServiceAction::Status status(action->status());
+            qMailLog(Messaging) << "Failed to update message flags -" << status.text << "(" << status.errorCode << ")";
+        } else if (activity != QMailServiceAction::Successful) {
+            return;
+        }
+
+        // Are there pending message IDS to be checked?
+        if (!flagMessageIds.isEmpty()) {
+            flagRetrievalAction->retrieveMessages(flagMessageIds.toList(), QMailRetrievalAction::Flags);
+            flagMessageIds.clear();
+        }
+    }
+}
+
 void EmailClient::folderSelected(QMailMessageSet *item)
 {
     if (item) {
@@ -1556,7 +1594,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         setActionVisible(synchronizeAction, synchronizeAvailable);
 
         updateGetAccountButton();
-
 
         bool contentsChanged = (item->messageKey() != messageListView()->key());
         if (contentsChanged)
@@ -1701,6 +1738,11 @@ void EmailClient::modify(const QMailMessage& message)
 
 void EmailClient::retrieveMoreMessages()
 {
+    if (isRetrieving()) {
+        qWarning() << "retrieveMoreMessages called while retrieval in progress";
+        return;
+    }
+    
     QMailFolderId folderId(messageListView()->folderId());
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
@@ -1723,6 +1765,22 @@ void EmailClient::retrieveMoreMessages()
     }
 }
 
+void EmailClient::retrieveVisibleMessagesFlags()
+{
+    // This code to detect flag changes is required to address a limitation 
+    // of IMAP servers that do not support NOTIFY+CONDSTORE functionality.
+    QMailMessageIdList ids(messageListView()->visibleMessagesIds());
+    if (ids.isEmpty())
+        return;
+    
+    QMailServiceAction::Activity activity(flagRetrievalAction->activity());
+    if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
+        // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
+        flagMessageIds += ids.toSet();
+    } else {
+        flagRetrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
+    }
+}
 
 void EmailClient::composeActivated()
 {

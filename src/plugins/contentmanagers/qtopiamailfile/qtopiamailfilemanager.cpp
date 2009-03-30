@@ -446,29 +446,39 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                     }
 
                     if (additionRequired) {
+                        // We can only write the content in decoded form if it is complete
+                        QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
+
                         QString detachedFile = message->customField("qtopiamail-detached-filename");
                         if (!detachedFile.isEmpty()) {
-                            // Try to take ownership of the file
-                            if (QFile::rename(detachedFile, partFilePath)) {
-                                message->removeCustomField("qtopiamail-detached-filename");
-                            }
-                        } else {
-                            QFile file(partFilePath);
-                            if (!file.open(QIODevice::WriteOnly)) {
-                                qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
-                                return false;
-                            }
-
-                            // Write the part content to file
-                            QDataStream out(&file);
-                            if (!part.body().toStream(out, QMailMessageBody::Decoded) || (out.status() != QDataStream::Ok)) {
-                                qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
-                                if (!QFile::remove(partFilePath)){
-                                    qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
+                            // We can take ownership of the file if that helps
+                            if ((outputFormat == QMailMessageBody::Encoded) ||
+                                // If the output should be decoded, then only unchanged 'encodings 'can be used directly
+                                ((part.transferEncoding() != QMailMessageBody::Base64) &&
+                                 (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
+                                // Try to take ownership of the file
+                                if (QFile::rename(detachedFile, partFilePath)) {
+                                    message->removeCustomField("qtopiamail-detached-filename");
+                                    continue;
                                 }
-
-                                return false;
                             }
+                        }
+                            
+                        QFile file(partFilePath);
+                        if (!file.open(QIODevice::WriteOnly)) {
+                            qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
+                            return false;
+                        }
+
+                        // Write the part content to file
+                        QDataStream out(&file);
+                        if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
+                            qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+                            if (!QFile::remove(partFilePath)){
+                                qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
+                            }
+
+                            return false;
                         }
                     }
                 }
@@ -525,7 +535,10 @@ bool QtopiamailfileManager::loadParts(QMailMessage *message, QMailMessagePartCon
             if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
                 QString partFilePath(messagePartFilePath(part, fileName));
                 if (QFile::exists(partFilePath)) {
-                    part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), QMailMessageBody::RequiresEncoding));
+                    // Is the file content in encoded or decoded form?  Since we're delivering
+                    // server-side data, the parameter seems reversed...
+                    QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
+                    part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
                     if (!part.hasBody())
                         return false;
                 }

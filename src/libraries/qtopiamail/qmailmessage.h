@@ -622,6 +622,9 @@ public:
     virtual QString inReplyTo() const;
     virtual void setInReplyTo(const QString &s);
 
+    virtual uint contentSize() const;
+    virtual void setContentSize(uint size);
+
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 

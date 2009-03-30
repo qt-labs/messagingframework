@@ -26,6 +26,7 @@
 
 class ImapStrategy;
 class ImapStrategyContext;
+class IdleProtocol;
 
 class ImapClient : public QObject
 {
@@ -55,6 +56,9 @@ public:
 
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
+    void idling();
+    void monitor(const QMailFolderIdList &mailboxIds);
+
 signals:
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
@@ -66,18 +70,16 @@ signals:
     void messageActionCompleted(const QString &uid);
 
     void allMessagesReceived();
-    void idleChangeNotification();
+    void idleNewMailNotification(QMailFolderId);
+    void idleFlagsChangedNotification(QMailFolderId);
 
 public slots:
     void transportError(int, const QString &msg);
     void transportError(QMailServiceAction::Status::ErrorCode, const QString &msg);
 
-    void idleTransportError();
-    void idleErrorRecovery();
-
     void mailboxListed(QString &, QString &, QString &);
     void messageFetched(QMailMessage& mail);
-    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size, bool partial);
+    void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void nonexistentUid(const QString &uid);
     void messageStored(const QString &);
     void messageCopied(const QString &, const QString &);
@@ -89,10 +91,7 @@ protected slots:
     void checkCommandResponse(const ImapCommand, const OperationStatus);
     void commandTransition(const ImapCommand, const OperationStatus);
     void transportStatus(const QString& status);
-
-    void idleContinuation(ImapCommand, const QString &);
-    void idleCommandTransition(ImapCommand, OperationStatus);
-    void idleTimeOut();
+    void idleOpenRequested(IdleProtocol*);
 
 private:
     friend class ImapStrategyContextBase;
@@ -115,17 +114,14 @@ private:
     ImapProtocol _protocol;
     QTimer _inactiveTimer;
 
-    ImapProtocol _idleProtocol;
+    IdleProtocol *_idleProtocol;
     QMailFolder _idleFolder;
-    QTimer _idleTimer; // Send a DONE command every 29 minutes
-    QTimer _idleRecoveryTimer; // Check command hasn't hung
-    int _idleRetryDelay; // Try to restablish IDLE state
-    enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
     bool _waitingForIdle;
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;
-    QMap<QString, uint> partialLength;
+
+    QMap<QMailFolderId, IdleProtocol*> _monitored;
 };
 
 #endif
