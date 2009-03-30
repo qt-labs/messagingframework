@@ -1,6 +1,7 @@
 qt4-messagingframework (2009W12-0maemo4) hardy; urgency=low
 
   * Fix the changelog format.
+  * Make the rule script clean up *all* generated files.
   * Fixes: NB#103702 - QMF Message server crashes during mail transmition if Outbox folder is empty.
   * Fixes: NB#103707 - QMailAddress does not recognize e-mail address in case of domain name is from 1st zone.
   * Fixes: NB#103923 - Issue with databaseIdentifier() function call order.

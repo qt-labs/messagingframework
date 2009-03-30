@@ -25,3 +25,32 @@ common-configure-arch:: configure-stamp
 configure-stamp:
 	qmake QMF_INSTALL_ROOT=/usr QMAKE_CXXFLAGS_DEBUG="-g1 -O0"
 	touch $@
+
+clean::
+# Clean extra stuff missed
+
+	# Delete all Makefiles
+	find $(CURDIR) -name Makefile \
+	 -print0 | xargs -0 rm -rf 
+
+ 	# Leftover files and all symlinks
+	find \( -false \
+	  -o -name \*.so \
+	  -o -name \*.so.* \
+	  -o -type l \
+	\) -print0 | xargs -0 rm -rf 
+
+	# Any remaining executables
+	find $(CURDIR) -type f -exec file -i '{}' \; | grep \
+	  -e application/x-executable \
+	| cut -d ':' -f 1 | xargs rm -f
+
+	# Misc. directories
+	rm -rf \
+	  src/libraries/messageserver/pkgconfig/ \
+	  src/libraries/qmfutil/pkgconfig/ \
+	  src/libraries/qtopiamail/pkgconfig/ \
+	;
+
+	rm -f .qmake.cache
+	rm -f configure-stamp
