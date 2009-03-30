@@ -6,7 +6,7 @@
 
 \section1 Introduction
  
-Qt Extended provides the following messaging features:
+The Messaging Framework provides the following messaging features:
 \list 1
 \o a client application supporting common messaging functionality
 \o a server application supporting multiple messaging transport mechanisms
@@ -16,26 +16,26 @@ Qt Extended provides the following messaging features:
 The \l{Messages Client}{Messages} client application provides standard functionality for creating and viewing SMS, MMS and email messages.
 
 The \l{MessageServer Daemon}{MessageServer} application is a daemon managed by the QPE server. 
-It provides messaging transport functionality, communicating with external servers on behalf of Qt Extended messaging client applications.
+It provides messaging transport functionality, communicating with external servers on behalf of Messaging Framework client applications.
 New types of messaging (such as Instant Messages or video messages) can be handled by the server application without modification to existing client applications.
 
-The \l{Qt Extended Messaging Library}{Qt Extended Messaging Library} provides classes giving access to all messages stored on the device, via a uniform interface. 
-It simplifies the task of creating messaging client applications, and permits other Qt Extended applications to interact with messaging data where appropriate.
+The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface. 
+It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
 New types of messages can be supported by the library without modification to existing client applications.
 
 \section1 Architecture
 
-Qt Extended Messaging uses a database to store all messaging-related data. 
-Rather than providing access via Structured Query Language, the Qt Extended Messaging library wraps the database with classes providing structured, focussed access to the database.
+The Messaging Framework uses a database to store all messaging-related data. 
+Rather than providing access via Structured Query Language, the Client library wraps the database with classes providing structured, focussed access to the database.
 Clients can add, remove or update messaging data via the wrapper classes, with appropriate guarantees of isolation, and with automatic propagation of updates between clients.
 
-Clients access messaging data via the Qt Extended Messaging library which provides a direct connection to the messaging database. 
+Clients access messaging data via the Client library which provides a direct connection to the messaging database. 
 Notifications of database changes that occur as a result of other clients' actions are received by IPC, and the messaging library automatically reflects those changes in all clients.
 
 A model/view architecture is provided for clients to access the messaging data content.
 A flexible system of filtering and sorting keys is provided, enabling clients to display a specific subset of the library's data with minimal resource overhead.
 
-Rather than requiring each client application to perform transmission and retrieval of messages from external sources, a server application provides these services to any Qt Extended Messaging Library client.
+Rather than requiring each client application to perform transmission and retrieval of messages from external sources, a server application provides these services to any Client library client.
 The server receives service requests from clients via IPC, and reports events and status information back over the same channel.
 However, to avoid the overhead of passing message data within the system, the server reads and writes messages directly to and from the messaging database, via the library class interface.
 Messaging clients do not need to communicate with the server directly.
@@ -45,12 +45,12 @@ For detailed information refer to:
 \list
 \o \l{Messages Client}{Messages client application}
 \o \l{MessageServer Daemon}{MessageServer server daemon}
-\o \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
+\o \l{Messaging Framework Client Library}{Client library}
 \endlist
 
 \section1 Building and Compiling 
 
-To build the Qt Extended Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
+To build the Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
 
 \code 
 qmake "QMF_INSTALL_ROOT=<image directory path>" "CONFIG+=debug" qmf.pro 

@@ -26,7 +26,7 @@ Messages provides the following features:
 \o Connect to a mail server and download emails to the device. 
 \row
 \o  Reply to messages 
-\o Reply to a message received via a Qt Extended device. 
+\o Reply to a message received via the Messaging Framework.
 \row
 \o  View an embedded image 
 \o View a message with an image either attached or embedded. 
@@ -254,8 +254,9 @@ Messages has the following requirements:
 \section1 Dependencies 
 Messages has the following dependencies:
 \list
-\o the \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
-\o the Qt Extended SMIL Library
+\o the \l{Messaging Framework Client Library}
+\o the \l{Messaging Client Utility Library}
+\o optionally, a SMIL Library
 \endlist
 
 */

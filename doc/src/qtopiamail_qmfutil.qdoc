@@ -6,15 +6,15 @@
 
 \section1 Overview
 
-The Qt Extended Messaging Client utility library provides classes that assist with the development of GUI messaging client applications.
-The client utility library depends on the \l{Qt Extended Messaging Library} to provide data access and manipulation classes.
+The Messaging Framework Messaging Client Utility library provides classes that assist with the development of GUI messaging client applications.
+The client utility library depends on the \l{Messaging Framework Client Library} to provide data access and manipulation classes.
 
 For detailed class information refer to: \l{Messaging Client Utility Classes}.
 
 \section1 Message Listing
 
 The Messaging Client Utility library provides classes to assist with displaying lists of message data.  
-Together with the model classes provided by the \l{Qt Extended Messaging Library}, these classes allow clients to
+Together with the model classes provided by the \l{Messaging Framework Client Library}, these classes allow clients to
 display lists of messages and accounts with minimal effort, and with minimal resource consumption.
 
 \table

@@ -1,16 +1,16 @@
 /*!
 \page qtextendedmail.html
-\title Qt Extended Messaging Library 
+\title Messaging Framework Client Library 
 
 \tableofcontents
 
 \section1 Overview
 
-The Qt Extended Messaging library provides a set of APIs for accessing Qt Extended messaging data.  
+The Messaging Framework Client library provides a set of APIs for accessing messaging data.  
 Interfaces are provided to create, modify, store, and retrieve messages.  
 The library does not directly support sending or retrieving messages; these actions are currently supported via the \l{Services}{QtopiaServiceRequest} mechanism.
 
-The Qt Extended Messaging library provides unified access to the messaging data on a Qt Extended device including concurrent access to messaging data by multiple applications, and independence from the mechanism used to store the messaging data on the device.  
+The Client library provides unified access to the messaging data on a device including concurrent access to messaging data by multiple applications, and independence from the mechanism used to store the messaging data on the device.  
 
 For detailed class information refer to: \l{Messaging Classes}.
 
@@ -23,16 +23,16 @@ The library is augmented by two related, more specific libraries:
 
 \section1 Composition and Manipulation of Messages
 
-The Qt Extended Messaging library provides a number of classes to assist with the composition and manipulation of message data.  
+The Client library provides a number of classes to assist with the composition and manipulation of message data.  
 Messages of all supported types are represented uniformly, although not all transport mechanisms are able to deliver more complex message formulations.
-Messages can be composed of multiple parts and constructed hierarchically. The Qt Extended Messaging Library supports composition of multipart messages from individual part objects.
+Messages can be composed of multiple parts and constructed hierarchically. The Client library supports composition of multipart messages from individual part objects.
 
 Classes to assist with composition and manipulation of messages:
 
 \table
 \header \o Class \o Description
 \row \o QMailMessageId \o Represents the mail store identifiers for message records.
-\row \o QMailMessageMetaData \o Represents a message stored by the Qt Extended Messaging library.
+\row \o QMailMessageMetaData \o Represents a message stored by the Messaging Framework.
 \row \o QMailMessage \o Convenient interface for working with messages.
 \row \o QMailMessagePart \o Convenient interface for working with message attachments.
 \row \o QMailMessagePartContainer \o Access to a collection of message parts.
@@ -47,7 +47,7 @@ Classes to assist with composition and manipulation of messages:
 
 \section1 Message Accounts
 
-The Qt Extended Messaging Library provides classes for storing information about
+The Client Library provides classes for storing information about
 messaging accounts both outgoing and incoming.
 
 Classes relating to messaging accounts:
@@ -64,20 +64,20 @@ Classes relating to messaging accounts:
 
 \section1 Message Listing
 
-The Qt Extended Messaging library provides classes to assist with displaying lists of message data.  These classes allow clients to
+The Client library provides classes to assist with displaying lists of message data.  These classes allow clients to
 display lists of messages and accounts with minimal effort, and with minimal resource consumption.
 
 Classes to assist with listing messages:
 
 \table
 \header \o Class \o Description
-\row \o QMailAccountListModel \o Provides a model representing the accounts stored by the Qt Extended Messaging library.
-\row \o QMailMessageListModel \o Provides a model representing the messages stored by the Qt Extended Messaging library.
+\row \o QMailAccountListModel \o Provides a model representing the accounts stored by the Messaging Framework.
+\row \o QMailMessageListModel \o Provides a model representing the messages stored by the Messaging Framework.
 \endtable
 
 \section1 Message Navigation
 
-The Qt Extended Messaging library provides classes to assist with partitioning and navigating message data 
+The Client library provides classes to assist with partitioning and navigating message data 
 according to the intrinsic message properties.  The classes allow clients to display a hierarchical
 taxonomy of message data, using standard or arbitrary categorization criteria.
 
@@ -94,7 +94,7 @@ Classes to assist with navigating messages:
 
 \section1 Sorting and Searching Functionality
 
-The Qt Extended Messaging library provides a number of sort and search functions to aid in selecting data most useful to the view requested.  
+The Client library provides a number of sort and search functions to aid in selecting data most useful to the view requested.  
 This reduces the burden on the application for managing the messaging data, as well as allowing better use of the underlying storage mechanism.
 
 Sorting is accomplished by providing a sorting key, specifying the sort order, and the message property upon which to sort.
@@ -117,7 +117,7 @@ Classes to assist with sorting and searching messages:
 
 \section1 Message Content Management Plugins
 
-The Qt Extended Messaging Library uses a plugin system to register components that provide message content management services.  
+The Client library uses a plugin system to register components that provide message content management services.  
 Message content can be stored externally to the QMailStore that contains the message meta data; plugins can be implemented to provide the Message Library with access to this content.
 
 Classes supporting the use of plugins for message content management:
@@ -132,7 +132,7 @@ Classes supporting the use of plugins for message content management:
 
 \section1 Message Transport Service
 
-The Qt Extended Messaging library provides the QMailMessageServer class, which provides an interface for a messaging client application to communicate with the system's messaging server.
+The Client library provides the QMailMessageServer class, which provides an interface for a messaging client application to communicate with the system's messaging server.
 The messaging server provides services relating to the transmission and retrieval of messages from various sources defined by QMailAccount objects.  
 Using QMailMessageServer, clients can communicate with the messaging server via local-process signals and slots, without having any direct contact with the server process.
 
@@ -141,27 +141,27 @@ QMailRetrievalAction, QMailTransmitAction, QMailStorageAction, QMailSearchAction
 
 \section1 Concurrent Access to Messaging Data
 
-The Qt Extended Messaging library provides a level of concurrent access to messaging data by multiple applications.  
+The Client library provides a level of concurrent access to messaging data by multiple applications.  
 The concurrent access does guarantee that data won't be corrupted by concurrent access, however does not give any guarantees as to performance of messaging data access if accessed concurrently by multiple applications.
 
 \section1 Abstraction of Messaging Data Storage Mechanism
 
-The Qt Extended Messaging library abstracts the storage method used to store messaging data.  
-On a device the Qt Extended Messaging library will only read and write the primary storage mechanism and synchronizing mechanism.  
+The Client library abstracts the storage method used to store messaging data.  
+On a device the Client library will only read and write the primary storage mechanism and synchronizing mechanism.  
 
 \section1 Performance Characteristics
 
-The performance of the Qt Extended Messaging library is tested using the reference \c{messageserver} implementation included with Qt Extended.  
+The performance of the Client library is tested using the reference \c{messageserver} implementation included with the Messaging Framework.  
 Various tasks are performed using different amounts and sizes of message to determine the effect these parameters have on the library's performance.  
 Placeholder: The results of these tests would be available <here>, if those results were currently exported.
 
 \section1 Assumptions and Dependencies
 
-The Qt Extended Messaging library requires SQL support either through the included SQLite or through some other SQL engine.
+The Client library requires SQL support either through the included SQLite or through some other SQL engine.
 
 \section1 Examples
 
-The Qt Extended Messaging library contains some example programs that demonstrate how to use the library's functionality.
+The Client library contains some example programs that demonstrate how to use the library's functionality.
 
 \table
 \header \o Name \o Description

@@ -2,10 +2,10 @@
     \example messageviewer
     \title MessageViewer Example
 
-    The MessageViewer example shows how to create a Qt Extended application
-    which accesses messages stored by the Qt Extended Messaging library. The
+    The MessageViewer example shows how to create a client application
+    which accesses messages stored by the Messaging Framework. The
     example application searches for, and displays the properties of messages 
-    stored by Qt Extended, but uses Qt Extended services to delegate the display 
+    stored by the Messaging Framework, but uses Qt Extended services to delegate the display 
     of the messages to another application.
 
     \image messageviewer-example.png Screenshot of the MessageViewer example
@@ -60,7 +60,7 @@
     \skipto class MessageModel
     \printuntil };
 
-    The Qt Extended Messaging library uses QMailMessageId objects to identify messages
+    The Messaging Framework Client library uses QMailMessageId objects to identify messages
     stored in the system.  QMailMessageId objects can be default-constructed to 
     an uninitialised state that does not identify any message, or they can
     contain the identifier for any message stored in the device. When we
@@ -120,7 +120,7 @@
     Now we have created the message filters we want, we use the 
     QMailStore::queryMessages() function to locate the matching messages. This
     function applies the criteria of the supplied QMailMessageKey to each 
-    message stored by the Qt Extended Messaging library, and returns a list 
+    message stored by the Messaging Framework, and returns a list 
     containing the QMailMessageId of each matching message. An overload of the
     function takes a second parameter: a QMailMessageSortKey which 
     determines the order in which the matching messages are returned. We

@@ -6,14 +6,14 @@
 
 \section1 Overview
 
-The Qt Extended Message Server support library provides classes that assist with the development of components that operate as plugins within the \l{MessageServer Daemon}{Message Server} daemon.
-The client utility library depends on the \l{Qt Extended Messaging Library} to provide data access and manipulation classes.
+The Messaging Framework Message Server Support Library provides classes that assist with the development of components that operate as plugins within the \l{MessageServer Daemon}{Message Server} daemon.
+The client utility library depends on the \l{Messaging Framework Client Library} to provide data access and manipulation classes.
 
 For detailed class information refer to: \l{Message Server Support Classes}.
 
 \section1 Message Accounts
 
-The Qt Extended Message Server Support Library provides classes for storing information about messaging accounts both outgoing and incoming.
+The Message Server Support Library provides classes for storing information about messaging accounts both outgoing and incoming.
 
 \table
 \header \o Class \o Description
