@@ -12,7 +12,7 @@
 #include "qcopchannel_p.h"
 #include <QtCore/qcoreapplication.h>
 
-/*!
+/* ! - documentation comments in this file are disabled:
     \class QCopApplicationChannel
     \inpublicgroup QtBaseModule
     \ingroup qws
@@ -28,7 +28,7 @@ static QString applicationChannelName()
            QString::number(QCoreApplication::applicationPid());
 }
 
-/*!
+/* !
     Constructs a new QCop channel for the application's private channel with
     parent object \a parent
 */
@@ -42,14 +42,14 @@ QCopApplicationChannel::QCopApplicationChannel(QObject *parent)
             this, SIGNAL(startupComplete()));
 }
 
-/*!
+/* !
     Destroys this QCopApplicationChannel object.
 */
 QCopApplicationChannel::~QCopApplicationChannel()
 {
 }
 
-/*!
+/* !
     Returns true if application channel startup has completed and the
     startupComplete() signal has already been issued.
 
@@ -61,7 +61,7 @@ bool QCopApplicationChannel::isStartupComplete() const
     return td->clientConnection()->isStartupComplete;
 }
 
-/*!
+/* !
     \fn void QCopApplicationChannel::startupComplete()
 
     This signal is emitted once the QCop server has forwarded all queued
