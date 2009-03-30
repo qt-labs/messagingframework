@@ -8,11 +8,8 @@
 **
 ****************************************************************************/
 
-#include <QProcess>
-#include <QTemporaryFile>
 #include <QTest>
-#include <QDir>
-#include <QTimer>
+#include <QtCore>
 #include <errno.h>
 #include <qmailnamespace.h>
 #include <stdio.h>
@@ -76,6 +73,7 @@ private:
     void addAccount(QMailAccount*, QString const&, QString const&, QString const&, QString const&, int);
     void removePath(QString const&);
     void runInChildProcess(TestFunction);
+    void runInCallgrind(QString const&);
 
     QEventLoop*                  m_loop;
     QTimer*                      m_timer;
@@ -148,6 +146,100 @@ void tst_MessageServer::removePath(QString const& path)
 void tst_MessageServer::completeRetrievalImap()
 {
     runInChildProcess(&tst_MessageServer::completeRetrievalImap_impl);
+    if (QTest::currentTestFailed()) return;
+
+    QByteArray tag = QTest::currentDataTag();
+    if (tag == "small_messages--100" || tag == "small_messages--500") {
+        runInCallgrind("completeRetrievalImap:" + tag);
+    }
+}
+
+void tst_MessageServer::runInCallgrind(QString const& testfunc)
+{
+    if (RUNNING_ON_VALGRIND) return;
+
+    /*
+        Run a particular testfunc in a separate process under callgrind.
+    */
+    QString thisapp = QCoreApplication::applicationFilePath();
+
+    // Strip any testfunction args
+    QMetaObject const* mo = metaObject();
+    QStringList testfunctions;
+    for (int i = 0; i < mo->methodCount(); ++i) {
+        QMetaMethod mm = mo->method(i);
+        if (mm.methodType() == QMetaMethod::Slot && mm.access() == QMetaMethod::Private) {
+            QByteArray sig = mm.signature();
+            testfunctions << QString::fromLatin1(sig.left(sig.indexOf('(')));
+        }
+    }
+    QStringList args;
+    foreach (QString const& arg, QCoreApplication::arguments()) {
+        bool bad = false;
+        foreach (QString const& tf, testfunctions) {
+            if (arg.startsWith(tf)) {
+                bad = true;
+                break;
+            }
+        }
+        if (!bad) args << arg;
+    }
+    args.removeAt(0); // application name
+
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+
+    proc.start("valgrind", QStringList()
+        << "--tool=callgrind"
+        << "--quiet"
+        << "--"
+        << thisapp
+        << args
+        << testfunc
+    );
+
+    if (!proc.waitForStarted(30000)) {
+        QFAIL(qPrintable(QString("Failed to start %1 under callgrind: %2").arg(testfunc)
+            .arg(proc.errorString())));
+    }
+
+    static const int timeoutSeconds = 60*60;
+    if (!proc.waitForFinished(timeoutSeconds*1000)) {
+        QFAIL(qPrintable(QString("%1 in callgrind didn't finish within %2 seconds\n"
+            "Output:\n%3")
+            .arg(testfunc)
+            .arg(timeoutSeconds)
+            .arg(QString::fromLocal8Bit(proc.readAll()))
+        ));
+    }
+
+    if (proc.exitStatus() != QProcess::NormalExit) {
+        QFAIL(qPrintable(QString("%1 in callgrind crashed: %2\n"
+            "Output:\n%3")
+            .arg(testfunc)
+            .arg(proc.errorString())
+            .arg(QString::fromLocal8Bit(proc.readAll()))
+        ));
+    }
+
+    if (proc.exitCode() != 0) {
+        QFAIL(qPrintable(QString("%1 in callgrind exited with code %2\n"
+            "Output:\n%3")
+            .arg(testfunc)
+            .arg(proc.exitCode())
+            .arg(QString::fromLocal8Bit(proc.readAll()))
+        ));
+    }
+
+    /*
+        OK, it ran fine.  Now reproduce the benchmark lines exactly as they appeared in
+        the child process.
+    */
+    foreach (QByteArray const& line, proc.readAll().split('\n')) {
+        if (line.contains("callgrind")) {
+            fprintf(stdout, "%s\n", line.constData());
+        }
+    }
 }
 
 void tst_MessageServer::runInChildProcess(TestFunction fn)
@@ -420,17 +512,6 @@ void tst_MessageServer::completeRetrievalImap_data()
     ;
 
     list.clear();
-    for (int i = 0; i < 5000; ++i)
-        list << TestMail();
-    QTest::newRow("small_messages--5000")
-        << QString::fromLatin1("mailtst35")
-        << QString::fromLatin1("testme35")
-        << m_imapServer
-        << 143
-        << list
-    ;
-
-    list.clear();
     for (int i = 0; i < 2000; ++i)
         list << TestMail();
     QTest::newRow("small_messages--2000")
@@ -442,6 +523,17 @@ void tst_MessageServer::completeRetrievalImap_data()
     ;
 
 #if VERY_PATIENT_TESTER
+    list.clear();
+    for (int i = 0; i < 5000; ++i)
+        list << TestMail();
+    QTest::newRow("small_messages--5000")
+        << QString::fromLatin1("mailtst35")
+        << QString::fromLatin1("testme35")
+        << m_imapServer
+        << 143
+        << list
+    ;
+
     list.clear();
     for (int i = 0; i < 10000; ++i)
         list << TestMail();
