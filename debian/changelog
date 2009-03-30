@@ -1,4 +1,16 @@
-qt4-messagingframework (2009W12-0maemo3) unstable; urgency=low
+qt4-messagingframework (2009W12-0maemo4) hardy; urgency=low
+
+  * Fix the changelog format.
+  * Fixes: NB#103702 - QMF Message server crashes during mail transmition if Outbox folder is empty.
+  * Fixes: NB#103707 - QMailAddress does not recognize e-mail address in case of domain name is from 1st zone.
+  * Fixes: NB#103923 - Issue with databaseIdentifier() function call order.
+  * Fixes: NB#103716 - QMF: Fail to retrieve messages from MSExchange 2007 server using POP3 protocol plugin.
+  * Fixes: NB#104197 - Common issues with QMF sources.
+  * Fixes: NB#105396 - Messageserver crashes during IMAP mail retrieval. 
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Mon, 30 Mar 2009 11:32:59 +1000
+
+qt4-messagingframework (2009W12-0maemo3) hardy; urgency=low
 
   * Move source changes to a separate patch.
   * Fixes: NB#103702, NB#103707, NB#103923, NB#103716, NB#104197, NB#105396
