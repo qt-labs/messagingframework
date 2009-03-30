@@ -18,7 +18,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvarlengtharray.h>
 
-/*!
+/* ! - documentation comments in this file are diasabled:
     \class QCopAdaptor
     \inpublicgroup QtBaseModule
 
@@ -279,7 +279,7 @@ public:
     }
 };
 
-/*!
+/* !
     Construct a Qt Extended IPC message object for \a channel and attach it to \a parent.
     If \a channel is empty, then messages are taken from the application's
     \c{appMessage} channel.
@@ -290,7 +290,7 @@ QCopAdaptor::QCopAdaptor(const QString& channel, QObject *parent)
     d = new QCopAdaptorPrivate(this, channel);
 }
 
-/*!
+/* !
     Destroy this Qt Extended IPC messaging object.
 */
 QCopAdaptor::~QCopAdaptor()
@@ -300,7 +300,7 @@ QCopAdaptor::~QCopAdaptor()
     d = 0;
 }
 
-/*!
+/* !
     Returns the name of the channel that this adaptor is associated with.
 */
 QString QCopAdaptor::channel() const
@@ -308,7 +308,7 @@ QString QCopAdaptor::channel() const
     return d->channelName;
 }
 
-/*!
+/* !
     Connects \a signal on \a sender to \a member on \a receiver.  Returns true
     if the connection was possible; otherwise returns false.
 
@@ -361,7 +361,7 @@ bool QCopAdaptor::connect(QObject *sender, const QByteArray& signal,
     }
 }
 
-/*!
+/* !
     Publishes the signal or slot called \a member on this object on
     the Qt Extended IPC channel represented by this QCopAdaptor.
 
@@ -390,7 +390,7 @@ bool QCopAdaptor::publish(const QByteArray& member)
     }
 }
 
-/*!
+/* !
     \enum QCopAdaptor::PublishType
     Type of members to publish via QCopAdaptor.
 
@@ -399,7 +399,7 @@ bool QCopAdaptor::publish(const QByteArray& member)
     \value SignalsAndSlots Publish both signals and public slots.
 */
 
-/*!
+/* !
     Publishes all signals or public slots on this object within subclasses of
     QCopAdaptor.  This is typically called from a subclass constructor.
     The \a type indicates if all signals, all public slots, or both, should
@@ -435,7 +435,7 @@ void QCopAdaptor::publishAll(QCopAdaptor::PublishType type)
     }
 }
 
-/*!
+/* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
     of \a member on receiving objects.  The return value can be used
     to add arguments to the message before transmission.
@@ -446,7 +446,7 @@ QCopAdaptorEnvelope QCopAdaptor::send(const QByteArray& member)
         (sendChannels(d->channelName), memberToMessage(member));
 }
 
-/*!
+/* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
     of the single-argument \a member on receiving objects, with the
     argument \a arg1.
@@ -458,7 +458,7 @@ void QCopAdaptor::send(const QByteArray& member, const QVariant &arg1)
     sendMessage(memberToMessage(member), args);
 }
 
-/*!
+/* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
     of the double-argument \a member on receiving objects, with the
     arguments \a arg1 and \a arg2.
@@ -471,7 +471,7 @@ void QCopAdaptor::send(const QByteArray& member, const QVariant &arg1, const QVa
     sendMessage(memberToMessage(member), args);
 }
 
-/*!
+/* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
     of the triple-argument \a member on receiving objects, with the
     arguments \a arg1, \a arg2, and \a arg3.
@@ -486,7 +486,7 @@ void QCopAdaptor::send(const QByteArray& member, const QVariant &arg1,
     sendMessage(memberToMessage(member), args);
 }
 
-/*!
+/* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
     of the multi-argument \a member on receiving objects, with the
     argument list \a args.
@@ -496,7 +496,7 @@ void QCopAdaptor::send(const QByteArray& member, const QList<QVariant>& args)
     sendMessage(memberToMessage(member), args);
 }
 
-/*!
+/* !
     Returns true if the message on the Qt Extended IPC channel corresponding to \a signal
     has been connected to a local slot; otherwise returns false.
 */
@@ -505,7 +505,7 @@ bool QCopAdaptor::isConnected(const QByteArray& signal)
     return d->invokers.contains(memberToMessage(signal));
 }
 
-/*!
+/* !
     Converts a signal or slot \a member name into a Qt Extended IPC message name.
     The default implementation strips the signal or slot prefix number
     from \a member and then normalizes the name to convert types
@@ -523,7 +523,7 @@ QString QCopAdaptor::memberToMessage(const QByteArray& member)
     }
 }
 
-/*!
+/* !
     Converts \a channel into a list of names to use for sending messages.
     The default implementation returns a list containing just \a channel.
 
@@ -536,7 +536,7 @@ QStringList QCopAdaptor::sendChannels(const QString& channel)
     return list;
 }
 
-/*!
+/* !
     Converts \a channel into a new name to use for receiving messages.
     The default implementation returns \a channel.
 
@@ -773,7 +773,7 @@ void QCopAdaptor::send
         QCopChannel::send(*iter, msg, array);
 }
 
-/*!
+/* !
     \class QCopAdaptorEnvelope
     \inpublicgroup QtBaseModule
 
@@ -811,7 +811,7 @@ QCopAdaptorEnvelope::QCopAdaptorEnvelope
     d->shouldBeSent = true;
 }
 
-/*!
+/* !
     Construct an empty QCopAdaptorEnvelope.
 */
 QCopAdaptorEnvelope::QCopAdaptorEnvelope()
@@ -820,7 +820,7 @@ QCopAdaptorEnvelope::QCopAdaptorEnvelope()
     d->shouldBeSent = false;
 }
 
-/*!
+/* !
     Construct a copy of \a value.
 */
 QCopAdaptorEnvelope::QCopAdaptorEnvelope(const QCopAdaptorEnvelope& value)
@@ -843,7 +843,7 @@ QCopAdaptorEnvelope::QCopAdaptorEnvelope(const QCopAdaptorEnvelope& value)
     value.d->shouldBeSent = false;
 }
 
-/*!
+/* !
     Destroy this envelope object and send the message.
 */
 QCopAdaptorEnvelope::~QCopAdaptorEnvelope()
@@ -853,7 +853,7 @@ QCopAdaptorEnvelope::~QCopAdaptorEnvelope()
     delete d;
 }
 
-/*!
+/* !
     Copy \a value into this object.
 */
 QCopAdaptorEnvelope& QCopAdaptorEnvelope::operator=(const QCopAdaptorEnvelope& value)
@@ -872,14 +872,14 @@ QCopAdaptorEnvelope& QCopAdaptorEnvelope::operator=(const QCopAdaptorEnvelope& v
     return *this;
 }
 
-/*!
+/* !
     \fn QCopAdaptorEnvelope& QCopAdaptorEnvelope::operator<<(const char *value)
 
     \overload
     Add \a value to the arguments for this Qt Extended IPC message.
 */
 
-/*!
+/* !
     \fn QCopAdaptorEnvelope& QCopAdaptorEnvelope::operator<<(const T &value)
     Add \a value to the arguments for this Qt Extended IPC message.
  */

@@ -90,7 +90,7 @@ QCopThreadData *QCopThreadData::instance()
     return qcopThreadData();
 }
 
-/*!
+/* ! - documentation comments in this file are disabled:
     \class QCopChannel
     \inpublicgroup QtBaseModule
     \ingroup qws
@@ -127,7 +127,7 @@ QCopThreadData *QCopThreadData::instance()
     \sa QCopServer, {Running Qt for Embedded Linux Applications}
 */
 
-/*!
+/* !
     Constructs a QCop channel with the given \a parent, and registers it
     with the server using the given \a channel name.
 
@@ -162,7 +162,7 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
     td->clientConnection()->registerChannel(channel);
 }
 
-/*!
+/* !
   \internal
 
   Resend all channel registrations  This function is obsolete.
@@ -172,7 +172,7 @@ void QCopChannel::reregisterAll()
     // Exists for backwards-compatibility only.  Not needed any more.
 }
 
-/*!
+/* !
     Destroys the client's end of the channel and notifies the server
     that the client has closed its connection. The server will keep
     the channel open until the last registered client detaches.
@@ -201,7 +201,7 @@ QCopChannel::~QCopChannel()
         delete d;
 }
 
-/*!
+/* !
     Returns the name of the channel.
 
     \sa QCopChannel()
@@ -212,7 +212,7 @@ QString QCopChannel::channel() const
     return d->channel;
 }
 
-/*!
+/* !
     \fn void QCopChannel::receive(const QString& message, const QByteArray &data)
 
     This virtual function allows subclasses of QCopChannel to process
@@ -256,7 +256,7 @@ void QCopChannel::receive(const QString& msg, const QByteArray &data)
     emit received(msg, data);
 }
 
-/*!
+/* !
     \fn void QCopChannel::received(const QString& message, const QByteArray &data)
 
     This signal is emitted with the given \a message and \a data whenever the
@@ -265,7 +265,7 @@ void QCopChannel::receive(const QString& msg, const QByteArray &data)
     \sa receive()
 */
 
-/*!
+/* !
     \fn void QCopChannel::forwarded(const QString& msg, const QByteArray &data, const QString& channel)
 
     This signal is emitted if the QCopChannel is listening on a wildcard
@@ -285,7 +285,7 @@ void QCopChannel::receive(const QString& msg, const QByteArray &data)
     \sa received()
 */
 
-/*!
+/* !
     \internal
 */
 void QCopChannel::connectNotify(const char *signal)
@@ -295,7 +295,7 @@ void QCopChannel::connectNotify(const char *signal)
     QObject::connectNotify(signal);
 }
 
-/*!
+/* !
     Queries the server for the existence of the given \a channel. Returns true
     if the channel is registered; otherwise returns false.
 
@@ -313,7 +313,7 @@ bool QCopChannel::isRegistered(const QString&  channel)
     return client->waitForIsRegistered();
 }
 
-/*!
+/* !
     \fn bool QCopChannel::send(const QString& channel, const QString& message)
     \overload
 
@@ -328,7 +328,7 @@ bool QCopChannel::send(const QString& channel, const QString& msg)
     return send(channel, msg, data);
 }
 
-/*!
+/* !
     \fn bool QCopChannel::send(const QString& channel, const QString& message,
                        const QByteArray &data)
 
@@ -377,7 +377,7 @@ bool QCopChannel::send(const QString& channel, const QString& msg,
     return true;
 }
 
-/*!
+/* !
     \since 4.2
 
     Flushes any pending messages queued through QCopChannel::send() to any subscribed clients.
@@ -553,7 +553,7 @@ void QCopClient::answer(const QString& ch, const char *packet, int packetLen)
     }
 }
 
-/*!
+/* !
     \internal
     Client side: distribute received event to the QCop instance managing the
     channel.

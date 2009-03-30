@@ -68,7 +68,7 @@ void QCopServerPrivate::incomingConnection(int socketDescriptor)
     sock->setParent(client);
 }
 
-/*!
+/* ! - documentation comments in this file are disabled:
     \class QCopServer
     \inpublicgroup QtBaseModule
     \ingroup qws
@@ -90,7 +90,7 @@ void QCopServerPrivate::incomingConnection(int socketDescriptor)
     \sa QCopChannel
 */
 
-/*!
+/* !
     Construct the QCop server and attach it to \a parent.
 */
 QCopServer::QCopServer(QObject *parent)
@@ -124,7 +124,7 @@ QCopServer::QCopServer(QObject *parent)
     }
 }
 
-/*!
+/* !
     Destruct the QCop server.
 */
 QCopServer::~QCopServer()
@@ -159,7 +159,7 @@ public:
     }
 };
 
-/*!
+/* !
     Requests that an application called \a name should be activated
     because a QCop message arrived on \c{QPE/Application/<name>} and
     that application is not currently running.
@@ -181,7 +181,7 @@ qint64 QCopServer::activateApplication(const QString& name)
     return -1;
 }
 
-/*!
+/* !
     Notifies the QCop server that an application with process ID \a pid
     that was previously started in response to a call to
     activateApplication() has exited or crashed.
