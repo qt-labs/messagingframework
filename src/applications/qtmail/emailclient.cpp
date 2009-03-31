@@ -377,7 +377,7 @@ EmailClient::EmailClient( QWidget* parent )
       preSearchWidgetId(-1),
       searchAction(0),
       m_messageServerProcess(0),
-      syncState(ListFolders)
+      syncState(ExportUpdates)
 {
     setObjectName( "EmailClient" );
 
@@ -972,11 +972,7 @@ void EmailClient::transmitCompleted()
 void EmailClient::retrievalCompleted()
 {
     if (mailAccountId.isValid()) {
-        if (syncState == ListFolders) {
-            syncState = ExportUpdates;
-            // Export (flag) changes (deletes are done immediately)
-            retrievalAction->exportUpdates(mailAccountId);
-        } else if (syncState == ExportUpdates) {
+        if (syncState == ExportUpdates) {
             syncState = RetrieveMessages;
             // Now we need to retrieve the message lists for the folders
             retrievalAction->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
@@ -1014,9 +1010,9 @@ void EmailClient::getNewMail()
         selectedMessageId = QMailMessageId();
 
     setRetrievalInProgress(true);
-    syncState = ListFolders;
+    syncState = ExportUpdates;
 
-    retrievalAction->retrieveFolderList(mailAccountId, QMailFolderId(), true);
+    retrievalAction->exportUpdates(mailAccountId);
 }
 
 void EmailClient::getAllNewMail()
