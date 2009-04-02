@@ -1179,6 +1179,7 @@ void ImapClient::idleOpenRequested(IdleProtocol *protocol)
             || !imapCfg.pushEnabled()) {
             return;
         }
+        protocol->close();
         protocol->open(imapCfg);
     }
 }
