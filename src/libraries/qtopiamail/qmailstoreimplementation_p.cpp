@@ -11,6 +11,7 @@
 #include "qmailstoreimplementation_p.h"
 #include "qmaillog.h"
 #include "qmailipc.h"
+#include <QCoreApplication>
 #include <unistd.h>
 
 namespace {
@@ -109,6 +110,11 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
             SIGNAL(timeout()),
             this,
             SLOT(processIpcMessageQueue()));
+
+    connect(qApp,
+            SIGNAL(aboutToQuit()),
+            this,
+            SLOT(aboutToQuit()));
 }
 
 bool QMailStoreImplementationBase::initStore()
@@ -162,6 +168,12 @@ void QMailStoreImplementationBase::processIpcMessageQueue()
 
    if (emitIpcNotification())
         queueTimer.start(0);
+}
+
+void QMailStoreImplementationBase::aboutToQuit()
+{
+    // Ensure that any pending updates are flushed
+    flushNotifications();
 }
 
 typedef QMap<QMailStore::ChangeType, QString> NotifyFunctionMap;

@@ -205,6 +205,18 @@ QStringList QMailContentManagerPlugin::keys() const
     \l{QMailMessageMetaData::setContentScheme()}{setContentScheme} to set the relevant scheme before adding the 
     message to the mail store.
 
+    If a content manager provides data to clients by creating references to file-backed memory
+    mappings, then the content manager must ensure that those files remain valid.  The existing content
+    within the file must not be modified, and the file must not be truncated.  If the content manager
+    updates the content of a message which is already exported using memory mappings, then the updated 
+    content should be stored to a new content location, and the message object updated with the new 
+    \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} information.
+
+    If a stored message contains parts whose content is only partially available (as defined by
+    QMailMessagePartContainer::partialContentAvailable() and QMailMessagePartContainer::contentAvailable()), 
+    the content manager must ensure that the partial data is returned to clients in the same transfer 
+    encoding that it was stored with.
+
     \sa QMailStore, QMailMessage
 */
 
@@ -230,7 +242,8 @@ QStringList QMailContentManagerPlugin::keys() const
     Returns \l{QMailStore::NoError}{NoError} to indicate successful update of the message content.
 
     If the updated content is not stored to the existing location, the content manager should 
-    use an alternate location and update \a message with the new identifier.
+    use an alternate location and update \a message with the new 
+    \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}.
 */
 
 /*!

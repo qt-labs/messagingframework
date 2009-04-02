@@ -76,6 +76,7 @@ public slots:
     void processIpcMessageQueue();
     void ipcMessage(const QString& message, const QByteArray& data);
     void flushNotifications();
+    void aboutToQuit();
 
 protected:
     typedef void (QMailStore::*AccountUpdateSignal)(const QMailAccountIdList&);
