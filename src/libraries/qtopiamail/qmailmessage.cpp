@@ -3270,7 +3270,8 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
         part = &(partList->at(index - 1));
         partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
     }
-        
+
+    Q_ASSERT(part);
     return *part;
 }
 
