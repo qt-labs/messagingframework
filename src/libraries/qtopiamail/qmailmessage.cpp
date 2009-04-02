@@ -3284,7 +3284,7 @@ QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePar
         part = &((*partList)[index - 1]);
         partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
     }
-        
+
     return *part;
 }
 

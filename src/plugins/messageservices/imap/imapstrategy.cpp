@@ -1546,7 +1546,8 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _completionSectionList.clear();
     
     if (_folderId.isValid()) {
-        if (_folderId == context->mailbox().id) {
+        // When minimum = 0 force update of server count and server unread count
+        if (_folderId == context->mailbox().id && (_minimum > 0)) {
             // We already have the appropriate mailbox selected
             handleSelect(context);
         } else {
