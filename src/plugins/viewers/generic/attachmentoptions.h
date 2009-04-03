@@ -44,6 +44,7 @@ public:
 
 signals:
     void retrieve(const QMailMessagePart& part);
+    void retrievePortion(const QMailMessagePart& part, uint bytes);
 
 public slots:
     void setAttachment(const QMailMessagePart& part);

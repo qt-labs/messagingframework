@@ -569,7 +569,12 @@ void AttachmentOptions::saveAttachment()
 
 void AttachmentOptions::retrieveAttachment()
 {
-    emit retrieve(*_part);
+    if ((_class == Text) && (_part->contentType().subType().toLower() == "plain")) {
+        // Retrieve text/plain progressively
+        emit retrievePortion(*_part, 5 * 1024);
+    } else {
+        emit retrieve(*_part);
+    }
 
     accept();
 }
