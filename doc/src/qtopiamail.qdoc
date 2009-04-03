@@ -169,4 +169,8 @@ The Client library contains some example programs that demonstrate how to use th
 \row \o \l{MessageNavigator Example}{MessageNavigator} \o Demonstrates the use of QMailMessageSetModel and QMailMessageListModel in presenting account, folder and message listings.
 \endtable
 
+\section1 Changes Between Versions
+
+Historical changes in the Client library API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
+
 */

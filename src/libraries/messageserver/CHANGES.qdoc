@@ -1,14 +1,21 @@
-/****************************************************************************
-**
-****************************************************************************/
+/*!
+\page changes-messageserver.html
+\code
 
-API changes since the development preview release on 06/03/09:
+*****************************************************************************
+**
+** API Change History
+**
+*****************************************************************************
+
+Changes since the development preview release on 06/03/09:
 
 1. Added 'QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration&, const QStringList &)'.
 
-/***************************************************************************/
 
-API changes since the development preview release on 16/01/09:
+*****************************************************************************
+
+Changes since the development preview release on 16/01/09:
 
 1. Added 'QMailAuthenticator' class.
 
@@ -33,3 +40,10 @@ API changes since the development preview release on 16/01/09:
            'QMailMessageSource::retrieveAll(const QMailAccountId &)' and 
            'QMailMessageSource::synchronize(const QMailAccountId &, QMailRetrievalAction::RetrievalSpecification)' to
            'QMailMessageSource::synchronize(const QMailAccountId &)'.
+
+
+*****************************************************************************
+
+\endcode
+*/
+
