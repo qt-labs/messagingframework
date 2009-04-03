@@ -163,6 +163,10 @@ void ReadMail::init()
     // Update the view if the displayed message's content changes
     connect(QMailStore::instance(), SIGNAL(messageContentsModified(QMailMessageIdList)), 
             this, SLOT(messageContentsModified(QMailMessageIdList)));
+
+    // Remove the view if the message is removed
+    connect(QMailStore::instance(), SIGNAL(messagesRemoved(QMailMessageIdList)), 
+            this, SLOT(messagesRemoved(QMailMessageIdList)));
 }
 
 QMailMessageId ReadMail::displayedMessage() const 
@@ -388,6 +392,19 @@ void ReadMail::messageContentsModified(const QMailMessageIdList& list)
     updateButtons();
 }
 
+void ReadMail::messagesRemoved(const QMailMessageIdList& list)
+{
+    if (!mail.id().isValid())
+        return;
+
+    if (list.contains(mail.id())) {
+        mail = QMailMessage();
+
+        if (QMailViewerInterface* viewer = currentViewer())
+            viewer->clear();
+    }
+}
+
 void ReadMail::showMessage(const QMailMessageId& id, QMailViewerFactory::PresentationType type)
 {
     loadMessage(id);
@@ -561,11 +578,23 @@ void ReadMail::sendThisMail()
         emit sendMailRequested(mail);
 }
 
+void ReadMail::retrieveMessagePortion(uint bytes)
+{
+    emit retrieveMessagePortion(mail, bytes);
+}
+
 void ReadMail::retrieveMessagePart(const QMailMessagePart &part)
 {
     QMailMessagePart::Location location(part.location());
     location.setContainingMessageId(mail.id());
     emit retrieveMessagePart(location);
+}
+
+void ReadMail::retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes)
+{
+    QMailMessagePart::Location location(part.location());
+    location.setContainingMessageId(mail.id());
+    emit retrieveMessagePartPortion(location, bytes);
 }
 
 void ReadMail::setSendingInProgress(bool on)
@@ -664,7 +693,6 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
 
             connect(view, SIGNAL(replyToSender()), replyButton, SLOT(trigger()));
             connect(view, SIGNAL(replyToAll()), replyAllAction, SLOT(trigger()));
-            connect(view, SIGNAL(completeMessage()), getThisMailButton, SLOT(trigger()));
             connect(view, SIGNAL(forwardMessage()), forwardAction, SLOT(trigger()));
             connect(view, SIGNAL(deleteMessage()), deleteButton, SLOT(trigger()));
             connect(view, SIGNAL(saveSender()), storeButton, SLOT(trigger()));
@@ -672,7 +700,10 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             connect(view, SIGNAL(messageChanged(QMailMessageId)), this, SLOT(messageChanged(QMailMessageId)));
             connect(view, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
             connect(view, SIGNAL(sendMessage(QMailMessage)), this, SIGNAL(sendMessage(QMailMessage)));
+            connect(view, SIGNAL(retrieveMessage()), getThisMailButton, SLOT(trigger()));
+            connect(view, SIGNAL(retrieveMessagePortion(uint)), this, SLOT(retrieveMessagePortion(uint)));
             connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));
+            connect(view, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)), this, SLOT(retrieveMessagePartPortion(QMailMessagePart, uint)));
 
             QWidget* viewWidget = view->widget();
             viewWidget->setGeometry(geometry());

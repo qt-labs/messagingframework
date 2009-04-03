@@ -199,10 +199,7 @@ void QMailMessageDelegate::setDisplaySelectionState(bool set)
     d->displaySelectionState = set;
 }
 
-/*!
-  \reimp
-*/
-
+/*! \internal */
 void QMailMessageDelegate::paint(QPainter* painter,
                                  const QStyleOptionViewItem& option,
                                  const QModelIndex& index) const
@@ -347,10 +344,7 @@ void QMailMessageDelegate::paint(QPainter* painter,
     painter->restore();
 }
 
-/*!
-  \reimp
-*/
-
+/*! \internal */
 QSize QMailMessageDelegate::sizeHint(const QStyleOptionViewItem& option,
                                      const QModelIndex& index) const
 {

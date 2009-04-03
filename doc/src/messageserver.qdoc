@@ -6,7 +6,7 @@
 
 \section1 Introduction
 
-The \i MessageServer application provides message transport services to Qt Extended client applications.  
+The \i MessageServer application provides message transport services to Messaging Framework client applications.  
 It can send and retrieve messages of various types, to and from external message service providers such as POP and IMAP servers, or local resources such as a SIM card.
 Protocol implementations are loaded from plugin libraries, so that the system can be extended with new services, without modification to the MessageServer application.
  
@@ -79,13 +79,13 @@ Other protocols can be supported by providing implementations as plugins.
 
 MessageServer communicates with clients via a QtopiaChannel.  The recommended method of passing messages over this channel is for each client to instantiate an object of the QMailMessageServer class, which converts between IPC messages and local signals and slots.
 
-Some actions of the MessageServer process affect the Qt Extended Messaging Library data store directly.  A client can respond to these actions by connecting to the relevant signals of the QMailStore class, such as QMailStore::messagesAdded(), and QMailStore::messagesRemoved().
+Some actions of the MessageServer process affect the Messaging Framework data store directly.  A client can respond to these actions by connecting to the relevant signals of the QMailStore class, such as QMailStore::messagesAdded(), and QMailStore::messagesRemoved().
 
 \section1 Dependencies 
 MessageServer has the following dependencies:
 \list
-\o the \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
-\o the Qt Extended Collective Library
+\o the \l{Messaging Framework Client Library}
+\o the \l{Message Server Support Library}
 \endlist
 
 */

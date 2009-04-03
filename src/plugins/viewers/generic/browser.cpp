@@ -544,10 +544,15 @@ void Browser::displayHtml(const QMailMessage* mail)
 "<br>"
 "WAITING_TEXT<br>"
 "SIZE_TEXT<br>"
-"<a href=\"download\">DOWNLOAD_TEXT</a>";
+"<a href=\"DOWNLOAD_ACTION\">DOWNLOAD_TEXT</a>";
 
                 trailer = replaceLast(trailer, "WAITING_TEXT", tr("More data available"));
                 trailer = replaceLast(trailer, "SIZE_TEXT", tr("Size") + ": " + describeMailSize(mail->body().length()) + tr(" of ") + describeMailSize(mail->contentSize()));
+                if ((mail->contentType().type().toLower() == "text") && (mail->contentType().subType().toLower() == "plain")) {
+                    trailer = replaceLast(trailer, "DOWNLOAD_ACTION", "download;5120");
+                } else {
+                    trailer = replaceLast(trailer, "DOWNLOAD_ACTION", "download");
+                }
                 trailer = replaceLast(trailer, "DOWNLOAD_TEXT", tr("Retrieve more data"));
 
                 bodyText += trailer;

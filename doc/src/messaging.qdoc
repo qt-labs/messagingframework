@@ -6,7 +6,7 @@
 
 \section1 Introduction
  
-Qt Extended provides the following messaging features:
+The Messaging Framework provides the following messaging features:
 \list 1
 \o a client application supporting common messaging functionality
 \o a server application supporting multiple messaging transport mechanisms
@@ -16,26 +16,26 @@ Qt Extended provides the following messaging features:
 The \l{Messages Client}{Messages} client application provides standard functionality for creating and viewing SMS, MMS and email messages.
 
 The \l{MessageServer Daemon}{MessageServer} application is a daemon managed by the QPE server. 
-It provides messaging transport functionality, communicating with external servers on behalf of Qt Extended messaging client applications.
+It provides messaging transport functionality, communicating with external servers on behalf of Messaging Framework client applications.
 New types of messaging (such as Instant Messages or video messages) can be handled by the server application without modification to existing client applications.
 
-The \l{Qt Extended Messaging Library}{Qt Extended Messaging Library} provides classes giving access to all messages stored on the device, via a uniform interface. 
-It simplifies the task of creating messaging client applications, and permits other Qt Extended applications to interact with messaging data where appropriate.
+The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface. 
+It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
 New types of messages can be supported by the library without modification to existing client applications.
 
 \section1 Architecture
 
-Qt Extended Messaging uses a database to store all messaging-related data. 
-Rather than providing access via Structured Query Language, the Qt Extended Messaging library wraps the database with classes providing structured, focussed access to the database.
+The Messaging Framework uses a database to store all messaging-related data. 
+Rather than providing access via Structured Query Language, the Client library wraps the database with classes providing structured, focussed access to the database.
 Clients can add, remove or update messaging data via the wrapper classes, with appropriate guarantees of isolation, and with automatic propagation of updates between clients.
 
-Clients access messaging data via the Qt Extended Messaging library which provides a direct connection to the messaging database. 
+Clients access messaging data via the Client library which provides a direct connection to the messaging database. 
 Notifications of database changes that occur as a result of other clients' actions are received by IPC, and the messaging library automatically reflects those changes in all clients.
 
 A model/view architecture is provided for clients to access the messaging data content.
 A flexible system of filtering and sorting keys is provided, enabling clients to display a specific subset of the library's data with minimal resource overhead.
 
-Rather than requiring each client application to perform transmission and retrieval of messages from external sources, a server application provides these services to any Qt Extended Messaging Library client.
+Rather than requiring each client application to perform transmission and retrieval of messages from external sources, a server application provides these services to any Client library client.
 The server receives service requests from clients via IPC, and reports events and status information back over the same channel.
 However, to avoid the overhead of passing message data within the system, the server reads and writes messages directly to and from the messaging database, via the library class interface.
 Messaging clients do not need to communicate with the server directly.
@@ -45,20 +45,20 @@ For detailed information refer to:
 \list
 \o \l{Messages Client}{Messages client application}
 \o \l{MessageServer Daemon}{MessageServer server daemon}
-\o \l{Qt Extended Messaging Library}{Qt Extended Messaging Library}
+\o \l{Messaging Framework Client Library}{Client library}
 \endlist
 
 \section1 Building and Compiling 
 
-To build the Qt Extended Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
+To build the Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
 
 \code 
 qmake "QMF_INSTALL_ROOT=<image directory path>" "CONFIG+=debug" qmf.pro 
 \endcode
 
 Where \c <image \c directory \c path> is the location that \c make \c install will put the resultant binary files. It is optional but 
-desirable to set this variable as it is not possible to run the applications from within their directories due
-to dependencies. The debug paramater is also optional.
+desirable to set this variable as it is not possible to run the applications from within their build directories due
+to dependencies. The \c debug configuration parameter is also optional.
 
 Following this simply run:
 
@@ -70,12 +70,12 @@ make install
 It is also recommended to build in a separate path to the source tree. This is just a matter
 of running the above commands from within a separate build directory.
 
-\bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensue that valgrind development headers are installed,
+\bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensure that valgrind development headers are installed,
 or optionally remove unwanted tests from the qmf.pro. 
 
 \section1 Running Messaging Framework 
 
-After \c make \c install has run, the following layout should exist in your image directory:
+After \c{make install} has run, the following layout should exist in your image directory:
 
 \code
 bin
@@ -97,7 +97,51 @@ Optionally set \c QMF_DATA to the location where you want the framework data fil
 default of \c $HOME/.qmf will be used.
 
 \bold Note: When running the test application \c qtmail, if the \c messageserver is not already running it will be started as
-a child process of the application. If debug to stdout is required from \c messageserver, ensure it is running separately 
-before running \c qtmail. 
+a child process of the application, whose output is not visible.  If you prefer to see the output of the \c messageserver
+daemon, ensure it is running separately before running \c qtmail. 
+
+\section1 Testing the Messaging Framework
+
+The messaging framework includes a series of unit tests designed to ensure that it is functioning correctly 
+in an operating environment.  Unit tests are located in the \c tests top-level directory.
+
+To run the tests:
+
+\code 
+cd tests
+make test
+\endcode
+
+Normal \c make options control the operation of the testing - \c{-j} controls the number of concurrent tests invoked, \c{-k} instructs make to keep running in the event of a failure.
+
+\bold Note: some tests alter or remove data from the mailstore they operate against.  It is prudent to use a different value for the \c QMF_DATA environment variable when running tests than when operating normally.
+
+To run a single test, perform \c{make test} within the subdirectory of the relevant test program.  For example, to run just the \c tst_QMailCodec test:
+
+\code
+make -C tests/tst_qmailcodec test
+\endcode
+
+To run a single test suite, provide the name of the test suite in the \c ARGS variable:
+
+\code
+make -C test/tst_qmailcodec ARGS="encode" test
+\endcode
+
+To run a single test case, provide the name of the test case in the \c ARGS variable:
+
+\code
+make -C test/tst_qmailcodec ARGS="encode:'one padding byte'" test
+\endcode
+
+\section2 Test Results
+
+Placeholder: it should be possible to see the results produced by the QtSoftware continuous integration system <here>, if those results were exported yet...
+
+\section1 Changes Between Messaging Framework Versions
+
+Historical changes in the \l {Messaging Framework Client Library} API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
+
+Historical changes in the \l {Message Server Support Library} API are listed in \l{changes-messageserver.html}{CHANGES.qdoc}.
 
 */

@@ -312,7 +312,9 @@ ReadMail* MessageUiBase::createReadMailWidget()
     connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)) );
     connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)) );
     connect(readMail, SIGNAL(sendMessage(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)) );
+    connect(readMail, SIGNAL(retrieveMessagePortion(QMailMessageMetaData, uint)),this, SLOT(retrieveMessagePortion(QMailMessageMetaData, uint)) );
     connect(readMail, SIGNAL(retrieveMessagePart(QMailMessagePart::Location)),this, SLOT(retrieveMessagePart(QMailMessagePart::Location)) );
+    connect(readMail, SIGNAL(retrieveMessagePartPortion(QMailMessagePart::Location, uint)),this, SLOT(retrieveMessagePartPortion(QMailMessagePart::Location, uint)) );
 
     return readMail;
 }
@@ -377,7 +379,7 @@ EmailClient::EmailClient( QWidget* parent )
       preSearchWidgetId(-1),
       searchAction(0),
       m_messageServerProcess(0),
-      syncState(ListFolders)
+      syncState(ExportUpdates)
 {
     setObjectName( "EmailClient" );
 
@@ -972,11 +974,7 @@ void EmailClient::transmitCompleted()
 void EmailClient::retrievalCompleted()
 {
     if (mailAccountId.isValid()) {
-        if (syncState == ListFolders) {
-            syncState = ExportUpdates;
-            // Export (flag) changes (deletes are done immediately)
-            retrievalAction->exportUpdates(mailAccountId);
-        } else if (syncState == ExportUpdates) {
+        if (syncState == ExportUpdates) {
             syncState = RetrieveMessages;
             // Now we need to retrieve the message lists for the folders
             retrievalAction->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
@@ -1014,9 +1012,9 @@ void EmailClient::getNewMail()
         selectedMessageId = QMailMessageId();
 
     setRetrievalInProgress(true);
-    syncState = ListFolders;
+    syncState = ExportUpdates;
 
-    retrievalAction->retrieveFolderList(mailAccountId, QMailFolderId(), true);
+    retrievalAction->exportUpdates(mailAccountId);
 }
 
 void EmailClient::getAllNewMail()
@@ -1051,15 +1049,24 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
     }
 
     mailAccountId = message.parentAccountId();
-
     setRetrievalInProgress(true);
 
-#ifdef USE_PROGRESSIVE_DOWNLOADING
-    QMailMessage msg(message.id());
-    retrievalAction->retrieveMessageRange(message.id(), msg.body().length() + (5 * 1024));
-#else
     retrievalAction->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
-#endif
+}
+
+void EmailClient::retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes)
+{
+    if (isRetrieving()) {
+        QString msg(tr("Cannot retrieve message portion because a retrieval operation is currently in progress"));
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        return;
+    }
+
+    mailAccountId = message.parentAccountId();
+    setRetrievalInProgress(true);
+
+    QMailMessage msg(message.id());
+    retrievalAction->retrieveMessageRange(message.id(), msg.body().length() + bytes);
 }
 
 void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
@@ -1074,22 +1081,34 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
         QString msg(tr("Cannot retrieve message part without a valid message ID"));
         QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
     } else {
-#ifdef USE_PROGRESSIVE_DOWNLOADING
-        QMailMessage messsage(partLocation.containingMessageId());
-
-        mailAccountId = messsage.parentAccountId();
-        setRetrievalInProgress(true);
-
-        const QMailMessagePart &part(messsage.partAt(partLocation));
-        retrievalAction->retrieveMessagePartRange(partLocation, part.body().length() + (20 * 1024));
-#else
         QMailMessageMetaData metaData(partLocation.containingMessageId());
 
         mailAccountId = metaData.parentAccountId();
         setRetrievalInProgress(true);
 
         retrievalAction->retrieveMessagePart(partLocation);
-#endif
+    }
+}
+
+void EmailClient::retrieveMessagePartPortion(const QMailMessagePart::Location &partLocation, uint bytes)
+{
+    if (isRetrieving()) {
+        QString msg(tr("Cannot retrieve message part portion because a retrieval operation is currently in progress"));
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        return;
+    }
+
+    if (!partLocation.isValid(true)) {
+        QString msg(tr("Cannot retrieve message part without a valid message ID"));
+        QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
+    } else {
+        QMailMessage messsage(partLocation.containingMessageId());
+
+        mailAccountId = messsage.parentAccountId();
+        setRetrievalInProgress(true);
+
+        const QMailMessagePart &part(messsage.partAt(partLocation));
+        retrievalAction->retrieveMessagePartRange(partLocation, part.body().length() + bytes);
     }
 }
 

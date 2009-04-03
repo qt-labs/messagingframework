@@ -133,7 +133,9 @@ protected slots:
     void sendSingleMail(QMailMessageMetaData& message);
 
     void getSingleMail(const QMailMessageMetaData& message);
+    void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
+    void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
     void messageActivated();
     void emptyTrashFolder();
 
@@ -285,7 +287,7 @@ private:
 private:
     // Whether the initial action for the app was to view incoming messages 
     enum InitialAction { None = 0, IncomingMessages, NewMessages, View, Compose, Cleanup };
-    enum SyncState { ListFolders = 0, ExportUpdates, RetrieveMessages };
+    enum SyncState { ExportUpdates = 0, RetrieveMessages };
 
     bool filesRead;
     QMailMessageId cachedDisplayMailId;

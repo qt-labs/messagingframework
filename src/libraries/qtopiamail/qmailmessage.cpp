@@ -3270,7 +3270,8 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
         part = &(partList->at(index - 1));
         partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
     }
-        
+
+    Q_ASSERT(part);
     return *part;
 }
 
@@ -3283,7 +3284,7 @@ QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePar
         part = &((*partList)[index - 1]);
         partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
     }
-        
+
     return *part;
 }
 
@@ -3895,10 +3896,7 @@ QMailMessagePartContainer::QMailMessagePartContainer(Subclass* p)
 {
 }
 
-/*! 
-    This should only be exposed if QMailMessageHeader is itself...
-    \internal
-*/
+/*! \internal */
 void QMailMessagePartContainer::setHeader(const QMailMessageHeader& partHeader, const QMailMessagePartContainerPrivate* parent)
 {
     impl(this)->setHeader(partHeader, parent);
@@ -4212,6 +4210,18 @@ void QMailMessagePartContainer::outputBody( QDataStream& out, bool includeAttach
 {
     impl(this)->outputBody( out, includeAttachments );
 }
+
+/*!
+    \fn QMailMessagePartContainer::contentAvailable() const
+
+    Returns true if the entire content of this element is available; otherwise returns false.
+*/
+
+/*!
+    \fn QMailMessagePartContainer::partialContentAvailable() const
+
+    Returns true if some portion of the content of this element is available; otherwise returns false.
+*/
 
 
 /* QMailMessagePart */
@@ -6779,7 +6789,7 @@ uint QMailMessage::contentSize() const
 }
 
 /*!
-    Sets the size of the message content excluding any meta data, in bytes.
+    Sets the size of the message content excluding any meta data to \a size, in bytes.
 */
 void QMailMessage::setContentSize(uint size)
 {

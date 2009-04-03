@@ -3,7 +3,7 @@
 
     \title Grouped Classes
 
-    This page provides a way to navigate the Qt Extended classes by grouping
+    This page provides a way to navigate the Messaging Framework classes by grouping
     related classes together. Some classes may appear in more than one group.
 
 
@@ -53,7 +53,7 @@
     and to assist with development of Message Server plugins via the
     \l{Message Server Support Classes}{Server Support Classes}.
 
-    \sa {Qt Extended Messaging Library}
+    \sa {Messaging Framework Client Library}
 */
 
 /*!
@@ -62,7 +62,7 @@
 
     These classes provide assistance in developing GUI clients that access messaging data.
 
-    \sa {Message Server Support Library}, {Qt Extended Messaging Library}
+    \sa {Message Server Support Library}, {Messaging Framework Client Library}
 */
 
 /*!
@@ -71,5 +71,5 @@
 
     These classes provide assistance in developing plugins for the \l{MessageServer Daemon}{Message Server} daemon.
 
-    \sa {Messaging Client Utility Library}, {Qt Extended Messaging Library}
+    \sa {Messaging Client Utility Library}, {Messaging Framework Client Library}
 */

@@ -12,6 +12,7 @@
 #include "testfsusage.h"
 #include "testmalloc.h"
 #include "3rdparty/cycle_p.h"
+#include "3rdparty/callgrind_p.h"
 #include "3rdparty/valgrind_p.h"
 
 #include <qmailnamespace.h>
@@ -19,6 +20,8 @@
 #include <QDebug>
 #include <QDir>
 #include <QTest>
+
+#undef HAVE_TICK_COUNTER // not useful for this test
 
 class BenchmarkContextPrivate
 {
@@ -45,12 +48,69 @@ BenchmarkContext::BenchmarkContext(bool xml)
 
     TestMalloc::resetNow();
     TestMalloc::resetPeak();
+    CALLGRIND_ZERO_STATS;
 }
 
 BenchmarkContext::~BenchmarkContext()
 {
     if (!QTest::currentTestFailed()) {
-        qint64 newQmfUsage = TestFsUsage::usage(QMail::dataPath());
+        CALLGRIND_DUMP_STATS;
+
+        if (RUNNING_ON_VALGRIND) {
+            // look for callgrind.out.<PID>.<NUM> in CWD
+            QDir dir;
+            QFile file;
+            QString match = QString("callgrind.out.%1.").arg(::getpid());
+            foreach (QString const& entry, dir.entryList(QDir::Files,QDir::Name)) {
+                if (entry.startsWith(match)) {
+                    file.setFileName(entry);
+                }
+            }
+
+            if (file.fileName().isEmpty()) {
+                qWarning("I'm running on valgrind, but couldn't find callgrind.out file...");
+                return;
+            }
+
+            if (!file.open(QIODevice::ReadOnly)) {
+                qWarning("Failed to open %s: %s", qPrintable(file.fileName()),
+                    qPrintable(file.errorString()));
+            }
+
+            QList<QByteArray> lines = file.readAll().split('\n');
+            qint64 ir = -1;
+            bool is_ir = false;
+            foreach (QByteArray const& line, lines) {
+                if (line == "events: Ir") {
+                    is_ir = true;
+                    continue;
+                }
+                if (is_ir) {
+                    if (line.startsWith("summary: ")) {
+                        bool ok;
+                        ir = line.mid(sizeof("summary: ")-1).toLongLong(&ok);
+                        if (!ok) ir = -1;
+                    }
+                    is_ir = false;
+                    break;
+                }
+            }
+            if (ir == -1) {
+                qWarning("Found callgrind.out file, but it doesn't seem to contain a valid "
+                    "Ir count...");
+                return;
+            }
+
+            if (d->xml) {
+                fprintf(stdout, "<BenchmarkResult metric=\"callgrind\" tag=\"%s\" value=\"%lld\" iterations=\"1\"/>\n", QTest::currentDataTag(), ir);
+            }
+            else {
+                qWarning("callgrind instruction count: %lld", ir);
+            }
+            // callgrind invalidates rest of results
+            return;
+        }
+
 #ifdef HAVE_TICK_COUNTER
         CycleCounterTicks newTicks = getticks();
 #endif
@@ -59,6 +119,7 @@ BenchmarkContext::~BenchmarkContext()
         int heapUsageTotal  = TestMalloc::peakTotal()/1000;
         int heapUsageUsable = TestMalloc::peakUsable()/1000;
         int ms = d->time.elapsed();
+        qint64 newQmfUsage = TestFsUsage::usage(QMail::dataPath());
 #ifdef HAVE_TICK_COUNTER
         quint64 cycles = quint64(elapsed(newTicks,d->ticks));
 #endif

@@ -43,6 +43,7 @@ public:
 private slots:
     void updateView(QMailViewerFactory::PresentationType);
     void messageContentsModified(const QMailMessageIdList& list);
+    void messagesRemoved(const QMailMessageIdList& list);
 
 signals:
     void resendRequested(const QMailMessage&, int);
@@ -55,7 +56,9 @@ signals:
     void readReplyRequested(const QMailMessageMetaData&);
     void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType);
     void sendMessage(const QMailMessage &message);
+    void retrieveMessagePortion(const QMailMessageMetaData &message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location &partLocation);
+    void retrieveMessagePartPortion(const QMailMessagePart::Location &partLocation, uint bytes);
 
 public slots:
     void setSendingInProgress(bool);
@@ -75,7 +78,9 @@ protected slots:
     void setStatus(int);
     void getThisMail();
     void sendThisMail();
+    void retrieveMessagePortion(uint bytes);
     void retrieveMessagePart(const QMailMessagePart &part);
+    void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
 
 protected:
     void keyPressEvent(QKeyEvent *);

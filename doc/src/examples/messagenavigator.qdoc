@@ -2,8 +2,8 @@
     \example messagenavigator
     \title MessageNavigator Example
 
-    The MessageNavigator example shows how to create a Qt Extended application
-    which displays messages stored by the Qt Extended Messaging library. The
+    The MessageNavigator example shows how to create a client application
+    which displays messages stored by the Messaging Framework. The
     example application allows the user to browse for messages using a tree
     view to expose the hierarchical structure of email accounts that use folders.
     It displays the messages in each folder in a list, and when a message is 
@@ -16,7 +16,7 @@
     QStackedWidget.  We need two widgets in our stack: one to select a folder 
     from a tree, and another to select a message from a list.  
 
-    The example application uses the Qt Extended Messaging library's 
+    The example application uses the Messaging Framework Client library's 
     QMailMessageSetModel class to build a model of the messages in the Qt 
     Extended mail store.  It divides all the messages into groups, first by the 
     account to which they belong, and within an account, by the folder where 

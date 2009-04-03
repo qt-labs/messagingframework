@@ -18,5 +18,6 @@ SUBDIRS = src/libraries/qtopiamail \
 CONFIG += ordered
 
 # Make it so projects can find our specific features
-system(echo QMAKEFEATURES+=$$PWD/features > $$OUT_PWD/.qmake.cache)
+system(touch $$OUT_PWD/.qmake.cache)
+system(if ! [ -e $$OUT_PWD/features ]; then ln -s $$PWD/features $$OUT_PWD/features; fi)
 

@@ -1,8 +1,14 @@
-/****************************************************************************
-**
-****************************************************************************/
+/*!
+\page changes-qtopiamail.html
+\code
 
-API changes since the development preview release on 06/03/09:
+*****************************************************************************
+**
+** API Change History
+**
+*****************************************************************************
+
+Changes since the development preview release on 06/03/09:
 
 1. Added 'QMailContentManager::init()' and 
          'QMailContentManagerFactory::init()'.
@@ -16,9 +22,10 @@ API changes since the development preview release on 06/03/09:
          'QMailPassThroughCodec::name() const' and
          'QMailLineEndingCodec::name() const'.
 
-/***************************************************************************/
 
-API changes since the development preview release on 16/01/09:
+*****************************************************************************
+
+Changes since the development preview release on 16/01/09:
 
 1. Added 'QMailAccountConfiguration::id() const'
 
@@ -125,3 +132,8 @@ API changes since the development preview release on 16/01/09:
           'QMailMessageMetaData::contentAvailable() const' and
           'QMailMessageMetaData::partialContentAvailable() const'.
 
+
+*****************************************************************************
+
+\endcode
+*/

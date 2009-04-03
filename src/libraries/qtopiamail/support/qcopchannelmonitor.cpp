@@ -12,7 +12,7 @@
 #include "qcopchannel_p.h"
 #include <QtCore/qtimer.h>
 
-/*!
+/* ! - documentation comments in this file are disabled:
     \class QCopChannelMonitor
     \brief The QCopChannelMonitor class allows applications to monitor when other applications register and unregister QCopChannels.
 
@@ -84,7 +84,7 @@
     \sa QCopChannel
 */
 
-/*!
+/* !
     Constructs a new QCop channel monitor for \a channel and
     attaches it to \a parent.
 
@@ -134,7 +134,7 @@ QCopChannelMonitor::QCopChannelMonitor(const QString& channel, QObject *parent)
     td->clientConnection()->sendChannelCommand(QCopCmd_RegisterMonitor, channel);
 }
 
-/*!
+/* !
     Destroys this QCop channel monitor.
 */
 QCopChannelMonitor::~QCopChannelMonitor()
@@ -161,7 +161,7 @@ QCopChannelMonitor::~QCopChannelMonitor()
         delete d;
 }
 
-/*!
+/* !
     Returns that QCop channel that this object is monitoring.
 
     \sa state()
@@ -171,7 +171,7 @@ QString QCopChannelMonitor::channel() const
     return d->channel;
 }
 
-/*!
+/* !
     \enum QCopChannelMonitor::State
     This enum defines the state of a QCop channel that is being monitored by QCopChannelMonitor.
 
@@ -181,7 +181,7 @@ QString QCopChannelMonitor::channel() const
     \value Unregistered The QCop channel is known to have been unregistered.
 */
 
-/*!
+/* !
     Returns the current state of the QCop channel that is being
     monitored by this object.
 
@@ -192,7 +192,7 @@ QCopChannelMonitor::State QCopChannelMonitor::state() const
     return QCopChannelMonitor::State(d->state);
 }
 
-/*!
+/* !
     \fn void QCopChannelMonitor::registered()
 
     Signal that is emitted when the channel is registered by one of
@@ -204,7 +204,7 @@ QCopChannelMonitor::State QCopChannelMonitor::state() const
     \sa unregistered(), state()
 */
 
-/*!
+/* !
     \fn void QCopChannelMonitor::unregistered()
 
     Signal that is emitted once the channel has been unregistered by
