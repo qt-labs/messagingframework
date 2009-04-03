@@ -133,7 +133,9 @@ protected slots:
     void sendSingleMail(QMailMessageMetaData& message);
 
     void getSingleMail(const QMailMessageMetaData& message);
+    void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
+    void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
     void messageActivated();
     void emptyTrashFolder();
 

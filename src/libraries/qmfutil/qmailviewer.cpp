@@ -119,15 +119,6 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QMailViewerInterface::completeMessage()
-
-    This signal is emitted by the viewer to initiate a message completion action.  
-    This is only meaningful if the message has not yet been completely retrieved.
-
-    \sa QMailMessage::status(), QMailRetrievalAction::retrieveMessages()
-*/
-
-/*!
     \fn QMailViewerInterface::deleteMessage()
 
     This signal is emitted by the viewer to initiate a message deletion action.
@@ -180,9 +171,33 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
+    \fn QMailViewerInterface::retrieveMessage()
+
+    This signal is emitted by the viewer to initiate a message completion action.  
+    This is only meaningful if the message has not yet been completely retrieved.
+
+    \sa QMailMessage::status(), QMailRetrievalAction::retrieveMessages()
+*/
+
+/*!
+    \fn QMailViewerInterface::retrieveMessagePortion(uint bytes)
+
+    This signal is emitted by the viewer to retrieve an additional \a bytes from the message.
+    This is only meaningful if the message has not yet been completely retrieved.
+
+    \sa QMailMessage::status(), QMailRetrievalAction::retrieveMessages()
+*/
+
+/*!
     \fn QMailViewerInterface::retrieveMessagePart(const QMailMessagePart &part)
 
     This signal is emitted by the viewer to initiate a message part retrieval action for \a part.
+*/
+
+/*!
+    \fn QMailViewerInterface::retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes)
+
+    This signal is emitted by the viewer to initiate a message part retrieval action for an additional \a bytes of the \a part.
 */
 
 /*!
