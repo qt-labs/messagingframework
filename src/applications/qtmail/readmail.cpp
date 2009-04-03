@@ -163,6 +163,10 @@ void ReadMail::init()
     // Update the view if the displayed message's content changes
     connect(QMailStore::instance(), SIGNAL(messageContentsModified(QMailMessageIdList)), 
             this, SLOT(messageContentsModified(QMailMessageIdList)));
+
+    // Remove the view if the message is removed
+    connect(QMailStore::instance(), SIGNAL(messagesRemoved(QMailMessageIdList)), 
+            this, SLOT(messagesRemoved(QMailMessageIdList)));
 }
 
 QMailMessageId ReadMail::displayedMessage() const 
@@ -386,6 +390,19 @@ void ReadMail::messageContentsModified(const QMailMessageIdList& list)
     }
     
     updateButtons();
+}
+
+void ReadMail::messagesRemoved(const QMailMessageIdList& list)
+{
+    if (!mail.id().isValid())
+        return;
+
+    if (list.contains(mail.id())) {
+        mail = QMailMessage();
+
+        if (QMailViewerInterface* viewer = currentViewer())
+            viewer->clear();
+    }
 }
 
 void ReadMail::showMessage(const QMailMessageId& id, QMailViewerFactory::PresentationType type)

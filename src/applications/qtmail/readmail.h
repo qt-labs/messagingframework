@@ -43,6 +43,7 @@ public:
 private slots:
     void updateView(QMailViewerFactory::PresentationType);
     void messageContentsModified(const QMailMessageIdList& list);
+    void messagesRemoved(const QMailMessageIdList& list);
 
 signals:
     void resendRequested(const QMailMessage&, int);
