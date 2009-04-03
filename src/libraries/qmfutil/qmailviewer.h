@@ -86,7 +86,6 @@ signals:
     void replyToSender();
     void replyToAll();
     void forwardMessage();
-    void completeMessage();
     void deleteMessage();
     void saveSender();
     void contactDetails(const QContact &contact);
@@ -95,7 +94,12 @@ signals:
     void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType);
     void sendMessage(const QMailMessage &message);
     void finished();
+
+    void retrieveMessage();
+    void retrieveMessagePortion(uint bytes);
+
     void retrieveMessagePart(const QMailMessagePart &part);
+    void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
 };
 
 #endif

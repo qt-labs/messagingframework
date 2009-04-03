@@ -138,4 +138,10 @@ make -C test/tst_qmailcodec ARGS="encode:'one padding byte'" test
 
 Placeholder: it should be possible to see the results produced by the QtSoftware continuous integration system <here>, if those results were exported yet...
 
+\section1 Changes Between Messaging Framework Versions
+
+Historical changes in the \l {Messaging Framework Client Library} API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
+
+Historical changes in the \l {Message Server Support Library} API are listed in \l{changes-messageserver.html}{CHANGES.qdoc}.
+
 */

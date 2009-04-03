@@ -150,14 +150,23 @@ void GenericViewer::linkClicked(const QUrl& link)
 
                 attachmentDialog->setAttachment(message->partAt(partLocation));
                 connect(attachmentDialog, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
+                connect(attachmentDialog, SIGNAL(retrievePortion(QMailMessagePart, uint)), this, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)));
                 connect(attachmentDialog, SIGNAL(finished(int)), this, SLOT(dialogFinished(int)));
 
                 attachmentDialog->exec();
                 return;
             }
         }
-    } else if (command == "download") {
-        emit completeMessage();
+    } else if (command.startsWith("download")) {
+        QRegExp splitter("download(?:;(\\d+))?");
+        if (splitter.exactMatch(command)) {
+            QString bytes = splitter.cap(1);
+            if (!bytes.isEmpty()) {
+                emit retrieveMessagePortion(bytes.toUInt());
+            } else {
+                emit retrieveMessage();
+            }
+        }
     }
 
     emit anchorClicked(link);

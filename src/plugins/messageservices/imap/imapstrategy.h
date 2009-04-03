@@ -238,7 +238,7 @@ protected:
     QStringList _newUids;
     QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
     QMailMessageIdList _completionList;
-    QList<QMailMessagePart::Location> _completionSectionList;
+    QList<QPair<QMailMessagePart::Location, uint> > _completionSectionList;
 
 private:
     uint _progress;

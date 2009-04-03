@@ -45,4 +45,8 @@ The library also provides some utility classes that are used by service componen
 \row \o QMailMessageClassifier \o A class that classifies message content by inspection.
 \endtable
 
+\section1 Changes Between Versions
+
+Historical changes in the Message Server Support Library API are listed in \l{changes-messageserver.html}{CHANGES.qdoc}.
+
 */
