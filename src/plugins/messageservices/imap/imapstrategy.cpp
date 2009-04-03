@@ -859,8 +859,13 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                 // Fetch the messages that need completion
                 clearSelection();
                 selectedMailsAppend(_completionList);
-                foreach(QMailMessagePart::Location location, _completionSectionList) {
-                    selectedSectionsAppend(location);
+                QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end(); 
+                for ( ; it != end; ++it) {
+                    if (it->second != 0) {
+                        selectedSectionsAppend(it->first, it->second);
+                    } else {
+                        selectedSectionsAppend(it->first);
+                    }
                 }
                 messageAction(context);
             } else {
@@ -892,6 +897,7 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
     for (uint i = 0; i < partContainer.partCount(); ++i) {
         const QMailMessagePart part(partContainer.partAt(i));
         const QMailMessageContentDisposition disposition(part.contentDisposition());
+        const QMailMessageContentType contentType(part.contentType());
 
         if (partsToRetrieve > 10) {
             break; // sanity check, prevent DOS
@@ -905,13 +911,13 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
 
                 for (uint j = 0; j < part.partCount(); ++j) {
                     const QMailMessagePart subpart(part.partAt(j));
-                    QMailMessageContentType contentType(subpart.contentType());
-                    if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
+                    QMailMessageContentType subcontent(subpart.contentType());
+                    if ((subcontent.type().toLower() == "text") && (subcontent.subType().toLower() == preferred)) {
                         alternativeSelected = true;
 
                         const QMailMessageContentDisposition subdisposition(subpart.contentDisposition());
                         if (bytesLeft > subdisposition.size()) {
-                            _completionSectionList.append(subpart.location());
+                            _completionSectionList.append(qMakePair(subpart.location(), 0u));
                             bytesLeft -= subdisposition.size();
                             ++partsToRetrieve;
                         }
@@ -928,12 +934,16 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
             continue;
         } else if (disposition.size() <= 0) {
             continue;
-        } else if ((disposition.type() != QMailMessageContentDisposition::Inline) && 
-                   (part.contentType().type().toLower() != "text")) {
+        } else if ((disposition.type() != QMailMessageContentDisposition::Inline) && (contentType.type().toLower() != "text")) {
             continue;
         } else if (bytesLeft >= disposition.size()) {
-            _completionSectionList.append(part.location());
+            _completionSectionList.append(qMakePair(part.location(), 0u));
             bytesLeft -= disposition.size();
+            ++partsToRetrieve;
+        } else if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
+            // We can retrieve the first portion of this part
+            _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+            bytesLeft = 0;
             ++partsToRetrieve;
         }
     }
@@ -949,9 +959,17 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
         if (message.size() < _headerLimit) {
             _completionList.append(message.id());
         } else {
-            int bytesLeft = _headerLimit;
-            int partsToRetrieve = 1;
-            recursivelyCompleteParts(context, message, partsToRetrieve, bytesLeft);
+            const QMailMessageContentType contentType(message.contentType());
+            if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
+                // We can retrieve the first portion of this message
+                QMailMessagePart::Location location;
+                location.setContainingMessageId(message.id());
+                _completionSectionList.append(qMakePair(location, static_cast<unsigned>(_headerLimit)));
+            } else {
+                int bytesLeft = _headerLimit;
+                int partsToRetrieve = 1;
+                recursivelyCompleteParts(context, message, partsToRetrieve, bytesLeft);
+            }
         }
     }
 }
