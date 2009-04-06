@@ -8,6 +8,11 @@
 **
 *****************************************************************************
 
+Changes since the development preview release on 03/04/09:
+
+
+*****************************************************************************
+
 Changes since the development preview release on 06/03/09:
 
 1. Added 'QMailContentManager::init()' and 
