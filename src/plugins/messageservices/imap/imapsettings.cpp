@@ -61,6 +61,7 @@ ImapSettings::ImapSettings()
     setupUi(this);
     setLayoutDirection(qApp->layoutDirection());
 
+    connect(pushCheckBox, SIGNAL(stateChanged(int)), this, SLOT(pushCheckChanged(int)));
     connect(intervalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(intervalCheckChanged(int)));
 
     const QString uncapitalised("email noautocapitalization");
@@ -80,9 +81,17 @@ ImapSettings::ImapSettings()
 
 }
 
+void ImapSettings::pushCheckChanged(int enabled)
+{
+    intervalCheckBox->setEnabled(!enabled);
+    intervalPeriod->setEnabled(!enabled && intervalCheckBox->isChecked());
+    roamingCheckBox->setEnabled(!enabled && intervalCheckBox->isChecked());
+}
+
 void ImapSettings::intervalCheckChanged(int enabled)
 {
     intervalPeriod->setEnabled(enabled);
+    roamingCheckBox->setEnabled(enabled);
 }
 
 void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
@@ -96,15 +105,10 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
 #ifndef QT_NO_OPENSSL
         encryptionIncoming->setCurrentIndex(0);
 #endif
-        deleteCheckBox->setEnabled(true);
-        thresholdCheckBox->setEnabled(true);
         preferHtml->setChecked(true);
         pushCheckBox->setChecked(false);
-        pushCheckBox->setEnabled(true);
         intervalCheckBox->setChecked(false);
-        intervalCheckBox->setEnabled(false);
         roamingCheckBox->setChecked(false);
-        roamingCheckBox->setEnabled(false);
     } else {
         ImapConfiguration imapConfig(config);
 
@@ -123,9 +127,12 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
         intervalCheckBox->setChecked(imapConfig.checkInterval() > 0);
         intervalPeriod->setValue(qAbs(imapConfig.checkInterval()));
         roamingCheckBox->setChecked(!imapConfig.intervalCheckRoamingEnabled());
-        roamingCheckBox->setEnabled(intervalCheckBox->isChecked());
         imapBaseDir->setText(imapConfig.baseFolder());
     }
+
+    intervalCheckBox->setEnabled(!pushCheckBox->isChecked());
+    intervalPeriod->setEnabled(false);
+    roamingCheckBox->setEnabled(intervalCheckBox->isChecked());
 }
 
 bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration *config)
