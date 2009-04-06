@@ -860,6 +860,7 @@ bool hasAttachments(const QMailMessagePartContainer &partContainer)
 
 void PopClient::createMail()
 {
+    int detachedSize = dataStream->length();
     QString detachedFile = dataStream->detach();
     
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
@@ -892,6 +893,9 @@ void PopClient::createMail()
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
     mail.setStatus(QMailMessage::ContentAvailable, isComplete);
     mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
+    if (!isComplete) {
+        mail.setContentSize(mailSize - detachedSize);
+    }
 
     if (isComplete && (mail.multipartType() != QMailMessage::MultipartNone)) {
         // See if any of the parts are attachments
