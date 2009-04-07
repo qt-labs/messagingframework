@@ -843,6 +843,62 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
     }
 }
 
+void ImapSynchronizeBaseStrategy::updateMessagesMetaData(ImapStrategyContextBase *context, 
+                                                        const QStringList &storedUids, 
+                                                        const QStringList &unseenUids, 
+                                                        const QStringList &seenUids,
+                                                        const QStringList &unreadElsewhereUids)
+{
+    QStringList reportedUids = seenUids + unseenUids;
+    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+
+    // Mark as deleted any messages that the server does not report
+    QStringList nonexistentUids = inFirstButNotSecond(storedUids, reportedUids);
+    QMailMessageKey uidKey(QMailMessageKey::serverUid(nonexistentUids));
+    if (!QMailStore::instance()->updateMessagesMetaData(accountKey & uidKey, QMailMessage::Removed, true)) {
+        qWarning() << "Unable to update message metadata for account:" << context->config().id();
+    }
+    
+    // Compensate for MS exchange temporarily failing to report existence of messages
+    QStringList existentUids = inFirstAndSecond(storedUids, reportedUids);
+    QMailMessageKey existentUidKey(QMailMessageKey::serverUid(existentUids));
+    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed,QMailDataComparator::Includes));
+    QMailMessageKey onServerButRemovedInStore(accountKey & existentUidKey & removedUidKey);
+
+    if (!nonexistentUids.isEmpty()) {
+        foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(uidKey)) {
+            QMailMessage message(id);
+        }
+    }
+    if (!existentUids.isEmpty()) {
+            foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(onServerButRemovedInStore)) {
+            QMailMessage message(id);
+        }
+    }
+
+    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
+        qWarning() << "Unable to update message metadata for account:" << context->config().id();
+    }
+
+    foreach (const QString &uid, nonexistentUids)  {
+        // We might have a deletion record for this UID
+        if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
+            qWarning() << "Unable to purge message records for account:" << context->config().id();
+        }
+        context->completedMessageAction(uid);
+    }
+
+    // Update any messages that are reported read-elsewhere, that we didn't previously know about
+    foreach (const QString &uid, inFirstAndSecond(seenUids, unreadElsewhereUids)) {
+        // We know of this message, but we have it marked as unread
+        QMailMessageMetaData metaData(uid, context->config().id());
+        metaData.setStatus(QMailMessage::ReadElsewhere, true);
+        if (!QMailStore::instance()->updateMessage(&metaData)) {
+            qWarning() << "Unable to update message for account:" << context->config().id();
+        }
+    }
+}
+
 void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
 {
     if (_newUids.count() > 0) {
@@ -859,7 +915,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                 // Fetch the messages that need completion
                 clearSelection();
                 selectedMailsAppend(_completionList);
-                QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end(); 
+                QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
                 for ( ; it != end; ++it) {
                     if (it->second != 0) {
                         selectedSectionsAppend(it->first, it->second);
@@ -1162,37 +1218,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
             return;
         }
 
-        // Mark as deleted any messages that the server does not report
-        QStringList nonexistentUids = inFirstButNotSecond(storedUids, reportedUids);
-
-        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
-        QMailMessageKey uidKey(QMailMessageKey::serverUid(nonexistentUids));
-        if (!QMailStore::instance()->updateMessagesMetaData(accountKey & uidKey, QMailMessage::Removed, true)) {
-            qWarning() << "Unable to update message metadata for account:" << context->config().id();
-        }
-        QStringList existentUids = inFirstAndSecond(storedUids, reportedUids);
-        QMailMessageKey existentUidKey(QMailMessageKey::serverUid(nonexistentUids));
-        if (!QMailStore::instance()->updateMessagesMetaData(accountKey & uidKey, QMailMessage::Removed, false)) {
-            qWarning() << "Unable to update message metadata for account:" << context->config().id();
-        }
-
-        foreach (const QString &uid, nonexistentUids)  {
-            // We might have a deletion record for this UID
-            if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
-                qWarning() << "Unable to purge message records for account:" << context->config().id();
-            }
-            context->completedMessageAction(uid);
-        }
-
-        // Update any messages that are reported read-elsewhere, that we didn't previously know about
-        foreach (const QString &uid, inFirstAndSecond(_seenUids, unreadElsewhereUids)) {
-            // We know of this message, but we have it marked as unread
-            QMailMessageMetaData metaData(uid, context->config().id());
-            metaData.setStatus(QMailMessage::ReadElsewhere, true);
-            if (!QMailStore::instance()->updateMessage(&metaData)) {
-                qWarning() << "Unable to update message for account:" << context->config().id();
-            }
-        }
+        updateMessagesMetaData(context, storedUids, _unseenUids, _seenUids, unreadElsewhereUids);
 
         // Mark any messages that we have read that the server thinks are unread
         handleUidStore(context);
@@ -1523,32 +1549,7 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
 
     QStringList storedUids = readElsewhereUids + unreadElsewhereUids + deletedUids;
 
-    // Code duplicated from ImapSynchronizeAllStrategy::processUidSearchResults below
-    // Could make it a function of storedUids, reportedUids, nonexistentUids, _seenUids, unreadElsewhereUids
-    
-    // Mark as deleted any messages that the server does not report
-    QStringList nonexistentUids = inFirstButNotSecond(storedUids, reportedUids);
-
-    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
-    QMailMessageKey uidKey(QMailMessageKey::serverUid(nonexistentUids));
-    QMailStore::instance()->updateMessagesMetaData(accountKey & uidKey, QMailMessage::Removed, true);
-
-    QStringList existentUids = inFirstAndSecond(storedUids, reportedUids);
-    QMailMessageKey existentUidKey(QMailMessageKey::serverUid(nonexistentUids));
-    QMailStore::instance()->updateMessagesMetaData(accountKey & uidKey, QMailMessage::Removed, false);
-
-    foreach (const QString &uid, nonexistentUids)  {
-        // We might have a deletion record for this UID
-        QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid);
-        context->completedMessageAction(uid);
-    }
-    // Update any messages that are reported read-elsewhere, that we didn't previously know about
-    foreach (const QString &uid, inFirstAndSecond(_seenUids, unreadElsewhereUids)) {
-        // We know of this message, but we have it marked as unread
-        QMailMessageMetaData metaData(uid, context->config().id());
-        metaData.setStatus(QMailMessage::ReadElsewhere, true);
-        QMailStore::instance()->updateMessage(&metaData);
-    }
+    updateMessagesMetaData(context, storedUids, _unseenUids, _seenUids, unreadElsewhereUids);
 
     fetchNextMailPreview(context);
 }
