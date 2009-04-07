@@ -76,9 +76,11 @@ private:
     QAction *m_cancelAction, *m_draftAction;
     QStackedWidget* m_widgetStack;
     QWidget *m_mainWindow;
-    bool hasMessageChanged;
-    bool _detailsOnly;
+    bool m_hasMessageChanged;
+    bool m_detailsOnly;
     SelectComposerWidget* m_selectComposerWidget;
+    QMailMessageId m_precursorId;
+    int m_replyAction;
 };
 
 #endif

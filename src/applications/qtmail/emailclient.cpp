@@ -1792,6 +1792,14 @@ void EmailClient::retrieveVisibleMessagesFlags()
     if (ids.isEmpty())
         return;
     
+    // Ensure that we only ask for flag updates for messages that are in account folders
+    QMailMessageKey idKey(QMailMessageKey::id(ids));
+    QMailFolderKey accountFolderKey(QMailFolderKey::parentAccountId(QMailAccountId(), QMailDataComparator::NotEqual));
+
+    ids = QMailStore::instance()->queryMessages(idKey & QMailMessageKey::parentFolderId(accountFolderKey));
+    if (ids.isEmpty())
+        return;
+
     QMailServiceAction::Activity activity(flagRetrievalAction->activity());
     if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
         // There is a flag retrieval already ocurring; save these IDs to be checked afterwards

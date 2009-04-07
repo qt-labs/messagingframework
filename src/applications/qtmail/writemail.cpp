@@ -28,8 +28,9 @@ WriteMail::WriteMail(QWidget* parent)
     m_cancelAction(0),
     m_draftAction(0),
     m_widgetStack(0),
-    _detailsOnly(false),
-    m_selectComposerWidget(0)
+    m_detailsOnly(false),
+    m_selectComposerWidget(0),
+    m_replyAction(0)
 {
     /*
       because of the way QtMail has been structured, even though
@@ -139,7 +140,7 @@ bool WriteMail::saveChangesOnRequest()
     // ideally, you'd also check to see if the message is the same as it was
     // when we started working on it
     // dont bother with a prompt for empty composers. Not likely to want to save empty draft.
-    if (hasMessageChanged && hasContent() &&
+    if (m_hasMessageChanged && hasContent() &&
         QMessageBox::warning(this,
                              tr("Save to drafts"),
                              tr("Do you wish to save the message to drafts?"),
@@ -166,14 +167,44 @@ bool WriteMail::buildMail()
     // Extract the message from the composer
     mail = m_composerInterface->message();
 
-    mail.setDate(QMailTimeStamp::currentDateTime());
     mail.setId(existingId);
     mail.setContentScheme(existingScheme);
     mail.setContentIdentifier(existingIdentifier);
+
+    mail.setDate(QMailTimeStamp::currentDateTime());
     mail.setStatus(QMailMessage::Outgoing, true);
     mail.setStatus(QMailMessage::ContentAvailable, true);
     mail.setStatus(QMailMessage::PartialContentAvailable, true);
     mail.setStatus(QMailMessage::Read,true);
+
+    if (m_precursorId.isValid()) {
+        mail.setInResponseTo(m_precursorId);
+        mail.setResponseType(static_cast<QMailMessage::ResponseType>(m_replyAction));
+
+        QMailMessage precursor(m_precursorId);
+
+        // Set the In-Reply-To and References headers in our outgoing message
+        QString references(precursor.headerFieldText("References"));
+        if (references.isEmpty()) {
+            references = precursor.headerFieldText("In-Reply-To");
+        }
+
+        QString precursorId(precursor.headerFieldText("Message-ID"));
+        if (!precursorId.isEmpty()) {
+            mail.setHeaderField("In-Reply-To", precursorId);
+
+            if (!references.isEmpty()) {
+                references.append(' ');
+            }
+            references.append(precursorId);
+        }
+
+        if (!references.isEmpty()) {
+            // TODO: Truncate references if they're too long
+            mail.setHeaderField("References", references);
+        }
+    }
+        
     return true;
 }
 
@@ -194,7 +225,9 @@ void WriteMail::reply(const QMailMessage& replyMail, int action)
         return;
 
     m_composerInterface->reply(replyMail,action);
-    hasMessageChanged = true;
+    m_hasMessageChanged = true;
+    m_precursorId = replyMail.id();
+    m_replyAction = action;
 }
 
 void WriteMail::modify(const QMailMessage& previousMessage)
@@ -216,7 +249,9 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     m_composerInterface->setMessage(previousMessage);
 
     // ugh. we need to do this everywhere
-    hasMessageChanged = false;
+    m_hasMessageChanged = false;
+    m_precursorId = mail.inResponseTo();
+    m_replyAction = mail.responseType();
 }
 
 void WriteMail::setRecipient(const QString &recipient)
@@ -284,7 +319,9 @@ void WriteMail::reset()
         m_composerInterface = 0;
     }
 
-    hasMessageChanged = false;
+    m_hasMessageChanged = false;
+    m_precursorId = QMailMessageId();
+    m_replyAction = 0;
 }
 
 bool WriteMail::prepareComposer(QMailMessage::MessageType type, bool detailsOnly)
@@ -293,7 +330,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, bool detailsOnly
 
     reset();
 
-    _detailsOnly = detailsOnly;
+    m_detailsOnly = detailsOnly;
 
     if (type == QMailMessage::AnyType) {
         bool displaySelector(true);
@@ -392,7 +429,7 @@ bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType>
     m_composerInterface->clear();
     m_composerInterface->setMessageType( selectedType );
     m_composerInterface->setSignature( signature() );
-    m_composerInterface->setDetailsOnlyMode(_detailsOnly);
+    m_composerInterface->setDetailsOnlyMode(m_detailsOnly);
 
     setTitle(m_composerInterface->contextTitle());
     m_widgetStack->setCurrentWidget(m_composerInterface);
@@ -444,7 +481,7 @@ QString WriteMail::composer() const
 
 void WriteMail::messageModified()
 {
-    hasMessageChanged = true;
+    m_hasMessageChanged = true;
 
     if ( m_composerInterface )
         m_draftAction->setVisible( hasContent() );
