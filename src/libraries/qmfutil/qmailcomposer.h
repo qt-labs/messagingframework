@@ -17,6 +17,7 @@
 #include <QIconSet>
 #include <qmailglobal.h>
 #include <qmailmessage.h>
+#include <QAction>
 
 class QMenu;
 class QMailAccount;
@@ -47,45 +48,30 @@ public:
         return (supportsMessageType && supportsContentType);
     }
 
-    virtual bool isEmpty() const = 0;
-    virtual bool isReadyToSend() const = 0;
-
-    virtual QMailMessage message() const = 0;
-
-    virtual void setTo(const QString& toAddress) = 0;
-    virtual QString to() const = 0;
-
-    virtual void setFrom(const QString& fromAddress) = 0;
-    virtual QString from() const = 0;
-
-    virtual void setSubject(const QString& subject) = 0;
-
-    virtual void setMessageType(QMailMessage::MessageType type);
-
-    virtual bool isDetailsOnlyMode() const = 0;
-    virtual void setDetailsOnlyMode(bool val) = 0;
-
-    virtual QString contextTitle() const = 0;
+    virtual QString title() const = 0;
 
     virtual QMailAccount fromAccount() const = 0;
 
+    virtual void compose(ComposeContext context = Create,
+                         const QMailMessage& source = QMailMessage(),
+                         QMailMessage::MessageType = QMailMessage::AnyType) = 0;
+    virtual QMailMessage message() const = 0;
+    virtual QList<QAction*> actions() const;
+
+    virtual bool isEmpty() const = 0;
+    virtual bool isReadyToSend() const = 0;
+    virtual QString status() const;
+
 public slots:
-    virtual void setMessage( const QMailMessage& mail ) = 0;
-
     virtual void clear() = 0;
-
-    virtual void setBody( const QString &text, const QString &type );
     //virtual void attach( const QContent &lnk, QMailMessage::AttachmentsAction action = QMailMessage::LinkToAttachments );
-
     virtual void setSignature( const QString &sig );
-
-    virtual void reply(const QMailMessage& source, int type) = 0;
 
 signals:
     void sendMessage();
     void cancel();
     void changed();
-    void contextChanged();
+    void statusChanged(const QString& status);
 };
 
 class QTOPIAMAIL_EXPORT QMailComposerFactory

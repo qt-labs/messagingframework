@@ -1725,7 +1725,10 @@ void EmailClient::resend(const QMailMessage& message, int replyType)
         return;
     }
 
-    writeMailWidget()->reply(message, replyType);
+    if(replyType == ReadMail::Forward)
+        writeMailWidget()->forward(message);
+    else if(replyType == ReadMail::Reply)
+        writeMailWidget()->reply(message);
 
     if ( writeMailWidget()->composer().isEmpty() ) {
         // failed to create new composer, maybe due to no email account
@@ -1827,7 +1830,9 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
     }
 
     if (writeMailWidget()->prepareComposer(type)) {
-        writeMailWidget()->setRecipient(address.address());
+        QMailMessage newMessage;
+        newMessage.setTo(QMailAddressList() << address);
+        writeMailWidget()->create(newMessage);
         viewComposer();
     }
 }

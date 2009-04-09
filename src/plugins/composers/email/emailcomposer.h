@@ -19,6 +19,8 @@ class QLabel;
 class BodyTextEdit;
 class QStackedWidget;
 class DetailsPage;
+class RecipientListWidget;
+class QLineEdit;
 
 class EmailComposerInterface : public QMailComposerInterface
 {
@@ -31,19 +33,8 @@ public:
     bool isEmpty() const;
     QMailMessage message() const;
 
-    void setTo(const QString& toAddress);
-    void setFrom(const QString& fromAddress);
-    void setCc(const QString& ccAddress);
-    void setBcc(const QString& bccAddress);
-    void setSubject(const QString& subject);
-    QString from() const;
-    QString to() const;
-    QString cc() const;
-    QString bcc() const;
     bool isReadyToSend() const;
-    bool isDetailsOnlyMode() const;
-    void setDetailsOnlyMode(bool val);
-    QString contextTitle() const;
+    QString title() const;
     QMailAccount fromAccount() const;
 
     virtual QString key() const;
@@ -53,13 +44,15 @@ public:
     virtual QString displayName(QMailMessage::MessageType type) const;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const;
 
+    void compose(ComposeContext context, const QMailMessage& source, QMailMessage::MessageType mtype);
+    QList<QAction*> actions() const;
+    QString status() const;
 
 public slots:
-    void setMessage( const QMailMessage &mail );
-    void setBody( const QString &txt, const QString &type );
     void clear();
 //    void attach( const QContent &lnk, QMailMessage::AttachmentsAction = QMailMessage::LinkToAttachments );
     void setSignature( const QString &sig );
+    void create(const QMailMessage& source);
     void reply(const QMailMessage& source, int action);
 
 protected slots:
@@ -67,13 +60,12 @@ protected slots:
     void updateLabel();
     void setCursorPosition();
     void updateAttachmentsLabel();
-    void detailsPage();
-    void composePage();
 
 private:
     void init();
     void setPlainText( const QString& text, const QString& signature );
-    void setContext(const QString& title);
+    void getDetails(QMailMessage& message) const;
+    void setDetails(const QMailMessage& message);
 
 private:
     AddAttDialog *m_addAttDialog;
@@ -82,13 +74,17 @@ private:
     BodyTextEdit* m_bodyEdit;
     QLabel* m_attachmentsLabel;
     QStackedWidget* m_widgetStack;
-    DetailsPage* m_detailsWidget;
+    QAction* m_attachmentAction;
+    RecipientListWidget* m_recipientListWidget;
+    QLineEdit* m_subjectEdit;
 
 //    typedef QPair<QContent, QMailMessage::AttachmentsAction> AttachmentDetail;
 //    QList<AttachmentDetail> m_attachments;
 
     QString m_signature;
     QString m_title;
+    QLabel* m_columnLabel;
+    QLabel* m_rowLabel;
 };
 
 #endif

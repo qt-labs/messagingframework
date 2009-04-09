@@ -28,7 +28,298 @@
 #include <qmailnamespace.h>
 #include <QApplication>
 #include <QtPlugin>
-#include <detailspage_p.h>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QToolButton>
+#include <qmailaccountkey.h>
+#include <qmailstore.h>
+
+static int minimumLeftWidth = 65;
+static const QString placeholder("(no subject)");
+
+enum RecipientType {To, Cc, Bcc };
+typedef QPair<RecipientType,QString> Recipient;
+typedef QList<Recipient> RecipientList;
+
+class RecipientWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    RecipientWidget(QWidget* parent = 0);
+
+    bool isRemoveEnabled() const;
+    void setRemoveEnabled(bool val);
+
+    QString recipient() const;
+    void setRecipient(const QString& r);
+    bool isEmpty() const;
+
+    RecipientType recipientType() const;
+    void setRecipientType(RecipientType r);
+
+signals:
+    void removeClicked();
+    void recipientChanged();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private:
+    QComboBox* m_typeCombo;
+    QLineEdit* m_recipientEdit;
+    QToolButton* m_removeButton;
+};
+
+RecipientWidget::RecipientWidget(QWidget* parent)
+:
+QWidget(parent),
+m_typeCombo(new QComboBox(this)),
+m_recipientEdit(new QLineEdit(this)),
+m_removeButton(new QToolButton(this))
+{
+    QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setSpacing(0);
+    layout->setContentsMargins(0,0,0,0);
+
+    m_typeCombo->addItem("To",To);
+    m_typeCombo->addItem("Cc",Cc);
+    m_typeCombo->addItem("Bcc",Bcc);
+    layout->addWidget(m_typeCombo);
+    m_typeCombo->setFocusPolicy(Qt::NoFocus);
+    m_typeCombo->setMinimumWidth(minimumLeftWidth);
+
+    connect(m_recipientEdit,SIGNAL(textChanged(QString)),this,SIGNAL(recipientChanged()));
+    layout->addWidget(m_recipientEdit);
+    setFocusProxy(m_recipientEdit);
+    m_recipientEdit->installEventFilter(this);
+
+    m_removeButton->setIcon(QIcon(":icon/clear"));
+    connect(m_removeButton,SIGNAL(clicked(bool)),this,SIGNAL(removeClicked()));
+    layout->addWidget(m_removeButton);
+    m_removeButton->setFocusPolicy(Qt::NoFocus);
+
+    setFocusPolicy(Qt::StrongFocus);
+}
+
+bool RecipientWidget::isRemoveEnabled() const
+{
+    return m_removeButton->isEnabled();
+}
+
+void RecipientWidget::setRemoveEnabled(bool val)
+{
+    m_removeButton->setEnabled(val);
+}
+
+QString RecipientWidget::recipient() const
+{
+    return m_recipientEdit->text();
+}
+
+void RecipientWidget::setRecipient(const QString& r)
+{
+    m_recipientEdit->setText(r);
+}
+
+bool RecipientWidget::isEmpty() const
+{
+    return recipient().isEmpty();
+}
+
+RecipientType RecipientWidget::recipientType() const
+{
+    return static_cast<RecipientType>(m_typeCombo->itemData(m_typeCombo->currentIndex()).toUInt());
+}
+
+void RecipientWidget::setRecipientType(RecipientType t)
+{
+    for(int index = 0; index < m_typeCombo->count(); index++)
+    {
+        RecipientType v = static_cast<RecipientType>(m_typeCombo->itemData(index).toUInt());
+        if(v == t)
+        {
+            m_typeCombo->setCurrentIndex(index);
+            break;
+        }
+    }
+}
+
+bool RecipientWidget::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == m_recipientEdit && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Backspace)
+            if(isEmpty())
+            {
+                emit removeClicked();
+                return true;
+            }
+        return false;
+    } else
+        return QObject::eventFilter(obj, event);
+}
+
+class RecipientListWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    RecipientListWidget(QWidget* parent = 0);
+    QStringList recipients(RecipientType t) const;
+    QStringList recipients() const;
+    void setRecipients(RecipientType, const QStringList& list);
+
+signals:
+    void changed();
+
+private:
+    int emptyRecipientSlots() const;
+    bool containRecipient(RecipientType t, const QString& address) const;
+
+private slots:
+    RecipientWidget* addRecipientWidget();
+    void removeRecipientWidget();
+    void recipientChanged();
+
+private:
+    QVBoxLayout* m_layout;
+    QList<RecipientWidget*> m_widgetList;
+};
+
+RecipientListWidget::RecipientListWidget(QWidget* parent )
+:
+QWidget(parent),
+m_layout(new QVBoxLayout(this))
+{
+    m_layout->setSpacing(0);
+    m_layout->setContentsMargins(0,0,0,0);
+    addRecipientWidget();
+}
+
+QStringList RecipientListWidget::recipients(RecipientType t) const
+{
+    QStringList results;
+
+    foreach(RecipientWidget* r,m_widgetList)
+        if(!r->isEmpty() && r->recipientType() == t)
+            results.append(r->recipient());
+
+    return results;
+}
+
+QStringList RecipientListWidget::recipients() const
+{
+    QStringList results;
+
+    foreach(RecipientWidget* r,m_widgetList)
+        if(!r->isEmpty())
+            results.append(r->recipient());
+
+    return results;
+}
+
+void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addresses)
+{
+    if(!addresses.isEmpty())
+    {
+        foreach(RecipientWidget* r, m_widgetList)
+            if(r->isEmpty())
+            {
+                m_widgetList.removeAll(r);
+                r->deleteLater();
+            }
+    }
+
+    foreach(QString address, addresses)
+    {
+        if(!containRecipient(t,address))
+        {
+            RecipientWidget* r = addRecipientWidget();
+            r->setRecipientType(t);
+            r->setRecipient(address);
+        }
+    }
+}
+
+int RecipientListWidget::emptyRecipientSlots() const
+{
+    int emptyCount = 0;
+    foreach(RecipientWidget* r,m_widgetList)
+    {
+        if(r->isEmpty())
+            emptyCount++;
+    }
+    return emptyCount;
+}
+
+bool RecipientListWidget::containRecipient(RecipientType t, const QString& address) const
+{
+    foreach(RecipientWidget* r,m_widgetList)
+    {
+        if(r->recipientType() == t && r->recipient() == address)
+            return true;
+    }
+    return false;
+}
+
+RecipientWidget* RecipientListWidget::addRecipientWidget()
+{
+    RecipientWidget* r = new RecipientWidget(this);
+    connect(r,SIGNAL(removeClicked()),this,SLOT(removeRecipientWidget()));
+    connect(r,SIGNAL(recipientChanged()),this,SLOT(recipientChanged()));
+    connect(r,SIGNAL(removeClicked()),this,SIGNAL(changed()));
+    connect(r,SIGNAL(recipientChanged()),this,SIGNAL(changed()));
+
+    m_layout->addWidget(r);
+    if(!m_widgetList.isEmpty())
+        m_widgetList.last()->setTabOrder(m_widgetList.last(),r);
+
+    r->setRemoveEnabled(!m_widgetList.isEmpty());
+    m_widgetList.append(r);
+
+    return r;
+}
+
+void RecipientListWidget::removeRecipientWidget()
+{
+    if(RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
+    {
+        if(m_widgetList.count() <= 1)
+            return;
+        int index = m_widgetList.indexOf(r);
+
+        /*
+        bool isEmptySlot = (r->isEmpty() && emptyRecipientSlots() == 1);
+        if(r->isEmpty())
+        {
+            //just move focus back to previous slot
+            if(index > 0)
+                m_widgetList.at(index-1)->setFocus();
+            return;
+        }
+*/
+        r->deleteLater();
+        m_widgetList.removeAll(r);
+
+        if(index >= m_widgetList.count())
+            index = m_widgetList.count()-1;
+
+        if(m_widgetList.at(index)->isEmpty() && index > 0)
+            index--;
+        m_widgetList.at(index)->setFocus();
+
+    }
+}
+
+void RecipientListWidget::recipientChanged()
+{
+    if(RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
+    {
+        if(emptyRecipientSlots() == 0)
+            addRecipientWidget();
+    }
+}
 
 class BodyTextEdit : public QTextEdit
 {
@@ -42,6 +333,7 @@ public:
 
 signals:
     void finished();
+    void positionChanged(int row, int col);
 
 protected:
     void keyPressEvent(QKeyEvent* e);
@@ -162,15 +454,6 @@ void EmailComposerInterface::updateAttachmentsLabel()
     */
 }
 
-void EmailComposerInterface::detailsPage()
-{
-}
-
-void EmailComposerInterface::composePage()
-{
-}
-
-
 void EmailComposerInterface::selectAttachment()
 {
     /*
@@ -200,8 +483,10 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_bodyEdit(0),
     m_attachmentsLabel(0),
     m_widgetStack(0),
-    m_detailsWidget(0),
-    m_title(QString())
+    m_recipientListWidget(0),
+    m_subjectEdit(0),
+    m_title(QString()),
+    m_attachmentAction(0)
 {
     init();
 }
@@ -226,21 +511,29 @@ void EmailComposerInterface::init()
     layout->setContentsMargins(0,0,0,0);
     QWidget::setLayout(layout);
 
-    m_detailsWidget = new DetailsPage(this,"send-message");
-    m_detailsWidget->setType(QMailMessage::Email);
-    connect( m_detailsWidget, SIGNAL(changed()), this, SIGNAL(changed()));
-    connect( m_detailsWidget, SIGNAL(sendMessage()), this, SIGNAL(sendMessage()));
-    connect( m_detailsWidget, SIGNAL(cancel()), this, SIGNAL(cancel()));
-    connect( m_detailsWidget, SIGNAL(editMessage()), this, SLOT(composePage()));
-    layout->addWidget(m_detailsWidget);
+    m_recipientListWidget = new RecipientListWidget(this);
+    layout->addWidget(m_recipientListWidget);
 
+    QWidget* subjectPanel = new QWidget(this);
+    QHBoxLayout* subjectLayout = new QHBoxLayout(subjectPanel);
+    subjectLayout->setSpacing(0);
+    subjectLayout->setContentsMargins(0,0,0,0);
+    QLabel* l = new QLabel("Subject:");
+    l->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    l->setMinimumWidth(minimumLeftWidth);
+    subjectLayout->addWidget(l);
+    subjectLayout->addWidget(m_subjectEdit = new QLineEdit(subjectPanel));
+    connect(m_subjectEdit,SIGNAL(textChanged(QString)),this,SIGNAL(statusChanged(QString)));
+    subjectPanel->setLayout(subjectLayout);
+    layout->addWidget(subjectPanel);
+
+    connect(m_recipientListWidget,SIGNAL(changed()),this,SIGNAL(changed()));
 
     //body edit
     m_bodyEdit = new BodyTextEdit(this,m_composerWidget);
-    m_bodyEdit->setFrameStyle(QFrame::NoFrame);
+//    m_bodyEdit->setFrameStyle(QFrame::NoFrame);
     m_bodyEdit->setWordWrapMode(QTextOption::WordWrap);
     connect(m_bodyEdit, SIGNAL(textChanged()), this, SIGNAL(changed()) );
-    connect(m_bodyEdit, SIGNAL(finished()),this,SLOT(detailsPage()));
     connect(m_bodyEdit->document(), SIGNAL(contentsChanged()), this, SLOT(updateLabel()));
     layout->addWidget(m_bodyEdit);
 
@@ -255,16 +548,27 @@ void EmailComposerInterface::init()
 //    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SIGNAL(changed()));
 
     //menus
-    QAction *attachAction = new QAction( QIcon( ":icon/attach" ), tr("Attachments") + "...", this);
-    connect( attachAction, SIGNAL(triggered()), this, SLOT(selectAttachment()) );
+    m_attachmentAction = new QAction( QIcon( ":icon/attach" ), tr("Attachments") + "...", this);
+    connect( m_attachmentAction, SIGNAL(triggered()), this, SLOT(selectAttachment()) );
     //QMenu* bodyEditMenu = QSoftMenuBar::menuFor(m_bodyEdit);
     //bodyEditMenu->addSeparator();
     //bodyEditMenu->addAction(attachAction);
     //addActionsFromWidget(QWidget::parentWidget(),bodyEditMenu);
 
-    setContext("Create " + displayName(QMailMessage::Email));
+    QWidget* statusWidget = new QWidget(this);
+    QHBoxLayout* statusWidgetLayout = new QHBoxLayout(statusWidget);
+    statusWidgetLayout->setSpacing(5);
+    statusWidgetLayout->setContentsMargins(0,0,0,0);
 
-    composePage();
+    m_columnLabel = new QLabel("Column: 0");
+    m_rowLabel = new QLabel("Row: 0");
+
+    statusWidgetLayout->addStretch();
+    statusWidgetLayout->addWidget(m_columnLabel);
+    statusWidgetLayout->addWidget(m_rowLabel);
+
+    layout->addWidget(statusWidget);
+
     updateLabel();
 }
 
@@ -289,13 +593,51 @@ void EmailComposerInterface::setPlainText( const QString& text, const QString& s
         m_bodyEdit->setPlainText(text);
         m_bodyEdit->moveCursor(QTextCursor::End);
     }
-    //m_bodyEdit->setEditFocus(true);
 }
 
-void EmailComposerInterface::setContext(const QString& title)
+void EmailComposerInterface::getDetails(QMailMessage& mail) const
 {
-    m_title = title;
-    emit contextChanged();
+    mail.setTo(QMailAddress::fromStringList(m_recipientListWidget->recipients(To)));
+    mail.setCc(QMailAddress::fromStringList(m_recipientListWidget->recipients(Cc)));
+    mail.setBcc(QMailAddress::fromStringList(m_recipientListWidget->recipients(Bcc)));
+
+    QString subjectText = m_subjectEdit->text();
+
+    if (!subjectText.isEmpty())
+        mail.setSubject(subjectText);
+    else
+        subjectText = placeholder;
+
+    QMailAccount account = fromAccount();
+    if (account.id().isValid()) {
+        mail.setParentAccountId(account.id());
+        mail.setFrom(account.fromAddress());
+    }
+}
+
+void EmailComposerInterface::setDetails(const QMailMessage& mail)
+{
+    m_recipientListWidget->setRecipients(To,QMailAddress::toStringList(mail.to()));
+    m_recipientListWidget->setRecipients(Cc,QMailAddress::toStringList(mail.cc()));
+    m_recipientListWidget->setRecipients(Bcc,QMailAddress::toStringList(mail.bcc()));
+
+    if ((mail.subject() != placeholder))
+        m_subjectEdit->setText(mail.subject());
+
+/*
+    if (mail.parentAccountId().isValid()) {
+        setFrom(mail.parentAccountId());
+    } else {
+        setFrom(mail.from().address());
+    }
+    if (mail.headerFieldText("X-Mms-Delivery-Report") == "Yes") {
+        m_deliveryReportField->setChecked(true);
+    }
+    if (mail.headerFieldText("X-Mms-Read-Reply") == "Yes") {
+        m_readReplyField->setChecked(true);
+    }
+
+*/
 }
 
 bool EmailComposerInterface::isEmpty() const
@@ -374,7 +716,7 @@ QMailMessage EmailComposerInterface::message() const
     //}
 
     mail.setMessageType( QMailMessage::Email );
-    m_detailsWidget->getDetails(mail);
+    getDetails(mail);
 
     return mail;
 }
@@ -394,69 +736,6 @@ void EmailComposerInterface::clear()
 
     m_attachments.clear();
     */
-}
-
-void EmailComposerInterface::setMessage( const QMailMessage &mail )
-{
-    if (mail.multipartType() == QMailMessagePartContainer::MultipartNone) {
-        if (mail.hasBody())
-            setBody( mail.body().data(), mail.contentType().content() );
-    } else {
-        // The only type of multipart message we currently compose is Mixed, with
-        // all but the first part as out-of-line attachments
-        int textPart = -1;
-        for ( uint i = 0; i < mail.partCount(); ++i ) {
-            QMailMessagePart &part = const_cast<QMailMessagePart&>(mail.partAt(i));
-
-            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text")) {
-                // This is the first text part, we will use as the forwarded text body
-                textPart = i;
-            } else {
-                // Save the existing part data to a temporary file
-                QString fileName(part.writeBodyTo(QMail::tempPath()));
-                if (fileName.isEmpty()) {
-                    qWarning() << "Unable to save part to temporary file!";
-                } else {
-                    /*
-                    // Create a content object for the file
-                    QContent doc(fileName);
-
-                    if (part.referenceType() == QMailMessagePart::None) {
-                        QMailMessageContentType type(part.contentType());
-
-                        if (doc.drmState() == QContent::Unprotected)
-                            doc.setType(type.content());
-                    } else {
-                        QString partLocation = part.location().toString(true);
-                        if (!partLocation.isEmpty()) {
-                            doc.setProperty("qtopiamail/partLocation", partLocation);
-                        }
-                    }
-
-                    doc.setName(part.displayName());
-                    doc.setRole(QContent::Data);
-                    doc.commit();
-
-                    attach(doc, QMailMessage::CopyAndDeleteAttachments);
-                    */
-                }
-            }
-        }
-
-        if (textPart != -1) {
-            const QMailMessagePart& part = mail.partAt(textPart);
-            setBody( part.body().data(), part.contentType().content() );
-        }
-    }
-
-    //set the details
-    //m_detailsWidget->setDetails(mail);
-}
-
-void EmailComposerInterface::setBody( const QString &txt, const QString &type )
-{
-    setPlainText( txt, m_signature );
-    Q_UNUSED(type)
 }
 
 /*
@@ -510,6 +789,63 @@ static void checkOutlookString(QString &str)
     }
 
     str = newStr.join(", ");
+}
+
+void EmailComposerInterface::create(const QMailMessage& sourceMail)
+{
+    if (sourceMail.multipartType() == QMailMessagePartContainer::MultipartNone) {
+        if (sourceMail.hasBody())
+            setPlainText( sourceMail.body().data(), m_signature );
+    } else {
+        // The only type of multipart message we currently compose is Mixed, with
+        // all but the first part as out-of-line attachments
+        int textPart = -1;
+        for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
+            QMailMessagePart &part = const_cast<QMailMessagePart&>(sourceMail.partAt(i));
+
+            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text")) {
+                // This is the first text part, we will use as the forwarded text body
+                textPart = i;
+            } else {
+                // Save the existing part data to a temporary file
+                QString fileName(part.writeBodyTo(QMail::tempPath()));
+                if (fileName.isEmpty()) {
+                    qWarning() << "Unable to save part to temporary file!";
+                } else {
+                    /*
+                    // Create a content object for the file
+                    QContent doc(fileName);
+
+                    if (part.referenceType() == QMailMessagePart::None) {
+                        QMailMessageContentType type(part.contentType());
+
+                        if (doc.drmState() == QContent::Unprotected)
+                            doc.setType(type.content());
+                    } else {
+                        QString partLocation = part.location().toString(true);
+                        if (!partLocation.isEmpty()) {
+                            doc.setProperty("qtopiamail/partLocation", partLocation);
+                        }
+                    }
+
+                    doc.setName(part.displayName());
+                    doc.setRole(QContent::Data);
+                    doc.commit();
+
+                    attach(doc, QMailMessage::CopyAndDeleteAttachments);
+                    */
+                }
+            }
+        }
+
+        if (textPart != -1) {
+            const QMailMessagePart& part = sourceMail.partAt(textPart);
+            setPlainText( part.body().data(), m_signature );
+        }
+    }
+    //set the details
+    setDetails(sourceMail);
+
 }
 
 void EmailComposerInterface::reply(const QMailMessage& source, int action)
@@ -649,98 +985,33 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
     if (!subjectText.isEmpty())
         mail.setSubject(subjectText);
 
-    setMessage( mail );
-
-    QString task;
-    if ((action == Create) || (action == Forward)) {
-        task = (action == Create ? tr("Create") : tr("Forward"));
-        task += " " + displayName(QMailMessage::Email);
-    } else if (action == Reply) {
-        task = tr("Reply");
-    } else if (action == ReplyToAll) {
-        task = tr("Reply to all");
-    }
-    setContext(task);
-}
-
-void EmailComposerInterface::setTo(const QString& toAddress)
-{
-    m_detailsWidget->setTo(toAddress);
-}
-
-void EmailComposerInterface::setFrom(const QString& fromAddress)
-{
-    m_detailsWidget->setFrom(fromAddress);
-}
-
-void EmailComposerInterface::setCc(const QString& ccAddress)
-{
-    m_detailsWidget->setCc(ccAddress);
-}
-
-void EmailComposerInterface::setBcc(const QString& bccAddress)
-{
-    m_detailsWidget->setBcc(bccAddress);
-}
-
-void EmailComposerInterface::setSubject(const QString& subject)
-{
-    m_detailsWidget->setSubject(subject);
-}
-
-QString EmailComposerInterface::from() const
-{
-    return m_detailsWidget->from();
-}
-
-QString EmailComposerInterface::to() const
-{
-    return m_detailsWidget->to();
-}
-
-QString EmailComposerInterface::cc() const
-{
-    return m_detailsWidget->cc();
-}
-
-QString EmailComposerInterface::bcc() const
-{
-    return m_detailsWidget->bcc();
+    create( mail );
 }
 
 bool EmailComposerInterface::isReadyToSend() const
 {
-  bool ready = !from().trimmed().isEmpty() &&
-           (!to().trimmed().isEmpty() ||
-           !cc().trimmed().isEmpty() ||
-           !bcc().trimmed().isEmpty());
+  bool ready = !m_recipientListWidget->recipients().isEmpty();
+  //QMailMessage m = message();
+  //ready &= m.parentAccountId().isValid();
   return ready;
 }
 
-bool EmailComposerInterface::isDetailsOnlyMode() const
-{
-    return false;
-//    return m_detailsWidget->isDetailsOnlyMode();
-}
-
-void EmailComposerInterface::setDetailsOnlyMode(bool)
-{
-    /*
-    m_detailsWidget->setDetailsOnlyMode(val);
-    if(val)
-        detailsPage();
-    */
-}
-
-QString EmailComposerInterface::contextTitle() const
+QString EmailComposerInterface::title() const
 {
     return m_title;
 }
 
 QMailAccount EmailComposerInterface::fromAccount() const
 {
+//    QMailAccountKey nameKey(QMailAccountKey::name(m_from));
+
+    QMailAccountKey statusKey(QMailAccountKey::status(QMailAccount::CanTransmit, QMailDataComparator::Includes));
+    statusKey &= QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes);
+
+    QMailAccountIdList accountIds = QMailStore::instance()->queryAccounts(statusKey);
+    if (!accountIds.isEmpty())
+        return QMailAccount(accountIds.first());
     return QMailAccount();
-//    return m_detailsWidget->fromAccount();
 }
 
 QString EmailComposerInterface::key() const { return "EmailComposer"; }
@@ -763,6 +1034,31 @@ QString EmailComposerInterface::name(QMailMessage::MessageType) const { return q
 QString EmailComposerInterface::displayName(QMailMessage::MessageType) const { return qApp->translate("EmailComposerPlugin","Email"); }
 
 QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { return QIcon(":icon/email"); }
+
+void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType mType)
+{
+    switch(context)
+    {
+        case Create:
+            create(sourceMail);
+        break;
+        case Reply:
+            reply(sourceMail,Reply);
+        break;
+        case Forward:
+            reply(sourceMail,Forward);
+    }
+}
+
+QList<QAction*> EmailComposerInterface::actions() const
+{
+    return QList<QAction*>() << m_attachmentAction;
+}
+
+QString EmailComposerInterface::status() const
+{
+    return m_subjectEdit->text();
+}
 
 Q_EXPORT_PLUGIN( EmailComposerInterface)
 
