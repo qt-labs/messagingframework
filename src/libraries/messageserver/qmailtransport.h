@@ -60,6 +60,7 @@ public:
 
     // Access a stream to write to the mail server (must have an open connection)
     QDataStream& stream();
+    QAbstractSocket& socket();
 
     // Read line-oriented data from the transport (must have an open connection)
     bool canReadLine() const;

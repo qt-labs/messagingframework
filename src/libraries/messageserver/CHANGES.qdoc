@@ -10,6 +10,8 @@
 
 Changes since the development preview release on 03/04/09:
 
+1. Added 'QMailTransport::socket()'.
+
 
 *****************************************************************************
 
