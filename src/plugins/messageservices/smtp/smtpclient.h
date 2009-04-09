@@ -61,7 +61,6 @@ protected slots:
     void sent(qint64);
 
 private:
-    void doSend();
     void sendCommand(const char *data, int len = -1);
     void sendCommand(const QString &cmd);
     void sendCommand(const QByteArray &cmd);
@@ -97,6 +96,8 @@ private:
     uint totalSendSize;
 
     QStringList capabilities;
+    quint32 addressComponent;
+    QByteArray domainName;
 };
 
 #endif

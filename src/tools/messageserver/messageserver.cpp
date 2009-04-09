@@ -74,11 +74,11 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(protocolResponse(quint64, QString, QVariant)));
         connect(handler, SIGNAL(protocolRequestCompleted(quint64)),
                 client, SIGNAL(protocolRequestCompleted(quint64)));
+        connect(handler, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)), 
+                client, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)));
 
         connect(handler, SIGNAL(transmissionCompleted(quint64)), 
                 this, SLOT(transmissionCompleted(quint64)));
-        connect(handler, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)), 
-                this, SLOT(messagesTransmitted(quint64, QMailMessageIdList)));
         connect(handler, SIGNAL(retrievalCompleted(quint64)),
                 this, SLOT(retrievalCompleted(quint64)));
 
@@ -290,14 +290,6 @@ void MessageServer::transmissionCompleted(quint64 action)
     QMailStore::instance()->flushIpcNotifications();
 
     emit client->transmissionCompleted(action);
-}
-
-void MessageServer::messagesTransmitted(quint64 action, const QMailMessageIdList &ids)
-{
-    // Mark these messages as having been sent
-    QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), QMailMessage::Sent, true);
-
-    emit client->messagesTransmitted(action, ids);
 }
 
 void MessageServer::messagesAdded(const QMailMessageIdList &ids)
