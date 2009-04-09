@@ -232,10 +232,10 @@ protected:
     virtual void handleUidSearch(ImapStrategyContextBase *context) = 0;
     virtual void processUidSearchResults(ImapStrategyContextBase *context) = 0;
     virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
-                                        const QStringList &storedUids, 
-                                        const QStringList &unseenUids, 
-                                        const QStringList &seenUids, 
-                                        const QStringList &unreadElsewhereUids);
+                                        const QMailMessageKey &storedKey, 
+                                        const QMailMessageKey &unseenKey, 
+                                        const QMailMessageKey &seenKey, 
+                                        const QMailMessageKey &unreadElsewhereKey);
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     
