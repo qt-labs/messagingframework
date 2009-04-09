@@ -865,17 +865,6 @@ void ImapSynchronizeBaseStrategy::updateMessagesMetaData(ImapStrategyContextBase
     QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed,QMailDataComparator::Includes));
     QMailMessageKey onServerButRemovedInStore(accountKey & existentUidKey & removedUidKey);
 
-    if (!nonexistentUids.isEmpty()) {
-        foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(uidKey)) {
-            QMailMessage message(id);
-        }
-    }
-    if (!existentUids.isEmpty()) {
-            foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(onServerButRemovedInStore)) {
-            QMailMessage message(id);
-        }
-    }
-
     if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
         qWarning() << "Unable to update message metadata for account:" << context->config().id();
     }
