@@ -969,21 +969,23 @@ QString Browser::encodeUrlAndMail(const QString& txt)
                 url = QString();
             } else {
                 QString location(urlPattern.cap(5));
-                QChar lastChar(location.at(location.length() - 1));
-                if (lastChar == ')') {
-                    // Check for unbalanced parentheses
-                    int left = location.count('(');
-                    int right = location.count(')');
+                if (!location.isEmpty()) {
+                    QChar lastChar(location.at(location.length() - 1));
+                    if (lastChar == ')') {
+                        // Check for unbalanced parentheses
+                        int left = location.count('(');
+                        int right = location.count(')');
 
-                    if (right > left) {
-                        // The last parentheses are probably not part of the URL
+                        if (right > left) {
+                            // The last parentheses are probably not part of the URL
+                            url = url.left(url.length() - 1);
+                            trailing = lastChar;
+                        }
+                    } else if ((lastChar == '.') || (lastChar == ',') || (lastChar == ';')) {
+                        // The last character is probably part of the surrounding text
                         url = url.left(url.length() - 1);
                         trailing = lastChar;
                     }
-                } else if ((lastChar == '.') || (lastChar == ',') || (lastChar == ';')) {
-                    // The last character is probably part of the surrounding text
-                    url = url.left(url.length() - 1);
-                    trailing = lastChar;
                 }
 
                 nonurl = txt.mid(lastUrlPos, (urlPos - lastUrlPos));
