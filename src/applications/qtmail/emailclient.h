@@ -57,7 +57,7 @@ signals:
 
 protected:
     void viewSearchResults(const QMailMessageKey& filter, const QString& title = QString());
-    void viewComposer(const QString& title = QString());
+    void viewComposer();
 
 protected:
     WriteMail* writeMailWidget() const;

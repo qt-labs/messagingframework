@@ -21,6 +21,7 @@ class QContent;
 class QMailComposerInterface;
 class QStackedWidget;
 class SelectComposerWidget;
+class QToolButton;
 
 class WriteMail : public QMainWindow
 {
@@ -61,25 +62,28 @@ protected slots:
 
 private:
     bool largeAttachments();
-    bool buildMail();
+    bool buildMail(const QMailAccountId& accountId);
     void init();
     QString signature() const;
     bool isComplete() const;
     bool changed() const;
     void setComposer( const QString &id );
     void setTitle(const QString& title);
+    void updateSendAction(QMailMessage::MessageType messageType);
 
 private:
     QMailMessage mail;
     QMailComposerInterface *m_composerInterface;
     QAction *m_cancelAction, *m_draftAction, *m_sendAction;
-    QToolBar *m_toolbar;
+    QMenu* m_sendViaMenu;
+    QToolButton* m_sendButton;
     QStackedWidget* m_widgetStack;
     QWidget *m_mainWindow;
     bool m_hasMessageChanged;
     SelectComposerWidget* m_selectComposerWidget;
     QMailMessageId m_precursorId;
     int m_replyAction;
+    QToolBar *m_toolbar;
 };
 
 #endif

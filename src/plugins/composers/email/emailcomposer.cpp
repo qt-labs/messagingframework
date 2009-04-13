@@ -54,6 +54,7 @@ public:
     QString recipient() const;
     void setRecipient(const QString& r);
     bool isEmpty() const;
+    void clear();
 
     RecipientType recipientType() const;
     void setRecipientType(RecipientType r);
@@ -127,6 +128,11 @@ bool RecipientWidget::isEmpty() const
     return recipient().isEmpty();
 }
 
+void RecipientWidget::clear()
+{
+   m_recipientEdit->clear();
+}
+
 RecipientType RecipientWidget::recipientType() const
 {
     return static_cast<RecipientType>(m_typeCombo->itemData(m_typeCombo->currentIndex()).toUInt());
@@ -169,6 +175,7 @@ public:
     QStringList recipients(RecipientType t) const;
     QStringList recipients() const;
     void setRecipients(RecipientType, const QStringList& list);
+    void clear();
 
 signals:
     void changed();
@@ -240,6 +247,17 @@ void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addr
             r->setRecipient(address);
         }
     }
+}
+
+void RecipientListWidget::clear()
+{
+	foreach(RecipientWidget* r, m_widgetList)
+	{
+		m_widgetList.removeAll(r);
+		r->deleteLater();
+	}
+
+    addRecipientWidget();
 }
 
 int RecipientListWidget::emptyRecipientSlots() const
@@ -531,7 +549,6 @@ void EmailComposerInterface::init()
 
     //body edit
     m_bodyEdit = new BodyTextEdit(this,m_composerWidget);
-//    m_bodyEdit->setFrameStyle(QFrame::NoFrame);
     m_bodyEdit->setWordWrapMode(QTextOption::WordWrap);
     connect(m_bodyEdit, SIGNAL(textChanged()), this, SIGNAL(changed()) );
     connect(m_bodyEdit->document(), SIGNAL(contentsChanged()), this, SLOT(updateLabel()));
@@ -550,26 +567,12 @@ void EmailComposerInterface::init()
     //menus
     m_attachmentAction = new QAction( QIcon( ":icon/attach" ), tr("Attachments") + "...", this);
     connect( m_attachmentAction, SIGNAL(triggered()), this, SLOT(selectAttachment()) );
-    //QMenu* bodyEditMenu = QSoftMenuBar::menuFor(m_bodyEdit);
-    //bodyEditMenu->addSeparator();
-    //bodyEditMenu->addAction(attachAction);
-    //addActionsFromWidget(QWidget::parentWidget(),bodyEditMenu);
-
-    QWidget* statusWidget = new QWidget(this);
-    QHBoxLayout* statusWidgetLayout = new QHBoxLayout(statusWidget);
-    statusWidgetLayout->setSpacing(5);
-    statusWidgetLayout->setContentsMargins(0,0,0,0);
-
-    m_columnLabel = new QLabel("Column: 0");
-    m_rowLabel = new QLabel("Row: 0");
-
-    statusWidgetLayout->addStretch();
-    statusWidgetLayout->addWidget(m_columnLabel);
-    statusWidgetLayout->addWidget(m_rowLabel);
-
-    layout->addWidget(statusWidget);
-
     updateLabel();
+
+    setTabOrder(m_recipientListWidget,m_subjectEdit);
+    setTabOrder(m_subjectEdit,m_bodyEdit);
+    setFocusProxy(m_bodyEdit);
+
 }
 
 void EmailComposerInterface::setPlainText( const QString& text, const QString& signature )
@@ -622,7 +625,7 @@ void EmailComposerInterface::setDetails(const QMailMessage& mail)
     m_recipientListWidget->setRecipients(Bcc,QMailAddress::toStringList(mail.bcc()));
 
     if ((mail.subject() != placeholder))
-        m_subjectEdit->setText(mail.subject());
+       m_subjectEdit->setText(mail.subject());
 
 /*
     if (mail.parentAccountId().isValid()) {
@@ -723,6 +726,9 @@ QMailMessage EmailComposerInterface::message() const
 
 void EmailComposerInterface::clear()
 {
+    m_subjectEdit->clear();
+    m_recipientListWidget->clear();
+
     m_bodyEdit->clear();
     //m_addAttDialog->clear();
 

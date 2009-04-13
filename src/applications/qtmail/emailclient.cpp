@@ -174,9 +174,8 @@ void MessageUiBase::viewSearchResults(const QMailMessageKey&, const QString& tit
         caption = tr("Search Results");
 }
 
-void MessageUiBase::viewComposer(const QString& title)
+void MessageUiBase::viewComposer()
 {
-    writeMailWidget()->setWindowTitle(title);
     writeMailWidget()->show();
 }
 
@@ -1764,7 +1763,7 @@ void EmailClient::retrieveMoreMessages()
         qWarning() << "retrieveMoreMessages called while retrieval in progress";
         return;
     }
-    
+
     QMailFolderId folderId(messageListView()->folderId());
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
@@ -1794,7 +1793,7 @@ void EmailClient::retrieveVisibleMessagesFlags()
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
     if (ids.isEmpty())
         return;
-    
+
     // Ensure that we only ask for flag updates for messages that are in account folders
     QMailMessageKey idKey(QMailMessageKey::id(ids));
     QMailFolderKey accountFolderKey(QMailFolderKey::parentAccountId(QMailAccountId(), QMailDataComparator::NotEqual));
