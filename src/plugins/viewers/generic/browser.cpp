@@ -915,7 +915,11 @@ QString Browser::encodeUrlAndMail(const QString& txt)
 
     // We should be optimistic in our URL matching - the link resolution can
     // always fail, but if we don't match it, then we can't make it into a link
-    QRegExp urlPattern("((?:http|https|ftp)://)?"               // optional scheme
+    QRegExp urlPattern("("
+                            "(?:http|https|ftp)://"
+                       "|"
+                            "mailto:"
+                       ")?"                                     // optional scheme
                        "((?:[^: \\t]+:)?[^ \\t@]+@)?"           // optional credentials
                        "("                                      // either:
                             "localhost"                             // 'localhost'
@@ -933,128 +937,132 @@ QString Browser::encodeUrlAndMail(const QString& txt)
                             ")?"                                    // end of optional group
                        ")"                                      // end of alternation
                        "(:\\d+)?"                               // optional port number
-                       "("                                      // optional trailer
+                       "("                                      // optional location
                             "/"                                 // beginning with a slash
                             "[A-Za-z\\d\\.\\!\\#\\$\\%\\'"      // containing any sequence of legal chars
                              "\\*\\+\\-\\/\\=\\?\\^\\_\\`"
                              "\\{\\|\\}\\~\\&\\(\\)]*"       
                        ")?");
 
+    // Find and encode file:// links
     QRegExp filePattern("(file://\\S+)");
 
     // Find and encode email addresses
     QRegExp addressPattern(QMailAddress::emailAddressPattern());
 
-    int lastUrlPos = 0;
-    while (lastUrlPos != -1) {
-        QString url;
-        QString scheme;
-        QString trailing;
-        QString nonurl;
+    int urlPos = urlPattern.indexIn(txt);
+    int addressPos = addressPattern.indexIn(txt);
+    int filePos = filePattern.indexIn(txt);
 
-        int nextUrlPos = -1;
-        int urlPos = urlPattern.indexIn(txt, lastUrlPos);
-        if (urlPos != -1) {
+    int lastPos = 0;
+    while ((urlPos != -1) || (addressPos != -1) || (filePos != -1)) {
+        int *matchPos = 0;
+        QRegExp *matchPattern = 0;
+
+        // Which pattern has the first match?
+        if ((urlPos != -1) && 
+            ((addressPos == -1) || (addressPos >= urlPos)) && 
+            ((filePos == -1) || (filePos >= urlPos))) {
+            matchPos = &urlPos;
+            matchPattern = &urlPattern;
+        } else if ((addressPos != -1) &&
+                   ((urlPos == -1) || (urlPos >= addressPos)) &&
+                   ((filePos == -1) || (filePos >= addressPos))) {
+            matchPos = &addressPos;
+            matchPattern = &addressPattern;
+        } else if ((filePos != -1) &&
+                   ((urlPos == -1) || (urlPos >= filePos)) &&
+                   ((addressPos == -1) || (addressPos >= filePos))) {
+            matchPos = &filePos;
+            matchPattern = &filePattern;
+        }
+
+        QString replacement;
+
+        if (matchPattern == &urlPattern) {
             // Is this a valid URL?
-            url = urlPattern.cap(0);
-            scheme = urlPattern.cap(1);
-
-            nextUrlPos = urlPos + url.length();
+            QString scheme = urlPattern.cap(1);
+            QString credentials = urlPattern.cap(2);
+            QString host(urlPattern.cap(3));
 
             // Ensure that the host is not purely a number
-            QString host(urlPattern.cap(3));
-            if (scheme.isEmpty() && (host.indexOf(QRegExp("[^\\d\\.]")) == -1)) {
+            // Also ignore credentials with no scheme
+            if (scheme.isEmpty() && 
+                ((host.indexOf(QRegExp("[^\\d\\.]")) == -1) || (!credentials.isEmpty()))) {
                 // Ignore this match
-                nonurl = txt.mid(lastUrlPos, (nextUrlPos - lastUrlPos));
-                url = QString();
+                urlPos = urlPattern.indexIn(txt, urlPos + 1);
+                continue;
             } else {
-                QString location(urlPattern.cap(5));
-                if (!location.isEmpty()) {
-                    QChar lastChar(location.at(location.length() - 1));
-                    if (lastChar == ')') {
+                char parenTypes[] = { '(', ')', '[', ']', '{', '}', '<', '>', '\0' };
+
+                QString leading;
+                QString trailing;
+                QString url = urlPattern.cap(0);
+
+                QChar firstChar(url.at(0));
+                QChar lastChar(url.at(url.length() - 1));
+
+                for (int i = 0; parenTypes[i] != '\0'; i += 2) {
+                    if ((firstChar == parenTypes[i]) || (lastChar == parenTypes[i+1])) {
                         // Check for unbalanced parentheses
-                        int left = location.count('(');
-                        int right = location.count(')');
+                        int left = url.count(parenTypes[i]);
+                        int right = url.count(parenTypes[i+1]);
 
-                        if (right > left) {
-                            // The last parentheses are probably not part of the URL
+                        if ((right > left) && (lastChar == parenTypes[i+1])) {
+                            // The last parenthesis is probably not part of the URL
                             url = url.left(url.length() - 1);
-                            trailing = lastChar;
+                            trailing.append(lastChar);
+                            lastChar = url.at(url.length() - 1);
+                        } else if ((right < left) && (firstChar == parenTypes[i])) {
+                            // The first parenthesis is probably not part of the URL
+                            url = url.mid(1);
+                            leading.append(firstChar);
+                            firstChar = url.at(0);
                         }
-                    } else if ((lastChar == '.') || (lastChar == ',') || (lastChar == ';')) {
-                        // The last character is probably part of the surrounding text
-                        url = url.left(url.length() - 1);
-                        trailing = lastChar;
                     }
                 }
 
-                nonurl = txt.mid(lastUrlPos, (urlPos - lastUrlPos));
+                if ((lastChar == '.') || (lastChar == ',') || (lastChar == ';')) {
+                    // The last character is probably part of the surrounding text
+                    url = url.left(url.length() - 1);
+                    trailing = lastChar;
+                }
+
+                replacement = refUrl(url, scheme, leading, trailing);
             }
+        } else if (matchPattern == &addressPattern) {
+            QString address = addressPattern.cap(0);
 
-        } else {
-            nonurl = txt.mid(lastUrlPos);
-        }
-        
-        if (!nonurl.isEmpty()) {
-            // See if there are any file:// links in the non-URL part
-            int lastFilePos = 0;
-            while (lastFilePos != -1) {
-                QString file;
-                QString nonfile;
+            replacement = refMailTo(QMailAddress(address));
+        } else if (matchPattern == &filePattern) {
+            QString file = filePattern.cap(0);
 
-                int nextFilePos = -1;
-                int filePos = filePattern.indexIn(nonurl, lastFilePos);
-                if (filePos != -1) {
-                    nonfile = nonurl.mid(lastFilePos, (filePos - lastFilePos));
-                    file = filePattern.cap(0);
-                    nextFilePos = filePos + file.length();
-                } else {
-                    nonfile = nonurl.mid(lastFilePos);
-                }
-                
-                if (!nonfile.isEmpty()) {
-                    // See if there are any addresses in the non-URL part
-                    int lastAddressPos = 0;
-                    while (lastAddressPos != -1) {
-                        QString address;
-                        QString nonaddress;
-
-                        int nextAddressPos = -1;
-                        int addressPos = addressPattern.indexIn(nonfile, lastAddressPos);
-                        if (addressPos != -1) {
-                            nonaddress = nonfile.mid(lastAddressPos, (addressPos - lastAddressPos));
-                            address = addressPattern.cap(0);
-                            nextAddressPos = addressPos + address.length();
-                        } else {
-                            nonaddress = nonfile.mid(lastAddressPos);
-                        }
-                        
-                        if (!nonaddress.isEmpty()) {
-                            // Write this plain text out in escaped form
-                            result.append(Qt::escape(nonaddress));
-                        }
-                        if (!address.isEmpty()) {
-                            // Write out the address link
-                            result.append(refMailTo(QMailAddress(address)));
-                        }
-
-                        lastAddressPos = nextAddressPos;
-                    }
-                }
-                if (!file.isEmpty()) {
-                    // Write out the file link
-                    result.append(refUrl(file, "file://", QString()));
-                }
-
-                lastFilePos = nextFilePos;
-            }
-        }
-        if (!url.isEmpty()) {
-            // Write out the URL link
-            result.append(refUrl(url, scheme, trailing));
+            replacement = refUrl(file, "file://", QString(), QString());
         }
 
-        lastUrlPos = nextUrlPos;
+        // Write the unmatched text out in escaped form
+        result.append(Qt::escape(txt.mid(lastPos, (*matchPos - lastPos))));
+
+        result.append(replacement);
+
+        // Find the following pattern match for this pattern
+        lastPos = *matchPos + matchPattern->cap(0).length();
+        *matchPos = matchPattern->indexIn(txt, lastPos);
+
+        // Bypass any other matches contained within the matched text
+        if ((urlPos != -1) && (urlPos < lastPos)) {
+            urlPos = urlPattern.indexIn(txt, lastPos);
+        }
+        if ((addressPos != -1) && (addressPos < lastPos)) {
+            addressPos = addressPattern.indexIn(txt, lastPos);
+        }
+        if ((filePos != -1) && (filePos < lastPos)) {
+            filePos = filePattern.indexIn(txt, lastPos);
+        }
+    }
+
+    if (lastPos < txt.length()) {
+        result.append(Qt::escape(txt.mid(lastPos)));
     }
 
     return result.join("");
@@ -1086,13 +1094,13 @@ QString Browser::refNumber(const QString& number)
     return "<a href=\"dial;" + Qt::escape(number) + "\">" + number + "</a>";
 }
 
-QString Browser::refUrl(const QString& url, const QString& scheme, const QString& trailing)
+QString Browser::refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing)
 {
     // Assume HTTP if there is no scheme
     QString escaped(Qt::escape(url));
     QString target(scheme.isEmpty() ? "http://" + escaped : escaped);
 
-    return "<a href=\"" + target + "\">" + escaped + "</a>" + Qt::escape(trailing);
+    return Qt::escape(leading) + "<a href=\"" + target + "\">" + escaped + "</a>" + Qt::escape(trailing);
 }
 
 void Browser::keyPressEvent(QKeyEvent* event)

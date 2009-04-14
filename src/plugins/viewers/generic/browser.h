@@ -76,7 +76,7 @@ private:
     static QString listRefMailTo(const QList<QMailAddress>& list);
     static QString refMailTo(const QMailAddress& address);
     static QString refNumber(const QString& number);
-    static QString refUrl(const QString& url, const QString& scheme, const QString& trailing);
+    static QString refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing);
 
     QMap<QUrl, QVariant> resourceMap;
     QString (Browser::*replySplitter)(const QString&) const;
