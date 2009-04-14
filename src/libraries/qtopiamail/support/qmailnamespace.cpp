@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QtDebug>
 #include <QMutex>
+#include <QRegExp>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -342,3 +343,62 @@ void QMail::usleep(unsigned long usecs)
         ::sleep( usecs / 1000000 );
     ::usleep( usecs % 1000000 );
 }
+
+QString QMail::baseSubject(const QString& subject)
+{
+    // Implements the conversion from subject to 'base subject' defined by RFC 5256
+    int pos = 0;
+    QString result(subject);
+
+    bool repeat = false;
+    do {
+        repeat = false;
+
+        // Remove any subj-trailer
+        QRegExp subjTrailer("("
+                                "[ \\t]+"               // WSP
+                            "|"
+                                "\\([Ff][Ww][Dd]\\)"    // "(fwd)"
+                            ")$");
+        while ((pos = subjTrailer.indexIn(result)) != -1) {
+            result = result.left(pos);
+        }
+
+        bool modified = false;
+        do {
+            modified = false;
+
+            // Remove any subj-leader
+            QRegExp subjLeader("^("
+                                    "[ \\t]+"       // WSP
+                               "|"
+                                    "(\\[[^\\[\\]]*\\][ \\t]*)*"        // ( '[' 'blobchar'* ']' WSP* )*
+                                    "([Rr][Ee]|[Ff][Ww][Dd]?)[ \\t]*"   // ( "Re" | "Fw" | "Fwd") WSP*
+                                    "(\\[[^\\[\\]]*\\][ \\t]*)?"        // optional: ( '[' 'blobchar'* ']' WSP* )
+                                    ":"                                 // ':'
+                               ")");
+            while ((pos = subjLeader.indexIn(result)) == 0) {
+                result = result.mid(subjLeader.cap(0).length());
+                modified = true;
+            }
+
+            // Remove subj-blob, if there would be a remainder
+            QRegExp subjBlob("^(\\[[^\\[\\]]*\\][ \\t]*)");             // '[' 'blobchar'* ']' WSP*
+            if ((subjBlob.indexIn(result) == 0) && (subjBlob.cap(0).length() < result.length())) {
+                result = result.mid(subjBlob.cap(0).length());
+                modified = true;
+            }
+        } while (modified);
+
+        // Remove subj-fwd-hdr and subj-fwd-trl if both are present
+        QRegExp subjFwdHdr("^\\[[Ff][Ww][Dd]:");
+        QRegExp subjFwdTrl("\\]$");
+        if ((subjFwdHdr.indexIn(result) == 0) && (subjFwdTrl.indexIn(result) != -1)) {
+            result = result.mid(subjFwdHdr.cap(0).length(), result.length() - (subjFwdHdr.cap(0).length() + subjFwdTrl.cap(0).length()));
+            repeat = true;
+        }
+    } while (repeat);
+
+    return result;
+}
+

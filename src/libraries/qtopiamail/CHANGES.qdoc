@@ -8,7 +8,9 @@
 **
 *****************************************************************************
 
-Changes since the development preview release on 03/04/09:
+Changes since the 1.0 release:
+
+1. Added 'QMail::baseSubject(const QString &)'.
 
 
 *****************************************************************************
