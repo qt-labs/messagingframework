@@ -916,7 +916,7 @@ QString Browser::encodeUrlAndMail(const QString& txt)
     // We should be optimistic in our URL matching - the link resolution can
     // always fail, but if we don't match it, then we can't make it into a link
     QRegExp urlPattern("((?:http|https|ftp)://)?"               // optional scheme
-                       "((?:[^:]+:)?[^@]+@)?"                   // optional credentials
+                       "((?:[^: \\t]+:)?[^ \\t@]+@)?"           // optional credentials
                        "("                                      // either:
                             "localhost"                             // 'localhost'
                        "|"                                      // or:
