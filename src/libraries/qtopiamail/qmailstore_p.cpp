@@ -209,6 +209,27 @@ QPair<QString, QString> uriElements(const QString &uri)
     return qMakePair(unescape(uri.mid(0, index), ':'), unescape(uri.mid(index + 1), ':'));
 }
 
+QString identifierValue(const QString &str)
+{
+    QString result(str.trimmed());
+
+    if (result.startsWith('<') && result.endsWith('>')) {
+        result = result.mid(1, result.length() - 2);
+    }
+
+    return result;
+}
+
+QStringList identifierValue(const QStringList &list)
+{
+    QStringList result;
+
+    foreach (const QString &str, list) {
+        result.append(identifierValue(str));
+    }
+
+    return result;
+}
 
 template<typename ValueContainer>
 class MessageValueExtractor;
@@ -3125,7 +3146,17 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
             return false;
         }
 
-        if (!addMessage(static_cast<QMailMessageMetaData*>(message), addedMessageIds, modifiedFolderIds, modifiedAccountIds)) {
+        QString identifier(identifierValue(message->headerFieldText("Message-ID")));
+        QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
+        QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
+        if (!predecessor.isEmpty()) {
+            references.append(predecessor);
+        }
+
+        if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this,
+                                          message, cref(identifier), cref(references),
+                                          addedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                     "addMessage")) {
             QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
             if (code != QMailStore::NoError) {
                 setLastError(code);
@@ -3145,8 +3176,11 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
 bool QMailStorePrivate::addMessage(QMailMessageMetaData *metaData,
                                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this, 
-                                        metaData,
+    QString identifier;
+    QStringList references;
+
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this,
+                                        metaData, cref(identifier), cref(references),
                                         addedMessageIds, modifiedFolderIds, modifiedAccountIds), 
                                    "addMessage");
 }
@@ -3923,7 +3957,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData,
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                                                       QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                                                       Transaction &t)
 {
@@ -3945,7 +3979,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     foreach (const QMailAddress& address, metaData->to())
         recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
 
-    QMailMessageId insertId;
+    quint64 insertId;
 
     {
         // Add the record to the mailmessages table
@@ -3985,13 +4019,26 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             return DatabaseFailure;
 
         //retrieve the insert id
-        insertId = QMailMessageId(extractValue<quint64>(query.lastInsertId()));
+        insertId = extractValue<quint64>(query.lastInsertId());
     }
 
     // Insert any custom fields belonging to this message
-    AttemptResult result = addCustomFields(insertId.toULongLong(), metaData->customFields(), "mailmessagecustom");
+    AttemptResult result = addCustomFields(insertId, metaData->customFields(), "mailmessagecustom");
     if (result != Success)
         return result;
+
+    // Does this message have any identifier?
+    if (!identifier.isEmpty()) {
+        QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
+                                    QVariantList() << insertId << identifier,
+                                    "addMessage mailmessageidentifiers query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+    }
+
+    // Does this message have any references to resolve?
+    if (!metaData->inResponseTo().isValid() && !references.isEmpty()) {
+    }
 
     // Find the complete set of modified folders, including ancestor folders
     QMailFolderIdList folderIds;
@@ -4005,8 +4052,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         return DatabaseFailure;
     }
 
-    metaData->setId(insertId);
-    addedMessageIds->append(insertId);
+    metaData->setId(QMailMessageId(insertId));
+    addedMessageIds->append(metaData->id());
     *modifiedFolderIds = folderIds;
     if (metaData->parentAccountId().isValid())
         modifiedAccountIds->append(metaData->parentAccountId());
@@ -4503,6 +4550,55 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 return result;
 
             updateProperties |= QMailMessageKey::Custom;
+        }
+
+        if (updateContent) {
+            // We may have a change in the message identifier
+            QString identifier(identifierValue(message->headerFieldText("Message-ID")));
+            QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
+            QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
+            if (!predecessor.isEmpty()) {
+                references.append(predecessor);
+            }
+
+            QString existingIdentifier;
+            {
+                QSqlQuery query(simpleQuery("SELECT identifier FROM mailmessageidentifiers WHERE id=?",
+                                            QVariantList() << metaData->id().toULongLong(),
+                                            "updateMessage existing identifier query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+
+                if (query.first()) {
+                    existingIdentifier = extractValue<QString>(query.value(0));
+                }
+            }
+
+            if (!identifier.isEmpty()) {
+                if (!existingIdentifier.isEmpty()) {
+                    QSqlQuery query(simpleQuery("UPDATE mailmessageidentifiers SET identifier=? WHERE id=?",
+                                                QVariantList() << identifier << metaData->id().toULongLong(),
+                                                "updateMessage mailmessageidentifiers update query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                } else {
+                    // Add the new value
+                    QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
+                                                QVariantList() << metaData->id().toULongLong() << identifier,
+                                                "updateMessage mailmessageidentifiers insert query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
+            } else {
+                if (!existingIdentifier.isEmpty()) {
+                    // Remove any existing value
+                    QSqlQuery query(simpleQuery("DELETE FROM mailmessageidentifiers WHERE id=?",
+                                                QVariantList() << metaData->id().toULongLong(),
+                                                "updateMessage mailmessageidentifiers delete query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
+            }
         }
     }
 
@@ -5645,7 +5741,16 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         // Delete any custom fields associated with these messages
         QString sql("DELETE FROM mailmessagecustom");
         QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
-                                            "deleteMessages delete mailmessagecustom query"));
+                                    "deleteMessages delete mailmessagecustom query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    {
+        // Delete any identfiers associated with these messages
+        QString sql("DELETE FROM mailmessageidentifiers");
+        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
+                                    "deleteMessages delete mailmessageidentifiers query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }

@@ -270,7 +270,7 @@ private:
                                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                    Transaction &t);
 
-    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData,
+    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                     QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                     Transaction &t);
 
