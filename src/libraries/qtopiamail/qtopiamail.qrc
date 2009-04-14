@@ -25,6 +25,7 @@
 <file alias="mailstatusflags">resources/mailstatusflags.sqlite.sql</file>
 <file alias="mailstatusflags-100-101">resources/mailstatusflags-100-101.sqlite.sql</file>
 <file alias="mailmessageidentifiers">resources/mailmessageidentifiers.sqlite.sql</file>
+<file alias="mailmessageidentifiers-100-101">resources/mailmessageidentifiers-100-101.sqlite.sql</file>
 <file alias="mailsubjects">resources/mailsubjects.sqlite.sql</file>
 <file alias="mailthreads">resources/mailthreads.sqlite.sql</file>
 <file alias="mailthreadsubjects">resources/mailthreadsubjects.sqlite.sql</file>
