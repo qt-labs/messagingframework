@@ -4054,6 +4054,37 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             return result;
     }
 
+    // Attach this message to a thread
+    if (metaData->inResponseTo().isValid()) {
+        // Use the thread of the parent message
+        QString sql("INSERT INTO mailthreadmessages (threadid,messageid) SELECT threadid,%1 FROM mailthreadmessages WHERE messageid=?");
+        QSqlQuery query(simpleQuery(sql.arg(QString::number(insertId)),
+                                    QVariantList() << metaData->inResponseTo().toULongLong(),
+                                    "addMessage mailthreadmessages insert query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+    } else {
+        // Add a new thread for this message
+        quint64 threadId;
+
+        {
+            QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id) SELECT COALESCE(MAX(id),0) + 1 FROM mailthreads",
+                                        "addMessage mailthreads insert query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            threadId = extractValue<quint64>(query.lastInsertId());
+        }
+
+        {
+            QSqlQuery query(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) VALUES (?,?)",
+                                        QVariantList() << threadId << insertId,
+                                        "addMessage mailthreads insert query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
+    }
+
     if (!missingReferences.isEmpty()) {
         // Add the missing references to the missing messages table
         QVariantList refs;
@@ -4585,6 +4616,37 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                         // We need to record this change
                         updateProperties |= QMailMessageKey::InResponseTo;
                         updateProperties |= QMailMessageKey::ResponseType;
+                    }
+
+                    // Join this message's thread to the predecessor's thread
+                    quint64 threadId;
+
+                    {
+                        QSqlQuery query(simpleQuery("SELECT threadid FROM mailthreadmessages WHERE messageid=?",
+                                                    QVariantList() << updateId,
+                                                    "updateMessage mailthreadmessages query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+
+                        if (query.first()) {
+                            threadId = extractValue<quint64>(query.value(0));
+                        }
+                    }
+
+                    {
+                        QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?) WHERE threadid=?",
+                                                    QVariantList() << message->inResponseTo().toULongLong() << threadId,
+                                                    "updateMessage mailthreadmessages update query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+                    }
+
+                    {
+                        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
+                                                    QVariantList() << threadId,
+                                                    "updateMessage mailthreads delete query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
                     }
                 }
             }
