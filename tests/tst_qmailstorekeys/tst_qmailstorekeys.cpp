@@ -1799,7 +1799,31 @@ void tst_QMailStoreKeys::messageStatus()
 
 void tst_QMailStoreKeys::messageConversation()
 {
-    // Not yet implemented
+    // ID inclusion
+    QCOMPARE(messageSet(QMailMessageKey::conversation(smsMessage)), messageSet() << smsMessage);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(smsMessage)), messageSet() << inboxMessage1 << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage1)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage1)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage2)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage2)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageId())), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageId())), allMessages);
+
+    // List inclusion
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList())), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList())), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1 << archivedMessage1)), messageSet() << inboxMessage1 << inboxMessage2 << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1 << archivedMessage1)), messageSet() << smsMessage);
+
+    // Key matching
+    QCOMPARE(messageSet(QMailMessageKey::id(inboxMessage1, Equal)), messageSet() << inboxMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::id(inboxMessage1, Equal)), messageSet() << smsMessage << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageKey::id(inboxMessage1, Equal))), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(~QMailMessageKey::id(inboxMessage1, Equal))), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageKey::id(inboxMessage1, Equal))), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(~QMailMessageKey::id(inboxMessage1, Equal))), noMessages);
 }
 
 void tst_QMailStoreKeys::messageServerUid()

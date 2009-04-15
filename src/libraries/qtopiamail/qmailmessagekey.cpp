@@ -120,11 +120,6 @@ QMailMessageKey::QMailMessageKey()
 QMailMessageKey::QMailMessageKey(Property p, const QVariant& value, QMailKey::Comparator c)
     : d(new QMailMessageKeyPrivate(p, value, c))
 {
-    // TODO: Implement Conversation
-    if (p == Conversation) {
-        qWarning() << "Warning: Conversation filtering is not yet implemented!";
-        *this = QMailMessageKey();
-    }
 }
 
 /*! 
@@ -840,6 +835,38 @@ QMailMessageKey QMailMessageKey::customField(const QString &name, const QString 
 QMailMessageKey QMailMessageKey::customField(const QString &name, const QString &value, QMailDataComparator::InclusionComparator cmp)
 {
     return QMailMessageKey(Custom, QStringList() << QMailKey::stringValue(name) << QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages that are participants in the conversation containing the message identified by \a id.
+
+    \sa QMailMessage::inResponseTo()
+*/
+QMailMessageKey QMailMessageKey::conversation(const QMailMessageId &id)
+{
+    return QMailMessageKey(Conversation, id, QMailKey::Equal);
+}
+
+/*!
+    Returns a key matching messages that are participants in any of the conversations containing the messages
+    whose identifiers are members of \a ids.
+
+    \sa QMailMessage::inResponseTo()
+*/
+QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
+{
+    return QMailMessageKey(ids, Conversation, QMailKey::Includes);
+}
+
+/*!
+    Returns a key matching messages that are participants in any of the conversations containing the messages
+    whose identifiers are members of the set yielded by \a key.
+
+    \sa QMailMessage::inResponseTo()
+*/
+QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
+{
+    return QMailMessageKey(Conversation, key, QMailKey::Includes);
 }
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);

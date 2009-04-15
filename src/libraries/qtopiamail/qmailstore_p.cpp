@@ -349,6 +349,7 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::ContentIdentifier,"mailfile");
     map.insert(QMailMessageKey::InResponseTo,"responseid");
     map.insert(QMailMessageKey::ResponseType,"responsetype");
+    map.insert(QMailMessageKey::Conversation,"id");
 
     return map;
 }
@@ -362,7 +363,6 @@ static QString messagePropertyName(QMailMessageKey::Property property)
         return it.value();
 
     if ((property != QMailMessageKey::AncestorFolderIds) &&
-        (property != QMailMessageKey::Conversation) &&
         (property != QMailMessageKey::Custom))
         qWarning() << "Unknown message property:" << property;
     
@@ -904,11 +904,7 @@ public:
 
     QVariantList responseType() const { return intValues(); }
 
-    QVariant conversation() const
-    {
-        // TODO: Not yet implemented
-        return QVariant();
-    }
+    QVariantList conversation() const { return idValues<QMailMessageKey>(); }
 
     QVariantList custom() const { return customValues(); }
 };
@@ -1529,6 +1525,30 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
             }
             break;
 
+        case QMailMessageKey::Conversation:
+            {
+                // We need to do a double lookup on the mailthreadmessages table, converting message key to threads, and then back to messages...
+                QString nestedAlias1(incrementAlias(alias));
+                QString nestedAlias2(incrementAlias(nestedAlias1));
+
+                q << baseExpression(columnName, Includes, true);
+                q << "( SELECT " << qualifiedName("messageid", nestedAlias1) << " FROM mailthreadmessages " << nestedAlias1 << " WHERE threadid IN ";
+                q << "( SELECT DISTINCT " << qualifiedName("threadid", nestedAlias2) << " FROM mailthreadmessages " << nestedAlias2 << " WHERE ";
+
+                if (a.valueList.first().canConvert<QMailMessageKey>()) {
+                    QMailMessageKey messageKey = a.valueList.first().value<QMailMessageKey>();
+                    QString nestedAlias3(incrementAlias(nestedAlias2));
+
+                    q << baseExpression(qualifiedName("messageid", nestedAlias2), Includes, true) << "( SELECT " << qualifiedName("id", nestedAlias3) << " FROM mailmessages " << nestedAlias3;
+                    q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias3)) << " )";
+                } else {
+                    q << columnExpression(qualifiedName("messageid", nestedAlias2), a.op, a.valueList);
+                }
+
+                q << " ) )";
+            }
+            break;
+
         case QMailMessageKey::Type:
         case QMailMessageKey::Status:
         case QMailMessageKey::Sender:
@@ -1544,10 +1564,6 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         case QMailMessageKey::ResponseType:
             q << expression;
             break;     
-
-        case QMailMessageKey::Conversation:
-            // TODO: Not yet implemented
-            break;
         }
     }
     return item;

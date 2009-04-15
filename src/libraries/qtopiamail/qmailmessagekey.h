@@ -164,6 +164,10 @@ public:
     static QMailMessageKey customField(const QString &name, const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey customField(const QString &name, const QString &value, QMailDataComparator::InclusionComparator cmp);
 
+    static QMailMessageKey conversation(const QMailMessageId &id);
+    static QMailMessageKey conversation(const QMailMessageIdList &ids);
+    static QMailMessageKey conversation(const QMailMessageKey &key);
+
 private:
     QMailMessageKey(Property p, const QVariant& value, QMailKey::Comparator c);
 
