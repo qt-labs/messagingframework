@@ -408,6 +408,8 @@ private:
 
     AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, QStringList *missingReferences);
 
+    AttemptResult resolveMissingMessages(const QString &identifier, quint64 messageId);
+
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
     QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties = allMessageProperties());

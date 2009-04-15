@@ -2011,7 +2011,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
                                             << tableInfo("mailthreadmessages", 100)
-                                            << tableInfo("missingmessages", 100)
+                                            << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)) ||
             !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::InboxFolder, tr("Inbox"))
                                               << folderInfo(QMailFolder::OutboxFolder, tr("Outbox"))
@@ -3863,9 +3863,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
             // Batch insert the custom fields
             QString sql("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)");
             QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())).arg(service),
-                                    QVariantList() << QVariant(configFields)
-                                                    << QVariant(configValues),
-                                    "addAccount mailaccountconfig query"));
+                                       QVariantList() << QVariant(configFields)
+                                                      << QVariant(configValues),
+                                       "addAccount mailaccountconfig query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
@@ -4040,15 +4040,37 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     // Does this message have any identifier?
     if (!identifier.isEmpty()) {
-        QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
-                                    QVariantList() << insertId << identifier,
-                                    "addMessage mailmessageidentifiers query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
+        {
+            QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
+                                        QVariantList() << insertId << identifier,
+                                        "addMessage mailmessageidentifiers query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
+
+        // See if this message resolves any missing message items
+        result = resolveMissingMessages(identifier, insertId);
+        if (result != Success)
+            return result;
     }
 
-    if (missingReferences.isEmpty()) {
-        // TODO: add the missing messages table
+    if (!missingReferences.isEmpty()) {
+        // Add the missing references to the missing messages table
+        QVariantList refs;
+        QVariantList levels;
+
+        int level = 0;
+        foreach (const QString &ref, missingReferences) {
+            refs.append(QVariant(ref));
+            levels.append(QVariant(level++));
+        }
+
+        QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
+        QSqlQuery query(batchQuery(sql.arg(QString::number(insertId)),
+                                   QVariantList() << QVariant(refs) << QVariant(levels),
+                                   "addMessage missingmessages insert query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
     }
 
     // Find the complete set of modified folders, including ancestor folders
@@ -4453,6 +4475,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     if (!metaData->id().isValid())
         return Failure;
 
+    quint64 updateId = metaData->id().toULongLong();
+
     QMailAccountId parentAccountId;
     QMailFolderId parentFolderId;
     QString contentUri;
@@ -4467,7 +4491,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         // Find the existing properties 
         {
             QSqlQuery query(simpleQuery("SELECT parentaccountId,parentfolderId,mailfile FROM mailmessages WHERE id=?",
-                                        QVariantList() << metaData->id().toULongLong(),
+                                        QVariantList() << updateId,
                                         "updateMessage existing properties query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -4575,14 +4599,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         {
             QString sql("UPDATE mailmessages SET %1 WHERE id=?");
             QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateProperties, true)),
-                                        extractedValues + (QVariantList() << metaData->id().toULongLong()),
+                                        extractedValues + (QVariantList() << updateId),
                                         "updateMessage mailmessages update"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
 
         if (metaData->customFieldsModified()) {
-            AttemptResult result = updateCustomFields(metaData->id().toULongLong(), metaData->customFields(), "mailmessagecustom");
+            AttemptResult result = updateCustomFields(updateId, metaData->customFields(), "mailmessagecustom");
             if (result != Success)
                 return result;
 
@@ -4596,7 +4620,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
             {
                 QSqlQuery query(simpleQuery("SELECT identifier FROM mailmessageidentifiers WHERE id=?",
-                                            QVariantList() << metaData->id().toULongLong(),
+                                            QVariantList() << updateId,
                                             "updateMessage existing identifier query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
@@ -4609,31 +4633,61 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             if (!identifier.isEmpty()) {
                 if (!existingIdentifier.isEmpty()) {
                     QSqlQuery query(simpleQuery("UPDATE mailmessageidentifiers SET identifier=? WHERE id=?",
-                                                QVariantList() << identifier << metaData->id().toULongLong(),
+                                                QVariantList() << identifier << updateId,
                                                 "updateMessage mailmessageidentifiers update query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 } else {
                     // Add the new value
                     QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
-                                                QVariantList() << metaData->id().toULongLong() << identifier,
+                                                QVariantList() << updateId << identifier,
                                                 "updateMessage mailmessageidentifiers insert query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
+
+                // See if this message resolves any missing message items
+                AttemptResult result = resolveMissingMessages(identifier, updateId);
+                if (result != Success)
+                    return result;
             } else {
                 if (!existingIdentifier.isEmpty()) {
                     // Remove any existing value
                     QSqlQuery query(simpleQuery("DELETE FROM mailmessageidentifiers WHERE id=?",
-                                                QVariantList() << metaData->id().toULongLong(),
+                                                QVariantList() << updateId,
                                                 "updateMessage mailmessageidentifiers delete query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
             }
 
-            if (missingReferences.isEmpty()) {
-                // TODO: add the missing messages table
+            if (!missingReferences.isEmpty()) {
+                // Add the missing references to the missing messages table
+                QVariantList refs;
+                QVariantList levels;
+
+                int level = 0;
+                foreach (const QString &ref, missingReferences) {
+                    refs.append(QVariant(ref));
+                    levels.append(QVariant(level++));
+                }
+
+                {
+                    QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
+                                                QVariantList() << updateId,
+                                                "addMessage missingmessages delete query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
+
+                {
+                    QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
+                    QSqlQuery query(batchQuery(sql.arg(QString::number(updateId)),
+                                               QVariantList() << QVariant(refs) << QVariant(levels),
+                                               "addMessage missingmessages insert query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
             }
         }
     }
@@ -5690,6 +5744,54 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         // TODO: What kind of response is this?  If the predecessor is from the same
         // account as the new message then it is probably a reply.  Otherwise, forward?
         metaData->setResponseType(QMailMessage::Reply);
+    }
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, quint64 messageId)
+{
+    QList<QPair<quint64, quint64> > descendants;
+
+    {
+        QSqlQuery query(simpleQuery("SELECT DISTINCT id,level from missingmessages WHERE identifier=?",
+                                    QVariantList() << identifier,
+                                    "addMessage missingmessages query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        while (query.next())
+            descendants.append(qMakePair(extractValue<quint64>(query.value(0)), extractValue<quint64>(query.value(1))));
+    }
+
+    if (!descendants.isEmpty()) {
+        QVariantList descendantIds;
+        QVariantList descendantLevels;
+
+        QList<QPair<quint64, quint64> >::const_iterator it = descendants.begin(), end = descendants.end();
+        for ( ; it != end; ++it) {
+            descendantIds.append(QVariant((*it).first));
+            descendantLevels.append(QVariant((*it).second));
+        }
+
+        {
+            // Update these descendant messages to have the new message as their predecessor
+            QString sql("UPDATE mailmessages SET responseid=%1 WHERE id IN %2");
+            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)).arg(expandValueList(descendantIds)),
+                                        descendantIds,
+                                        "addMessage mailmessages update query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
+
+        {
+            // Truncate the missingmessages entries for each updated messages
+            QSqlQuery query(batchQuery("DELETE FROM missingmessages WHERE id=? AND level>=?",
+                                       QVariantList() << QVariant(descendantIds) << QVariant(descendantLevels),
+                                       "addMessage missingmessages delete query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
     }
 
     return Success;
