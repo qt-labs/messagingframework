@@ -3150,7 +3150,9 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
         QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
         QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
         if (!predecessor.isEmpty()) {
-            references.append(predecessor);
+            if (references.isEmpty() || (references.last() != predecessor)) {
+                references.append(predecessor);
+            }
         }
 
         if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this,
@@ -3971,6 +3973,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         return Failure;
     }
 
+    QStringList missingReferences;
+
+    // Does this message have any references to resolve?
+    if (!metaData->inResponseTo().isValid() && !references.isEmpty()) {
+        AttemptResult result = messagePredecessor(metaData, references, &missingReferences);
+        if (result != Success)
+            return result;
+    }
+
     // Ensure that any phone numbers are added in minimal form
     QMailAddress from(metaData->from());
     QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
@@ -4036,8 +4047,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             return DatabaseFailure;
     }
 
-    // Does this message have any references to resolve?
-    if (!metaData->inResponseTo().isValid() && !references.isEmpty()) {
+    if (missingReferences.isEmpty()) {
+        // TODO: add the missing messages table
     }
 
     // Find the complete set of modified folders, including ancestor folders
@@ -4485,6 +4496,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
         }
 
+        QStringList missingReferences;
+
         if (updateContent) {
             updateProperties |= QMailMessageKey::ContentIdentifier;
 
@@ -4527,6 +4540,30 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 qMailLog(Messaging) << "Unable to create content manager for scheme:" << metaData->contentScheme();
                 return Failure;
             }
+
+            // The message references may have been updated
+            if (!metaData->inResponseTo().isValid()) {
+                // Does this message have any references to resolve?
+                QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
+                QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
+                if (!predecessor.isEmpty()) {
+                    if (references.isEmpty() || (references.last() != predecessor)) {
+                        references.append(predecessor);
+                    }
+                }
+
+                if (!references.isEmpty()) {
+                    AttemptResult result = messagePredecessor(message, references, &missingReferences);
+                    if (result != Success)
+                        return result;
+
+                    if (message->inResponseTo().isValid()) {
+                        // We need to record this change
+                        updateProperties |= QMailMessageKey::InResponseTo;
+                        updateProperties |= QMailMessageKey::ResponseType;
+                    }
+                }
+            }
         }
 
         // Don't update the previous parent folder if it isn't set
@@ -4555,13 +4592,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         if (updateContent) {
             // We may have a change in the message identifier
             QString identifier(identifierValue(message->headerFieldText("Message-ID")));
-            QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
-            QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
-            if (!predecessor.isEmpty()) {
-                references.append(predecessor);
-            }
-
             QString existingIdentifier;
+
             {
                 QSqlQuery query(simpleQuery("SELECT identifier FROM mailmessageidentifiers WHERE id=?",
                                             QVariantList() << metaData->id().toULongLong(),
@@ -4599,6 +4631,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                         return DatabaseFailure;
                 }
             }
+
+            if (missingReferences.isEmpty()) {
+                // TODO: add the missing messages table
+            }
         }
     }
 
@@ -4633,49 +4669,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     *modifiedContent = updateContent;
 
     return Success;
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const
-{
-    AttemptResult result;
-
-    // Find the set of folders whose contents are modified by this update
-    QMailFolderIdList messageFolderIds;
-
-    QMailStorePrivate *self(const_cast<QMailStorePrivate*>(this));
-    {
-        ReadLock l(self);
-        result = self->attemptMessageFolderIds(QMailMessageKey::id(messages), &messageFolderIds, l);
-    }
-
-    if (result != Success)
-        return result;
-
-    return affectedByFolderIds(messageFolderIds, folderIds, accountIds);
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const
-{
-    AttemptResult result;
-
-    // Any ancestor folders are also modified
-    QMailFolderIdList ancestorIds;
-
-    QMailStorePrivate *self(const_cast<QMailStorePrivate*>(this));
-    {
-        ReadLock l(self);
-        result = self->attemptFolderAncestorIds(folders, &ancestorIds, l);
-    }
-
-    if (result != Success)
-        return result;
-
-    *folderIds = folders + ancestorIds;
-
-    // Find the set of accounts whose contents are modified by this update
-    ReadLock l(self);
-    result = self->attemptFolderAccountIds(QMailFolderKey::id(*folderIds), accountIds, l);
-    return result;
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data, 
@@ -5599,6 +5592,107 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageId(const QStri
     }
         
     return Failure;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const
+{
+    AttemptResult result;
+
+    // Find the set of folders whose contents are modified by this update
+    QMailFolderIdList messageFolderIds;
+
+    QMailStorePrivate *self(const_cast<QMailStorePrivate*>(this));
+    {
+        ReadLock l(self);
+        result = self->attemptMessageFolderIds(QMailMessageKey::id(messages), &messageFolderIds, l);
+    }
+
+    if (result != Success)
+        return result;
+
+    return affectedByFolderIds(messageFolderIds, folderIds, accountIds);
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const
+{
+    AttemptResult result;
+
+    // Any ancestor folders are also modified
+    QMailFolderIdList ancestorIds;
+
+    QMailStorePrivate *self(const_cast<QMailStorePrivate*>(this));
+    {
+        ReadLock l(self);
+        result = self->attemptFolderAncestorIds(folders, &ancestorIds, l);
+    }
+
+    if (result != Success)
+        return result;
+
+    *folderIds = folders + ancestorIds;
+
+    // Find the set of accounts whose contents are modified by this update
+    ReadLock l(self);
+    result = self->attemptFolderAccountIds(QMailFolderKey::id(*folderIds), accountIds, l);
+    return result;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references,
+                                                                       QStringList *missingReferences)
+{
+    // Find any messages that correspond to these references
+    QMap<QString, QList<quint64> > referencedMessages;
+
+    QVariantList refs;
+    foreach (const QString &ref, references) {
+        refs.append(QVariant(ref));
+    }
+
+    {
+        QString sql("SELECT id,identifier FROM mailmessageidentifiers WHERE identifier IN %1");
+        QSqlQuery query(simpleQuery(sql.arg(expandValueList(refs)),
+                                    refs,
+                                    "addMessage mailmessageidentifiers select query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        while (query.next()) {
+            referencedMessages[extractValue<QString>(query.value(1))].append(extractValue<quint64>(query.value(0).toInt()));
+        }
+    }
+
+    quint64 predecessor = 0;
+    if (!referencedMessages.isEmpty()) {
+        for (int i = references.count() - 1; (predecessor == 0) && (i >= 0); --i) {
+            const QString &refId(references.at(i));
+
+            QMap<QString, QList<quint64> >::const_iterator it = referencedMessages.find(refId);
+            if (it != referencedMessages.end()) {
+                const QList<quint64> &messageIds(it.value());
+
+                if (messageIds.count() == 1) {
+                    // This is the best parent message choice
+                    predecessor = messageIds.first();
+                } else {
+                    // TODO: We need to choose a best selection from amongst these messages
+                    // For now, just pick the first
+                    predecessor = messageIds.first();
+                }
+            } else {
+                missingReferences->append(refId);
+            }
+        }
+    }
+
+    if (predecessor) {
+        metaData->setInResponseTo(QMailMessageId(predecessor));
+
+        // TODO: What kind of response is this?  If the predecessor is from the same
+        // account as the new message then it is probably a reply.  Otherwise, forward?
+        metaData->setResponseType(QMailMessage::Reply);
+    }
+
+    return Success;
 }
 
 bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool update)
