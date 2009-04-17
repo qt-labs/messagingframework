@@ -6051,27 +6051,94 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Delete any custom fields associated with these messages
-        QString sql("DELETE FROM mailmessagecustom");
-        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
+        QSqlQuery query(simpleQuery("DELETE FROM mailmessagecustom",
+                                    Key(QMailMessageKey::id(deletedMessages)),
                                     "deleteMessages delete mailmessagecustom query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
-        // Delete any identfiers associated with these messages
-        QString sql("DELETE FROM mailmessageidentifiers");
-        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
+        // Delete any identifiers associated with these messages
+        QSqlQuery query(simpleQuery("DELETE FROM mailmessageidentifiers",
+                                    Key(QMailMessageKey::id(deletedMessages)),
                                     "deleteMessages delete mailmessageidentifiers query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
+        // Delete any missing message identifiers associated with these messages
+        QSqlQuery query(simpleQuery("DELETE FROM missingmessages",
+                                    Key(QMailMessageKey::id(deletedMessages)),
+                                    "deleteMessages delete missingmessages query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    {
+        QMap<QMailMessageId, quint64> predecessors;
+
+        {
+            // Find the predecessors for any messages we're removing
+            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
+                                        Key(QMailMessageKey::id(deletedMessages)),
+                                        "deleteMessages mailmessages predecessor query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+
+            while (query.next())
+                predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), extractValue<quint64>(query.value(1)));
+        }
+
+        QVariantList newPredecessorValues;
+        foreach (const QMailMessageId &id, deletedMessages) {
+            newPredecessorValues.append(QVariant(predecessors[id]));
+        }
+
+        // Link any descendants of the messages to the deleted messages' predecessor
+        QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
+                                   QVariantList() << QVariant(newPredecessorValues) << QVariant(idValues),
+                                   "deleteMessages mailmessages update query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    {
         // Perform the message deletion
-        QString sql("DELETE FROM mailmessages");
-        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(deletedMessages)),
-                                    "deleteMessages delete mailmessages query"));
+        QSqlQuery query(simpleQuery("DELETE FROM mailmessages",
+                                    Key(QMailMessageKey::id(deletedMessages)),
+                                    "deleteMessages mailmessages delete query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    {
+        // Delete the thread associations of these messages
+
+        // TODO - we need a way to override the column name for a key expansion
+        
+        // A set clause can handle only a limited amount of values
+        if (deletedMessages.count() < IdLookupThreshold) {
+            QString sql("DELETE FROM mailthreadmessages WHERE messageid IN %1");
+            QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
+                                        idValues,
+                                        "deleteMessages mailthreadmessages delete query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+        } else {
+            // Delete any orphaned thread-message links
+            QSqlQuery query(simpleQuery("DELETE FROM mailthreadmessages WHERE messageid NOT IN (SELECT id FROM mailmessages)",
+                                        "deleteMessages mailthreadmessages delete query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+        }
+    }
+
+    {
+        // Remove any threads that are empty after this deletion
+        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id IN (SELECT id FROM mailthreads mt WHERE 0 = (SELECT COUNT(*) FROM mailthreadmessages WHERE threadid=mt.id) )",
+                                   "deleteMessages mailthreads delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
