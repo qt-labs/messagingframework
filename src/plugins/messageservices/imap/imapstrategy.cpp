@@ -414,16 +414,29 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
 
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        // TODO - order messages within each folder by size ascending, or most recent first?
-        QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-        _selectionMap[parentFolderId].insert(metaData.serverUid(), SectionProperties(metaData.id()));
 
-        uint size = metaData.indicativeSize();
-        uint bytes = metaData.size();
+    // Break retrieval of message meta data into chunks to reduce peak memory use
+    QMailMessageIdList idsBatch;
+    const int batchSize(100);
+    int i = 0;
+    while (i < ids.count()) {
+        idsBatch.clear();
+        while ((i < ids.count()) && (idsBatch.count() < batchSize)) {
+            idsBatch.append(ids[i]);
+            ++i;
+        }
+    
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
+            // TODO - order messages within each folder by size ascending, or most recent first?
+            QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
+            _selectionMap[parentFolderId].insert(metaData.serverUid(), SectionProperties(metaData.id()));
 
-        _retrievalSize.insert(metaData.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
-        _totalRetrievalSize += size;
+            uint size = metaData.indicativeSize();
+            uint bytes = metaData.size();
+
+            _retrievalSize.insert(metaData.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+            _totalRetrievalSize += size;
+        }
     }
 
     _folderItr = _selectionMap.begin();
