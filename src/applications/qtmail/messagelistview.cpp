@@ -12,7 +12,11 @@
 #include <qmaillog.h>
 #include <qmailfolder.h>
 #include <qmailfolderkey.h>
+#ifndef USE_NONTHREADED_VIEW
+#include <qmailmessagethreadedmodel.h>
+#else
 #include <qmailmessagelistmodel.h>
+#endif
 #include <QTreeView>
 #include <QKeyEvent>
 #include <QLayout>
@@ -28,7 +32,6 @@
 #include <QHeaderView>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
-static const bool alternatingBackground = true;
 static const QColor newMessageColor(Qt::blue);
 
 static QString dateString(const QDateTime& dt)
@@ -59,7 +62,7 @@ static QString sizeString(uint size)
         return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
 }
 
-class MessageListModel : public QMailMessageListModel
+class MessageListModel : public MessageListView::ModelType
 {
 public:
     MessageListModel(QWidget* parent );
@@ -74,7 +77,7 @@ private:
 
 MessageListModel::MessageListModel(QWidget* parent)
 :
-QMailMessageListModel(parent),
+MessageListView::ModelType(parent),
 m_markingMode(false)
 {
 }
@@ -87,7 +90,7 @@ QVariant MessageListModel::headerData(int section, Qt::Orientation o, int role) 
             return headers.at(section);
     }
 
-   return QMailMessageListModel::headerData(section,o,role);
+   return MessageListView::ModelType::headerData(section,o,role);
 }
 
 int MessageListModel::columnCount(const QModelIndex & parent ) const
@@ -123,7 +126,7 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
             return QVariant();
         else if(role == Qt::CheckStateRole && !m_markingMode)
         {
-            Qt::CheckState state = static_cast<Qt::CheckState>(QMailMessageListModel::data(index,role).toInt());
+            Qt::CheckState state = static_cast<Qt::CheckState>(MessageListView::ModelType::data(index,role).toInt());
             if(state == Qt::Unchecked)
                 return QVariant();
         }
@@ -177,17 +180,8 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
             if(status & QMailMessage::PartialContentAvailable && unread)
                 return newMessageColor;
         }
-        else if(role == Qt::BackgroundRole && alternatingBackground)
-        {
-            bool oddrow = index.row() % 2;
-            if(oddrow)
-            {
-                QWidget* p = static_cast<QWidget*>(QObject::parent());
-                return p->palette().color(QPalette::AlternateBase);
-            }
-        }
     }
-    return QMailMessageListModel::data(index,role);
+    return MessageListView::ModelType::data(index,role);
 }
 
 void MessageListModel::setMarkingMode(bool val)
@@ -322,7 +316,7 @@ void MessageListView::setFolderId(const QMailFolderId& folderId)
     mMoreButton->setVisible(mFolderId.isValid());
 }
 
-QMailMessageListModel* MessageListView::model() const
+MessageListView::ModelType* MessageListView::model() const
 {
     return mModel;
 }
@@ -330,11 +324,18 @@ QMailMessageListModel* MessageListView::model() const
 void MessageListView::init()
 {
     mMoreButton->hide();
+
     mFilterModel->setSourceModel(mModel);
-    mFilterModel->setFilterRole(QMailMessageListModel::MessageFilterTextRole);
+    mFilterModel->setFilterRole(QMailMessageModelBase::MessageFilterTextRole);
     mFilterModel->setDynamicSortFilter(true);
+
     mMessageList->setUniformRowHeights(true);
+#ifndef USE_NONTHREADED_VIEW
+    mMessageList->setRootIsDecorated(true);
+#else
     mMessageList->setRootIsDecorated(false);
+#endif
+    mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);
     mMessageList->setModel(mFilterModel);
 
@@ -408,7 +409,7 @@ void MessageListView::init()
 
 QMailMessageId MessageListView::current() const
 {
-    return mMessageList->currentIndex().data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>();
+    return mMessageList->currentIndex().data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>();
 }
 
 void MessageListView::setCurrent(const QMailMessageId& id)
@@ -465,7 +466,7 @@ QMailMessageIdList MessageListView::selected() const
         for (int i = 0, count = mFilterModel->rowCount(); i < count; ++i) {
             QModelIndex index(mFilterModel->index(i, 0));
             if (static_cast<Qt::CheckState>(index.data(Qt::CheckStateRole).toInt()) == Qt::Checked)
-                selectedIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+                selectedIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         }
     } else {
         if (current().isValid())
@@ -497,17 +498,29 @@ void MessageListView::setSelected(const QMailMessageId& id)
     }
 }
 
+void MessageListView::selectChildren(const QModelIndex &index, bool selected, bool *modified)
+{
+    for (int i = 0, count = mFilterModel->rowCount(index); i < count; ++i) {
+        QModelIndex idx(mFilterModel->index(i, 0, index));
+        Qt::CheckState state(static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()));
+
+        if (selected && (state == Qt::Unchecked)) {
+            mFilterModel->setData(idx, static_cast<int>(Qt::Checked), Qt::CheckStateRole);
+            *modified = true;
+        } else if (!selected && (state == Qt::Checked)) {
+            mFilterModel->setData(idx, static_cast<int>(Qt::Unchecked), Qt::CheckStateRole);
+            *modified = true;
+        }
+
+        selectChildren(idx, selected, modified);
+    }
+}
+
 void MessageListView::selectAll()
 {
     bool modified(false);
 
-    for (int i = 0, count = mFilterModel->rowCount(); i < count; ++i) {
-        QModelIndex idx(mFilterModel->index(i, 0));
-        if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Unchecked) {
-            mFilterModel->setData(idx, static_cast<int>(Qt::Checked), Qt::CheckStateRole);
-            modified = true;
-        }
-    }
+    selectChildren(QModelIndex(), true, &modified);
 
     if (modified)
         emit selectionChanged();
@@ -517,13 +530,7 @@ void MessageListView::clearSelection()
 {
     bool modified(false);
 
-    for (int i = 0, count = mFilterModel->rowCount(); i < count; ++i) {
-        QModelIndex idx(mFilterModel->index(i, 0));
-        if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Checked) {
-            mFilterModel->setData(idx, static_cast<int>(Qt::Unchecked), Qt::CheckStateRole);
-            modified = true;
-        }
-    }
+    selectChildren(QModelIndex(), false, &modified);
 
     if (modified)
         emit selectionChanged();
@@ -620,7 +627,7 @@ void MessageListView::indexClicked(const QModelIndex& index)
         mFilterModel->setData(index, static_cast<int>(checked ? Qt::Unchecked : Qt::Checked), Qt::CheckStateRole);
         emit selectionChanged();
     } else {
-        QMailMessageId id(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        QMailMessageId id(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         if (id.isValid()) {
             emit clicked(id);
         }
@@ -630,8 +637,8 @@ void MessageListView::indexClicked(const QModelIndex& index)
 void MessageListView::currentIndexChanged(const QModelIndex& currentIndex,
                                           const QModelIndex& previousIndex)
 {
-    QMailMessageId currentId(currentIndex.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
-    QMailMessageId previousId(previousIndex.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+    QMailMessageId currentId(currentIndex.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
+    QMailMessageId previousId(previousIndex.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
 
     emit currentChanged(currentId, previousId);
 
@@ -703,7 +710,7 @@ QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
         QRect indexRect(mMessageList->visualRect(index));
         if (!indexRect.isValid() || (!viewRect.intersects(indexRect)))
             break;
-        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        visibleIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         index = mMessageList->indexBelow(index);
     }
     if (!buffer)
@@ -711,7 +718,7 @@ QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
     
     int i = bufferWidth;
     while (index.isValid() && (i > 0)) { // Add succeeding items
-        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        visibleIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         index = mMessageList->indexBelow(index);
         --i;
     }
@@ -720,7 +727,7 @@ QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
     if (index.isValid())
         index = mMessageList->indexAbove(index);
     while (index.isValid() && (i > 0)) { // Add preceding items
-        visibleIds.append(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        visibleIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         index = mMessageList->indexAbove(index);
         --i;
     }

@@ -21,6 +21,7 @@ class MessageList;
 class QFrame;
 class QLineEdit;
 class QMailMessageListModel;
+class QMailMessageThreadedModel;
 class QModelIndex;
 class QPushButton;
 class QSortFilterProxyModel;
@@ -36,6 +37,12 @@ class MessageListView : public QWidget
     Q_OBJECT
 
 public:
+#ifndef USE_NONTHREADED_MODEL
+    typedef QMailMessageThreadedModel ModelType;
+#else
+    typedef QMailMessageListModel ModelType;
+#endif
+
     enum DisplayMode
     {
         DisplayMessages = 0,
@@ -61,7 +68,7 @@ public:
     QMailFolderId folderId() const;
     void setFolderId(const QMailFolderId &id);
 
-    QMailMessageListModel* model() const;
+    ModelType* model() const;
 
     QMailMessageId current() const;
     void setCurrent(const QMailMessageId& id);
@@ -116,6 +123,7 @@ protected:
 private:
     void init();
     bool eventFilter(QObject*, QEvent*);
+    void selectChildren(const QModelIndex &index, bool selected, bool *modified);
 
 private:
     MessageList* mMessageList;
