@@ -669,6 +669,8 @@ void ImapClient::messageFetched(QMailMessage& mail)
             mail.setContent(existing.content());
             mail.setReceivedDate(existing.receivedDate());
             mail.setPreviousParentFolderId(existing.previousParentFolderId());
+            mail.setInResponseTo(existing.inResponseTo());
+            mail.setResponseType(existing.responseType());
             mail.setContentScheme(existing.contentScheme());
             mail.setContentIdentifier(existing.contentIdentifier());
             mail.setCustomFields(existing.customFields());
