@@ -10,6 +10,8 @@
 
 #include <QObject>
 #include <QTest>
+#include <qmailmessagelistmodel.h>
+#include <qmailmessagethreadedmodel.h>
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
@@ -63,6 +65,9 @@ private slots:
     void messageInResponseTo();
     void messageResponseType();
     void messageCustom();
+
+    void listModel();
+    void threadedModel();
 
 private:
     // We only want to compare sets, disregarding ordering
@@ -2328,5 +2333,121 @@ void tst_QMailStoreKeys::messageCustom()
     QCOMPARE(messageSet(~QMailMessageKey::customField("todo", QString(""), Excludes)), messageSet() << smsMessage << inboxMessage2);
     QCOMPARE(messageSet(QMailMessageKey::customField("todo", QString(), Excludes)), noMessages);
     QCOMPARE(messageSet(~QMailMessageKey::customField("todo", QString(), Excludes)), messageSet() << smsMessage << inboxMessage2);
+}
+
+void tst_QMailStoreKeys::listModel()
+{
+    QMailMessageListModel model(this);
+
+    // Default sort
+    model.setKey(QMailMessageKey());
+
+    QCOMPARE(model.indexFromId(smsMessage).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 3);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 4);
+
+    QCOMPARE(model.rowCount(), 5);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(3, 0)), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(4, 0)), savedMessage2);
+
+    // Sort by descending subject - note majuscules sort before miniscules
+    model.setKey(QMailMessageKey());
+    model.setSortKey(QMailMessageSortKey::subject(Qt::DescendingOrder));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(smsMessage).row(), 2);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 3);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 4);
+
+    QCOMPARE(model.rowCount(), 5);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(3, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(4, 0)), inboxMessage2);
+
+    // Only display messages from inbox1, or with a response type
+    model.setKey(QMailMessageKey::parentFolderId(inboxId1) | QMailMessageKey::responseType(QMailMessage::NoResponse, QMailDataComparator::NotEqual));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 1);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 2);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), inboxMessage2);
+}
+
+void tst_QMailStoreKeys::threadedModel()
+{
+    QMailMessageThreadedModel model(this);
+
+    // Default sort
+    model.setKey(QMailMessageKey());
+
+    QCOMPARE(model.indexFromId(smsMessage).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 1);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).parent().row(), 2);
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+    QCOMPARE(model.rowCount(model.indexFromId(archivedMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(archivedMessage1))), savedMessage2);
+
+    // Sort by descending subject - note majuscules sort before miniscules
+    model.setKey(QMailMessageKey());
+    model.setSortKey(QMailMessageSortKey::subject(Qt::DescendingOrder));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(smsMessage).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).parent().row(), 1);
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+    QCOMPARE(model.rowCount(model.indexFromId(archivedMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(archivedMessage1))), savedMessage2);
+
+    // Only display messages from inbox1, or with a response type
+    model.setKey(QMailMessageKey::parentFolderId(inboxId1) | QMailMessageKey::responseType(QMailMessage::NoResponse, QMailDataComparator::NotEqual));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 1);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 0);
+
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
 }
 

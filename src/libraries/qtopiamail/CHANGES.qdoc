@@ -12,6 +12,10 @@ Changes since the 1.0 release:
 
 1. Added 'QMail::baseSubject(const QString &)'.
 
+2. Extracted 'QMailMessageModelBase' from 'QMailMessageListModel'.
+
+3. Added 'QMailMessageThreadedModel'.
+
 
 *****************************************************************************
 

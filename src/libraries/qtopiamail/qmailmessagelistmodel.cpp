@@ -11,8 +11,6 @@
 #include "qmailmessagelistmodel.h"
 #include "qmailstore.h"
 #include "qmailnamespace.h"
-#include <QIcon>
-#include <QDebug>
 #include <QCache>
 #include <QtAlgorithms>
 
@@ -48,8 +46,6 @@ public:
     template<typename Comparator>
     QList<Item>::iterator lowerBound(const QMailMessageId& id, Comparator& cmp) const;
 
-    QString messageAddressText(const QMailMessageMetaData& m, bool incoming);
-
     void invalidateCache();
 
 public:
@@ -62,13 +58,13 @@ public:
     QCache<QString,QString> nameCache;
 };
 
-class LessThanFunctor
+class ListMessageLessThan
 {
 public:
     typedef QMailMessageListModelPrivate::Item Item;
 
-    LessThanFunctor(const QMailMessageSortKey& sortKey);
-    ~LessThanFunctor();
+    ListMessageLessThan(const QMailMessageSortKey& sortKey);
+    ~ListMessageLessThan();
 
     bool operator()(const QMailMessageId& lhs, const QMailMessageId& rhs);
 
@@ -83,16 +79,16 @@ private:
     bool mInvalidatedList;
 };
 
-LessThanFunctor::LessThanFunctor(const QMailMessageSortKey& sortKey)
+ListMessageLessThan::ListMessageLessThan(const QMailMessageSortKey& sortKey)
 :
     mSortKey(sortKey),
     mInvalidatedList(false)
 {
 }
 
-LessThanFunctor::~LessThanFunctor(){}
+ListMessageLessThan::~ListMessageLessThan(){}
 
-bool LessThanFunctor::operator()(const QMailMessageId& lhs, const QMailMessageId& rhs)
+bool ListMessageLessThan::operator()(const QMailMessageId& lhs, const QMailMessageId& rhs)
 {
     QMailMessageKey firstKey(QMailMessageKey::id(lhs));
     QMailMessageKey secondKey(QMailMessageKey::id(rhs));
@@ -107,7 +103,7 @@ bool LessThanFunctor::operator()(const QMailMessageId& lhs, const QMailMessageId
     return results.first() == lhs;
 }
 
-bool LessThanFunctor::invalidatedList() const
+bool ListMessageLessThan::invalidatedList() const
 {
     return mInvalidatedList;
 }
@@ -159,32 +155,6 @@ QList<QMailMessageListModelPrivate::Item>::iterator QMailMessageListModelPrivate
     return qLowerBound(itemList.begin(), itemList.end(), id, cmp);
 }
 
-QString QMailMessageListModelPrivate::messageAddressText(const QMailMessageMetaData& m, bool incoming) 
-{
-    //message sender or recipients
-    if ( incoming ) 
-    {
-        QMailAddress fromAddress(m.from());
-        return fromAddress.toString();
-
-    }
-    else 
-    {
-        QMailAddressList toAddressList(m.to());
-        if (!toAddressList.isEmpty())
-        {
-            QMailAddress firstRecipient(toAddressList.first());
-            QString text = firstRecipient.toString();
-            bool multipleRecipients(toAddressList.count() > 1);
-            if(multipleRecipients)
-                text += ", ...";
-            return text;
-        }
-        else 
-            return QObject::tr("Draft Message");
-    }
-}
-
 void QMailMessageListModelPrivate::invalidateCache()
 {
     nameCache.clear();
@@ -217,37 +187,6 @@ void QMailMessageListModelPrivate::invalidateCache()
   QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering. 
 
   \sa QMailMessage, QSortFilterProxyModel
-*/
-
-/*!
-  \enum QMailMessageListModel::Roles
-
-  Represents common display roles of a message. These roles are used to display common message elements 
-  in a view and its attached delegates.
-
-  \value MessageAddressTextRole 
-    The address text of a message. This a can represent a name if the address is tied to a contact in the addressbook and 
-    represents either the incoming or outgoing address depending on the message direction.
-  \value MessageSubjectTextRole  
-    The subject of a message. For-non email messages this may represent the body text of a message.
-  \value MessageFilterTextRole 
-    The MessageAddressTextRole concatenated with the MessageSubjectTextRole. This can be used by filtering classes to filter
-    messages based on the text of these commonly displayed roles. 
-  \value MessageTimeStampTextRole
-    The timestamp of a message. "Recieved" or "Sent" is prepended to the timestamp string depending on the message
-    direction.
-  \value MessageTypeIconRole
-    An Icon representing the type of the message.
-  \value MessageStatusIconRole
-    An Icon representing the status of the message. e.g Read, Unread, Downloaded
-  \value MessageDirectionIconRole
-    An Icon representing the incoming or outgoing direction of a message.
-  \value MessagePresenceIconRole
-    An Icon representing the presence status of the contact associated with the MessageAddressTextRole.
-  \value MessageBodyTextRole  
-    The body of a message represented as text.
-  \value MessageIdRole
-    The QMailMessageId value identifying the message.
 */
 
 /*!
@@ -311,28 +250,7 @@ bool QMailMessageListModel::isEmpty() const
 
 QVariant QMailMessageListModel::data(const QModelIndex& index, int role) const
 {
-    static QIcon outgoingIcon(":icon/qtmail/sendmail");
-    static QIcon incomingIcon(":icon/qtmail/getmail");
-
-    static QIcon readIcon(":icon/qtmail/flag_normal");
-    static QIcon unreadIcon(":icon/qtmail/flag_unread");
-    static QIcon toGetIcon(":icon/qtmail/flag_toget");
-    static QIcon toSendIcon(":icon/qtmail/flag_tosend");
-    static QIcon unfinishedIcon(":icon/qtmail/flag_unfinished");
-    static QIcon removedIcon(":icon/qtmail/flag_removed");
-
-    static QIcon noPresenceIcon(":icon/presence-none");
-    static QIcon offlineIcon(":icon/presence-offline");
-    static QIcon awayIcon(":icon/presence-away");
-    static QIcon busyIcon(":icon/presence-busy");
-    static QIcon onlineIcon(":icon/presence-online");
-
-    static QIcon messageIcon(":icon/txt");
-    static QIcon mmsIcon(":icon/multimedia");
-    static QIcon emailIcon(":icon/email");
-    static QIcon instantMessageIcon(":icon/im");
-
-    if(!index.isValid())
+    if (!index.isValid())
         return QVariant();
 
     QMailMessageId id = idFromIndex(index);
@@ -355,120 +273,7 @@ QVariant QMailMessageListModel::data(const QModelIndex& index, int role) const
     }
 
     // Otherwise, load the message data
-    QMailMessageMetaData message(id);
-
-    bool sent(message.status() & QMailMessage::Sent);
-    bool incoming(message.status() & QMailMessage::Incoming);
-
-    switch(role)
-    {
-        case Qt::DisplayRole:
-        case MessageAddressTextRole:
-            return d->messageAddressText(message,incoming);
-            break;
-
-        case MessageTimeStampTextRole:
-        {
-            QString action;
-            if(incoming)
-                action = tr("Received");
-            else
-            {
-                if(!sent)
-                    action = tr("Last edited");
-                else
-                    action = tr("Sent");
-            }
-
-            QDateTime messageTime(message.date().toLocalTime());
-
-            QString date(messageTime.date().toString("dd MMM"));
-            QString time(messageTime.time().toString("h:mm"));
-            QString sublabel(QString("%1 %2 %3").arg(action).arg(date).arg(time));
-            return sublabel;
-
-        }break;
-
-        case MessageSubjectTextRole:
-            return message.subject();
-        break;
-
-        case MessageFilterTextRole:
-            return d->messageAddressText(message,incoming) + " " + message.subject();
-        break;
-
-        case Qt::DecorationRole:
-        case MessageTypeIconRole:
-        {
-            QIcon icon = messageIcon;
-            if (message.messageType() == QMailMessage::Mms) {
-                icon = mmsIcon;
-            } else if (message.messageType() == QMailMessage::Email) {
-                icon = emailIcon;
-            } else if (message.messageType() == QMailMessage::Instant) {
-                icon = instantMessageIcon;
-            }
-            return icon;
-
-        }break;
-
-        case MessageDirectionIconRole:
-        {
-            QIcon mainIcon = incoming ? incomingIcon : outgoingIcon;
-            return mainIcon;
-        }break;
-
-        case MessageStatusIconRole:
-        {
-            if (incoming){ 
-                quint64 status = message.status();
-                if ( status & QMailMessage::Removed ) {
-                    return removedIcon;
-                } else if ( status & QMailMessage::PartialContentAvailable ) {
-                    if ( status & QMailMessage::Read || status & QMailMessage::ReadElsewhere ) {
-                        return readIcon;
-                    } else {
-                        return unreadIcon;
-                    }
-                } else {
-                    return toGetIcon;
-                }
-            } else {
-                if (sent) {
-                    return readIcon;
-                } else if ( message.to().isEmpty() ) {
-                    // Not strictly true - there could be CC or BCC addressees
-                    return unfinishedIcon;
-                } else {
-                    return toSendIcon;
-                }
-            }
-        }break;
-
-        case MessagePresenceIconRole:
-        {
-            QIcon icon = noPresenceIcon;
-            return icon;
-        }break;
-
-        case MessageBodyTextRole:
-        {
-            if ((message.messageType() == QMailMessage::Instant) && !message.subject().isEmpty()) {
-                // For IMs that contain only text, the body is replicated in the subject
-                return message.subject();
-            } else {
-                QMailMessage fullMessage(id);
-
-                // Some items require the entire message data
-                if (fullMessage.hasBody())
-                    return fullMessage.body().data();
-
-                return QString();
-            }
-        }
-        break;
-    }
-    return QVariant();
+    return QMailMessageModelBase::data(QMailMessageMetaData(id), role);
 }
 
 /*!
@@ -568,7 +373,7 @@ void QMailMessageListModel::messagesAdded(const QMailMessageIdList& ids)
     { 
         foreach(const QMailMessageId &id,validIds)
         {
-            LessThanFunctor lessThan(d->sortKey);
+            ListMessageLessThan lessThan(d->sortKey);
 
             //if sorting the list fails, then resort to a complete refresh
             if(lessThan.invalidatedList())
@@ -639,7 +444,7 @@ void QMailMessageListModel::messagesUpdated(const QMailMessageIdList& ids)
         }
     }
 
-    LessThanFunctor lessThan(d->sortKey);
+    ListMessageLessThan lessThan(d->sortKey);
 
     foreach(const QMailMessageId &id, validIds)
     {
@@ -752,6 +557,9 @@ QMailMessageId QMailMessageListModel::idFromIndex(const QModelIndex& index) cons
 QModelIndex QMailMessageListModel::indexFromId(const QMailMessageId& id) const
 {
     if (id.isValid()) {
+        // Ensure that we have initialised
+        d->items();
+
         //if the id does not exist return null
         int index = d->indexOf(id);
         if(index != -1)

@@ -8,25 +8,27 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILMESSAGELISTMODEL_H
-#define QMAILMESSAGELISTMODEL_H
+#ifndef QMAILMESSAGETHREADEDMODEL_H
+#define QMAILMESSAGETHREADEDMODEL_H
 
-#include <QAbstractListModel>
-#include "qmailmessagemodelbase.h"
+#include <QAbstractItemModel>
 #include "qmailmessagekey.h"
+#include "qmailmessagemodelbase.h"
 #include "qmailmessagesortkey.h"
 
-class QMailMessageListModelPrivate;
+class QMailMessageThreadedModelPrivate;
+class QMailMessageThreadedModelItem;
 
-class QTOPIAMAIL_EXPORT QMailMessageListModel : public QAbstractListModel, public QMailMessageModelBase
+class QTOPIAMAIL_EXPORT QMailMessageThreadedModel : public QAbstractItemModel, public QMailMessageModelBase
 {
     Q_OBJECT 
 
 public:
-    QMailMessageListModel(QObject* parent = 0);
-    virtual ~QMailMessageListModel();
+    QMailMessageThreadedModel(QObject* parent = 0);
+    virtual ~QMailMessageThreadedModel();
 
     int rowCount(const QModelIndex& index = QModelIndex()) const;
+    int columnCount(const QModelIndex& index = QModelIndex()) const;
 
     bool isEmpty() const;
 
@@ -45,19 +47,32 @@ public:
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
 
+    int rootRow(const QModelIndex& index) const;
+
+    virtual QModelIndex index(int row, int column, const QModelIndex &parentIndex = QModelIndex()) const;
+    virtual QModelIndex parent(const QModelIndex &index) const;
+
 signals:
     void modelChanged();
 
+# if 0
 private slots:
     void messagesAdded(const QMailMessageIdList& ids); 
     void messagesUpdated(const QMailMessageIdList& ids);
     void messagesRemoved(const QMailMessageIdList& ids);
+#endif
 
 private:
     void fullRefresh(bool modelChanged);
 
+    QModelIndex index(QMailMessageThreadedModelItem *item, int column) const;
+    QModelIndex parentIndex(QMailMessageThreadedModelItem *item, int column) const;
+
+    QMailMessageThreadedModelItem *itemFromIndex(const QModelIndex &index) const;
+    QModelIndex indexFromItem(QMailMessageThreadedModelItem *item) const;
+
 private:
-    QMailMessageListModelPrivate* d;
+    QMailMessageThreadedModelPrivate* d;
 };
 
 #endif
