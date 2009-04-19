@@ -106,7 +106,7 @@ private:
 
     bool asyncEmission;
 
-    QBasicTimer preFlushTimer;
+    QTimer preFlushTimer;
     QTimer flushTimer;
 
     QSet<QMailAccountId> addAccountsBuffer;
