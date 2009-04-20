@@ -16,8 +16,6 @@
 #include <QCache>
 #include <QtAlgorithms>
 
-static const int nameCacheSize = 50;
-static const int fullRefreshCutoff = 10;
 
 class QMailMessageListModelPrivate
 {
@@ -50,8 +48,6 @@ public:
 
     QString messageAddressText(const QMailMessageMetaData& m, bool incoming);
 
-    void invalidateCache();
-
     bool additionLocations(const QMailMessageIdList &ids,
                            QList<LocationSequence> *locations, 
                            QMailMessageIdList *insertIds) const;
@@ -80,7 +76,6 @@ public:
     mutable QMailMessageIdList currentIds;
     mutable bool init;
     mutable bool needSynchronize;
-    QCache<QString,QString> nameCache;
 };
 
 
@@ -94,8 +89,7 @@ QMailMessageListModelPrivate::QMailMessageListModelPrivate(QMailMessageListModel
     sortKey(sortKey),
     ignoreUpdates(ignoreUpdates),
     init(false),
-    needSynchronize(true),
-    nameCache(nameCacheSize)
+    needSynchronize(true)
 {
 }
 
@@ -158,11 +152,6 @@ QString QMailMessageListModelPrivate::messageAddressText(const QMailMessageMetaD
         else 
             return QObject::tr("Draft Message");
     }
-}
-
-void QMailMessageListModelPrivate::invalidateCache()
-{
-    nameCache.clear();
 }
 
 bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &ids,
