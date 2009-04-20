@@ -143,7 +143,7 @@ public:
     static QString expandValueList(const QVariantList& valueList);
     static QString expandValueList(int valueCount);
 
-    static QString temporaryTableName(const QMailMessageKey &key);
+    static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
 
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
@@ -187,7 +187,7 @@ private:
     typedef QPair<quint64, QString> FolderInfo;
     bool setupFolders(const QList<FolderInfo> &folderList);
 
-    void createTemporaryTable(const QMailMessageKey &key) const;
+    void createTemporaryTable(const QMailMessageKey::ArgumentType &arg) const;
     void destroyTemporaryTables(void);
 
     bool transaction(void);
@@ -474,9 +474,9 @@ private:
     mutable IdCache<QMailFolder, QMailFolderId> folderCache;
     mutable IdCache<QMailAccount, QMailAccountId> accountCache;
 
-    mutable QList<const QMailMessageKey*> requiredTableKeys;
-    mutable QList<const QMailMessageKey*> temporaryTableKeys;
-    QList<const QMailMessageKey*> expiredTableKeys;
+    mutable QList<const QMailMessageKey::ArgumentType*> requiredTableKeys;
+    mutable QList<const QMailMessageKey::ArgumentType*> temporaryTableKeys;
+    QList<const QMailMessageKey::ArgumentType*> expiredTableKeys;
 
     bool inTransaction;
     mutable int lastQueryError;

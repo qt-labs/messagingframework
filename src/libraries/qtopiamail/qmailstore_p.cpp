@@ -1422,7 +1422,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         {
         case QMailMessageKey::Id:
             if (a.valueList.count() >= IdLookupThreshold) {
-                q << baseExpression(columnName, a.op, true) << "( SELECT id FROM " << QMailStorePrivate::temporaryTableName(key) << ")";
+                q << baseExpression(columnName, a.op, true) << "( SELECT id FROM " << QMailStorePrivate::temporaryTableName(a) << ")";
             } else {
                 if (a.valueList.first().canConvert<QMailMessageKey>()) {
                     QMailMessageKey subKey = a.valueList.first().value<QMailMessageKey>();
@@ -2107,47 +2107,54 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
     
     // Create any temporary tables needed for this query
     while (!requiredTableKeys.isEmpty()) {
-        const QMailMessageKey *key = requiredTableKeys.takeFirst();
-        if (!temporaryTableKeys.contains(key)) {
-            QString tableName = temporaryTableName(*key);
+        const QMailMessageKey::ArgumentType *arg = requiredTableKeys.takeFirst();
+        if (!temporaryTableKeys.contains(arg)) {
+            QString tableName = temporaryTableName(*arg);
 
-            bool ok = true;
             QSqlQuery tableQuery(database);
             if (!tableQuery.exec(QString("CREATE TEMP TABLE %1 ( id INTEGER PRIMARY KEY )").arg(tableName))) { 
-                ok = false;
-            } else {
-                temporaryTableKeys.append(key);
-
-                // Add the ID values to the temp table
-                foreach (const QVariant &var, key->arguments().first().valueList) {
-                    quint64 id = 0;
-
-                    if (qVariantCanConvert<QMailMessageId>(var)) {
-                        id = var.value<QMailMessageId>().toULongLong(); 
-                    } else if (qVariantCanConvert<QMailFolderId>(var)) {
-                        id = var.value<QMailFolderId>().toULongLong(); 
-                    } else if (qVariantCanConvert<QMailAccountId>(var)) {
-                        id = var.value<QMailAccountId>().toULongLong(); 
-                    }
-
-                    if (id != 0) {
-                        tableQuery = QSqlQuery(database);
-                        if (!tableQuery.exec(QString("INSERT INTO %1 VALUES (%2)").arg(tableName).arg(id))) { 
-                            ok = false;
-                            break;
-                        }
-                    } else {
-                        qMailLog(Messaging) << "Unable to extract ID value from valuelist!";
-                        ok = false;
-                        break;
-                    }
-                }
-            }
-            
-            if (!ok) {
                 setQueryError(tableQuery.lastError(), "Failed to create temporary table", queryText(tableQuery));
                 qMailLog(Messaging) << "Unable to prepare query:" << sql;
                 return query;
+            } else {
+                temporaryTableKeys.append(arg);
+
+                int type = 0;
+                if (qVariantCanConvert<QMailMessageId>(arg->valueList.first())) {
+                    type = 1;
+                } else if (qVariantCanConvert<QMailFolderId>(arg->valueList.first())) {
+                    type = 2;
+                } else if (qVariantCanConvert<QMailAccountId>(arg->valueList.first())) {
+                    type = 3;
+                }
+
+                // Add the ID values to the temp table
+                foreach (const QVariant &var, arg->valueList) {
+                    quint64 id = 0;
+
+                    switch (type) {
+                    case 1:
+                        id = var.value<QMailMessageId>().toULongLong(); 
+                        break;
+                    case 2:
+                        id = var.value<QMailFolderId>().toULongLong(); 
+                        break;
+                    case 3:
+                        id = var.value<QMailAccountId>().toULongLong(); 
+                        break;
+                    default:
+                        qMailLog(Messaging) << "Unable to extract ID value from valuelist!";
+                        qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                        return query;
+                    }
+
+                    tableQuery = QSqlQuery(database);
+                    if (!tableQuery.exec(QString("INSERT INTO %1 VALUES (%2)").arg(tableName).arg(id))) { 
+                        setQueryError(tableQuery.lastError(), "Failed to populate temporary table", queryText(tableQuery));
+                        qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                        return query;
+                    }
+                }
             }
         }
     }
@@ -2253,22 +2260,22 @@ QString numericPtrValue<false>(const void *ptr)
     return QString::number(reinterpret_cast<unsigned long>(ptr), 16).rightJustified(8, '0');;
 }
 
-QString QMailStorePrivate::temporaryTableName(const QMailMessageKey& key)
+QString QMailStorePrivate::temporaryTableName(const QMailMessageKey::ArgumentType& arg)
 {
-    const QMailMessageKey *ptr = &key;
+    const QMailMessageKey::ArgumentType *ptr = &arg;
     return QString("qtopiamail_idmatch_%1").arg(numericPtrValue<(sizeof(void*) > sizeof(unsigned long))>(ptr));
 }
 
-void QMailStorePrivate::createTemporaryTable(const QMailMessageKey& key) const
+void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType& arg) const
 {
-    requiredTableKeys.append(&key);
+    requiredTableKeys.append(&arg);
 }
 
 void QMailStorePrivate::destroyTemporaryTables()
 {
     while (!expiredTableKeys.isEmpty()) {
-        const QMailMessageKey *key = expiredTableKeys.takeFirst();
-        QString tableName = temporaryTableName(*key);
+        const QMailMessageKey::ArgumentType *arg = expiredTableKeys.takeFirst();
+        QString tableName = temporaryTableName(*arg);
 
         QSqlQuery query(database);
         if (!query.exec(QString("DROP TABLE %1").arg(tableName))) {
@@ -2541,7 +2548,7 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
         // See if we need to create any temporary tables to use in this query
         foreach (const QMailMessageKey::ArgumentType &a, messageKey.arguments()) {
             if (a.property == QMailMessageKey::Id && a.valueList.count() >= IdLookupThreshold) {
-                createTemporaryTable(messageKey);
+                createTemporaryTable(a);
             }
         }
 
