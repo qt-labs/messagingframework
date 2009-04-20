@@ -12,7 +12,7 @@
 #include <qmaillog.h>
 #include <qmailfolder.h>
 #include <qmailfolderkey.h>
-#ifndef USE_NONTHREADED_VIEW
+#ifndef USE_NONTHREADED_MODEL
 #include <qmailmessagethreadedmodel.h>
 #else
 #include <qmailmessagelistmodel.h>
@@ -330,7 +330,7 @@ void MessageListView::init()
     mFilterModel->setDynamicSortFilter(true);
 
     mMessageList->setUniformRowHeights(true);
-#ifndef USE_NONTHREADED_VIEW
+#ifndef USE_NONTHREADED_MODEL
     mMessageList->setRootIsDecorated(true);
 #else
     mMessageList->setRootIsDecorated(false);
