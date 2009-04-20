@@ -226,7 +226,7 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
         QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
         bool ok;
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[parentFolderId].insert(serverUid, SectionProperties(metaData.id()));
+        _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
     }
 
     _folderItr = _selectionMap.begin();
@@ -237,7 +237,7 @@ void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Loc
 {
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
-        SectionProperties sectionProperties(metaData.id(), location);
+        SectionProperties sectionProperties(location);
         bool ok;
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
         _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);
@@ -453,7 +453,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
             bool ok;
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-            _selectionMap[parentFolderId].insert(serverUid, SectionProperties(metaData.id()));
+            _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
@@ -476,7 +476,7 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
 
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
-        SectionProperties sectionProperties(metaData.id(), location, minimum);
+        SectionProperties sectionProperties(location, minimum);
         bool ok;
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
         _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);

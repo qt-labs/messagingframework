@@ -21,11 +21,9 @@
 
 
 struct SectionProperties {
-    SectionProperties(const QMailMessageId& id,
-                      const QMailMessagePart::Location &location = QMailMessagePart::Location(),
+    SectionProperties(const QMailMessagePart::Location &location = QMailMessagePart::Location(),
                       int minimum = All)
-        : _id(id),
-          _location(location),
+        :  _location(location),
           _minimum(minimum)
     {
     }
@@ -34,7 +32,6 @@ struct SectionProperties {
         All = -1
     };
 
-    QMailMessageId _id;
     QMailMessagePart::Location _location;
     int _minimum;
 };
