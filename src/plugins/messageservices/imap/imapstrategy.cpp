@@ -28,6 +28,24 @@
 static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
 static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
 
+static QString stripFolderPrefix(const QString &str)
+{
+    QString result;
+    int index;
+    if ((index = str.lastIndexOf('|')) != -1)
+        return str.mid(index + 1);
+    return str;
+}
+
+static QStringList stripFolderPrefix(const QStringList &list)
+{
+    QStringList result;
+    foreach(const QString &uid, list) {
+        result.append(stripFolderPrefix(uid));
+    }
+    return result;
+}
+
 ImapClient *ImapStrategyContextBase::client() 
 { 
     return _client; 
@@ -206,7 +224,9 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         // TODO - order messages within each folder by size ascending, or most recent first?
         QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-        _selectionMap[parentFolderId].insert(metaData.serverUid(), SectionProperties(metaData.id()));
+        bool ok;
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
+        _selectionMap[parentFolderId].insert(serverUid, SectionProperties(metaData.id()));
     }
 
     _folderItr = _selectionMap.begin();
@@ -218,7 +238,9 @@ void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Loc
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
         SectionProperties sectionProperties(metaData.id(), location);
-        _selectionMap[metaData.parentFolderId()].insert(metaData.serverUid(), sectionProperties);
+        bool ok;
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
+        _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);
     }
 
     _folderItr = _selectionMap.begin();
@@ -332,7 +354,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
            && (uidList.count() < maximum)
            && (!location.isValid())
            && (minimum == SectionProperties::All)) {
-        uidList.append(_selectionItr.key());
+        uidList.append(QString::number(_selectionItr.key()));
         location = _selectionItr.value()._location;
         minimum = _selectionItr.value()._minimum;
 
@@ -429,7 +451,9 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
             // TODO - order messages within each folder by size ascending, or most recent first?
             QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-            _selectionMap[parentFolderId].insert(metaData.serverUid(), SectionProperties(metaData.id()));
+            bool ok;
+            uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
+            _selectionMap[parentFolderId].insert(serverUid, SectionProperties(metaData.id()));
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
@@ -453,7 +477,9 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
         SectionProperties sectionProperties(metaData.id(), location, minimum);
-        _selectionMap[metaData.parentFolderId()].insert(metaData.serverUid(), sectionProperties);
+        bool ok;
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
+        _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);
 
         uint size = metaData.indicativeSize();
         uint bytes = metaData.size();
@@ -1302,19 +1328,6 @@ void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *c
 ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
 {
     setOptions((Options)(RetrieveMail | ImportChanges));
-}
-
-static QStringList stripFolderPrefix(const QStringList &list)
-{
-    QStringList result;
-    foreach(const QString &uid, list) {
-        int index = 0;
-        if ((index = uid.lastIndexOf('|')) != -1)
-            result.append(uid.mid(index + 1));
-        else
-            result.append(uid);
-    }
-    return result;
 }
 
 /* A strategy to exports changes made on the client to the server.

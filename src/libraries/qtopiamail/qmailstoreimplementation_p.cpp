@@ -101,6 +101,8 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
             this,
             SLOT(ipcMessage(QString,QByteArray)));
 
+    preFlushTimer.setSingleShot(true);
+
     flushTimer.setSingleShot(true);
     connect(&flushTimer,
             SIGNAL(timeout()),
@@ -250,7 +252,7 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
         flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
         
-        preFlushTimer.start(preFlushTimeout, this);
+        preFlushTimer.start(preFlushTimeout);
     }
 }
 
@@ -288,7 +290,7 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
         flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
-        preFlushTimer.start(preFlushTimeout, this);
+        preFlushTimer.start(preFlushTimeout);
     }
 }
 
@@ -326,7 +328,7 @@ void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType ch
         flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
-        preFlushTimer.start(preFlushTimeout, this);
+        preFlushTimer.start(preFlushTimeout);
     }
 }
 
@@ -358,7 +360,7 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
         flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
-        preFlushTimer.start(preFlushTimeout, this);
+        preFlushTimer.start(preFlushTimeout);
     }
 }
 
