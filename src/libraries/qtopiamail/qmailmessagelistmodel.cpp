@@ -34,7 +34,10 @@ public:
         bool operator== (const Item& other) { return (first == other.first); }
     };
 
-    QMailMessageListModelPrivate(const QMailMessageKey& key,
+    typedef QPair<QModelIndex, QPair<int, int> > LocationSequence;
+
+    QMailMessageListModelPrivate(QMailMessageListModel& model,
+                                 const QMailMessageKey& key,
                                  const QMailMessageSortKey& sortKey,
                                  bool sychronizeEnabled);
     ~QMailMessageListModelPrivate();
@@ -43,75 +46,46 @@ public:
 
     int indexOf(const QMailMessageId& id) const;
 
-    template<typename Comparator>
-    QList<Item>::iterator lowerBound(const QMailMessageId& id, Comparator& cmp) const;
-
     void invalidateCache();
 
+    bool additionLocations(const QMailMessageIdList &ids,
+                           QList<LocationSequence> *locations, 
+                           QMailMessageIdList *insertIds) const;
+
+    bool updateLocations(const QMailMessageIdList &ids, 
+                         QList<LocationSequence> *additions, 
+                         QList<LocationSequence> *deletions, 
+                         QList<LocationSequence> *updates,
+                         QMailMessageIdList *insertIds) const;
+
+    bool removalLocations(const QMailMessageIdList &ids, 
+                          QList<LocationSequence> *locations) const;
+
+    void insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id);
+    void removeItemAt(int row, const QModelIndex &parentIndex);
+
 public:
+    QList<QMailMessageListModelPrivate::LocationSequence> indicesToLocationSequence(const QList<int> &indices) const;
+
+    QMailMessageListModel &model;
     QMailMessageKey key;
     QMailMessageSortKey sortKey;
     bool ignoreUpdates;
     mutable QList<Item> itemList;
+    mutable QMap<QMailMessageId, int> itemIndex;
+    mutable QMailMessageIdList currentIds;
     mutable bool init;
     mutable bool needSynchronize;
     QCache<QString,QString> nameCache;
 };
 
-class ListMessageLessThan
-{
-public:
-    typedef QMailMessageListModelPrivate::Item Item;
 
-    ListMessageLessThan(const QMailMessageSortKey& sortKey);
-    ~ListMessageLessThan();
-
-    bool operator()(const QMailMessageId& lhs, const QMailMessageId& rhs);
-
-    bool operator()(const Item& lhs, const Item& rhs) { return operator()(lhs.id(), rhs.id()); }
-    bool operator()(const Item& lhs, const QMailMessageId& rhs) { return operator()(lhs.id(), rhs); }
-    bool operator()(const QMailMessageId& lhs, const Item& rhs) { return operator()(lhs, rhs.id()); }
-
-    bool invalidatedList() const;
-
-private:
-    QMailMessageSortKey mSortKey;
-    bool mInvalidatedList;
-};
-
-ListMessageLessThan::ListMessageLessThan(const QMailMessageSortKey& sortKey)
-:
-    mSortKey(sortKey),
-    mInvalidatedList(false)
-{
-}
-
-ListMessageLessThan::~ListMessageLessThan(){}
-
-bool ListMessageLessThan::operator()(const QMailMessageId& lhs, const QMailMessageId& rhs)
-{
-    QMailMessageKey firstKey(QMailMessageKey::id(lhs));
-    QMailMessageKey secondKey(QMailMessageKey::id(rhs));
-
-    // TODO: we have to do this in a more efficient manner:
-    QMailMessageIdList results = QMailStore::instance()->queryMessages(firstKey | secondKey, mSortKey);
-    if(results.count() != 2)
-    {
-        mInvalidatedList = true;
-        return false;
-    }
-    return results.first() == lhs;
-}
-
-bool ListMessageLessThan::invalidatedList() const
-{
-    return mInvalidatedList;
-}
-
-QMailMessageListModelPrivate::QMailMessageListModelPrivate(const QMailMessageKey& key,
+QMailMessageListModelPrivate::QMailMessageListModelPrivate(QMailMessageListModel& model,
+                                                           const QMailMessageKey& key,
                                                            const QMailMessageSortKey& sortKey,
                                                            bool ignoreUpdates)
 :
+    model(model),
     key(key),
     sortKey(sortKey),
     ignoreUpdates(ignoreUpdates),
@@ -127,12 +101,17 @@ QMailMessageListModelPrivate::~QMailMessageListModelPrivate()
 
 const QList<QMailMessageListModelPrivate::Item>& QMailMessageListModelPrivate::items() const
 {
-    if(!init)
-    {
+    if (!init) {
         itemList.clear();
-        QMailMessageIdList ids = QMailStore::instance()->queryMessages(key,sortKey);
-        foreach (const QMailMessageId& id, ids)
+        itemIndex.clear();
+
+        int index = 0;
+        currentIds = QMailStore::instance()->queryMessages(key, sortKey);
+        foreach (const QMailMessageId &id, currentIds) {
             itemList.append(QMailMessageListModelPrivate::Item(id, false));
+            itemIndex.insert(id, index);
+            ++index;
+        }
 
         init = true;
         needSynchronize = false;
@@ -143,21 +122,213 @@ const QList<QMailMessageListModelPrivate::Item>& QMailMessageListModelPrivate::i
 
 int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 {
-    Item item(id, false);
+    QMap<QMailMessageId, int>::const_iterator it = itemIndex.find(id);
+    if (it != itemIndex.end()) {
+        return it.value();
+    }
 
-    // Will return the matching item regardless of boolean state due to Item::operator==
-    return itemList.indexOf(item);
-}
-
-template<typename Comparator>
-QList<QMailMessageListModelPrivate::Item>::iterator QMailMessageListModelPrivate::lowerBound(const QMailMessageId& id, Comparator& cmp) const
-{
-    return qLowerBound(itemList.begin(), itemList.end(), id, cmp);
+    return -1;
 }
 
 void QMailMessageListModelPrivate::invalidateCache()
 {
     nameCache.clear();
+}
+
+bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &ids,
+                                                     QList<LocationSequence> *locations, 
+                                                     QMailMessageIdList *insertIds) const
+{
+    // Are any of these messages members of our display set?
+    // Note - we must only consider messages in the set given by (those we currently know +
+    // those we have now been informed of) because the database content may have changed between
+    // when this event was recorded and when we're processing the signal.
+    
+    QMailMessageKey idKey(QMailMessageKey::id(currentIds + ids));
+    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(key & idKey, sortKey));
+
+    int additionCount = newIds.count() - itemList.count();
+    if (additionCount <= 0) {
+        // Nothing has been added
+        return true;
+    }
+
+    // Find the locations for these messages by comparing to the existing list
+    QList<QMailMessageId>::const_iterator nit = newIds.begin(), nend = newIds.end();
+    QList<Item>::const_iterator iit = itemList.begin(), iend = itemList.end();
+
+    QList<int> insertIndices;
+    QMap<int, QMailMessageId> indexId;
+    for (int index = 0; nit != nend; ++nit, ++index) {
+        const QMailMessageId &id(*nit);
+
+        if ((iit == iend) || ((*iit).id() != id)) {
+            // We need to insert this item here
+            insertIndices.append(index);
+            indexId.insert(index, id);
+        } else {
+            ++iit;
+        }
+    }
+
+    Q_ASSERT(insertIndices.count() == additionCount);
+
+    *locations = indicesToLocationSequence(insertIndices);
+    foreach (int index, insertIndices) {
+        insertIds->append(indexId[index]);
+    }
+    return true;
+}
+
+bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids, 
+                                                   QList<LocationSequence> *additions, 
+                                                   QList<LocationSequence> *deletions, 
+                                                   QList<LocationSequence> *updates,
+                                                   QMailMessageIdList *insertIds) const
+{
+    QList<int> insertIndices;
+    QList<int> removeIndices;
+    QList<int> updateIndices;
+
+    // Find the updated positions for our messages
+    QMailMessageKey idKey(QMailMessageKey::id((currentIds.toSet() + ids.toSet()).toList()));
+    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(key & idKey, sortKey));
+    QMap<QMailMessageId, int> newPositions;
+
+    int index = 0;
+    foreach (const QMailMessageId &id, newIds) {
+        newPositions.insert(id, index);
+        ++index;
+    }
+
+    int delta = (newIds.count() - itemList.count());
+
+    QMap<int, QMailMessageId> indexId;
+    foreach (const QMailMessageId &id, ids) {
+        int newIndex = -1;
+        QMap<QMailMessageId, int>::const_iterator it = newPositions.find(id);
+        if (it != newPositions.end()) {
+            newIndex = it.value();
+        }
+
+        int oldIndex(indexOf(id));
+        if (oldIndex == -1) {
+            // This message was not previously in our set - add it
+            if (newIndex != -1) {
+                insertIndices.append(newIndex);
+                indexId.insert(newIndex, id);
+            }
+        } else {
+            // We already had this message
+            if (newIndex == -1) {
+                removeIndices.append(oldIndex);
+            } else {
+                if (newIndex == oldIndex) {
+                    // This message is updated but has not changed position
+                    updateIndices.append(newIndex);
+                } else {
+                    // The item has changed position - delete and re-add
+                    removeIndices.append(oldIndex);
+                    insertIndices.append(newIndex);
+                    indexId.insert(newIndex, id);
+                }
+            }
+        }
+    }
+
+    Q_ASSERT((insertIndices.count() - removeIndices.count()) == delta);
+
+    // Sort the lists to yield ascending order
+    qSort(insertIndices);
+    qSort(removeIndices);
+    qSort(updateIndices);
+
+    *additions = indicesToLocationSequence(insertIndices);
+    *deletions = indicesToLocationSequence(removeIndices);
+    *updates = indicesToLocationSequence(updateIndices);
+
+    foreach (int index, insertIndices) {
+        insertIds->append(indexId[index]);
+    }
+    return true;
+}
+
+bool QMailMessageListModelPrivate::removalLocations(const QMailMessageIdList &ids, QList<LocationSequence> *locations) const
+{
+    QList<int> removeIndices;
+    foreach (const QMailMessageId &id, ids) {
+        int index(indexOf(id));
+        if (index != -1) {
+            removeIndices.append(index);
+        }
+    }
+    
+    // Sort the indices to yield ascending order (they must be deleted in descending order!)
+    qSort(removeIndices);
+
+    *locations = indicesToLocationSequence(removeIndices);
+    return true;
+}
+
+void QMailMessageListModelPrivate::insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id)
+{
+    itemList.insert(row, QMailMessageListModelPrivate::Item(id));
+    itemIndex.insert(id, row);
+    currentIds.append(id);
+
+    // Adjust the indices for the items that have been moved
+    QList<Item>::iterator it = itemList.begin() + (row + 1), end = itemList.end();
+    for ( ; it != end; ++it) {
+        itemIndex[(*it).id()] += 1;
+    }
+
+    Q_UNUSED(parentIndex)
+}
+
+void QMailMessageListModelPrivate::removeItemAt(int row, const QModelIndex &parentIndex)
+{
+    QMailMessageId id(itemList.at(row).id());
+    itemIndex.remove(id);
+    itemList.removeAt(row);
+    currentIds.append(id);
+
+    // Adjust the indices for the items that have been moved
+    QList<Item>::iterator it = itemList.begin() + row, end = itemList.end();
+    for ( ; it != end; ++it) {
+        itemIndex[(*it).id()] -= 1;
+    }
+
+    Q_UNUSED(parentIndex)
+}
+
+QList<QMailMessageListModelPrivate::LocationSequence> QMailMessageListModelPrivate::indicesToLocationSequence(const QList<int> &indices) const
+{
+    QList<LocationSequence> result;
+
+    QList<int>::const_iterator it = indices.begin(), end = indices.end();
+    for (; it != end; ++it) {
+        LocationSequence loc;
+        loc.first = QModelIndex();
+        loc.second.first = *it;
+        loc.second.second = *it;
+        
+        // See if the following indices form a sequence
+        QList<int>::const_iterator next = it + 1;
+        while (next != end) {
+            if (*next == *(next - 1) + 1) {
+                // This ID is part of the same sequence
+                loc.second.second = *next;
+                ++it;
+                ++next;
+            } else {
+                next = end;
+            }
+        }
+
+        result.append(loc);
+    }
+
+    return result;
 }
 
 
@@ -201,7 +372,7 @@ void QMailMessageListModelPrivate::invalidateCache()
 QMailMessageListModel::QMailMessageListModel(QObject* parent)
 :
     QAbstractListModel(parent),
-    d(new QMailMessageListModelPrivate(QMailMessageKey::nonMatchingKey(),QMailMessageSortKey(),false))
+    d(new QMailMessageListModelPrivate(*this,QMailMessageKey::nonMatchingKey(),QMailMessageSortKey::id(),false))
 {
     connect(QMailStore::instance(),
             SIGNAL(messagesAdded(QMailMessageIdList)),
@@ -340,7 +511,13 @@ QMailMessageSortKey QMailMessageListModel::sortKey() const
 
 void QMailMessageListModel::setSortKey(const QMailMessageSortKey& sortKey) 
 {
-    d->sortKey = sortKey;
+    // We need a sort key defined, to preserve the ordering in DB records for addition/removal events
+    if (sortKey.isEmpty()) {
+        d->sortKey = QMailMessageSortKey::id();
+    } else {
+        d->sortKey = sortKey;
+    }
+
     fullRefresh(true);
 }
 
@@ -348,186 +525,137 @@ void QMailMessageListModel::setSortKey(const QMailMessageSortKey& sortKey)
 
 void QMailMessageListModel::messagesAdded(const QMailMessageIdList& ids)
 {
-    d->needSynchronize = true;
-    if(d->ignoreUpdates)
+    if (!d->init) {
         return;
-
-    //TODO change this code to use our own searching and insertion routines
-    //for more control
-    //use id sorted indexes
+    }
     
-    if(!d->init)
-        return;
-    
-    QMailMessageKey idKey(QMailMessageKey::id(ids));
-
-    QMailMessageIdList validIds = QMailStore::instance()->queryMessages(idKey & d->key);
-    if (validIds.isEmpty()) { 
-        return;
-    } else if (validIds.count() > fullRefreshCutoff) {
-        fullRefresh(false);
+    if (d->ignoreUpdates) {
+        d->needSynchronize = true;
         return;
     }
 
-    if(!d->sortKey.isEmpty())
-    { 
-        foreach(const QMailMessageId &id,validIds)
-        {
-            ListMessageLessThan lessThan(d->sortKey);
+    QList<QMailMessageListModelPrivate::LocationSequence> locations;
+    QMailMessageIdList insertIds;
 
-            //if sorting the list fails, then resort to a complete refresh
-            if(lessThan.invalidatedList())
-                fullRefresh(false);
-            else
-            {
-                QList<QMailMessageListModelPrivate::Item>::iterator itr = d->lowerBound(id, lessThan);
-                int newIndex = (itr - d->itemList.begin());
+    // Find where these messages should be added
+    if (!d->additionLocations(ids, &locations, &insertIds)) {
+        // We need to refresh the entire content
+        fullRefresh(false);
+    } else if (!locations.isEmpty()) {
+        QMailMessageIdList::const_iterator it = insertIds.begin();
 
-                beginInsertRows(QModelIndex(),newIndex,newIndex);
-                d->itemList.insert(newIndex, QMailMessageListModelPrivate::Item(id));
-                endInsertRows();
+        foreach (const QMailMessageListModelPrivate::LocationSequence &seq, locations) {
+            const QPair<int, int> rows(seq.second);
+
+            // Insert the item(s) at this location
+            beginInsertRows(seq.first, rows.first, rows.second);
+            for (int i = rows.first; i <= rows.second; ++i) {
+                d->insertItemAt(i, seq.first, *it);
+                ++it;
             }
+            endInsertRows();
         }
     }
-    else
-    {
-        int index = d->itemList.count();
-
-        beginInsertRows(QModelIndex(),index,(index + validIds.count() - 1));
-        foreach(const QMailMessageId &id,validIds)
-            d->itemList.append(QMailMessageListModelPrivate::Item(id));
-        endInsertRows();
-    }
-    d->needSynchronize = false;
 }
 
 /*! \internal */
 
 void QMailMessageListModel::messagesUpdated(const QMailMessageIdList& ids)
 {
-    d->needSynchronize = true;
-    if(d->ignoreUpdates)
+    if (!d->init) {
         return;
-
-    //TODO change this code to use our own searching and insertion routines
-    //for more control
-    //use id sorted indexes
-
-    if(!d->init)
+    }
+    
+    if (d->ignoreUpdates) {
+        d->needSynchronize = true;
         return;
+    }
 
-    QMailMessageKey idKey(QMailMessageKey::id(ids));
+    QList<QMailMessageListModelPrivate::LocationSequence> insertions;
+    QList<QMailMessageListModelPrivate::LocationSequence> removals;
+    QList<QMailMessageListModelPrivate::LocationSequence> updates;
+    QMailMessageIdList insertIds;
 
-    QMailMessageIdList validIds = QMailStore::instance()->queryMessages(idKey & d->key);
-    if (validIds.isEmpty()) { 
-        return;
-    } else if (validIds.count() > fullRefreshCutoff) {
+    // Find where these messages should be added/removed/updated
+    if (!d->updateLocations(ids, &insertions, &removals, &updates, &insertIds)) {
+        // We need to refresh the entire content
         fullRefresh(false);
-        return;
-    }
+    } else {
+        // Remove any items that are no longer present
+        if (!removals.isEmpty()) {
+            // Remove the items in reverse order
+            for (int n = removals.count(); n > 0; --n) {
+                const QMailMessageListModelPrivate::LocationSequence &seq(removals.at(n - 1));
+                const QPair<int, int> rows(seq.second);
 
-    //if the key is empty the id's will be returned valid and invalid
-    if(!d->key.isEmpty())
-    {
-        QMailMessageIdList invalidIds = QMailStore::instance()->queryMessages(idKey & ~d->key);
-
-        foreach(const QMailMessageId &id,invalidIds)
-        {
-            //get the index
-            int index = d->indexOf(id);
-            if(index == -1) 
-                continue;
-
-            beginRemoveRows(QModelIndex(),index,index);
-            d->itemList.removeAt(index);
-            endRemoveRows();
-        }
-    }
-
-    ListMessageLessThan lessThan(d->sortKey);
-
-    foreach(const QMailMessageId &id, validIds)
-    {
-        int index = d->indexOf(id);
-        if(index == -1) //insert
-        {
-            if(lessThan.invalidatedList())
-                fullRefresh(false);
-            else
-            {
-                QList<QMailMessageListModelPrivate::Item>::iterator itr = d->lowerBound(id, lessThan);
-                int newIndex = (itr - d->itemList.begin());
-
-                beginInsertRows(QModelIndex(),newIndex,newIndex);
-                d->itemList.insert(itr, QMailMessageListModelPrivate::Item(id));
-                endInsertRows();
+                beginRemoveRows(seq.first, rows.first, rows.second);
+                for (int i = rows.second; i >= rows.first; --i) {
+                    d->removeItemAt(i, seq.first);
+                }
+                endRemoveRows();
             }
-
         }
-        else //update
-        {
-            if(lessThan.invalidatedList())
-                fullRefresh(false);
-            else
-            {
-                QList<QMailMessageListModelPrivate::Item>::iterator itr = d->lowerBound(id, lessThan);
-                int newIndex = (itr - d->itemList.begin());
 
-                if((newIndex == index) || (newIndex == index + 1))
-                {
-                    // This item would be inserted either immediately before or after itself
-                    QModelIndex modelIndex = createIndex(index,0);
-                    emit dataChanged(modelIndex,modelIndex);
-                }
-                else
-                {
-                    beginRemoveRows(QModelIndex(),index,index);
-                    d->itemList.removeAt(index);
-                    endRemoveRows();
+        // Insert any new items
+        QMailMessageIdList::const_iterator it = insertIds.begin();
 
-                    if (newIndex > index)
-                        --newIndex;
+        foreach (const QMailMessageListModelPrivate::LocationSequence &seq, insertions) {
+            const QPair<int, int> rows(seq.second);
 
-                    beginInsertRows(QModelIndex(),newIndex,newIndex);
-                    d->itemList.insert(newIndex, QMailMessageListModelPrivate::Item(id));
-                    endInsertRows();
-                }
+            // Insert the item(s) at this location
+            beginInsertRows(seq.first, rows.first, rows.second);
+            for (int i = rows.first; i <= rows.second; ++i) {
+                d->insertItemAt(i, seq.first, *it);
+                ++it;
+            }
+            endInsertRows();
+        }
+
+        // Update any items still at the same location
+        foreach (const QMailMessageListModelPrivate::LocationSequence &seq, insertions) {
+            const QPair<int, int> rows(seq.second);
+
+            // Update the item(s) at this location
+            for (int i = rows.first; i <= rows.second; ++i) {
+                QModelIndex idx(index(i, 0, seq.first));
+                emit dataChanged(idx, idx);
             }
         }
     }
-    d->needSynchronize = false;
 }
 
 /*! \internal */
 
 void QMailMessageListModel::messagesRemoved(const QMailMessageIdList& ids)
 {
-    d->needSynchronize = true;
-    if(d->ignoreUpdates)
+    if (!d->init) {
         return;
-
-    if(!d->init)
+    }
+    
+    if (d->ignoreUpdates) {
+        d->needSynchronize = true;
         return;
-
-    QList<int> indexes;
-
-    foreach (const QMailMessageId &id, ids) {
-        int index = d->indexOf(id);
-        if (index != -1 && !indexes.contains(index))
-            indexes.append(index);
     }
 
-    if (!indexes.isEmpty()) {
-        qSort(indexes.begin(), indexes.end(), qGreater<int>());
+    QList<QMailMessageListModelPrivate::LocationSequence> locations;
 
-        foreach (int index, indexes) {
-            beginRemoveRows(QModelIndex(), index, index);
-            d->itemList.removeAt(index);
+    // Find where these messages should be removed from
+    if (!d->removalLocations(ids, &locations)) {
+        // We need to refresh the entire content
+        fullRefresh(false);
+    } else if (!locations.isEmpty()) {
+        // Remove the items in reverse order
+        for (int n = locations.count(); n > 0; --n) {
+            const QMailMessageListModelPrivate::LocationSequence &seq(locations.at(n - 1));
+            const QPair<int, int> rows(seq.second);
+
+            beginRemoveRows(seq.first, rows.first, rows.second);
+            for (int i = rows.second; i >= rows.first; --i) {
+                d->removeItemAt(i, seq.first);
+            }
             endRemoveRows();
         }
     }
-
-    d->needSynchronize = false;
 }
 
 /*!
