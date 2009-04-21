@@ -9,8 +9,8 @@
 ****************************************************************************/
 
 #include "readmail.h"
-#include <QApplication>
 #include <qmailviewer.h>
+#include <qmaillog.h>
 #include <qlabel.h>
 #include <qimage.h>
 #include <qaction.h>
@@ -35,8 +35,9 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QMenuBar>
-#include <qmaillog.h>
 #include <QPalette>
+#include <QApplication>
+#include <QProcess>
 
 class SaveContactDialog : public QDialog
 {
@@ -230,10 +231,6 @@ void ReadMail::linkClicked(const QUrl &lnk)
     } else if (str.startsWith("mailto:")) {
         // strip leading 'mailto:'
         emit sendMessageTo( QMailAddress(str.mid(7)), mail.messageType() );
-    } else if (str.startsWith("http://")) {
-        //QtopiaServiceRequest e( "WebAccess", "openURL(QString)" );
-        //e << str;
-        //e.send();
     } else if (mail.messageType() == QMailMessage::System && str.startsWith(QLatin1String("qtopiaservice:"))) {
         int commandPos  = str.indexOf( QLatin1String( "::" ) ) + 2;
         int argPos      = str.indexOf( '?' ) + 1;
@@ -252,6 +249,18 @@ void ReadMail::linkClicked(const QUrl &lnk)
         //foreach( const QString &arg, args )
         //    e << arg;
         //e.send();
+    } else { 
+        // Try opening this link via a service
+        //QtopiaServiceRequest e( "WebAccess", "openURL(QString)" );
+        //e << str;
+        //e.send();
+        QProcess launcher;
+        launcher.start("xdg-open", QStringList() << str);
+        if (!launcher.waitForStarted()) {
+            qWarning() << "Unable to execute URL:" << str;
+        } else if (!launcher.waitForFinished()) {
+            qWarning() << "Unable to wait for execution of URL:" << str;
+        }
     }
 }
 

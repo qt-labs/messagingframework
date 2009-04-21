@@ -101,11 +101,6 @@ void QTMailWindow::setVisible(bool visible)
     QWidget::setVisible(visible);
 }
 
-void QTMailWindow::setDocument(const QString &address)
-{
-    emailClient->sendMessageTo(QMailAddress(address), QMailMessage::AnyType);
-}
-
 QWidget* QTMailWindow::currentWidget() const
 {
     return views->currentWidget();

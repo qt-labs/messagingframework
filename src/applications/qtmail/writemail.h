@@ -21,6 +21,7 @@ class QContent;
 class QMailComposerInterface;
 class QStackedWidget;
 class SelectComposerWidget;
+class QToolButton;
 
 class WriteMail : public QMainWindow
 {
@@ -30,19 +31,18 @@ public:
     WriteMail(QWidget* parent = 0);
     virtual ~WriteMail();
 
-    void reply(const QMailMessage& replyMail, int action);
+    void create(const QMailMessage& initMessage = QMailMessage());
+    void forward(const QMailMessage& forwardMail);
+    void reply(const QMailMessage& replyMail);
     void modify(const QMailMessage& previousMessage);
-    void setRecipients(const QString &emails, const QString &numbers);
-    void setRecipient(const QString &recipient);
-    void setSubject(const QString &subject);
-    void setBody(const QString &text, const QString &type);
+
     bool hasContent();
     QString composer() const;
     bool forcedClosure();
 
 public slots:
     bool saveChangesOnRequest();
-    bool prepareComposer( QMailMessage::MessageType = QMailMessage::AnyType, bool detailsOnly = false );
+    bool prepareComposer( QMailMessage::MessageType = QMailMessage::AnyType);
 
 signals:
     void editAccounts();
@@ -58,27 +58,32 @@ protected slots:
     void discard();
     bool draft();
     bool composerSelected(const QPair<QString, QMailMessage::MessageType> &selection);
-    void contextChanged();
+    void statusChanged(const QString& status);
 
 private:
     bool largeAttachments();
-    bool buildMail();
+    bool buildMail(const QMailAccountId& accountId);
     void init();
     QString signature() const;
     bool isComplete() const;
     bool changed() const;
     void setComposer( const QString &id );
     void setTitle(const QString& title);
+    void updateSendAction(QMailMessage::MessageType messageType);
 
 private:
     QMailMessage mail;
     QMailComposerInterface *m_composerInterface;
-    QAction *m_cancelAction, *m_draftAction;
+    QAction *m_cancelAction, *m_draftAction, *m_sendAction;
+    QMenu* m_sendViaMenu;
+    QToolButton* m_sendButton;
     QStackedWidget* m_widgetStack;
     QWidget *m_mainWindow;
-    bool hasMessageChanged;
-    bool _detailsOnly;
+    bool m_hasMessageChanged;
     SelectComposerWidget* m_selectComposerWidget;
+    QMailMessageId m_precursorId;
+    int m_replyAction;
+    QToolBar *m_toolbar;
 };
 
 #endif

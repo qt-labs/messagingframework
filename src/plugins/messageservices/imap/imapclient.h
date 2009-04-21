@@ -53,7 +53,9 @@ public:
 
     QStringList serverUids(const QMailFolderId &folderId) const;
     QStringList serverUids(const QMailFolderId &folderId, quint64 messageStatusFilter, bool set = true) const;
-
+    QStringList serverUids(QMailMessageKey key) const;
+    QMailMessageKey messagesKey(const QMailFolderId &folderId) const;
+    QMailMessageKey trashKey(const QMailFolderId &folderId) const;
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
     void idling();
@@ -103,10 +105,6 @@ private:
     void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void updateFolderCountStatus(QMailFolder *folder);
-
-    QStringList serverUids(QMailMessageKey key) const;
-    QMailMessageKey messagesKey(const QMailFolderId &folderId) const;
-    QMailMessageKey trashKey(const QMailFolderId &folderId) const;
 
 private:
     QMailAccountConfiguration _config;

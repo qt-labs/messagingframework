@@ -80,6 +80,7 @@ PopSettings::PopSettings()
 void PopSettings::intervalCheckChanged(int enabled)
 {
     intervalPeriod->setEnabled(enabled);
+    roamingCheckBox->setEnabled(enabled);
 }
 
 void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
@@ -93,12 +94,8 @@ void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountC
 #ifndef QT_NO_OPENSSL
         encryptionIncoming->setCurrentIndex(0);
 #endif
-        deleteCheckBox->setEnabled(true);
-        thresholdCheckBox->setEnabled(true);
         intervalCheckBox->setChecked(false);
-        intervalCheckBox->setEnabled(false);
         roamingCheckBox->setChecked(false);
-        roamingCheckBox->setEnabled(false);
     } else {
         PopConfiguration popConfig(config);
 
@@ -115,8 +112,10 @@ void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountC
         intervalCheckBox->setChecked(popConfig.checkInterval() > 0);
         intervalPeriod->setValue(qAbs(popConfig.checkInterval() ));
         roamingCheckBox->setChecked(!popConfig.intervalCheckRoamingEnabled());
-        roamingCheckBox->setEnabled(intervalCheckBox->isChecked());
     }
+
+    intervalPeriod->setEnabled(false);
+    roamingCheckBox->setEnabled(intervalCheckBox->isChecked());
 }
 
 bool PopSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration *config)

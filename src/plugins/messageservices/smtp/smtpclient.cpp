@@ -13,10 +13,38 @@
 #include "smtpauthenticator.h"
 #include "smtpconfiguration.h"
 
+#include <QHostAddress>
 #include <QTextCodec>
 #include <qmaillog.h>
 #include <qmailaddress.h>
+#include <qmailstore.h>
 #include <qmailtransport.h>
+
+
+static bool initialiseRng()
+{
+    qsrand(QDateTime::currentDateTime().toUTC().toTime_t());
+    return true;
+}
+
+static QByteArray messageId(const QByteArray& domainName, quint32 addressComponent)
+{
+    static bool rngInitialised(initialiseRng());
+    Q_UNUSED(rngInitialised)
+
+    quint32 randomComponent(static_cast<quint32>(qrand()));
+    quint32 timeComponent(QDateTime::currentDateTime().toUTC().toTime_t());
+
+    return ("<" + 
+            QString::number(randomComponent, 36) + 
+            "." +
+            QString::number(timeComponent, 36) +
+            "." +
+            QString::number(addressComponent, 36) +
+            "-qmf@" +
+            domainName +
+            ">").toAscii();
+}
 
 
 SmtpClient::SmtpClient(QObject* parent)
@@ -76,6 +104,10 @@ void SmtpClient::newConnection()
     progressSendSize = 0;
     emit progressChanged(progressSendSize, totalSendSize);
 
+    status = Init;
+    sending = true;
+    domainName = QByteArray();
+
     if (!transport) {
         // Set up the transport
         transport = new QMailTransport("SMTP");
@@ -92,16 +124,7 @@ void SmtpClient::newConnection()
                 this, SLOT(transportError(int,QString)));
     }
 
-    doSend();
-}
-
-void SmtpClient::doSend()
-{
-    status = Init;
-    sending = true;
-
     qMailLog(SMTP) << "Open SMTP connection" << flush;
-    SmtpConfiguration smtpCfg(config);
     transport->open(smtpCfg.smtpServer(), smtpCfg.smtpPort(), static_cast<QMailTransport::EncryptType>(smtpCfg.smtpEncryption()));
 }
 
@@ -244,6 +267,16 @@ void SmtpClient::nextAction(const QString &response)
             // EHLO is not implemented by this server - fallback to HELO
             sendCommand("HELO qtopia-messageserver");
         } else if (responseCode == 250) {
+            if (domainName.isEmpty()) {
+                // Extract the domain name from the greeting
+                int index = response.indexOf(' ', 4);
+                if (index == -1) {
+                    domainName = response.mid(4).trimmed().toAscii();
+                } else {
+                    domainName = response.mid(4, index - 4).trimmed().toAscii();
+                }
+            }
+
             if (response[3] == '-') {
                 // This is to be followed by extension keywords
                 status = Extension;
@@ -308,6 +341,17 @@ void SmtpClient::nextAction(const QString &response)
     case Connected:
     {
         // We are now connected with appropriate encryption
+        
+        // Find the properties of our connection
+        QHostAddress localAddress(transport->socket().localAddress());
+        if (localAddress.isNull()) {
+            // Better to use the remote address than nothing...
+            localAddress = transport->socket().peerAddress();
+            if (localAddress.isNull()) {
+                localAddress = QHostAddress(QHostAddress::LocalHost);
+            }
+        }
+        addressComponent = localAddress.toIPv4Address();
 
         // Find the authentication mode to use
         QByteArray authCmd(SmtpAuthenticator::getAuthentication(config.serviceConfiguration("smtp"), capabilities));
@@ -395,6 +439,9 @@ void SmtpClient::nextAction(const QString &response)
             sendingId = mailItr->mail.id();
             sentLength = 0;
 
+            // Set the message's message ID
+            mailItr->mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
+
             transport->mark();
             mailItr->mail.toRfc2822(transport->stream(), QMailMessage::TransmissionFormat);
             messageLength = transport->bytesSinceMark();
@@ -403,7 +450,6 @@ void SmtpClient::nextAction(const QString &response)
 
             qMailLog(SMTP) << "Body: sent:" << messageLength << "bytes";
 
-            mailItr++;
             status = Sent;
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
@@ -412,13 +458,26 @@ void SmtpClient::nextAction(const QString &response)
     }
     case Sent:  
     {
-        bool moreToSend(mailItr != mailList.end());
+        QMailMessageId msgId(mailItr->mail.id());
 
+        // The last send operation is complete
         if (responseCode == 250) {
-            if (sendingId.isValid())
-                emit messageTransmitted(sendingId);
+            if (msgId.isValid()) {
+                // Update the message to store the message-ID and mark as sent
+                mailItr->mail.setStatus(Sent, true);
+                if (!QMailStore::instance()->updateMessage(&mailItr->mail)) {
+                    qWarning() << "Unable to update message after transmission:" << msgId;
+                }
 
-            if (!moreToSend) {
+                emit messageTransmitted(msgId);
+
+                messageProcessed(msgId);
+                sendingId = QMailMessageId();
+            }
+
+            mailItr++;
+            if (mailItr == mailList.end()) {
+                // Completed successfully
                 sendCommand("QUIT");
 
                 sending = false;
@@ -430,21 +489,14 @@ void SmtpClient::nextAction(const QString &response)
                 mailList.clear();
 
                 emit updateStatus(tr("Sent %n messages", "", count));
+            } else {
+                // More messages to send
+                status = From;
+                nextAction(QString());
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
-        }
-
-        if (sendingId.isValid()) {
-            // The last send operation is complete
-            messageProcessed(sendingId);
-            sendingId = QMailMessageId();
-        }
-
-        if (moreToSend) {
-            // More messages to send
-            status = From;
-            nextAction(QString());
+            messageProcessed(msgId);
         }
         break;
     }

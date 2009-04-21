@@ -120,6 +120,12 @@ bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds, 
         return false;
     }
 
+    if (spec == QMailRetrievalAction::Flags) {
+        // Just report success
+        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        return true;
+    }
+
     SelectionMap selectionMap;
     foreach (const QMailMessageId& id, messageIds) {
         QMailMessageMetaData message(id);

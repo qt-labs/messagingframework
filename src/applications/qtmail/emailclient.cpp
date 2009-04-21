@@ -174,9 +174,8 @@ void MessageUiBase::viewSearchResults(const QMailMessageKey&, const QString& tit
         caption = tr("Search Results");
 }
 
-void MessageUiBase::viewComposer(const QString& title)
+void MessageUiBase::viewComposer()
 {
-    writeMailWidget()->setWindowTitle(title);
     writeMailWidget()->show();
 }
 
@@ -1725,7 +1724,10 @@ void EmailClient::resend(const QMailMessage& message, int replyType)
         return;
     }
 
-    writeMailWidget()->reply(message, replyType);
+    if(replyType == ReadMail::Forward)
+        writeMailWidget()->forward(message);
+    else if(replyType == ReadMail::Reply)
+        writeMailWidget()->reply(message);
 
     if ( writeMailWidget()->composer().isEmpty() ) {
         // failed to create new composer, maybe due to no email account
@@ -1761,7 +1763,7 @@ void EmailClient::retrieveMoreMessages()
         qWarning() << "retrieveMoreMessages called while retrieval in progress";
         return;
     }
-    
+
     QMailFolderId folderId(messageListView()->folderId());
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
@@ -1791,7 +1793,15 @@ void EmailClient::retrieveVisibleMessagesFlags()
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
     if (ids.isEmpty())
         return;
-    
+
+    // Ensure that we only ask for flag updates for messages that are in account folders
+    QMailMessageKey idKey(QMailMessageKey::id(ids));
+    QMailFolderKey accountFolderKey(QMailFolderKey::parentAccountId(QMailAccountId(), QMailDataComparator::NotEqual));
+
+    ids = QMailStore::instance()->queryMessages(idKey & QMailMessageKey::parentFolderId(accountFolderKey));
+    if (ids.isEmpty())
+        return;
+
     QMailServiceAction::Activity activity(flagRetrievalAction->activity());
     if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
         // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
@@ -1819,7 +1829,9 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
     }
 
     if (writeMailWidget()->prepareComposer(type)) {
-        writeMailWidget()->setRecipient(address.address());
+        QMailMessage newMessage;
+        newMessage.setTo(QMailAddressList() << address);
+        writeMailWidget()->create(newMessage);
         viewComposer();
     }
 }

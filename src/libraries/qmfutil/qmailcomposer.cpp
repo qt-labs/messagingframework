@@ -177,17 +177,6 @@ QIcon QMailComposerInterface::displayIcon(QMailMessage::MessageType type) const
     return mapping(key())->displayIcon(type);
 }
 
-/*!
-    Sets the message to contain body with \a text, if that is meaningful to the message type created by the composer.
-    The text has the mime-type \a type.
-*/
-void QMailComposerInterface::setBody( const QString& text, const QString &type )
-{
-    // default implementation does nothing
-    Q_UNUSED(text)
-    Q_UNUSED(type)
-}
-
 /* !
     Adds \a item as an attachment to the message in the composer. The \a action parameter
     specifies what the composer should do with \a item.
@@ -208,14 +197,11 @@ void QMailComposerInterface::setSignature( const QString& signature )
     Q_UNUSED(signature)
 }
 
-/*!
-    Sets the composer to produce a message of type \a type.
-*/
-void QMailComposerInterface::setMessageType( QMailMessage::MessageType type )
+QList<QAction*> QMailComposerInterface::actions() const
 {
-    // default implementation does nothing - override for composers supporting multiple types
-    Q_UNUSED(type)
+    return QList<QAction*>();
 }
+
 
 /*!
     \fn bool QMailComposerInterface::isEmpty() const
@@ -248,31 +234,10 @@ void QMailComposerInterface::setMessageType( QMailMessage::MessageType type )
 */
 
 /*!
-    \fn QString QMailComposerInterface::from() const
-
-    Returns the from address string for the currently composed message.
-*/
-
-/*!
     \fn QMailAccount QMailComposerInterface::fromAccount() const
 
     Returns the sending account for the currently composed message or an
     invalid \c QMailAccount if no account could be set.
-*/
-
-/*!
-    \fn bool QMailComposerInterface::isDetailsOnlyMode() const
-
-    Returns \c true if the composer is in details only mode, or \c false otherwise.
-    This only applies to composers which may present a different view for message
-    address details entry.
-*/
-
-/*!
-    \fn void QMailComposerInterface::setDetailsOnlyMode(bool val)
-
-    If supported, sets the composer into details only mode if \a val is \c true.
-    Otherwise the composer is set into normal composition mode.
 */
 
 /*!
@@ -281,35 +246,16 @@ void QMailComposerInterface::setMessageType( QMailMessage::MessageType type )
     Returns \c true if the composed message is ready to send or \c false otherwise.
 */
 
+QString QMailComposerInterface::status() const
+{
+    return QString();
+}
+
 /*!
     \fn void QMailComposerInterface::reply(const QMailMessage& source, int type)
 
     Presets the content of the composer from the message \a source. The message
     may be presented differently based on the type of composition specified by \a type.
-*/
-
-/*!
-    \fn void QMailComposerInterface::setFrom(const QString& fromAddress)
-
-    Sets the composed message from address to \a fromAddress.
-*/
-
-/*!
-    \fn void QMailComposerInterface::setSubject(const QString& subject)
-
-    Sets the composed message subject to \a subject.
-*/
-
-/*!
-    \fn void QMailComposerInterface::setTo(const QString& to)
-
-    Sets the composed message recipient address to \a to.
-*/
-
-/*!
-    \fn QString QMailComposerInterface::to() const
-
-    Returns the recipient address of the composed message.
 */
 
 /*!

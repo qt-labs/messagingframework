@@ -41,7 +41,6 @@ public:
 
 public slots:
     void closeEvent(QCloseEvent *e);
-    void setDocument(const QString &);
 
 protected:
     void init();

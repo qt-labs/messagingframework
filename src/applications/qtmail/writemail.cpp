@@ -20,6 +20,21 @@
 #include <QSettings>
 #include <qtmailwindow.h>
 #include <QMenuBar>
+#include <QToolBar>
+#include "readmail.h"
+#include <qmailaccountkey.h>
+#include <qmailstore.h>
+#include <QToolButton>
+
+static QMailAccountIdList sendingAccounts(QMailMessage::MessageType messageType)
+{
+    QMailAccountKey statusKey(QMailAccountKey::status(QMailAccount::CanTransmit, QMailDataComparator::Includes));
+    statusKey &= QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes);
+    QMailAccountKey typeKey(QMailAccountKey::messageType(messageType));
+    QMailAccountIdList accountIds = QMailStore::instance()->queryAccounts(statusKey & typeKey);
+    return accountIds;
+
+}
 
 WriteMail::WriteMail(QWidget* parent)
     :
@@ -27,13 +42,16 @@ WriteMail::WriteMail(QWidget* parent)
     m_composerInterface(0),
     m_cancelAction(0),
     m_draftAction(0),
+    m_sendAction(0),
+    m_sendViaMenu(0),
+    m_sendButton(0),
     m_widgetStack(0),
-    _detailsOnly(false),
-    m_selectComposerWidget(0)
+    m_selectComposerWidget(0),
+    m_replyAction(0),
+    m_toolbar(0)
 {
     /*
       because of the way QtMail has been structured, even though
-      WriteMail is a main window, setting its caption has no effect
       because its parent is also a main window. have to set it through
       the real main window.
     */
@@ -50,6 +68,8 @@ WriteMail::~WriteMail()
 
 void WriteMail::init()
 {
+    m_toolbar = new QToolBar(this);
+    addToolBar(m_toolbar);
     m_widgetStack = new QStackedWidget(this);
 
     m_draftAction = new QAction(QIcon(":icon/draft"),tr("Save in drafts"),this);
@@ -57,13 +77,28 @@ void WriteMail::init()
     m_draftAction->setWhatsThis( tr("Save this message as a draft.") );
     addAction(m_draftAction);
 
-    m_cancelAction = new QAction(QIcon(":icon/cancel"),tr("Cancel"),this);
+    m_cancelAction = new QAction(QIcon(":icon/cancel"),tr("Close"),this);
     connect( m_cancelAction, SIGNAL(triggered()), this, SLOT(discard()) );
     addAction(m_cancelAction);
 
+    QIcon sendIcon(":icon/sendmail");
+
+    m_sendAction = new QAction(sendIcon,tr("Send"),this);
+    connect( m_sendAction, SIGNAL(triggered()), this, SLOT(sendStage()) );
+    m_sendAction->setWhatsThis( tr("Send the message.") );
+    addAction(m_sendAction);
+
+    m_sendViaMenu = new QMenu("Send Via",this);
+    m_sendViaMenu->setIcon(sendIcon);
+
+    m_sendButton = new QToolButton(m_toolbar);
+    m_sendButton->setDefaultAction(m_sendAction);
+    m_sendButton->setMenu(m_sendViaMenu);
+    m_sendButton->setIcon(sendIcon);
+
     m_selectComposerWidget = new SelectComposerWidget(this);
     m_selectComposerWidget->setObjectName("selectComposer");
-    connect(m_selectComposerWidget, SIGNAL(selected(QPair<QString,QMailMessage::MessageType>)), 
+    connect(m_selectComposerWidget, SIGNAL(selected(QPair<QString,QMailMessage::MessageType>)),
             this, SLOT(composerSelected(QPair<QString,QMailMessage::MessageType>)));
     connect(m_selectComposerWidget, SIGNAL(cancel()), this, SLOT(discard()));
     m_widgetStack->addWidget(m_selectComposerWidget);
@@ -73,8 +108,17 @@ void WriteMail::init()
     QMenuBar* mainMenuBar = new QMenuBar();
     setMenuBar(mainMenuBar);
     QMenu* file = mainMenuBar->addMenu("File");
+    file->addAction(m_sendAction);
+    file->addMenu(m_sendViaMenu);
     file->addAction(m_draftAction);
+    file->addSeparator();
     file->addAction(m_cancelAction);
+
+    m_toolbar->addWidget(m_sendButton);
+    m_toolbar->addAction(m_draftAction);
+    m_toolbar->addSeparator();
+
+    setWindowTitle(tr("Composer"));
 }
 
 bool WriteMail::sendStage()
@@ -84,7 +128,22 @@ bool WriteMail::sendStage()
         return false;
     }
 
-    if (buildMail()) {
+    QAction* sendAction = qobject_cast<QAction*>(sender());
+    if(!sendAction)
+	return false;
+
+    QMailAccountId sendAccountId;
+
+    if(!sendAction->data().isValid())
+    {
+	qWarning() << "Cannot send message without valid account id!";
+	return false;
+    }
+
+    sendAccountId = sendAction->data().value<QMailAccountId>();
+
+    if (buildMail(sendAccountId)) {
+
         if (largeAttachments()) {
             //prompt for action
             QMessageBox::StandardButton result;
@@ -118,9 +177,9 @@ bool WriteMail::sendStage()
 bool WriteMail::isComplete() const
 {
     if (m_composerInterface && m_composerInterface->isReadyToSend()) {
-        if (changed() || (QMessageBox::question(qApp->activeWindow(), 
-                                                tr("Empty message"), 
-                                                tr("The message is currently empty. Do you wish to send an empty message?"), 
+        if (changed() || (QMessageBox::question(qApp->activeWindow(),
+                                                tr("Empty message"),
+                                                tr("The message is currently empty. Do you wish to send an empty message?"),
                                                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)) {
             return true;
         }
@@ -139,7 +198,7 @@ bool WriteMail::saveChangesOnRequest()
     // ideally, you'd also check to see if the message is the same as it was
     // when we started working on it
     // dont bother with a prompt for empty composers. Not likely to want to save empty draft.
-    if (hasMessageChanged && hasContent() &&
+    if (m_hasMessageChanged && hasContent() &&
         QMessageBox::warning(this,
                              tr("Save to drafts"),
                              tr("Do you wish to save the message to drafts?"),
@@ -153,7 +212,7 @@ bool WriteMail::saveChangesOnRequest()
     return true;
 }
 
-bool WriteMail::buildMail()
+bool WriteMail::buildMail(const QMailAccountId& accountId)
 {
     //retain the old mail id since it may have been a draft
     QMailMessageId existingId = mail.id();
@@ -166,14 +225,45 @@ bool WriteMail::buildMail()
     // Extract the message from the composer
     mail = m_composerInterface->message();
 
-    mail.setDate(QMailTimeStamp::currentDateTime());
     mail.setId(existingId);
     mail.setContentScheme(existingScheme);
     mail.setContentIdentifier(existingIdentifier);
+
+    mail.setDate(QMailTimeStamp::currentDateTime());
     mail.setStatus(QMailMessage::Outgoing, true);
     mail.setStatus(QMailMessage::ContentAvailable, true);
     mail.setStatus(QMailMessage::PartialContentAvailable, true);
     mail.setStatus(QMailMessage::Read,true);
+    if(accountId.isValid())
+        mail.setParentAccountId(accountId);
+
+    if (m_precursorId.isValid()) {
+        mail.setInResponseTo(m_precursorId);
+        mail.setResponseType(static_cast<QMailMessage::ResponseType>(m_replyAction));
+
+        QMailMessage precursor(m_precursorId);
+
+        // Set the In-Reply-To and References headers in our outgoing message
+        QString references(precursor.headerFieldText("References"));
+        if (references.isEmpty()) {
+            references = precursor.headerFieldText("In-Reply-To");
+        }
+
+        QString precursorId(precursor.headerFieldText("Message-ID"));
+        if (!precursorId.isEmpty()) {
+            mail.setHeaderField("In-Reply-To", precursorId);
+
+            if (!references.isEmpty()) {
+                references.append(' ');
+            }
+            references.append(precursorId);
+        }
+
+        if (!references.isEmpty()) {
+            // TODO: Truncate references if they're too long
+            mail.setHeaderField("References", references);
+        }
+    }
     return true;
 }
 
@@ -187,14 +277,39 @@ bool WriteMail::changed() const
     return true;
 }
 
-void WriteMail::reply(const QMailMessage& replyMail, int action)
+void WriteMail::create(const QMailMessage& initMessage)
+{
+    prepareComposer(initMessage.messageType());
+    if (composer().isEmpty())
+        return;
+
+    m_composerInterface->compose(QMailComposerInterface::Create,initMessage);
+    m_hasMessageChanged = true;
+}
+
+void WriteMail::forward(const QMailMessage& forwardMail)
+{
+    prepareComposer(forwardMail.messageType());
+    if (composer().isEmpty())
+        return;
+
+    m_composerInterface->compose(QMailComposerInterface::Forward,forwardMail);
+    m_hasMessageChanged = true;
+    m_precursorId = forwardMail.id();
+    m_replyAction = ReadMail::Forward;
+
+}
+
+void WriteMail::reply(const QMailMessage& replyMail)
 {
     prepareComposer(replyMail.messageType());
     if (composer().isEmpty())
         return;
 
-    m_composerInterface->reply(replyMail,action);
-    hasMessageChanged = true;
+    m_composerInterface->compose(QMailComposerInterface::Reply ,replyMail);
+    m_hasMessageChanged = true;
+    m_precursorId = replyMail.id();
+    m_replyAction = ReadMail::Reply;
 }
 
 void WriteMail::modify(const QMailMessage& previousMessage)
@@ -213,38 +328,25 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     mail.setCustomFields(previousMessage.customFields());
 
     m_composerInterface->setSignature(signature());
-    m_composerInterface->setMessage(previousMessage);
+    m_composerInterface->compose(QMailComposerInterface::Create,previousMessage);
 
     // ugh. we need to do this everywhere
-    hasMessageChanged = false;
+    m_hasMessageChanged = false;
+    m_precursorId = mail.inResponseTo();
+    m_replyAction = mail.responseType();
 }
 
+/*
 void WriteMail::setRecipient(const QString &recipient)
 {
     if (m_composerInterface) {
-        m_composerInterface->setTo( recipient );
+//        m_composerInterface->setTo( recipient );
     } else {
         qWarning("WriteMail::setRecipient called with no composer interface present.");
     }
 }
 
-void WriteMail::setSubject(const QString &subject)
-{
-    if (m_composerInterface) {
-        m_composerInterface->setSubject( subject );
-    } else {
-        qWarning("WriteMail::setRecipient called with no composer interface present.");
-    }
-}
-
-void WriteMail::setBody(const QString &text, const QString &type)
-{
-    if (m_composerInterface) {
-        m_composerInterface->setBody( text, type );
-    } else {
-        qWarning("WriteMail::setBody called with no composer interface present.");
-    }
-}
+*/
 
 bool WriteMail::hasContent()
 {
@@ -255,6 +357,7 @@ bool WriteMail::hasContent()
     return !m_composerInterface->isEmpty();
 }
 
+/*
 void WriteMail::setRecipients(const QString &emails, const QString & numbers)
 {
     QString to;
@@ -266,11 +369,13 @@ void WriteMail::setRecipients(const QString &emails, const QString & numbers)
     to +=  numbers;
 
  if (m_composerInterface) {
-        m_composerInterface->setTo( to );
+    //    m_composerInterface->setTo( to );
     } else {
         qWarning("WriteMail::setRecipients called with no composer interface present.");
     }
 }
+
+*/
 
 void WriteMail::reset()
 {
@@ -279,21 +384,19 @@ void WriteMail::reset()
     if (m_composerInterface) {
         // Remove any associated widgets
         m_widgetStack->removeWidget(m_composerInterface);
-        // Remove and delete any existing details page
-//        m_composerInterface->deleteLater();
         m_composerInterface = 0;
     }
 
-    hasMessageChanged = false;
+    m_hasMessageChanged = false;
+    m_precursorId = QMailMessageId();
+    m_replyAction = 0;
 }
 
-bool WriteMail::prepareComposer(QMailMessage::MessageType type, bool detailsOnly)
+bool WriteMail::prepareComposer(QMailMessage::MessageType type)
 {
     bool success = false;
 
     reset();
-
-    _detailsOnly = detailsOnly;
 
     if (type == QMailMessage::AnyType) {
         bool displaySelector(true);
@@ -302,9 +405,9 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, bool detailsOnly
         if (m_selectComposerWidget->availableTypes().isEmpty()) {
             displaySelector = false;
 
-            if (QMessageBox::question(qApp->activeWindow(), 
-                                      tr("No accounts configured"), 
-                                      tr("No accounts are configured to send messages with. Do you wish to configure one now?"), 
+            if (QMessageBox::question(qApp->activeWindow(),
+                                      tr("No accounts configured"),
+                                      tr("No accounts are configured to send messages with. Do you wish to configure one now?"),
                                       QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
                 emit editAccounts();
             }
@@ -319,7 +422,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, bool detailsOnly
 
         if (displaySelector) {
             m_selectComposerWidget->setSelected(composer(), QMailMessage::AnyType);
-            setTitle( tr("Select type") );
+            setWindowTitle( tr("Select type") );
             m_widgetStack->setCurrentWidget(m_selectComposerWidget);
             success = true;
         }
@@ -347,7 +450,7 @@ bool WriteMail::draft()
     bool result(false);
 
     if (changed()) {
-        if (!buildMail()) {
+        if (!buildMail(QMailAccountId())) {
             qWarning() << "draft() - Unable to buildMail for saveAsDraft!";
         } else {
             emit saveAsDraft( mail );
@@ -357,48 +460,48 @@ bool WriteMail::draft()
 
     // Since the existing details page may have hijacked the focus, we need to reset
     reset();
+    close();
 
     return result;
 }
 
-void WriteMail::contextChanged()
+void WriteMail::statusChanged(const QString& status)
 {
-    setTitle(m_composerInterface->contextTitle());
+    if(status.isEmpty())
+        setWindowTitle(tr("(Unamed)"));
+    else
+        setWindowTitle(status);
 }
 
 bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType> &selection)
 {
     // We need to ensure that we can send for this composer
-    QMailMessage::MessageType selectedType = selection.second;
+    QMailMessage::MessageType messageType = selection.second;
 
-    if (!m_selectComposerWidget->availableTypes().contains(selectedType)) {
+    if (!m_selectComposerWidget->availableTypes().contains(messageType)) {
         // See if the user wants to add/edit an account to resolve this
-        QString type(QMailComposerFactory::displayName(selection.first, selectedType));
-        if (QMessageBox::question(qApp->activeWindow(), 
-                                  tr("No accounts configured"), 
-                                  tr("No accounts are configured to send %1.\nDo you wish to configure one now?").arg(type), 
+        QString type(QMailComposerFactory::displayName(selection.first, messageType));
+        if (QMessageBox::question(qApp->activeWindow(),
+                                  tr("No accounts configured"),
+                                  tr("No accounts are configured to send %1.\nDo you wish to configure one now?").arg(type),
                                   QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
             emit editAccounts();
         }
     }
-    if (!m_selectComposerWidget->availableTypes().contains(selectedType)) {
+    if (!m_selectComposerWidget->availableTypes().contains(messageType)) {
         // If still not possible, then just fail
-        emit noSendAccount(selectedType);
+        emit noSendAccount(messageType);
         return false;
     }
 
     setComposer(selection.first);
-
     m_composerInterface->clear();
-    m_composerInterface->setMessageType( selectedType );
     m_composerInterface->setSignature( signature() );
-    m_composerInterface->setDetailsOnlyMode(_detailsOnly);
-
-    setTitle(m_composerInterface->contextTitle());
     m_widgetStack->setCurrentWidget(m_composerInterface);
 
     // Can't save as draft until there has been a change
-    m_draftAction->setVisible(false);
+    m_draftAction->setEnabled(false);
+    updateSendAction(messageType);
     return true;
 }
 
@@ -422,16 +525,39 @@ void WriteMail::setComposer( const QString &key )
         return;
 
     connect( m_composerInterface, SIGNAL(changed()), this, SLOT(messageModified()) );
-    connect( m_composerInterface, SIGNAL(sendMessage()), this, SLOT(sendStage()));
     connect( m_composerInterface, SIGNAL(cancel()), this, SLOT(saveChangesOnRequest()));
-    connect( m_composerInterface, SIGNAL(contextChanged()), this, SLOT(contextChanged()));
+    connect( m_composerInterface, SIGNAL(statusChanged(QString)), this, SLOT(statusChanged(QString)));
 
     m_widgetStack->addWidget(m_composerInterface);
+
+    foreach(QAction* a, m_composerInterface->actions())
+        m_toolbar->addAction(a);
+
+    m_composerInterface->setFocus();
 }
 
-void WriteMail::setTitle(const QString& title)
+void WriteMail::updateSendAction(QMailMessage::MessageType messageType)
 {
-    setWindowTitle(title);
+    QMailAccountIdList accountIds = sendingAccounts(messageType);
+    bool haveMultipleAccounts = accountIds.count() > 1;
+    m_sendViaMenu->menuAction()->setVisible(haveMultipleAccounts);
+
+    if (haveMultipleAccounts)
+    {
+        m_sendViaMenu->clear();
+        foreach(QMailAccountId id, accountIds)
+        {
+            QMailAccount a(id);
+            QAction* accountSendAction = m_sendViaMenu->addAction(a.name());
+	    connect(accountSendAction,SIGNAL(triggered(bool)),this,SLOT(sendStage()));
+            accountSendAction->setData(id);
+        }
+        m_sendButton->setMenu(m_sendViaMenu);
+    }
+    else if(!accountIds.isEmpty())
+        m_sendButton->setMenu(0);
+
+    m_sendAction->setData(accountIds.first());
 }
 
 QString WriteMail::composer() const
@@ -444,10 +570,13 @@ QString WriteMail::composer() const
 
 void WriteMail::messageModified()
 {
-    hasMessageChanged = true;
+    m_hasMessageChanged = true;
 
     if ( m_composerInterface )
-        m_draftAction->setVisible( hasContent() );
+        m_draftAction->setEnabled( hasContent() );
+    bool enableSend = m_composerInterface->isReadyToSend();
+    m_sendAction->setEnabled(enableSend);
+    m_sendViaMenu->setEnabled(enableSend);
 }
 
 bool WriteMail::forcedClosure()

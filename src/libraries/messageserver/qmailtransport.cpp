@@ -311,7 +311,17 @@ bool QMailTransport::inUse() const
 */
 QDataStream& QMailTransport::stream()
 {
+    Q_ASSERT(mStream);
     return *mStream;
+}
+
+/*!
+    Returns the socket object allowing state to be accessed and manipulated.
+*/
+QAbstractSocket& QMailTransport::socket()
+{
+    Q_ASSERT(mSocket);
+    return *mSocket;
 }
 
 /*!

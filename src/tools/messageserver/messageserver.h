@@ -37,7 +37,6 @@ private slots:
     void retrievalCompleted(quint64 action);
 
     void transmissionCompleted(quint64 action);
-    void messagesTransmitted(quint64 action, const QMailMessageIdList &);
 
     void response(bool handled);
     void error(const QString &message);

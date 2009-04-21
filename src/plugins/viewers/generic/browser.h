@@ -44,6 +44,8 @@ public:
 
     QList<QString> embeddedNumbers() const;
 
+    static QString encodeUrlAndMail(const QString& txt);
+
 public slots:
     virtual void setSource(const QUrl &name);
 
@@ -70,10 +72,11 @@ private:
     QString noBreakReplies(const QString& txt) const;
     QString handleReplies(const QString& txt) const;
     QString buildParagraph(const QString& txt, const QString& prepend, bool preserveWs = false) const;
-    QString encodeUrlAndMail(const QString& txt) const;
-    QString listRefMailTo(const QList<QMailAddress>& list) const;
-    QString refMailTo(const QMailAddress& address) const;
-    QString refNumber(const QString& number) const;
+
+    static QString listRefMailTo(const QList<QMailAddress>& list);
+    static QString refMailTo(const QMailAddress& address);
+    static QString refNumber(const QString& number);
+    static QString refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing);
 
     QMap<QUrl, QVariant> resourceMap;
     QString (Browser::*replySplitter)(const QString&) const;

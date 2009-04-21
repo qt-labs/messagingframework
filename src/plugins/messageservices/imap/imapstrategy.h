@@ -231,6 +231,11 @@ protected:
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context) = 0;
     virtual void processUidSearchResults(ImapStrategyContextBase *context) = 0;
+    virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
+                                        const QMailMessageKey &storedKey, 
+                                        const QMailMessageKey &unseenKey, 
+                                        const QMailMessageKey &seenKey, 
+                                        const QMailMessageKey &unreadElsewhereKey);
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     
