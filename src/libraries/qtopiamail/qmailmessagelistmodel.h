@@ -57,6 +57,10 @@ private:
     void fullRefresh(bool modelChanged);
 
 private:
+    friend class QMailMessageListModelPrivate;
+
+    QModelIndex generateIndex(int row, const QModelIndex &idx);
+
     QMailMessageListModelPrivate* d;
 };
 

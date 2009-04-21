@@ -934,6 +934,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                 // Fetch the messages that need completion
                 clearSelection();
                 selectedMailsAppend(_completionList);
+                _completionList.clear();
                 QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
                 for ( ; it != end; ++it) {
                     if (it->second != 0) {
@@ -942,6 +943,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                         selectedSectionsAppend(it->first);
                     }
                 }
+                _completionSectionList.clear();
                 messageAction(context);
             } else {
                 context->operationCompleted();
