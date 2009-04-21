@@ -41,11 +41,11 @@ HEADERS += bind_p.h \
            qmailmessagelistmodel.h \
            qmailmessagemodelbase.h \
            qmailmessageremovalrecord.h \
-           qmailmessagethreadedmodel.h \
            qmailmessageserver.h \
            qmailmessageset.h \
            qmailmessagesortkey.h \
            qmailmessagesortkey_p.h \
+           qmailmessagethreadedmodel.h \
            qmailserviceaction.h \
            qmailstore.h \
            qmailstore_p.h \
@@ -88,10 +88,10 @@ SOURCES += longstream.cpp \
            qmailmessagelistmodel.cpp \
            qmailmessagemodelbase.cpp \
            qmailmessageremovalrecord.cpp \
-           qmailmessagethreadedmodel.cpp \
            qmailmessageserver.cpp \
            qmailmessageset.cpp \
            qmailmessagesortkey.cpp \
+           qmailmessagethreadedmodel.cpp \
            qmailserviceaction.cpp \
            qmailstore.cpp \
            qmailstore_p.cpp \
