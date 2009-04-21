@@ -54,3 +54,6 @@ clean::
 
 	rm -f .qmake.cache
 	rm -f configure-stamp
+	rm -f src/libraries/messageserver/libmessageserver.prl
+	rm -f src/libraries/qmfutil/libqmfutil.prl
+	rm -f src/libraries/qtopiamail/libqtopiamail.prl

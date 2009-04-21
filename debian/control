@@ -37,6 +37,22 @@ Description: Qt Messaging Framework Library development files
  can access the data independ of their storage and if
  necessary on a concurrent base.
 
+Package: libqmf-tests
+Section: libdevel
+Architecture: any
+Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
+Description: Qt Messaging Framework Library unit tests
+ Unit tests for Qt Messaging Framework Library.
+ .
+ The Qt Messaging Framework Library provides a set of APIs
+ that support the most common operations related
+ to arbitrary messages such as creation, modification,
+ retrieval, storage and display of messages. It
+ defines interfaces which enable the integration
+ of new message types. Therefore multiple applications
+ can access the data independ of their storage and if
+ necessary on a concurrent base.
+
 Package: libqmf0-dbg
 Section: libdevel
 Priority: extra
