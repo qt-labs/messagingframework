@@ -777,6 +777,7 @@ bool QMailMessageListModel::setData(const QModelIndex& index, const QVariant& va
         if (role == Qt::CheckStateRole || role == Qt::EditRole) {
             d->setCheckState(index, static_cast<Qt::CheckState>(value.toInt()));
             emit dataChanged(index, index);
+            return true;
         }
     }
 
