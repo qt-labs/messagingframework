@@ -337,6 +337,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
 
     if ((_folderItr == _selectionMap.end()) || !_folderItr.key().isValid()) {
         _currentMailbox = QMailFolder();
+        _selectionMap.clear();
         folderAction(context);
         return false;
     }
