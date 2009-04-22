@@ -172,18 +172,6 @@ public:
 typedef Guard<ProcessMutex> MutexGuard;
 
 
-template <typename IdType>
-QVariantList idValueList(const QList<IdType>& ids)
-{
-    QVariantList values;
-
-    foreach (const IdType& id, ids)
-        values.append(QVariant(id.toULongLong()));
-
-    return values;
-}
-
-
 QString escape(const QString &original, const QChar &escapee, const QChar &escaper = '\\')
 {
     QString result(original);
@@ -5379,13 +5367,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAncestorIds(con
                                                                              QMailFolderIdList *result, 
                                                                              ReadLock &)
 {
-    QVariantList idValues;
-    foreach (const QMailFolderId& id, ids)
-        idValues.append(id.toULongLong());
-
-    QString sql("SELECT DISTINCT id FROM mailfolderlinks WHERE descendantid IN %1");
-    QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                idValues,
+    QSqlQuery query(simpleQuery("SELECT DISTINCT id FROM mailfolderlinks",
+                                Key("descendantid", QMailFolderKey::id(ids)),
                                 "folderAncestorIds id select query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -5640,13 +5623,10 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     if (deletedMessageIds.isEmpty())
         return true;
 
-    // Any ancestor folders of the directly modified folders are indirectly modified
-    QVariantList folderIdValues(idValueList(modifiedFolderIds));
-
-    if (!folderIdValues.isEmpty()) {
-        QString sql("SELECT DISTINCT id FROM mailfolderlinks WHERE descendantid IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(folderIdValues)),
-                                    folderIdValues,
+    if (!modifiedFolderIds.isEmpty()) {
+        // Any ancestor folders of the directly modified folders are indirectly modified
+        QSqlQuery query(simpleQuery("SELECT DISTINCT id FROM mailfolderlinks",
+                                    Key("descendantid", QMailFolderKey::id(modifiedFolderIds)),
                                     "deleteMessages mailfolderlinks ancestor query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5667,9 +5647,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
-
-    // Use the derived ID list rather than the key, in case the deletion statements affect the key result
-    QVariantList idValues(idValueList(deletedMessageIds));
 
     {
         // Delete any custom fields associated with these messages
@@ -5758,9 +5735,6 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
             return false;
     }
 
-    // Use the derived ID list rather than the key, in case the deletion statements affect the key result
-    QVariantList idValues(idValueList(deletedFolderIds));
-
     {
         // Delete any custom fields associated with these folders
         QString sql("DELETE FROM mailfoldercustom");
@@ -5845,13 +5819,10 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
     if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedAccountIds))
         return false;
 
-    QVariantList idValues(idValueList(deletedAccountIds));
-        
     {
         // Delete the removal records related to these accounts
-        QString sql("DELETE FROM deletedmessages WHERE parentaccountid IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QSqlQuery query(simpleQuery("DELETE FROM deletedmessages",
+                                    Key("parentaccountid", QMailAccountKey::id(deletedAccountIds)),
                                     "deleteAccounts removal record delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5859,9 +5830,8 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Remove any standard folders associated with these accounts
-        QString sql("DELETE FROM mailaccountfolders WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QSqlQuery query(simpleQuery("DELETE FROM mailaccountfolders",
+                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
                                     "deleteAccounts delete mailaccountfolders query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5869,9 +5839,8 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Remove any custom fields associated with these accounts
-        QString sql("DELETE FROM mailaccountcustom WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QSqlQuery query(simpleQuery("DELETE FROM mailaccountcustom",
+                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
                                     "deleteAccounts delete mailaccountcustom query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5879,9 +5848,8 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Remove any configuration fields associated with these accounts
-        QString sql("DELETE FROM mailaccountconfig WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QSqlQuery query(simpleQuery("DELETE FROM mailaccountconfig",
+                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
                                     "deleteAccounts delete mailaccountconfig query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -5889,9 +5857,8 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Perform the account deletion
-        QString sql("DELETE FROM mailaccounts WHERE id IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                    idValues,
+        QSqlQuery query(simpleQuery("DELETE FROM mailaccounts",
+                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
                                     "deleteAccounts delete mailaccounts query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
