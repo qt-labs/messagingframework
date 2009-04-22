@@ -55,6 +55,9 @@ class QMailStorePrivate::Key
     Type m_type;
     const void* m_key;
     const QString* m_alias;
+    const QString* m_field;
+
+    static QString s_null;
 
     template<typename NonKeyType>
     bool isType(NonKeyType) const { return false; }
@@ -76,14 +79,17 @@ class QMailStorePrivate::Key
     const QString &key(QString*) const { return *m_alias; }
 
 public:
-    explicit Key(const QMailAccountKey &key, const QString &alias = QString()) : m_type(Account), m_key(&key), m_alias(&alias) {}
-    explicit Key(const QMailAccountSortKey &key, const QString &alias = QString()) : m_type(AccountSort), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailAccountKey &key, const QString &alias = QString()) : m_type(Account), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailAccountKey &key, const QString &alias = QString()) : m_type(Account), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailAccountSortKey &key, const QString &alias = QString()) : m_type(AccountSort), m_key(&key), m_alias(&alias), m_field(0) {}
 
-    explicit Key(const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias) {}
-    explicit Key(const QMailFolderSortKey &key, const QString &alias = QString()) : m_type(FolderSort), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailFolderSortKey &key, const QString &alias = QString()) : m_type(FolderSort), m_key(&key), m_alias(&alias), m_field(0) {}
 
-    explicit Key(const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias) {}
-    explicit Key(const QMailMessageSortKey &key, const QString &alias = QString()) : m_type(MessageSort), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailMessageSortKey &key, const QString &alias = QString()) : m_type(MessageSort), m_key(&key), m_alias(&alias), m_field(0) {}
 
     explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text) {}
 
@@ -94,7 +100,11 @@ public:
     const KeyType &key() const { return key(reinterpret_cast<KeyType*>(0)); }
 
     const QString &alias() const { return *m_alias; }
+
+    const QString &field() const { return (m_field ? *m_field : s_null); }
 };
+
+QString QMailStorePrivate::Key::s_null;
 
 
 namespace { // none of this code is externally visible:
@@ -1344,16 +1354,21 @@ QString baseExpression(const QString &column, QMailKey::Comparator op, bool mult
 
 
 template<typename Key>
-QString whereClauseItem(const Key &key, const typename Key::ArgumentType &arg, const QString &alias, const QMailStorePrivate &store);
+QString whereClauseItem(const Key &key, const typename Key::ArgumentType &arg, const QString &alias, const QString &field, const QMailStorePrivate &store);
 
 template<>
-QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAccountKey::ArgumentType &a, const QString &alias, const QMailStorePrivate &store)
+QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAccountKey::ArgumentType &a, const QString &alias, const QString &field, const QMailStorePrivate &store)
 {
     QString item;
     {
         QTextStream q(&item);
 
-        QString columnName = fieldName(a.property, alias);
+        QString columnName;
+        if (!field.isEmpty()) {
+            columnName = qualifiedName(field, alias);
+        } else {
+            columnName = fieldName(a.property, alias);
+        }
 
         bool bitwise((a.property == QMailAccountKey::Status) || (a.property == QMailAccountKey::MessageType));
         bool patternMatching(a.property == QMailAccountKey::FromAddress);
@@ -1404,13 +1419,18 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
 }
 
 template<>
-QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMessageKey::ArgumentType &a, const QString &alias, const QMailStorePrivate &store)
+QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMessageKey::ArgumentType &a, const QString &alias, const QString &field, const QMailStorePrivate &store)
 {
     QString item;
     {
         QTextStream q(&item);
 
-        QString columnName = fieldName(a.property, alias);
+        QString columnName;
+        if (!field.isEmpty()) {
+            columnName = qualifiedName(field, alias);
+        } else {
+            columnName = fieldName(a.property, alias);
+        }
 
         bool bitwise((a.property == QMailMessageKey::Type) || (a.property == QMailMessageKey::Status));
         bool patternMatching((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) ||
@@ -1533,13 +1553,18 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
 }
 
 template<>
-QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolderKey::ArgumentType &a, const QString &alias, const QMailStorePrivate &store)
+QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolderKey::ArgumentType &a, const QString &alias, const QString &field, const QMailStorePrivate &store)
 {
     QString item;
     {
         QTextStream q(&item);
 
-        QString columnName(fieldName(a.property, alias));
+        QString columnName;
+        if (!field.isEmpty()) {
+            columnName = qualifiedName(field, alias);
+        } else {
+            columnName = fieldName(a.property, alias);
+        }
 
         bool bitwise(a.property == QMailFolderKey::Status);
         QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise);
@@ -1639,6 +1664,7 @@ QString buildWhereClause(const KeyType &key,
                          bool nested,
                          bool firstClause,
                          const QString &alias, 
+                         const QString &field, 
                          const QMailStorePrivate& store)
 {
     QString whereClause;
@@ -1649,7 +1675,7 @@ QString buildWhereClause(const KeyType &key,
 
         QString op = " ";
         foreach (typename ArgumentListType::const_reference a, args) {
-            s << op << whereClauseItem(key, a, alias, store);
+            s << op << whereClauseItem(key, a, alias, field, store);
             op = logicalOpString;
         }
 
@@ -2552,13 +2578,13 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
             }
         }
 
-        return ::buildWhereClause(messageKey, messageKey.arguments(), messageKey.subKeys(), messageKey.combiner(), messageKey.isNegated(), nested, firstClause, key.alias(), *this);
+        return ::buildWhereClause(messageKey, messageKey.arguments(), messageKey.subKeys(), messageKey.combiner(), messageKey.isNegated(), nested, firstClause, key.alias(), key.field(), *this);
     } else if (key.isType<QMailFolderKey>()) {
         const QMailFolderKey &folderKey(key.key<QMailFolderKey>());
-        return ::buildWhereClause(folderKey, folderKey.arguments(), folderKey.subKeys(), folderKey.combiner(), folderKey.isNegated(), nested, firstClause, key.alias(), *this);
+        return ::buildWhereClause(folderKey, folderKey.arguments(), folderKey.subKeys(), folderKey.combiner(), folderKey.isNegated(), nested, firstClause, key.alias(), key.field(), *this);
     } else if (key.isType<QMailAccountKey>()) {
         const QMailAccountKey &accountKey(key.key<QMailAccountKey>());
-        return ::buildWhereClause(accountKey, accountKey.arguments(), accountKey.subKeys(), accountKey.combiner(), accountKey.isNegated(), nested, firstClause, key.alias(), *this);
+        return ::buildWhereClause(accountKey, accountKey.arguments(), accountKey.subKeys(), accountKey.combiner(), accountKey.isNegated(), nested, firstClause, key.alias(), key.field(), *this);
     }
 
     return QString();
