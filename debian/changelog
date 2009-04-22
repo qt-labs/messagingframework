@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W16-0maemo3) hardy; urgency=low
+
+  * Add initial version of the Content Manager Integration.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 22 Apr 2009 12:03:35 +1000
+
 qt4-messagingframework (2009W16-0maemo2) hardy; urgency=low
 
   * Add test pkg containing unit tests.
