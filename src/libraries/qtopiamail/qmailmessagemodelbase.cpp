@@ -42,6 +42,11 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
 }
 
 
+QModelIndex QMailMessageModelImplementation::updateIndex(const QModelIndex &idx) const
+{
+    return idx;
+}
+
 QList<QMailMessageModelImplementation::LocationSequence> QMailMessageModelImplementation::indicesToLocationSequence(const QList<int> &indices)
 {
     QList<LocationSequence> result;
@@ -56,9 +61,39 @@ QList<QMailMessageModelImplementation::LocationSequence> QMailMessageModelImplem
         // See if the following indices form a sequence
         QList<int>::const_iterator next = it + 1;
         while (next != end) {
-            if (*next == *(next - 1) + 1) {
+            if (*next == (loc.second.second + 1)) {
                 // This ID is part of the same sequence
-                loc.second.second = *next;
+                loc.second.second += 1;
+                ++it;
+                ++next;
+            } else {
+                next = end;
+            }
+        }
+
+        result.append(loc);
+    }
+
+    return result;
+}
+
+QList<QMailMessageModelImplementation::LocationSequence> QMailMessageModelImplementation::indicesToLocationSequence(const QList<QPair<QModelIndex, int> > &indices)
+{
+    QList<LocationSequence> result;
+
+    QList<QPair<QModelIndex, int> >::const_iterator it = indices.begin(), end = indices.end();
+    for (; it != end; ++it) {
+        LocationSequence loc;
+        loc.first = (*it).first;
+        loc.second.first = (*it).second;
+        loc.second.second = (*it).second;
+        
+        // See if the following indices form a sequence
+        QList<QPair<QModelIndex, int> >::const_iterator next = it + 1;
+        while (next != end) {
+            if (((*next).first == loc.first) && ((*next).second == (loc.second.second + 1))) {
+                // This ID is part of the same sequence
+                loc.second.second += 1;
                 ++it;
                 ++next;
             } else {
@@ -380,10 +415,12 @@ void QMailMessageModelBase::messagesAdded(const QMailMessageIdList& ids)
         foreach (const QMailMessageModelImplementation::LocationSequence &seq, locations) {
             const QPair<int, int> rows(seq.second);
 
+            QModelIndex parentIndex(impl()->updateIndex(seq.first));
+
             // Insert the item(s) at this location
-            beginInsertRows(seq.first, rows.first, rows.second);
+            beginInsertRows(parentIndex, rows.first, rows.second);
             for (int i = rows.first; i <= rows.second; ++i) {
-                impl()->insertItemAt(i, seq.first, *it);
+                impl()->insertItemAt(i, parentIndex, *it);
                 ++it;
             }
             endInsertRows();
@@ -411,9 +448,11 @@ void QMailMessageModelBase::messagesUpdated(const QMailMessageIdList& ids)
                 const QMailMessageModelImplementation::LocationSequence &seq(removals.at(n - 1));
                 const QPair<int, int> rows(seq.second);
 
-                beginRemoveRows(seq.first, rows.first, rows.second);
+                QModelIndex parentIndex(impl()->updateIndex(seq.first));
+
+                beginRemoveRows(parentIndex, rows.first, rows.second);
                 for (int i = rows.second; i >= rows.first; --i) {
-                    impl()->removeItemAt(i, seq.first);
+                    impl()->removeItemAt(i, parentIndex);
                 }
                 endRemoveRows();
             }
@@ -425,10 +464,12 @@ void QMailMessageModelBase::messagesUpdated(const QMailMessageIdList& ids)
         foreach (const QMailMessageModelImplementation::LocationSequence &seq, insertions) {
             const QPair<int, int> rows(seq.second);
 
+            QModelIndex parentIndex(impl()->updateIndex(seq.first));
+
             // Insert the item(s) at this location
-            beginInsertRows(seq.first, rows.first, rows.second);
+            beginInsertRows(parentIndex, rows.first, rows.second);
             for (int i = rows.first; i <= rows.second; ++i) {
-                impl()->insertItemAt(i, seq.first, *it);
+                impl()->insertItemAt(i, parentIndex, *it);
                 ++it;
             }
             endInsertRows();
@@ -438,9 +479,11 @@ void QMailMessageModelBase::messagesUpdated(const QMailMessageIdList& ids)
         foreach (const QMailMessageModelImplementation::LocationSequence &seq, insertions) {
             const QPair<int, int> rows(seq.second);
 
+            QModelIndex parentIndex(impl()->updateIndex(seq.first));
+
             // Update the item(s) at this location
             for (int i = rows.first; i <= rows.second; ++i) {
-                QModelIndex idx(index(i, 0, seq.first));
+                QModelIndex idx(index(i, 0, parentIndex));
                 emit dataChanged(idx, idx);
             }
         }
@@ -462,9 +505,11 @@ void QMailMessageModelBase::messagesRemoved(const QMailMessageIdList& ids)
             const QMailMessageModelImplementation::LocationSequence &seq(locations.at(n - 1));
             const QPair<int, int> rows(seq.second);
 
-            beginRemoveRows(seq.first, rows.first, rows.second);
+            QModelIndex parentIndex(impl()->updateIndex(seq.first));
+
+            beginRemoveRows(parentIndex, rows.first, rows.second);
             for (int i = rows.second; i >= rows.first; --i) {
-                impl()->removeItemAt(i, seq.first);
+                impl()->removeItemAt(i, parentIndex);
             }
             endRemoveRows();
         }

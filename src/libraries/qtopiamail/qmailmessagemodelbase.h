@@ -60,8 +60,11 @@ public:
     virtual void insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id) = 0;
     virtual void removeItemAt(int row, const QModelIndex &parentIndex) = 0;
 
+    virtual QModelIndex updateIndex(const QModelIndex &idx) const;
+
 protected:
     static QList<LocationSequence> indicesToLocationSequence(const QList<int> &indices);
+    static QList<LocationSequence> indicesToLocationSequence(const QList<QPair<QModelIndex, int> > &indices);
 };
 
 

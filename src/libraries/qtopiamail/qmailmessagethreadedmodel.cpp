@@ -85,6 +85,8 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parentIndex) const;
     QModelIndex parent(const QModelIndex &idx) const;
 
+    QModelIndex updateIndex(const QModelIndex &idx) const;
+
 private:
     void init() const;
 
@@ -101,6 +103,8 @@ private:
     mutable QMailMessageThreadedModelItem _root;
     mutable QMap<QMailMessageId, QMailMessageThreadedModelItem*> _messageItem;
     mutable QSet<QMailMessageId> _checkedIds;
+    mutable QList<QMailMessageId> _currentIds;
+    mutable QList<QMailMessageThreadedModelItem> _pendingItem;
     mutable bool _initialised;
     mutable bool _needSynchronize;
 };
@@ -261,8 +265,8 @@ bool QMailMessageThreadedModelPrivate::setIgnoreMailStoreUpdates(bool ignore)
 }
 
 bool QMailMessageThreadedModelPrivate::additionLocations(const QMailMessageIdList &ids,
-                                                     QList<LocationSequence> *locations, 
-                                                     QMailMessageIdList *insertIds)
+                                                         QList<LocationSequence> *locations, 
+                                                         QMailMessageIdList *insertIds)
 {
     if (!_initialised) {
         // Nothing to do yet
@@ -275,54 +279,164 @@ bool QMailMessageThreadedModelPrivate::additionLocations(const QMailMessageIdLis
         return true;
     }
 
-#if 0
     // Are any of these messages members of our display set?
     // Note - we must only consider messages in the set given by (those we currently know +
     // those we have now been informed of) because the database content may have changed between
     // when this event was recorded and when we're processing the signal.
     
-    QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
+    QMailMessageKey idKey(QMailMessageKey::id(_currentIds + ids));
     QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
 
-    int additionCount = newIds.count() - _idList.count();
+    int additionCount = newIds.count() - _currentIds.count();
     if (additionCount <= 0) {
         // Nothing has been added
         return true;
     }
 
-    // Find the locations for these messages by comparing to the existing list
-    QList<QMailMessageId>::const_iterator nit = newIds.begin(), nend = newIds.end();
-    QList<QMailMessageId>::const_iterator iit = _idList.begin(), iend = _idList.end();
-
-    QList<int> insertIndices;
-    QMap<int, QMailMessageId> indexId;
-    for (int index = 0; nit != nend; ++nit, ++index) {
-        const QMailMessageId &id(*nit);
-
-        if ((iit == iend) || (*iit != id)) {
-            // We need to insert this item here
-            insertIndices.append(index);
-            indexId.insert(index, id);
-        } else {
-            ++iit;
+    // Find which of the messages we must add
+    QMailMessageIdList additionIds;
+    foreach (const QMailMessageId &id, ids) {
+        if (newIds.contains(id)) {
+            additionIds.append(id);
         }
+    }
+
+    Q_ASSERT(additionIds.count() == additionCount);
+
+    // Find all messages involved in conversations with the new messages, along with their predecessor ID
+    QMailMessageKey conversationKey(QMailMessageKey::conversation(QMailMessageKey::id(additionIds)));
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::InResponseTo);
+
+    QMap<QMailMessageId, QMailMessageId> predecessor;
+    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(conversationKey, props)) {
+        predecessor.insert(metaData.id(), metaData.inResponseTo());
+    }
+
+    // Any previous additions should have been finalised by now
+    _pendingItem.clear();
+
+    QList<QPair<QModelIndex, int> > insertIndices;
+    QMap<QMailMessageThreadedModelItem*, int> addedChildren;
+    QMap<QMailMessageThreadedModelItem*, int> pendingIndex;
+
+    // Process the messages to insert into the tree
+    foreach (const QMailMessageId& id, additionIds) {
+        // See if we have already added this message
+        QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(id);
+        if (it != _messageItem.end())
+            continue;
+
+        QMailMessageId messageId(id);
+        QList<QMailMessageId> descendants;
+
+        int messagePos = newIds.indexOf(messageId);
+
+        // Find the first message ancestor that is in our display set
+        QMailMessageId predecessorId(predecessor[messageId]);
+        while (predecessorId.isValid() && !newIds.contains(predecessorId)) {
+            predecessorId = predecessor[predecessorId];
+        }
+
+        do {
+            QMailMessageThreadedModelItem *insertParent = 0;
+            int insertIndex = 0;
+
+            if (!predecessorId.isValid()) {
+                // This message is a root node - we need to find where it fits in
+                insertParent = &_root;
+
+                foreach (const QMailMessageThreadedModelItem &item, insertParent->children()) {
+                    int childPos = newIds.indexOf(item.id());
+                    if (childPos > messagePos) {
+                        // We should insert the new item before this existing child
+                        break;
+                    }
+                    ++insertIndex;
+                }
+            } else {
+                // Find the predecessor and add to the tree
+                it = _messageItem.find(predecessorId);
+                if (it != _messageItem.end()) {
+                    // Add this message to its parent
+                    insertParent = it.value();
+
+                    foreach (const QMailMessageThreadedModelItem &item, insertParent->children()) {
+                        int childPos = newIds.indexOf(item.id());
+                        if (childPos > messagePos) {
+                            // We should insert the new item before this existing child
+                            break;
+                        }
+                        ++insertIndex;
+                    }
+                }
+            }
+
+            if (insertParent != 0) {
+                // If we have added any children to this parent previously, they precede this one
+                QMap<QMailMessageThreadedModelItem*, int>::const_iterator ait = addedChildren.find(insertParent);
+                if (ait != addedChildren.end()) {
+                    insertIndex += ait.value();
+                }
+
+                // This message becomes a new child of the parent
+                // Add to the pending list, because we can't actually change the model data here
+                _pendingItem.append(QMailMessageThreadedModelItem(messageId, insertParent));
+                QMailMessageThreadedModelItem *item = &(_pendingItem.last());
+
+                _messageItem[messageId] = item;
+                addedChildren[insertParent] += 1;
+
+                // Record the index within the parent where this item is found
+                pendingIndex.insert(item, insertIndex);
+
+                QModelIndex parentIndex;
+                if (insertParent == &_root) {
+                    parentIndex = indexFromItem(insertParent);
+                } else {
+                    QMap<QMailMessageThreadedModelItem*, int>::const_iterator pit = pendingIndex.find(insertParent);
+                    if (pit != pendingIndex.end()) {
+                        // The item we're inserting into is a pending item
+                        parentIndex = _model.generateIndex(pit.value(), 0, static_cast<void*>(insertParent));
+                    } else {
+                        // The parent item is already existing in the model
+                        parentIndex = indexFromItem(insertParent);
+                    }
+                }
+
+                insertIndices.append(qMakePair(parentIndex, insertIndex));
+                insertIds->append(messageId);
+
+                if (descendants.isEmpty()) {
+                    messageId = QMailMessageId();
+                } else {
+                    // Process the descendants of the added node
+                    predecessorId = messageId;
+                    messageId = descendants.takeLast();
+                }
+            } else {
+                // We need to add the parent before we can be added to it
+                descendants.append(messageId);
+
+                messageId = predecessorId;
+                predecessorId = predecessor[messageId];
+                while (predecessorId.isValid() && !newIds.contains(predecessorId)) {
+                    predecessorId = predecessor[predecessorId];
+                }
+            }
+        } while (messageId.isValid());
     }
 
     Q_ASSERT(insertIndices.count() == additionCount);
 
     *locations = indicesToLocationSequence(insertIndices);
-    foreach (int index, insertIndices) {
-        insertIds->append(indexId[index]);
-    }
-#endif
     return true;
 }
 
 bool QMailMessageThreadedModelPrivate::updateLocations(const QMailMessageIdList &ids, 
-                                                   QList<LocationSequence> *additions, 
-                                                   QList<LocationSequence> *deletions, 
-                                                   QList<LocationSequence> *updates,
-                                                   QMailMessageIdList *insertIds)
+                                                       QList<LocationSequence> *additions, 
+                                                       QList<LocationSequence> *deletions, 
+                                                       QList<LocationSequence> *updates,
+                                                       QMailMessageIdList *insertIds)
 {
     if (!_initialised) {
         // Nothing to do yet
@@ -404,6 +518,48 @@ bool QMailMessageThreadedModelPrivate::updateLocations(const QMailMessageIdList 
     return true;
 }
 
+// Messages must be deleted in the order: deep to shallow, and then high index to low index
+// This comparator must yield less than to facilitate deletion in reverse sorted order
+struct LessThanForRemoval
+{
+    bool operator()(const QPair<QModelIndex, int> &lhs, const QPair<QModelIndex, int> &rhs) const
+    {
+        if (!lhs.first.isValid() && !rhs.first.isValid()) {
+            return (lhs.second < rhs.second);
+        } 
+        if (!lhs.first.isValid()) {
+            return true;
+        } 
+        if (!rhs.first.isValid()) {
+            return false;
+        } 
+
+        int lhsDepth = 0;
+        int rhsDepth = 0;
+
+        QMailMessageThreadedModelItem *lhsItem = static_cast<QMailMessageThreadedModelItem *>(lhs.first.internalPointer());
+        while (lhsItem) {
+            lhsItem = lhsItem->_parent;
+            ++lhsDepth;
+        }
+
+        QMailMessageThreadedModelItem *rhsItem = static_cast<QMailMessageThreadedModelItem *>(rhs.first.internalPointer());
+        while (rhsItem) {
+            rhsItem = rhsItem->_parent;
+            ++rhsDepth;
+        }
+
+        if (lhsDepth < rhsDepth) {
+            return true;
+        }
+        if (rhsDepth < lhsDepth) {
+            return false;
+        }
+
+        return (lhs.second < rhs.second);
+    }
+};
+
 bool QMailMessageThreadedModelPrivate::removalLocations(const QMailMessageIdList &ids, QList<LocationSequence> *locations)
 {
     if (!_initialised) {
@@ -417,55 +573,79 @@ bool QMailMessageThreadedModelPrivate::removalLocations(const QMailMessageIdList
         return true;
     }
 
-#if 0
-    QList<int> removeIndices;
+    QList<QPair<QModelIndex, int> > removeIndices;
     foreach (const QMailMessageId &id, ids) {
-        int index(indexOf(id));
-        if (index != -1) {
-            removeIndices.append(index);
+        QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(id);
+        if (it != _messageItem.end()) {
+            QMailMessageThreadedModelItem *item = it.value();
+
+            QModelIndex idx(indexFromItem(item));
+            QModelIndex parentIndex(idx.parent());
+
+            QMailMessageThreadedModelItem *parent;
+            if (parentIndex.isValid()) {
+                parent = itemFromIndex(parentIndex);
+            } else {
+                parent = &_root;
+            }
+
+            int childIndex = parent->children().indexOf(*item);
+            removeIndices.append(qMakePair(parentIndex, childIndex));
         }
     }
     
     // Sort the indices to yield ascending order (they must be deleted in descending order!)
-    qSort(removeIndices);
+    qSort(removeIndices.begin(), removeIndices.end(), LessThanForRemoval());
 
     *locations = indicesToLocationSequence(removeIndices);
-#endif
     return true;
 }
 
 void QMailMessageThreadedModelPrivate::insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id)
 {
-#if 0
-    _idList.insert(row, id);
-    _itemIndex.insert(id, row);
-
-    // Adjust the indices for the items that have been moved
-    QList<QMailMessageId>::iterator it = _idList.begin() + (row + 1), end = _idList.end();
-    for ( ; it != end; ++it) {
-        _itemIndex[*it] += 1;
+    QMailMessageThreadedModelItem *parent;
+    if (parentIndex.isValid()) {
+        parent = itemFromIndex(parentIndex);
+    } else {
+        parent = &_root;
     }
 
-    Q_UNUSED(parentIndex)
-#endif
+    QList<QMailMessageThreadedModelItem> &container(parent->children());
+
+    container.insert(row, QMailMessageThreadedModelItem(id, parent));
+    _messageItem[id] = &(container[row]);
+    _currentIds.append(id);
 }
 
 void QMailMessageThreadedModelPrivate::removeItemAt(int row, const QModelIndex &parentIndex)
 {
-#if 0
-    QMailMessageId id(_idList.at(row));
-    _checkedIds.remove(id);
-    _itemIndex.remove(id);
-    _idList.removeAt(row);
-
-    // Adjust the indices for the items that have been moved
-    QList<QMailMessageId>::iterator it = _idList.begin() + row, end = _idList.end();
-    for ( ; it != end; ++it) {
-        _itemIndex[*it] -= 1;
+    QMailMessageThreadedModelItem *parent;
+    if (parentIndex.isValid()) {
+        parent = itemFromIndex(parentIndex);
+    } else {
+        parent = &_root;
     }
 
-    Q_UNUSED(parentIndex)
-#endif
+    QList<QMailMessageThreadedModelItem> &container(parent->children());
+
+    if (container.count() > row) {
+        QMailMessageThreadedModelItem *item = &(container[row]);
+
+        // TODO: Is this right?
+        // Any remaining children of this item need to be migrated to this item's parent
+        QList<QMailMessageThreadedModelItem> &children(item->_children);
+        while (!children.isEmpty()) {
+            container.append(children.takeFirst());
+            container.last()._parent = parent;
+        }
+
+        QMailMessageId id(item->id());
+
+        _checkedIds.remove(id);
+        _currentIds.removeAll(id);
+        _messageItem.remove(id);
+        container.removeAt(row);
+    }
 }
 
 QModelIndex QMailMessageThreadedModelPrivate::index(int row, int column, const QModelIndex &parentIndex) const
@@ -473,15 +653,14 @@ QModelIndex QMailMessageThreadedModelPrivate::index(int row, int column, const Q
     init();
 
     QMailMessageThreadedModelItem *parent;
-
     if (parentIndex.isValid()) {
         parent = itemFromIndex(parentIndex);
     } else {
         parent = &_root;
     }
 
-    if (parent && parent->children().count() > row)
-        return _model.generateIndex(row, column, reinterpret_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(parent->children().at(row)))));
+    if (parent && (parent->children().count() > row))
+        return _model.generateIndex(row, column, static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(parent->children().at(row)))));
 
     return QModelIndex();
 }
@@ -496,11 +675,31 @@ QModelIndex QMailMessageThreadedModelPrivate::parent(const QModelIndex &idx) con
     return QModelIndex();
 }
 
+QModelIndex QMailMessageThreadedModelPrivate::updateIndex(const QModelIndex &idx) const
+{
+    if (idx.isValid()) {
+        if (QMailMessageThreadedModelItem *item = static_cast<QMailMessageThreadedModelItem*>(idx.internalPointer())) {
+            // This index may refer to a pending item - use the in-model location is there is one
+            QMap<QMailMessageId, QMailMessageThreadedModelItem*>::const_iterator it = _messageItem.find(item->id());
+            if (it != _messageItem.end()) {
+                QMailMessageThreadedModelItem *modelItem = it.value();
+                if (modelItem != item) {
+                    // Create a new index pointing to the real location
+                    return _model.generateIndex(idx.row(), idx.column(), static_cast<void*>(modelItem));
+                }
+            }
+        }
+    }
+
+    return idx;
+}
+
 void QMailMessageThreadedModelPrivate::init() const
 {
     if (!_initialised) {
         _root.children().clear();
         _messageItem.clear();
+        _currentIds.clear();
 
         // Find all messages involved in conversations with the messages to show, along with their predecessor ID
         QMailMessageKey conversationKey(QMailMessageKey::conversation(_key));
@@ -531,29 +730,28 @@ void QMailMessageThreadedModelPrivate::init() const
             }
 
             do {
-                bool added(false);
+                QMailMessageThreadedModelItem *insertParent = 0;
 
                 if (!predecessorId.isValid()) {
                     // This message is a root node
-                    QList<QMailMessageThreadedModelItem> &container(_root.children());
-                    container.append(QMailMessageThreadedModelItem(messageId, &_root));
-                    _messageItem[messageId] = &(container.last());
-                    added = true;
+                    insertParent = &_root;
                 } else {
                     // Find the predecessor and add to the tree
                     it = _messageItem.find(predecessorId);
                     if (it != _messageItem.end()) {
                         // Add this message to its parent
-                        QMailMessageThreadedModelItem *parent(it.value());
-                        QList<QMailMessageThreadedModelItem> &container(parent->children());
-
-                        container.append(QMailMessageThreadedModelItem(messageId, parent));
-                        _messageItem[messageId] = &(container.last());
-                        added = true;
+                        insertParent = it.value();
                     }
                 }
 
-                if (added) {
+                if (insertParent != 0) {
+                    // Append the message to the existing children of the parent
+                    QList<QMailMessageThreadedModelItem> &container(insertParent->children());
+
+                    container.append(QMailMessageThreadedModelItem(messageId, insertParent));
+                    _messageItem[messageId] = &(container.last());
+                    _currentIds.append(messageId);
+                    
                     if (descendants.isEmpty()) {
                         messageId = QMailMessageId();
                     } else {
@@ -583,7 +781,7 @@ QModelIndex QMailMessageThreadedModelPrivate::parentIndex(QMailMessageThreadedMo
 {
     if (QMailMessageThreadedModelItem *parent = item->_parent)
         if (parent->_parent != 0)
-            return index(static_cast<QMailMessageThreadedModelItem*>(parent), column);
+            return index(parent, column);
 
     return QModelIndex();
 }
@@ -591,7 +789,7 @@ QModelIndex QMailMessageThreadedModelPrivate::parentIndex(QMailMessageThreadedMo
 QModelIndex QMailMessageThreadedModelPrivate::index(QMailMessageThreadedModelItem *item, int column) const
 {
     if (QMailMessageThreadedModelItem *parent = item->_parent)
-        return _model.generateIndex(parent->children().indexOf(*item), column, reinterpret_cast<void*>(item));
+        return _model.generateIndex(parent->children().indexOf(*item), column, static_cast<void*>(item));
 
     return QModelIndex();
 }
@@ -606,7 +804,6 @@ QMailMessageThreadedModelItem *QMailMessageThreadedModelPrivate::itemFromIndex(c
 
 QModelIndex QMailMessageThreadedModelPrivate::indexFromItem(QMailMessageThreadedModelItem *item) const
 {
-    //return const_cast<QMailMessageThreadedModel*>(this)->index(item, 0);
     return index(item, 0);
 }
 
@@ -654,6 +851,7 @@ QModelIndex QMailMessageThreadedModel::parent(const QModelIndex &idx) const
 /*! \reimp */
 QModelIndex QMailMessageThreadedModel::generateIndex(int row, int column, void *ptr)
 {
+    Q_ASSERT(ptr);
     return createIndex(row, column, ptr);
 }
 
