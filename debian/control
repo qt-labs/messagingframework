@@ -38,7 +38,7 @@ Description: Qt Messaging Framework Library development files
  necessary on a concurrent base.
 
 Package: libqmf-tests
-Section: libdevel
+Section: tests
 Architecture: any
 Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
 Description: Qt Messaging Framework Library unit tests
