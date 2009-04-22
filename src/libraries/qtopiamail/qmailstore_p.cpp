@@ -5891,9 +5891,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Update these descendant messages to have the new message as their predecessor
-            QString sql("UPDATE mailmessages SET responseid=%1 WHERE id IN %2");
-            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)).arg(expandValueList(descendantIds)),
-                                        descendantIds,
+            QString sql("UPDATE mailmessages SET responseid=%1");
+            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)),
+                                        Key(QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -5912,9 +5912,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Find the threads that the descendants currently belong to
-            QString sql("SELECT DISTINCT threadid FROM mailthreadmessages WHERE messageid IN %1");
-            QSqlQuery query(simpleQuery(sql.arg(expandValueList(descendantIds)),
-                                        descendantIds,
+            QSqlQuery query(simpleQuery("SELECT DISTINCT threadid FROM mailthreadmessages",
+                                        Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailthreadmessages query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -5925,9 +5924,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Attach the descendants to the thread of their new predecessor
-            QString sql("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=%1) WHERE messageid IN %2");
-            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)).arg(expandValueList(descendantIds)),
-                                        descendantIds,
+            QString sql("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=%1)");
+            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)),
+                                        Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailthreadmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -6106,23 +6105,15 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
-        // Until we have a proper solution, I need to loop over this:
-        int count = 0;
-        while (count < idValues.count()) {
-            QVariantList subList(idValues.mid(count, IdLookupThreshold));
-            count += IdLookupThreshold;
+        // Find any messages that need to updated
+        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
+                                    Key("responseid", QMailMessageKey::id(deletedMessageIds)),
+                                    "deleteMessages mailmessages updated query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
 
-            // Find any messages that need to updated
-            QString sql("SELECT id FROM mailmessages WHERE responseid IN %1");
-            QSqlQuery query(simpleQuery(sql.arg(expandValueList(subList)),
-                                        subList,
-                                        "deleteMessages mailmessages updated query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
-
-            while (query.next())
-                updatedMessageIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
-        }
+        while (query.next())
+            updatedMessageIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
     }
 
     {
@@ -6142,13 +6133,15 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
         {
             QVariantList newPredecessorValues;
+            QVariantList deletedValues;
             foreach (const QMailMessageId &id, deletedMessageIds) {
                 newPredecessorValues.append(QVariant(predecessors[id]));
+                deletedValues.append(QVariant(id));
             }
 
             // Link any descendants of the messages to the deleted messages' predecessor
             QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
-                                       QVariantList() << QVariant(newPredecessorValues) << QVariant(idValues),
+                                       QVariantList() << QVariant(newPredecessorValues) << QVariant(deletedValues),
                                        "deleteMessages mailmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
@@ -6166,24 +6159,11 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Delete the thread associations of these messages
-
-        // TODO - we need a way to override the column name for a key expansion
-        
-        // A set clause can handle only a limited amount of values
-        if (deletedMessageIds.count() < IdLookupThreshold) {
-            QString sql("DELETE FROM mailthreadmessages WHERE messageid IN %1");
-            QSqlQuery query(simpleQuery(sql.arg(expandValueList(idValues)),
-                                        idValues,
-                                        "deleteMessages mailthreadmessages delete query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
-        } else {
-            // Delete any orphaned thread-message links
-            QSqlQuery query(simpleQuery("DELETE FROM mailthreadmessages WHERE messageid NOT IN (SELECT id FROM mailmessages)",
-                                        "deleteMessages mailthreadmessages delete query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
-        }
+        QSqlQuery query(simpleQuery("DELETE FROM mailthreadmessages",
+                                    Key("messageid", QMailMessageKey::id(deletedMessageIds)),
+                                    "deleteMessages mailthreadmessages delete query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
     }
 
     {
