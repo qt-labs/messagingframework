@@ -4103,9 +4103,17 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         }
 
         // See if this message resolves any missing message items
-        result = resolveMissingMessages(identifier, insertId);
+        result = resolveMissingMessages(identifier, insertId, updatedMessageIds);
         if (result != Success)
             return result;
+
+        if (!updatedMessageIds->isEmpty()) {
+            // Find the set of folders and accounts whose contents are modified by these messages
+            QMailMessageKey modifiedMessageKey(QMailMessageKey::id(*updatedMessageIds));
+            result = affectedByMessageIds(*updatedMessageIds, modifiedFolderIds, modifiedAccountIds);
+            if (result != Success)
+                return result;
+        }
     }
 
     if (!missingReferences.isEmpty()) {
@@ -4145,8 +4153,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     if (metaData->parentAccountId().isValid())
         modifiedAccountIds->append(metaData->parentAccountId());
     return Success;
-
-    Q_UNUSED(updatedMessageIds)
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const QMailAccountKey &key, 
@@ -4734,9 +4740,17 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 // See if this message resolves any missing message items
-                AttemptResult result = resolveMissingMessages(identifier, updateId);
+                AttemptResult result = resolveMissingMessages(identifier, updateId, updatedMessageIds);
                 if (result != Success)
                     return result;
+
+                if (!updatedMessageIds->isEmpty()) {
+                    // Find the set of folders and accounts whose contents are modified by these messages
+                    QMailMessageKey modifiedMessageKey(QMailMessageKey::id(*updatedMessageIds));
+                    result = affectedByMessageIds(*updatedMessageIds, modifiedFolderIds, modifiedAccountIds);
+                    if (result != Success)
+                        return result;
+                }
             } else {
                 if (!existingIdentifier.isEmpty()) {
                     // Remove any existing value
@@ -5839,7 +5853,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, quint64 messageId)
+QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, quint64 messageId, QMailMessageIdList *updatedMessageIds)
 {
     QList<QPair<quint64, quint64> > descendants;
 
@@ -5860,6 +5874,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         QList<QPair<quint64, quint64> >::const_iterator it = descendants.begin(), end = descendants.end();
         for ( ; it != end; ++it) {
+            updatedMessageIds->append(QMailMessageId((*it).first));
+
             descendantIds.append(QVariant((*it).first));
             descendantLevels.append(QVariant((*it).second));
         }
@@ -6087,6 +6103,26 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
+        // Until we have a proper solution, I need to loop over this:
+        int count = 0;
+        while (count < idValues.count()) {
+            QVariantList subList(idValues.mid(count, IdLookupThreshold));
+            count += IdLookupThreshold;
+
+            // Find any messages that need to updated
+            QString sql("SELECT id FROM mailmessages WHERE responseid IN %1");
+            QSqlQuery query(simpleQuery(sql.arg(expandValueList(subList)),
+                                        subList,
+                                        "deleteMessages mailmessages updated query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+
+            while (query.next())
+                updatedMessageIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
+        }
+    }
+
+    {
         QMap<QMailMessageId, quint64> predecessors;
 
         {
@@ -6101,17 +6137,19 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), extractValue<quint64>(query.value(1)));
         }
 
-        QVariantList newPredecessorValues;
-        foreach (const QMailMessageId &id, deletedMessageIds) {
-            newPredecessorValues.append(QVariant(predecessors[id]));
-        }
+        {
+            QVariantList newPredecessorValues;
+            foreach (const QMailMessageId &id, deletedMessageIds) {
+                newPredecessorValues.append(QVariant(predecessors[id]));
+            }
 
-        // Link any descendants of the messages to the deleted messages' predecessor
-        QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
-                                   QVariantList() << QVariant(newPredecessorValues) << QVariant(idValues),
-                                   "deleteMessages mailmessages update query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return false;
+            // Link any descendants of the messages to the deleted messages' predecessor
+            QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
+                                       QVariantList() << QVariant(newPredecessorValues) << QVariant(idValues),
+                                       "deleteMessages mailmessages update query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+        }
     }
 
     {

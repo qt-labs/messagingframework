@@ -414,7 +414,7 @@ private:
 
     AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, QStringList *missingReferences);
 
-    AttemptResult resolveMissingMessages(const QString &identifier, quint64 messageId);
+    AttemptResult resolveMissingMessages(const QString &identifier, quint64 messageId, QMailMessageIdList *updatedMessageIds);
 
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
