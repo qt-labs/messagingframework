@@ -157,14 +157,16 @@ bool QMailStore::addFolder(QMailFolder* folder)
 bool QMailStore::addMessage(QMailMessage* msg)
 {
     QMailMessageIdList addedMessageIds;
+    QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessage(msg, &addedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessage(msg, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
+    emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
@@ -178,14 +180,16 @@ bool QMailStore::addMessage(QMailMessage* msg)
 bool QMailStore::addMessage(QMailMessageMetaData* metaData)
 {
     QMailMessageIdList addedMessageIds;
+    QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessage(metaData, &addedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessage(metaData, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
+    emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
@@ -208,18 +212,24 @@ bool QMailStore::removeAccount(const QMailAccountId& id)
 */
 bool QMailStore::removeAccounts(const QMailAccountKey& key)
 {
-    QMailAccountIdList deletedAccounts;
-    QMailFolderIdList deletedFolders;
-    QMailMessageIdList deletedMessages;
+    QMailAccountIdList deletedAccountIds;
+    QMailFolderIdList deletedFolderIds;
+    QMailMessageIdList deletedMessageIds;
+    QMailMessageIdList updatedMessageIds;
+    QMailFolderIdList modifiedFolderIds;
+    QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeAccounts(key, &deletedAccounts, &deletedFolders, &deletedMessages))
+    if (!d->removeAccounts(key, &deletedAccountIds, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
-    emitRemovalRecordNotification(Removed, deletedAccounts);
-    emitMessageNotification(Removed, deletedMessages);
-    emitFolderNotification(Removed, deletedFolders);
-    emitAccountNotification(Removed, deletedAccounts);
+    emitRemovalRecordNotification(Removed, deletedAccountIds);
+    emitMessageNotification(Removed, deletedMessageIds);
+    emitFolderNotification(Removed, deletedFolderIds);
+    emitAccountNotification(Removed, deletedAccountIds);
+    emitMessageNotification(Updated, updatedMessageIds);
+    emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
 
@@ -248,18 +258,22 @@ bool QMailStore::removeFolder(const QMailFolderId& id, QMailStore::MessageRemova
 */
 bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRemovalOption option)
 {
-    QMailFolderIdList deletedFolders;
-    QMailMessageIdList deletedMessages;
-    QMailAccountIdList modifiedAccounts;
+    QMailFolderIdList deletedFolderIds;
+    QMailMessageIdList deletedMessageIds;
+    QMailMessageIdList updatedMessageIds;
+    QMailFolderIdList modifiedFolderIds;
+    QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeFolders(key, option, &deletedFolders, &deletedMessages, &modifiedAccounts))
+    if (!d->removeFolders(key, option, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
-    emitRemovalRecordNotification(Added, modifiedAccounts);
-    emitMessageNotification(Removed, deletedMessages);
-    emitFolderNotification(Removed, deletedFolders);
-    emitAccountNotification(ContentsModified, modifiedAccounts);
+    emitRemovalRecordNotification(Added, modifiedAccountIds);
+    emitMessageNotification(Removed, deletedMessageIds);
+    emitFolderNotification(Removed, deletedFolderIds);
+    emitMessageNotification(Updated, updatedMessageIds);
+    emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
 
@@ -282,18 +296,20 @@ bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemo
 */
 bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageRemovalOption option)
 {
-    QMailMessageIdList deletedMessages;
-    QMailAccountIdList modifiedAccounts;
-    QMailFolderIdList modifiedFolders;
+    QMailMessageIdList deletedMessageIds;
+    QMailMessageIdList updatedMessageIds;
+    QMailAccountIdList modifiedAccountIds;
+    QMailFolderIdList modifiedFolderIds;
 
     d->setLastError(NoError);
-    if (!d->removeMessages(key, option, &deletedMessages, &modifiedAccounts, &modifiedFolders))
+    if (!d->removeMessages(key, option, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
-    emitRemovalRecordNotification(Added, modifiedAccounts);
-    emitMessageNotification(Removed, deletedMessages);
-    emitFolderNotification(ContentsModified, modifiedFolders);
-    emitAccountNotification(ContentsModified, modifiedAccounts);
+    emitRemovalRecordNotification(Added, modifiedAccountIds);
+    emitMessageNotification(Removed, deletedMessageIds);
+    emitMessageNotification(Updated, updatedMessageIds);
+    emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
 
