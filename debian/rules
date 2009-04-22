@@ -57,3 +57,8 @@ clean::
 	rm -f src/libraries/messageserver/libmessageserver.prl
 	rm -f src/libraries/qmfutil/libqmfutil.prl
 	rm -f src/libraries/qtopiamail/libqtopiamail.prl
+
+install/libqmf-tests::
+	mkdir -p $(CURDIR)/debian/tmp/usr/tests
+	cp $(CURDIR)/debian/runtests.sh $(CURDIR)/debian/tmp/usr/tests/.
+	cp $(CURDIR)/debian/test_script.sh $(CURDIR)/debian/tmp/usr/tests/.
