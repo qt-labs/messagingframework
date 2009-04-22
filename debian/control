@@ -40,7 +40,7 @@ Description: Qt Messaging Framework Library development files
 Package: libqmf-tests
 Section: tests
 Architecture: any
-Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5)
+Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5), testrunner-package
 Description: Qt Messaging Framework Library unit tests
  Unit tests for Qt Messaging Framework Library.
  .
