@@ -322,6 +322,7 @@ bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *
 bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum)
 {
     QMailFolderId mailboxId;
+    QString mailboxIdStr;
     QStringList uidList;
     QMailMessagePart::Location location;
     int minimum = SectionProperties::All;
@@ -349,13 +350,14 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         folderAction(context);
         return false;
     }
+    mailboxIdStr = QString::number(mailboxId.toULongLong()) + '|';
 
     //TODO Leave parts to last to reduce roundtrips. Get all parts in one message in one roundtrip.
     while ((_selectionItr != selectionEnd) 
            && (uidList.count() < maximum)
            && (!location.isValid())
            && (minimum == SectionProperties::All)) {
-        uidList.append(QString::number(_selectionItr.key()));
+        uidList.append(mailboxIdStr + QString::number(_selectionItr.key()));
         location = _selectionItr.value()._location;
         minimum = _selectionItr.value()._minimum;
 
