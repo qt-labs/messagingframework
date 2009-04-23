@@ -147,19 +147,19 @@ public:
                            QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool addMessage(QMailMessage *m,
-                            QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
+                            QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool addMessage(QMailMessageMetaData *m,
-                            QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
+                            QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeAccounts(const QMailAccountKey &key,
-                                QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages) = 0;
+                                QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modeifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                               QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts) = 0;
+                               QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modeifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                                QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts, QMailFolderIdList *modifiedFolders) = 0;
+                                QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                                QMailAccountIdList *updatedAccountIds) = 0;
