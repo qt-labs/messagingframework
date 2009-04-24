@@ -1356,13 +1356,15 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
             "disabled for account name" << name << "id" << id;
     }
     QMailFolderIdList folders(context->client()->mailboxIds());
+    QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
+    statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
+    ImapClient *c(context->client());
     foreach(QMailFolderId folderId, folders) {
         QStringList deletedUids;
         if (imapCfg.canDeleteMail())
             deletedUids = context->client()->deletedMessages(folderId);
-        QStringList readElsewereUids(context->client()->serverUids(folderId, QMailMessage::ReadElsewhere));
-        QStringList readUids(context->client()->serverUids(folderId, QMailMessage::Read));
-        readUids = inFirstButNotSecond(readUids, readElsewereUids);
+        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
+        QStringList readUids = c->serverUids(folderKey & statusKey);
         if (!deletedUids.isEmpty() || !readUids.isEmpty())
             _mailboxList.append(folderId);
     }
@@ -1387,17 +1389,18 @@ void ImapExportUpdatesStrategy::handleSelect(ImapStrategyContextBase *context)
             // Only interested in messages that are going to be operated on
             ImapConfiguration imapCfg(context->config());
             QMailFolderId folderId(_currentMailbox.id());
-            QStringList readElsewereUids(context->client()->serverUids(folderId, QMailMessage::ReadElsewhere));
-            
+            QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
+            statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
+            ImapClient *c(context->client());
+            QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
+            _clientReadUids = c->serverUids(folderKey & statusKey);
             if (imapCfg.canDeleteMail())
                 _clientDeletedUids = context->client()->deletedMessages(folderId);
-            _clientReadUids = context->client()->serverUids(folderId, QMailMessage::Read);
-            _clientReadUids = inFirstButNotSecond(_clientReadUids, readElsewereUids);
+            
             if (_clientDeletedUids.isEmpty() && _clientReadUids.isEmpty()) {
                 processUidSearchResults(context);
                 return;
             }
-            
             QStringList changedUids = _clientDeletedUids + _clientReadUids;
             QString uidList = "UID " + stripFolderPrefix(changedUids).join(",");
             context->protocol().sendUidSearch(MFlag_All, uidList);
