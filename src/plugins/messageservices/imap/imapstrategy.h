@@ -21,11 +21,9 @@
 
 
 struct SectionProperties {
-    SectionProperties(const QMailMessageId& id,
-                      const QMailMessagePart::Location &location = QMailMessagePart::Location(),
+    SectionProperties(const QMailMessagePart::Location &location = QMailMessagePart::Location(),
                       int minimum = All)
-        : _id(id),
-          _location(location),
+        :  _location(location),
           _minimum(minimum)
     {
     }
@@ -34,12 +32,11 @@ struct SectionProperties {
         All = -1
     };
 
-    QMailMessageId _id;
     QMailMessagePart::Location _location;
     int _minimum;
 };
 
-typedef QMultiMap<QString, SectionProperties> FolderMap;
+typedef QMultiMap<uint, SectionProperties> FolderMap;
 typedef QMap<QMailFolderId, FolderMap> SelectionMap;
 
 class QMailAccount;

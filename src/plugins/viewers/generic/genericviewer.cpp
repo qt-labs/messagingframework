@@ -166,6 +166,7 @@ void GenericViewer::linkClicked(const QUrl& link)
             } else {
                 emit retrieveMessage();
             }
+            return;
         }
     }
 

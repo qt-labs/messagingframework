@@ -184,6 +184,26 @@ struct FunctionWrapper7e1
     R operator()(E1 e1) { return (m_a1->*m_f)(m_a2, m_a3, m_a4, m_a5, m_a6, m_a7, e1); }
 };
 
+template<typename R, typename F, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+struct FunctionWrapper8
+{
+    F m_f; A1 m_a1; A2 m_a2; A3 m_a3; A4 m_a4; A5 m_a5; A6 m_a6; A7 m_a7; A8 m_a8;
+
+    FunctionWrapper8(F f, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8) : m_f(f), m_a1(a1), m_a2(a2), m_a3(a3), m_a4(a4), m_a5(a5), m_a6(a6), m_a7(a7), m_a8(a8) {}
+
+    R operator()() { return (m_a1->*m_f)(m_a2, m_a3, m_a4, m_a5, m_a6, m_a7, m_a8); }
+};
+
+template<typename R, typename F, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename E1>
+struct FunctionWrapper8e1
+{
+    F m_f; A1 m_a1; A2 m_a2; A3 m_a3; A4 m_a4; A5 m_a5; A6 m_a6; A7 m_a7; A8 m_a8;
+
+    FunctionWrapper8e1(F f, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8) : m_f(f), m_a1(a1), m_a2(a2), m_a3(a3), m_a4(a4), m_a5(a5), m_a6(a6), m_a7(a7), m_a8(a8) {}
+
+    R operator()(E1 e1) { return (m_a1->*m_f)(m_a2, m_a3, m_a4, m_a5, m_a6, m_a7, m_a8, e1); }
+};
+
 } // namespace impl
 
 template<typename T>
@@ -358,6 +378,30 @@ template<typename R, typename T, typename B1, typename B2, typename B3, typename
 impl::FunctionWrapper7e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, E1) const, A1, A2, A3, A4, A5, A6, A7, E1> bind(R (T::*f)(B1, B2, B3, B4, B5, B6, E1) const, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7)
 {
     return impl::FunctionWrapper7e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, E1) const, A1, A2, A3, A4, A5, A6, A7, E1>(f, a1, a2, a3, a4, a5, a6, a7);
+}
+
+template<typename R, typename T, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+impl::FunctionWrapper8<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7), A1, A2, A3, A4, A5, A6, A7, A8> bind(R (T::*f)(B1, B2, B3, B4, B5, B6, B7), A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8)
+{
+    return impl::FunctionWrapper8<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7), A1, A2, A3, A4, A5, A6, A7, A8>(f, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+template<typename R, typename T, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+impl::FunctionWrapper8<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7) const, A1, A2, A3, A4, A5, A6, A7, A8> bind(R (T::*f)(B1, B2, B3, B4, B5, B6, B7) const, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8)
+{
+    return impl::FunctionWrapper8<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7) const, A1, A2, A3, A4, A5, A6, A7, A8>(f, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+template<typename R, typename T, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename E1, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+impl::FunctionWrapper8e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7, E1), A1, A2, A3, A4, A5, A6, A7, A8, E1> bind(R (T::*f)(B1, B2, B3, B4, B5, B6, B7, E1), A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8)
+{
+    return impl::FunctionWrapper8e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7, E1), A1, A2, A3, A4, A5, A6, A7, A8, E1>(f, a1, a2, a3, a4, a5, a6, a7, a8);
+}
+
+template<typename R, typename T, typename B1, typename B2, typename B3, typename B4, typename B5, typename B6, typename B7, typename E1, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8>
+impl::FunctionWrapper8e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7, E1) const, A1, A2, A3, A4, A5, A6, A7, A8, E1> bind(R (T::*f)(B1, B2, B3, B4, B5, B6, B7, E1) const, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6, A7 a7, A8 a8)
+{
+    return impl::FunctionWrapper8e1<R, R (T::*)(B1, B2, B3, B4, B5, B6, B7, E1) const, A1, A2, A3, A4, A5, A6, A7, A8, E1>(f, a1, a2, a3, a4, a5, a6, a7, a8);
 }
 
 }  // namespace tr1

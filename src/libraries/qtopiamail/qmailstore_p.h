@@ -65,19 +65,19 @@ public:
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool addMessage(QMailMessage *m,
-                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool addMessage(QMailMessageMetaData *m,
-                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool removeAccounts(const QMailAccountKey &key,
-                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages);
+                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts);
+                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                        QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts, QMailFolderIdList *modifiedFolders);
+                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                        QMailAccountIdList *updatedAccountIds);
@@ -143,7 +143,7 @@ public:
     static QString expandValueList(const QVariantList& valueList);
     static QString expandValueList(int valueCount);
 
-    static QString temporaryTableName(const QMailMessageKey &key);
+    static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
 
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
@@ -187,7 +187,7 @@ private:
     typedef QPair<quint64, QString> FolderInfo;
     bool setupFolders(const QList<FolderInfo> &folderList);
 
-    void createTemporaryTable(const QMailMessageKey &key) const;
+    void createTemporaryTable(const QMailMessageKey::ArgumentType &arg) const;
     void destroyTemporaryTables(void);
 
     bool transaction(void);
@@ -234,21 +234,27 @@ private:
                         QMailStore::MessageRemovalOption option,
                         QMailMessageIdList& deletedMessageIds,
                         QStringList& expiredMailfiles,
-                        QMailAccountIdList& modifiedAccounts,
-                        QMailFolderIdList& modifiedFolders);
+                        QMailMessageIdList& updatedMessageIds,
+                        QMailFolderIdList& modifiedFolders,
+                        QMailAccountIdList& modifiedAccounts);
 
     bool deleteFolders(const QMailFolderKey& key,
                        QMailStore::MessageRemovalOption option,
-                       QMailFolderIdList& deletedFolders,
+                       QMailFolderIdList& deletedFolderIds,
                        QMailMessageIdList& deletedMessageIds,
                        QStringList& expiredMailfiles,
-                       QMailAccountIdList& modifiedAccounts);
+                       QMailMessageIdList& updatedMessageIds,
+                       QMailFolderIdList& modifiedFolderIds,
+                       QMailAccountIdList& modifiedAccountIds);
 
     bool deleteAccounts(const QMailAccountKey& key,
-                        QMailAccountIdList& deletedAccounts,
-                        QMailFolderIdList& deletedFolders,
+                        QMailAccountIdList& deletedAccountIds,
+                        QMailFolderIdList& deletedFolderIds,
                         QMailMessageIdList& deletedMessageIds,
-                        QStringList& expiredMailfile);
+                        QStringList& expiredMailfiles,
+                        QMailMessageIdList& updatedMessageIds,
+                        QMailFolderIdList& modifiedFolderIds,
+                        QMailAccountIdList& modifiedAccountIds);
 
     void removeExpiredData(const QMailMessageIdList& messageIds,
                            const QStringList& mailfiles,
@@ -271,19 +277,19 @@ private:
                                    Transaction &t);
 
     AttemptResult attemptAddMessage(QMailMessageMetaData *metaData,
-                                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                     Transaction &t);
 
     AttemptResult attemptRemoveAccounts(const QMailAccountKey &key, 
-                                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages,
+                                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                         Transaction &t);
 
     AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
-                                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts,
+                                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                        Transaction &t);
 
     AttemptResult attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option, 
-                                        QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts, QMailFolderIdList *modifiedFolders,
+                                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                         Transaction &t);
 
     AttemptResult attemptUpdateAccount(QMailAccount *account, QMailAccountConfiguration *config, 
@@ -474,9 +480,9 @@ private:
     mutable IdCache<QMailFolder, QMailFolderId> folderCache;
     mutable IdCache<QMailAccount, QMailAccountId> accountCache;
 
-    mutable QList<const QMailMessageKey*> requiredTableKeys;
-    mutable QList<const QMailMessageKey*> temporaryTableKeys;
-    QList<const QMailMessageKey*> expiredTableKeys;
+    mutable QList<const QMailMessageKey::ArgumentType*> requiredTableKeys;
+    mutable QList<const QMailMessageKey::ArgumentType*> temporaryTableKeys;
+    QList<const QMailMessageKey::ArgumentType*> expiredTableKeys;
 
     bool inTransaction;
     mutable int lastQueryError;
