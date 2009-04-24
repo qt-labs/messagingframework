@@ -72,7 +72,7 @@ for each_test in `find $test_dir_path -type f -name "tst_*"`; do
 #done
 #    if [ ${test_excluded} -eq 0 ]; then
         test_exec=$each_test
-        [ -x $test_exec ] && $test_exec
+        [ -x $test_exec ] && $test_exec > /tmp/libqmf-tests/$test_exec.log
 #    fi
 done
 exit 0
