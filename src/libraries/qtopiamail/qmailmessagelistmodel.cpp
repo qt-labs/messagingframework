@@ -45,26 +45,21 @@ public:
     bool ignoreMailStoreUpdates() const;
     bool setIgnoreMailStoreUpdates(bool ignore);
 
-    bool additionLocations(const QMailMessageIdList &ids,
-                           QList<LocationSequence> *locations, 
-                           QMailMessageIdList *insertIds);
-
-    bool updateLocations(const QMailMessageIdList &ids, 
-                         QList<LocationSequence> *additions, 
-                         QList<LocationSequence> *deletions, 
-                         QList<LocationSequence> *updates,
-                         QMailMessageIdList *insertIds);
-
-    bool removalLocations(const QMailMessageIdList &ids, 
-                          QList<LocationSequence> *locations);
-
-    void insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id);
-    void removeItemAt(int row, const QModelIndex &parentIndex);
+    bool processMessagesAdded(const QMailMessageIdList &ids);
+    bool processMessagesUpdated(const QMailMessageIdList &ids);
+    bool processMessagesRemoved(const QMailMessageIdList &ids);
 
 private:
     void init() const;
 
     int indexOf(const QMailMessageId& id) const;
+
+    bool addMessages(const QMailMessageIdList &ids);
+    bool updateMessages(const QMailMessageIdList &ids);
+    bool removeMessages(const QMailMessageIdList &ids);
+
+    void insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id);
+    void removeItemAt(int row, const QModelIndex &parentIndex);
 
     QMailMessageListModel &_model;
     QMailMessageKey _key;
@@ -214,9 +209,7 @@ bool QMailMessageListModelPrivate::setIgnoreMailStoreUpdates(bool ignore)
     return (!_ignoreUpdates && _needSynchronize);
 }
 
-bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &ids,
-                                                     QList<LocationSequence> *locations, 
-                                                     QMailMessageIdList *insertIds)
+bool QMailMessageListModelPrivate::processMessagesAdded(const QMailMessageIdList &ids)
 {
     if (!_initialised) {
         // Nothing to do yet
@@ -229,6 +222,16 @@ bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &i
         return true;
     }
 
+    // Find where these messages should be added
+    if (!addMessages(ids)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
+{
     // Are any of these messages members of our display set?
     // Note - we must only consider messages in the set given by (those we currently know +
     // those we have now been informed of) because the database content may have changed between
@@ -261,18 +264,16 @@ bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &i
         }
     }
 
-    *locations = indicesToLocationSequence(insertIndices);
     foreach (int index, insertIndices) {
-        insertIds->append(indexId[index]);
+        _model.emitBeginInsertRows(QModelIndex(), index, index);
+        insertItemAt(index, QModelIndex(), indexId[index]);
+        _model.emitEndInsertRows();
     }
+
     return true;
 }
 
-bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids, 
-                                                   QList<LocationSequence> *additions, 
-                                                   QList<LocationSequence> *deletions, 
-                                                   QList<LocationSequence> *updates,
-                                                   QMailMessageIdList *insertIds)
+bool QMailMessageListModelPrivate::processMessagesUpdated(const QMailMessageIdList &ids)
 {
     if (!_initialised) {
         // Nothing to do yet
@@ -285,6 +286,16 @@ bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids
         return true;
     }
 
+    // Find where these messages should be added/removed/updated
+    if (!updateMessages(ids)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
+{
     QList<int> insertIndices;
     QList<int> removeIndices;
     QList<int> updateIndices;
@@ -320,35 +331,58 @@ bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids
             if (newIndex == -1) {
                 removeIndices.append(oldIndex);
             } else {
-                if (newIndex == oldIndex) {
-                    // This message is updated but has not changed position
-                    updateIndices.append(newIndex);
-                } else {
-                    // The item has changed position - delete and re-add
+                bool reinsert(false);
+
+                // See if this item is still sorted correctly with respect to its neighbours
+                if (newIndex > 0) {
+                    if (newIds.indexOf(_idList.at(newIndex - 1)) > newIndex) {
+                        reinsert = true;
+                    }
+                }
+
+                if (newIndex < _idList.count() - 1) {
+                    if (newIds.indexOf(_idList.at(newIndex + 1)) < newIndex) {
+                        reinsert = true;
+                    }
+                }
+
+                if (reinsert) {
                     removeIndices.append(oldIndex);
                     insertIndices.append(newIndex);
                     indexId.insert(newIndex, id);
+                } else {
+                    // This message is updated but has not changed position
+                    updateIndices.append(newIndex);
                 }
             }
         }
     }
 
     // Sort the lists to yield ascending order
-    qSort(insertIndices);
     qSort(removeIndices);
-    qSort(updateIndices);
-
-    *additions = indicesToLocationSequence(insertIndices);
-    *deletions = indicesToLocationSequence(removeIndices);
-    *updates = indicesToLocationSequence(updateIndices);
-
-    foreach (int index, insertIndices) {
-        insertIds->append(indexId[index]);
+    for (int i = removeIndices.count(); i > 0; --i) {
+        int index = i - 1;
+        _model.emitBeginRemoveRows(QModelIndex(), index, index);
+        removeItemAt(index, QModelIndex());
+        _model.emitEndRemoveRows();
     }
+
+    qSort(insertIndices);
+    foreach (int index, insertIndices) {
+        _model.emitBeginInsertRows(QModelIndex(), index, index);
+        insertItemAt(index, QModelIndex(), indexId[index]);
+        _model.emitEndInsertRows();
+    }
+
+    qSort(updateIndices);
+    foreach (int index, updateIndices) {
+        _model.emitDataChanged(_model.index(index, 0, QModelIndex()));
+    }
+
     return true;
 }
 
-bool QMailMessageListModelPrivate::removalLocations(const QMailMessageIdList &ids, QList<LocationSequence> *locations)
+bool QMailMessageListModelPrivate::processMessagesRemoved(const QMailMessageIdList &ids)
 {
     if (!_initialised) {
         // Nothing to do yet
@@ -361,6 +395,16 @@ bool QMailMessageListModelPrivate::removalLocations(const QMailMessageIdList &id
         return true;
     }
 
+    // Find where these messages should be removed from
+    if (!removeMessages(ids)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool QMailMessageListModelPrivate::removeMessages(const QMailMessageIdList &ids)
+{
     QList<int> removeIndices;
     foreach (const QMailMessageId &id, ids) {
         int index(indexOf(id));
@@ -372,7 +416,13 @@ bool QMailMessageListModelPrivate::removalLocations(const QMailMessageIdList &id
     // Sort the indices to yield ascending order (they must be deleted in descending order!)
     qSort(removeIndices);
 
-    *locations = indicesToLocationSequence(removeIndices);
+    for (int i = removeIndices.count(); i > 0; --i) {
+        int index = i - 1;
+        _model.emitBeginRemoveRows(QModelIndex(), index, index);
+        removeItemAt(index, QModelIndex());
+        _model.emitEndRemoveRows();
+    }
+
     return true;
 }
 
