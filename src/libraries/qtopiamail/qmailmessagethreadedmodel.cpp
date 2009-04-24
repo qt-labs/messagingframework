@@ -674,7 +674,10 @@ void QMailMessageThreadedModelPrivate::removalLocations(const QMailMessageIdList
                         if (!removedIds.contains(child._id)) {
                             removedIds.insert(child._id);
                             if (readditions) {
-                                childIds.insert(child._id);
+                                // Don't re-add this child if it is being deleted itself
+                                if (!ids.contains(child._id)) {
+                                    childIds.insert(child._id);
+                                }
                             }
 
                             items.append(&child);
