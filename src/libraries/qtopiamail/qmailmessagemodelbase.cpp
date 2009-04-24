@@ -61,7 +61,7 @@ QList<QMailMessageModelImplementation::LocationSequence> QMailMessageModelImplem
         // See if the following indices form a sequence
         QList<int>::const_iterator next = it + 1;
         while (next != end) {
-            if (*next == (loc.second.second + 1)) {
+            if ((*next == loc.second.second) || (*next == (loc.second.second + 1))) {
                 // This ID is part of the same sequence
                 loc.second.second += 1;
                 ++it;
@@ -91,7 +91,8 @@ QList<QMailMessageModelImplementation::LocationSequence> QMailMessageModelImplem
         // See if the following indices form a sequence
         QList<QPair<QModelIndex, int> >::const_iterator next = it + 1;
         while (next != end) {
-            if (((*next).first == loc.first) && ((*next).second == (loc.second.second + 1))) {
+            if (((*next).first == loc.first) && 
+                (((*next).second == loc.second.second) || ((*next).second == (loc.second.second + 1)))) {
                 // This ID is part of the same sequence
                 loc.second.second += 1;
                 ++it;
