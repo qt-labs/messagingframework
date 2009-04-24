@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W17-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 24 Apr 2009 18:00:47 +1000
+
 qt4-messagingframework (2009W16-0maemo4) hardy; urgency=low
 
   * Install test scripts into test pkg.
