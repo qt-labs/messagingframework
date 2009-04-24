@@ -123,6 +123,7 @@ protected:
 private:
     void init();
     bool eventFilter(QObject*, QEvent*);
+    void selectedChildren(const QModelIndex &index, QMailMessageIdList *selectedIds) const;
     void selectChildren(const QModelIndex &index, bool selected, bool *modified);
 
 private:

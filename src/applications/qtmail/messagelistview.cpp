@@ -424,32 +424,28 @@ void MessageListView::setCurrent(const QMailMessageId& id)
 
 void MessageListView::setNextCurrent()
 {
-    QModelIndex index = mMessageList->currentIndex();
-    if ((index.row() + 1) < mFilterModel->rowCount()) {
-        QModelIndex nextIndex = mFilterModel->index(index.row()+1,0);
-        mMessageList->setCurrentIndex(nextIndex);
+    QModelIndex index = mMessageList->indexBelow(mMessageList->currentIndex());
+    if (index.isValid()) {
+        mMessageList->setCurrentIndex(index);
     }
 }
 
 void MessageListView::setPreviousCurrent()
 {
-    QModelIndex index = mMessageList->currentIndex();
-    if (index.row() > 0) {
-        QModelIndex previousIndex = mFilterModel->index(index.row()-1,0);
-        mMessageList->setCurrentIndex(previousIndex);
+    QModelIndex index = mMessageList->indexAbove(mMessageList->currentIndex());
+    if (index.isValid()) {
+        mMessageList->setCurrentIndex(index);
     }
 }
 
 bool MessageListView::hasNext() const
 {
-    QModelIndex index = mMessageList->currentIndex();
-    return index.row() < (mFilterModel->rowCount() - 1);
+    return (mMessageList->indexBelow(mMessageList->currentIndex()).isValid());
 }
 
 bool MessageListView::hasPrevious() const
 {
-    QModelIndex index = mMessageList->currentIndex();
-    return index.row() > 0;
+    return (mMessageList->indexAbove(mMessageList->currentIndex()).isValid());
 }
 
 int MessageListView::rowCount() const
@@ -457,17 +453,24 @@ int MessageListView::rowCount() const
     return mFilterModel->rowCount();
 }
 
+void MessageListView::selectedChildren(const QModelIndex &parentIndex, QMailMessageIdList *selectedIds) const
+{
+    for (int i = 0, count = mFilterModel->rowCount(parentIndex); i < count; ++i) {
+        QModelIndex idx(mFilterModel->index(i, 0, parentIndex));
+        if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Checked) {
+            selectedIds->append(idx.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
+        }
+
+        selectedChildren(idx, selectedIds);
+    }
+}
+
 QMailMessageIdList MessageListView::selected() const
 {
     QMailMessageIdList selectedIds;
 
     if (mMarkingMode) {
-        // get the selected model indexes and convert to ids
-        for (int i = 0, count = mFilterModel->rowCount(); i < count; ++i) {
-            QModelIndex index(mFilterModel->index(i, 0));
-            if (static_cast<Qt::CheckState>(index.data(Qt::CheckStateRole).toInt()) == Qt::Checked)
-                selectedIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
-        }
+        selectedChildren(mMessageList->rootIndex(), &selectedIds);
     } else {
         if (current().isValid())
             selectedIds.append(current());
@@ -498,10 +501,10 @@ void MessageListView::setSelected(const QMailMessageId& id)
     }
 }
 
-void MessageListView::selectChildren(const QModelIndex &index, bool selected, bool *modified)
+void MessageListView::selectChildren(const QModelIndex &parentIndex, bool selected, bool *modified)
 {
-    for (int i = 0, count = mFilterModel->rowCount(index); i < count; ++i) {
-        QModelIndex idx(mFilterModel->index(i, 0, index));
+    for (int i = 0, count = mFilterModel->rowCount(parentIndex); i < count; ++i) {
+        QModelIndex idx(mFilterModel->index(i, 0, parentIndex));
         Qt::CheckState state(static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()));
 
         if (selected && (state == Qt::Unchecked)) {
@@ -520,7 +523,7 @@ void MessageListView::selectAll()
 {
     bool modified(false);
 
-    selectChildren(QModelIndex(), true, &modified);
+    selectChildren(mMessageList->rootIndex(), true, &modified);
 
     if (modified)
         emit selectionChanged();
@@ -530,7 +533,7 @@ void MessageListView::clearSelection()
 {
     bool modified(false);
 
-    selectChildren(QModelIndex(), false, &modified);
+    selectChildren(mMessageList->rootIndex(), false, &modified);
 
     if (modified)
         emit selectionChanged();
@@ -646,12 +649,12 @@ void MessageListView::currentIndexChanged(const QModelIndex& currentIndex,
         emit selectionChanged();
 }
 
-void MessageListView::rowsAboutToBeRemoved(const QModelIndex&, int start, int end)
+void MessageListView::rowsAboutToBeRemoved(const QModelIndex &parentIndex, int start, int end)
 {
     if (mMarkingMode && !mSelectedRowsRemoved) {
         // See if any of the removed rows are currently selected
         for (int row = start; row <= end; ++row) {
-            QModelIndex idx(mFilterModel->index(row, 0));
+            QModelIndex idx(mFilterModel->index(row, 0, parentIndex));
             if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Checked) {
                 mSelectedRowsRemoved = true;
                 break;
