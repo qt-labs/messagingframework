@@ -477,16 +477,9 @@ void QMailMessageModelBase::messagesUpdated(const QMailMessageIdList& ids)
         }
 
         // Update any items still at the same location
-        foreach (const QMailMessageModelImplementation::LocationSequence &seq, insertions) {
-            const QPair<int, int> rows(seq.second);
-
-            QModelIndex parentIndex(impl()->updateIndex(seq.first));
-
-            // Update the item(s) at this location
-            for (int i = rows.first; i <= rows.second; ++i) {
-                QModelIndex idx(index(i, 0, parentIndex));
-                emit dataChanged(idx, idx);
-            }
+        foreach (const QMailMessageModelImplementation::LocationSequence &seq, updates) {
+            // Ignore the rows, these indexes are to items rather than parents
+            emit dataChanged(seq.first, seq.first);
         }
     }
 }

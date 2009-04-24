@@ -600,9 +600,8 @@ bool QMailMessageThreadedModelPrivate::updateLocations(const QMailMessageIdList 
             // Remove and re-add this item
             temporaryRemovalIds.append(messageId);
         } else {
-            // Find the location for this updated item
-            QModelIndex idx(indexFromItem(item));
-            updateIndices.append(qMakePair(idx.parent(), item->rowInParent()));
+            // Find the location for this updated item (not its parent)
+            updateIndices.append(qMakePair(index(item, 0), 0));
         }
     }
 
