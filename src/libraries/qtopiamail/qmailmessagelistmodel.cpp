@@ -261,8 +261,6 @@ bool QMailMessageListModelPrivate::additionLocations(const QMailMessageIdList &i
         }
     }
 
-    Q_ASSERT(insertIndices.count() == additionCount);
-
     *locations = indicesToLocationSequence(insertIndices);
     foreach (int index, insertIndices) {
         insertIds->append(indexId[index]);
@@ -302,8 +300,6 @@ bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids
         ++index;
     }
 
-    int delta = (newIds.count() - _idList.count());
-
     QMap<int, QMailMessageId> indexId;
     foreach (const QMailMessageId &id, ids) {
         int newIndex = -1;
@@ -336,8 +332,6 @@ bool QMailMessageListModelPrivate::updateLocations(const QMailMessageIdList &ids
             }
         }
     }
-
-    Q_ASSERT((insertIndices.count() - removeIndices.count()) == delta);
 
     // Sort the lists to yield ascending order
     qSort(insertIndices);
