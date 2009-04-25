@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W17-0maemo2) hardy; urgency=low
+
+  * Add SPARQL library to package.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Sun, 26 Apr 2009 09:40:23 +1000
+
 qt4-messagingframework (2009W17-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
