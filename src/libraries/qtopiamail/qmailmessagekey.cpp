@@ -16,6 +16,10 @@
 #include <QDateTime>
 #include <QStringList>
 
+#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
+// This value is defined in qmailstore_p.cpp
+const int IdLookupThreshold = 256;
+#endif
 
 using namespace QMailKey;
 
@@ -347,6 +351,14 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageId &id, QMailDataComparato
 */
 QMailMessageKey QMailMessageKey::id(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp)
 {
+#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
+    if (ids.count() >= IdLookupThreshold) {
+        // If there are a large number of IDs, they will be inserted into a temporary table
+        // with a uniqueness constraint; ensure only unique values are supplied
+        return QMailMessageKey(ids.toSet().toList(), Id, QMailKey::comparator(cmp));
+    }
+#endif
+
     return QMailMessageKey(ids, Id, QMailKey::comparator(cmp));
 }
 
