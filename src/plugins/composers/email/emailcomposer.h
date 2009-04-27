@@ -35,7 +35,6 @@ public:
 
     bool isReadyToSend() const;
     QString title() const;
-    QMailAccount fromAccount() const;
 
     virtual QString key() const;
     virtual QList<QMailMessage::MessageType> messageTypes() const;

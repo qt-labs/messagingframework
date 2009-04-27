@@ -119,13 +119,6 @@ QMailComposerInterface::QMailComposerInterface( QWidget *parent )
 }
 
 /*!
-    Destructs the QMailComposerInterface object.
-*/
-QMailComposerInterface::~QMailComposerInterface()
-{
-}
-
-/*!
     Returns a string identifying the composer.
 */
 
@@ -231,13 +224,6 @@ QList<QAction*> QMailComposerInterface::actions() const
     \fn QString QMailComposerInterface::contextTitle() const
 
     Returns a string description of the current composition context.
-*/
-
-/*!
-    \fn QMailAccount QMailComposerInterface::fromAccount() const
-
-    Returns the sending account for the currently composed message or an
-    invalid \c QMailAccount if no account could be set.
 */
 
 /*!

@@ -136,8 +136,8 @@ bool WriteMail::sendStage()
 
     if(!sendAction->data().isValid())
     {
-	qWarning() << "Cannot send message without valid account id!";
-	return false;
+        qWarning() << "Cannot send message without valid account id!";
+        return false;
     }
 
     sendAccountId = sendAction->data().value<QMailAccountId>();
@@ -212,7 +212,7 @@ bool WriteMail::saveChangesOnRequest()
     return true;
 }
 
-bool WriteMail::buildMail(const QMailAccountId& accountId)
+bool WriteMail::buildMail(const QMailAccountId& accountId, bool includeSignature)
 {
     //retain the old mail id since it may have been a draft
     QMailMessageId existingId = mail.id();
@@ -220,7 +220,8 @@ bool WriteMail::buildMail(const QMailAccountId& accountId)
     QString existingIdentifier = mail.contentIdentifier();
 
     // Ensure the signature of the selected account is used
-    m_composerInterface->setSignature(signature());
+    if(includeSignature)
+        m_composerInterface->setSignature(signature(accountId));
 
     // Extract the message from the composer
     mail = m_composerInterface->message();
@@ -235,7 +236,10 @@ bool WriteMail::buildMail(const QMailAccountId& accountId)
     mail.setStatus(QMailMessage::PartialContentAvailable, true);
     mail.setStatus(QMailMessage::Read,true);
     if(accountId.isValid())
+    {
         mail.setParentAccountId(accountId);
+        mail.setFrom(QMailAccount(accountId).fromAddress());
+    }
 
     if (m_precursorId.isValid()) {
         mail.setInResponseTo(m_precursorId);
@@ -326,8 +330,6 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     mail.setTo(previousMessage.to());
     mail.setFrom(previousMessage.from());
     mail.setCustomFields(previousMessage.customFields());
-
-    m_composerInterface->setSignature(signature());
     m_composerInterface->compose(QMailComposerInterface::Create,previousMessage);
 
     // ugh. we need to do this everywhere
@@ -449,13 +451,13 @@ bool WriteMail::draft()
 {
     bool result(false);
 
-    if (changed()) {
-        if (!buildMail(QMailAccountId())) {
-            qWarning() << "draft() - Unable to buildMail for saveAsDraft!";
-        } else {
-            emit saveAsDraft( mail );
-        }
+    //build message using first available account id.
+    QMailAccountId accountid = m_sendAction->data().value<QMailAccountId>();
+    if (!buildMail(accountid,false)) {
+        qWarning() << "draft() - Unable to buildMail for saveAsDraft!";
+    } else {
         result = true;
+        emit saveAsDraft( mail );
     }
 
     // Since the existing details page may have hijacked the focus, we need to reset
@@ -496,7 +498,6 @@ bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType>
 
     setComposer(selection.first);
     m_composerInterface->clear();
-    m_composerInterface->setSignature( signature() );
     m_widgetStack->setCurrentWidget(m_composerInterface);
 
     // Can't save as draft until there has been a change
@@ -618,16 +619,15 @@ bool WriteMail::largeAttachments()
     return (totalAttachmentSize > limit);
 }
 
-QString WriteMail::signature() const
+QString WriteMail::signature(const QMailAccountId& accountId) const
 {
-    if (m_composerInterface)
+    if (accountId.isValid())
     {
-        QMailAccount account = m_composerInterface->fromAccount();
-        if (account.id().isValid()) {
-            if (account.status() & QMailAccount::AppendSignature)
-                return account.signature();
-        }
+        QMailAccount account(accountId);
+        if (account.status() & QMailAccount::AppendSignature)
+            return account.signature();
     }
+
     return QString();
 }
 
