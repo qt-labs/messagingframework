@@ -402,3 +402,60 @@ QString QMail::baseSubject(const QString& subject)
     return result;
 }
 
+static QString normaliseIdentifier(const QString& str)
+{
+    // Don't permit space, tab or quote marks
+    static const QChar skip[] = { QChar(' '), QChar('\t'), QChar('"') };
+
+    QString result;
+    result.reserve(str.length());
+
+    QString::const_iterator it = str.begin(), end = str.end();
+    while (it != end) {
+        if ((*it != skip[0]) && (*it != skip[1]) && (*it != skip[2])) {
+            result.append(*it);
+        }
+        ++it;
+    }
+
+    return result;
+}
+
+QStringList QMail::messageIdentifiers(const QString& str)
+{
+    QStringList result;
+
+    QRegExp identifierPattern("("
+                                "(?:[ \\t]*)"           // Optional leading whitespace
+                                "[^ \\t\\<\\>@]+"       // Leading part
+                                "(?:[ \\t]*)"           // Optional whitespace allowed before '@'?
+                                "@"
+                                "(?:[ \\t]*)"           // Optional whitespace allowed after '@'?
+                                "[^ \\t\\<\\>]+"        // Trailing part
+                              ")");
+
+    // Extracts message identifiers from \a str, matching the definition used in RFC 5256
+    int index = str.indexOf('<');
+    if (index != -1) {
+        // This may contain other information besides the IDs delimited by < and >
+        do {
+            // Extract only the delimited content
+            if (str.indexOf(identifierPattern, index + 1) == (index + 1)) {
+                result.append(normaliseIdentifier(identifierPattern.cap(1)));
+                index += identifierPattern.cap(0).length();
+            } else {
+                index += 1;
+            }
+
+            index = str.indexOf('<', index);
+        } while (index != -1);
+    } else {
+        // No delimiters - consider the entirety as an identifier
+        if (str.indexOf(identifierPattern) != -1) {
+            result.append(normaliseIdentifier(identifierPattern.cap(1)));
+        }
+    }
+
+    return result;
+}
+

@@ -33,6 +33,7 @@ namespace QMail
     QTOPIAMAIL_EXPORT bool fileUnlock(int id);
 
     QTOPIAMAIL_EXPORT QString baseSubject(const QString& subject);
+    QTOPIAMAIL_EXPORT QStringList messageIdentifiers(const QString& str);
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)
