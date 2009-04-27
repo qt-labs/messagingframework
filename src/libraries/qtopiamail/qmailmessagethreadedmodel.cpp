@@ -699,13 +699,14 @@ void QMailMessageThreadedModelPrivate::init() const
         QMailMessageIdList ids = QMailStore::instance()->queryMessages(_key, _sortKey);
 
         // Process the messages to build a tree
-        foreach (const QMailMessageId& id, ids) {
+        QMailMessageIdList::const_iterator iit = ids.begin(), iend = ids.end();
+        for ( ; iit != iend; ++iit) {
             // See if we have already added this message
-            QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(id);
+            QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(*iit);
             if (it != _messageItem.end())
                 continue;
 
-            QMailMessageId messageId(id);
+            QMailMessageId messageId(*iit);
             QList<QMailMessageId> descendants;
 
             // Find the first message ancestor that is in our display set
@@ -733,8 +734,16 @@ void QMailMessageThreadedModelPrivate::init() const
                     // Append the message to the existing children of the parent
                     QList<QMailMessageThreadedModelItem> &container(insertParent->_children);
 
-                    container.append(QMailMessageThreadedModelItem(messageId, insertParent));
-                    _messageItem[messageId] = &(container.last());
+                    // Determine where this message should sort amongst its siblings
+                    int index = 0;
+                    for ( ; index < container.count(); ++index) {
+                        if (ids.indexOf(container.at(index)._id) > (iit - ids.begin())) {
+                            break;
+                        }
+                    }
+
+                    container.insert(index, QMailMessageThreadedModelItem(messageId, insertParent));
+                    _messageItem[messageId] = &(container[index]);
                     _currentIds.append(messageId);
                     
                     if (descendants.isEmpty()) {
