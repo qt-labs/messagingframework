@@ -209,24 +209,17 @@ QPair<QString, QString> uriElements(const QString &uri)
 
 QString identifierValue(const QString &str)
 {
-    QString result(str.trimmed());
-
-    if (result.startsWith('<') && result.endsWith('>')) {
-        result = result.mid(1, result.length() - 2);
+    QStringList identifiers(QMail::messageIdentifiers(str));
+    if (!identifiers.isEmpty()) {
+        return identifiers.first();
     }
 
-    return result;
+    return QString();
 }
 
-QStringList identifierValue(const QStringList &list)
+QStringList identifierValues(const QString &str)
 {
-    QStringList result;
-
-    foreach (const QString &str, list) {
-        result.append(identifierValue(str));
-    }
-
-    return result;
+    return QMail::messageIdentifiers(str);
 }
 
 template<typename ValueContainer>
@@ -3184,7 +3177,7 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
         }
 
         QString identifier(identifierValue(message->headerFieldText("Message-ID")));
-        QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
+        QStringList references(identifierValues(message->headerFieldText("References")));
         QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
         if (!predecessor.isEmpty()) {
             if (references.isEmpty() || (references.last() != predecessor)) {
@@ -4142,10 +4135,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         QVariantList refs;
         QVariantList levels;
 
-        int level = 0;
+        int level = missingReferences.count();
         foreach (const QString &ref, missingReferences) {
             refs.append(QVariant(ref));
-            levels.append(QVariant(level++));
+            levels.append(QVariant(--level));
         }
 
         QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
@@ -4652,7 +4645,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             // The message references may have been updated
             if (!metaData->inResponseTo().isValid()) {
                 // Does this message have any references to resolve?
-                QStringList references(identifierValue(message->headerFieldText("References").split(' ', QString::SkipEmptyParts)));
+                QStringList references(identifierValues(message->headerFieldText("References")));
                 QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
                 if (!predecessor.isEmpty()) {
                     if (references.isEmpty() || (references.last() != predecessor)) {
@@ -4798,10 +4791,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 QVariantList refs;
                 QVariantList levels;
 
-                int level = 0;
+                int level = missingReferences.count();
                 foreach (const QString &ref, missingReferences) {
                     refs.append(QVariant(ref));
-                    levels.append(QVariant(level++));
+                    levels.append(QVariant(--level));
                 }
 
                 {
@@ -6291,8 +6284,8 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     // Do not report any deleted entities as updated
-    QMailMessageIdList::iterator mit = updatedMessageIds.begin(), mend = updatedMessageIds.end();
-    for ( ; mit != mend; ) {
+    QMailMessageIdList::iterator mit = updatedMessageIds.begin();
+    for ( ; mit != updatedMessageIds.end(); ) {
         if (deletedMessageIds.contains(*mit)) {
             mit = updatedMessageIds.erase(mit);
         } else {
