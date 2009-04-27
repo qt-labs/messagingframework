@@ -275,7 +275,12 @@ bool QMailMessageThreadedModelPrivate::processMessagesAdded(const QMailMessageId
         return true;
     }
 
-    // Find where these messages should be added
+    if (_key.isEmpty()) {
+        // No messages are relevant
+        return true;
+    }
+
+    // Find if and where these messages should be added
     if (!addMessages(ids)) {
         return false;
     }
@@ -408,7 +413,12 @@ bool QMailMessageThreadedModelPrivate::processMessagesUpdated(const QMailMessage
         return true;
     }
 
-    // Find where these messages should be added/removed/updated
+    if (_key.isEmpty()) {
+        // No messages are relevant
+        return true;
+    }
+
+    // Find if and where these messages should be added/removed/updated
     if (!updateMessages(ids)) {
         return false;
     }
@@ -539,7 +549,12 @@ bool QMailMessageThreadedModelPrivate::processMessagesRemoved(const QMailMessage
         return true;
     }
     
-    // Find where these messages should be removed from
+    if (_key.isEmpty()) {
+        // No messages are relevant
+        return true;
+    }
+
+    // Find if and where these messages should be removed from
     if (!removeMessages(ids, 0)) {
         return false;
     }
