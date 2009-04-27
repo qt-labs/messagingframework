@@ -332,7 +332,7 @@ void RecipientListWidget::removeRecipientWidget()
 
 void RecipientListWidget::recipientChanged()
 {
-    if(RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
+    if(qobject_cast<RecipientWidget*>(sender()))
     {
         if(emptyRecipientSlots() == 0)
             addRecipientWidget();
@@ -503,8 +503,8 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_widgetStack(0),
     m_recipientListWidget(0),
     m_subjectEdit(0),
-    m_title(QString()),
-    m_attachmentAction(0)
+    m_attachmentAction(0),
+    m_title(QString())
 {
     init();
 }
@@ -610,12 +610,6 @@ void EmailComposerInterface::getDetails(QMailMessage& mail) const
         mail.setSubject(subjectText);
     else
         subjectText = placeholder;
-
-    QMailAccount account = fromAccount();
-    if (account.id().isValid()) {
-        mail.setParentAccountId(account.id());
-        mail.setFrom(account.fromAddress());
-    }
 }
 
 void EmailComposerInterface::setDetails(const QMailMessage& mail)
@@ -1005,19 +999,6 @@ bool EmailComposerInterface::isReadyToSend() const
 QString EmailComposerInterface::title() const
 {
     return m_title;
-}
-
-QMailAccount EmailComposerInterface::fromAccount() const
-{
-//    QMailAccountKey nameKey(QMailAccountKey::name(m_from));
-
-    QMailAccountKey statusKey(QMailAccountKey::status(QMailAccount::CanTransmit, QMailDataComparator::Includes));
-    statusKey &= QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes);
-
-    QMailAccountIdList accountIds = QMailStore::instance()->queryAccounts(statusKey);
-    if (!accountIds.isEmpty())
-        return QMailAccount(accountIds.first());
-    return QMailAccount();
 }
 
 QString EmailComposerInterface::key() const { return "EmailComposer"; }

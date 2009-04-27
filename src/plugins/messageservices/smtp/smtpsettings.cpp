@@ -33,6 +33,9 @@ public:
     void setEntry(QString sig);
     QString entry() const;
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private:
     QTextEdit *input;
 };
@@ -56,6 +59,11 @@ void SigEntry::setEntry(QString sig)
 QString SigEntry::entry() const
 {
     return input->toPlainText();
+}
+
+void SigEntry::closeEvent(QCloseEvent *event)
+{
+    accept();
 }
 
 
@@ -125,6 +133,7 @@ SmtpSettings::SmtpSettings()
     connect(setSignatureButton, SIGNAL(clicked()), this, SLOT(sigPressed()));
     connect(authentication, SIGNAL(currentIndexChanged(int)), this, SLOT(authChanged(int)));
     connect(emailInput, SIGNAL(textChanged(QString)), this, SLOT(emailModified()));
+    connect(sigCheckBox,SIGNAL(clicked(bool)),setSignatureButton,SLOT(setEnabled(bool)));
 
     const QString uncapitalised("email noautocapitalization");
 
@@ -231,9 +240,9 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         smtpPasswordInput->setEnabled(enableCredentials);
         lblSmtpPassword->setEnabled(enableCredentials);
 #endif
-
         defaultMailCheckBox->setChecked(account.status() & QMailAccount::PreferredSender);
         sigCheckBox->setChecked(account.status() & QMailAccount::AppendSignature);
+        setSignatureButton->setEnabled(sigCheckBox->isChecked());
         signature = account.signature();
     }
 }

@@ -31,7 +31,6 @@ public:
 
 public:
     QMailComposerInterface( QWidget *parent = 0 );
-    virtual ~QMailComposerInterface();
 
     virtual QString key() const = 0;
     virtual QList<QMailMessage::MessageType> messageTypes() const = 0;
@@ -39,7 +38,6 @@ public:
     virtual QString name(QMailMessage::MessageType type) const = 0;
     virtual QString displayName(QMailMessage::MessageType type) const = 0;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const = 0;
-
     virtual bool isSupported(QMailMessage::MessageType t, QMailMessage::ContentType c = QMailMessage::NoContent) const
     {
         bool supportsMessageType(t == QMailMessage::AnyType || messageTypes().contains(t));
@@ -49,15 +47,11 @@ public:
     }
 
     virtual QString title() const = 0;
-
-    virtual QMailAccount fromAccount() const = 0;
-
     virtual void compose(ComposeContext context = Create,
                          const QMailMessage& source = QMailMessage(),
                          QMailMessage::MessageType = QMailMessage::AnyType) = 0;
     virtual QMailMessage message() const = 0;
     virtual QList<QAction*> actions() const;
-
     virtual bool isEmpty() const = 0;
     virtual bool isReadyToSend() const = 0;
     virtual QString status() const;
