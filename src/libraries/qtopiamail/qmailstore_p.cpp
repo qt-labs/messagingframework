@@ -4010,11 +4010,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         return Failure;
     }
 
+    QString baseSubject(QMail::baseSubject(metaData->subject()));
     QStringList missingReferences;
 
     // Does this message have any references to resolve?
     if (!metaData->inResponseTo().isValid() && !references.isEmpty()) {
-        AttemptResult result = messagePredecessor(metaData, references, &missingReferences);
+        AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences);
         if (result != Success)
             return result;
     }
@@ -4078,9 +4079,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     // Attach this message to a thread
     if (metaData->inResponseTo().isValid()) {
         // Use the thread of the parent message
-        QString sql("INSERT INTO mailthreadmessages (threadid,messageid) SELECT threadid,%1 FROM mailthreadmessages WHERE messageid=?");
-        QSqlQuery query(simpleQuery(sql.arg(QString::number(insertId)),
-                                    QVariantList() << metaData->inResponseTo().toULongLong(),
+        QSqlQuery query(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
+                                    QVariantList() << insertId << metaData->inResponseTo().toULongLong(),
                                     "addMessage mailthreadmessages insert query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
@@ -4104,6 +4104,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
+    }
+
+    if (!baseSubject.isEmpty()) {
+        // Ensure that this subject is in the subjects table
+        AttemptResult result = registerSubject(baseSubject, insertId);
+        if (result != Success)
+            return result;
     }
 
     // Does this message have any identifier?
@@ -4596,6 +4603,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
         }
 
+        QString baseSubject(QMail::baseSubject(metaData->subject()));
         QStringList missingReferences;
 
         if (updateContent) {
@@ -4653,11 +4661,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 if (!references.isEmpty()) {
-                    AttemptResult result = messagePredecessor(message, references, &missingReferences);
+                    AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences);
                     if (result != Success)
                         return result;
 
-                    if (message->inResponseTo().isValid()) {
+                    if (metaData->inResponseTo().isValid()) {
                         // We need to record this change
                         updateProperties |= QMailMessageKey::InResponseTo;
                         updateProperties |= QMailMessageKey::ResponseType;
@@ -4679,7 +4687,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                         {
                             QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?) WHERE threadid=?",
-                                                        QVariantList() << message->inResponseTo().toULongLong() << threadId,
+                                                        QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
                                                         "updateMessage mailthreadmessages update query"));
                             if (query.lastError().type() != QSqlError::NoError)
                                 return DatabaseFailure;
@@ -4718,6 +4726,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 return result;
 
             updateProperties |= QMailMessageKey::Custom;
+        }
+
+        if (updateProperties & QMailMessageKey::Subject) {
+            if (!baseSubject.isEmpty()) {
+                // Ensure that this subject is in the subjects table
+                AttemptResult result = registerSubject(baseSubject, updateId);
+                if (result != Success)
+                    return result;
+            }
         }
 
         if (updateContent) {
@@ -5801,53 +5818,81 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
     return result;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references,
+QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject,
                                                                        QStringList *missingReferences)
 {
-    // Find any messages that correspond to these references
-    QMap<QString, QList<quint64> > referencedMessages;
-
-    QVariantList refs;
-    foreach (const QString &ref, references) {
-        refs.append(QVariant(ref));
-    }
-
-    {
-        QString sql("SELECT id,identifier FROM mailmessageidentifiers WHERE identifier IN %1");
-        QSqlQuery query(simpleQuery(sql.arg(expandValueList(refs)),
-                                    refs,
-                                    "addMessage mailmessageidentifiers select query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
-
-        while (query.next()) {
-            referencedMessages[extractValue<QString>(query.value(1))].append(extractValue<quint64>(query.value(0).toInt()));
-        }
-    }
-
     quint64 predecessor = 0;
-    if (referencedMessages.isEmpty()) {
-        // All the references are missing
-        *missingReferences = references;
-    } else {
-        for (int i = references.count() - 1; (predecessor == 0) && (i >= 0); --i) {
-            const QString &refId(references.at(i));
 
-            QMap<QString, QList<quint64> >::const_iterator it = referencedMessages.find(refId);
-            if (it != referencedMessages.end()) {
-                const QList<quint64> &messageIds(it.value());
+    if (!references.isEmpty()) {
+        // Find any messages that correspond to these references
+        QMap<QString, QList<quint64> > referencedMessages;
 
-                if (messageIds.count() == 1) {
-                    // This is the best parent message choice
-                    predecessor = messageIds.first();
-                } else {
-                    // TODO: We need to choose a best selection from amongst these messages
-                    // For now, just pick the first
-                    predecessor = messageIds.first();
-                }
-            } else {
-                missingReferences->append(refId);
+        QVariantList refs;
+        foreach (const QString &ref, references) {
+            refs.append(QVariant(ref));
+        }
+
+        {
+            QString sql("SELECT id,identifier FROM mailmessageidentifiers WHERE identifier IN %1");
+            QSqlQuery query(simpleQuery(sql.arg(expandValueList(refs)),
+                                        refs,
+                                        "messagePredecessor mailmessageidentifiers select query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            while (query.next()) {
+                referencedMessages[extractValue<QString>(query.value(1))].append(extractValue<quint64>(query.value(0).toInt()));
             }
+        }
+
+        if (referencedMessages.isEmpty()) {
+            // All the references are missing
+            *missingReferences = references;
+        } else {
+            for (int i = references.count() - 1; (predecessor == 0) && (i >= 0); --i) {
+                const QString &refId(references.at(i));
+
+                QMap<QString, QList<quint64> >::const_iterator it = referencedMessages.find(refId);
+                if (it != referencedMessages.end()) {
+                    const QList<quint64> &messageIds(it.value());
+
+                    if (messageIds.count() == 1) {
+                        // This is the best parent message choice
+                        predecessor = messageIds.first();
+                    } else {
+                        // TODO: We need to choose a best selection from amongst these messages
+                        // For now, just pick the first
+                        predecessor = messageIds.first();
+                    }
+                } else {
+                    missingReferences->append(refId);
+                }
+            }
+        }
+    } else if (!baseSubject.isEmpty()) {
+        if (sameSubject) {
+            // The base subject does not differ from the actual subject - probably not a reply
+        } else {
+            // Find the most recent root message of any thread matching this base subject
+            QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
+                                        "WHERE id!=? "
+                                        "AND responseid=? "
+                                        "AND parentaccountid=? "
+                                        "AND id IN ("
+                                            "SELECT messageid FROM mailthreadmessages WHERE threadid IN ("
+                                                "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
+                                                    "SELECT id FROM mailsubjects WHERE basesubject=?"
+                                                ")"
+                                            ")"
+                                        ")"
+                                        "ORDER BY stamp DESC",
+                                        QVariantList() << metaData->id().toULongLong() << quint64(0) << metaData->parentAccountId().toULongLong() << baseSubject,
+                                        "messagePredecessor mailmessages select query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            if (query.next())
+                predecessor = extractValue<quint64>(query.value(0));
         }
     }
 
@@ -5891,8 +5936,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Update these descendant messages to have the new message as their predecessor
-            QString sql("UPDATE mailmessages SET responseid=%1");
-            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)),
+            QSqlQuery query(simpleQuery("UPDATE mailmessages SET responseid=?",
+                                        QVariantList() << messageId,
                                         Key(QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -5924,8 +5969,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Attach the descendants to the thread of their new predecessor
-            QString sql("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=%1)");
-            QSqlQuery query(simpleQuery(sql.arg(QString::number(messageId)),
+            QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?)",
+                                        QVariantList() << messageId,
                                         Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailthreadmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -5941,6 +5986,60 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
+    }
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QString &baseSubject, quint64 messageId)
+{
+    int subjectId = 0;
+
+    {
+        QSqlQuery query(simpleQuery("SELECT id FROM mailsubjects WHERE basesubject=?",
+                                    QVariantList() << baseSubject,
+                                    "addMessage mailsubjects query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        if (query.next())
+            subjectId = extractValue<quint64>(query.value(0));
+    }
+    
+    if (subjectId == 0) {
+        QSqlQuery query(simpleQuery("INSERT INTO mailsubjects (basesubject) VALUES (?)",
+                                    QVariantList() << baseSubject,
+                                    "addMessage mailsubjects insert query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        // Retrieve the insert id
+        subjectId = extractValue<quint64>(query.lastInsertId());
+    }
+
+    // Ensure that this thread is linked to the base subject of this message
+    int count = 0;
+    {
+        QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailthreadsubjects "
+                                    "WHERE subjectid=? AND threadid = (SELECT threadid FROM mailthreadmessages WHERE messageid=?)",
+                                    QVariantList() << subjectId << messageId,
+                                    "addMessage mailthreadsubjects query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        if (query.next())
+            count = extractValue<int>(query.value(0));
+    }
+    
+    if (count == 0) {
+        QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
+                                    QVariantList() << subjectId << messageId,
+                                    "addMessage mailthreadsubjects insert query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        // Retrieve the insert id
+        subjectId = extractValue<quint64>(query.lastInsertId());
     }
 
     return Success;
@@ -6169,9 +6268,26 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     {
         // Remove any threads that are empty after this deletion
         QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id IN (SELECT id FROM mailthreads mt WHERE 0 = (SELECT COUNT(*) FROM mailthreadmessages WHERE threadid=mt.id) )",
-                                   "deleteMessages mailthreads delete query"));
+                                    "deleteMessages mailthreads delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
+    }
+
+    {
+        // Remove any subjects that are unreferenced after this deletion
+        {
+            QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT id FROM mailthreads)",
+                                        "deleteMessages mailthreadsubjects delete query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+        }
+
+        {
+            QSqlQuery query(simpleQuery("DELETE FROM mailsubjects WHERE id NOT IN (SELECT subjectid FROM mailthreadsubjects)",
+                                        "deleteMessages mailthreadsubjects delete query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+        }
     }
 
     // Do not report any deleted entities as updated
