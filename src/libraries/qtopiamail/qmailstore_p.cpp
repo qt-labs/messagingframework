@@ -2034,6 +2034,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
                                             << tableInfo("mailthreadmessages", 100)
+                                            << tableInfo("missingancestors", 100)
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)) ||
             !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::InboxFolder, tr("Inbox"))
@@ -4117,8 +4118,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     // See if this message resolves any missing message items
-    bool threadRoot(!metaData->inResponseTo().isValid() && missingReferences.isEmpty() && !missingAncestor);
-    result = resolveMissingMessages(identifier, threadRoot, baseSubject, insertId, updatedMessageIds);
+    bool threadRoot(!metaData->inResponseTo().isValid());
+    bool optimalRoot(threadRoot && (missingReferences.isEmpty() && !missingAncestor));
+    result = resolveMissingMessages(identifier, threadRoot, optimalRoot, baseSubject, insertId, updatedMessageIds);
     if (result != Success)
         return result;
 
@@ -4561,6 +4563,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     QMailMessageKey::Properties updateProperties(QMailStorePrivate::updatableMessageProperties());
     QVariantList extractedValues;
 
+    // TODO - is this safe?
+    /*
+    if (!metaData->dataModified()) {
+        updateProperties = QMailMessageKey::Properties();
+    }
+    */
+
     // Do we actually have an update to perform?
     bool updateContent(message && message->contentModified());
     if (metaData->dataModified() || updateContent) {
@@ -4599,6 +4608,22 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         QString baseSubject(QMail::baseSubject(metaData->subject()));
         QStringList missingReferences;
         bool missingAncestor(false);
+
+        bool knownPredecessor(metaData->inResponseTo().isValid());
+        if (!knownPredecessor && (updateContent || (updateProperties & QMailMessageKey::InResponseTo))) {
+            // Does this message have any references to resolve?
+            QStringList references(identifierValues(message->headerFieldText("References")));
+            QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
+            if (!predecessor.isEmpty()) {
+                if (references.isEmpty() || (references.last() != predecessor)) {
+                    references.append(predecessor);
+                }
+            }
+
+            AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences, &missingAncestor);
+            if (result != Success)
+                return result;
+        }
 
         if (updateContent) {
             updateProperties |= QMailMessageKey::ContentIdentifier;
@@ -4644,55 +4669,58 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
 
             // The message references may have been updated
-            if (!metaData->inResponseTo().isValid()) {
-                // Does this message have any references to resolve?
-                QStringList references(identifierValues(message->headerFieldText("References")));
-                QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
-                if (!predecessor.isEmpty()) {
-                    if (references.isEmpty() || (references.last() != predecessor)) {
-                        references.append(predecessor);
+            if (!knownPredecessor && metaData->inResponseTo().isValid()) {
+                // We need to record this change
+                updateProperties |= QMailMessageKey::InResponseTo;
+                updateProperties |= QMailMessageKey::ResponseType;
+
+                // Join this message's thread to the predecessor's thread
+                quint64 threadId;
+
+                {
+                    QSqlQuery query(simpleQuery("SELECT threadid FROM mailthreadmessages WHERE messageid=?",
+                                                QVariantList() << updateId,
+                                                "updateMessage mailthreadmessages query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+
+                    if (query.first()) {
+                        threadId = extractValue<quint64>(query.value(0));
                     }
                 }
 
-                AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences, &missingAncestor);
-                if (result != Success)
-                    return result;
+                {
+                    QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?) WHERE threadid=?",
+                                                QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
+                                                "updateMessage mailthreadmessages update query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
 
-                if (metaData->inResponseTo().isValid()) {
-                    // We need to record this change
-                    updateProperties |= QMailMessageKey::InResponseTo;
-                    updateProperties |= QMailMessageKey::ResponseType;
+                {
+                    QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
+                                                QVariantList() << threadId,
+                                                "updateMessage mailthreads delete query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
+                
+                // Remove any missing message/ancestor references associated with this message
 
-                    // Join this message's thread to the predecessor's thread
-                    quint64 threadId;
+                {
+                    QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
+                                                QVariantList() << updateId,
+                                                "updateMessage missingmessages delete query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
 
-                    {
-                        QSqlQuery query(simpleQuery("SELECT threadid FROM mailthreadmessages WHERE messageid=?",
-                                                    QVariantList() << updateId,
-                                                    "updateMessage mailthreadmessages query"));
-                        if (query.lastError().type() != QSqlError::NoError)
-                            return DatabaseFailure;
-
-                        if (query.first()) {
-                            threadId = extractValue<quint64>(query.value(0));
-                        }
-                    }
-
-                    {
-                        QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?) WHERE threadid=?",
-                                                    QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
-                                                    "updateMessage mailthreadmessages update query"));
-                        if (query.lastError().type() != QSqlError::NoError)
-                            return DatabaseFailure;
-                    }
-
-                    {
-                        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
-                                                    QVariantList() << threadId,
-                                                    "updateMessage mailthreads delete query"));
-                        if (query.lastError().type() != QSqlError::NoError)
-                            return DatabaseFailure;
-                    }
+                {
+                    QSqlQuery query(simpleQuery("DELETE FROM missingancestors WHERE messageid=?",
+                                                QVariantList() << updateId,
+                                                "updateMessage missingancestors delete query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
                 }
             }
         }
@@ -4812,8 +4840,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
         if (updatedIdentifier || (updateProperties & QMailMessageKey::InResponseTo)) {
             // See if this message resolves any missing message items
-            bool threadRoot(!metaData->inResponseTo().isValid() && missingReferences.isEmpty() && !missingAncestor);
-            AttemptResult result = resolveMissingMessages(messageIdentifier, threadRoot, baseSubject, updateId, updatedMessageIds);
+            bool threadRoot(!metaData->inResponseTo().isValid());
+            bool optimalRoot(threadRoot && (missingReferences.isEmpty() && !missingAncestor));
+            AttemptResult result = resolveMissingMessages(messageIdentifier, threadRoot, optimalRoot, baseSubject, updateId, updatedMessageIds);
             if (result != Success)
                 return result;
 
@@ -5879,19 +5908,25 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             // Find the most recent root message of any thread matching this base subject
             QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
                                         "WHERE id!=? "
-                                        "AND responseid=? "
+                                        "AND (responseid=0 OR responseid IS NULL) "
                                         "AND parentaccountid=? "
+                                        "AND stamp<? "
                                         "AND id IN ("
                                             "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
                                                 "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
                                                     "SELECT id FROM mailsubjects WHERE basesubject=?"
                                                 ")"
                                             ") AND 0 = ("
-                                                "SELECT COUNT(identifier) FROM missingmessages WHERE id = mtm.messageid"
+                                                "SELECT COUNT(id) FROM missingmessages WHERE id = mtm.messageid"
+                                            ") AND 0 = ("
+                                                "SELECT COUNT(messageid) FROM missingancestors WHERE messageid = mtm.messageid"
                                             ")"
-                                        ")"
+                                        ") "
                                         "ORDER BY stamp DESC",
-                                        QVariantList() << metaData->id().toULongLong() << quint64(0) << metaData->parentAccountId().toULongLong() << baseSubject,
+                                        QVariantList() << metaData->id().toULongLong() 
+                                                       << metaData->parentAccountId().toULongLong() 
+                                                       << metaData->date().toLocalTime() 
+                                                       << baseSubject,
                                         "messagePredecessor mailmessages select query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -5901,6 +5936,32 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             } else {
                 // This message has a thread ancestor, but we don't have it yet
                 *missingAncestor = true;
+
+                // Select the current best option
+                QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
+                                            "WHERE id!=? "
+                                            "AND (responseid=0 OR responseid IS NULL) "
+                                            "AND parentaccountid=? "
+                                            "AND stamp<? "
+                                            "AND id IN ("
+                                                "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
+                                                    "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
+                                                        "SELECT id FROM mailsubjects WHERE basesubject=?"
+                                                    ")"
+                                                ")"
+                                            ") "
+                                            "ORDER BY stamp DESC",
+                                            QVariantList() << metaData->id().toULongLong() 
+                                                           << metaData->parentAccountId().toULongLong() 
+                                                           << metaData->date().toLocalTime() 
+                                                           << baseSubject,
+                                            "messagePredecessor mailmessages select query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+
+                if (query.next()) {
+                    predecessor = extractValue<quint64>(query.value(0));
+                }
             }
         }
     }
@@ -5916,7 +5977,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, bool threadRoot, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds)
+QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, bool threadRoot, bool optimalRoot, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds)
 {
     QList<QPair<quint64, quint64> > descendants;
 
@@ -5998,8 +6059,46 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
     }
 
     if (threadRoot && !baseSubject.isEmpty()) {
-        // TODO
-        // See if there are any messages waiting for a thread root message with this subject
+        QMailMessageIdList ids;
+
+        {
+            // See if there are any messages waiting for a thread root message with this subject
+            QSqlQuery query(simpleQuery("SELECT id FROM mailmessages WHERE id IN ("
+                                            "SELECT messageid FROM missingancestors WHERE subjectid=(SELECT id FROM mailsubjects WHERE basesubject=?) "
+                                        ") AND stamp > (SELECT stamp FROM mailmessages WHERE id=?)",
+                                        QVariantList() << baseSubject << messageId,
+                                        "resolveMissingMessages missingancestors query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            while (query.next())
+                ids.append(QMailMessageId(extractValue<quint64>(query.value(0))));
+        }
+
+        if (!ids.isEmpty()) {
+            // TODO: Ensure we don't create any cycles
+
+            {
+                // Update these descendant messages to have the new message as their predecessor
+                QSqlQuery query(simpleQuery("UPDATE mailmessages SET responseid=?",
+                                            QVariantList() << messageId,
+                                            Key(QMailMessageKey::id(ids)),
+                                            "resolveMissingMessages mailmessages update root query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+            }
+
+            if (optimalRoot) {
+                // Remove the missing ancestor records
+                QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
+                                            Key("messageid", QMailMessageKey::id(ids)),
+                                            "resolveMissingMessages missingancestors delete query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+
+                updatedMessageIds->append(ids);
+            }
+        }
     }
 
     return Success;
@@ -6012,7 +6111,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     {
         QSqlQuery query(simpleQuery("SELECT id FROM mailsubjects WHERE basesubject=?",
                                     QVariantList() << baseSubject,
-                                    "addMessage mailsubjects query"));
+                                    "registerSubject mailsubjects query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -6023,7 +6122,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     if (subjectId == 0) {
         QSqlQuery query(simpleQuery("INSERT INTO mailsubjects (basesubject) VALUES (?)",
                                     QVariantList() << baseSubject,
-                                    "addMessage mailsubjects insert query"));
+                                    "registerSubject mailsubjects insert query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -6037,7 +6136,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
         QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailthreadsubjects "
                                     "WHERE subjectid=? AND threadid = (SELECT threadid FROM mailthreadmessages WHERE messageid=?)",
                                     QVariantList() << subjectId << messageId,
-                                    "addMessage mailthreadsubjects query"));
+                                    "registerSubject mailthreadsubjects query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -6048,17 +6147,39 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     if (count == 0) {
         QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
                                     QVariantList() << subjectId << messageId,
-                                    "addMessage mailthreadsubjects insert query"));
+                                    "registerSubject mailthreadsubjects insert query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
-
-        // Retrieve the insert id
-        subjectId = extractValue<quint64>(query.lastInsertId());
     }
 
     if (missingAncestor) {
-        // TODO
-        // We need to record that this message's ancestor is currently missing
+        count = 0;
+
+        {
+            // We need to record that this message's ancestor is currently missing
+            QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM missingancestors WHERE messageid=?",
+                                        QVariantList() << messageId,
+                                        "registerSubject missingancestors query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            if (query.next())
+                count = extractValue<int>(query.value(0));
+        }
+
+        if (count == 0) {
+            QSqlQuery query(simpleQuery("INSERT INTO missingancestors (messageid,subjectid) VALUES(?,?)",
+                                        QVariantList() << messageId << subjectId,
+                                        "registerSubject missingancestors insert query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        } else {
+            QSqlQuery query(simpleQuery("UPDATE missingancestors SET subjectid=? WHERE messageid=?",
+                                        QVariantList() << subjectId << messageId,
+                                        "registerSubject missingancestors update query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
     }
 
     return Success;
@@ -6218,6 +6339,15 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         QSqlQuery query(simpleQuery("DELETE FROM missingmessages",
                                     Key(QMailMessageKey::id(deletedMessageIds)),
                                     "deleteMessages delete missingmessages query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    {
+        // Delete any missing ancestor records for these messages
+        QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
+                                    Key("messageid", QMailMessageKey::id(deletedMessageIds)),
+                                    "deleteMessages missing ancestors delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
