@@ -412,11 +412,11 @@ private:
 
     AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
 
-    AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences);
+    AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences, bool *missingAncestor);
 
-    AttemptResult resolveMissingMessages(const QString &identifier, quint64 messageId, QMailMessageIdList *updatedMessageIds);
+    AttemptResult resolveMissingMessages(const QString &identifier, bool threadRoot, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds);
 
-    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId);
+    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, bool missingAncestor);
 
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
