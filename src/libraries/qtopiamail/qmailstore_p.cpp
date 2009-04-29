@@ -4559,15 +4559,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     QString contentUri;
     QMailFolderIdList folderIds;
 
-    QMailMessageKey::Properties updateProperties(QMailStorePrivate::updatableMessageProperties());
+    QMailMessageKey::Properties updateProperties;
     QVariantList extractedValues;
 
-    // TODO - is this safe?
-    /*
-    if (!metaData->dataModified()) {
-        updateProperties = QMailMessageKey::Properties();
+    if (metaData->dataModified()) {
+        // Assume all the meta data fields have been updated
+        updateProperties = QMailStorePrivate::updatableMessageProperties();
     }
-    */
 
     // Do we actually have an update to perform?
     bool updateContent(message && message->contentModified());
@@ -4728,9 +4726,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         if (!metaData->previousParentFolderId().isValid())
             updateProperties &= ~QMailMessageKey::PreviousParentFolderId;
 
-        extractedValues = messageValues(updateProperties, *metaData);
+        if (updateProperties != QMailMessageKey::Properties()) {
+            extractedValues = messageValues(updateProperties, *metaData);
 
-        {
             QString sql("UPDATE mailmessages SET %1 WHERE id=?");
             QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateProperties, true)),
                                         extractedValues + (QVariantList() << updateId),
@@ -4865,9 +4863,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
         if (messageCache.contains(metaData->id())) {
             QMailMessageMetaData cachedMetaData = messageCache.lookup(metaData->id());
-            updateMessageValues(updateProperties, extractedValues, metaData->customFields(), cachedMetaData);
-            cachedMetaData.setUnmodified();
-            messageCache.insert(cachedMetaData);
+            if (!extractedValues.isEmpty()) {
+                // Update the cache with the modifications we recorded
+                updateMessageValues(updateProperties, extractedValues, metaData->customFields(), cachedMetaData);
+                cachedMetaData.setUnmodified();
+                messageCache.insert(cachedMetaData);
+            }
             uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
         }
 
