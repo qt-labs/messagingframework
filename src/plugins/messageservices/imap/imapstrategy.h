@@ -356,6 +356,7 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void completedAction(ImapStrategyContextBase *context);
     virtual void listCompleted(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
@@ -364,7 +365,7 @@ protected:
     QMailFolderId _folderId;
     uint _minimum;
     bool _fillingGap;
-    IntegerRegion _serverRegion;
+    QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
     QMap<QMailFolderId, int> _lastExistsMap;
     QMap<QMailFolderId, int> _lastUidNextMap;
 };

@@ -6516,8 +6516,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     // Do not report any deleted entities as updated
-    QMailMessageIdList::iterator mit = updatedMessageIds.begin();
-    for ( ; mit != updatedMessageIds.end(); ) {
+    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
         if (deletedMessageIds.contains(*mit)) {
             mit = updatedMessageIds.erase(mit);
         } else {
@@ -6603,8 +6602,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
     }
 
     // Do not report any deleted entities as updated
-    QMailMessageIdList::iterator mit = updatedMessageIds.begin(), mend = updatedMessageIds.end();
-    for ( ; mit != mend; ) {
+    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
         if (deletedMessageIds.contains(*mit)) {
             mit = updatedMessageIds.erase(mit);
         } else {
@@ -6612,8 +6610,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
         }
     }
 
-    QMailFolderIdList::iterator fit = modifiedFolderIds.begin(), fend = modifiedFolderIds.end();
-    for ( ; fit != fend; ) {
+    for (QMailFolderIdList::iterator fit = modifiedFolderIds.begin(); fit != modifiedFolderIds.end(); ) {
         if (deletedFolderIds.contains(*fit)) {
             fit = modifiedFolderIds.erase(fit);
         } else {
@@ -6714,8 +6711,7 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
     }
 
     // Do not report any deleted entities as updated
-    QMailMessageIdList::iterator mit = updatedMessageIds.begin(), mend = updatedMessageIds.end();
-    for ( ; mit != mend; ) {
+    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
         if (deletedMessageIds.contains(*mit)) {
             mit = updatedMessageIds.erase(mit);
         } else {
@@ -6723,8 +6719,7 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
         }
     }
 
-    QMailFolderIdList::iterator fit = modifiedFolderIds.begin(), fend = modifiedFolderIds.end();
-    for ( ; fit != fend; ) {
+    for (QMailFolderIdList::iterator fit = modifiedFolderIds.begin(); fit != modifiedFolderIds.end(); ) {
         if (deletedFolderIds.contains(*fit)) {
             fit = modifiedFolderIds.erase(fit);
         } else {
@@ -6732,8 +6727,7 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
         }
     }
 
-    QMailAccountIdList::iterator ait = modifiedAccountIds.begin(), aend = modifiedAccountIds.end();
-    for ( ; ait != aend; ) {
+    for (QMailAccountIdList::iterator ait = modifiedAccountIds.begin(); ait != modifiedAccountIds.end(); ) {
         if (deletedAccountIds.contains(*ait)) {
             ait = modifiedAccountIds.erase(ait);
         } else {

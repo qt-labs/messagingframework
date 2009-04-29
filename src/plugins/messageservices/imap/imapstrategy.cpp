@@ -949,7 +949,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                 _completionSectionList.clear();
                 messageAction(context);
             } else {
-                context->operationCompleted();
+                completedAction(context);
             }
         } else {
             // We now have a list of all messages to be retrieved for each mailbox
@@ -1198,15 +1198,19 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
 {
     QMailFolderId boxId = _currentMailbox.id();
     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
-
+    QMailFolder folder(boxId);
+    
+    // Folder min/max invalidated
+    folder.removeCustomField("qmf-min-serveruid");
+    folder.removeCustomField("qmf-max-serveruid");
+    
     if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
         !(_currentMailbox.status() & QMailFolder::Synchronized)) {
         // We have just synchronized this folder
-        QMailFolder folder(boxId);
         folder.setStatus(QMailFolder::Synchronized, true);
-        if (!QMailStore::instance()->updateFolder(&folder)) {
-            qWarning() << "Unable to update folder for account:" << context->config().id();
-        }
+    }
+    if (!QMailStore::instance()->updateFolder(&folder)) {
+        qWarning() << "Unable to update folder for account:" << context->config().id();
     }
 
     // Messages reported as being on the server
@@ -1546,7 +1550,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     default:
         qMailLog(IMAP) << "Unknown search status in transition";
         Q_ASSERT(0);
-        context->operationCompleted();
+        completedAction(context);
     }
 }
 
@@ -1605,6 +1609,20 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     }
 }
 
+void ImapRetrieveMessageListStrategy::completedAction(ImapStrategyContextBase *context)
+{
+    foreach(QMailFolderId folderId, _newMinMaxMap.keys()) {
+        QMailFolder folder(folderId);
+        int newMin(_newMinMaxMap[folderId].minimum());
+        int newMax(_newMinMaxMap[folderId].maximum());
+        folder.setCustomField("qmf-min-serveruid", QString::number(newMin));
+        folder.setCustomField("qmf-max-serveruid", QString::number(newMax));
+        QMailStore::instance()->updateFolder(&folder);
+    }
+    _newMinMaxMap.clear();
+    ImapSynchronizeBaseStrategy::completedAction(context);
+}
+
 void ImapRetrieveMessageListStrategy::listCompleted(ImapStrategyContextBase *context)
 {
     removeDeletedMailboxes(context);
@@ -1659,9 +1677,11 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
         } else if (!comparable || (lastExists != exists) || (lastUidNext != uidNext)) {
             context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
         } else {
-            // No messages have been appended or expunged since we last retrieve messages
+            // No messages have been appended or expunged since we last retrieved messages
             // should be safe to incrementally retrieve
-            uint onClient(context->client()->serverUids(_folderId).count());
+            QMailMessageKey folderKey(context->client()->messagesKey(_folderId));
+            QMailMessageKey folderTrashKey(context->client()->trashKey(_folderId));
+            uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
             if (onClient >= _minimum) {
                 // We already have _minimum mails
                 processUidSearchResults(context);
@@ -1682,37 +1702,52 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
 
 void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
-    IntegerRegion clientRegion(stripFolderPrefix(context->client()->serverUids(_folderId)));
-    _serverRegion = IntegerRegion(stripFolderPrefix(context->mailbox().uidList));
-    // clientList and serverList should be sorted numerically
+    QMailFolder folder(_folderId);
+    bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
+    int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
+    int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+
+    // Use an optimization/simplification because client region should be contiguous
+    IntegerRegion clientRegion;
+    if ((clientMin != 0) && (clientMax != 0))
+        clientRegion = IntegerRegion(clientMin, clientMax);
+    IntegerRegion serverRegion;
+    foreach(const QString &uid, context->mailbox().uidList) {
+        bool ok;
+        uint number = stripFolderPrefix(uid).toUInt(&ok);
+        if (ok)
+            serverRegion.add(number);
+    }
     
     if (!_fillingGap) {
-        bool ok1, ok2;
-        QStringList clientList(clientRegion.toStringList());
-        QStringList serverList(_serverRegion.toStringList());
-        if (!clientList.isEmpty() && !serverList.isEmpty()) {
-            uint newestClient(clientList.last().toUInt(&ok1));
-            uint oldestServer(serverList.first().toUInt(&ok2));
-            if (ok1 && ok2 && (newestClient + 1 < oldestServer)) {
+        if (!clientRegion.isEmpty() && !serverRegion.isEmpty()) {
+            uint newestClient(clientRegion.maximum());
+            uint oldestServer(serverRegion.minimum());
+            uint newestServer(serverRegion.maximum());
+            if (newestClient + 1 < oldestServer) {
                 // There's a gap
                 _fillingGap = true;
-                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(serverList.last()));
+                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(newestServer));
                 return;
             }
         }
-    } else {
-        // TODO: IntegerRegion union
-        foreach(const QString &uid, context->mailbox().uidList) {
-            bool ok;
-            uint number = uid.toUInt(&ok);
-            if (ok)
-                _serverRegion.add(number);
-        }
     }
     
-    IntegerRegion difference(_serverRegion.subtract(clientRegion));
+    IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(_folderId, difference.toStringList()));
+        int newClientMin;
+        int newClientMax;
+        if (clientMin > 0)
+            newClientMin = qMin(serverRegion.minimum(), clientMin);
+        else
+            newClientMin = serverRegion.minimum();
+        if (clientMax > 0)
+            newClientMax = qMax(serverRegion.maximum(), clientMax);
+        else
+            newClientMax = serverRegion.maximum();
+        if ((newClientMin > 0) && (newClientMax > 0))
+            _newMinMaxMap.insert(_folderId, IntegerRegion(newClientMin, newClientMax));
     }
 
     processUidSearchResults(context);
