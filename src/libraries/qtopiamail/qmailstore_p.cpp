@@ -4118,8 +4118,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     // See if this message resolves any missing message items
-    bool optimalRoot(!metaData->inResponseTo().isValid() && (missingReferences.isEmpty() && !missingAncestor));
-    result = resolveMissingMessages(identifier, metaData->inResponseTo(), optimalRoot, baseSubject, insertId, updatedMessageIds);
+    result = resolveMissingMessages(identifier, metaData->inResponseTo(), baseSubject, insertId, updatedMessageIds);
     if (result != Success)
         return result;
 
@@ -4837,8 +4836,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
         if (updatedIdentifier || (updateProperties & QMailMessageKey::InResponseTo)) {
             // See if this message resolves any missing message items
-            bool optimalRoot(!metaData->inResponseTo().isValid() && (missingReferences.isEmpty() && !missingAncestor));
-            AttemptResult result = resolveMissingMessages(messageIdentifier, metaData->inResponseTo(), optimalRoot, baseSubject, updateId, updatedMessageIds);
+            AttemptResult result = resolveMissingMessages(messageIdentifier, metaData->inResponseTo(), baseSubject, updateId, updatedMessageIds);
             if (result != Success)
                 return result;
 
@@ -5904,9 +5902,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         if (sameSubject) {
             // The base subject does not differ from the actual subject - probably not a reply
         } else {
-            // TODO: This will not necessarily find the *visible* root...
-
-            // Find the most recent root message of any thread matching this base subject
+            // Find the most recent preceding message of any thread matching this base subject
             QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
                                         "WHERE id!=? "
                                         "AND (responseid=0 OR responseid IS NULL) "
@@ -5917,10 +5913,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                                                 "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
                                                     "SELECT id FROM mailsubjects WHERE basesubject=?"
                                                 ")"
-                                            ") AND 0 = ("
-                                                "SELECT COUNT(id) FROM missingmessages WHERE id = mtm.messageid"
-                                            ") AND 0 = ("
-                                                "SELECT COUNT(messageid) FROM missingancestors WHERE messageid = mtm.messageid"
                                             ")"
                                         ") "
                                         "ORDER BY stamp DESC",
@@ -5937,32 +5929,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             } else {
                 // This message has a thread ancestor, but we don't have it yet
                 *missingAncestor = true;
-
-                // Select the current best option
-                QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
-                                            "WHERE id!=? "
-                                            "AND (responseid=0 OR responseid IS NULL) "
-                                            "AND parentaccountid=? "
-                                            "AND stamp<? "
-                                            "AND id IN ("
-                                                "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
-                                                    "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
-                                                        "SELECT id FROM mailsubjects WHERE basesubject=?"
-                                                    ")"
-                                                ")"
-                                            ") "
-                                            "ORDER BY stamp DESC",
-                                            QVariantList() << metaData->id().toULongLong() 
-                                                           << metaData->parentAccountId().toULongLong() 
-                                                           << metaData->date().toLocalTime() 
-                                                           << baseSubject,
-                                            "messagePredecessor mailmessages select query"));
-                if (query.lastError().type() != QSqlError::NoError)
-                    return DatabaseFailure;
-
-                if (query.next()) {
-                    predecessor = extractValue<quint64>(query.value(0));
-                }
             }
         }
     }
@@ -5978,9 +5944,44 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, bool optimalRoot, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds)
+QMailStorePrivate::AttemptResult QMailStorePrivate::identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds, QMailMessageIdList *ancestorIds)
 {
-    QMap<quint64, quint64> descendants;
+    if (childIds.isEmpty() && predecessorId.isValid()) {
+        QMap<quint64, quint64> predecessor;
+
+        {
+            // Find the predecessor message for every message in the same thread as the predecessor
+            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
+                                            "SELECT messageid FROM mailthreadmessages WHERE threadid = ("
+                                                "SELECT threadid FROM mailthreadmessages WHERE messageid=?"
+                                            ")"
+                                        ")",
+                                        QVariantList() << predecessorId.toULongLong(),
+                                        "identifyAncestors mailmessages query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            while (query.next())
+                predecessor.insert(extractValue<quint64>(query.value(0)), extractValue<quint64>(query.value(1)));
+        }
+
+        // Ensure that none of the prospective children are predecessors of this message
+        quint64 messageId = predecessorId.toULongLong();
+        while (messageId) {
+            if (childIds.contains(QMailMessageId(messageId))) {
+                ancestorIds->append(QMailMessageId(messageId));
+            }
+
+            messageId = predecessor[messageId];
+        }
+    }
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds)
+{
+    QMap<QMailMessageId, quint64> descendants;
 
     if (!identifier.isEmpty()) {
         QSqlQuery query(simpleQuery("SELECT DISTINCT id,level FROM missingmessages WHERE identifier=?",
@@ -5990,39 +5991,20 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
             return DatabaseFailure;
 
         while (query.next())
-            descendants.insert(extractValue<quint64>(query.value(0)), extractValue<quint64>(query.value(1)));
+            descendants.insert(QMailMessageId(extractValue<quint64>(query.value(0))), extractValue<quint64>(query.value(1)));
     }
 
-    if (!descendants.isEmpty()) {
-        if (predecessorId.isValid()) {
-            // Do not create a cycle - ensure that none of these messages is a predecessor of the new message
-            QMap<quint64, quint64> predecessor;
+    if (!descendants.isEmpty() && predecessorId.isValid()) {
+        QMailMessageIdList ancestorIds;
 
-            {
-                // Find the predecessor message for every message in the same thread as the predecessor
-                QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
-                                                "SELECT messageid FROM mailthreadmessages WHERE threadid = ("
-                                                    "SELECT threadid FROM mailthreadmessages WHERE messageid=?"
-                                                ")"
-                                            ")",
-                                            QVariantList() << predecessorId.toULongLong(),
-                                            "resolveMissingMessages mailmessages query"));
-                if (query.lastError().type() != QSqlError::NoError)
-                    return DatabaseFailure;
+        // Do not create a cycle - ensure that none of these messages is an ancestor of the new message
+        AttemptResult result = identifyAncestors(predecessorId, descendants.keys(), &ancestorIds);
+        if (result != Success)
+            return result;
 
-                while (query.next())
-                    predecessor.insert(extractValue<quint64>(query.value(0)), extractValue<quint64>(query.value(1)));
-            }
-
-            // Ensure that none of the prospective children are predecessors of this message
-            quint64 messageId = predecessorId.toULongLong();
-            while (messageId) {
-                if (descendants.contains(messageId)) {
-                    descendants.remove(messageId);
-                }
-
-                messageId = predecessor[messageId];
-            }
+        // Ensure that none of the ancestors become descendants of this message
+        foreach (const QMailMessageId &id, ancestorIds) {
+            descendants.remove(id);
         }
     }
 
@@ -6030,11 +6012,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
         QVariantList descendantIds;
         QVariantList descendantLevels;
 
-        QMap<quint64, quint64>::const_iterator it = descendants.begin(), end = descendants.end();
+        QMap<QMailMessageId, quint64>::const_iterator it = descendants.begin(), end = descendants.end();
         for ( ; it != end; ++it) {
-            updatedMessageIds->append(QMailMessageId(it.key()));
+            updatedMessageIds->append(it.key());
 
-            descendantIds.append(QVariant(it.key()));
+            descendantIds.append(QVariant(it.key().toULongLong()));
             descendantLevels.append(QVariant(it.value()));
         }
 
@@ -6092,8 +6074,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
         }
     }
 
-    // TODO: this may be the visible root, even if it has a predecessor...
-    if (!predecessorId.isValid() && !baseSubject.isEmpty()) {
+    if (!baseSubject.isEmpty()) {
         QMailMessageIdList ids;
 
         {
@@ -6110,6 +6091,20 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                 ids.append(QMailMessageId(extractValue<quint64>(query.value(0))));
         }
 
+        if (!ids.isEmpty() && predecessorId.isValid()) {
+            QMailMessageIdList ancestorIds;
+
+            // Do not create a cycle - ensure that none of these messages is an ancestor of the new message
+            AttemptResult result = identifyAncestors(predecessorId, descendants.keys(), &ancestorIds);
+            if (result != Success)
+                return result;
+
+            // Ensure that none of the ancestors become descendants of this message
+            foreach (const QMailMessageId &id, ancestorIds) {
+                ids.removeAll(id);
+            }
+        }
+
         if (!ids.isEmpty()) {
             {
                 // Update these descendant messages to have the new message as their predecessor
@@ -6121,16 +6116,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                     return DatabaseFailure;
             }
 
-            if (optimalRoot) {
+            {
                 // Remove the missing ancestor records
                 QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
                                             Key("messageid", QMailMessageKey::id(ids)),
                                             "resolveMissingMessages missingancestors delete query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
-
-                updatedMessageIds->append(ids);
             }
+
+            updatedMessageIds->append(ids);
         }
     }
 

@@ -414,7 +414,9 @@ private:
 
     AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences, bool *missingAncestor);
 
-    AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, bool optimalRoot, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds);
+    AttemptResult identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds, QMailMessageIdList *ancestorIds);
+
+    AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds);
 
     AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, bool missingAncestor);
 
