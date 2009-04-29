@@ -4555,6 +4555,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
     QMailAccountId parentAccountId;
     QMailFolderId parentFolderId;
+    QMailMessageId responseId;
     QString contentUri;
     QMailFolderIdList folderIds;
 
@@ -4571,7 +4572,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     if (metaData->dataModified() || updateContent) {
         // Find the existing properties 
         {
-            QSqlQuery query(simpleQuery("SELECT parentaccountId,parentfolderId,mailfile FROM mailmessages WHERE id=?",
+            QSqlQuery query(simpleQuery("SELECT parentaccountid,parentfolderid,responseid,mailfile FROM mailmessages WHERE id=?",
                                         QVariantList() << updateId,
                                         "updateMessage existing properties query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -4580,7 +4581,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             if (query.first()) {
                 parentAccountId = QMailAccountId(extractValue<quint64>(query.value(0)));
                 parentFolderId = QMailFolderId(extractValue<quint64>(query.value(1)));
-                contentUri = extractValue<QString>(query.value(2));
+                responseId = QMailMessageId(extractValue<quint64>(query.value(2)));
+                contentUri = extractValue<QString>(query.value(3));
 
                 // Find any folders affected by this update
                 folderIds.append(metaData->parentFolderId());
@@ -4605,8 +4607,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         QStringList missingReferences;
         bool missingAncestor(false);
 
-        bool knownPredecessor(metaData->inResponseTo().isValid());
-        if (!knownPredecessor && (updateContent || (updateProperties & QMailMessageKey::InResponseTo))) {
+        if (updateContent || (message && (!metaData->inResponseTo().isValid() || (metaData->inResponseTo() != responseId)))) {
             // Does this message have any references to resolve?
             QStringList references(identifierValues(message->headerFieldText("References")));
             QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
@@ -4663,16 +4664,17 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 qMailLog(Messaging) << "Unable to create content manager for scheme:" << metaData->contentScheme();
                 return Failure;
             }
+        }
 
-            // The message references may have been updated
-            if (!knownPredecessor && metaData->inResponseTo().isValid()) {
-                // We need to record this change
-                updateProperties |= QMailMessageKey::InResponseTo;
-                updateProperties |= QMailMessageKey::ResponseType;
+        if (metaData->inResponseTo() != responseId) {
+            // We need to record this change
+            updateProperties |= QMailMessageKey::InResponseTo;
+            updateProperties |= QMailMessageKey::ResponseType;
 
-                // Join this message's thread to the predecessor's thread
-                quint64 threadId;
+            // Join this message's thread to the predecessor's thread
+            quint64 threadId;
 
+            if (metaData->inResponseTo().isValid()) {
                 {
                     QSqlQuery query(simpleQuery("SELECT threadid FROM mailthreadmessages WHERE messageid=?",
                                                 QVariantList() << updateId,
@@ -4700,24 +4702,70 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
-                
-                // Remove any missing message/ancestor references associated with this message
+            } else {
+                // This message is no longer associated with the thread of the former predecessor
+                QMailMessageIdList descendantIds;
 
                 {
-                    QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
-                                                QVariantList() << updateId,
-                                                "updateMessage missingmessages delete query"));
-                    if (query.lastError().type() != QSqlError::NoError)
-                        return DatabaseFailure;
+                    QMailMessageIdList parentIds;
+
+                    parentIds.append(QMailMessageId(updateId));
+
+                    // Find all descendants of this message
+                    while (!parentIds.isEmpty()) {
+                        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
+                                                    Key("responseid", QMailMessageKey::id(parentIds)),
+                                                    "updateMessage mailmessages responseid query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+
+                        while (!parentIds.isEmpty()) {
+                            descendantIds.append(parentIds.takeFirst());
+                        }
+
+                        while (query.next()) {
+                            parentIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
+                        }
+                    }
                 }
 
                 {
-                    QSqlQuery query(simpleQuery("DELETE FROM missingancestors WHERE messageid=?",
-                                                QVariantList() << updateId,
-                                                "updateMessage missingancestors delete query"));
+                    // Allocate a new thread for this message
+                    QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id) SELECT COALESCE(MAX(id),0) + 1 FROM mailthreads",
+                                                "updateMessage mailthreads insert query"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+
+                    threadId = extractValue<quint64>(query.lastInsertId());
+                }
+
+                {
+                    // Migrate descendants to the new thread
+                    QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=?",
+                                                QVariantList() << threadId,
+                                                Key("messageid", QMailMessageKey::id(descendantIds)),
+                                                "updateMessage mailthreadmessages update query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
+            }
+            
+            // Remove any missing message/ancestor references associated with this message
+
+            {
+                QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
+                                            QVariantList() << updateId,
+                                            "updateMessage missingmessages delete query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+            }
+
+            {
+                QSqlQuery query(simpleQuery("DELETE FROM missingancestors WHERE messageid=?",
+                                            QVariantList() << updateId,
+                                            "updateMessage missingancestors delete query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
             }
         }
 
@@ -4851,7 +4899,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     }
 
     if (!t.commit()) {
-        qMailLog(Messaging) << "Could not commit folder update to database";
+        qMailLog(Messaging) << "Could not commit message update to database";
         return DatabaseFailure;
     }
 
