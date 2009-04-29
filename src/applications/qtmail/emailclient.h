@@ -149,6 +149,8 @@ protected slots:
 
     void selectAll();
 
+    void detachThread();
+
     void connectivityChanged(QMailServiceAction::Connectivity connectivity);
     void activityChanged(QMailServiceAction::Activity activity);
     void statusChanged(const QMailServiceAction::Status &status);
@@ -308,6 +310,7 @@ private:
     QAction *settingsAction;
     QAction *emptyTrashAction;
     QAction *deleteMailAction;
+    QAction *detachThreadAction;
     QAction *markAction;
     bool enableMessageActions;
 

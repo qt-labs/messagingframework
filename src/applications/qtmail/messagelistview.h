@@ -77,6 +77,8 @@ public:
 
     bool hasNext() const;
     bool hasPrevious() const;
+    bool hasParent() const;
+    bool hasChildren() const;
 
     int rowCount() const;
 

@@ -630,6 +630,10 @@ void EmailClient::initActions()
         connect(deleteMailAction, SIGNAL(triggered()), this, SLOT(deleteSelectedMessages()));
         setActionVisible(deleteMailAction, false);
 
+        detachThreadAction = new QAction( tr("Detach from thread"), this );
+        connect(detachThreadAction, SIGNAL(triggered()), this, SLOT(detachThread()));
+        setActionVisible(detachThreadAction, false);
+
         markAction = new QAction( tr("Mark messages"), this );
         connect(markAction, SIGNAL(triggered()), this, SLOT(markMessages()));
         setActionVisible(markAction, true);
@@ -657,6 +661,7 @@ void EmailClient::initActions()
         folderView()->setContextMenuPolicy(Qt::ActionsContextMenu);
 
         messageListView()->addAction( deleteMailAction );
+        messageListView()->addAction( detachThreadAction );
         messageListView()->addAction( moveAction );
         messageListView()->addAction( copyAction );
         messageListView()->addAction( restoreAction );
@@ -1299,14 +1304,14 @@ void EmailClient::updateGetAccountButton()
     // We can get only mail if we're currently inactive
     bool inactive(!isTransmitting());
 
-        if (QMailMessageSet* item = folderView()->currentItem()) {
-            QMailAccountId accountId(item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>());
-            bool accountContext(accountId.isValid());
+    if (QMailMessageSet* item = folderView()->currentItem()) {
+        QMailAccountId accountId(item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>());
+        bool accountContext(accountId.isValid());
 
-            // Only show the get mail for account button if there are multiple accounts to retrieve from
-            bool multipleMailAccounts = (emailAccounts().count() > 1);
-            setActionVisible(getAccountButton, (inactive && accountContext && multipleMailAccounts));
-        }
+        // Only show the get mail for account button if there are multiple accounts to retrieve from
+        bool multipleMailAccounts = (emailAccounts().count() > 1);
+        setActionVisible(getAccountButton, (inactive && accountContext && multipleMailAccounts));
+    }
 }
 
 void EmailClient::updateAccounts()
@@ -1507,6 +1512,22 @@ void EmailClient::emptyTrashFolder()
     if (confirmDelete(this, "Empty trash", tr("all messages in the trash"))) {
         AcknowledgmentBox::show(tr("Deleting"), tr("Deleting %n message(s)", "%1: number of messages", trashIds.count()));
         storageAction->deleteMessages(trashIds);
+    }
+}
+
+void EmailClient::detachThread()
+{
+    QMailMessageIdList ids(messageListView()->selected());
+    if (ids.count() == 1) {
+        QString caption(tr("Detach"));
+        QString msg(tr("Are you sure you want to detach this message from its current thread?"));
+
+        if (QMessageBox::warning(this, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default|QMessageBox::Escape, 0) == QMessageBox::Yes) {
+            QMailMessageMetaData metaData(ids.first());
+            metaData.setInResponseTo(QMailMessageId());
+
+            QMailStore::instance()->updateMessage(&metaData);
+        }
     }
 }
 
@@ -2103,6 +2124,10 @@ void EmailClient::messageSelectionChanged()
     setActionVisible(moveAction, (messagesSelected && !trashMessagesSelected));
     setActionVisible(copyAction, (messagesSelected && !trashMessagesSelected));
     setActionVisible(restoreAction, (messagesSelected && trashMessagesSelected));
+
+    // We can detach is a single non-root message is selected
+    setActionVisible(detachThreadAction, ((selectionCount == 1) && messageListView()->hasParent()));
+
     updateActions();
 }
 

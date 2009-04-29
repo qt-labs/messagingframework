@@ -448,6 +448,16 @@ bool MessageListView::hasPrevious() const
     return (mMessageList->indexAbove(mMessageList->currentIndex()).isValid());
 }
 
+bool MessageListView::hasParent() const
+{
+    return (mMessageList->currentIndex().parent().isValid());
+}
+
+bool MessageListView::hasChildren() const
+{
+    return (mFilterModel->rowCount(mMessageList->currentIndex()) > 0);
+}
+
 int MessageListView::rowCount() const
 {
     return mFilterModel->rowCount();
