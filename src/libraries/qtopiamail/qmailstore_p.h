@@ -187,6 +187,10 @@ private:
     typedef QPair<quint64, QString> FolderInfo;
     bool setupFolders(const QList<FolderInfo> &folderList);
 
+    bool purgeMissingAncestors();
+
+    bool performMaintenance();
+
     void createTemporaryTable(const QMailMessageKey::ArgumentType &arg) const;
     void destroyTemporaryTables(void);
 

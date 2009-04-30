@@ -2019,7 +2019,8 @@ bool QMailStorePrivate::initStore()
         Transaction t(this);
 
         if (!ensureVersionInfo() ||
-            !setupTables(QList<TableInfo>() << tableInfo("mailaccounts", 106)
+            !setupTables(QList<TableInfo>() << tableInfo("maintenancerecord", 100)
+                                            << tableInfo("mailaccounts", 106)
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
@@ -2064,6 +2065,10 @@ bool QMailStorePrivate::initStore()
 
     if (!QMailContentManagerFactory::init()) {
         qMailLog(Messaging) << "Could not initialize content manager factory";
+        return false;
+    }
+
+    if (!performMaintenance()) {
         return false;
     }
 
@@ -3061,6 +3066,59 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
                                     "setupFolders insert query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
+    }
+
+    return true;
+}
+
+bool QMailStorePrivate::purgeMissingAncestors()
+{
+    return true;
+}
+
+bool QMailStorePrivate::performMaintenance()
+{
+    QDateTime lastPerformed(QDateTime::fromTime_t(0));
+
+    {
+        QString sql("SELECT performed FROM maintenancerecord WHERE task=?");
+
+        QSqlQuery query(database);
+        query.prepare(sql);
+        query.addBindValue("purge missing ancestors");
+        if (!query.exec()) {
+            qMailLog(Messaging) << "Failed to query performed timestamp - query:" << sql << "- error:" << query.lastError().text();
+            return false;
+        } else {
+            if (query.first()) {
+                lastPerformed = query.value(0).value<QDateTime>();
+            }
+        }
+    }
+
+    // Perform this task no more than once every 24 hours
+    QDateTime nextTime(lastPerformed.addDays(1));
+    if (QDateTime::currentDateTime() >= nextTime) {
+        if (!purgeMissingAncestors()) {
+            return false;
+        }
+
+        // Update the timestamp
+        QString sql;
+        if (lastPerformed.toTime_t() == 0) {
+            sql = "INSERT INTO maintenancerecord (performed,task) VALUES(?,?)";
+        } else {
+            sql = "UPDATE maintenancerecord SET performed=? WHERE task=?";
+        }
+
+        QSqlQuery query(database);
+        query.prepare(sql);
+        query.addBindValue(QDateTime::currentDateTime());
+        query.addBindValue("purge missing ancestors");
+        if (!query.exec()) {
+            qMailLog(Messaging) << "Failed to update performed timestamp - query:" << sql << "- error:" << query.lastError().text();
+            return false;
+        }
     }
 
     return true;
