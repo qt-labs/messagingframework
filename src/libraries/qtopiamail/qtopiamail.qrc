@@ -33,6 +33,7 @@
 <file alias="missingmessages">resources/missingmessages.sqlite.sql</file>
 <file alias="missingmessages-100-101">resources/missingmessages-100-101.sqlite.sql</file>
 <file alias="missingancestors">resources/missingancestors.sqlite.sql</file>
+<file alias="missingancestors-100-101">resources/missingancestors-100-101.sqlite.sql</file>
 <file alias="maintenancerecord">resources/maintenancerecord.sqlite.sql</file>
 </qresource>
 </RCC>

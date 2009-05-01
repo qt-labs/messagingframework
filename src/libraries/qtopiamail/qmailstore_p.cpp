@@ -2035,7 +2035,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
                                             << tableInfo("mailthreadmessages", 100)
-                                            << tableInfo("missingancestors", 100)
+                                            << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)) ||
             !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::InboxFolder, tr("Inbox"))
@@ -3073,6 +3073,14 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
 
 bool QMailStorePrivate::purgeMissingAncestors()
 {
+    QString sql("DELETE FROM missingancestors WHERE state=1");
+
+    QSqlQuery query(database);
+    query.prepare(sql);
+    if (!query.exec()) {
+        qMailLog(Messaging) << "Failed to purge missing ancestors - query:" << sql << "- error:" << query.lastError().text();
+        return false;
+    }
     return true;
 }
 
@@ -4161,7 +4169,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     if (!baseSubject.isEmpty()) {
         // Ensure that this subject is in the subjects table
-        result = registerSubject(baseSubject, insertId, missingAncestor);
+        result = registerSubject(baseSubject, insertId, metaData->inResponseTo(), missingAncestor);
         if (result != Success)
             return result;
     }
@@ -4853,7 +4861,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         if (updateProperties & QMailMessageKey::Subject) {
             if (!baseSubject.isEmpty()) {
                 // Ensure that this subject is in the subjects table
-                AttemptResult result = registerSubject(baseSubject, updateId, missingAncestor);
+                AttemptResult result = registerSubject(baseSubject, updateId, metaData->inResponseTo(), missingAncestor);
                 if (result != Success)
                     return result;
             }
@@ -6016,7 +6024,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             // Find the preceding messages of all thread matching this base subject
             QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
                                         "WHERE id!=? "
-                                        "AND (responseid=0 OR responseid IS NULL) "
                                         "AND parentaccountid=? "
                                         "AND stamp<? "
                                         "AND id IN ("
@@ -6241,11 +6248,19 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
         QMailMessageIdList ids;
 
         {
-            // See if there are any messages waiting for a thread root message with this subject
-            QSqlQuery query(simpleQuery("SELECT id FROM mailmessages WHERE id IN ("
+            // See if there are any messages waiting for a thread ancestor message with this subject
+            // (or who have one that is older than this message)
+            QSqlQuery query(simpleQuery("SELECT id FROM mailmessages mm "
+                                        "WHERE id IN ("
                                             "SELECT messageid FROM missingancestors WHERE subjectid=(SELECT id FROM mailsubjects WHERE basesubject=?) "
-                                        ") AND stamp > (SELECT stamp FROM mailmessages WHERE id=?)",
-                                        QVariantList() << baseSubject << messageId,
+                                        ") AND "
+                                            "stamp > (SELECT stamp FROM mailmessages WHERE id=?) "
+                                        "AND ("
+                                            "mm.responseid=0 "
+                                        "OR "
+                                            "(SELECT stamp FROM mailmessages WHERE id=?) > (SELECT stamp FROM mailmessages WHERE id=mm.responseid)"
+                                        ")",
+                                        QVariantList() << baseSubject << messageId << messageId,
                                         "resolveMissingMessages missingancestors query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -6281,7 +6296,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
             {
                 // Remove the missing ancestor records
-                QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
+                QSqlQuery query(simpleQuery("UPDATE missingancestors SET state=1",
                                             Key("messageid", QMailMessageKey::id(ids)),
                                             "resolveMissingMessages missingancestors delete query"));
                 if (query.lastError().type() != QSqlError::NoError)
@@ -6295,7 +6310,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QString &baseSubject, quint64 messageId, bool missingAncestor)
+QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId, bool missingAncestor)
 {
     int subjectId = 0;
 
@@ -6359,8 +6374,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
         }
 
         if (count == 0) {
-            QSqlQuery query(simpleQuery("INSERT INTO missingancestors (messageid,subjectid) VALUES(?,?)",
-                                        QVariantList() << messageId << subjectId,
+            quint64 state(predecessorId.isValid() ? 1 : 0);
+            QSqlQuery query(simpleQuery("INSERT INTO missingancestors (messageid,subjectid,state) VALUES(?,?,?)",
+                                        QVariantList() << messageId << subjectId << state,
                                         "registerSubject missingancestors insert query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;

@@ -422,7 +422,7 @@ private:
 
     AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds);
 
-    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, bool missingAncestor);
+    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId, bool missingAncestor);
 
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
