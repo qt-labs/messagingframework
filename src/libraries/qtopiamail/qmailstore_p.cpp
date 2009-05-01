@@ -5956,7 +5956,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
 QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject,
                                                                        QStringList *missingReferences, bool *missingAncestor)
 {
-    quint64 predecessor = 0;
+    QList<quint64> potentialPredecessors;
 
     if (!references.isEmpty()) {
         // Find any messages that correspond to these references
@@ -5984,7 +5984,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             // All the references are missing
             *missingReferences = references;
         } else {
-            for (int i = references.count() - 1; (predecessor == 0) && (i >= 0); --i) {
+            for (int i = references.count() - 1; i >= 0; --i) {
                 const QString &refId(references.at(i));
 
                 QMap<QString, QList<quint64> >::const_iterator it = referencedMessages.find(refId);
@@ -5993,11 +5993,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
 
                     if (messageIds.count() == 1) {
                         // This is the best parent message choice
-                        predecessor = messageIds.first();
+                        potentialPredecessors.append(messageIds.first());
+                        break;
                     } else {
                         // TODO: We need to choose a best selection from amongst these messages
-                        // For now, just pick the first
-                        predecessor = messageIds.first();
+                        // For now, just process the order the DB gave us
+                        potentialPredecessors = messageIds;
+                        break;
                     }
                 } else {
                     missingReferences->append(refId);
@@ -6008,7 +6010,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         if (sameSubject) {
             // The base subject does not differ from the actual subject - probably not a reply
         } else {
-            // Find the most recent preceding message of any thread matching this base subject
+            // This message has a thread ancestor, but we can only estimate which is the best choice
+            *missingAncestor = true;
+
+            // Find the preceding messages of all thread matching this base subject
             QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
                                         "WHERE id!=? "
                                         "AND (responseid=0 OR responseid IS NULL) "
@@ -6030,21 +6035,73 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
 
-            if (query.next()) {
-                predecessor = extractValue<quint64>(query.value(0));
-            } else {
-                // This message has a thread ancestor, but we don't have it yet
-                *missingAncestor = true;
+            while (query.next()) {
+                potentialPredecessors.append(extractValue<quint64>(query.value(0)));
             }
         }
     }
 
-    if (predecessor) {
-        metaData->setInResponseTo(QMailMessageId(predecessor));
+    if (!potentialPredecessors.isEmpty()) {
+        quint64 predecessorId(0);
+        quint64 messageId(metaData->id().toULongLong());
 
-        // TODO: What kind of response is this?  If the predecessor is from the same
-        // account as the new message then it is probably a reply.  Otherwise, forward?
-        metaData->setResponseType(QMailMessage::Reply);
+        if (messageId != 0) {
+            // We already exist - therefore we must ensure that we do not create a response ID cycle
+            QMap<quint64, quint64> predecessor;
+
+            {
+
+                // Find the predecessor message for every message in the same thread as us
+                QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
+                                                "SELECT messageid FROM mailthreadmessages WHERE threadid = ("
+                                                    "SELECT threadid FROM mailthreadmessages WHERE messageid=?"
+                                                ")"
+                                            ")",
+                                            QVariantList() << metaData->id().toULongLong(),
+                                            "identifyAncestors mailmessages query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+
+                while (query.next())
+                    predecessor.insert(extractValue<quint64>(query.value(0)), extractValue<quint64>(query.value(1)));
+            }
+
+            // Choose the best predecessor, ensuring that we don't pick a message whose own ancestors include us
+            while (!potentialPredecessors.isEmpty()) {
+                quint64 ancestorId = potentialPredecessors.first();
+
+                bool descendant(false);
+                while (ancestorId) {
+                    if (ancestorId == messageId) {
+                        // This message is a descendant of ourself
+                        descendant = true;
+                        break;
+                    } else {
+                        ancestorId = predecessor[ancestorId];
+                    }
+                }
+
+                if (!descendant) {
+                    // This message can become our predecessor
+                    predecessorId = potentialPredecessors.first();
+                    break;
+                } else {
+                    // Try the next option, if any
+                    potentialPredecessors.takeFirst();
+                }
+            }
+        } else {
+            // Just take the first selection
+            predecessorId = potentialPredecessors.first();
+        }
+
+        if (predecessorId) {
+            metaData->setInResponseTo(QMailMessageId(predecessorId));
+
+            // TODO: What kind of response is this?  If the predecessor is from the same
+            // account as the new message then it is probably a reply.  Otherwise, forward?
+            metaData->setResponseType(QMailMessage::Reply);
+        }
     }
 
     return Success;
@@ -6052,7 +6109,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds, QMailMessageIdList *ancestorIds)
 {
-    if (childIds.isEmpty() && predecessorId.isValid()) {
+    if (!childIds.isEmpty() && predecessorId.isValid()) {
         QMap<quint64, quint64> predecessor;
 
         {
@@ -6201,7 +6258,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
             QMailMessageIdList ancestorIds;
 
             // Do not create a cycle - ensure that none of these messages is an ancestor of the new message
-            AttemptResult result = identifyAncestors(predecessorId, descendants.keys(), &ancestorIds);
+            AttemptResult result = identifyAncestors(predecessorId, ids, &ancestorIds);
             if (result != Success)
                 return result;
 
