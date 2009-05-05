@@ -6303,7 +6303,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                     return DatabaseFailure;
             }
 
-            updatedMessageIds->append(ids);
+            *updatedMessageIds += ids;
         }
     }
 
