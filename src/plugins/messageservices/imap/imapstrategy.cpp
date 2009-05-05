@@ -22,8 +22,8 @@
 #include <limits.h>
 #include <QDir>
 
-// Enable this to use some simple command pipelining
-//#define Q_PIPELINE_COMMANDS
+// TODO: Use pipelined commands where appropriate - where error handling remains 
+// sensible and it isn't too difficult to tell which commands have/haven't completed...
 
 static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
 static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
@@ -289,12 +289,8 @@ void ImapMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 
 void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
-#ifndef Q_PIPELINE_COMMANDS
     // We're completing a message or section
     messageAction(context);
-#else
-    Q_UNUSED(context);
-#endif
 }
 
 bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *context)
@@ -395,9 +391,6 @@ void ImapMessageListStrategy::folderAction(ImapStrategyContextBase *context)
         } else {
             context->protocol().sendSelect(_currentMailbox);
         }
-#ifdef Q_PIPELINE_COMMANDS
-        messageAction(context);
-#endif
     } else {
         completedAction(context);
     }
@@ -878,10 +871,8 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
         // We're retrieving message metadata
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {
-#ifndef Q_PIPELINE_COMMANDS
         // We're completing a message or section
         messageAction(context);
-#endif
     }
 }
 
@@ -1133,9 +1124,6 @@ void ImapSynchronizeAllStrategy::handleSelect(ImapStrategyContextBase *context)
         if (context->mailbox().exists > 0) {
             // Start by looking for previously-seen and unseen messages
             context->protocol().sendUidSearch(MFlag_Seen);
-#ifdef Q_PIPELINE_COMMANDS
-            context->protocol().sendUidSearch(MFlag_Unseen);
-#endif
         } else {
             // No messages, so no need to perform search
             processUidSearchResults(context);
@@ -1154,9 +1142,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
         _seenUids = context->mailbox().uidList;
 
         _searchState = Unseen;
-#ifndef Q_PIPELINE_COMMANDS
         context->protocol().sendUidSearch(MFlag_Unseen);
-#endif
         break;
     }
     case Unseen:
@@ -1515,9 +1501,6 @@ void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *cont
 
             // Start by looking for previously-seen and unseen messages
             context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-#ifdef Q_PIPELINE_COMMANDS
-            context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-#endif
         } else {
             // No messages, so no need to perform search
             processUidSearchResults(context);
@@ -1536,9 +1519,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
         _seenUids = context->mailbox().uidList;
 
         _searchState = Unseen;
-#ifndef Q_PIPELINE_COMMANDS
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-#endif
         break;
     }
     case Unseen:
