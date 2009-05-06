@@ -2177,7 +2177,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
         setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
     }
 
-    // TODO: setForwardOnly?
+    query.setForwardOnly(true);
     return query;
 }
 
