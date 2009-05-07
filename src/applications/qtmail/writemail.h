@@ -62,9 +62,9 @@ protected slots:
 
 private:
     bool largeAttachments();
-    bool buildMail(const QMailAccountId& accountId);
+    bool buildMail(const QMailAccountId& accountId, bool includeSignature = true);
     void init();
-    QString signature() const;
+    QString signature(const QMailAccountId& id) const;
     bool isComplete() const;
     bool changed() const;
     void setComposer( const QString &id );

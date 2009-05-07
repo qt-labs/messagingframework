@@ -612,7 +612,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     "<td align=right>"
         "<b>ID_TEXT: </b>"
     "</td>"
-    "<td width=50\%>"
+    "<td align=left>"
         "CONTENT_TEXT"
     "</td>"
 "</tr>";

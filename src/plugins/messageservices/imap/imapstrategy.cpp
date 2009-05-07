@@ -22,8 +22,8 @@
 #include <limits.h>
 #include <QDir>
 
-// Enable this to use some simple command pipelining
-//#define Q_PIPELINE_COMMANDS
+// TODO: Use pipelined commands where appropriate - where error handling remains 
+// sensible and it isn't too difficult to tell which commands have/haven't completed...
 
 static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
 static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
@@ -289,12 +289,8 @@ void ImapMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 
 void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
-#ifndef Q_PIPELINE_COMMANDS
     // We're completing a message or section
     messageAction(context);
-#else
-    Q_UNUSED(context);
-#endif
 }
 
 bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *context)
@@ -395,9 +391,6 @@ void ImapMessageListStrategy::folderAction(ImapStrategyContextBase *context)
         } else {
             context->protocol().sendSelect(_currentMailbox);
         }
-#ifdef Q_PIPELINE_COMMANDS
-        messageAction(context);
-#endif
     } else {
         completedAction(context);
     }
@@ -878,10 +871,8 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
         // We're retrieving message metadata
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {
-#ifndef Q_PIPELINE_COMMANDS
         // We're completing a message or section
         messageAction(context);
-#endif
     }
 }
 
@@ -949,7 +940,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                 _completionSectionList.clear();
                 messageAction(context);
             } else {
-                context->operationCompleted();
+                completedAction(context);
             }
         } else {
             // We now have a list of all messages to be retrieved for each mailbox
@@ -1133,9 +1124,6 @@ void ImapSynchronizeAllStrategy::handleSelect(ImapStrategyContextBase *context)
         if (context->mailbox().exists > 0) {
             // Start by looking for previously-seen and unseen messages
             context->protocol().sendUidSearch(MFlag_Seen);
-#ifdef Q_PIPELINE_COMMANDS
-            context->protocol().sendUidSearch(MFlag_Unseen);
-#endif
         } else {
             // No messages, so no need to perform search
             processUidSearchResults(context);
@@ -1154,9 +1142,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
         _seenUids = context->mailbox().uidList;
 
         _searchState = Unseen;
-#ifndef Q_PIPELINE_COMMANDS
         context->protocol().sendUidSearch(MFlag_Unseen);
-#endif
         break;
     }
     case Unseen:
@@ -1198,15 +1184,19 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
 {
     QMailFolderId boxId = _currentMailbox.id();
     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
-
+    QMailFolder folder(boxId);
+    
+    // Folder min/max invalidated
+    folder.removeCustomField("qmf-min-serveruid");
+    folder.removeCustomField("qmf-max-serveruid");
+    
     if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
         !(_currentMailbox.status() & QMailFolder::Synchronized)) {
         // We have just synchronized this folder
-        QMailFolder folder(boxId);
         folder.setStatus(QMailFolder::Synchronized, true);
-        if (!QMailStore::instance()->updateFolder(&folder)) {
-            qWarning() << "Unable to update folder for account:" << context->config().id();
-        }
+    }
+    if (!QMailStore::instance()->updateFolder(&folder)) {
+        qWarning() << "Unable to update folder for account:" << context->config().id();
     }
 
     // Messages reported as being on the server
@@ -1511,9 +1501,6 @@ void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *cont
 
             // Start by looking for previously-seen and unseen messages
             context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-#ifdef Q_PIPELINE_COMMANDS
-            context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-#endif
         } else {
             // No messages, so no need to perform search
             processUidSearchResults(context);
@@ -1532,9 +1519,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
         _seenUids = context->mailbox().uidList;
 
         _searchState = Unseen;
-#ifndef Q_PIPELINE_COMMANDS
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-#endif
         break;
     }
     case Unseen:
@@ -1546,7 +1531,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     default:
         qMailLog(IMAP) << "Unknown search status in transition";
         Q_ASSERT(0);
-        context->operationCompleted();
+        completedAction(context);
     }
 }
 
@@ -1605,6 +1590,20 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     }
 }
 
+void ImapRetrieveMessageListStrategy::completedAction(ImapStrategyContextBase *context)
+{
+    foreach(QMailFolderId folderId, _newMinMaxMap.keys()) {
+        QMailFolder folder(folderId);
+        int newMin(_newMinMaxMap[folderId].minimum());
+        int newMax(_newMinMaxMap[folderId].maximum());
+        folder.setCustomField("qmf-min-serveruid", QString::number(newMin));
+        folder.setCustomField("qmf-max-serveruid", QString::number(newMax));
+        QMailStore::instance()->updateFolder(&folder);
+    }
+    _newMinMaxMap.clear();
+    ImapSynchronizeBaseStrategy::completedAction(context);
+}
+
 void ImapRetrieveMessageListStrategy::listCompleted(ImapStrategyContextBase *context)
 {
     removeDeletedMailboxes(context);
@@ -1659,9 +1658,11 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
         } else if (!comparable || (lastExists != exists) || (lastUidNext != uidNext)) {
             context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
         } else {
-            // No messages have been appended or expunged since we last retrieve messages
+            // No messages have been appended or expunged since we last retrieved messages
             // should be safe to incrementally retrieve
-            uint onClient(context->client()->serverUids(_folderId).count());
+            QMailMessageKey folderKey(context->client()->messagesKey(_folderId));
+            QMailMessageKey folderTrashKey(context->client()->trashKey(_folderId));
+            uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
             if (onClient >= _minimum) {
                 // We already have _minimum mails
                 processUidSearchResults(context);
@@ -1682,37 +1683,52 @@ void ImapRetrieveMessageListStrategy::handleSelect(ImapStrategyContextBase *cont
 
 void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
-    IntegerRegion clientRegion(stripFolderPrefix(context->client()->serverUids(_folderId)));
-    _serverRegion = IntegerRegion(stripFolderPrefix(context->mailbox().uidList));
-    // clientList and serverList should be sorted numerically
+    QMailFolder folder(_folderId);
+    bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
+    int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
+    int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+
+    // Use an optimization/simplification because client region should be contiguous
+    IntegerRegion clientRegion;
+    if ((clientMin != 0) && (clientMax != 0))
+        clientRegion = IntegerRegion(clientMin, clientMax);
+    IntegerRegion serverRegion;
+    foreach(const QString &uid, context->mailbox().uidList) {
+        bool ok;
+        uint number = stripFolderPrefix(uid).toUInt(&ok);
+        if (ok)
+            serverRegion.add(number);
+    }
     
     if (!_fillingGap) {
-        bool ok1, ok2;
-        QStringList clientList(clientRegion.toStringList());
-        QStringList serverList(_serverRegion.toStringList());
-        if (!clientList.isEmpty() && !serverList.isEmpty()) {
-            uint newestClient(clientList.last().toUInt(&ok1));
-            uint oldestServer(serverList.first().toUInt(&ok2));
-            if (ok1 && ok2 && (newestClient + 1 < oldestServer)) {
+        if (!clientRegion.isEmpty() && !serverRegion.isEmpty()) {
+            uint newestClient(clientRegion.maximum());
+            uint oldestServer(serverRegion.minimum());
+            uint newestServer(serverRegion.maximum());
+            if (newestClient + 1 < oldestServer) {
                 // There's a gap
                 _fillingGap = true;
-                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(serverList.last()));
+                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(newestServer));
                 return;
             }
         }
-    } else {
-        // TODO: IntegerRegion union
-        foreach(const QString &uid, context->mailbox().uidList) {
-            bool ok;
-            uint number = uid.toUInt(&ok);
-            if (ok)
-                _serverRegion.add(number);
-        }
     }
     
-    IntegerRegion difference(_serverRegion.subtract(clientRegion));
+    IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(_folderId, difference.toStringList()));
+        int newClientMin;
+        int newClientMax;
+        if (clientMin > 0)
+            newClientMin = qMin(serverRegion.minimum(), clientMin);
+        else
+            newClientMin = serverRegion.minimum();
+        if (clientMax > 0)
+            newClientMax = qMax(serverRegion.maximum(), clientMax);
+        else
+            newClientMax = serverRegion.maximum();
+        if ((newClientMin > 0) && (newClientMax > 0))
+            _newMinMaxMap.insert(_folderId, IntegerRegion(newClientMin, newClientMax));
     }
 
     processUidSearchResults(context);

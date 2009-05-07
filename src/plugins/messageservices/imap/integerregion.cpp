@@ -77,6 +77,14 @@ IntegerRegion::IntegerRegion(const QString &uidString)
     }
 }
 
+IntegerRegion::IntegerRegion(int begin, int end)
+{
+    clear();
+    if (begin > end)
+        return;
+    mRangeList.append(IntegerRange(begin, end));
+}
+
 /*
   Removes all ranges from the region.
 */
@@ -106,6 +114,24 @@ uint IntegerRegion::cardinality() const
         result += range.second - range.first + 1;
 
     return result;
+}
+
+/*
+  The maximum integer contained in the region. The region must be not
+  be empty. If the region can be empty call isEmpty() before calling this function.
+*/
+int IntegerRegion::maximum() const
+{
+    return mRangeList.last().second;
+}
+
+/*
+  The minimum integer contained in the region. The region must be not
+  be empty. If the region can be empty call isEmpty() before calling this function.
+*/
+int IntegerRegion::minimum() const
+{
+    return mRangeList.first().first;
 }
 
 /*

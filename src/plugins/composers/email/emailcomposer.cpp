@@ -33,6 +33,11 @@
 #include <QToolButton>
 #include <qmailaccountkey.h>
 #include <qmailstore.h>
+#include <QListWidget>
+#include <QPushButton>
+#include <QStringListModel>
+#include <QFileDialog>
+#include "attachmentlistwidget.h"
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -332,7 +337,7 @@ void RecipientListWidget::removeRecipientWidget()
 
 void RecipientListWidget::recipientChanged()
 {
-    if(RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
+    if(qobject_cast<RecipientWidget*>(sender()))
     {
         if(emptyRecipientSlots() == 0)
             addRecipientWidget();
@@ -474,6 +479,9 @@ void EmailComposerInterface::updateAttachmentsLabel()
 
 void EmailComposerInterface::selectAttachment()
 {
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select attachments"));
+    m_attachmentListWidget->addAttachments(fileNames);
+
     /*
     if (m_attachments.isEmpty() && m_addAttDialog->documentSelector()->documents().isEmpty()) {
         QMessageBox::warning(this,
@@ -503,8 +511,9 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_widgetStack(0),
     m_recipientListWidget(0),
     m_subjectEdit(0),
+    m_attachmentAction(0),
     m_title(QString()),
-    m_attachmentAction(0)
+    m_attachmentListWidget(0)
 {
     init();
 }
@@ -558,6 +567,7 @@ void EmailComposerInterface::init()
     m_attachmentsLabel = new QLabel(this);
     layout->addWidget(m_attachmentsLabel);
     m_attachmentsLabel->hide();
+    layout->addWidget(m_attachmentListWidget = new AttachmentListWidget(this));
 
 //    m_addAttDialog = new AddAttDialog(this, "attachmentDialog");
 //    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SLOT(updateAttachmentsLabel()));
@@ -610,12 +620,6 @@ void EmailComposerInterface::getDetails(QMailMessage& mail) const
         mail.setSubject(subjectText);
     else
         subjectText = placeholder;
-
-    QMailAccount account = fromAccount();
-    if (account.id().isValid()) {
-        mail.setParentAccountId(account.id());
-        mail.setFrom(account.fromAddress());
-    }
 }
 
 void EmailComposerInterface::setDetails(const QMailMessage& mail)
@@ -730,6 +734,7 @@ void EmailComposerInterface::clear()
     m_recipientListWidget->clear();
 
     m_bodyEdit->clear();
+    m_attachmentListWidget->clear();
     //m_addAttDialog->clear();
 
     // Delete any temporary files we don't need
@@ -1005,19 +1010,6 @@ bool EmailComposerInterface::isReadyToSend() const
 QString EmailComposerInterface::title() const
 {
     return m_title;
-}
-
-QMailAccount EmailComposerInterface::fromAccount() const
-{
-//    QMailAccountKey nameKey(QMailAccountKey::name(m_from));
-
-    QMailAccountKey statusKey(QMailAccountKey::status(QMailAccount::CanTransmit, QMailDataComparator::Includes));
-    statusKey &= QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes);
-
-    QMailAccountIdList accountIds = QMailStore::instance()->queryAccounts(statusKey);
-    if (!accountIds.isEmpty())
-        return QMailAccount(accountIds.first());
-    return QMailAccount();
 }
 
 QString EmailComposerInterface::key() const { return "EmailComposer"; }

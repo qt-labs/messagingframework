@@ -13,9 +13,11 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
 LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
         -L../../../libraries/qmfutil -lqmfutil
 
-HEADERS += emailcomposer.h
+HEADERS += emailcomposer.h \
+           attachmentlistwidget.h
 
-SOURCES += emailcomposer.cpp
+SOURCES += emailcomposer.cpp \
+           attachmentlistwidget.cpp
 
 TRANSLATIONS += libemailcomposer-ar.ts \
                 libemailcomposer-de.ts \

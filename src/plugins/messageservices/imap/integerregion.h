@@ -23,10 +23,13 @@ public:
     IntegerRegion();
     IntegerRegion(const QStringList &uids);
     IntegerRegion(const QString &uidString);
+    IntegerRegion(int begin, int end);
 
     void clear();
     bool isEmpty() const;
     uint cardinality() const;
+    int maximum() const;
+    int minimum() const;
     QStringList toStringList() const;
     QString toString() const;
 
