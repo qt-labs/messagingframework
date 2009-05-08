@@ -34,6 +34,7 @@ enum ImapCommand
     IMAP_List,
     IMAP_Select,
     IMAP_Examine,
+    IMAP_Search,
     IMAP_UIDSearch,
     IMAP_UIDFetch,
     IMAP_UIDStore,
@@ -123,6 +124,7 @@ public:
     void sendExamine(const QMailFolder &mailbox);
 
     /*  Valid in Selected state only */
+    void sendSearch(MessageFlags flags, const QString &range = QString());
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);
     void sendUidFetchSection(const QString &uid, const QString &section, int start, int end);
