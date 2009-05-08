@@ -13,6 +13,9 @@
 #include <QPointer>
 #include <QMouseEvent>
 #include <QHeaderView>
+#include <support/qmailnamespace.h>
+
+class AttachmentListWidget;
 
 static QString sizeString(uint size)
 {
@@ -26,8 +29,7 @@ static QString sizeString(uint size)
         return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
 }
 
-static QStringList headers(QStringList() << "Attachment" << "Size" << "");
-class AttachmentListWidget;
+static QStringList headers(QStringList() << "Attachment" << "Size" << "Type" << "");
 
 class AttachmentListHeader : public QHeaderView
 {
@@ -60,7 +62,7 @@ m_parent(parent)
 
 void AttachmentListHeader::paintSection(QPainter * painter, const QRect & rect, int logicalIndex) const
 {
-    if(logicalIndex == 2 && m_parent->attachments().count() > 1)
+    if(logicalIndex == 3 && m_parent->attachments().count() > 1)
     {
         painter->save();
         QFont font = painter->font();
@@ -126,7 +128,7 @@ void AttachmentListDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 {
 //    QStyleOptionViewItem myStyle(option);
 //    myStyle.state &= ~QStyle::State_HasFocus;
-    if(index.isValid() && index.column() == 2)
+    if(index.isValid() && index.column() == 3)
     {
         painter->save();
         QFont font = painter->font();
@@ -207,7 +209,7 @@ void AttachmentListView::mousePressEvent(QMouseEvent* e)
 bool AttachmentListView::overRemoveLink(QMouseEvent* e)
 {
     QModelIndex index = indexAt(e->pos());
-    if(index.isValid() && index.column() == 2)
+    if(index.isValid() && index.column() == 3)
     {
         AttachmentListDelegate* delegate = static_cast<AttachmentListDelegate*>(itemDelegate());
         return delegate->isOverRemoveLink(visualRect(index),e->pos());
@@ -277,19 +279,16 @@ QVariant AttachmentListModel::data( const QModelIndex & index, int role) const
             case 1:
                 return sizeString(fi.size());
                 break;
+            case 2:
+                QString mimeType = QMail::mimeTypeFromFileName(path);
+                if(mimeType.isEmpty()) mimeType = "Unknown";
+                return mimeType;
+                break;
             }
         }
         else if((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
             return QVariant();
-        else if(role == Qt::CheckStateRole)
-        {
-            /*
-            Qt::CheckState state = static_cast<Qt::CheckState>(QMailAttachmentListModel::data(index,role).toInt());
-            if(state == Qt::Unchecked)
-                */
-                return QVariant();
-        }
-        else if(role == Qt::DecorationRole)
+            else if(role == Qt::DecorationRole)
         {
             static QIcon attachIcon( ":icon/attach" );
             return attachIcon;
@@ -338,20 +337,18 @@ m_clearLink(new QLabel(this))
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(m_listView);
 
-//    m_clearLink->setAlignment(Qt::AlignHCenter);
-//    layout->addWidget(m_clearLink);
-//    connect(this,SIGNAL(attachmentsAdded(QStringList)),this,SLOT(updateClearLabel()));
-//    connect(this,SIGNAL(attachmentsRemoved(QString)),this,SLOT(updateClearLabel()));
     connect(m_clearLink,SIGNAL(linkActivated(QString)),this,SLOT(clearClicked()));
     connect(m_listView,SIGNAL(removeAttachmentAtIndex(int)),this,SLOT(removeAttachmentAtIndex(int)));
-
-
- //   updateClearLabel();
 }
 
 QStringList AttachmentListWidget::attachments() const
 {
     return m_attachments;
+}
+
+bool AttachmentListWidget::isEmpty() const
+{
+    return m_attachments.isEmpty();
 }
 
 void AttachmentListWidget::addAttachment(const QString& attachment)
@@ -389,13 +386,6 @@ void AttachmentListWidget::clear()
     m_attachments.clear();
     m_model->setAttachments(m_attachments);
     setVisible(false);
-}
-
-void AttachmentListWidget::updateClearLabel()
-{
-    int attachmentCount = m_attachments.count();
-    if(attachmentCount)
-        m_clearLink->setText("<b><a href=\"http://foo\">Clear " + QString::number(attachmentCount) + " attachment(s)</a></b>");
 }
 
 void AttachmentListWidget::clearClicked()
