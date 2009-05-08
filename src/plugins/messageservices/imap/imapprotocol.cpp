@@ -195,6 +195,30 @@ static QList<uint> sequenceUids(const QString &sequence)
     return uids;
 }
 
+static QString searchFlagsToString(MessageFlags flags)
+{
+    QString result;
+
+    if (flags != 0) {
+        if (flags & MFlag_Recent)
+            result += " RECENT";
+        if (flags & MFlag_Deleted)
+            result += " DELETED";
+        if (flags & MFlag_Answered)
+            result += " ANSWERED";
+        if (flags & MFlag_Flagged)
+            result += " FLAGGED";
+        if (flags & MFlag_Seen)
+            result += " SEEN";
+        if (flags & MFlag_Unseen)
+            result += " UNSEEN";
+        if (flags & MFlag_Draft)
+            result += " DRAFT";
+    }
+
+    return result.trimmed();
+}
+
 
 /* Begin state design pattern related classes */
 
@@ -229,6 +253,7 @@ public:
     void setUidNext(int n) { mProtocol->_mailbox.uidNext = n; }
     void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
     void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
+    void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -739,6 +764,90 @@ QString ExamineState::transmit(ImapContext *c)
 }
 
 
+class SearchState : public SelectedState
+{
+    Q_OBJECT
+
+public:
+    SearchState() : SelectedState(IMAP_Search, "Search") { SearchState::init(); }
+
+    void setParameters(MessageFlags flags, const QString &range);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    virtual QString error(const QString &line);
+
+private:
+    // The list of flags/range pairs we're listing (via multiple commands), in order
+    QList<QPair<MessageFlags, QString> > _parameters;
+};
+
+void SearchState::setParameters(MessageFlags flags, const QString &range)
+{
+    _parameters.append(qMakePair(flags, range));
+}
+
+void SearchState::init()
+{
+    SelectedState::init();
+    _parameters.clear();
+}
+
+QString SearchState::transmit(ImapContext *c)
+{
+    const QPair<MessageFlags, QString> &params(_parameters.last());
+
+    QString flagStr;
+    if ((params.first == 0) && params.second.isEmpty()) {
+        flagStr = "ALL";
+    } else {
+        flagStr = searchFlagsToString(params.first);
+    }
+
+    if (!params.second.isEmpty() && !flagStr.isEmpty())
+        flagStr.prepend(' ');
+
+    return c->sendCommand(QString("SEARCH %1%2").arg(params.second).arg(flagStr));
+}
+
+void SearchState::leave(ImapContext *)
+{
+    SelectedState::init();
+    _parameters.removeFirst();
+}
+
+void SearchState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    if (line.startsWith("* SEARCH")) {
+        QList<uint> numbers;
+
+        int index = 7;
+        QString temp;
+        while ((temp = token(line, ' ', ' ', &index)) != QString::null) {
+            numbers.append(temp.toUInt());
+            index--;
+        }
+        temp = token(line, ' ', '\n', &index);
+        if (temp != QString::null)
+            numbers.append(temp.toUInt());
+        c->setMsnList(numbers);
+    } else {
+        SelectedState::untaggedResponse(c, line);
+    }
+}
+
+QString SearchState::error(const QString &line)
+{
+    return SelectedState::error(line)
+        + QLatin1String("\n")
+        + QObject::tr( "This server does not provide a complete "
+                       "IMAP4rev1 implementation." );
+}
+
+
 class UidSearchState : public SelectedState
 {
     Q_OBJECT
@@ -776,26 +885,12 @@ QString UidSearchState::transmit(ImapContext *c)
     const QPair<MessageFlags, QString> &params(_parameters.last());
 
     QString flagStr;
-    if ( params.first != 0 ) {
-        if (params.first & MFlag_Recent)
-            flagStr += " RECENT";
-        if (params.first & MFlag_Deleted)
-            flagStr += " DELETED";
-        if (params.first & MFlag_Answered)
-            flagStr += " ANSWERED";
-        if (params.first & MFlag_Flagged)
-            flagStr += " FLAGGED";
-        if (params.first & MFlag_Seen)
-            flagStr += " SEEN";
-        if (params.first & MFlag_Unseen)
-            flagStr += " UNSEEN";
-        if (params.first & MFlag_Draft)
-            flagStr += " DRAFT";
-    } else if ( params.second.isEmpty() ) {
+    if ((params.first == 0) && params.second.isEmpty()) {
         flagStr = "ALL";
+    } else {
+        flagStr = searchFlagsToString(params.first);
     }
 
-    flagStr = flagStr.trimmed();
     if (!params.second.isEmpty() && !flagStr.isEmpty())
         flagStr.prepend(' ');
 
@@ -1360,6 +1455,7 @@ public:
     ListState listState;
     SelectState selectState;
     ExamineState examineState;
+    SearchState searchState;
     UidSearchState uidSearchState;
     UidFetchState uidFetchState;
     UidStoreState uidStoreState;
@@ -1625,6 +1721,12 @@ void ImapProtocol::sendExamine(const QMailFolder &mailbox)
 {
     _fsm->examineState.setMailbox(mailbox);
     _fsm->setState(&_fsm->examineState);
+}
+
+void ImapProtocol::sendSearch(MessageFlags flags, const QString &range)
+{
+    _fsm->searchState.setParameters(flags, range);
+    _fsm->setState(&_fsm->searchState);
 }
 
 void ImapProtocol::sendUidSearch(MessageFlags flags, const QString &range)

@@ -33,6 +33,11 @@
 #include <QToolButton>
 #include <qmailaccountkey.h>
 #include <qmailstore.h>
+#include <QListWidget>
+#include <QPushButton>
+#include <QStringListModel>
+#include <QFileDialog>
+#include "attachmentlistwidget.h"
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -474,6 +479,9 @@ void EmailComposerInterface::updateAttachmentsLabel()
 
 void EmailComposerInterface::selectAttachment()
 {
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select attachments"));
+    m_attachmentListWidget->addAttachments(fileNames);
+
     /*
     if (m_attachments.isEmpty() && m_addAttDialog->documentSelector()->documents().isEmpty()) {
         QMessageBox::warning(this,
@@ -504,7 +512,8 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_recipientListWidget(0),
     m_subjectEdit(0),
     m_attachmentAction(0),
-    m_title(QString())
+    m_title(QString()),
+    m_attachmentListWidget(0)
 {
     init();
 }
@@ -558,6 +567,7 @@ void EmailComposerInterface::init()
     m_attachmentsLabel = new QLabel(this);
     layout->addWidget(m_attachmentsLabel);
     m_attachmentsLabel->hide();
+    layout->addWidget(m_attachmentListWidget = new AttachmentListWidget(this));
 
 //    m_addAttDialog = new AddAttDialog(this, "attachmentDialog");
 //    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SLOT(updateAttachmentsLabel()));
@@ -724,6 +734,7 @@ void EmailComposerInterface::clear()
     m_recipientListWidget->clear();
 
     m_bodyEdit->clear();
+    m_attachmentListWidget->clear();
     //m_addAttDialog->clear();
 
     // Delete any temporary files we don't need

@@ -24,6 +24,7 @@ public:
           status(0),
           serverCount(0),
           serverUnreadCount(0),
+          serverUndiscoveredCount(0),
           customFieldsModified(false)
     {
     }
@@ -36,6 +37,7 @@ public:
     quint64 status;
     uint serverCount;
     uint serverUnreadCount;
+    uint serverUndiscoveredCount;
 
     QMap<QString, QString> customFields;
     bool customFieldsModified;
@@ -384,11 +386,10 @@ quint64 QMailFolder::statusMask(const QString &flagName)
 /*! 
     Returns the count of messages on the server for the folder.
     
-    Will be upated when an operation to the folder is made on the server. For example
-    when \link QMailRetrievalAction::retrieveMessageList() 
-    QMailRetrievalAction::retrieveMessageList() \endlink is called on the folder.
+    The count is updated when an operation involving the folder is performed on the
+    server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
 
-    \sa setServerCount(), serverUnreadCount()
+    \sa setServerCount(), serverUnreadCount(), serverUndiscoveredCount()
 */
 uint QMailFolder::serverCount() const
 {
@@ -396,23 +397,23 @@ uint QMailFolder::serverCount() const
 }
 
 /*! 
-    Sets the count of messages on the server for the folder to \a serverCount.
+    Sets the count of messages on the server for the folder to \a count.
     
-    \sa serverCount(), serverUnreadCount()
+    \sa serverCount(), setServerUnreadCount(), setServerUndiscoveredCount()
 */
-void QMailFolder::setServerCount(uint serverCount)
+void QMailFolder::setServerCount(uint count)
 {
-    d->serverCount = serverCount;
+    d->serverCount = count;
 }
 
 /*! 
     Returns the count of unread messages on the server for the folder.
+    Unread messages have not had their content displayed by any client.
+    
+    The count is updated when an operation involving the folder is performed on the
+    server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
 
-    Will be upated when an operation to the folder is made on the server. For example
-    when \link QMailRetrievalAction::retrieveMessageList() 
-    QMailRetrievalAction::retrieveMessageList() \endlink is called on the folder.
-
-    \sa setServerUnreadCount(), serverCount()
+    \sa setServerUnreadCount(), serverCount(), serverUndiscoveredCount()
 */
 uint QMailFolder::serverUnreadCount() const
 {
@@ -420,13 +421,39 @@ uint QMailFolder::serverUnreadCount() const
 }
 
 /*! 
-    Sets the count of unread messages on the server for the folder to \a serverUnreadCount.
+    Sets the count of unread messages on the server for the folder to \a count.
+    Unread messages have not had their content displayed by any client.
     
-    \sa serverUnreadCount(), serverCount()
+    \sa serverUnreadCount(), setServerCount(), setServerUndiscoveredCount()
 */
-void QMailFolder::setServerUnreadCount(uint serverUnreadCount)
+void QMailFolder::setServerUnreadCount(uint count)
 {
-    d->serverUnreadCount = serverUnreadCount;
+    d->serverUnreadCount = count;
+}
+
+/*! 
+    Returns the count of undiscovered messages on the server for the folder.
+    Undiscovered messages are available at the server, but their meta data is not yet available on this client.
+    
+    The count is updated when an operation involving the folder is performed on the
+    server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
+
+    \sa setServerUndiscoveredCount(), serverCount(), serverUnreadCount()
+*/
+uint QMailFolder::serverUndiscoveredCount() const
+{
+    return d->serverUndiscoveredCount;
+}
+
+/*! 
+    Sets the count of undiscovered messages on the server for the folder to \a count.
+    Undiscovered messages are available at the server, but their meta data is not yet available on this client.
+    
+    \sa serverUndiscoveredCount(), setServerCount(), setServerUnreadCount()
+*/
+void QMailFolder::setServerUndiscoveredCount(uint count)
+{
+    d->serverUndiscoveredCount = count;
 }
 
 /*! 

@@ -7,6 +7,7 @@ CREATE TABLE mailfolders (
     displayname VARCHAR(255),
     servercount INTEGER,
     serverunreadcount INTEGER,
+    serverundiscoveredcount INTEGER,
     FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id),
     FOREIGN KEY (parentid) REFERENCES mailfolder(id));
 
