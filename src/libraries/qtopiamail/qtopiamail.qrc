@@ -10,6 +10,8 @@
 <file alias="mailaccountconfig">resources/mailaccountconfig.sqlite.sql</file>
 <file alias="mailaccountfolders">resources/mailaccountfolders.sqlite.sql</file>
 <file alias="mailfolders">resources/mailfolders.sqlite.sql</file>
+<file alias="mailfolders-101-102">resources/mailfolders-101-102.sqlite.sql</file>
+<file alias="mailfolders-102-103">resources/mailfolders-102-103.sqlite.sql</file>
 <file alias="mailfoldercustom">resources/mailfoldercustom.sqlite.sql</file>
 <file alias="mailfolderlinks">resources/mailfolderlinks.sqlite.sql</file>
 <file alias="mailmessages">resources/mailmessages.sqlite.sql</file>
@@ -23,6 +25,5 @@
 <file alias="deletedmessages-100-101">resources/deletedmessages-100-101.sqlite.sql</file>
 <file alias="mailstatusflags">resources/mailstatusflags.sqlite.sql</file>
 <file alias="mailstatusflags-100-101">resources/mailstatusflags-100-101.sqlite.sql</file>
-<file alias="mailfolders-101-102">resources/mailfolders-101-102.sqlite.sql</file>
 </qresource>
 </RCC>

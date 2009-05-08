@@ -41,7 +41,8 @@ public:
         AncestorFolderIds = (1 << 6),
         ServerCount = (1 << 7),
         ServerUnreadCount = (1 << 8),
-        Custom = (1 << 9)
+        ServerUndiscoveredCount = (1 << 9),
+        Custom = (1 << 10)
     };
 
     typedef QMailFolderId IdType;
@@ -111,6 +112,9 @@ public:
 
     static QMailFolderKey serverUnreadCount(int value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailFolderKey serverUnreadCount(int value, QMailDataComparator::RelationComparator cmp);
+
+    static QMailFolderKey serverUndiscoveredCount(int value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailFolderKey serverUndiscoveredCount(int value, QMailDataComparator::RelationComparator cmp);
 
     static QMailFolderKey customField(const QString &name, QMailDataComparator::PresenceComparator cmp = QMailDataComparator::Present);
     static QMailFolderKey customField(const QString &name, const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);

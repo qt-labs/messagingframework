@@ -19,6 +19,7 @@ class AttachmentListWidget : public QWidget
 public:
     AttachmentListWidget(QWidget* parent = 0);
     QStringList attachments() const;
+    bool isEmpty() const;
 
 public slots:
     void clear();
@@ -31,7 +32,6 @@ signals:
     void attachmentsRemoved(const QString& attachment);
 
 private slots:
-    void updateClearLabel();
     void clearClicked();
     void removeAttachmentAtIndex(int);
 

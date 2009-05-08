@@ -48,6 +48,7 @@
     \value Status The status value of the folder.
     \value ServerCount The number of messages reported to be on the server for the folder.
     \value ServerUnreadCount The number of unread messages reported to be on the server for the folder.
+    \value ServerUndiscoveredCount The number of undiscovered messages reported to be on the server for the folder.
 */
 
 /*!
@@ -250,5 +251,15 @@ QMailFolderSortKey QMailFolderSortKey::serverCount(Qt::SortOrder order)
 QMailFolderSortKey QMailFolderSortKey::serverUnreadCount(Qt::SortOrder order)
 {
     return QMailFolderSortKey(ServerUnreadCount, order);
+}
+
+/*!
+    Returns a key that sorts folders by their message undiscovered count on server, according to \a order.
+
+    \sa QMailFolder::status()
+*/
+QMailFolderSortKey QMailFolderSortKey::serverUndiscoveredCount(Qt::SortOrder order)
+{
+    return QMailFolderSortKey(ServerUndiscoveredCount, order);
 }
 

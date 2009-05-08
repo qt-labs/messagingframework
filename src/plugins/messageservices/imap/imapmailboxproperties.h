@@ -37,6 +37,7 @@ struct ImapMailboxProperties
     int uidNext;
     QString flags;
     QStringList uidList;
+    QList<uint> msnList;
 };
 
 #endif
