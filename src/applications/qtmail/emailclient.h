@@ -287,7 +287,7 @@ private:
 private:
     // Whether the initial action for the app was to view incoming messages 
     enum InitialAction { None = 0, IncomingMessages, NewMessages, View, Compose, Cleanup };
-    enum SyncState { ExportUpdates = 0, RetrieveMessages };
+    enum SyncState { ExportUpdates = 0, RetrieveFolders, RetrieveMessages };
 
     bool filesRead;
     QMailMessageId cachedDisplayMailId;

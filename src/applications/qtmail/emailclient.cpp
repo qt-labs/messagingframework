@@ -974,8 +974,12 @@ void EmailClient::retrievalCompleted()
 {
     if (mailAccountId.isValid()) {
         if (syncState == ExportUpdates) {
-            syncState = RetrieveMessages;
+            // Find any changes to the folder list of the server
+            syncState = RetrieveFolders;
+            retrievalAction->retrieveFolderList(mailAccountId, QMailFolderId());
+        } else if (syncState == RetrieveFolders) {
             // Now we need to retrieve the message lists for the folders
+            syncState = RetrieveMessages;
             retrievalAction->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
         } else {
             // See if there are more accounts to process
