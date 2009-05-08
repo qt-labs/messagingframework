@@ -184,14 +184,13 @@ protected:
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleSearch(ImapStrategyContextBase *context);
 
-    virtual void newfolderAction(ImapStrategyContextBase *context);
-
     virtual void listCompleted(ImapStrategyContextBase *context);
 
     virtual void processMailbox(ImapStrategyContextBase *context);
 
     virtual void processNextMailbox(ImapStrategyContextBase *context);
     virtual bool getnextMailbox();
+    virtual void newfolderAction(ImapStrategyContextBase *context);
 
     void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
@@ -393,7 +392,9 @@ protected:
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
 
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
+    virtual bool getnextMailbox();
+    virtual void newfolderAction(ImapStrategyContextBase *context);
+
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
     virtual void listCompleted(ImapStrategyContextBase *context);

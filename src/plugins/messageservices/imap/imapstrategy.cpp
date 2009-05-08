@@ -1659,49 +1659,8 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     _transferState = List;
     _searchState = Seen;
     _messageIds = _selectedMessageIds;
-    if (!selectNextMailbox(context))
-        completedAction(context);
-}
 
-bool ImapUpdateMessagesFlagsStrategy::selectNextMailbox(ImapStrategyContextBase *context)
-{
-    QMailFolderId folderId;
-    QList<QMailMessageId> nextMessageIds;
-    QListIterator<QMailMessageId> it(_messageIds);
-    _serverUids.clear();
-    while (it.hasNext()) {
-        QMailMessageId id(it.next());
-        if (!id.isValid()) {
-            continue;
-        }
-        QMailMessageMetaData metaData(id);
-        if (!metaData.parentFolderId().isValid()) {
-            continue;
-        }
-        if (!folderId.isValid())
-            folderId = metaData.parentFolderId();
-        if (metaData.parentFolderId() == folderId) {
-            _serverUids.append(metaData.serverUid());
-            continue;
-        }
-        nextMessageIds.append(id);
-    }
-    _messageIds = nextMessageIds;
-    if (_serverUids.isEmpty() || !folderId.isValid()) {
-        // Only allow monitoring of one folder other than the inbox
-            
-        if (_monitoredFoldersIds.count() > 1)
-            _monitoredFoldersIds.clear();
-        context->client()->monitor(_monitoredFoldersIds);
-        return false;
-    }
-
-    _folderId = folderId;
-    if (folderId != context->client()->mailboxId("INBOX")
-        && !_monitoredFoldersIds.contains(_folderId))
-        _monitoredFoldersIds << _folderId;
-    context->protocol().sendSelect(QMailFolder(folderId));
-    return true;
+    processNextMailbox(context);
 }
 
 void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *context)
@@ -1749,11 +1708,55 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
 }
 
+bool ImapUpdateMessagesFlagsStrategy::getnextMailbox()
+{
+    QMailFolderId folderId;
+    QList<QMailMessageId> nextMessageIds;
+    QListIterator<QMailMessageId> it(_messageIds);
+    _serverUids.clear();
+    while (it.hasNext()) {
+        QMailMessageId id(it.next());
+        if (!id.isValid()) {
+            continue;
+        }
+        QMailMessageMetaData metaData(id);
+        if (!metaData.parentFolderId().isValid()) {
+            continue;
+        }
+        if (!folderId.isValid())
+            folderId = metaData.parentFolderId();
+        if (metaData.parentFolderId() == folderId) {
+            _serverUids.append(metaData.serverUid());
+            continue;
+        }
+        nextMessageIds.append(id);
+    }
+    _messageIds = nextMessageIds;
+
+    if (folderId.isValid()) {
+        _folderId = folderId;
+        _currentMailbox = QMailFolder(_folderId);
+        return true;
+    }
+
+    return false;
+}
+
+void ImapUpdateMessagesFlagsStrategy::newfolderAction(ImapStrategyContextBase *context)
+{
+    if ((_folderId != context->client()->mailboxId("INBOX")) && 
+        !_monitoredFoldersIds.contains(_folderId)) {
+        _monitoredFoldersIds << _folderId;
+    }
+
+    context->protocol().sendSelect(QMailFolder(_folderId));
+}
+
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)
 {
     if (!_folderId.isValid()) {
         // Folder was removed while we were updating messages flags in it
-        fetchNextMailPreview(context);
+        processNextMailbox(context);
         return;
     }
     
@@ -1768,12 +1771,18 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     
     updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
 
-    fetchNextMailPreview(context);
+    processNextMailbox(context);
 }
 
 void ImapUpdateMessagesFlagsStrategy::listCompleted(ImapStrategyContextBase *context)
 {
-    previewDiscoveredMessages(context);
+    // Only allow monitoring of one folder other than the inbox
+    if (_monitoredFoldersIds.count() > 1)
+        _monitoredFoldersIds.clear();
+
+    context->client()->monitor(_monitoredFoldersIds);
+
+    completedAction(context);
 }
 
 
