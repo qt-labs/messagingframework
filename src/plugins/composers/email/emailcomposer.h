@@ -78,10 +78,6 @@ private:
     RecipientListWidget* m_recipientListWidget;
     AttachmentListWidget* m_attachmentListWidget;
     QLineEdit* m_subjectEdit;
-
-//    typedef QPair<QContent, QMailMessage::AttachmentsAction> AttachmentDetail;
-//    QList<AttachmentDetail> m_attachments;
-
     QString m_signature;
     QString m_title;
     QLabel* m_columnLabel;

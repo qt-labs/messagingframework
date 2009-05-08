@@ -510,11 +510,11 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_bodyEdit(0),
     m_attachmentsLabel(0),
     m_widgetStack(0),
-    m_recipientListWidget(0),
-    m_subjectEdit(0),
     m_attachmentAction(0),
-    m_title(QString()),
-    m_attachmentListWidget(0)
+    m_recipientListWidget(0),
+    m_attachmentListWidget(0),
+    m_subjectEdit(0),
+    m_title(QString())
 {
     init();
 }
@@ -635,8 +635,7 @@ void EmailComposerInterface::setDetails(const QMailMessage& mail)
 
 bool EmailComposerInterface::isEmpty() const
 {
-    return m_bodyEdit->isEmpty();
-    //return (m_bodyEdit->isEmpty() && m_attachments.isEmpty());
+    return m_bodyEdit->isEmpty() && m_attachmentListWidget->isEmpty();
 }
 
 QMailMessage EmailComposerInterface::message() const
@@ -981,7 +980,7 @@ QString EmailComposerInterface::displayName(QMailMessage::MessageType) const { r
 
 QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { return QIcon(":icon/email"); }
 
-void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType mType)
+void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType)
 {
     switch(context)
     {
@@ -990,6 +989,9 @@ void EmailComposerInterface::compose(ComposeContext context, const QMailMessage&
         break;
         case Reply:
             reply(sourceMail,Reply);
+        break;
+        case ReplyToAll:
+            reply(sourceMail,ReplyToAll);
         break;
         case Forward:
             reply(sourceMail,Forward);

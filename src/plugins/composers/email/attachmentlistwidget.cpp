@@ -126,8 +126,6 @@ m_parent(parent)
 
 void AttachmentListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-//    QStyleOptionViewItem myStyle(option);
-//    myStyle.state &= ~QStyle::State_HasFocus;
     if(index.isValid() && index.column() == 3)
     {
         painter->save();
