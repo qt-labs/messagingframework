@@ -2184,11 +2184,11 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
         }
     }
 
+    query.setForwardOnly(true);
     if (!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
     }
 
-    query.setForwardOnly(true);
     return query;
 }
 

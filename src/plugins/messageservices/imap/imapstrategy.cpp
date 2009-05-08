@@ -637,7 +637,7 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
 */
 void ImapFolderListStrategy::selectedFoldersAppend(const QMailFolderIdList& ids) 
 {
-    _mailboxIds.append(ids);
+    _mailboxIds += ids;
 }
 
 void ImapFolderListStrategy::newConnection(ImapStrategyContextBase *context)
