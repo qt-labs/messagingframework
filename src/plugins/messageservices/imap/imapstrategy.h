@@ -280,6 +280,34 @@ protected:
     QMailFolderIdList _mailboxList;
 };
 
+class ImapRetrieveMessageListStrategy : public ImapSynchronizeBaseStrategy
+{
+public:
+    ImapRetrieveMessageListStrategy() {}
+    virtual ~ImapRetrieveMessageListStrategy() {}
+
+    virtual void setMinimum(uint minimum);
+
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual void completedAction(ImapStrategyContextBase *context);
+    virtual void listCompleted(ImapStrategyContextBase *context);
+    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    virtual void processMailbox(ImapStrategyContextBase *context);
+
+    uint _minimum;
+    bool _fillingGap;
+    QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
+    QMap<QMailFolderId, int> _lastExistsMap;
+    QMap<QMailFolderId, int> _lastUidNextMap;
+    QMailFolderIdList _updatedFolders;
+};
+
 class ImapSynchronizeAllStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
@@ -382,35 +410,6 @@ private:
 
     QStringList _seenUids;
     QStringList _unseenUids;
-};
-
-class ImapRetrieveMessageListStrategy : public ImapRetrieveFolderListStrategy 
-{
-public:
-    ImapRetrieveMessageListStrategy() {}
-    virtual ~ImapRetrieveMessageListStrategy() {}
-
-    virtual void setFolder(const QMailFolderId &folderId, uint minimum);
-
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
-
-protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context);
-
-    virtual void completedAction(ImapStrategyContextBase *context);
-    virtual void listCompleted(ImapStrategyContextBase *context);
-    virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void processMailbox(ImapStrategyContextBase *context);
-
-    QMailFolderId _folderId;
-    uint _minimum;
-    bool _fillingGap;
-    QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
-    QMap<QMailFolderId, int> _lastExistsMap;
-    QMap<QMailFolderId, int> _lastUidNextMap;
-    QMailFolderIdList _updatedFolders;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy
