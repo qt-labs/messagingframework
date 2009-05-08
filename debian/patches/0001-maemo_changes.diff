@@ -10,6 +10,23 @@ index cd9a51e..3415d8e 100644
            src/libraries/messageserver \
            src/libraries/qmfutil \
            src/plugins/messageservices/imap \
+diff --git a/src/applications/qtmail/qtmail.pro b/src/applications/qtmail/qtmail.pro
+index 74c79bc..65be577 100644
+--- a/src/applications/qtmail/qtmail.pro
++++ b/src/applications/qtmail/qtmail.pro
+@@ -11,7 +11,11 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
+                  ../../libraries/qmfutil
+ 
+ LIBS += -L../../libraries/qtopiamail -lqtopiamail \
+-        -L../../libraries/qmfutil -lqmfutil
++        -L../../libraries/qmfutil    -lqmfutil
++
++QMAKE_LFLAGS += -Wl,-rpath,../../libraries/qtopiamail \
++                -Wl,-rpath,../../libraries/qmfutil \
++                -Wl,-rpath,../../libraries/sparql
+ 
+ HEADERS += foldermodel.h \
+            folderdelegate.h \
 diff --git a/src/libraries/messageserver/include/QMailAuthenticator b/src/libraries/messageserver/include/QMailAuthenticator
 new file mode 100644
 index 0000000..a1c5ba5
@@ -596,7 +613,7 @@ index bc5fecc..992cafc 100644
      \class QMailStore
 diff --git a/src/libraries/qtopiamail/qmailstore_sparql.cpp b/src/libraries/qtopiamail/qmailstore_sparql.cpp
 new file mode 100644
-index 0000000..f596c19
+index 0000000..132f0a7
 --- /dev/null
 +++ b/src/libraries/qtopiamail/qmailstore_sparql.cpp
 @@ -0,0 +1,3314 @@
@@ -793,9 +810,6 @@ index 0000000..f596c19
 +    return QString();
 +}
 +
-+template <class Comparator>
-+QString operatorString(Comparator op, int argsNumber = 1);
-+
 +QString operatorStringPattern(int argNumber, const QString& op, const QString& comp)
 +{
 +    QStringList pattern;
@@ -807,6 +821,9 @@ index 0000000..f596c19
 +    else
 +        return pattern.join(comp);
 +}
++
++template <class Comparator>
++QString operatorString(Comparator op, int argsNumber = 1);
 +
 +template <>
 +QString operatorString<QMailKey::Comparator>(QMailKey::Comparator op, int argsNumber)
@@ -864,7 +881,7 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailMessageKey::Id:
-+            return "?id";
++            return "?mail";
 +
 +        case QMailMessageKey::Type:
 +            return "?type";
@@ -938,7 +955,7 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailFolderKey::Id:
-+            return "?id";
++            return "?folder";
 +
 +        case QMailFolderKey::Path:
 +            return "?path";
@@ -979,7 +996,7 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailAccountKey::Id:
-+            return "?id";
++            return "?account";
 +
 +        case QMailAccountKey::Name:
 +            return "?name";
@@ -1008,46 +1025,46 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailMessageSortKey::Id:
-+            return "?id";
++            return propertyNameString(QMailMessageKey::Id);
 +
 +        case QMailMessageSortKey::Type:
-+            return "?type";
++            return propertyNameString(QMailMessageKey::Type);
 +
 +        case QMailMessageSortKey::ParentFolderId:
-+            return "?parentFolderId";
++            return propertyNameString(QMailMessageKey::ParentFolderId);
 +
 +        case QMailMessageSortKey::Sender:
-+            return "?sender";
++            return propertyNameString(QMailMessageKey::Sender);
 +
 +        case QMailMessageSortKey::Recipients:
-+            return "?recipients";
++            return propertyNameString(QMailMessageKey::Recipients);
 +
 +        case QMailMessageSortKey::Subject:
-+            return "?subject";
++            return propertyNameString(QMailMessageKey::Subject);
 +
 +        case QMailMessageSortKey::TimeStamp:
-+            return "?timestamp";
++            return propertyNameString(QMailMessageKey::TimeStamp);
 +
 +        case QMailMessageSortKey::Status:
-+            return "?status";
++            return propertyNameString(QMailMessageKey::Status);
 +
 +        case QMailMessageSortKey::ReceptionTimeStamp:
-+            return "?receptionTimeStamp";
++            return propertyNameString(QMailMessageKey::ReceptionTimeStamp);
 +
 +        case QMailMessageSortKey::ServerUid:
-+            return "?serverUid";
++            return propertyNameString(QMailMessageKey::ServerUid);
 +
 +        case QMailMessageSortKey::Size:
-+            return "?size";
++            return propertyNameString(QMailMessageKey::Size);
 +
 +        case QMailMessageSortKey::ParentAccountId:
-+            return "?parentAccountId";
++            return propertyNameString(QMailMessageKey::ParentAccountId);
 +
 +        case QMailMessageSortKey::ContentType:
-+            return "?contentType";
++            return propertyNameString(QMailMessageKey::ContentType);
 +
 +        case QMailMessageSortKey::PreviousParentFolderId:
-+            return "?previousParentFolderId";
++            return propertyNameString(QMailMessageKey::PreviousParentFolderId);
 +
 +        default:
 +            Q_ASSERT(false);
@@ -1061,28 +1078,28 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailFolderSortKey::Id:
-+            return "?id";
++            return propertyNameString(QMailFolderKey::Id);
 +
 +        case QMailFolderSortKey::Path:
-+            return "?path";
++            return propertyNameString(QMailFolderKey::Path);
 +
 +        case QMailFolderSortKey::ParentFolderId:
-+            return "?parentFolderId";
++            return propertyNameString(QMailFolderKey::ParentFolderId);
 +
 +        case QMailFolderSortKey::ParentAccountId:
-+            return "?parentAccountId";
++            return propertyNameString(QMailFolderKey::ParentAccountId);
 +
 +        case QMailFolderSortKey::DisplayName:
-+            return "?displayName";
++            return propertyNameString(QMailFolderKey::DisplayName);
 +
 +        case QMailFolderSortKey::Status:
-+            return "?status";
++            return propertyNameString(QMailFolderKey::Status);
 +
 +        case QMailFolderSortKey::ServerCount:
-+            return "?serverCount";
++            return propertyNameString(QMailFolderKey::ServerCount);
 +
 +        case QMailFolderSortKey::ServerUnreadCount:
-+            return "?serverUnreadCount";
++            return propertyNameString(QMailFolderKey::ServerUnreadCount);
 +
 +        default:
 +            Q_ASSERT(false);
@@ -1096,16 +1113,16 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailAccountSortKey::Id:
-+            return "?id";
++            return propertyNameString(QMailAccountKey::Id);
 +
 +        case QMailAccountSortKey::Name:
-+            return "?name";
++            return propertyNameString(QMailAccountKey::Name);
 +
 +        case QMailAccountSortKey::MessageType:
-+            return "?messageType";
++            return propertyNameString(QMailAccountKey::MessageType);
 +
 +        case QMailAccountSortKey::Status:
-+            return "?status";
++            return propertyNameString(QMailAccountKey::Status);
 +
 +        default:
 +            Q_ASSERT(false);
@@ -1202,7 +1219,7 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailFolderKey::Id:
-+            return "id";
++            return QString();
 +
 +        case QMailFolderKey::Path:
 +            return QString("%1 nmo:folderName %2 .").arg(uri).arg(propertyNameString(property));
@@ -1246,7 +1263,7 @@ index 0000000..f596c19
 +    switch (property)
 +    {
 +        case QMailAccountKey::Id:
-+            return QString();
++            return QString("%1 rdf:type %2 .").arg(uri).arg(propertyNameString(property));
 +
 +        case QMailAccountKey::Name:
 +            return QString("%1 nmo:accountName %2 .").arg(uri).arg(propertyNameString(property));
@@ -1399,14 +1416,14 @@ index 0000000..f596c19
 +    foreach (SortArgumentType argument, sort.arguments())
 +    {
 +        QString statement = sparqlPropertyStatmentString(uri, argument.first);
-+        if (!arguments.contains(statement))
++        if (!statement.isEmpty() && !arguments.contains(statement))
 +            arguments << statement;
 +    }
 +
 +    foreach (ArgumentType argument, key.arguments())
 +    {
 +        QString statement = sparqlPropertyStatmentString(uri, argument.property);
-+        if (!arguments.contains(statement))
++        if (!statement.isEmpty() && !arguments.contains(statement))
 +            arguments << statement;
 +    }
 +
@@ -1486,14 +1503,14 @@ index 0000000..f596c19
 +
 +QString keyQuery(const QMailMessageKey& key, const QMailMessageSortKey& sort = QMailMessageSortKey())
 +{
-+    QString query("SELECT ?mail \n"
-+                  "WHERE { \n"
-+                  "?mail rdf:type nmo:Email . \n"
-+                  "%1"
-+                  "%2"
-+                  "} %3\n");
++    QString query = QString("SELECT %1 \n"
++                            "WHERE { \n"
++                            "%1 rdf:type nmo:Email . \n"
++                            "%2"
++                            "%3"
++                            "} %4\n").arg(propertyNameString(QMailMessageKey::Id));
 +
-+    QString statement = keyStatment("?mail", key, sort);
++    QString statement = keyStatment(propertyNameString(QMailMessageKey::Id), key, sort);
 +    if (!statement.isEmpty())
 +        statement = QString("%1 \n").arg(statement);
 +
@@ -1506,14 +1523,14 @@ index 0000000..f596c19
 +
 +QString keyQuery(const QMailFolderKey& key, const QMailFolderSortKey& sort = QMailFolderSortKey())
 +{
-+    QString query("SELECT ?folder \n"
-+                  "WHERE { \n"
-+                  "?folder rdf:type nmo:MailFolder . \n"
-+                  "%1"
-+                  "%2"
-+                  "} %3\n");
++    QString query = QString("SELECT %1 \n"
++                            "WHERE { \n"
++                            "%1 rdf:type nmo:MailFolder . \n"
++                            "%2"
++                            "%3"
++                            "} %4\n").arg(propertyNameString(QMailFolderKey::Id));
 +
-+    QString statement = keyStatment("?folder", key, sort);
++    QString statement = keyStatment(propertyNameString(QMailFolderKey::Id), key, sort);
 +    if (!statement.isEmpty())
 +        statement = QString("%1 \n").arg(statement);
 +
@@ -1526,14 +1543,14 @@ index 0000000..f596c19
 +
 +QString keyQuery(const QMailAccountKey& key, const QMailAccountSortKey& sort = QMailAccountSortKey())
 +{
-+    QString query("SELECT ?account \n"
-+                  "WHERE { \n"
-+                  "?account rdf:type nmo:Mailbox . \n"
-+                  "%1"
-+                  "%2"
-+                  "} %3\n");
++    QString query = QString("SELECT %1 \n"
++                            "WHERE { \n"
++                            "%1 rdf:type nmo:Mailbox . \n"
++                            "%2"
++                            "%3"
++                            "} %4\n").arg(propertyNameString(QMailAccountKey::Id));
 +
-+    QString statement = keyStatment("?account", key, sort);
++    QString statement = keyStatment(propertyNameString(QMailAccountKey::Id), key, sort);
 +    if (!statement.isEmpty())
 +        statement = QString("%1 \n").arg(statement);
 +
@@ -2129,7 +2146,7 @@ index 0000000..f596c19
 +}
 +
 +bool QMailStorePrivate::addMessage(QMailMessage *message,
-+                                   QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
++                                   QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 +{
 +    if (!message->parentAccountId().isValid()) {
 +        // Require a parent account - possibly relax this later
@@ -2156,7 +2173,7 @@ index 0000000..f596c19
 +            return false;
 +        }
 +
-+        if (!addMessage(static_cast<QMailMessageMetaData*>(message), addedMessageIds, modifiedFolderIds, modifiedAccountIds)) {
++        if (!addMessage(static_cast<QMailMessageMetaData*>(message), updatedMessageIds, addedMessageIds, modifiedFolderIds, modifiedAccountIds)) {
 +            QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
 +            if (code != QMailStore::NoError) {
 +                setLastError(code);
@@ -2174,7 +2191,7 @@ index 0000000..f596c19
 +}
 +
 +bool QMailStorePrivate::addMessage(QMailMessageMetaData *metaData,
-+                                   QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
++                                   QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 +{
 +    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this, 
 +                                        metaData,
@@ -2183,7 +2200,7 @@ index 0000000..f596c19
 +}
 +
 +bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
-+                                       QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages)
++                                       QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 +{
 +    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveAccounts, this, 
 +                                        cref(key), 
@@ -2192,20 +2209,20 @@ index 0000000..f596c19
 +}
 +
 +bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-+                                      QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts)
++                                      QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 +{
 +    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveFolders, this, 
 +                                        cref(key), option, 
-+                                        deletedFolders, deletedMessages, modifiedAccounts), 
++                                        deletedFolders, deletedMessages, modifiedAccountIds),
 +                                   "removeFolders");
 +}
 +
 +bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-+                                       QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts, QMailFolderIdList *modifiedFolders)
++                                       QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 +{
 +    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveMessages, this, 
 +                                        cref(key), option, 
-+                                        deletedMessages, modifiedAccounts, modifiedFolders), 
++                                        deletedMessages, modifiedAccountIds, modifiedFolderIds),
 +                                   "removeMessages");
 +}
 +
@@ -3916,7 +3933,7 @@ index 0000000..f596c19
 +}
 diff --git a/src/libraries/qtopiamail/qmailstore_sparql.h b/src/libraries/qtopiamail/qmailstore_sparql.h
 new file mode 100644
-index 0000000..4d185cd
+index 0000000..fe05e08
 --- /dev/null
 +++ b/src/libraries/qtopiamail/qmailstore_sparql.h
 @@ -0,0 +1,470 @@
@@ -3989,19 +4006,19 @@ index 0000000..4d185cd
 +                   QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool addMessage(QMailMessage *m,
-+                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
++                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool addMessage(QMailMessageMetaData *m,
-+                    QMailMessageIdList *addedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
++                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool removeAccounts(const QMailAccountKey &key,
-+                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages);
++                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-+                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts);
++                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-+                        QMailMessageIdList *deletedMessages, QMailAccountIdList *modifiedAccounts, QMailFolderIdList *modifiedFolders);
++                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 +
 +    bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
 +                       QMailAccountIdList *updatedAccountIds);
@@ -4391,7 +4408,7 @@ index 0000000..4d185cd
 +
 +#endif
 diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
-index c715160..069f2cd 100644
+index c715160..7d28130 100644
 --- a/src/libraries/qtopiamail/qtopiamail.pro
 +++ b/src/libraries/qtopiamail/qtopiamail.pro
 @@ -1,17 +1,35 @@
@@ -4406,7 +4423,7 @@ index c715160..069f2cd 100644
  QT *= sql network
  
 -CONFIG += warn_on
-+CONFIG += warn_on create_pc create_prl
++CONFIG += warn_on create_pc create_prl sparql
  
  INCLUDEPATH += support
  
@@ -4716,7 +4733,7 @@ index 0000000..ab1d6b5
 +#endif // SPARQLDATABASE_H
 diff --git a/src/libraries/sparql/sparqlquery.cpp b/src/libraries/sparql/sparqlquery.cpp
 new file mode 100644
-index 0000000..951c115
+index 0000000..8801b79
 --- /dev/null
 +++ b/src/libraries/sparql/sparqlquery.cpp
 @@ -0,0 +1,86 @@
@@ -4763,7 +4780,7 @@ index 0000000..951c115
 +    if (_type == SearchQuery)
 +    {
 +        QDBusPendingReply<QueryResultType> reply;
-+        reply = _database->_proxy.Query(_query);
++        reply = _database->_proxy.SparqlQuery(_query);
 +
 +        reply.waitForFinished();
 +
@@ -5317,7 +5334,7 @@ index 0000000..96f5d46
 +
 diff --git a/src/libraries/sparql/tracker/resourcesproxy.h b/src/libraries/sparql/tracker/resourcesproxy.h
 new file mode 100644
-index 0000000..5dcee19
+index 0000000..eafaa2a
 --- /dev/null
 +++ b/src/libraries/sparql/tracker/resourcesproxy.h
 @@ -0,0 +1,85 @@
@@ -5331,8 +5348,8 @@ index 0000000..5dcee19
 + * Do not edit! All changes made to it will be lost.
 + */
 +
-+#ifndef RESOURCESPROXY_H_1238063483
-+#define RESOURCESPROXY_H_1238063483
++#ifndef RESOURCESPROXY_H_1241509742
++#define RESOURCESPROXY_H_1241509742
 +
 +#include <QtCore/QObject>
 +#include <QtCore/QByteArray>
@@ -5381,11 +5398,11 @@ index 0000000..5dcee19
 +        return asyncCallWithArgumentList(QLatin1String("Load"), argumentList);
 +    }
 +
-+    inline QDBusPendingReply<QVector<QStringList> > Query(const QString &query)
++    inline QDBusPendingReply<QVector<QStringList> > SparqlQuery(const QString &query)
 +    {
 +        QList<QVariant> argumentList;
 +        argumentList << qVariantFromValue(query);
-+        return asyncCallWithArgumentList(QLatin1String("Query"), argumentList);
++        return asyncCallWithArgumentList(QLatin1String("SparqlQuery"), argumentList);
 +    }
 +
 +    inline QDBusPendingReply<> SparqlUpdate(const QString &query)
@@ -5408,10 +5425,10 @@ index 0000000..5dcee19
 +#endif
 diff --git a/src/libraries/sparql/tracker/tracker-resources.xml b/src/libraries/sparql/tracker/tracker-resources.xml
 new file mode 100644
-index 0000000..9d8f79d
+index 0000000..233fc64
 --- /dev/null
 +++ b/src/libraries/sparql/tracker/tracker-resources.xml
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,44 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +
 +<node name="/org/freedesktop/Tracker">
@@ -5439,15 +5456,16 @@ index 0000000..9d8f79d
 +      <arg type="s" name="uri" direction="in" />
 +    </method>
 +
-+    <!-- SPARL Query without updates -->
-+    <method name="Query">
++    <!-- SPARQL Query without updates -->
++    <method name="SparqlQuery">
 +      <annotation name="org.freedesktop.DBus.GLib.Async" value="true"/>
++      <annotation name="com.trolltech.QtDBus.QtTypeName.Out0" 
++		  value="QVector&lt;QStringList&gt;"/>
 +      <arg type="s" name="query" direction="in" />
 +      <arg type="aas" name="result" direction="out" />
-+        <annotation name="com.trolltech.QtDBus.QtTypeName.Out0" value="QVector&lt;QStringList&gt;"/>
 +    </method>
 +
-+    <!-- SPARL Update extensions, allows bulk insert and delete -->
++    <!-- SPARQL Update extensions, allows bulk insert and delete -->
 +    <method name="SparqlUpdate">
 +      <annotation name="org.freedesktop.DBus.GLib.Async" value="true"/>
 +      <arg type="s" name="query" direction="in" />
@@ -5457,10 +5475,10 @@ index 0000000..9d8f79d
 +</node>
 diff --git a/tools/sparql-import/main.cpp b/tools/sparql-import/main.cpp
 new file mode 100644
-index 0000000..c8a8b28
+index 0000000..4fcdd02
 --- /dev/null
 +++ b/tools/sparql-import/main.cpp
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,82 @@
 +#include <QCoreApplication>
 +
 +#include "sparqluri.h"
@@ -5471,7 +5489,12 @@ index 0000000..c8a8b28
 +
 +#include <qmailstore.h>
 +
-+
++/**
++ * \brief Export database from the SQLite to SPARQ.
++ *
++ * This utility allows you to export your existing SQL
++ * mailstore to the SPARQL database.
++ */
 +int main(int argc, char* argv[])
 +{
 +    QCoreApplication app(argc, argv);
@@ -5480,69 +5503,6 @@ index 0000000..c8a8b28
 +    SparqlMailStore sparqlStore;
 +
 +    QMailStore* sqlStore = QMailStore::instance();
-+
-+    qDebug() << sqlStore->countAccounts();
-+    qDebug() << sqlStore->countFolders();
-+    qDebug() << sqlStore->countMessages();
-+
-+    qDebug() << "Number of accounts:" << sparqlStore.countAccounts();
-+
-+    QMailAccountIdList accountIdList = sparqlStore.queryAccounts();
-+
-+    foreach (QMailAccountId accountId, accountIdList)
-+    {
-+        QMailAccount account = sparqlStore.account(accountId);
-+
-+        QMailFolderKey folderKey = QMailFolderKey::parentAccountId(accountId);
-+
-+        qDebug() << "Number of Folders (" << account.name() << ")" << sparqlStore.countFolders(folderKey);
-+
-+        QMailFolderIdList folderIdList = sparqlStore.queryFolders(folderKey);
-+
-+        foreach (QMailFolderId folderId, folderIdList)
-+        {
-+            QMailFolder folder = sparqlStore.folder(folderId);
-+
-+            QMailMessageKey messageKey = QMailMessageKey::parentFolderId(folderId);
-+
-+            qDebug() << "Number of Messages (" << account.name() << "/" << folder.displayName() << ")" << sparqlStore.countMessages(messageKey);
-+
-+            QMailMessageIdList messageIdList = sparqlStore.queryMessages(messageKey);
-+
-+            foreach (QMailMessageId messageId, messageIdList)
-+            {
-+                QMailMessage message = sparqlStore.message(messageId);
-+
-+                qDebug() << message.subject();
-+            }
-+
-+        }
-+    }
-+
-+    QMailFolderKey folderKey = QMailFolderKey::parentAccountId(QMailAccountId());
-+    QMailFolderIdList folderIdList = sparqlStore.queryFolders(folderKey);
-+
-+    foreach (QMailFolderId folderId, folderIdList)
-+    {
-+        QMailFolder folder = sparqlStore.folder(folderId);
-+
-+        QMailMessageKey messageKey = QMailMessageKey::parentFolderId(folderId);
-+
-+        qDebug() << "Number of Messages (" << folder.displayName() << ")" << sparqlStore.countMessages(messageKey);
-+
-+        QMailMessageIdList messageIdList = sparqlStore.queryMessages(messageKey);
-+
-+        foreach (QMailMessageId messageId, messageIdList)
-+        {
-+            QMailMessage message = sparqlStore.message(messageId);
-+
-+            qDebug() << message.subject();
-+        }
-+
-+    }
-+
-+
-+    /*
 +
 +    QMailAccountIdList accountIdList = sqlStore->queryAccounts();
 +
@@ -5597,7 +5557,6 @@ index 0000000..c8a8b28
 +        }
 +    }
 +
-+    */
 +    return 0;
 +}
 +
@@ -5633,7 +5592,7 @@ index 0000000..3429430
 +INSTALLS += target
 diff --git a/tools/sparql-import/sparqlmailstore.cpp b/tools/sparql-import/sparqlmailstore.cpp
 new file mode 100644
-index 0000000..b524f72
+index 0000000..cfa78b7
 --- /dev/null
 +++ b/tools/sparql-import/sparqlmailstore.cpp
 @@ -0,0 +1,1404 @@
@@ -5698,9 +5657,9 @@ index 0000000..b524f72
 +    WellKnownUri(quint64 id) : SparqlUri(WellKnownUris[INDEX], id) {}
 +};
 +
-+typedef WellKnownUri<1> MailMessageUri;
-+typedef WellKnownUri<2> MailFolderUri;
-+typedef WellKnownUri<3> MailAccountUri;
++typedef WellKnownUri<0> MailMessageUri;
++typedef WellKnownUri<1> MailFolderUri;
++typedef WellKnownUri<2> MailAccountUri;
 +
 +QString combineOperatorString(QMailKey::Combiner op)
 +{
@@ -6731,7 +6690,7 @@ index 0000000..b524f72
 +    "WHERE { \n"
 +    "%1 rdf:type nmo:Mailbox ; \n"
 +    "   nmo:accountName ?name ; \n"
-+//    "   nmo:status ?status ; \n"
++    "   nmo:status ?status ; \n"
 +    "   nmo:signature ?signature ; \n"
 +    "   nmo:fromAddress [ \n"
 +    "       rdf:type nco:EmailAddress ; \n"
@@ -6752,7 +6711,7 @@ index 0000000..b524f72
 +
 +    account.setId(id);
 +    account.setName(list.at(0));
-+//  account.setStatus(list.at(1).toULongLong());
++  account.setStatus(list.at(1).toULongLong());
 +    account.setSignature(list.at(1));
 +    account.setFromAddress(QMailAddress(list.at(2)));
 +
@@ -6771,9 +6730,9 @@ index 0000000..b524f72
 +    "   nie:isLogicalPartOf ?parentFolder ; \n"
 +    "   nie:relatedTo ?parentAccount ; \n"
 +    "   nmo:folderDisplayName ?displayName ; \n"
-+//    "   nmo:status ?status ; \n"
-+//    "   nmo:serverCount ?serverCount ; \n"
-+//    "   nmo:serverUnreadCount ?serverUnreadCount . \n"
++    "   nmo:status ?status ; \n"
++    "   nmo:serverCount ?serverCount ; \n"
++    "   nmo:serverUnreadCount ?serverUnreadCount . \n"
 +    "}").arg(folderUri.uri()));
 +
 +    if (!query.exec())
@@ -6791,9 +6750,9 @@ index 0000000..b524f72
 +    QMailFolder folder(list.at(0), IdFromUri<QMailFolderId>(list.at(1)), IdFromUri<QMailAccountId>(list.at(2)));
 +    folder.setId(id);
 +    folder.setDisplayName(list.at(3));
-+//    folder.setStatus(list.at(4).toULongLong());
-+//    folder.setServerCount(list.at(5).toUInt());
-+//    folder.setServerUnreadCount(list.at(6).toUInt());
++    folder.setStatus(list.at(4).toULongLong());
++    folder.setServerCount(list.at(5).toUInt());
++    folder.setServerUnreadCount(list.at(6).toUInt());
 +
 +    return folder;
 +}
