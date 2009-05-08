@@ -70,6 +70,7 @@ using namespace QMailKey;
     \value AncestorFolderIds The set of IDs of folders which are direct or indirect parents of this folder.
     \value ServerCount The number of messages reported to be on the server for the folder.
     \value ServerUnreadCount The number of unread messages reported to be on the server for the folder.
+    \value ServerUndiscoveredCount The number of undiscovered messages reported to be on the server for the folder.
     \value Custom The custom fields of the folder.
 */
 
@@ -551,6 +552,26 @@ QMailFolderKey QMailFolderKey::serverUnreadCount(int value, QMailDataComparator:
 QMailFolderKey QMailFolderKey::serverUnreadCount(int value, QMailDataComparator::RelationComparator cmp)
 {
     return QMailFolderKey(ServerUnreadCount, value, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching folders whose serverUndiscoveredCount matches \a value, according to \a cmp.
+
+    \sa QMailFolder::serverUndiscoveredCount()
+*/
+QMailFolderKey QMailFolderKey::serverUndiscoveredCount(int value, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailFolderKey(ServerUndiscoveredCount, value, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching folders whose serverUndiscoveredCount has the relation to \a value that is specified by \a cmp.
+
+    \sa QMailFolder::serverUndiscoveredCount()
+*/
+QMailFolderKey QMailFolderKey::serverUndiscoveredCount(int value, QMailDataComparator::RelationComparator cmp)
+{
+    return QMailFolderKey(ServerUndiscoveredCount, value, QMailKey::comparator(cmp));
 }
 
 /*!

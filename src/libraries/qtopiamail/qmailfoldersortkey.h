@@ -31,6 +31,7 @@ public:
         Status,
         ServerCount,
         ServerUnreadCount,
+        ServerUndiscoveredCount,
     };
 
     typedef QPair<Property, Qt::SortOrder> ArgumentType;
@@ -60,6 +61,7 @@ public:
     static QMailFolderSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverCount(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverUnreadCount(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailFolderSortKey serverUndiscoveredCount(Qt::SortOrder order = Qt::AscendingOrder);
 
 private:
     QMailFolderSortKey(Property p, Qt::SortOrder order);
