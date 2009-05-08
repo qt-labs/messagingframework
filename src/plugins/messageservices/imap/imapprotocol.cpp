@@ -1694,7 +1694,7 @@ void ImapProtocol::sendIdleDone()
 void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbox )
 {
     QString path;
-    if (reference.id().isValid()) {
+    if (!reference.path().isEmpty()) {
         path = reference.path();
     }
 
