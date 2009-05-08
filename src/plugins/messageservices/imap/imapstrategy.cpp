@@ -69,6 +69,44 @@ static QStringList inFirstButNotSecond(const QStringList &first, const QStringLi
     return result;
 }
 
+static void updateMessagesMetaData(ImapStrategyContextBase *context, 
+                                   const QMailMessageKey &storedKey, 
+                                   const QMailMessageKey &unseenKey, 
+                                   const QMailMessageKey &seenKey,
+                                   const QMailMessageKey &unreadElsewhereKey)
+{
+    QMailMessageKey reportedKey(seenKey | unseenKey);
+
+    // Mark as deleted any messages that the server does not report
+    QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
+    if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
+        qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
+    }
+    
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
+        const QString &uid(r.serverUid()); 
+        // We might have a deletion record for this UID
+        if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
+            qWarning() << "Unable to purge message records for account:" << context->config().id();
+        }
+        context->completedMessageAction(uid);
+    }
+
+    // Compensate for MS exchange temporarily failing to report existence of messages
+    QMailMessageKey existentUidKey(storedKey & reportedKey);
+    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
+    QMailMessageKey onServerButRemovedInStore(removedUidKey & existentUidKey);
+    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
+        qWarning() << "Unable to update unremoved message metadata for account:" << context->config().id();
+    }
+
+    // Update any messages that are reported as read elsewhere, that previously were not
+    if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
+        qWarning() << "Unable to update read message metadata for account:" << context->config().id();
+    }
+}
+
+
 ImapClient *ImapStrategyContextBase::client() 
 { 
     return _client; 
@@ -996,43 +1034,6 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
     }
 }
 
-void ImapSynchronizeBaseStrategy::updateMessagesMetaData(ImapStrategyContextBase *context, 
-                                                         const QMailMessageKey &storedKey, 
-                                                         const QMailMessageKey &unseenKey, 
-                                                         const QMailMessageKey &seenKey,
-                                                         const QMailMessageKey &unreadElsewhereKey)
-{
-    QMailMessageKey reportedKey(seenKey | unseenKey);
-
-    // Mark as deleted any messages that the server does not report
-    QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
-    if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
-        qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
-    }
-    
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
-        const QString &uid(r.serverUid()); 
-        // We might have a deletion record for this UID
-        if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
-            qWarning() << "Unable to purge message records for account:" << context->config().id();
-        }
-        context->completedMessageAction(uid);
-    }
-
-    // Compensate for MS exchange temporarily failing to report existence of messages
-    QMailMessageKey existentUidKey(storedKey & reportedKey);
-    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
-    QMailMessageKey onServerButRemovedInStore(removedUidKey & existentUidKey);
-    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
-        qWarning() << "Unable to update unremoved message metadata for account:" << context->config().id();
-    }
-
-    // Update any messages that are reported as read elsewhere, that previously were not
-    if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
-        qWarning() << "Unable to update read message metadata for account:" << context->config().id();
-    }
-}
-
 void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
                                                            const QMailMessagePartContainer &partContainer, 
                                                            int &partsToRetrieve, 
@@ -1618,6 +1619,7 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
     handleUidStore(context);
 }
 
+
 /* A strategy to update message flags for a list of messages.
    
    That is to detect changes to flags (unseen->seen) 
@@ -1625,7 +1627,7 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
 */
 void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
-    ImapMessageListStrategy::clearSelection();
+    ImapFolderListStrategy::clearSelection();
     _monitoredFoldersIds.clear();
     _selectedMessageIds.clear();
 }
@@ -1646,7 +1648,7 @@ void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *contex
         
         default:
         {
-            ImapRetrieveFolderListStrategy::transition(context, command, status);
+            ImapFolderListStrategy::transition(context, command, status);
             break;
         }
     }
@@ -1679,7 +1681,7 @@ void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *cont
             processUidSearchResults(context);
         }
     } else {
-        ImapRetrieveFolderListStrategy::handleSelect(context);
+        ImapFolderListStrategy::handleSelect(context);
     }
 }
 

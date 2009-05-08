@@ -208,6 +208,43 @@ protected:
     QMap<QMailFolderId, FolderStatus> _folderStatus;
 };
 
+class ImapUpdateMessagesFlagsStrategy : public ImapFolderListStrategy 
+{
+public:
+    ImapUpdateMessagesFlagsStrategy() {}
+    virtual ~ImapUpdateMessagesFlagsStrategy() {}
+
+    virtual void clearSelection();      
+    virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
+
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual bool getnextMailbox();
+    virtual void newfolderAction(ImapStrategyContextBase *context);
+
+    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    virtual void listCompleted(ImapStrategyContextBase *context);
+
+private:
+    QMailMessageIdList _selectedMessageIds;
+    QMailMessageIdList _messageIds;
+    QMailFolderId _folderId;
+    QMailFolderIdList _monitoredFoldersIds;
+    QStringList _serverUids;
+    QString _filter;
+    enum SearchState { Seen, Unseen };
+    SearchState _searchState;
+
+    QStringList _seenUids;
+    QStringList _unseenUids;
+};
+
 class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy 
 {
 public:
@@ -230,12 +267,6 @@ protected:
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
-                                        const QMailMessageKey &storedKey, 
-                                        const QMailMessageKey &unseenKey, 
-                                        const QMailMessageKey &seenKey, 
-                                        const QMailMessageKey &unreadElsewhereKey);
 
     virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
 
@@ -374,43 +405,6 @@ protected:
     QStringList _serverReportedUids;
     QStringList _clientDeletedUids;
     QStringList _clientReadUids;
-};
-
-class ImapUpdateMessagesFlagsStrategy : public ImapRetrieveFolderListStrategy 
-{
-public:
-    ImapUpdateMessagesFlagsStrategy() {}
-    virtual ~ImapUpdateMessagesFlagsStrategy() {}
-
-    virtual void clearSelection();      
-    virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
-
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
-
-protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context);
-
-    virtual bool getnextMailbox();
-    virtual void newfolderAction(ImapStrategyContextBase *context);
-
-    virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void listCompleted(ImapStrategyContextBase *context);
-
-private:
-    QMailMessageIdList _selectedMessageIds;
-    QMailMessageIdList _messageIds;
-    QMailFolderId _folderId;
-    QMailFolderIdList _monitoredFoldersIds;
-    QStringList _serverUids;
-    QString _filter;
-    enum SearchState { Seen, Unseen };
-    SearchState _searchState;
-
-    QStringList _seenUids;
-    QStringList _unseenUids;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy
