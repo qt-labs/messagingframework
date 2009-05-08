@@ -209,7 +209,49 @@ protected:
     QMap<QMailFolderId, FolderStatus> _folderStatus;
 };
 
-class ImapRetrieveFolderListStrategy : public ImapFolderListStrategy
+class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy 
+{
+public:
+    ImapSynchronizeBaseStrategy() {}
+    virtual ~ImapSynchronizeBaseStrategy() {}
+
+    virtual void newConnection(ImapStrategyContextBase *context);
+    
+    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleUidFetch(ImapStrategyContextBase *context);
+
+    virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
+    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
+    virtual bool nextMailbox(ImapStrategyContextBase *context);
+
+    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
+
+    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
+                                        const QMailMessageKey &storedKey, 
+                                        const QMailMessageKey &unseenKey, 
+                                        const QMailMessageKey &seenKey, 
+                                        const QMailMessageKey &unreadElsewhereKey);
+
+    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
+
+protected:
+    QStringList _newUids;
+    QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
+    QMailMessageIdList _completionList;
+    QList<QPair<QMailMessagePart::Location, uint> > _completionSectionList;
+
+private:
+    uint _progress;
+    uint _total;
+};
+
+class ImapRetrieveFolderListStrategy : public ImapSynchronizeBaseStrategy
 {
 public:
     ImapRetrieveFolderListStrategy() :_descending(false) {}
@@ -238,49 +280,7 @@ protected:
     QMailFolderIdList _mailboxList;
 };
 
-class ImapSynchronizeBaseStrategy : public ImapRetrieveFolderListStrategy
-{
-public:
-    ImapSynchronizeBaseStrategy() {}
-    virtual ~ImapSynchronizeBaseStrategy() {}
-
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
-    
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-
-protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context) = 0;
-
-    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
-    virtual void listCompleted(ImapStrategyContextBase *context);
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
-    virtual bool nextMailbox(ImapStrategyContextBase *context);
-    virtual void processUidSearchResults(ImapStrategyContextBase *context) = 0;
-    virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
-                                        const QMailMessageKey &storedKey, 
-                                        const QMailMessageKey &unseenKey, 
-                                        const QMailMessageKey &seenKey, 
-                                        const QMailMessageKey &unreadElsewhereKey);
-    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
-    virtual void handleUidFetch(ImapStrategyContextBase *context);
-    
-    virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
-
-protected:
-    QStringList _newUids;
-    QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
-    QMailMessageIdList _completionList;
-    QList<QPair<QMailMessagePart::Location, uint> > _completionSectionList;
-
-private:
-    uint _progress;
-    uint _total;
-};
-
-class ImapSynchronizeAllStrategy : public ImapSynchronizeBaseStrategy
+class ImapSynchronizeAllStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
     enum Options
@@ -349,7 +349,7 @@ protected:
     QStringList _clientReadUids;
 };
 
-class ImapUpdateMessagesFlagsStrategy : public ImapSynchronizeBaseStrategy
+class ImapUpdateMessagesFlagsStrategy : public ImapRetrieveFolderListStrategy 
 {
 public:
     ImapUpdateMessagesFlagsStrategy() {}
@@ -358,12 +358,17 @@ public:
     virtual void clearSelection();      
     virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
 
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    virtual void listCompleted(ImapStrategyContextBase *context);
 
 private:
     QMailMessageIdList _selectedMessageIds;
@@ -379,13 +384,15 @@ private:
     QStringList _unseenUids;
 };
 
-class ImapRetrieveMessageListStrategy : public ImapSynchronizeBaseStrategy
+class ImapRetrieveMessageListStrategy : public ImapRetrieveFolderListStrategy 
 {
 public:
     ImapRetrieveMessageListStrategy() {}
     virtual ~ImapRetrieveMessageListStrategy() {}
 
     virtual void setFolder(const QMailFolderId &folderId, uint minimum);
+
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
