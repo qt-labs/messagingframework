@@ -582,20 +582,30 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         case IMAP_Examine:
         {
             if (_protocol.mailbox().isSelected()) {
-                QMailFolder folder(_protocol.mailbox().id);
                 QString uidValidity(_protocol.mailbox().uidValidity);
+                uint serverCount(_protocol.mailbox().exists);
+                uint unreadCount(_protocol.mailbox().unseen);
                 
-                folder.setServerUnreadCount(_protocol.mailbox().unseen);
-                folder.setCustomField("qmf-uidvalidity", uidValidity);
+                QMailFolder folder(_protocol.mailbox().id);
 
-                if (folder.serverCount() != static_cast<uint>(_protocol.mailbox().exists)) {
-                    folder.setServerCount(_protocol.mailbox().exists);
+                bool modified(false);
+                if ((folder.serverCount() != serverCount) || (folder.serverUnreadCount() != unreadCount)) {
+                    folder.setServerCount(serverCount);
+                    folder.setServerUnreadCount(unreadCount);
+                    modified = true;
 
                     // See how this compares to the local mailstore count
                     updateFolderCountStatus(&folder);
                 }
+                
+                if (folder.customField("qmf-uidvalidity") != uidValidity) {
+                    folder.setCustomField("qmf-uidvalidity", uidValidity);
+                    modified = true;
+                }
 
-                QMailStore::instance()->updateFolder(&folder);
+                if (modified) {
+                    QMailStore::instance()->updateFolder(&folder);
+                }
             }
             // fall through
         }

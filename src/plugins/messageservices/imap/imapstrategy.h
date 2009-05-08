@@ -168,11 +168,10 @@ protected:
 class ImapFolderListStrategy : public ImapFetchSelectedMessagesStrategy
 {
 public:
-    ImapFolderListStrategy() :_descending(false) {}
+    ImapFolderListStrategy() {}
     virtual ~ImapFolderListStrategy() {}
 
-    virtual void setBase(const QMailFolderId &folderId);
-    virtual void setDescending(bool descending);
+    virtual void selectedFoldersAppend(const QMailFolderIdList &ids);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -182,10 +181,19 @@ public:
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleList(ImapStrategyContextBase *context);
+    virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleSearch(ImapStrategyContextBase *context);
+
+    virtual void newfolderAction(ImapStrategyContextBase *context);
 
     virtual void listCompleted(ImapStrategyContextBase *context);
 
-    void removeDeletedMailboxes(ImapStrategyContextBase *context);
+    virtual void processMailbox(ImapStrategyContextBase *context);
+
+    virtual void processNextMailbox(ImapStrategyContextBase *context);
+    virtual bool getnextMailbox();
+
+    void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
     enum FolderStatus
     {
@@ -197,22 +205,44 @@ protected:
         HasNoChildren = (1 << 5)
     };
 
-    QMailFolderId _baseId;
-    bool _descending;
-    QStringList _mailboxPaths;
     QMailFolderIdList _mailboxIds;
-    QMailFolderIdList _mailboxList;
     QMap<QMailFolderId, FolderStatus> _folderStatus;
 };
 
-class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy
+class ImapRetrieveFolderListStrategy : public ImapFolderListStrategy
+{
+public:
+    ImapRetrieveFolderListStrategy() :_descending(false) {}
+    virtual ~ImapRetrieveFolderListStrategy() {}
+
+    virtual void setBase(const QMailFolderId &folderId);
+    virtual void setDescending(bool descending);
+
+    virtual void newConnection(ImapStrategyContextBase *context);
+    
+    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleSearch(ImapStrategyContextBase *context);
+
+    virtual void listCompleted(ImapStrategyContextBase *context);
+
+    virtual void processNextMailbox(ImapStrategyContextBase *context);
+
+    void removeDeletedMailboxes(ImapStrategyContextBase *context);
+
+    QMailFolderId _baseId;
+    bool _descending;
+    QStringList _mailboxPaths;
+    QMailFolderIdList _mailboxList;
+};
+
+class ImapSynchronizeBaseStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
     ImapSynchronizeBaseStrategy() {}
     virtual ~ImapSynchronizeBaseStrategy() {}
-
-    static QStringList inFirstAndSecond(const QStringList &first, const QStringList &second);
-    static QStringList inFirstButNotSecond(const QStringList &first, const QStringList &second);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -220,13 +250,14 @@ public:
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
-    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
     virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleUidSearch(ImapStrategyContextBase *context) = 0;
+
+    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
     virtual void listCompleted(ImapStrategyContextBase *context);
     virtual bool selectNextMailbox(ImapStrategyContextBase *context);
     virtual bool nextMailbox(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context) = 0;
     virtual void processUidSearchResults(ImapStrategyContextBase *context) = 0;
     virtual void updateMessagesMetaData(ImapStrategyContextBase *context, 
                                         const QMailMessageKey &storedKey, 
@@ -236,6 +267,8 @@ protected:
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     
+    virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
+
 protected:
     QStringList _newUids;
     QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
@@ -356,11 +389,13 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleUidSearch(ImapStrategyContextBase *context);
+
     virtual void completedAction(ImapStrategyContextBase *context);
     virtual void listCompleted(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
+
+    virtual void processMailbox(ImapStrategyContextBase *context);
 
     QMailFolderId _folderId;
     uint _minimum;
@@ -368,6 +403,7 @@ protected:
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
     QMap<QMailFolderId, int> _lastExistsMap;
     QMap<QMailFolderId, int> _lastUidNextMap;
+    QMailFolderIdList _updatedFolders;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy
@@ -461,7 +497,7 @@ public:
     ImapStrategyContext(ImapClient *client);
 
     ImapFetchSelectedMessagesStrategy selectedStrategy;
-    ImapFolderListStrategy foldersOnlyStrategy;
+    ImapRetrieveFolderListStrategy foldersOnlyStrategy;
     ImapExportUpdatesStrategy exportUpdatesStrategy;
     ImapUpdateMessagesFlagsStrategy updateMessagesFlagsStrategy;
     ImapSynchronizeAllStrategy synchronizeAccountStrategy;
