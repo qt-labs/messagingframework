@@ -1629,7 +1629,7 @@ void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapFolderListStrategy::clearSelection();
     _monitoredFoldersIds.clear();
-    _selectedMessageIds.clear();
+    _folderMessageUids.clear();
 }
 
 void ImapUpdateMessagesFlagsStrategy::selectedMailsAppend(const QMailMessageIdList &messageIds)
@@ -1657,10 +1657,19 @@ void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *contex
 void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     _serverUids.clear();
-    _folderId = QMailFolderId();
     _transferState = List;
     _searchState = Seen;
-    _messageIds = _selectedMessageIds;
+
+    // Associate each message to the relevant folder
+    _folderMessageUids.clear();
+    if (!_selectedMessageIds.isEmpty()) {
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(_selectedMessageIds), 
+                                                                                                QMailMessageKey::ServerUid | QMailMessageKey::ParentFolderId, 
+                                                                                                QMailStore::ReturnAll)) {
+            if (!metaData.serverUid().isEmpty() && metaData.parentFolderId().isValid())
+                _folderMessageUids[metaData.parentFolderId()].append(metaData.serverUid());
+        }
+    }
 
     processNextMailbox(context);
 }
@@ -1712,51 +1721,34 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
 
 bool ImapUpdateMessagesFlagsStrategy::getnextMailbox()
 {
-    QMailFolderId folderId;
-    QList<QMailMessageId> nextMessageIds;
-    QListIterator<QMailMessageId> it(_messageIds);
-    _serverUids.clear();
-    while (it.hasNext()) {
-        QMailMessageId id(it.next());
-        if (!id.isValid()) {
-            continue;
-        }
-        QMailMessageMetaData metaData(id);
-        if (!metaData.parentFolderId().isValid()) {
-            continue;
-        }
-        if (!folderId.isValid())
-            folderId = metaData.parentFolderId();
-        if (metaData.parentFolderId() == folderId) {
-            _serverUids.append(metaData.serverUid());
-            continue;
-        }
-        nextMessageIds.append(id);
-    }
-    _messageIds = nextMessageIds;
-
-    if (folderId.isValid()) {
-        _folderId = folderId;
-        _currentMailbox = QMailFolder(_folderId);
-        return true;
+    if (_folderMessageUids.isEmpty()) {
+        return false;
     }
 
-    return false;
+    QMap<QMailFolderId, QStringList>::iterator it = _folderMessageUids.begin();
+
+    _currentMailbox = QMailFolder(it.key());
+    _serverUids = it.value();
+
+    _folderMessageUids.erase(it);
+    return true;
 }
 
 void ImapUpdateMessagesFlagsStrategy::newfolderAction(ImapStrategyContextBase *context)
 {
-    if ((_folderId != context->client()->mailboxId("INBOX")) && 
-        !_monitoredFoldersIds.contains(_folderId)) {
-        _monitoredFoldersIds << _folderId;
+    QMailFolderId folderId(_currentMailbox.id());
+    if ((folderId != context->client()->mailboxId("INBOX")) && 
+        !_monitoredFoldersIds.contains(folderId)) {
+        _monitoredFoldersIds << folderId;
     }
 
-    context->protocol().sendSelect(QMailFolder(_folderId));
+    context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)
 {
-    if (!_folderId.isValid()) {
+    QMailFolderId folderId(_currentMailbox.id());
+    if (!folderId.isValid()) {
         // Folder was removed while we were updating messages flags in it
         processNextMailbox(context);
         return;
@@ -1768,7 +1760,7 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
     QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes));
-    QMailMessageKey folderKey(context->client()->messagesKey(_folderId) | context->client()->trashKey(_folderId));
+    QMailMessageKey folderKey(context->client()->messagesKey(folderId) | context->client()->trashKey(folderId));
     QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
     
     updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);

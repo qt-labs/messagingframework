@@ -233,8 +233,7 @@ protected:
 
 private:
     QMailMessageIdList _selectedMessageIds;
-    QMailMessageIdList _messageIds;
-    QMailFolderId _folderId;
+    QMap<QMailFolderId, QStringList> _folderMessageUids;
     QMailFolderIdList _monitoredFoldersIds;
     QStringList _serverUids;
     QString _filter;
