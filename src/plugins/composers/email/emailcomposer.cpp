@@ -38,6 +38,7 @@
 #include <QStringListModel>
 #include <QFileDialog>
 #include "attachmentlistwidget.h"
+#include <support/qmailnamespace.h>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -509,11 +510,11 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_bodyEdit(0),
     m_attachmentsLabel(0),
     m_widgetStack(0),
-    m_recipientListWidget(0),
-    m_subjectEdit(0),
     m_attachmentAction(0),
-    m_title(QString()),
-    m_attachmentListWidget(0)
+    m_recipientListWidget(0),
+    m_attachmentListWidget(0),
+    m_subjectEdit(0),
+    m_title(QString())
 {
     init();
 }
@@ -630,27 +631,11 @@ void EmailComposerInterface::setDetails(const QMailMessage& mail)
 
     if ((mail.subject() != placeholder))
        m_subjectEdit->setText(mail.subject());
-
-/*
-    if (mail.parentAccountId().isValid()) {
-        setFrom(mail.parentAccountId());
-    } else {
-        setFrom(mail.from().address());
-    }
-    if (mail.headerFieldText("X-Mms-Delivery-Report") == "Yes") {
-        m_deliveryReportField->setChecked(true);
-    }
-    if (mail.headerFieldText("X-Mms-Read-Reply") == "Yes") {
-        m_readReplyField->setChecked(true);
-    }
-
-*/
 }
 
 bool EmailComposerInterface::isEmpty() const
 {
-    return m_bodyEdit->isEmpty();
-    //return (m_bodyEdit->isEmpty() && m_attachments.isEmpty());
+    return m_bodyEdit->isEmpty() && m_attachmentListWidget->isEmpty();
 }
 
 QMailMessage EmailComposerInterface::message() const
@@ -660,67 +645,29 @@ QMailMessage EmailComposerInterface::message() const
     QString messageText( m_bodyEdit->toPlainText() );
 
     QMailMessageContentType type("text/plain; charset=UTF-8");
-    //if (m_attachments.isEmpty()) {
+    if (m_attachmentListWidget->isEmpty()) {
         mail.setBody( QMailMessageBody::fromData( messageText, type, QMailMessageBody::Base64 ) );
-    //} else {
-    //    QMailMessagePart textPart;
-    //    textPart.setBody(QMailMessageBody::fromData(messageText.toUtf8(), type, QMailMessageBody::Base64));
-    //    mail.setMultipartType(QMailMessagePartContainer::MultipartMixed);
-    //    mail.appendPart(textPart);
+    } else {
+        QMailMessagePart textPart;
+        textPart.setBody(QMailMessageBody::fromData(messageText.toUtf8(), type, QMailMessageBody::Base64));
+        mail.setMultipartType(QMailMessagePartContainer::MultipartMixed);
+        mail.appendPart(textPart);
 
-/*
-        foreach (const AttachmentDetail &current, m_attachments) {
-            const QContent &document(current.first);
-
-            QFileInfo fi(document.fileName());
+        foreach (const QString& attachment, m_attachmentListWidget->attachments()) {
+            QFileInfo fi(attachment);
             QString partName(fi.fileName());
             QString filePath(fi.absoluteFilePath());
 
-            QString mimeTypeName(document.type());
-            if (mimeTypeName.isEmpty())
-                mimeTypeName = QMimeType(filePath).id();
-
-            QMailMessageContentType type(mimeTypeName.toLatin1());
-            type.setName(document.name().toLatin1());
+            QMailMessageContentType type(QMail::mimeTypeFromFileName(attachment).toLatin1());
+            type.setName(partName.toLatin1());
 
             QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
             disposition.setFilename(partName.toLatin1());
 
-            QMailMessagePart part;
-
-            QString location = document.property("qtopiamail/partLocation");
-            if (!location.isEmpty()) {
-                // This part is only a reference to another part
-                QMailMessagePart::Location partLocation(location);
-                const QMailMessage original(partLocation.containingMessageId());
-                if (original.id().isValid()) {
-                    const QMailMessagePart &srcPart(original.partAt(partLocation));
-
-                    part = QMailMessagePart::fromPartReference(partLocation, srcPart.contentDisposition(), srcPart.contentType(), srcPart.transferEncoding());
-                } else {
-                    qWarning() << "Unable to locate referenced message:" << partLocation.toString(true);
-                }
-            } else {
-                if ((current.second != QMailMessage::LinkToAttachments) ||
-                    (filePath.startsWith(Qtopia::tempDir()))) {
-                    // This file is temporary - extract the data and create a part from that
-                    QFile dataFile(filePath);
-                    if (dataFile.open(QIODevice::ReadOnly)) {
-                        QDataStream in(&dataFile);
-
-                        part = QMailMessagePart::fromStream(in, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-                    } else {
-                        qWarning() << "Unable to open temporary file:" << filePath;
-                    }
-                } else {
-                    part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-                }
-            }
-
+            QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
             mail.appendPart(part);
         }
-        */
-    //}
+    }
 
     mail.setMessageType( QMailMessage::Email );
     getDetails(mail);
@@ -1033,7 +980,7 @@ QString EmailComposerInterface::displayName(QMailMessage::MessageType) const { r
 
 QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { return QIcon(":icon/email"); }
 
-void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType mType)
+void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType)
 {
     switch(context)
     {
@@ -1042,6 +989,9 @@ void EmailComposerInterface::compose(ComposeContext context, const QMailMessage&
         break;
         case Reply:
             reply(sourceMail,Reply);
+        break;
+        case ReplyToAll:
+            reply(sourceMail,ReplyToAll);
         break;
         case Forward:
             reply(sourceMail,Forward);
