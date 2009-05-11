@@ -825,24 +825,8 @@ bool ImapFolderListStrategy::nextFolder()
 
 void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
-    if (_folderStatus.contains(_currentMailbox.id())) {
-        // We already have the status for this folder - select it
-        context->protocol().sendSelect(_currentMailbox);
-    } else {
-        // List the contents of the parent of this folder, to see if we can select it
-        QMailFolderId parentFolderId(_currentMailbox.parentFolderId());
-        if (parentFolderId.isValid()) {
-            context->protocol().sendList(QMailFolder(parentFolderId), "%");
-        } else {
-            QMailFolder root;
-            ImapConfiguration imapCfg(context->config());
-            if (!imapCfg.baseFolder().isEmpty()) {
-                root.setPath(imapCfg.baseFolder());
-            }
-
-            context->protocol().sendList(root, "%");
-        }
-    }
+    // Attempt to select the current folder
+    context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
