@@ -405,6 +405,7 @@ static FolderPropertyMap folderPropertyMap()
     map.insert(QMailFolderKey::Status,"status");
     map.insert(QMailFolderKey::ServerCount,"servercount");
     map.insert(QMailFolderKey::ServerUnreadCount,"serverunreadcount");
+    map.insert(QMailFolderKey::ServerUndiscoveredCount,"serverundiscoveredcount");
 
     return map;
 }
@@ -501,6 +502,7 @@ static QMap<QMailFolderSortKey::Property, QMailFolderKey::Property> folderSortMa
     map.insert(QMailFolderSortKey::Status, QMailFolderKey::Status);
     map.insert(QMailFolderSortKey::ServerCount, QMailFolderKey::ServerCount);
     map.insert(QMailFolderSortKey::ServerUnreadCount, QMailFolderKey::ServerUnreadCount);
+    map.insert(QMailFolderSortKey::ServerUndiscoveredCount, QMailFolderKey::ServerUndiscoveredCount);
 
     return map;
 }
@@ -1117,6 +1119,8 @@ public:
 
     uint serverUnreadCount() const { return value<uint>(QMailFolderKey::ServerUnreadCount); }
 
+    uint serverUndiscoveredCount() const { return value<uint>(QMailFolderKey::ServerUndiscoveredCount); }
+
 private:
     int fieldIndex(const QString &field, int props) const
     {
@@ -1153,6 +1157,8 @@ public:
     QVariant serverCount() const { return intValue(); }
 
     QVariant serverUnreadCount() const { return intValue(); }
+
+    QVariant serverUndiscoveredCount() const { return intValue(); }
 
     QVariantList custom() const { return customValues(); }
 };
@@ -1198,6 +1204,10 @@ void appendWhereValues<QMailFolderKey::ArgumentType>(const QMailFolderKey::Argum
 
     case QMailFolderKey::ServerUnreadCount:
         values += extractor.serverUnreadCount();
+        break;
+
+    case QMailFolderKey::ServerUndiscoveredCount:
+        values += extractor.serverUndiscoveredCount();
         break;
 
     case QMailFolderKey::Custom:
@@ -1665,6 +1675,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
         case QMailFolderKey::DisplayName:
         case QMailFolderKey::ServerCount:
         case QMailFolderKey::ServerUnreadCount:
+        case QMailFolderKey::ServerUndiscoveredCount:
 
             q << expression;
             break;
@@ -2024,7 +2035,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
-                                            << tableInfo("mailfolders", 102)
+                                            << tableInfo("mailfolders", 103)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
                                             << tableInfo("mailmessages", 105)
@@ -2215,11 +2226,11 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
         }
     }
 
+    query.setForwardOnly(true);
     if (!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
     }
 
-    // TODO: setForwardOnly?
     return query;
 }
 
@@ -2403,6 +2414,7 @@ QMailFolder QMailStorePrivate::extractFolder(const QSqlRecord& r)
     result.setStatus(record.status());
     result.setServerCount(record.serverCount());
     result.setServerUnreadCount(record.serverUnreadCount());
+    result.setServerUndiscoveredCount(record.serverUndiscoveredCount());
     return result;
 }
 
@@ -3054,13 +3066,14 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     foreach (const FolderInfo &folder, folderList) {
         if (folderIds.contains(folder.first))
             continue;
-        QSqlQuery query(simpleQuery("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount) VALUES (?,?,?,?,?,?,?,?)",
+        QSqlQuery query(simpleQuery("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?,?)",
                                     QVariantList() << folder.first
                                                    << folder.second
                                                    << quint64(0)
                                                    << quint64(0)
                                                    << QString()
                                                    << quint64(0)
+                                                   << int(0)
                                                    << int(0)
                                                    << int(0),
                                     "setupFolders insert query"));
@@ -3995,14 +4008,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
 
     {
         {
-            QSqlQuery query(simpleQuery("INSERT INTO mailfolders (name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount) VALUES (?,?,?,?,?,?,?)",
+            QSqlQuery query(simpleQuery("INSERT INTO mailfolders (name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?)",
                                         QVariantList() << folder->path()
                                                        << folder->parentFolderId().toULongLong()
                                                        << folder->parentAccountId().toULongLong()
                                                        << folder->displayName()
                                                        << folder->status()
                                                        << folder->serverCount()
-                                                       << folder->serverUnreadCount(),
+                                                       << folder->serverUnreadCount()
+                                                       << folder->serverUndiscoveredCount(),
                                         "addFolder mailfolders query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -4540,7 +4554,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
     }
 
     {
-        QSqlQuery query(simpleQuery("UPDATE mailfolders SET name=?,parentid=?,parentaccountid=?,displayname=?,status=?,servercount=?,serverunreadcount=? WHERE id=?",
+        QSqlQuery query(simpleQuery("UPDATE mailfolders SET name=?,parentid=?,parentaccountid=?,displayname=?,status=?,servercount=?,serverunreadcount=?,serverundiscoveredcount=? WHERE id=?",
                                     QVariantList() << folder->path()
                                                    << folder->parentFolderId().toULongLong()
                                                    << folder->parentAccountId().toULongLong()
@@ -4548,6 +4562,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
                                                    << folder->status()
                                                    << folder->serverCount()
                                                    << folder->serverUnreadCount()
+                                                   << folder->serverUndiscoveredCount()
                                                    << folder->id().toULongLong(),
                                     "updateFolder mailfolders query"));
         if (query.lastError().type() != QSqlError::NoError)

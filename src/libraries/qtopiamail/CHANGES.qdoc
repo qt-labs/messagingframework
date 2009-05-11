@@ -16,6 +16,9 @@ Changes since the 1.0 release:
 
 3. Added 'QMailMessageThreadedModel'.
 
+1. Added 'QMailFolder::serverUndiscoveredCount() const' and
+         'QMailFolder::setServerUndiscoveredCount()'.
+
 
 *****************************************************************************
 

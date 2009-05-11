@@ -21,6 +21,7 @@ class QStackedWidget;
 class DetailsPage;
 class RecipientListWidget;
 class QLineEdit;
+class AttachmentListWidget;
 
 class EmailComposerInterface : public QMailComposerInterface
 {
@@ -49,10 +50,8 @@ public:
 
 public slots:
     void clear();
-//    void attach( const QContent &lnk, QMailMessage::AttachmentsAction = QMailMessage::LinkToAttachments );
+    //void attach( const QContent &lnk, QMailMessage::AttachmentsAction = QMailMessage::LinkToAttachments );
     void setSignature( const QString &sig );
-    void create(const QMailMessage& source);
-    void reply(const QMailMessage& source, int action);
 
 protected slots:
     void selectAttachment();
@@ -61,6 +60,8 @@ protected slots:
     void updateAttachmentsLabel();
 
 private:
+    void create(const QMailMessage& source);
+    void reply(const QMailMessage& source, int action);
     void init();
     void setPlainText( const QString& text, const QString& signature );
     void getDetails(QMailMessage& message) const;
@@ -75,11 +76,8 @@ private:
     QStackedWidget* m_widgetStack;
     QAction* m_attachmentAction;
     RecipientListWidget* m_recipientListWidget;
+    AttachmentListWidget* m_attachmentListWidget;
     QLineEdit* m_subjectEdit;
-
-//    typedef QPair<QContent, QMailMessage::AttachmentsAction> AttachmentDetail;
-//    QList<AttachmentDetail> m_attachments;
-
     QString m_signature;
     QString m_title;
     QLabel* m_columnLabel;

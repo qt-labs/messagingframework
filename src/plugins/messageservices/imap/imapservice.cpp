@@ -115,9 +115,16 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
         qWarning() << "IMAP Search sorting not yet implemented!";
     }
     
-    _service->_client.strategyContext()->retrieveMessageListStrategy.setBase(folderId);
-    _service->_client.strategyContext()->retrieveMessageListStrategy.setDescending(!folderId.isValid());
-    _service->_client.strategyContext()->retrieveMessageListStrategy.setFolder(folderId, minimum);
+    QMailFolderIdList folderIds;
+    if (folderId.isValid()) {
+        folderIds.append(folderId);
+    } else {
+        // Retrieve messages for all folders in the account
+        folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId), QMailFolderSortKey::id(Qt::AscendingOrder));
+    }
+
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
+    _service->_client.strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
     return setStrategy(&_service->_client.strategyContext()->retrieveMessageListStrategy);
 }
 

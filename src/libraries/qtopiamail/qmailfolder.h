@@ -69,8 +69,12 @@ public:
 
     uint serverCount() const;
     void setServerCount(uint count);
+
     uint serverUnreadCount() const;
     void setServerUnreadCount(uint count);
+
+    uint serverUndiscoveredCount() const;
+    void setServerUndiscoveredCount(uint count);
 
     QString customField(const QString &name) const;
     void setCustomField(const QString &name, const QString &value);
