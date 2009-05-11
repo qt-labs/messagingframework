@@ -120,8 +120,11 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     if (folderId.isValid()) {
         folderIds.append(folderId);
     } else {
-        // Retrieve messages for all folders in the account
-        folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId), QMailFolderSortKey::id(Qt::AscendingOrder));
+        // Retrieve messages for all folders in the account that have undiscovered messages
+        QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
+        QMailFolderKey undiscoveredKey(QMailFolderKey::serverUndiscoveredCount(0, QMailDataComparator::GreaterThan));
+
+        folderIds = QMailStore::instance()->queryFolders(accountKey & undiscoveredKey, QMailFolderSortKey::id(Qt::AscendingOrder));
     }
 
     _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
