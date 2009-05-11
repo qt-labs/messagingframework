@@ -272,6 +272,7 @@ void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString 
 void ImapMessageListStrategy::clearSelection()
 {
     _selectionMap.clear();
+    _folderItr = _selectionMap.end();
 }
 
 void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids) 
@@ -384,6 +385,11 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     QMailMessagePart::Location location;
     int minimum = SectionProperties::All;
 
+    if (_folderItr == _selectionMap.end()) {
+        messageListCompleted(context);
+        return false;
+    }
+        
     FolderMap::ConstIterator selectionEnd = _folderItr.value().end();
     while (_selectionItr == selectionEnd) {
         ++_folderItr;
