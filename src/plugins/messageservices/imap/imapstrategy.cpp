@@ -1603,6 +1603,7 @@ void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapFolderListStrategy::clearSelection();
     _monitoredFoldersIds.clear();
+    _selectedMessageIds.clear();
     _folderMessageUids.clear();
 }
 
@@ -1648,26 +1649,6 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     processNextFolder(context);
 }
 
-void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
-            _filter = clientRegion.toString();
-            _searchState = Seen;
-
-            // Start by looking for previously-seen and unseen messages
-            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapFolderListStrategy::handleSelect(context);
-    }
-}
-
 void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     switch(_searchState)
@@ -1689,8 +1670,35 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     default:
         qMailLog(IMAP) << "Unknown search status in transition";
         Q_ASSERT(0);
-        messageListCompleted(context);
+
+        processNextFolder(context);
     }
+}
+
+void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContextBase *context)
+{
+    if (context->mailbox().exists > 0) {
+        IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
+        _filter = clientRegion.toString();
+        _searchState = Seen;
+
+        // Start by looking for previously-seen and unseen messages
+        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+void ImapUpdateMessagesFlagsStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    // Only allow monitoring of one folder other than the inbox
+    if (_monitoredFoldersIds.count() > 1)
+        _monitoredFoldersIds.clear();
+
+    context->client()->monitor(_monitoredFoldersIds);
+
+    messageListCompleted(context);
 }
 
 bool ImapUpdateMessagesFlagsStrategy::nextFolder()
@@ -1740,17 +1748,6 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
 
     processNextFolder(context);
-}
-
-void ImapUpdateMessagesFlagsStrategy::folderListCompleted(ImapStrategyContextBase *context)
-{
-    // Only allow monitoring of one folder other than the inbox
-    if (_monitoredFoldersIds.count() > 1)
-        _monitoredFoldersIds.clear();
-
-    context->client()->monitor(_monitoredFoldersIds);
-
-    messageListCompleted(context);
 }
 
 

@@ -220,15 +220,15 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
 
     virtual bool nextFolder();
     virtual void processFolder(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
 
 private:
     QMailMessageIdList _selectedMessageIds;
