@@ -1289,8 +1289,14 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     {
         _seenUids = context->mailbox().uidList;
 
-        _searchState = Unseen;
-        context->protocol().sendUidSearch(MFlag_Unseen);
+        if (_seenUids.count() == context->mailbox().exists) {
+            // All of the messages are seen
+            _unseenUids.clear();
+            processUidSearchResults(context);
+        } else {
+            _searchState = Unseen;
+            context->protocol().sendUidSearch(MFlag_Unseen);
+        }
         break;
     }
     case Unseen:
@@ -1658,8 +1664,14 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     {
         _unseenUids = context->mailbox().uidList;
 
-        _searchState = Unseen;
-        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        if (_unseenUids.count() == _serverUids.count()) {
+            // All of the messages are unseen
+            _seenUids.clear();
+            processUidSearchResults(context);
+        } else {
+            _searchState = Unseen;
+            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        }
         break;
     }
     case Seen:
