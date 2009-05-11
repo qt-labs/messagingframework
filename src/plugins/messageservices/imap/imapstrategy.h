@@ -399,13 +399,18 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual void processMailbox(ImapStrategyContextBase *context);
+    virtual bool getnextMailbox();
+
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
     QStringList _serverReportedUids;
     QStringList _clientDeletedUids;
     QStringList _clientReadUids;
+
+    QMap<QMailFolderId, QPair<QStringList, QStringList> > _folderMessageUids;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy

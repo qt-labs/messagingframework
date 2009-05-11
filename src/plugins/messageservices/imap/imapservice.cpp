@@ -237,11 +237,8 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-    _service->_client.strategyContext()->exportUpdatesStrategy.setBase(QMailFolderId());
-    _service->_client.strategyContext()->exportUpdatesStrategy.setDescending(true);
-    _service->_client.strategyContext()->exportUpdatesStrategy.setOperation(QMailRetrievalAction::Content);
+
     _service->_client.strategyContext()->exportUpdatesStrategy.clearSelection();
-    _service->_client.strategyContext()->exportUpdatesStrategy.selectedMailsAppend(QMailMessageIdList());
     return setStrategy(&_service->_client.strategyContext()->exportUpdatesStrategy);
 }
 

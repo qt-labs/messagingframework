@@ -1522,78 +1522,77 @@ ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 
 void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    ImapConfiguration imapCfg(context->config());
+    _transferState = List;
     _completionList.clear();
     _completionSectionList.clear();
-    _mailboxList.clear();
-    if (!imapCfg.canDeleteMail()) {
-        QMailAccountId id(context->config().id());
-        QString name(QMailAccount(id).name());
-        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is "
-            "disabled for account name" << name << "id" << id;
-    }
-    QMailFolderIdList folders(context->client()->mailboxIds());
-    QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
-    statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
-    ImapClient *c(context->client());
-    foreach(QMailFolderId folderId, folders) {
-        QStringList deletedUids;
-        if (imapCfg.canDeleteMail())
-            deletedUids = context->client()->deletedMessages(folderId);
-        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
-        QStringList readUids = c->serverUids(folderKey & statusKey);
-        if (!deletedUids.isEmpty() || !readUids.isEmpty())
-            _mailboxList.append(folderId);
-    }
-    _transferState = List;
-    
-    if (!selectNextMailbox(context)) {
-        // No changes to export
-        completedAction(context);
-    }
-}
 
-void ImapExportUpdatesStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    _clientDeletedUids = QStringList();
-    _clientReadUids = QStringList();
-    _serverReportedUids = QStringList();
-    
-    // We have selected the current mailbox
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            // Only interested in messages that are going to be operated on
-            ImapConfiguration imapCfg(context->config());
-            QMailFolderId folderId(_currentMailbox.id());
-            QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
-            statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
-            ImapClient *c(context->client());
-            QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
-            _clientReadUids = c->serverUids(folderKey & statusKey);
-            if (imapCfg.canDeleteMail())
-                _clientDeletedUids = context->client()->deletedMessages(folderId);
-            
-            if (_clientDeletedUids.isEmpty() && _clientReadUids.isEmpty()) {
-                processUidSearchResults(context);
-                return;
-            }
-            QStringList changedUids = _clientDeletedUids + _clientReadUids;
-            QString uidList = "UID " + stripFolderPrefix(changedUids).join(",");
-            context->protocol().sendUidSearch(MFlag_All, uidList);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapRetrieveFolderListStrategy::handleSelect(context);
+    ImapConfiguration imapCfg(context->config());
+    if (!imapCfg.canDeleteMail()) {
+        QString name(QMailAccount(context->config().id()).name());
+        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is disabled for account name" << name;
     }
+
+    QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
+    statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
+
+    _folderMessageUids.clear();
+
+    ImapClient *c(context->client());
+    foreach (const QMailFolderId &folderId, context->client()->mailboxIds()) {
+        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
+
+        // Find messages marked as read locally
+        QStringList deletedUids;
+        QStringList readUids = c->serverUids(folderKey & statusKey);
+
+        if (imapCfg.canDeleteMail()) {
+            // Also find messages deleted locally
+            deletedUids = context->client()->deletedMessages(folderId);
+        }
+
+        if (!readUids.isEmpty() || !deletedUids.isEmpty())
+            _folderMessageUids.insert(folderId, qMakePair(readUids, deletedUids));
+    }
+    
+    processNextMailbox(context);
 }
 
 void ImapExportUpdatesStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     _serverReportedUids = context->mailbox().uidList;
+
     processUidSearchResults(context);
+}
+
+void ImapExportUpdatesStrategy::processMailbox(ImapStrategyContextBase *context)
+{
+    _serverReportedUids = QStringList();
+    
+    // We have selected the current mailbox
+    if (context->mailbox().exists > 0) {
+        // Find which of our messages-of-interest are still on the server
+        IntegerRegion clientRegion(stripFolderPrefix(_clientReadUids + _clientDeletedUids));
+        context->protocol().sendUidSearch(MFlag_All, "UID " + clientRegion.toString());
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+bool ImapExportUpdatesStrategy::getnextMailbox()
+{
+    if (_folderMessageUids.isEmpty()) {
+        return false;
+    }
+
+    QMap<QMailFolderId, QPair<QStringList, QStringList> >::iterator it = _folderMessageUids.begin();
+
+    _currentMailbox = QMailFolder(it.key());
+    _clientReadUids = it.value().first;
+    _clientDeletedUids = it.value().second;
+
+    _folderMessageUids.erase(it);
+    return true;
 }
 
 void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase *context)
@@ -1645,8 +1644,8 @@ void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *contex
 
 void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    _serverUids.clear();
     _transferState = List;
+    _serverUids.clear();
     _searchState = Seen;
 
     // Associate each message to the relevant folder
