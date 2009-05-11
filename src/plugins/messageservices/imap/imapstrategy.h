@@ -355,17 +355,19 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
 protected:
-    virtual void listCompleted(ImapStrategyContextBase *context);
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void handleUidStore(ImapStrategyContextBase *context);
+    virtual void handleExpunge(ImapStrategyContextBase *context);
+
+    virtual void processMailbox(ImapStrategyContextBase *context);
+
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
     virtual void searchInconclusive(ImapStrategyContextBase *context);
-    virtual void handleUidStore(ImapStrategyContextBase *context);
+
+    virtual void listCompleted(ImapStrategyContextBase *context);
+
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
-    virtual void handleExpunge(ImapStrategyContextBase *context);
-    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
 
 protected:
     QStringList _readUids;

@@ -1258,7 +1258,7 @@ void ImapRetrieveFolderListStrategy::removeDeletedMailboxes(ImapStrategyContextB
 */
 ImapSynchronizeAllStrategy::ImapSynchronizeAllStrategy()
 {
-    _options = (Options)(RetrieveMail | ImportChanges | ExportChanges);
+    _options = static_cast<Options>(RetrieveMail | ImportChanges | ExportChanges);
 }
 
 void ImapSynchronizeAllStrategy::setOptions(Options options)
@@ -1292,42 +1292,6 @@ void ImapSynchronizeAllStrategy::transition(ImapStrategyContextBase *context, Im
             ImapRetrieveFolderListStrategy::transition(context, command, status);
             break;
         }
-    }
-}
-
-void ImapSynchronizeAllStrategy::listCompleted(ImapStrategyContextBase *context)
-{
-    removeDeletedMailboxes(context);
-
-    previewDiscoveredMessages(context);
-}
-
-bool ImapSynchronizeAllStrategy::selectNextMailbox(ImapStrategyContextBase *context)
-{
-    _seenUids = QStringList();
-    _unseenUids = QStringList();
-    _readUids = QStringList();
-    _removedUids = QStringList();
-    _expungeRequired = false;
-    
-    _searchState = Seen;
-    return ImapRetrieveFolderListStrategy::selectNextMailbox(context);
-}
-
-void ImapSynchronizeAllStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    // We have selected the current mailbox
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            // Start by looking for previously-seen and unseen messages
-            context->protocol().sendUidSearch(MFlag_Seen);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapRetrieveFolderListStrategy::handleSelect(context);
     }
 }
 
@@ -1376,6 +1340,49 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     default:
         qMailLog(IMAP) << "Unknown search status in transition";
     }
+}
+
+void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
+    if (!(_options & ExportChanges)) {
+        processNextMailbox(context);
+        return;
+    }
+    if (!setNextSeen(context))
+        if (!setNextDeleted(context))
+            processNextMailbox(context);
+}
+
+void ImapSynchronizeAllStrategy::handleExpunge(ImapStrategyContextBase *context)
+{
+    processNextMailbox(context);
+}
+
+void ImapSynchronizeAllStrategy::processMailbox(ImapStrategyContextBase *context)
+{
+    _seenUids = QStringList();
+    _unseenUids = QStringList();
+    _readUids = QStringList();
+    _removedUids = QStringList();
+    _expungeRequired = false;
+    
+    // Search for messages in the current mailbox
+    _searchState = Seen;
+
+    if (context->mailbox().exists > 0) {
+        // Start by looking for previously-seen and unseen messages
+        context->protocol().sendUidSearch(MFlag_Seen);
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+void ImapSynchronizeAllStrategy::listCompleted(ImapStrategyContextBase *context)
+{
+    removeDeletedMailboxes(context);
+
+    previewDiscoveredMessages(context);
 }
 
 void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase *context)
@@ -1446,18 +1453,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
 
 void ImapSynchronizeAllStrategy::searchInconclusive(ImapStrategyContextBase *context)
 {
-    fetchNextMailPreview(context);
-}
-
-void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context)
-{
-    if (!(_options & ExportChanges)) {
-        fetchNextMailPreview(context);
-        return;
-    }
-    if (!setNextSeen(context))
-        if (!setNextDeleted(context))
-            fetchNextMailPreview(context);
+    processNextMailbox(context);
 }
 
 bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
@@ -1503,15 +1499,6 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     return false;
 }
 
-void ImapSynchronizeAllStrategy::handleExpunge(ImapStrategyContextBase *context)
-{
-    fetchNextMailPreview(context);
-}
-
-void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
-{
-    ImapRetrieveFolderListStrategy::fetchNextMailPreview(context);
-}
 
 /* A strategy to retrieve all messages from an account.
    
@@ -1520,15 +1507,17 @@ void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *c
 */
 ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
 {
-    setOptions((Options)(RetrieveMail | ImportChanges));
+    // This is just synchronize without update-exporting
+    setOptions(static_cast<Options>(RetrieveMail | ImportChanges));
 }
+
 
 /* A strategy to exports changes made on the client to the server.
    That is to export flag changes (unseen -> seen) and deletes.
 */
 ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 {
-    setOptions((Options)(ExportChanges));
+    setOptions(ExportChanges);
 }
 
 void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
