@@ -1602,6 +1602,7 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
 void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapFolderListStrategy::clearSelection();
+
     _monitoredFoldersIds.clear();
     _selectedMessageIds.clear();
     _folderMessageUids.clear();
@@ -1633,7 +1634,7 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
 {
     _transferState = List;
     _serverUids.clear();
-    _searchState = Seen;
+    _searchState = Unseen;
 
     // Associate each message to the relevant folder
     _folderMessageUids.clear();
@@ -1653,17 +1654,17 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
 {
     switch(_searchState)
     {
-    case Seen:
-    {
-        _seenUids = context->mailbox().uidList;
-
-        _searchState = Unseen;
-        context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-        break;
-    }
     case Unseen:
     {
         _unseenUids = context->mailbox().uidList;
+
+        _searchState = Unseen;
+        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        break;
+    }
+    case Seen:
+    {
+        _seenUids = context->mailbox().uidList;
         processUidSearchResults(context);
         break;
     }
@@ -1680,10 +1681,13 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
     if (context->mailbox().exists > 0) {
         IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
         _filter = clientRegion.toString();
-        _searchState = Seen;
+        _searchState = Unseen;
 
-        // Start by looking for previously-seen and unseen messages
-        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        // Start by looking for previously-unseen messages
+        // If a message is moved from Unseen to Seen between our two searches, then we will
+        // miss this change by searching Unseen first; if, however, we were to search Seen first,
+        // then we would miss the message altogether and mark it as deleted...
+        context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
     } else {
         // No messages, so no need to perform search
         processUidSearchResults(context);
