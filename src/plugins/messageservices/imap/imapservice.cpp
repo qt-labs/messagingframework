@@ -101,6 +101,7 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
 
     _service->_client.strategyContext()->foldersOnlyStrategy.setBase(folderId);
     _service->_client.strategyContext()->foldersOnlyStrategy.setDescending(descending);
+    _service->_client.strategyContext()->foldersOnlyStrategy.clearSelection();
     return setStrategy(&_service->_client.strategyContext()->foldersOnlyStrategy);
 }
 
@@ -119,11 +120,15 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     if (folderId.isValid()) {
         folderIds.append(folderId);
     } else {
-        // Retrieve messages for all folders in the account
-        folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId), QMailFolderSortKey::id(Qt::AscendingOrder));
+        // Retrieve messages for all folders in the account that have undiscovered messages
+        QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
+        QMailFolderKey undiscoveredKey(QMailFolderKey::serverUndiscoveredCount(0, QMailDataComparator::GreaterThan));
+
+        folderIds = QMailStore::instance()->queryFolders(accountKey & undiscoveredKey, QMailFolderSortKey::id(Qt::AscendingOrder));
     }
 
     _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
+    _service->_client.strategyContext()->retrieveMessageListStrategy.clearSelection();
     _service->_client.strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
     return setStrategy(&_service->_client.strategyContext()->retrieveMessageListStrategy);
 }
@@ -227,6 +232,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
 
     _service->_client.strategyContext()->retrieveAllStrategy.setBase(QMailFolderId());
     _service->_client.strategyContext()->retrieveAllStrategy.setDescending(true);
+    _service->_client.strategyContext()->retrieveAllStrategy.clearSelection();
     _service->_client.strategyContext()->retrieveAllStrategy.setOperation(QMailRetrievalAction::MetaData);
     return setStrategy(&_service->_client.strategyContext()->retrieveAllStrategy);
 }
@@ -237,11 +243,8 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-    _service->_client.strategyContext()->exportUpdatesStrategy.setBase(QMailFolderId());
-    _service->_client.strategyContext()->exportUpdatesStrategy.setDescending(true);
-    _service->_client.strategyContext()->exportUpdatesStrategy.setOperation(QMailRetrievalAction::Content);
+
     _service->_client.strategyContext()->exportUpdatesStrategy.clearSelection();
-    _service->_client.strategyContext()->exportUpdatesStrategy.selectedMailsAppend(QMailMessageIdList());
     return setStrategy(&_service->_client.strategyContext()->exportUpdatesStrategy);
 }
 
@@ -254,6 +257,7 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
 
     _service->_client.strategyContext()->synchronizeAccountStrategy.setBase(QMailFolderId());
     _service->_client.strategyContext()->synchronizeAccountStrategy.setDescending(true);
+    _service->_client.strategyContext()->synchronizeAccountStrategy.clearSelection();
     _service->_client.strategyContext()->synchronizeAccountStrategy.setOperation(QMailRetrievalAction::MetaData);
     return setStrategy(&_service->_client.strategyContext()->synchronizeAccountStrategy);
 }

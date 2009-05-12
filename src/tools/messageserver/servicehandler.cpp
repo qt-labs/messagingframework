@@ -737,9 +737,12 @@ void ServiceHandler::cancelTransfer(quint64 action)
         for ( ; it != end; ++it) {
             if ((*it).action == action) {
                 mRequests.erase(it);
-                return;
+                break;
             }
         }
+
+        // Report this action as failed
+        reportFailure(action, QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
     }
 }
 
