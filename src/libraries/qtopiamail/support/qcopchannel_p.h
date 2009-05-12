@@ -84,7 +84,7 @@ class QCopClient : public QObject
 
 public:
     template<typename T>
-    QCopClient(T *instance = 0, void (T::*func)() = 0)
+    QCopClient(bool connectImmediately, T *instance = 0, void (T::*func)() = 0)
         : QObject(),
           server(false),
           socket(new QCopLocalSocket(this)),
@@ -92,7 +92,10 @@ public:
           disconnectHandler(instance ? new MemberInvoker<T>(instance, func) : 0)
     {
         init();
-        connectToServer();
+
+        if (connectImmediately) {
+            connectToServer();
+        }
     }
 
     QCopClient(QIODevice *device, QCopLocalSocket *socket);
@@ -118,6 +121,8 @@ public:
     static const int minPacketSize = 256;
 
     bool isStartupComplete;
+
+    void reconnect();
 
 signals:
     void startupComplete();
@@ -148,6 +153,7 @@ private:
     QByteArray pendingData;
     int retryCount;
     bool connecting;
+    bool reconnecting;
     int channelCount;
 
     void detachAll();
@@ -348,16 +354,8 @@ public:
     // Get the client connection object for this thread.
     inline QCopClient *clientConnection()
     {
-        if ((conn == 0) || (reinterpret_cast<int>(conn) == -1)) {
-            bool reconnectChannels(conn != 0);
-
-            conn = new QCopClient(this, &QCopThreadData::disconnected);
-            if (reconnectChannels) {
-                foreach (const QString &channel, clientMap.keys()) {
-                    conn->registerChannel(channel);
-                }
-            }
-
+        if (!conn) {
+            conn = new QCopClient(true, this, &QCopThreadData::disconnected);
         }
         return conn;
     }
@@ -365,7 +363,7 @@ public:
     // Determine if we have a client connection object for this thread.
     inline bool hasClientConnection() const
     {
-        return ((conn != 0) && (reinterpret_cast<int>(conn) != -1));
+        return (conn != 0);
     }
 
     // Map client-side channel names to lists of QCopChannel objects.
@@ -393,7 +391,15 @@ private:
     {
         if (conn) {
             conn->deleteLater();
-            conn = reinterpret_cast<QCopClient*>(int(-1));
+
+            conn = new QCopClient(false, this, &QCopThreadData::disconnected);
+
+            // These registrations are queued prior to connectivity:
+            foreach (const QString &channel, clientMap.keys()) {
+                conn->registerChannel(channel);
+            }
+
+            conn->reconnect();
         }
     }
 };
