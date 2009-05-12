@@ -16,10 +16,10 @@
 #include <qmailmessageserver.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>
-#include <QTimer>
 #include <qmaillog.h>
 #include <QApplication>
-#include <QFile>
+#include <QDir>
+#include <QTimer>
 
 // Account preparation is handled by an external function
 extern void prepareAccounts();
@@ -224,6 +224,11 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
     return false;
 }
 
+QString requestsFileName()
+{
+    return QDir::tempPath() + "/qmf-messageserver-requests";
+}
+
 }
 
 
@@ -292,7 +297,8 @@ QMailMessageIdList ServiceHandler::MessageSearch::takeBatch()
 
 
 ServiceHandler::ServiceHandler(QObject* parent)
-    : QObject(parent)
+    : QObject(parent),
+      _requestsFile(requestsFileName())
 {
     LongStream::cleanupTempFiles();
 
@@ -308,6 +314,39 @@ ServiceHandler::ServiceHandler(QObject* parent)
     }
 
     connect(this, SIGNAL(remoteSearchCompleted(quint64)), this, SLOT(finaliseSearch(quint64)));
+
+    // See if there are any requests remaining from our previous run
+    if (_requestsFile.exists()) {
+        if (!_requestsFile.open(QIODevice::ReadOnly)) {
+            qWarning() << "Unable to open requests file for read!";
+        } else {
+            QString line;
+
+            // Every request still in the file failed to complete
+            for (QByteArray line = _requestsFile.readLine(); !line.isEmpty(); line = _requestsFile.readLine()) {
+                if (quint64 action = line.trimmed().toULongLong()) {
+                    _failedRequests.append(action);
+                }
+            }
+
+            _requestsFile.close();
+        }
+    }
+
+    if (!_requestsFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to open requests file for write!" << _requestsFile.fileName();
+    } else {
+        if (!_requestsFile.resize(0)) {
+            qWarning() << "Unable to truncate requests file!";
+        } else {
+            _requestsFile.flush();
+        }
+    }
+
+    if (!_failedRequests.isEmpty()) {
+        // Allow the clients some time to reconnect, then report our failures
+        QTimer::singleShot(2000, this, SLOT(reportFailures()));
+    }
 }
 
 ServiceHandler::~ServiceHandler()
@@ -602,6 +641,16 @@ void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, cons
     req.completion = completion;
 
     mRequests.append(req);
+
+    // Add this request to the outstanding list
+    if (!_outstandingRequests.contains(action)) {
+        _outstandingRequests.insert(action);
+
+        QByteArray requestNumber(QByteArray::number(action));
+        _requestsFile.write(requestNumber.append("\n"));
+        _requestsFile.flush();
+    }
+
     QTimer::singleShot(0, this, SLOT(dispatchRequest()));
 }
 
@@ -1519,6 +1568,18 @@ void ServiceHandler::actionCompleted(bool success)
                 }
             }
 
+            if (_outstandingRequests.contains(action)) {
+                _outstandingRequests.remove(action);
+
+                // Ensure this request is no longer in the file
+                _requestsFile.resize(0);
+                foreach (quint64 req, _outstandingRequests) {
+                    QByteArray requestNumber(QByteArray::number(req));
+                    _requestsFile.write(requestNumber.append("\n"));
+                }
+                _requestsFile.flush();
+            }
+
             mServiceAction.remove(service);
         }
     }
@@ -1606,6 +1667,14 @@ void ServiceHandler::finaliseSearch(quint64 action)
                     QTimer::singleShot(0, this, SLOT(continueSearch()));
             }
         }
+    }
+}
+
+void ServiceHandler::reportFailures()
+{
+    while (!_failedRequests.isEmpty()) {
+        quint64 action(_failedRequests.takeFirst());
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Failed to perform requested action!"));
     }
 }
 

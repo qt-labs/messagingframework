@@ -12,6 +12,7 @@
 #define SERVICEHANDLER_H
 
 #include <QByteArray>
+#include <QFile>
 #include <QLinkedList>
 #include <QList>
 #include <qmailmessageserver.h>
@@ -106,6 +107,8 @@ private slots:
     void dispatchRequest();
 
     void expireAction();
+
+    void reportFailures();
 
 private:
     QMailAccountId transmissionAccountId(const QMailAccountId &accountId) const;
@@ -233,6 +236,10 @@ private:
 
     QList<MessageSearch> mSearches;
     QMailMessageIdList mMatchingIds;
+
+    QFile _requestsFile;
+    QSet<quint64> _outstandingRequests;
+    QList<quint64> _failedRequests;
 };
 
 #endif
