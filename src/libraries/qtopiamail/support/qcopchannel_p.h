@@ -393,12 +393,6 @@ private:
             conn->deleteLater();
 
             conn = new QCopClient(false, this, &QCopThreadData::disconnected);
-
-            // These registrations are queued prior to connectivity:
-            foreach (const QString &channel, clientMap.keys()) {
-                conn->registerChannel(channel);
-            }
-
             conn->reconnect();
         }
     }

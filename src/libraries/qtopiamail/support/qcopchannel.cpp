@@ -1035,8 +1035,13 @@ void QCopClient::connectToServer()
     socket->connectToHost(QHostAddress::LocalHost, QCopThreadData::listenPort());
 #endif
     if (socket->waitForConnected()) {
+        if (reconnecting) {
+            reconnecting = false;
+            foreach (const QString &channel, qcopThreadData()->clientMap.keys()) {
+                registerChannel(channel);
+            }
+        }
         connecting = false;
-        reconnecting = false;
         retryCount = 0;
         device = socket;
         connectSignals();
