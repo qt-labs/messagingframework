@@ -787,6 +787,10 @@ void EmailClient::cancelOperation()
         retrievalAction->cancelOperation();
         setRetrievalInProgress( false );
     }
+
+    if (flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
+        flagRetrievalAction->cancelOperation();
+    }
 }
 
 /*  Enqueue mail must always store the mail in the outbox   */
