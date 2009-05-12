@@ -1669,7 +1669,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
             _seenUids.clear();
             processUidSearchResults(context);
         } else {
-            _searchState = Unseen;
+            _searchState = Seen;
             context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
         }
         break;
