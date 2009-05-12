@@ -165,11 +165,15 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
 /* !
   \internal
 
-  Resend all channel registrations  This function is obsolete.
+  Resend all channel registrations.
   */
 void QCopChannel::reregisterAll()
 {
-    // Exists for backwards-compatibility only.  Not needed any more.
+    QCopThreadData *td = qcopThreadData();
+
+    foreach (const QString &channel, td->clientMap.keys()) {
+        td->clientConnection()->registerChannel(channel);
+    }
 }
 
 /* !
@@ -632,22 +636,13 @@ struct QCopPacketHeader
     int forwardToLength;
 };
 
-QCopClient::QCopClient()
-    : QObject()
-{
-    socket = new QCopLocalSocket(this);
-    device = socket;
-    server = false;
-    init();
-    connectToServer();
-}
-
 QCopClient::QCopClient(QIODevice *device, QCopLocalSocket *socket)
     : QObject()
 {
     this->device = device;
     this->socket = socket;
     server = true;
+    disconnectHandler = 0;
     init();
 }
 
@@ -657,6 +652,7 @@ QCopClient::QCopClient(QIODevice *device, bool isServer)
     this->device = device;
     this->socket = 0;
     server = isServer;
+    disconnectHandler = 0;
     init();
 }
 
@@ -688,6 +684,8 @@ QCopClient::~QCopClient()
 {
     if (socket)
         delete socket;
+    if (disconnectHandler)
+        delete disconnectHandler;
 }
 
 void QCopClient::registerChannel(const QString& ch)
@@ -986,8 +984,10 @@ void QCopClient::disconnected()
     if (!finished) {
         finished = true;
         if (server) {
-	    detachAll();
+            detachAll();
             deleteLater();
+        } else if (disconnectHandler) {
+            (*disconnectHandler)();
         }
     }
 }

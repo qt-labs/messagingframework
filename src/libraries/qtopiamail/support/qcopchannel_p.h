@@ -62,8 +62,39 @@ class QCopLoopbackDevice;
 class QCopClient : public QObject
 {
     Q_OBJECT
+
+    struct MemberInvokerBase
+    {
+        virtual ~MemberInvokerBase() {}
+
+        virtual void operator()() = 0;
+    };
+
+    template<typename T>
+    struct MemberInvoker : public MemberInvokerBase
+    {
+        T* instance;
+        void (T::*function)();
+
+        MemberInvoker(T* inst, void (T::*func)())
+            : instance(inst), function(func) {}
+
+        virtual void operator()() { (instance->*function)(); }
+    };
+
 public:
-    QCopClient();
+    template<typename T>
+    QCopClient(T *instance = 0, void (T::*func)() = 0)
+        : QObject(),
+          server(false),
+          socket(new QCopLocalSocket(this)),
+          device(socket),
+          disconnectHandler(instance ? new MemberInvoker<T>(instance, func) : 0)
+    {
+        init();
+        connectToServer();
+    }
+
     QCopClient(QIODevice *device, QCopLocalSocket *socket);
     QCopClient(QIODevice *device, bool isServer);
     ~QCopClient();
@@ -100,9 +131,10 @@ private slots:
 private:
     bool server;
     bool finished;
-    QIODevice *device;
     QCopLoopbackDevice *loopback;
     QCopLocalSocket *socket;
+    QIODevice *device;
+    MemberInvokerBase *disconnectHandler;
 
     void init();
 
@@ -316,15 +348,24 @@ public:
     // Get the client connection object for this thread.
     inline QCopClient *clientConnection()
     {
-        if (!conn)
-            conn = new QCopClient();
+        if ((conn == 0) || (reinterpret_cast<int>(conn) == -1)) {
+            bool reconnectChannels(conn != 0);
+
+            conn = new QCopClient(this, &QCopThreadData::disconnected);
+            if (reconnectChannels) {
+                foreach (const QString &channel, clientMap.keys()) {
+                    conn->registerChannel(channel);
+                }
+            }
+
+        }
         return conn;
     }
 
     // Determine if we have a client connection object for this thread.
     inline bool hasClientConnection() const
     {
-        return (conn != 0);
+        return ((conn != 0) && (reinterpret_cast<int>(conn) != -1));
     }
 
     // Map client-side channel names to lists of QCopChannel objects.
@@ -346,6 +387,15 @@ public:
     QCopServer *server;
 
     QCopClient *conn;
+
+private:
+    void disconnected()
+    {
+        if (conn) {
+            conn->deleteLater();
+            conn = reinterpret_cast<QCopClient*>(int(-1));
+        }
+    }
 };
 
 #endif
