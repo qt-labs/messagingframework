@@ -782,14 +782,14 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         // We have selected this folder - find out how many undiscovered messages exist
 
         // We need the UID of the most recent message we have previously discovered in this folder
-        QMailMessageKey key(QMailMessageKey::parentFolderId(_currentMailbox.id()));
-        QMailMessageSortKey sortKey(QMailMessageSortKey::id(Qt::DescendingOrder));
+        QMailFolderId folderId(context->mailbox().id);
+        QMailFolder folder(folderId);
 
-        QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sortKey));
-        if (!messageIds.isEmpty()) {
-            // Find this message's MSN
-            QMailMessageMetaData message(messageIds.first());
-            context->protocol().sendSearch(0, QString("UID ") + ImapProtocol::uid(message.serverUid()));
+        bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
+        int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+
+        if (clientMax) {
+            context->protocol().sendSearch(0, QString("UID %1").arg(clientMax));
         } else {
             // No messages - nothing to discover...
             handleSearch(context);
