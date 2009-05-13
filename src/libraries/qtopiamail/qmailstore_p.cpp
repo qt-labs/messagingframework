@@ -2157,6 +2157,8 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
 
             temporaryTableKeys.append(arg);
 
+            QVariantList idValues;
+
             if (key.second == "INTEGER") {
                 int type = 0;
                 if (qVariantCanConvert<QMailMessageId>(arg->valueList.first())) {
@@ -2167,7 +2169,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     type = 3;
                 }
 
-                // Add the ID values to the temp table
+                // Extract the ID values to INTEGER variants
                 foreach (const QVariant &var, arg->valueList) {
                     quint64 id = 0;
 
@@ -2187,30 +2189,33 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                         return QSqlQuery();
                     }
 
-                    {
-                        QSqlQuery insertQuery(database);
-                        insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
-                        insertQuery.addBindValue(id);
-                        if (!insertQuery.exec()) { 
-                            setQueryError(insertQuery.lastError(), "Failed to populate integer temporary table", queryText(insertQuery));
-                            qMailLog(Messaging) << "Unable to prepare query:" << sql;
-                            return QSqlQuery();
-                        }
+                    idValues.append(QVariant(id));
+                }
+
+                // Add the ID values to the temp table
+                {
+                    QSqlQuery insertQuery(database);
+                    insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
+                    insertQuery.addBindValue(idValues);
+                    if (!insertQuery.execBatch()) { 
+                        setQueryError(insertQuery.lastError(), "Failed to populate integer temporary table", queryText(insertQuery));
+                        qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                        return QSqlQuery();
                     }
                 }
             } else if (key.second == "VARCHAR") {
                 foreach (const QVariant &var, arg->valueList) {
-                    QString id(var.value<QString>());
+                    idValues.append(QVariant(var.value<QString>()));
+                }
 
-                    {
-                        QSqlQuery insertQuery(database);
-                        insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
-                        insertQuery.addBindValue(id);
-                        if (!insertQuery.exec()) { 
-                            setQueryError(insertQuery.lastError(), "Failed to populate varchar temporary table", queryText(insertQuery));
-                            qMailLog(Messaging) << "Unable to prepare query:" << sql;
-                            return QSqlQuery();
-                        }
+                {
+                    QSqlQuery insertQuery(database);
+                    insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
+                    insertQuery.addBindValue(idValues);
+                    if (!insertQuery.execBatch()) { 
+                        setQueryError(insertQuery.lastError(), "Failed to populate varchar temporary table", queryText(insertQuery));
+                        qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                        return QSqlQuery();
                     }
                 }
             }
