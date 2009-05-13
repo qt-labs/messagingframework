@@ -13,6 +13,11 @@ Changes since the development preview release on 03/04/09:
 1. Added 'QMailFolder::serverUndiscoveredCount() const' and
          'QMailFolder::setServerUndiscoveredCount()'.
 
+2. Added 'QMailStore::retrievalInProgress()',
+         'QMailStore::setRetrievalInProgress()',
+         'QMailStore::transmissionInProgress()' and
+         'QMailStore::setTransmissionInProgress()'.
+
 
 *****************************************************************************
 

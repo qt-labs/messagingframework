@@ -171,6 +171,9 @@ private:
     void activateAction(quint64, const QSet<QMailMessageService*> &, CompletionSignal);
     void updateAction(quint64);
 
+    void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);
+    void setTransmissionInProgress(const QMailAccountId &id, bool inProgress);
+
     QMap<QPair<QMailAccountId, QString>, QMailMessageService*> serviceMap;
     QMap<QMailAccountId, QMailMessageSource*> sourceMap;
     QMap<QMailAccountId, QMailMessageSink*> sinkMap;
@@ -186,6 +189,7 @@ private:
         QSet<QMailMessageService*> services;
         CompletionSignal completion;
         QTime expiry;
+        bool reported;
     };
     
     QMap<quint64, ActionData> mActiveActions;
@@ -240,6 +244,9 @@ private:
     QFile _requestsFile;
     QSet<quint64> _outstandingRequests;
     QList<quint64> _failedRequests;
+
+    QSet<QMailAccountId> _retrievalAccountIds;
+    QSet<QMailAccountId> _transmissionAccountIds;
 };
 
 #endif
