@@ -92,20 +92,11 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         context->completedMessageAction(uid);
     }
 
-    // Compensate for MS exchange temporarily failing to report existence of messages
-    QMailMessageKey existentUidKey(storedKey & reportedKey);
-    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
-    QMailMessageKey onServerButRemovedInStore(removedUidKey & existentUidKey);
-    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
-        qWarning() << "Unable to update unremoved message metadata for account:" << context->config().id();
-    }
-
     // Update any messages that are reported as read elsewhere, that previously were not
     if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 }
-
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
