@@ -754,7 +754,7 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
 
         if (clientMax) {
-            context->protocol().sendSearch(0, QString("UID %1").arg(clientMax));
+            context->protocol().sendSearch(0, QString("UID %1:*").arg(clientMax + 1));
         } else {
             // No messages - nothing to discover...
             handleSearch(context);
@@ -850,17 +850,19 @@ void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMa
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
 {
-    // We should have the MSN of the our most recent message
-    uint msn = 0;
-    if (!context->mailbox().msnList.isEmpty()) {
-        msn = context->mailbox().msnList.first();
-    }
-
-    // The difference between the server count and the MSN of our message should yield the undiscovered count
-    // Note: MSN is 1-based, count is 0-based.
+    // The undiscoverd count for a folder is the number of messages on the server newer 
+    // than the most recent (highest server uid) message in the folder.
     QMailFolder folder(_currentMailbox.id());
-    int undiscovered = folder.serverCount() - msn;
-    if ((undiscovered >= 0) && (uint(undiscovered) != folder.serverUndiscoveredCount())) {
+    int undiscovered(context->mailbox().msnList.count());
+    
+    // Initial case set the undiscovered count to exists in the case of no 
+    // max-serveruid set for the folder
+    bool ok;
+    int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+    if (!clientMax)
+        undiscovered = context->mailbox().exists;
+    
+    if (uint(undiscovered) != folder.serverUndiscoveredCount()) {
         folder.setServerUndiscoveredCount(undiscovered);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
