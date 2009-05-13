@@ -639,8 +639,8 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
         if (boxId.isValid()) {
             // This element already exists
             if (mailboxPath == path) {
-                QMailFolder folder(boxId);
-                _strategyContext->mailboxListed(folder, flags);
+                QMailFolder folder(boxId); 
+                _strategyContext->mailboxListed(folder, flags, delimiter);
             }
 
             parentId = boxId;
@@ -650,9 +650,16 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
             folder.setDisplayName(decodeFolderName(*it));
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
 
-            _strategyContext->mailboxListed(folder, flags);
+            // The reported flags pertain to the listed folder only
+            QString folderFlags;
+            if (mailboxPath == path) {
+                folderFlags = flags;
+            }
+
+            _strategyContext->mailboxListed(folder, folderFlags, delimiter);
 
             boxId = mailboxId(mailboxPath);
+            parentId = boxId;
         }
     }
 }

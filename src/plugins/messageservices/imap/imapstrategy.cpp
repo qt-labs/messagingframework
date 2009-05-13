@@ -155,6 +155,9 @@ void ImapStrategy::newConnection(ImapStrategyContextBase *context)
 {
     _transferState = Init;
 
+    ImapConfiguration imapCfg(context->config());
+    _baseFolder = imapCfg.baseFolder();
+
     initialAction(context);
 }
 
@@ -171,11 +174,18 @@ void ImapStrategy::initialAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder, const QString &flags)
+void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder, const QString &flags, const QString &delimiter)
 {
     if (!folder.id().isValid()) {
-        if (!QMailStore::instance()->addFolder(&folder)) {
-            qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+        // Only folders beneath the base folder are relevant
+        QString path(folder.path());
+
+        if (_baseFolder.isEmpty() || 
+            (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
+            (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+            if (!QMailStore::instance()->addFolder(&folder)) {
+                qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+            }
         }
     }
 
@@ -826,26 +836,28 @@ void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *contex
     messageListMessageAction(context);
 }
 
-void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
+void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
 {
-    ImapStrategy::mailboxListed(context, folder, flags);
+    ImapStrategy::mailboxListed(context, folder, flags, delimiter);
 
-    // Record the status of the listed mailbox
-    int status = 0;
-    if (flags.indexOf("NoInferiors", 0, Qt::CaseInsensitive) != -1)
-        status |= NoInferiors;
-    if (flags.indexOf("NoSelect", 0, Qt::CaseInsensitive) != -1)
-        status |= NoSelect;
-    if (flags.indexOf("Marked", 0, Qt::CaseInsensitive) != -1)
-        status |= Marked;
-    if (flags.indexOf("Unmarked", 0, Qt::CaseInsensitive) != -1)
-        status |= Unmarked;
-    if (flags.indexOf("HasChildren", 0, Qt::CaseInsensitive) != -1)
-        status |= HasChildren;
-    if (flags.indexOf("HasNoChildren", 0, Qt::CaseInsensitive) != -1)
-        status |= HasNoChildren;
+    if (folder.id().isValid()) {
+        // Record the status of the listed mailbox
+        int status = 0;
+        if (flags.indexOf("NoInferiors", 0, Qt::CaseInsensitive) != -1)
+            status |= NoInferiors;
+        if (flags.indexOf("NoSelect", 0, Qt::CaseInsensitive) != -1)
+            status |= NoSelect;
+        if (flags.indexOf("Marked", 0, Qt::CaseInsensitive) != -1)
+            status |= Marked;
+        if (flags.indexOf("Unmarked", 0, Qt::CaseInsensitive) != -1)
+            status |= Unmarked;
+        if (flags.indexOf("HasChildren", 0, Qt::CaseInsensitive) != -1)
+            status |= HasChildren;
+        if (flags.indexOf("HasNoChildren", 0, Qt::CaseInsensitive) != -1)
+            status |= HasNoChildren;
 
-    _folderStatus[folder.id()] = static_cast<FolderStatus>(status);
+        _folderStatus[folder.id()] = static_cast<FolderStatus>(status);
+    }
 }
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
@@ -1116,6 +1128,7 @@ void ImapRetrieveFolderListStrategy::setDescending(bool descending)
 void ImapRetrieveFolderListStrategy::newConnection(ImapStrategyContextBase *context)
 {
     _mailboxList.clear();
+    _ancestorPaths.clear();
 
     ImapSynchronizeBaseStrategy::newConnection(context);
 }
@@ -1130,8 +1143,6 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
     ImapConfiguration imapCfg(context->config());
     if (_baseId.isValid()) {
         folderId = _baseId;
-    } else {
-        folderId = context->client()->mailboxId(imapCfg.baseFolder());
     }
 
     _transferState = List;
@@ -1142,12 +1153,7 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
         ImapSynchronizeBaseStrategy::handleLogin(context);
     } else {
         // We need to search for folders at the account root
-        QMailFolder root;
-        if (!imapCfg.baseFolder().isEmpty()) {
-            root.setPath(imapCfg.baseFolder());
-        }
-
-        context->protocol().sendList(root, "%");
+        context->protocol().sendList(QMailFolder(), "%");
     }
 }
 
@@ -1163,6 +1169,22 @@ void ImapRetrieveFolderListStrategy::handleSearch(ImapStrategyContextBase *conte
     } else {
         folderListFolderAction(context);
     }
+}
+
+void ImapRetrieveFolderListStrategy::handleList(ImapStrategyContextBase *context)
+{
+    if (!_currentMailbox.id().isValid()) {
+        // See if there are any more ancestors to search
+        if (!_ancestorSearchPaths.isEmpty()) {
+            QMailFolder ancestor;
+            ancestor.setPath(_ancestorSearchPaths.takeFirst());
+
+            context->protocol().sendList(ancestor, "%");
+            return;
+        }
+    }
+
+    ImapSynchronizeBaseStrategy::handleList(context);
 }
 
 void ImapRetrieveFolderListStrategy::processNextFolder(ImapStrategyContextBase *context)
@@ -1186,16 +1208,32 @@ void ImapRetrieveFolderListStrategy::folderListCompleted(ImapStrategyContextBase
     messageListMessageAction(context);
 }
 
-void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
+void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
 {
-    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags);
+    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags, delimiter);
 
     _mailboxPaths.append(folder.path());
 
     if (_descending) {
-        if (folder.id() != _currentMailbox.id()) {
-            // We need to list this folder's contents, too
-            selectedFoldersAppend(QMailFolderIdList() << folder.id());
+        QString path(folder.path());
+
+        if (folder.id().isValid()) {
+            if (folder.id() != _currentMailbox.id()) {
+                if (_baseFolder.isEmpty() || 
+                    (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
+                    (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+                    // We need to list this folder's contents, too
+                    selectedFoldersAppend(QMailFolderIdList() << folder.id());
+                }
+            }
+        } else {
+            if (!_ancestorPaths.contains(path)) {
+                if (_baseFolder.startsWith(path + delimiter, Qt::CaseInsensitive)) {
+                    // This folder must be an ancestor of the base folder - list its contents
+                    _ancestorPaths.insert(path);
+                    _ancestorSearchPaths.append(path);
+                }
+            }
         }
     }
 }
