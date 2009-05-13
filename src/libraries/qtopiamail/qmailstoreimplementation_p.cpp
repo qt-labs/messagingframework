@@ -256,7 +256,6 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
             break;
         }
     } else {
-        flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
         
         preFlushTimer.start(preFlushTimeout);
@@ -294,7 +293,6 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
             break;
         }
     } else {
-        flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
@@ -332,7 +330,6 @@ void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType ch
             break;
         }
     } else {
-        flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
@@ -364,7 +361,6 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
             break;
         }
     } else {
-        flushNotifications();
         emitIpcUpdates(ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
