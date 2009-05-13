@@ -92,20 +92,11 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         context->completedMessageAction(uid);
     }
 
-    // Compensate for MS exchange temporarily failing to report existence of messages
-    QMailMessageKey existentUidKey(storedKey & reportedKey);
-    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
-    QMailMessageKey onServerButRemovedInStore(removedUidKey & existentUidKey);
-    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
-        qWarning() << "Unable to update unremoved message metadata for account:" << context->config().id();
-    }
-
     // Update any messages that are reported as read elsewhere, that previously were not
     if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 }
-
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -756,14 +747,14 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         // We have selected this folder - find out how many undiscovered messages exist
 
         // We need the UID of the most recent message we have previously discovered in this folder
-        QMailMessageKey key(QMailMessageKey::parentFolderId(_currentMailbox.id()));
-        QMailMessageSortKey sortKey(QMailMessageSortKey::id(Qt::DescendingOrder));
+        QMailFolderId folderId(context->mailbox().id);
+        QMailFolder folder(folderId);
 
-        QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sortKey));
-        if (!messageIds.isEmpty()) {
-            // Find this message's MSN
-            QMailMessageMetaData message(messageIds.first());
-            context->protocol().sendSearch(0, QString("UID ") + ImapProtocol::uid(message.serverUid()));
+        bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
+        int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+
+        if (clientMax) {
+            context->protocol().sendSearch(0, QString("UID %1").arg(clientMax));
         } else {
             // No messages - nothing to discover...
             handleSearch(context);

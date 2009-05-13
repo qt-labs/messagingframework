@@ -191,7 +191,7 @@ private:
 
     bool performMaintenance();
 
-    void createTemporaryTable(const QMailMessageKey::ArgumentType &arg) const;
+    void createTemporaryTable(const QMailMessageKey::ArgumentType &arg, const QString &dataType) const;
     void destroyTemporaryTables(void);
 
     bool transaction(void);
@@ -492,7 +492,7 @@ private:
     mutable IdCache<QMailFolder, QMailFolderId> folderCache;
     mutable IdCache<QMailAccount, QMailAccountId> accountCache;
 
-    mutable QList<const QMailMessageKey::ArgumentType*> requiredTableKeys;
+    mutable QList<QPair<const QMailMessageKey::ArgumentType*, QString> > requiredTableKeys;
     mutable QList<const QMailMessageKey::ArgumentType*> temporaryTableKeys;
     QList<const QMailMessageKey::ArgumentType*> expiredTableKeys;
 

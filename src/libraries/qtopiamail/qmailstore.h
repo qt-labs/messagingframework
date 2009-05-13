@@ -134,6 +134,9 @@ public:
     bool registerMessageStatusFlag(const QString& name);
     quint64 messageStatusMask(const QString& name) const;
 
+    void setRetrievalInProgress(const QMailAccountIdList &ids);
+    void setTransmissionInProgress(const QMailAccountIdList &ids);
+
     bool asynchronousEmission() const;
 
     void flushIpcNotifications();
@@ -164,6 +167,9 @@ signals:
     void messageRemovalRecordsAdded(const QMailAccountIdList& ids);
     void messageRemovalRecordsRemoved(const QMailAccountIdList& ids);
 
+    void retrievalInProgress(const QMailAccountIdList &ids);
+    void transmissionInProgress(const QMailAccountIdList &ids);
+
 private:
     friend class QMailStoreImplementationBase;
     friend class QMailStorePrivate;
@@ -180,6 +186,8 @@ private:
     void emitFolderNotification(ChangeType type, const QMailFolderIdList &ids);
     void emitMessageNotification(ChangeType type, const QMailMessageIdList &ids);
     void emitRemovalRecordNotification(ChangeType type, const QMailAccountIdList &ids);
+    void emitRetrievalInProgress(const QMailAccountIdList &ids);
+    void emitTransmissionInProgress(const QMailAccountIdList &ids);
 
     QMailStorePrivate* d;
 };
