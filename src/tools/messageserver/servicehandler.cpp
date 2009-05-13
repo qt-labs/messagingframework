@@ -692,6 +692,7 @@ void ServiceHandler::activateAction(quint64 action, const QSet<QMailMessageServi
     data.services = services;
     data.completion = completion;
     data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
+    data.reported = false;
 
     mActiveActions.insert(action, data);
 
@@ -737,10 +738,35 @@ void ServiceHandler::expireAction()
 
                 QSet<QMailAccountId> serviceAccounts;
 
+                bool retrievalSetModified(false);
+                bool transmissionSetModified(false);
+
                 // Remove this action
                 foreach (QMailMessageService *service, data.services) {
                     serviceAccounts.insert(service->accountId());
                     mServiceAction.remove(service);
+
+                    QMailAccountId accountId(service->accountId());
+                    if (accountId.isValid()) {
+                        if (data.completion == &ServiceHandler::retrievalCompleted) {
+                            if (_retrievalAccountIds.contains(accountId)) {
+                                _retrievalAccountIds.remove(accountId);
+                                retrievalSetModified = true;
+                            }
+                        } else if (data.completion == &ServiceHandler::transmissionCompleted) {
+                            if (_transmissionAccountIds.contains(accountId)) {
+                                _transmissionAccountIds.remove(accountId);
+                                transmissionSetModified = true;
+                            }
+                        }
+                    }
+                }
+
+                if (retrievalSetModified) {
+                    QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+                }
+                if (transmissionSetModified) {
+                    QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
                 }
 
                 mActiveActions.erase(it);
@@ -771,9 +797,35 @@ void ServiceHandler::cancelTransfer(quint64 action)
 {
     QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
     if (it != mActiveActions.end()) {
-        foreach (QMailMessageService *service, it.value().services) {
+        bool retrievalSetModified(false);
+        bool transmissionSetModified(false);
+
+        const ActionData &data(it.value());
+        foreach (QMailMessageService *service, data.services) {
             service->cancelOperation();
             mServiceAction.remove(service);
+
+            QMailAccountId accountId(service->accountId());
+            if (accountId.isValid()) {
+                if (data.completion == &ServiceHandler::retrievalCompleted) {
+                    if (_retrievalAccountIds.contains(accountId)) {
+                        _retrievalAccountIds.remove(accountId);
+                        retrievalSetModified = true;
+                    }
+                } else if (data.completion == &ServiceHandler::transmissionCompleted) {
+                    if (_transmissionAccountIds.contains(accountId)) {
+                        _transmissionAccountIds.remove(accountId);
+                        transmissionSetModified = true;
+                    }
+                }
+            }
+        }
+
+        if (retrievalSetModified) {
+            QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+        }
+        if (transmissionSetModified) {
+            QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
         }
 
         mActiveActions.erase(it);
@@ -822,6 +874,9 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
         if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & folderKey))) {
             qMailLog(Messaging) << "Unable to service request to add messages to sink for account:" << accountId;
             return false;
+        } else {
+            // This account is now transmitting
+            setTransmissionInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate sink for account"), accountId);
@@ -853,6 +908,9 @@ bool ServiceHandler::dispatchRetrieveFolderListAccount(quint64 action, const QBy
         if (!source->retrieveFolderList(accountId, folderId, descending)) {
             qMailLog(Messaging) << "Unable to service request to retrieve folder list for account:" << accountId;
             return false;
+        } else {
+            // This account is now retrieving (arguably...)
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -885,6 +943,9 @@ bool ServiceHandler::dispatchRetrieveMessageList(quint64 action, const QByteArra
         if (!source->retrieveMessageList(accountId, folderId, minimum, sort)) {
             qMailLog(Messaging) << "Unable to service request to retrieve message list for folder:" << folderId;
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -919,6 +980,11 @@ bool ServiceHandler::dispatchRetrieveMessages(quint64 action, const QByteArray &
             if (!source->retrieveMessages(it.value(), spec)) {
                 qMailLog(Messaging) << "Unable to service request to retrieve messages for account:" << it.key();
                 return false;
+            } else if (spec != QMailRetrievalAction::Flags) {
+                // This account is now retrieving
+                if (!_retrievalAccountIds.contains(it.key())) {
+                    _retrievalAccountIds.insert(it.key());
+                }
             }
         } else {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), it.key());
@@ -926,6 +992,7 @@ bool ServiceHandler::dispatchRetrieveMessages(quint64 action, const QByteArray &
         }
     }
 
+    QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
     return true;
 }
 
@@ -951,6 +1018,9 @@ bool ServiceHandler::dispatchRetrieveMessagePart(quint64 action, const QByteArra
         if (!source->retrieveMessagePart(partLocation)) {
             qMailLog(Messaging) << "Unable to service request to retrieve part for message:" << partLocation.containingMessageId();
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -983,6 +1053,9 @@ bool ServiceHandler::dispatchRetrieveMessageRange(quint64 action, const QByteArr
         if (!source->retrieveMessageRange(messageId, minimum)) {
             qMailLog(Messaging) << "Unable to service request to retrieve range:" << minimum << "for message:" << messageId;
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1015,6 +1088,9 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(quint64 action, const QByt
         if (!source->retrieveMessagePartRange(partLocation, minimum)) {
             qMailLog(Messaging) << "Unable to service request to retrieve range:" << minimum << "for part in message:" << partLocation.containingMessageId();
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1044,6 +1120,9 @@ bool ServiceHandler::dispatchRetrieveAll(quint64 action, const QByteArray &data)
         if (!source->retrieveAll(accountId)) {
             qMailLog(Messaging) << "Unable to service request to retrieve all messages for account:" << accountId;
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1102,6 +1181,9 @@ bool ServiceHandler::dispatchSynchronize(quint64 action, const QByteArray &data)
         if (!source->synchronize(accountId)) {
             qMailLog(Messaging) << "Unable to service request to synchronize account:" << accountId;
             return false;
+        } else {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1551,14 +1633,25 @@ void ServiceHandler::actionCompleted(bool success)
                     // Remove this service from the set for the action
                     data.services.erase(sit);
 
+                    // This account is no longer retrieving/transmitting
+                    QMailAccountId accountId(service->accountId());
+                    if (accountId.isValid()) {
+                        if (data.completion == &ServiceHandler::retrievalCompleted) {
+                            setRetrievalInProgress(accountId, false);
+                        } else if (data.completion == &ServiceHandler::transmissionCompleted) {
+                            setTransmissionInProgress(accountId, false);
+                        } 
+                    }
+
                     if (success) {
-                        if (data.services.isEmpty() && data.completion != 0) {
+                        if (data.services.isEmpty() && (data.reported == false)) {
                             // Report success
                             emit (this->*data.completion)(action);
+                            data.reported = true;
                         }
                     } else {
-                        // This action has failed - remove the completion signal so it can't be reported as successful
-                        data.completion = 0;
+                        // This action has failed - mark it so that it can't be reported as successful
+                        data.reported = true;
                     }
                 }
 
@@ -1672,9 +1765,47 @@ void ServiceHandler::finaliseSearch(quint64 action)
 
 void ServiceHandler::reportFailures()
 {
+    // We have no active accounts at this point
+    QMailStore::instance()->setRetrievalInProgress(QMailAccountIdList());
+    QMailStore::instance()->setTransmissionInProgress(QMailAccountIdList());
+
     while (!_failedRequests.isEmpty()) {
         quint64 action(_failedRequests.takeFirst());
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Failed to perform requested action!"));
+    }
+}
+
+void ServiceHandler::setRetrievalInProgress(const QMailAccountId &accountId, bool inProgress)
+{
+    bool modified(false);
+
+    if (inProgress && !_retrievalAccountIds.contains(accountId)) {
+        _retrievalAccountIds.insert(accountId);
+        modified = true;
+    } else if (!inProgress && _retrievalAccountIds.contains(accountId)) {
+        _retrievalAccountIds.remove(accountId);
+        modified = true;
+    }
+
+    if (modified) {
+        QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+    }
+}
+
+void ServiceHandler::setTransmissionInProgress(const QMailAccountId &accountId, bool inProgress)
+{
+    bool modified(false);
+
+    if (inProgress && !_transmissionAccountIds.contains(accountId)) {
+        _transmissionAccountIds.insert(accountId);
+        modified = true;
+    } else if (!inProgress && _transmissionAccountIds.contains(accountId)) {
+        _transmissionAccountIds.remove(accountId);
+        modified = true;
+    }
+
+    if (modified) {
+        QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
     }
 }
 

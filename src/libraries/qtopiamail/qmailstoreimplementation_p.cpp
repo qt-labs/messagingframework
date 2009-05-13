@@ -90,7 +90,9 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
     : QObject(parent),
       q(parent),
       errorCode(QMailStore::NoError),
-      asyncEmission(false)
+      asyncEmission(false),
+      retrievalSetInitialized(false),
+      transmissionSetInitialized(false)
 {
     Q_ASSERT(q);
 
@@ -159,6 +161,11 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     QCopAdaptor a("QPE/Qtopiamail");
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
     e << ::getpid();
+
+    if (flushTimer.isActive()) {
+        // We interrupted a batching period - reset the flush timer to its full period
+        flushTimer.start(flushTimeout);
+    }
 }
 
 void QMailStoreImplementationBase::processIpcMessageQueue()
@@ -364,6 +371,46 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
     }
 }
 
+void QMailStoreImplementationBase::notifyRetrievalInProgress(const QMailAccountIdList& ids)
+{
+    // Clients may want to enable or disable event handling based on this event, therefore
+    // we must ensure that all previous events are actually delivered before this one is.
+    flushIpcNotifications();
+
+    emitIpcUpdates(ids, retrievalInProgressSig());
+}
+
+void QMailStoreImplementationBase::notifyTransmissionInProgress(const QMailAccountIdList& ids)
+{
+    flushIpcNotifications();
+
+    emitIpcUpdates(ids, transmissionInProgressSig());
+}
+
+bool QMailStoreImplementationBase::setRetrievalInProgress(const QMailAccountIdList& ids)
+{
+    QSet<QMailAccountId> idSet(ids.toSet());
+    if ((idSet != retrievalInProgressIds) || !retrievalSetInitialized) {
+        retrievalInProgressIds = idSet;
+        retrievalSetInitialized = true;
+        return true;
+    }
+
+    return false;
+}
+
+bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountIdList& ids)
+{
+    QSet<QMailAccountId> idSet(ids.toSet());
+    if ((idSet != transmissionInProgressIds) || !transmissionSetInitialized) {
+        transmissionInProgressIds = idSet;
+        transmissionSetInitialized = true;
+        return true;
+    }
+
+    return false;
+}
+
 QString QMailStoreImplementationBase::accountAddedSig()
 {
     static QString s("accountAdded(int,QList<quint64>)");
@@ -448,6 +495,18 @@ QString QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()
     return s;
 }
 
+QString QMailStoreImplementationBase::retrievalInProgressSig()
+{
+    static QString s("retrievalInProgress(QList<quint64>)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::transmissionInProgressSig()
+{
+    static QString s("transmissionInProgress(QList<quint64>)");
+    return s;
+}
+
 QMailStoreImplementationBase::AccountUpdateSignalMap QMailStoreImplementationBase::initAccountUpdateSignals()
 {
     AccountUpdateSignalMap sig;
@@ -525,7 +584,18 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
         // We have been told to flush any pending ipc notifications
         queueTimer.stop();
         while (emitIpcNotification()) {}
+    } else if ((message == retrievalInProgressSig()) || (message == transmissionInProgressSig())) {
+        // Emit this message immediately
+        QMailAccountIdList ids;
+        ds >> ids;
+
+        if (message == retrievalInProgressSig()) {
+            emitIpcNotification(&QMailStore::retrievalInProgress, ids);
+        } else {
+            emitIpcNotification(&QMailStore::transmissionInProgress, ids);
+        }
     } else {
+        // Queue this message for batched delivery
         messageQueue.append(qMakePair(message, data));
         queueTimer.start(0);
     }

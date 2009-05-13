@@ -758,6 +758,30 @@ quint64 QMailStore::messageStatusMask(const QString& name) const
 }
 
 /*!
+    Sets the list of accounts currently retrieving from external sources to be \a ids.
+
+    \sa retrievalInProgress()
+*/
+void QMailStore::setRetrievalInProgress(const QMailAccountIdList &ids)
+{
+    if (d->setRetrievalInProgress(ids)) {
+        emitRetrievalInProgress(ids);
+    }
+}
+
+/*!
+    Sets the list of accounts currently transmitting to external sources to be \a ids.
+
+    \sa transmissionInProgress()
+*/
+void QMailStore::setTransmissionInProgress(const QMailAccountIdList &ids)
+{
+    if (d->setTransmissionInProgress(ids)) {
+        emitTransmissionInProgress(ids);
+    }
+}
+
+/*!
     Forces any queued event notifications to immediately be synchronously emitted, and processed
     synchronously by recipient processes.
 
@@ -891,6 +915,22 @@ void QMailStore::emitRemovalRecordNotification(ChangeType type, const QMailAccou
     }
 }
 
+/*! \internal */
+void QMailStore::emitRetrievalInProgress(const QMailAccountIdList &ids)
+{
+    d->notifyRetrievalInProgress(ids);
+
+    emit retrievalInProgress(ids);
+}
+
+/*! \internal */
+void QMailStore::emitTransmissionInProgress(const QMailAccountIdList &ids)
+{
+    d->notifyTransmissionInProgress(ids);
+
+    emit transmissionInProgress(ids);
+}
+
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
 
 /*!
@@ -1015,6 +1055,15 @@ QMailStore* QMailStore::instance()
 */
 
 /*!
+    \fn void QMailStore::folderContentsModified(const QMailFolderIdList& ids)
+
+    Signal that is emitted when changes to messages in the mail store
+    affect the content of the folders in the list \a ids.
+
+    \sa messagesAdded(), messagesUpdated(), messagesRemoved()
+*/
+
+/*!
     \fn void QMailStore::messageRemovalRecordsAdded(const QMailAccountIdList& ids)
 
     Signal that is emitted when QMailMessageRemovalRecords are added to the store, 
@@ -1033,12 +1082,25 @@ QMailStore* QMailStore::instance()
 */
 
 /*!
-    \fn void QMailStore::folderContentsModified(const QMailFolderIdList& ids)
+    \fn void QMailStore::retrievalInProgress(const QMailAccountIdList& ids)
 
-    Signal that is emitted when changes to messages in the mail store
-    affect the content of the folders in the list \a ids.
+    Signal that is emitted when the set of accounts currently retrieving from
+    external sources is modified to \a ids.  Accounts listed in \a ids are likely
+    to be the source of numerous mail store signals; some clients may wish to 
+    ignore updates associated with these accounts whilst they are engaged in retrieving.
 
-    \sa messagesAdded(), messagesUpdated(), messagesRemoved()
+    \sa transmissionInProgress()
+*/
+
+/*!
+    \fn void QMailStore::transmissionInProgress(const QMailAccountIdList& ids)
+
+    Signal that is emitted when the set of accounts currently transmitting to
+    external sources is modified to \a ids.  Accounts listed in \a ids are likely
+    to be the source of numerous mail store signals; some clients may wish to 
+    ignore updates associated with these accounts whilst they are engaged in transmitting.
+
+    \sa retrievalInProgress()
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

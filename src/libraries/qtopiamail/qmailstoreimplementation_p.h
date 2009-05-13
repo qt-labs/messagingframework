@@ -51,6 +51,11 @@ public:
     void notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids);
     void notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids);
     void notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
+    void notifyRetrievalInProgress(const QMailAccountIdList& ids);
+    void notifyTransmissionInProgress(const QMailAccountIdList& ids);
+
+    bool setRetrievalInProgress(const QMailAccountIdList &ids);
+    bool setTransmissionInProgress(const QMailAccountIdList &ids);
 
     static QString accountAddedSig();
     static QString accountRemovedSig();
@@ -69,6 +74,9 @@ public:
 
     static QString messageRemovalRecordsAddedSig();
     static QString messageRemovalRecordsRemovedSig();
+
+    static QString retrievalInProgressSig();
+    static QString transmissionInProgressSig();
 
     static const int maxNotifySegmentSize = 0;
 
@@ -126,6 +134,12 @@ private:
     QSet<QMailFolderId> folderContentsModifiedBuffer;
     QSet<QMailAccountId> accountContentsModifiedBuffer;
     QSet<QMailMessageId> messageContentsModifiedBuffer;
+
+    bool retrievalSetInitialized;
+    bool transmissionSetInitialized;
+
+    QSet<QMailAccountId> retrievalInProgressIds;
+    QSet<QMailAccountId> transmissionInProgressIds;
 
     QTimer queueTimer;
     QList<QPair<QString, QByteArray> > messageQueue;
