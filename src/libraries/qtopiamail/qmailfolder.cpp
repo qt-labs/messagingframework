@@ -107,7 +107,6 @@ private:
 
 /*!
     \class QMailFolder
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailFolder class represents a folder for mail messages in the mail store.

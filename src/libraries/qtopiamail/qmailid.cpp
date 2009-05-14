@@ -95,7 +95,6 @@ QTextStream& operator<< (QTextStream& s, const MailId &id)
 
 /*!
     \class QMailAccountId
-    \inpublicgroup QtMessagingModule
     \ingroup messaginglibrary
 
     \preliminary
@@ -234,7 +233,6 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 
 /*!
     \class QMailFolderId
-    \inpublicgroup QtMessagingModule
     \ingroup messaginglibrary
 
     \preliminary
@@ -373,7 +371,6 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
 
 /*!
     \class QMailMessageId
-    \inpublicgroup QtMessagingModule
     \ingroup messaginglibrary
 
     \preliminary

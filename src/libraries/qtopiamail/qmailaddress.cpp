@@ -764,7 +764,6 @@ void QMailAddressPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailAddress
-    \inpublicgroup QtMessagingModule
 
     \brief The QMailAddress class provides an interface for manipulating message address strings.
     \ingroup messaginglibrary

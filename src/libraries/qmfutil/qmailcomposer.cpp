@@ -57,7 +57,6 @@ static QMailComposerInterface* mapping(const QString& key)
 
 /*!
     \class QMailComposerInterface
-    \inpublicgroup QtMessagingModule
     \ingroup qmfutil
 
     \brief The QMailComposerInterface class defines the interface to objects that can compose a mail message.
@@ -280,7 +279,6 @@ QString QMailComposerInterface::status() const
 
 /*!
     \class QMailComposerFactory
-    \inpublicgroup QtMessagingModule
     \ingroup qmfutil
 
     \brief The QMailComposerFactory class creates objects implementing the QMailComposerInterface interface.

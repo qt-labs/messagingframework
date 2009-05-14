@@ -124,7 +124,6 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
 
 /*!
   \class QMailAccountListModel 
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \ingroup messaginglibrary 

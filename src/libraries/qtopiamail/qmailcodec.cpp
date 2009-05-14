@@ -25,7 +25,6 @@ int QTOPIAMAIL_EXPORT QuotedPrintableMaxLineLength = 74;
 
 /*!
   \class QMailCodec
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \brief The QMailCodec class provides mechanisms for encoding and decoding between 7-bit ASCII strings
@@ -363,7 +362,6 @@ static inline unsigned char base64Index(const char ascii)
 
 /*!
   \class QMailBase64Codec
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \brief The QMailBase64Codec class encodes or decodes between 8-bit data and 7-bit ASCII, using the Base64
@@ -663,7 +661,6 @@ static inline unsigned char decodeCharacter(unsigned char value)
 
 /*!
   \class QMailQuotedPrintableCodec
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \brief The QMailQuotedPrintableCodec class encodes or decodes between 8-bit data and 7-bit ASCII, 
@@ -935,7 +932,6 @@ static void writeStream(QDataStream& out, const char* it, int length)
 
 /*!
   \class QMailPassThroughCodec
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \brief The QMailPassThroughCodec class uses the QMailCodec interface to move data between streams
@@ -989,7 +985,6 @@ void QMailPassThroughCodec::decodeChunk(QDataStream& out, const char* it, int le
 
 /*!
   \class QMailLineEndingCodec
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \brief The QMailLineEndingCodec class encodes textual data to use CR/LF line endings required for SMTP transmission.

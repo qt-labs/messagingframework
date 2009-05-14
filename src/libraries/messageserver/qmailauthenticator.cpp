@@ -13,7 +13,6 @@
 
 /*!
     \class QMailAuthenticator
-    \inpublicgroup QtMessagingModule
     \ingroup libmessageserver
 
     \preliminary

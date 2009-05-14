@@ -41,7 +41,6 @@ template class QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>;
 
 /*!
     \class QMailMessageSetContainer
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -218,7 +217,6 @@ public:
 
 /*!
     \class QMailMessageSet
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -376,7 +374,6 @@ public:
 
 /*!
     \class QMailFolderMessageSet
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -605,7 +602,6 @@ public:
 
 /*!
     \class QMailAccountMessageSet
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -844,7 +840,6 @@ public:
 
 /*!
     \class QMailFilterMessageSet
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1085,7 +1080,6 @@ public:
 
 /*!
     \class QMailMessageSetModel
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1098,7 +1092,7 @@ public:
     to construct a hierarchical tree of message folders, or other, more flexible ways of 
     partitioning the set of messages into hierarchical groups.
 
-    QMailMessageListModel inherits from QAbstractListModel, so it is suitable for use 
+    QMailMessageSetModel inherits from QAbstractItemModel, so it is suitable for use 
     with the Qt View classes such as QTreeView, to visually represent the hierachical
     structure.
 
@@ -1107,9 +1101,9 @@ public:
     function is used to disable this feature.
 
     To customize the display of QMailMessageSets, create a delegate that paints the
-    object as desired, using data elements accessed via the QMailMessageSetModel
-    data() method.  The data() function should be overridden to support additional roles, 
-    or to customize the display of existing roles.
+    object as desired, using data elements accessed via the data() function.  
+    The data() function should be overridden by subclasses to support additional roles, 
+    or to customize the data displayed for existing roles.
 
     To define the content of a QMailMessageSetModel, derive classes from QMailMessageSet
     which select your desired message sets, and add them to the model in the init() 
