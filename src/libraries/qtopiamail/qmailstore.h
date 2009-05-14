@@ -174,6 +174,7 @@ private:
     friend class QMailStoreImplementationBase;
     friend class QMailStorePrivate;
     friend class tst_QMailStore;
+    friend class tst_QMailStoreKeys;
 
     QMailStore();
 
