@@ -498,7 +498,6 @@ QList<QMailMessageListModelPrivate::LocationSequence> QMailMessageListModelPriva
 
 /*!
   \class QMailMessageListModel 
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \ingroup messaginglibrary 

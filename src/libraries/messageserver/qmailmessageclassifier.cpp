@@ -15,7 +15,6 @@
 
 /*!
     \class QMailMessageClassifier
-    \inpublicgroup QtMessagingModule
     \ingroup libmessageserver
 
     \preliminary

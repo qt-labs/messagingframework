@@ -53,7 +53,6 @@ QMailContentManager *mapping(const QString &scheme)
 
 /*!
     \class QMailContentManagerFactory
-    \inpublicgroup QtMessagingModule
 
     \brief The QMailContentManagerFactory class creates objects implementing the QMailContentManager interface.
     \ingroup messaginglibrary
@@ -125,7 +124,6 @@ void QMailContentManagerFactory::clearContent()
 
 /*!
     \class QMailContentManagerPluginInterface
-    \inpublicgroup QtMessagingModule
 
     \brief The QMailContentManagerPluginInterface class defines the interface to plugins that provide message content management facilities.
     \ingroup messaginglibrary
@@ -151,7 +149,6 @@ void QMailContentManagerFactory::clearContent()
 
 /*!
     \class QMailContentManagerPlugin
-    \inpublicgroup QtMessagingModule
 
     \brief The QMailContentManagerPlugin class defines a base class for implementing message content manager plugins.
     \ingroup messaginglibrary
@@ -188,7 +185,6 @@ QStringList QMailContentManagerPlugin::keys() const
 
 /*!
     \class QMailContentManager
-    \inpublicgroup QtMessagingModule
 
     \brief The QMailContentManager class defines the interface to objects that provide a storage facility for message content.
     \ingroup messaginglibrary

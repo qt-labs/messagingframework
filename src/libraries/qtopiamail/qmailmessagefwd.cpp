@@ -8,12 +8,6 @@
 **
 ****************************************************************************/
 
-/* 
-    TODO: Do we need these?
-    \inpublicgroup QtMessagingModule
-    \ingroup messaginglibrary
-*/
-
 /*!
     \class QMailMessageHeaderFieldFwd
     \preliminary

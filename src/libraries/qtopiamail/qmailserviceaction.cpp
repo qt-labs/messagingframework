@@ -310,7 +310,6 @@ template class QPrivatelyNoncopyable<QMailServiceActionPrivate>;
 
 /*!
     \class QMailServiceAction::Status
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -450,7 +449,6 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 
 /*!
     \class QMailServiceAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -720,7 +718,6 @@ template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
 
 /*!
     \class QMailRetrievalAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -987,7 +984,6 @@ template class QPrivatelyNoncopyable<QMailTransmitActionPrivate>;
 
 /*!
     \class QMailTransmitAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1134,7 +1130,6 @@ template class QPrivatelyNoncopyable<QMailStorageActionPrivate>;
 
 /*!
     \class QMailStorageAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1304,7 +1299,6 @@ template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
 
 /*!
     \class QMailSearchAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1446,7 +1440,6 @@ template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
 
 /*!
     \class QMailProtocolAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary

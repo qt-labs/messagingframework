@@ -13,7 +13,6 @@
 
 /*!
     \class QMailAccountSortKey
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailAccountSortKey class defines the parameters used for sorting a subset of 

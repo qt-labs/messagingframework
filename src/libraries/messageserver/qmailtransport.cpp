@@ -90,7 +90,6 @@ qint64 QMailTransport::Socket::bytesSinceMark() const
 
 /*!
     \class QMailTransport
-    \inpublicgroup QtMessagingModule
     \ingroup libmessageserver
 
     \preliminary
