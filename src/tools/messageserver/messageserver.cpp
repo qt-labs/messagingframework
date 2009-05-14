@@ -36,7 +36,7 @@ MessageServer::MessageServer(QObject *parent)
         it.value() = 0;
 
     QMailStore *store = QMailStore::instance();
-    if (!store->initialized()) {
+    if (store->initializationState() != QMailStore::Initialized) {
         qFatal("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
         // Do not close, however, or QPE will start another instance.
     } else {

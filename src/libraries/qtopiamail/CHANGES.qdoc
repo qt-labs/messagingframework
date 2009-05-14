@@ -18,6 +18,10 @@ Changes since the development preview release on 03/04/09:
          'QMailStore::transmissionInProgress()' and
          'QMailStore::setTransmissionInProgress()'.
 
+3. Replaced 'QMailStore::initialized() const' and
+            'QMailStore::storeInitialized()' with
+            'QMailStore::InitializationState QMailStore::initializationState()'.
+
 
 *****************************************************************************
 

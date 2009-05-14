@@ -36,6 +36,13 @@ class QTOPIAMAIL_EXPORT QMailStore : public QObject
     Q_OBJECT
 
 public:
+    enum InitializationState
+    {
+        Uninitialized = 0,
+        InitializationFailed,
+        Initialized
+    };
+
     enum ReturnOption
     {
         ReturnAll = 0,
@@ -69,8 +76,7 @@ public:
 public:
     virtual ~QMailStore();
 
-    bool initialized() const;
-    static bool storeInitialized();
+    static InitializationState initializationState();
 
     QMailStore::ErrorCode lastError() const;
 

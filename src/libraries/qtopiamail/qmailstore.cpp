@@ -68,6 +68,15 @@
 */
 
 /*!
+    \enum QMailStore::InitializationState
+    This enum defines the initialization states that the mail store can assume.
+
+    \value Uninitialized        The mail store has not yet been instantiated and initialized.
+    \value InitializationFailed The mail store has been instantiated and initization was unsuccessful.
+    \value Initialized          The mail store has been instantiated and successfully initialized.
+*/
+
+/*!
     \enum QMailStore::ReturnOption
     This enum defines the meta data list return option for QMailStore::messagesMetaData()
 
@@ -125,19 +134,11 @@ QMailStore::~QMailStore()
 }
 
 /*!
-    Returns true if the QMailStore object was correctly initialized.
+    Returns the initialization state of the QMailStore.
 */
-bool QMailStore::initialized() const
+QMailStore::InitializationState QMailStore::initializationState()
 {
-    return QMailStore::storeInitialized();
-}
-
-/*!
-    Returns true if the QMailStore was correctly initialized.
-*/
-bool QMailStore::storeInitialized()
-{
-    return QMailStorePrivate::initialized();
+    return QMailStorePrivate::initializationState();
 }
 
 /*!
@@ -969,15 +970,18 @@ void QMailStore::emitTransmissionInProgress(const QMailAccountIdList &ids)
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
 
 /*!
-    Returns an instance of the QMailStore object.
-*/
+    Returns the single instance of the QMailStore class.
 
+    If necessary, the store will be instantiated and initialized.
+
+    \sa initializationState()
+*/
 QMailStore* QMailStore::instance()
 {
     static bool init = false;
     if (!init) {
         init = true;
-        QMailStoreInstance()->d->initStore();
+        QMailStoreInstance()->d->initialize();
     }
     return QMailStoreInstance();
 }

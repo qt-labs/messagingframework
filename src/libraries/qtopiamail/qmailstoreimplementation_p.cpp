@@ -84,7 +84,7 @@ void dispatchNotifications(IDSetType &ids, const QString &sig)
 } 
 
 
-bool QMailStoreImplementationBase::init = false;
+QMailStore::InitializationState QMailStoreImplementationBase::initState = QMailStore::Uninitialized;
 
 QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
     : QObject(parent),
@@ -121,14 +121,14 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
             SLOT(aboutToQuit()));
 }
 
-bool QMailStoreImplementationBase::initStore()
+void QMailStoreImplementationBase::initialize()
 {
-    return false;
+    initState = (initStore() ? QMailStore::Initialized : QMailStore::InitializationFailed);
 }
 
-bool QMailStoreImplementationBase::initialized()
+QMailStore::InitializationState QMailStoreImplementationBase::initializationState()
 {
-    return init;
+    return initState;
 }
 
 QMailStore::ErrorCode QMailStoreImplementationBase::lastError() const
