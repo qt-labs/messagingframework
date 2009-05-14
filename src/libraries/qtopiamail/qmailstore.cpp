@@ -28,6 +28,42 @@
     QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts and QMailMessages
     when used in conjunction with QMailMessageKey, QMailFolderKey and QMailAccountKey classes.
 
+    Messaging accounts are represented by QMailAccountId objects.  The data associated with
+    accounts is separated into two components: QMailAccount objects hold account properties
+    exported to mail store client applications, and QMailAccountConfiguration objects hold
+    data used only by the messageserver and the protocol plugins it loads.
+
+    Account objects are accessed via the account(), accountConfiguration(), countAccounts()
+    and queryAccounts() functions.  Accounts in the mail store can be manipulated via the 
+    addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
+    affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
+    accountContentsModified() and accountsRemoved() signals.
+
+    Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
+    The data associated with folders is held by instances of the QMailFolder class.
+
+    Folder objects are accessed via the folder(), countFolders() and queryFolders() functions.  
+    Folders in the mail store can be manipulated via the addFolder(), updateFolder() and 
+    removeFolder() functions.  Mail store manipulations affecting folders are reported via 
+    the foldersAdded(), foldersUpdated(), folderContentsModified() and foldersRemoved() signals.
+
+    Messages in the mail store are represented by QMailMessageId objects.  The data associated
+    with a message can be retrieved in two forms: QMailMessageMetaData objects contain only
+    the meta data fields associated with a message, and QMailMessage objects contain both
+    the meta data fields and the message content proper.
+
+    Message objects are accessed via the message(), messageMetaData(), countMessages()
+    and queryMessages() functions.  Additionally, the messagesMetaData() function can be
+    used to retrieve subsets of meta data pertaining to a set of messages.  Messages in 
+    the mail store can be manipulated via the addMessage(), updateMessage() and removeMessage() 
+    functions.  Mail store manipulations affecting messages are reported via the messagesAdded(), 
+    messagesUpdated(), messageContentsModified() and messagesRemoved() signals.
+
+    Messages that have been removed can be represented by removal records, which persist 
+    only to assist in keeping mail store content synchronized with the content of
+    an external message source.  QMailMessageRemovalRecord objects can be accessed
+    via the messageRemovalRecords() function.
+
     \sa QMailMessage, QMailFolder, QMailMessageKey, QMailFolderKey, QMailAccountKey
 */
 
