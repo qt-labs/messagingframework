@@ -2065,6 +2065,8 @@ void QMailStorePrivate::clearContent()
     messageCache.clear();
     uidCache.clear();
 
+    Transaction t(this);
+
     // Drop all data
     foreach (const QString &table, database.tables()) {
         if (table != "versioninfo") {
@@ -2074,6 +2076,10 @@ void QMailStorePrivate::clearContent()
                 qMailLog(Messaging) << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
             }
         }
+    }
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << "Could not commit clearContent operation to database";
     }
     
     // Remove all content
