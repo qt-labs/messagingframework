@@ -124,7 +124,7 @@ tst_QMailStoreKeys::~tst_QMailStoreKeys()
 
 void tst_QMailStoreKeys::initTestCase()
 {
-    // Instantiate the store to initialise the values of the status flags
+    // Instantiate the store to initialise the values of the status flags and create the standard folders
     QMailStore::instance();
 
     // Create the data set we will test our keys upon
@@ -451,6 +451,7 @@ void tst_QMailStoreKeys::initTestCase()
 
 void tst_QMailStoreKeys::cleanupTestCase()
 {
+    QMailStore::instance()->clearContent();
 }
 
 using namespace QMailDataComparator;
