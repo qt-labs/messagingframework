@@ -760,11 +760,16 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         QMailFolderId folderId(context->mailbox().id);
         QMailFolder folder(folderId);
 
-        bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
-        int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
+        // toUint returns 0 on error, which is an invalid IMAP uid
+        int clientMax(folder.customField("qmf-max-serveruid").toUInt());
 
-        if (clientMax) {
-            context->protocol().sendSearch(0, QString("UID %1:*").arg(clientMax + 1));
+        if (clientMax && context->mailbox().exists) {
+            if (context->mailbox().uidNext > (clientMax + 1)) {
+                context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(context->mailbox().uidNext));
+            } else {
+                // There's no need to search if (clientMax <= (UIDNEXT - 1))
+                handleSearch(context);
+            }
         } else {
             // No messages - nothing to discover...
             handleSearch(context);
@@ -862,17 +867,17 @@ void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMa
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
 {
-    // The undiscoverd count for a folder is the number of messages on the server newer 
-    // than the most recent (highest server uid) message in the folder.
-    QMailFolder folder(_currentMailbox.id());
-    int undiscovered(context->mailbox().msnList.count());
-    
     // Initial case set the undiscovered count to exists in the case of no 
     // max-serveruid set for the folder
-    bool ok;
-    int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
-    if (!clientMax)
-        undiscovered = context->mailbox().exists;
+    int undiscovered(context->mailbox().exists);
+
+    QMailFolder folder(_currentMailbox.id());
+    int clientMax(folder.customField("qmf-max-serveruid").toUInt());
+    if (clientMax) {
+        // The undiscovered count for a folder is the number of messages on the server newer 
+        // than the most recent (highest server uid) message in the folder.
+        undiscovered = context->mailbox().msnList.count();
+    }
     
     if (uint(undiscovered) != folder.serverUndiscoveredCount()) {
         folder.setServerUndiscoveredCount(undiscovered);
