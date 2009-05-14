@@ -1000,7 +1000,11 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
 
         context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
         _newUids = _newUids.mid(uidList.count());
-    } else if (!selectNextPreviewFolder(context)) {
+        return;
+    }
+    
+    previewingCompleted(context);
+    if (!selectNextPreviewFolder(context)) {
         // No more messages to preview
         if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
             if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
@@ -1028,6 +1032,10 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
             }
         }
     }
+}
+
+void ImapSynchronizeBaseStrategy::previewingCompleted(ImapStrategyContextBase *)
+{
 }
 
 void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
@@ -1419,10 +1427,6 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
     QMailFolder folder(boxId);
     
-    // Folder min/max invalidated
-    folder.removeCustomField("qmf-min-serveruid");
-    folder.removeCustomField("qmf-max-serveruid");
-    
     if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
         !(_currentMailbox.status() & QMailFolder::Synchronized)) {
         // We have just synchronized this folder
@@ -1525,6 +1529,20 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     }
 
     return false;
+}
+
+void ImapSynchronizeAllStrategy::previewingCompleted(ImapStrategyContextBase *context)
+{
+    QMailFolder folder(context->mailbox().id);
+    if (context->mailbox().exists > 0) {
+        folder.setCustomField("qmf-min-serveruid", QString::number(1));
+        folder.setCustomField("qmf-max-serveruid", QString::number(context->mailbox().uidNext - 1));
+        folder.setServerUndiscoveredCount(0);
+
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            qWarning() << "Unable to update folder for account:" << context->config().id();
+        }
+    }
 }
 
 
