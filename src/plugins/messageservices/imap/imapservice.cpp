@@ -30,6 +30,7 @@ public:
           _service(service),
           _flagsCheckQueued(false),
           _queuedMailCheckInProgress(false),
+          _mailCheckPhase(RetrieveFolders),
           _unavailable(false),
           _synchronizing(false),
           _actionCompletedSignal(0)
@@ -81,9 +82,13 @@ public slots:
 private:
     virtual bool setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&) = 0);
 
+    enum MailCheckPhase { RetrieveFolders = 0, RetrieveMessages, CheckFlags };
+
     ImapService *_service;
     bool _flagsCheckQueued;
     bool _queuedMailCheckInProgress;
+    MailCheckPhase _mailCheckPhase;
+    QMailFolderId _mailCheckFolderId;
     bool _unavailable;
     bool _synchronizing;
     QTimer _intervalTimer;
@@ -392,8 +397,13 @@ void ImapService::Source::retrievalCompleted()
     _unavailable = false;
 
     if (_queuedMailCheckInProgress) {
-        _queuedMailCheckInProgress = false;
-        emit _service->availabilityChanged(true);
+        if (_mailCheckPhase == RetrieveFolders) {
+            _mailCheckPhase = RetrieveMessages;
+            retrieveMessageList(_service->accountId(), _mailCheckFolderId, 1, QMailMessageSortKey());
+        } else {
+            _queuedMailCheckInProgress = false;
+            emit _service->availabilityChanged(true);
+        }
     }
 
     emit _service->activityChanged(QMailServiceAction::Successful);
@@ -435,9 +445,11 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
 
     _queuedFolders.removeAll(folderId);
     _queuedMailCheckInProgress = true;
+    _mailCheckPhase = RetrieveFolders;
+    _mailCheckFolderId = folderId;
 
     emit _service->availabilityChanged(false);
-    retrieveMessageList(_service->accountId(), folderId, 1, QMailMessageSortKey());
+    retrieveFolderList(_service->accountId(), folderId, true);
 }
 
 void ImapService::Source::queueFlagsChangedCheck()
@@ -449,6 +461,7 @@ void ImapService::Source::queueFlagsChangedCheck()
     
     _flagsCheckQueued = false;
     _queuedMailCheckInProgress = true;
+    _mailCheckPhase = CheckFlags;
 
     emit _service->availabilityChanged(false);
     
