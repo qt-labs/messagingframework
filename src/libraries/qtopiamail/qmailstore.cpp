@@ -28,6 +28,10 @@
     QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts and QMailMessages
     when used in conjunction with QMailMessageKey, QMailFolderKey and QMailAccountKey classes.
 
+    If a QMailStore operation fails, the lastError() function will return an error code
+    value indicating the failure mode encountered.  A successful operation will set the 
+    lastError() result to QMailStore::NoError.
+
     Messaging accounts are represented by QMailAccountId objects.  The data associated with
     accounts is separated into two components: QMailAccount objects hold account properties
     exported to mail store client applications, and QMailAccountConfiguration objects hold
@@ -56,15 +60,17 @@
     and queryMessages() functions.  Additionally, the messagesMetaData() function can be
     used to retrieve subsets of meta data pertaining to a set of messages.  Messages in 
     the mail store can be manipulated via the addMessage(), updateMessage() and removeMessage() 
-    functions.  Mail store manipulations affecting messages are reported via the messagesAdded(), 
-    messagesUpdated(), messageContentsModified() and messagesRemoved() signals.
+    functions.  Multiple messages can have their meta data fields updated together via 
+    the updateMessagesMetaData() function.  Mail store manipulations affecting messages are 
+    reported via the messagesAdded(), messagesUpdated(), messageContentsModified() and 
+    messagesRemoved() signals.
 
     Messages that have been removed can be represented by removal records, which persist 
     only to assist in keeping mail store content synchronized with the content of
     an external message source.  QMailMessageRemovalRecord objects can be accessed
     via the messageRemovalRecords() function.
 
-    \sa QMailMessage, QMailFolder, QMailMessageKey, QMailFolderKey, QMailAccountKey
+    \sa QMailAccount, QMailFolder, QMailMessage
 */
 
 /*!
