@@ -40,6 +40,8 @@ public:
     QString composer() const;
     bool forcedClosure();
 
+    void setVisible(bool visible);
+
 public slots:
     bool saveChangesOnRequest();
     bool prepareComposer( QMailMessage::MessageType = QMailMessage::AnyType);

@@ -50,14 +50,12 @@ public:
 
 public slots:
     void clear();
-    //void attach( const QContent &lnk, QMailMessage::AttachmentsAction = QMailMessage::LinkToAttachments );
     void setSignature( const QString &sig );
 
 protected slots:
     void selectAttachment();
     void updateLabel();
     void setCursorPosition();
-    void updateAttachmentsLabel();
 
 private:
     void create(const QMailMessage& source);

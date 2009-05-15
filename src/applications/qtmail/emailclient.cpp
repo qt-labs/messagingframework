@@ -282,7 +282,7 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
 WriteMail* MessageUiBase::createWriteMailWidget()
 {
     WriteMail* writeMail = new WriteMail(this);
-    writeMail->setGeometry(0,0,400,400);
+    writeMail->setGeometry(0,0,500,400);
     writeMail->setObjectName("write-mail");
 
     connect(writeMail, SIGNAL(enqueueMail(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)));
@@ -1823,7 +1823,11 @@ void EmailClient::composeActivated()
 {
     delayedInit();
     if(writeMailWidget()->prepareComposer())
+    {
         writeMailWidget()->show();
+        writeMailWidget()->raise();
+        writeMailWidget()->activateWindow();
+    }
 }
 
 void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::MessageType type)
