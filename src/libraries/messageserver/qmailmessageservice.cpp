@@ -949,6 +949,12 @@ void QMailMessageSink::notImplemented()
     information about the actions of messaging service components.  It also provides the 
     \l{QMailMessageService::source()}{source} and \l{QMailMessageService::sink()}{sink} functions that 
     the message server uses to acquire access to the functionality that the service may implement.
+
+    Subclasses of QMailMessageService are instantiated by the message server process, one for each 
+    enabled account that is configured to use that service.  The QMailMessageService interface does
+    not cater for concurrent actions; each instance may only service a single request at any given
+    time.  The message server process provides request queueing so that QMailMessageService objects
+    see only a sequential series of requests.
 */
 
 /*!

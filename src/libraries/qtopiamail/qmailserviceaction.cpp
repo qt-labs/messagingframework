@@ -470,6 +470,15 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 
     A user may attempt to cancel an operation after it has been initiated.  The cancelOperation()
     slot is provided for this purpose.
+
+    A QMailServiceAction instance supports only a single request at any time.  An application
+    may, however, use multiple QMailServiceAction instances to send independent requests concurrently.
+    Each QMailServiceAction instance will report only the changes pertaining to the request
+    that instance delivered.  Whether or not concurrent requests are concurrently serviced by 
+    the message server depends on whether those requests must be serviced by the same 
+    QMailMessageService instance.
+
+    \sa QMailMessageService
 */
 
 /*!
