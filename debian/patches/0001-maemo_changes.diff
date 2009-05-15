@@ -1,8 +1,8 @@
 diff --git a/qmf.pro b/qmf.pro
-index cd9a51e..3415d8e 100644
+index cd9a51e..f7e97ed 100644
 --- a/qmf.pro
 +++ b/qmf.pro
-@@ -1,5 +1,6 @@
+@@ -1,10 +1,13 @@
  TEMPLATE = subdirs
 -SUBDIRS = src/libraries/qtopiamail \
 +SUBDIRS = src/libraries/sparql \
@@ -10,11 +10,18 @@ index cd9a51e..3415d8e 100644
            src/libraries/messageserver \
            src/libraries/qmfutil \
            src/plugins/messageservices/imap \
+           src/plugins/messageservices/pop \
+           src/plugins/messageservices/smtp \
++          src/plugins/messageservices/dummysink \
++          src/plugins/messageservices/dummysource \
+           src/plugins/messageservices/qtopiamailfile \
+           src/plugins/contentmanagers/qtopiamailfile \
+           src/plugins/viewers/generic \
 diff --git a/src/applications/qtmail/qtmail.pro b/src/applications/qtmail/qtmail.pro
-index 74c79bc..65be577 100644
+index 74c79bc..2ec5e71 100644
 --- a/src/applications/qtmail/qtmail.pro
 +++ b/src/applications/qtmail/qtmail.pro
-@@ -11,7 +11,11 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
+@@ -11,7 +11,18 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
                   ../../libraries/qmfutil
  
  LIBS += -L../../libraries/qtopiamail -lqtopiamail \
@@ -22,8 +29,15 @@ index 74c79bc..65be577 100644
 +        -L../../libraries/qmfutil    -lqmfutil
 +
 +QMAKE_LFLAGS += -Wl,-rpath,../../libraries/qtopiamail \
-+                -Wl,-rpath,../../libraries/qmfutil \
-+                -Wl,-rpath,../../libraries/sparql
++                -Wl,-rpath,../../libraries/qmfutil
++
++sparql {
++
++LIBS += -L../../libraries/sparql -lsparql
++
++QMAKE_LFLAGS += -Wl,-rpath,../../libraries/sparql
++
++}
  
  HEADERS += foldermodel.h \
             folderdelegate.h \
@@ -595,7 +609,7 @@ index 0000000..cfbd6ca
 @@ -0,0 +1 @@
 +#include "qmailserviceaction.h"
 diff --git a/src/libraries/qtopiamail/qmailstore.cpp b/src/libraries/qtopiamail/qmailstore.cpp
-index bc5fecc..992cafc 100644
+index d0a8cdb..300f5bd 100644
 --- a/src/libraries/qtopiamail/qmailstore.cpp
 +++ b/src/libraries/qtopiamail/qmailstore.cpp
 @@ -11,7 +11,12 @@
@@ -611,6 +625,59 @@ index bc5fecc..992cafc 100644
  
  /*!
      \class QMailStore
+diff --git a/src/libraries/qtopiamail/qmailstore_p.cpp b/src/libraries/qtopiamail/qmailstore_p.cpp
+index 016f218..62eb13f 100644
+--- a/src/libraries/qtopiamail/qmailstore_p.cpp
++++ b/src/libraries/qtopiamail/qmailstore_p.cpp
+@@ -1941,6 +1941,7 @@ int QMailStorePrivate::pathIdentifier(const QString &filePath)
+ 
+ int QMailStorePrivate::databaseIdentifier(int n) const
+ {
++    qMailLog(Messaging) << "Database name:" << database.databaseName();
+     int result = static_cast<int>(::ftok(database.databaseName().toAscii(), n));
+     if (result == -1)
+         qFatal("Could not create database semaphore. Database could not be found.");
+@@ -1960,12 +1961,17 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
+       lastQueryError(0),
+       mutex(0)
+ {
+-    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
++    ProcessMutex creationMutex(pathIdentifier(QDir::homePath()));
+     MutexGuard guard(creationMutex);
+     if (guard.lock(1000)) {
++        qMailLog(Messaging) << "Successfully lock mutex at:" << QDir::homePath();
++
+         //open the database
+         database = QMail::createDatabase();
++    } else {
++        qMailLog(Messaging) << "Failed to lock the mutex:" << QDir::homePath();
+     }
++
+     mutex = new ProcessMutex(databaseIdentifier(1));
+     readLock = new ProcessReadLock(databaseIdentifier(2));
+     if (contentMutex == 0) {
+@@ -1996,7 +2002,7 @@ ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
+ 
+ bool QMailStorePrivate::initStore()
+ {
+-    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
++    ProcessMutex creationMutex(pathIdentifier(QDir::homePath()));
+     MutexGuard guard(creationMutex);
+     if (!guard.lock(1000)) {
+         return false;
+diff --git a/src/libraries/qtopiamail/qmailstore_p.h b/src/libraries/qtopiamail/qmailstore_p.h
+index 4b011d7..c9c1071 100644
+--- a/src/libraries/qtopiamail/qmailstore_p.h
++++ b/src/libraries/qtopiamail/qmailstore_p.h
+@@ -26,7 +26,7 @@
+ #include <QSqlDatabase>
+ #include <QCache>
+ 
+-//#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
++#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
+ //#define QMAILSTORE_USE_RTTI //define if RTTI is available to assist debugging
+ 
+ #ifdef QMAILSTORE_USE_RTTI
 diff --git a/src/libraries/qtopiamail/qmailstore_sparql.cpp b/src/libraries/qtopiamail/qmailstore_sparql.cpp
 new file mode 100644
 index 0000000..132f0a7
@@ -4408,7 +4475,7 @@ index 0000000..fe05e08
 +
 +#endif
 diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
-index c715160..7d28130 100644
+index c715160..069f2cd 100644
 --- a/src/libraries/qtopiamail/qtopiamail.pro
 +++ b/src/libraries/qtopiamail/qtopiamail.pro
 @@ -1,17 +1,35 @@
@@ -4423,7 +4490,7 @@ index c715160..7d28130 100644
  QT *= sql network
  
 -CONFIG += warn_on
-+CONFIG += warn_on create_pc create_prl sparql
++CONFIG += warn_on create_pc create_prl
  
  INCLUDEPATH += support
  
@@ -4527,10 +4594,18 @@ index 9d61887..81373e8 100644
  
  #endif //QMAILLOG_H
 diff --git a/src/libraries/qtopiamail/support/qmailnamespace.cpp b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-index d63acdf..ce4b0a7 100644
+index d63acdf..8bad4af 100644
 --- a/src/libraries/qtopiamail/support/qmailnamespace.cpp
 +++ b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-@@ -178,9 +178,9 @@ QString QMail::pluginsPath()
+@@ -130,6 +130,7 @@ int QMail::fileLock(const QString& lockFile)
+     int fdlock = -1;
+ 
+     QString path = QDir::tempPath() + "/" + lockFile;
++    qMailLog(Messaging) << "File Lock Path:" << path;
+     if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT, 0666)) == -1)
+         return -1;
+ 
+@@ -178,9 +179,9 @@ QString QMail::pluginsPath()
  {
      static QString pluginsEnv(getenv(QMF_PLUGINS_ENV));
      if(!pluginsEnv.isEmpty())
@@ -4543,6 +4618,23 @@ index d63acdf..ce4b0a7 100644
  }
  
  QString QMail::sslCertsPath()
+@@ -194,11 +195,16 @@ QSqlDatabase QMail::createDatabase()
+     QSqlDatabase db;
+     if(!init)
+     {
++        Q_ASSERT(QSqlDatabase::isDriverAvailable("QSQLITE"));
++
+         db = QSqlDatabase::addDatabase("QSQLITE");
+         QDir dp(dataPath());
+         if(!dp.exists())
+             if(!dp.mkpath(dataPath()))
+                 qCritical() << "Cannot create data path";
++
++        qMailLog(Messaging) << "Set database name:" << dataPath() + "/qmailstore.db";
++
+         db.setDatabaseName(dataPath() + "/qmailstore.db");
+         if(!db.open())
+             qCritical() << "Cannot open database";
 diff --git a/src/libraries/sparql/include/SparqlDatabase b/src/libraries/sparql/include/SparqlDatabase
 new file mode 100644
 index 0000000..ac92cb7
@@ -5473,6 +5565,4001 @@ index 0000000..233fc64
 +
 +  </interface>
 +</node>
+diff --git a/src/plugins/messageservices/dummysink/dummysink.pro b/src/plugins/messageservices/dummysink/dummysink.pro
+new file mode 100644
+index 0000000..8fcfd89
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysink.pro
+@@ -0,0 +1,31 @@
++TEMPLATE = lib 
++
++TARGET = dummysink
++
++target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
++INSTALLS += target
++
++QT += network
++
++DEPENDPATH += .
++
++INCLUDEPATH += . ../../../libraries/qtopiamail \
++               ../../../libraries/messageserver \
++               ../../../libraries/qtopiamail/support
++
++LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
++        -L../../../libraries/messageserver -lmessageserver
++
++HEADERS += dummysinkauthenticator.h \
++           dummysinkclient.h \
++           dummysinkconfiguration.h \
++           dummysinkservice.h \
++           dummysinksettings.h
++
++FORMS += dummysinksettings.ui
++
++SOURCES += dummysinkauthenticator.cpp \
++           dummysinkclient.cpp \
++           dummysinkconfiguration.cpp \
++           dummysinkservice.cpp \
++           dummysinksettings.cpp
+diff --git a/src/plugins/messageservices/dummysink/dummysinkauthenticator.cpp b/src/plugins/messageservices/dummysink/dummysinkauthenticator.cpp
+new file mode 100644
+index 0000000..7af18a1
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkauthenticator.cpp
+@@ -0,0 +1,68 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysinkauthenticator.h"
++#include "dummysinkconfiguration.h"
++#include <qmailauthenticator.h>
++
++
++namespace {
++
++QMap<QMailAccountId, QList<QByteArray> > gResponses;
++
++}
++
++QByteArray DummySinkAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
++{
++    QByteArray result(QMailAuthenticator::getAuthentication(svcCfg, capabilities));
++    if (!result.isEmpty())
++        return result;
++
++#ifndef QT_NO_OPENSSL
++    DummySinkConfiguration dummyCfg(svcCfg);
++    if (dummyCfg.dummyAuthentication() != DummySinkConfiguration::Auth_NONE) {
++        QMailAccountId id(dummyCfg.id());
++        QByteArray username(dummyCfg.dummyUsername().toAscii());
++        QByteArray password(dummyCfg.dummyPassword().toAscii());
++
++        if (dummyCfg.dummyAuthentication() == DummySinkConfiguration::Auth_LOGIN) {
++            result = QByteArray("LOGIN");
++            gResponses[id] = (QList<QByteArray>() << username << password);
++        } else if (dummyCfg.dummyAuthentication() == DummySinkConfiguration::Auth_PLAIN) {
++            result = QByteArray("PLAIN");
++            gResponses[id] = (QList<QByteArray>() << QByteArray(username + '\0' + username + '\0' + password));
++        }
++    }
++#endif
++
++    if (!result.isEmpty()) {
++        result.prepend("AUTH ");
++    }
++    return result;
++}
++
++QByteArray DummySinkAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
++{
++    QByteArray result;
++
++    QMap<QMailAccountId, QList<QByteArray> >::iterator it = gResponses.find(svcCfg.id());
++    if (it != gResponses.end()) {
++        QList<QByteArray> &responses = it.value();
++        result = responses.takeFirst();
++
++        if (responses.isEmpty())
++            gResponses.erase(it);
++    } else {
++        result = QMailAuthenticator::getResponse(svcCfg, challenge);
++    }
++
++    return result;
++}
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinkauthenticator.h b/src/plugins/messageservices/dummysink/dummysinkauthenticator.h
+new file mode 100644
+index 0000000..6ea3f51
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkauthenticator.h
+@@ -0,0 +1,27 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SINK_AUTHENTICATOR_H
++#define DUMMY_SINK_AUTHENTICATOR_H
++
++#include <qmailaccountconfiguration.h>
++
++#include <QByteArray>
++#include <QStringList>
++
++class DummySinkAuthenticator
++{
++public:
++    static QByteArray getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);
++    static QByteArray getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge);
++};
++
++#endif
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinkclient.cpp b/src/plugins/messageservices/dummysink/dummysinkclient.cpp
+new file mode 100644
+index 0000000..232ef60
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkclient.cpp
+@@ -0,0 +1,348 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysinkclient.h"
++#include "dummysinkservice.h"
++#include "dummysinkauthenticator.h"
++#include "dummysinkconfiguration.h"
++
++#include <QHostAddress>
++#include <QTextCodec>
++#include <qmaillog.h>
++#include <qmailaddress.h>
++#include <qmailstore.h>
++#include <qmailtransport.h>
++#include <qmaillog.h>
++
++
++DummySinkClient::DummySinkClient(QObject* parent)
++    : QObject(parent),
++    ConnectionActive(false),
++    transport(NULL),
++    progressSendSize(0),
++    totalSendSize(0)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::DummySinkClient(QObject* parent) called" << flush;
++
++    domainName = "groovemail.com";
++}
++
++DummySinkClient::~DummySinkClient()
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::~DummySinkClient(QObject* parent) called" << flush;
++    delete transport;
++}
++
++QMailMessage::MessageType DummySinkClient::messageType() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::messageType() called" << flush;
++
++    return QMailMessage::Email;
++}
++
++void DummySinkClient::setAccount(const QMailAccountId &id)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::setAccount(const QMailAccountId &id) called" << flush;
++
++    // Load the current configuration for this account
++    config = QMailAccountConfiguration(id);
++}
++
++QMailAccountId DummySinkClient::account() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::account() called" << flush;
++
++    return config.id();
++}
++
++void DummySinkClient::newConnection()
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::newConnection() called" << flush;
++
++    if (!transport)
++    {
++        // Set up the transport
++        transport = new QMailTransport("DUMMYSINK");
++
++        connect(transport, SIGNAL(readyRead()),
++                this, SLOT(readyRead()));
++        connect(transport, SIGNAL(connected(QMailTransport::EncryptType)),
++                this, SLOT(connected(QMailTransport::EncryptType)));
++        connect(transport, SIGNAL(bytesWritten(qint64)),
++                this, SLOT(sent(qint64)));
++        connect(transport, SIGNAL(updateStatus(QString)),
++                this, SIGNAL(updateStatus(QString)));
++        connect(transport, SIGNAL(errorOccurred(int,QString)),
++                this, SLOT(transportError(int,QString)));
++
++        qMailLog(DUMMYSINK) << "DummySinkClient::newConnection() transport connected" << flush;
++    }
++
++    // Set size attributes.
++    progressSendSize = 0;
++
++    emit connected(QMailTransport::Encrypt_NONE);
++
++    //DummySinkConfiguration dummyCfg(config);
++    //transport->open(dummyCfg.dummyServer(), dummyCfg.dummyPort(), static_cast<QMailTransport::EncryptType>(dummyCfg.dummyEncryption()));
++}
++
++QMailServiceAction::Status::ErrorCode DummySinkClient::addMail(const QMailMessage& mail)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::addMail() called" << flush;
++
++    QStringList sendTo;
++    foreach (const QMailAddress& address, mail.recipients()) {
++        // Only send to mail addresses
++        if (address.isEmailAddress())
++            sendTo.append(address.address());
++    }
++    if (sendTo.isEmpty()) {
++        qMailLog(DUMMYSINK) << "Cannot send message with empty recipient address!";
++        return QMailServiceAction::Status::ErrInvalidAddress;
++    }
++
++    // Set required mail parameters and add mail to send list.
++    RawEmail rawmail;
++    rawmail.from = "<" + mail.from().address() + ">";
++    rawmail.to = sendTo;
++    rawmail.mail = mail;
++    rawmail.mail.setContentSize(mail.body().data().length());
++    rawmail.mail.setSize(mail.body().data().length());
++    rawmail.mail.setStatus(QMailMessage::Incoming, true);
++    rawmail.mail.setStatus(QMailMessage::New, true);
++    rawmail.mail.setReceivedDate(QMailTimeStamp::currentDateTime());
++    rawmail.mail.setParentFolderId(QMailFolderId(QMailFolder::InboxFolder));
++    rawmail.mail.setStatus(QMailMessage::ContentAvailable, 1);
++    rawmail.mail.setStatus(QMailMessage::PartialContentAvailable, 1);
++    rawmail.mail.setParentAccountId(config.id());
++
++    mailList.append(rawmail);
++    sendSize.insert(rawmail.mail.id(), rawmail.mail.indicativeSize());
++
++    // Add messages size to total messages size to be sent.
++    totalSendSize += rawmail.mail.body().data().length();
++
++    // Logging the data that is being sent to the store/network.
++    {
++        qMailLog(DUMMYSINK) << "To: " << flush;
++    }
++
++    if (!QMailStore::instance()->addMessage(&rawmail.mail))
++    {
++        qWarning() << "Unable to add message after transmission:" << rawmail.mail.id();
++    }
++
++    messageProcessed(mail.id());
++
++    return QMailServiceAction::Status::ErrNoError;
++}
++
++void DummySinkClient::connected(QMailTransport::EncryptType encryptType)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::connected() called" << flush;
++
++    DummySinkConfiguration dummyCfg(config);
++    if (dummyCfg.dummyEncryption() == encryptType) {
++        qMailLog(DUMMYSINK) << "Connected" << flush;
++        emit updateStatus(tr("Connected"));
++    }
++
++    // Set connection is active.
++    ConnectionActive = true;
++
++    emit readyRead();
++}
++
++void DummySinkClient::transportError(int errorCode, QString msg)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::transportError(int errorCode, QString msg) called" << flush;
++
++    operationFailed(errorCode, msg);
++}
++
++void DummySinkClient::sent(qint64 size)
++{
++    Q_UNUSED(size);
++    qMailLog(DUMMYSINK) << "DummySinkClient::sent(qint64 size) called" << flush;
++}
++
++void DummySinkClient::readyRead()
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::senreadyReadt() called" << flush;
++
++    incomingData();
++}
++
++void DummySinkClient::sendCommand(const char *data, int len)
++{
++    Q_UNUSED(data);
++    Q_UNUSED(len);
++    qMailLog(DUMMYSINK) << "DummySinkClient::sendCommand(const char *data, int len) called" << flush;
++}
++
++void DummySinkClient::sendCommand(const QString &cmd)
++{
++    Q_UNUSED(cmd);
++    qMailLog(DUMMYSINK) << "DummySinkClient::sendCommand(const QString &cmd) called" << flush;
++}
++
++void DummySinkClient::sendCommand(const QByteArray &cmd)
++{
++    Q_UNUSED(cmd);
++    qMailLog(DUMMYSINK) << "DummySinkClient::sendCommand(const QByteArray &cmd) called" << flush;
++}
++
++void DummySinkClient::incomingData()
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::incomingData() called" << flush;
++
++    nextAction("send mail");
++}
++
++void DummySinkClient::nextAction(const QString &response)
++{
++    Q_UNUSED(response);
++
++    qMailLog(DUMMYSINK) << "DummySinkClient::incomingData(nextAction(const QString &response) called" << flush;
++
++    for(mailItr = mailList.begin(); mailItr != mailList.end(); mailItr++)
++    {
++	QMailMessageId msgId(mailItr->mail.id());
++
++        // Create new mail to add into store.
++        QMailMessage NewMail(mailItr->mail.serverUid(), mailItr->mail.parentAccountId());
++        NewMail.setBody(QMailMessageBody::fromData(mailItr->mail.body().data(), mailItr->mail.contentType(), mailItr->mail.transferEncoding()));
++        NewMail.setMessageType(mailItr->mail.messageType());
++        NewMail.setTo(mailItr->mail.to());
++        NewMail.setSubject(mailItr->mail.subject());
++        NewMail.setParentAccountId(mailItr->mail.parentAccountId());
++
++        // Print mail contents for debug information.
++        qMailLog(DUMMYSINK) << "******************************************" << flush;
++        qMailLog(DUMMYSINK) << "* Mail information being sent to network *" << flush;
++        qMailLog(DUMMYSINK) << "******************************************" << flush;
++        qMailLog(DUMMYSINK) << "";
++        qMailLog(DUMMYSINK) << "Message Type: "   << NewMail.messageType() << flush;
++        qMailLog(DUMMYSINK) << "Content Type: "   << (NewMail.contentType()).type() \
++                            << "Sub Type: "       << (NewMail.contentType()).subType() \
++                            << "Charset: "        << (NewMail.contentType()).charset() << flush;
++        qMailLog(DUMMYSINK) << "Encoding: "       << NewMail.transferEncoding() << flush;
++        qMailLog(DUMMYSINK) << "Size: "           << (NewMail.body()).data().length() << flush;
++        qMailLog(DUMMYSINK) << "Sending account: "<< NewMail.parentAccountId() << flush;
++
++        qMailLog(DUMMYSINK) << "Sending to: " << flush;
++        foreach(const QMailAddress& Addr, NewMail.recipients())
++        if (Addr.isEmailAddress())
++            qMailLog(DUMMYSINK) << "    " << Addr.address() << flush;
++
++        qMailLog(DUMMYSINK) << "";
++        qMailLog(DUMMYSINK) << "Subject: " << NewMail.subject() << flush;
++        qMailLog(DUMMYSINK) << "Body: " << (NewMail.body()).data() << flush;
++        qMailLog(DUMMYSINK) << "*******************END********************" << flush;
++
++    	// Set the message's message ID
++        NewMail.setHeaderField("Message-ID", "dummyMailHeader");
++
++        // Set mail size.
++        NewMail.setContentSize(NewMail.body().data().length());
++        NewMail.setSize(NewMail.contentSize());
++        NewMail.setPreviousParentFolderId(QMailFolderId(0));
++
++        if (!QMailStore::instance()->addMessage(&NewMail))
++    	{
++    		qWarning() << "Unable to update message after transmission:" << msgId;
++    	}
++
++
++        progressSendSize += (mailItr->mail.body()).data().length();
++    	mailItr->mail.setStatus(Sent, true);
++        mailItr->mail.setParentFolderId(QMailFolderId(QMailFolder::SentFolder));
++        NewMail.setPreviousParentFolderId(QMailFolderId(QMailFolder::OutboxFolder));
++
++        emit sent(progressSendSize);
++
++    	if (!QMailStore::instance()->updateMessage(&mailItr->mail))
++    	{
++    		qWarning() << "Unable to update message after transmission:" << msgId;
++    	}
++
++    	emit messageTransmitted(msgId);
++    	messageProcessed(msgId);
++        sendingId = QMailMessageId();
++    }
++
++    mailList.clear();
++    emit sendCompleted();
++    deactivateConnection();
++}
++
++void DummySinkClient::cancelTransfer()
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::cancelTransfer() called" << flush;
++
++    operationFailed(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
++}
++
++void DummySinkClient::messageProcessed(const QMailMessageId &id)
++{
++    Q_UNUSED(id);
++
++    qMailLog(DUMMYSINK) << "DummySinkClient::messageProcessed(const QMailMessageId &id) called" << flush;
++
++    emit progressChanged(progressSendSize, totalSendSize);
++}
++
++void DummySinkClient::operationFailed(int code, const QString &text)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::operationFailed(int code, const QString &text) called" << flush;
++
++    if (ConnectionActive)
++    {
++        transport->close();
++        qMailLog(DUMMYSINK) << "Connection closed:" << text << flush;
++        
++        mailList.clear();
++    }
++
++    deactivateConnection();
++    emit errorOccurred(code, text);
++}
++
++void DummySinkClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
++{
++    qMailLog(DUMMYSINK) << "DummySinkClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text) called" << flush;
++    mailList.clear();
++
++    QString msg;
++    if (code == QMailServiceAction::Status::ErrUnknownResponse) {
++        if (config.id().isValid()) {
++            DummySinkConfiguration dummyCfg(config);
++            msg = dummyCfg.dummyServer() + ": ";
++        }
++    }
++    msg.append(text);
++
++    deactivateConnection();
++    emit errorOccurred(code, msg);
++}
++
++void DummySinkClient::deactivateConnection()
++{
++    qMailLog(DUMMYSINK) << "****************DummySinkClient::deactivateConnection() called" << flush;
++
++    // Close connection.
++    if(transport && transport->connected())
++        transport->close();
++
++    // Set connection is free.
++    ConnectionActive = false;
++    emit sendCompleted();
++}
+diff --git a/src/plugins/messageservices/dummysink/dummysinkclient.h b/src/plugins/messageservices/dummysink/dummysinkclient.h
+new file mode 100644
+index 0000000..772e51c
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkclient.h
+@@ -0,0 +1,102 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SINK_CLIENT_H
++#define DUMMY_SINK_CLIENT_H
++
++#include <qstring.h>
++#include <qobject.h>
++#include <qstringlist.h>
++#include <qlist.h>
++#include <qmailaccountconfiguration.h>
++#include <qmailmessage.h>
++#include <qmailmessageserver.h>
++#include <qmailtransport.h>
++
++struct RawEmail
++{
++    QString from;
++    QStringList to;
++    QMailMessage mail;
++};
++
++class DummySinkClient : public QObject
++{
++    Q_OBJECT
++
++public:
++    DummySinkClient(QObject* parent);
++    ~DummySinkClient();
++
++    QMailMessage::MessageType messageType() const;
++
++    void setAccount(const QMailAccountId &accountId);
++    QMailAccountId account() const;
++
++    void newConnection();
++    void cancelTransfer();
++
++    QMailServiceAction::Status::ErrorCode addMail(const QMailMessage& mail);
++
++signals:
++    void errorOccurred(int, const QString &);
++    void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
++    void updateStatus(const QString &);
++
++    void progressChanged(uint, uint);
++    void messageTransmitted(const QMailMessageId&);
++    void sendCompleted();
++
++protected slots:
++    void connected(QMailTransport::EncryptType encryptType);
++    void transportError(int, QString msg);
++    void readyRead();
++    void sent(qint64);
++
++private:
++    void deactivateConnection();
++    void sendCommand(const char *data, int len = -1);
++    void sendCommand(const QString &cmd);
++    void sendCommand(const QByteArray &cmd);
++    void incomingData();
++    void nextAction(const QString &response);
++    void messageProcessed(const QMailMessageId &id);
++
++    void operationFailed(int code, const QString &text);
++    void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
++
++private:
++    enum TransferStatus
++    {
++        Init, Helo, Extension, StartTLS, TLS, Connected, Auth,
++        From, Recv, MRcv, Data, Body, Sent, Done
++    };
++
++    QMailAccountConfiguration config;
++    TransferStatus status;
++    QList<RawEmail> mailList;
++    QList<RawEmail>::Iterator mailItr;
++    QMailMessageId sendingId;
++    bool ConnectionActive;
++
++    QStringList::Iterator it;
++    QMailTransport *transport;
++
++    // SendMap maps id -> (units) to be sent
++    typedef QMap<QMailMessageId, uint> SendMap;
++    SendMap sendSize;
++    uint progressSendSize;
++    uint totalSendSize;
++
++    quint32 addressComponent;
++    QByteArray domainName;
++};
++
++#endif
+diff --git a/src/plugins/messageservices/dummysink/dummysinkconfiguration.cpp b/src/plugins/messageservices/dummysink/dummysinkconfiguration.cpp
+new file mode 100644
+index 0000000..96a6a73
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkconfiguration.cpp
+@@ -0,0 +1,125 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysinkconfiguration.h"
++
++
++DummySinkConfiguration::DummySinkConfiguration(const QMailAccountConfiguration &config)
++    : QMailServiceConfiguration(config, "dummysink")
++{
++}
++
++DummySinkConfiguration::DummySinkConfiguration(const QMailAccountConfiguration::ServiceConfiguration &svcCfg)
++    : QMailServiceConfiguration(svcCfg)
++{
++}
++
++QString DummySinkConfiguration::userName() const
++{
++    return value("username");
++}
++
++QString DummySinkConfiguration::emailAddress() const
++{
++    return value("address");
++}
++
++QString DummySinkConfiguration::dummyServer() const
++{
++    return value("server");
++}
++
++int DummySinkConfiguration::dummyPort() const
++{
++    return value("port", "25").toInt();
++}
++
++#ifndef QT_NO_OPENSSL
++
++QString DummySinkConfiguration::dummyUsername() const
++{
++    return value("dummyusername");
++}
++
++QString DummySinkConfiguration::dummyPassword() const
++{
++    return decodeValue(value("dummypassword"));
++}
++
++#endif
++
++int DummySinkConfiguration::dummyAuthentication() const
++{
++    return value("authentication", "0").toInt();
++}
++
++int DummySinkConfiguration::dummyEncryption() const
++{
++    return value("encryption", "0").toInt();
++}
++
++
++DummySinkConfigurationEditor::DummySinkConfigurationEditor(QMailAccountConfiguration *config)
++    : DummySinkConfiguration(*config)
++{
++}
++
++void DummySinkConfigurationEditor::setUserName(const QString& str)
++{
++    setValue("username",str);
++}
++
++void DummySinkConfigurationEditor::setEmailAddress(const QString &str)
++{
++    setValue("address", str);
++}
++
++void DummySinkConfigurationEditor::setDummySinkServer(const QString &str)
++{
++    setValue("server", str);
++}
++
++void DummySinkConfigurationEditor::setDummySinkPort(int i)
++{
++    setValue("port", QString::number(i));
++}
++
++#ifndef QT_NO_OPENSSL
++
++void DummySinkConfigurationEditor::setDummySinkUsername(const QString& str)
++{
++    setValue("dummyusername", str);
++}
++
++void DummySinkConfigurationEditor::setDummySinkPassword(const QString& str)
++{
++    setValue("dummypassword", encodeValue(str));
++}
++
++#endif
++
++#ifndef QT_NO_OPENSSL
++
++void DummySinkConfigurationEditor::setDummySinkAuthentication(int t)
++{
++    setValue("authentication", QString::number(t));
++}
++
++#endif
++
++#ifndef QT_NO_OPENSSL
++
++void DummySinkConfigurationEditor::setDummySinkEncryption(int t)
++{
++    setValue("encryption", QString::number(t));
++}
++
++#endif
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinkconfiguration.h b/src/plugins/messageservices/dummysink/dummysinkconfiguration.h
+new file mode 100644
+index 0000000..0264830
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkconfiguration.h
+@@ -0,0 +1,75 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SINK_CONFIGURATION_H
++#define DUMMY_SINK_CONFIGURATION_H
++
++//
++//  W A R N I N G
++//  -------------
++//
++// This file is not part of the Qt Extended API.  It exists purely as an
++// implementation detail.  This header file may change from version to
++// version without notice, or even be removed.
++//
++// We mean it.
++//
++
++#include <qmailserviceconfiguration.h>
++
++class QTOPIAMAIL_EXPORT DummySinkConfiguration : public QMailServiceConfiguration
++{
++public:
++    enum AuthType {
++        Auth_NONE = 0,
++#ifndef QT_NO_OPENSSL
++        Auth_LOGIN = 1,
++        Auth_PLAIN = 2,
++#endif
++        Auth_INCOMING = 3
++    };
++
++    explicit DummySinkConfiguration(const QMailAccountConfiguration &config);
++    explicit DummySinkConfiguration(const QMailAccountConfiguration::ServiceConfiguration &svcCfg);
++
++    QString userName() const;
++    QString emailAddress() const;
++    QString dummyServer() const;
++    int dummyPort() const;
++#ifndef QT_NO_OPENSSL
++    QString dummyUsername() const;
++    QString dummyPassword() const;
++#endif
++    int dummyAuthentication() const;
++    int dummyEncryption() const;
++};
++
++class QTOPIAMAIL_EXPORT DummySinkConfigurationEditor : public DummySinkConfiguration
++{
++public:
++    explicit DummySinkConfigurationEditor(QMailAccountConfiguration *config);
++
++    void setUserName(const QString &str);
++    void setEmailAddress(const QString &str);
++    void setDummySinkServer(const QString &str);
++    void setDummySinkPort(int i);
++#ifndef QT_NO_OPENSSL
++    void setDummySinkUsername(const QString& username);
++    void setDummySinkPassword(const QString& password);
++#endif
++#ifndef QT_NO_OPENSSL
++    void setDummySinkAuthentication(int t);
++#endif
++#ifndef QT_NO_OPENSSL
++    void setDummySinkEncryption(int t);
++#endif
++};
++
++#endif
+diff --git a/src/plugins/messageservices/dummysink/dummysinkservice.cpp b/src/plugins/messageservices/dummysink/dummysinkservice.cpp
+new file mode 100644
+index 0000000..920bdf0
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkservice.cpp
+@@ -0,0 +1,264 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysinkservice.h"
++#include "dummysinksettings.h"
++#include <QtPlugin>
++#include <qmaillog.h>
++
++namespace { const QString serviceKey("dummysink"); }
++
++class DummySinkService::Sink : public QMailMessageSink
++{
++    Q_OBJECT
++
++public:
++    Sink(DummySinkService *service)
++        : QMailMessageSink(service),
++          _service(service)
++    {
++        connect(&_service->_client, SIGNAL(messageTransmitted(QMailMessageId)), this, SLOT(messageTransmitted(QMailMessageId)));
++        connect(&_service->_client, SIGNAL(sendCompleted()), this, SLOT(sendCompleted()));
++    }
++
++public slots:
++    virtual bool transmitMessages(const QMailMessageIdList &ids);
++
++    void messageTransmitted(const QMailMessageId &id);
++    void sendCompleted();
++
++private:
++    DummySinkService *_service;
++};
++
++bool DummySinkService::Sink::transmitMessages(const QMailMessageIdList &ids)
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::Sink::transmitMessages() called" << flush;
++
++    QMailServiceAction::Status::ErrorCode errorCode = QMailServiceAction::Status::ErrNoError;
++    QString errorText;
++
++    if (ids.isEmpty()) {
++        errorCode = QMailServiceAction::Status::ErrInvalidData;
++        errorText = tr("No messages to transmit");
++    } else {
++        foreach (const QMailMessageId id, ids) {
++            QMailMessage message(id);
++            if ((errorCode = _service->_client.addMail(message)) != QMailServiceAction::Status::ErrNoError) {
++                errorText = tr("Unable to addMail");
++                break;
++            }
++        }
++    }
++
++    if (errorCode == QMailServiceAction::Status::ErrNoError) {
++        _service->_client.newConnection();
++        return true;
++    }
++
++    _service->errorOccurred(errorCode, errorText);
++    return false;
++}
++
++void DummySinkService::Sink::messageTransmitted(const QMailMessageId &id)
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::Sink::messageTransmitted() called" << flush;
++
++    emit messagesTransmitted(QMailMessageIdList() << id);
++}
++
++void DummySinkService::Sink::sendCompleted()
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::Sink::sendCompleted() called" << flush;
++
++    emit _service->actionCompleted(true);
++    emit _service->activityChanged(QMailServiceAction::Successful);
++}
++
++
++DummySinkService::DummySinkService(const QMailAccountId &accountId)
++    : QMailMessageService(),
++      _client(this),
++      _sink(new Sink(this))
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::DummySinkService(const QMailAccountId &accountId) called" << flush;
++
++    connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
++
++    connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
++    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
++    connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
++
++    _client.setAccount(accountId);
++}
++
++DummySinkService::~DummySinkService()
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::~DummySinkService() called" << flush;
++
++    delete _sink;
++}
++
++QString DummySinkService::service() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::service() called" << flush;
++
++    return serviceKey;
++}
++
++QMailAccountId DummySinkService::accountId() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::accountId() called" << flush;
++
++    return _client.account();
++}
++
++bool DummySinkService::hasSink() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::hasSink() called" << flush;
++
++    return true;
++}
++
++QMailMessageSink &DummySinkService::sink() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::sink() called" << flush;
++    qMailLog(DUMMYSINK) << "DummySinkService::sink(), _sink =" << _sink;
++
++    return *_sink;
++}
++
++bool DummySinkService::available() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::available() called, return true." << flush;
++
++    return true;
++}
++
++bool DummySinkService::cancelOperation()
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::cancelOperation() called" << flush;
++
++    _client.cancelTransfer();
++    return true;
++}
++
++void DummySinkService::errorOccurred(int code, const QString &text)
++{
++    qMailLog(DUMMYSINK) << "DummySinkService::errorOccurred(int code, const QString &text) called" << flush;
++
++    updateStatus(code, text, _client.account());
++    emit actionCompleted(false);
++}
++
++void DummySinkService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
++{
++    updateStatus(code, text, _client.account());
++    emit actionCompleted(false);
++}
++
++void DummySinkService::updateStatus(const QString &text)
++{
++    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
++}
++
++
++class DummySinkConfigurator : public QMailMessageServiceConfigurator
++{
++public:
++    DummySinkConfigurator();
++    ~DummySinkConfigurator();
++
++    virtual QString service() const;
++    virtual QString displayName() const;
++
++    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
++};
++
++DummySinkConfigurator::DummySinkConfigurator()
++{
++    qMailLog(DUMMYSINK) << "DummySinkConfigurator::DummySinkConfigurator() called" << flush;
++}
++
++DummySinkConfigurator::~DummySinkConfigurator()
++{
++    qMailLog(DUMMYSINK) << "DummySinkConfigurator::~DummySinkConfigurator() called" << flush;
++}
++
++QString DummySinkConfigurator::service() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkConfigurator::service() called" << flush;
++
++    return serviceKey;
++}
++
++QString DummySinkConfigurator::displayName() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkConfigurator::displayName() called" << flush;
++
++    return qApp->translate("QMailMessageService", "DummySink");
++}
++
++QMailMessageServiceEditor *DummySinkConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
++{
++    qMailLog(DUMMYSINK) << "DummySinkConfigurator::DummySinkConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type) called" << flush;
++
++    if (type == QMailMessageServiceFactory::Sink)
++        return new DummySinkSettings;
++
++    return 0;
++}
++
++Q_EXPORT_PLUGIN2(dummysink,DummySinkServicePlugin)
++
++DummySinkServicePlugin::DummySinkServicePlugin()
++    : QMailMessageServicePlugin()
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::DummySinkServicePlugin() called" << flush;
++}
++
++QString DummySinkServicePlugin::key() const
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::key() called" << flush;
++
++    return serviceKey;
++}
++
++bool DummySinkServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) const
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) called" << flush;
++
++    return (type == QMailMessageServiceFactory::Sink);
++}
++
++bool DummySinkServicePlugin::supports(QMailMessage::MessageType type) const
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::supports(QMailMessage::MessageType type) called" << flush;
++
++    return (type == QMailMessage::Email);
++}
++
++QMailMessageService *DummySinkServicePlugin::createService(const QMailAccountId &id)
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::createService(const QMailAccountId &id) called" << flush;
++
++    return new DummySinkService(id);
++}
++
++QMailMessageServiceConfigurator *DummySinkServicePlugin::createServiceConfigurator()
++{
++    qMailLog(DUMMYSINK) << "DummySinkServicePlugin::createServiceConfigurator() called" << flush;
++
++    return new DummySinkConfigurator();
++}
++
++
++#include "dummysinkservice.moc"
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinkservice.h b/src/plugins/messageservices/dummysink/dummysinkservice.h
+new file mode 100644
+index 0000000..d9f240f
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinkservice.h
+@@ -0,0 +1,72 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SINK_SERVICE_H
++#define DUMMY_SINK_SERVICE_H
++
++#include "dummysinkclient.h"
++#include <qmailmessageservice.h>
++#include <qmaillog.h>
++
++QLOG_ENABLE(DUMMYSINK)
++
++class DummySinkService : public QMailMessageService
++{
++    Q_OBJECT
++
++public:
++    using QMailMessageService::updateStatus;
++
++    DummySinkService(const QMailAccountId &accountId);
++    ~DummySinkService();
++
++    virtual QString service() const;
++    virtual QMailAccountId accountId() const;
++
++    virtual bool hasSink() const;
++    virtual QMailMessageSink &sink() const;
++
++    virtual bool available() const;
++
++public slots:
++    virtual bool cancelOperation();
++
++protected slots:
++    void errorOccurred(int code, const QString &text);
++    void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
++
++    void updateStatus(const QString& text);
++
++private:
++    class Sink;
++    friend class Sink;
++
++    DummySinkClient _client;
++    Sink *_sink;
++};
++
++
++class DummySinkServicePlugin : public QMailMessageServicePlugin
++{
++    Q_OBJECT
++
++public:
++    DummySinkServicePlugin();
++
++    virtual QString key() const;
++    virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;
++    virtual bool supports(QMailMessage::MessageType type) const;
++
++    virtual QMailMessageService *createService(const QMailAccountId &id);
++    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
++};
++
++
++#endif
+diff --git a/src/plugins/messageservices/dummysink/dummysinksettings.cpp b/src/plugins/messageservices/dummysink/dummysinksettings.cpp
+new file mode 100644
+index 0000000..9a9b449
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinksettings.cpp
+@@ -0,0 +1,298 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysinksettings.h"
++#include "dummysinkconfiguration.h"
++#include <QGridLayout>
++#include <QLineEdit>
++#include <QTextEdit>
++#include <QValidator>
++#include <qmailaccount.h>
++#include <qmailaccountconfiguration.h>
++#include <qmailtransport.h>
++#include <QDialog>
++
++namespace {
++
++const QString serviceKey("dummysink");
++
++class SigEntry : public QDialog
++{
++    Q_OBJECT
++
++public:
++    SigEntry(QWidget *parent, const char* name, Qt::WFlags fl = 0);
++
++    void setEntry(QString sig);
++    QString entry() const;
++
++private:
++    QTextEdit *input;
++};
++
++SigEntry::SigEntry(QWidget *parent, const char *name, Qt::WFlags fl)
++    : QDialog(parent, fl)
++{
++    setObjectName(name);
++    setWindowTitle(tr("Signature"));
++
++    QGridLayout *grid = new QGridLayout(this);
++    input = new QTextEdit(this);
++    grid->addWidget(input, 0, 0);
++}
++
++void SigEntry::setEntry(QString sig)
++{
++    input->insertPlainText(sig);
++}
++
++QString SigEntry::entry() const
++{
++    return input->toPlainText();
++}
++
++
++class PortValidator : public QValidator
++{
++public:
++    PortValidator(QWidget *parent = 0, const char *name = 0);
++
++    QValidator::State validate(QString &str, int &) const;
++};
++
++PortValidator::PortValidator(QWidget *parent, const char *name)
++    : QValidator(parent)
++{
++    setObjectName(name);
++}
++
++QValidator::State PortValidator::validate(QString &str, int &) const
++{
++    // allow empty strings, as it's a bit awkward to edit otherwise
++    if ( str.isEmpty() )
++        return QValidator::Acceptable;
++
++    bool ok = false;
++    int i = str.toInt(&ok);
++    if ( !ok )
++        return QValidator::Invalid;
++
++    if ( i <= 0 || i >= 65536 )
++        return QValidator::Invalid;
++
++    return QValidator::Acceptable;
++}
++
++
++const DummySinkConfiguration::AuthType authenticationType[] = {
++    DummySinkConfiguration::Auth_NONE,
++#ifndef QT_NO_OPENSSL
++    DummySinkConfiguration::Auth_LOGIN,
++    DummySinkConfiguration::Auth_PLAIN,
++#endif
++    DummySinkConfiguration::Auth_INCOMING
++};
++
++#ifndef QT_NO_OPENSSL
++int authenticationIndex(int type)
++{
++    const int numTypes = sizeof(authenticationType)/sizeof(DummySinkConfiguration::AuthType);
++    for (int i = 0; i < numTypes; ++i)
++        if (type == authenticationType[i])
++            return i;
++
++    return 0;
++}
++#endif
++
++}
++
++
++DummySinkSettings::DummySinkSettings()
++    : QMailMessageServiceEditor(),
++      addressModified(false)
++{
++    setupUi(this);
++    setLayoutDirection(qApp->layoutDirection());
++
++    connect(setSignatureButton, SIGNAL(clicked()), this, SLOT(sigPressed()));
++    connect(authentication, SIGNAL(currentIndexChanged(int)), this, SLOT(authChanged(int)));
++    connect(emailInput, SIGNAL(textChanged(QString)), this, SLOT(emailModified()));
++
++    const QString uncapitalised("email noautocapitalization");
++
++    // These fields should not be autocapitalised
++
++    PortInput->setValidator(new PortValidator(this));
++
++    PasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
++
++#ifdef QT_NO_OPENSSL
++    encryption->hide();
++    lblEncryption->hide();
++    authentication->hide();
++    lblAuthentication->hide();
++    dummyUsernameInput->hide();
++    lblDummyUsername->hide();
++    dummyPasswordInput->hide();
++    lblDummyPassword->hide();
++#else
++    PasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
++#endif
++}
++
++void DummySinkSettings::sigPressed()
++{
++    if (sigCheckBox->isChecked()) {
++        QString sigText;
++        if (signature.isEmpty())
++            sigText = QLatin1String("~~\n") + nameInput->text();
++        else
++            sigText = signature;
++
++        SigEntry sigEntry(this, "sigEntry", static_cast<Qt::WFlags>(1));
++        sigEntry.setEntry(sigText);
++        if (sigEntry.exec() == QDialog::Accepted)
++            signature = sigEntry.entry();
++    }
++}
++
++void DummySinkSettings::emailModified()
++{
++    addressModified = true;
++}
++
++void DummySinkSettings::authChanged(int index)
++{
++#ifndef QT_NO_OPENSSL
++    DummySinkConfiguration::AuthType type = authenticationType[index];
++    bool enableCredentials = (type == DummySinkConfiguration::Auth_LOGIN || type == DummySinkConfiguration::Auth_PLAIN);
++
++    UsernameInput->setEnabled(enableCredentials);
++    lblUsername->setEnabled(enableCredentials);
++    PasswordInput->setEnabled(enableCredentials);
++    lblPassword->setEnabled(enableCredentials);
++
++    if (!enableCredentials) {
++        UsernameInput->clear();
++        PasswordInput->clear();
++    }
++#else
++    Q_UNUSED(index);
++#endif
++}
++
++void DummySinkSettings::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config)
++{
++#ifndef QT_NO_OPENSSL
++    // Any reason to re-enable this facility?
++    //authentication->setItemText(3, tr("Incoming");
++#endif
++
++    if (!config.services().contains(serviceKey)) {
++        // New account
++        emailInput->setText("");
++        ServerInput->setText("");
++        PortInput->setText("25");
++#ifndef QT_NO_OPENSSL
++        UsernameInput->setText("");
++        PasswordInput->setText("");
++        encryption->setCurrentIndex(0);
++        authentication->setCurrentIndex(0);
++        UsernameInput->setEnabled(false);
++        lblUsername->setEnabled(false);
++        PasswordInput->setEnabled(false);
++        lblPassword->setEnabled(false);
++#endif
++        signature = QString();
++    } else {
++        DummySinkConfiguration dummyConfig(config);
++
++        emailInput->setText(dummyConfig.emailAddress());
++        ServerInput->setText(dummyConfig.dummyServer());
++        PortInput->setText(QString::number(dummyConfig.dummyPort()));
++#ifndef QT_NO_OPENSSL
++        UsernameInput->setText(dummyConfig.dummyUsername());
++        PasswordInput->setText(dummyConfig.dummyPassword());
++        authentication->setCurrentIndex(authenticationIndex(dummyConfig.dummyAuthentication()));
++        encryption->setCurrentIndex(static_cast<int>(dummyConfig.dummyEncryption()));
++
++        DummySinkConfiguration::AuthType type = authenticationType[authentication->currentIndex()];
++        const bool enableCredentials(type == DummySinkConfiguration::Auth_LOGIN || type == DummySinkConfiguration::Auth_PLAIN);
++        UsernameInput->setEnabled(enableCredentials);
++        lblUsername->setEnabled(enableCredentials);
++        PasswordInput->setEnabled(enableCredentials);
++        lblPassword->setEnabled(enableCredentials);
++#endif
++
++        defaultMailCheckBox->setChecked(account.status() & QMailAccount::PreferredSender);
++        sigCheckBox->setChecked(account.status() & QMailAccount::AppendSignature);
++        signature = account.signature();
++    }
++}
++
++bool DummySinkSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration *config)
++{
++    QString username(nameInput->text());
++    QString address(emailInput->text());
++
++    if (!username.isEmpty() || !address.isEmpty()) {
++        account->setFromAddress(QMailAddress(username, address)); 
++    }
++
++    bool result;
++    int port = PortInput->text().toInt(&result);
++    if ( (!result) ) {
++        // should only happen when the string is empty, since we use a validator.
++        port = 25;
++    }
++
++    if (!config->services().contains(serviceKey))
++        config->addServiceConfiguration(serviceKey);
++
++    DummySinkConfigurationEditor dummyConfig(config);
++
++    dummyConfig.setVersion(100);
++    dummyConfig.setType(QMailServiceConfiguration::Sink);
++
++    if ((!addressModified) && (address.isEmpty())) {
++        // Try to guess email address
++        QString server(dummyConfig.dummyServer());
++        if (server.count('.')) {
++            address = username + "@" + server.mid(server.indexOf('.') + 1, server.length());
++        } else if (server.count('.') == 1) {
++            address = username + "@" + server;
++        }
++    }
++    dummyConfig.setUserName(username);
++    dummyConfig.setEmailAddress(address);
++    dummyConfig.setDummySinkServer(ServerInput->text());
++    dummyConfig.setDummySinkPort(port);
++#ifndef QT_NO_OPENSSL
++    dummyConfig.setDummySinkUsername(UsernameInput->text());
++    dummyConfig.setDummySinkPassword(PasswordInput->text());
++    dummyConfig.setDummySinkAuthentication(authenticationType[authentication->currentIndex()]);
++    dummyConfig.setDummySinkEncryption(static_cast<QMailTransport::EncryptType>(encryption->currentIndex()));
++#endif
++
++    account->setStatus(QMailAccount::PreferredSender, defaultMailCheckBox->isChecked());
++    account->setStatus(QMailAccount::AppendSignature, sigCheckBox->isChecked());
++    account->setSignature(signature);
++
++    // Do we have a configuration we can use?
++    if (!dummyConfig.dummyServer().isEmpty() && !dummyConfig.emailAddress().isEmpty())
++        account->setStatus(QMailAccount::CanTransmit, true);
++
++    return true;
++}
++
++
++#include "dummysinksettings.moc"
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinksettings.h b/src/plugins/messageservices/dummysink/dummysinksettings.h
+new file mode 100644
+index 0000000..702103f
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinksettings.h
+@@ -0,0 +1,42 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SINK_SETTINGS_H
++#define DUMMY_SINK_SETTINGS_H
++
++#include "ui_dummysinksettings.h"
++#include <qmailmessageservice.h>
++
++class QMailAccount;
++class QMailAccountConfiguration;
++
++
++class DummySinkSettings : public QMailMessageServiceEditor, private Ui::DummySinkSettings
++{
++    Q_OBJECT
++
++public:
++    DummySinkSettings();
++
++    virtual void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
++    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
++
++private slots:
++    void sigPressed();
++    void emailModified();
++    void authChanged(int index);
++
++private:
++    bool addressModified;
++    QString signature;
++};
++
++#endif
++
+diff --git a/src/plugins/messageservices/dummysink/dummysinksettings.ui b/src/plugins/messageservices/dummysink/dummysinksettings.ui
+new file mode 100644
+index 0000000..292ee72
+--- /dev/null
++++ b/src/plugins/messageservices/dummysink/dummysinksettings.ui
+@@ -0,0 +1,357 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<ui version="4.0">
++ <class>DummySinkSettings</class>
++ <widget class="QWidget" name="DummySinkSettings">
++  <property name="geometry">
++   <rect>
++    <x>0</x>
++    <y>0</y>
++    <width>400</width>
++    <height>300</height>
++   </rect>
++  </property>
++  <property name="windowTitle">
++   <string>Form</string>
++  </property>
++  <layout class="QVBoxLayout" name="verticalLayout">
++   <property name="margin">
++    <number>0</number>
++   </property>
++   <item>
++    <widget class="QScrollArea" name="scrollArea">
++     <property name="focusPolicy">
++      <enum>Qt::NoFocus</enum>
++     </property>
++     <property name="frameShape">
++      <enum>QFrame::NoFrame</enum>
++     </property>
++     <property name="lineWidth">
++      <number>0</number>
++     </property>
++     <property name="horizontalScrollBarPolicy">
++      <enum>Qt::ScrollBarAlwaysOff</enum>
++     </property>
++     <property name="widgetResizable">
++      <bool>true</bool>
++     </property>
++     <widget class="QWidget" name="scrollAreaWidgetContents">
++      <property name="geometry">
++       <rect>
++        <x>0</x>
++        <y>0</y>
++        <width>382</width>
++        <height>330</height>
++       </rect>
++      </property>
++      <layout class="QGridLayout">
++       <item row="0" column="0">
++        <widget class="QLabel" name="nameLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>From</string>
++         </property>
++         <property name="buddy">
++          <cstring>nameInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="0" column="1">
++        <widget class="QLineEdit" name="nameInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="1" column="0">
++        <widget class="QLabel" name="emailLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Email</string>
++         </property>
++         <property name="buddy">
++          <cstring>emailInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="1" column="1">
++        <widget class="QLineEdit" name="emailInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="2" column="0">
++        <widget class="QLabel" name="serverLabel_2">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Server</string>
++         </property>
++         <property name="buddy">
++          <cstring>ServerInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="2" column="1">
++        <widget class="QLineEdit" name="ServerInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="3" column="0">
++        <widget class="QLabel" name="portLabel_2">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Port</string>
++         </property>
++         <property name="buddy">
++          <cstring>PortInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="3" column="1">
++        <widget class="QLineEdit" name="PortInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="4" column="0">
++        <widget class="QLabel" name="lblEncryption">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Encryption</string>
++         </property>
++         <property name="buddy">
++          <cstring>encryption</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="4" column="1">
++        <widget class="QComboBox" name="encryption">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <item>
++          <property name="text">
++           <string>None</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>SSL</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>TLS</string>
++          </property>
++         </item>
++        </widget>
++       </item>
++       <item row="5" column="0">
++        <widget class="QLabel" name="lblAuthentication">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Authentication</string>
++         </property>
++         <property name="buddy">
++          <cstring>authentication</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="5" column="1">
++        <widget class="QComboBox" name="authentication">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <item>
++          <property name="text">
++           <string>None</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>Login</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>Plain</string>
++          </property>
++         </item>
++        </widget>
++       </item>
++       <item row="6" column="0">
++        <widget class="QLabel" name="lblUsername">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Username</string>
++         </property>
++         <property name="buddy">
++          <cstring>UsernameInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="6" column="1">
++        <widget class="QLineEdit" name="UsernameInput">
++         <property name="enabled">
++          <bool>false</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="7" column="0">
++        <widget class="QLabel" name="lblPassword">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Password</string>
++         </property>
++         <property name="buddy">
++          <cstring>PasswordInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="7" column="1">
++        <widget class="QLineEdit" name="PasswordInput">
++         <property name="enabled">
++          <bool>false</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="echoMode">
++          <enum>QLineEdit::Password</enum>
++         </property>
++        </widget>
++       </item>
++       <item row="9" column="0">
++        <widget class="QCheckBox" name="sigCheckBox">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Signature</string>
++         </property>
++        </widget>
++       </item>
++       <item row="9" column="1">
++        <widget class="QToolButton" name="setSignatureButton">
++         <property name="enabled">
++          <bool>false</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Set...</string>
++         </property>
++        </widget>
++       </item>
++       <item row="10" column="0" colspan="2">
++        <widget class="QCheckBox" name="defaultMailCheckBox">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Default sending account</string>
++         </property>
++        </widget>
++       </item>
++      </layout>
++     </widget>
++    </widget>
++   </item>
++  </layout>
++ </widget>
++ <tabstops>
++  <tabstop>nameInput</tabstop>
++  <tabstop>emailInput</tabstop>
++  <tabstop>ServerInput</tabstop>
++  <tabstop>PortInput</tabstop>
++  <tabstop>encryption</tabstop>
++  <tabstop>authentication</tabstop>
++  <tabstop>UsernameInput</tabstop>
++  <tabstop>PasswordInput</tabstop>
++  <tabstop>sigCheckBox</tabstop>
++  <tabstop>setSignatureButton</tabstop>
++  <tabstop>defaultMailCheckBox</tabstop>
++ </tabstops>
++ <resources/>
++ <connections/>
++</ui>
+diff --git a/src/plugins/messageservices/dummysource/dummyauthenticator.cpp b/src/plugins/messageservices/dummysource/dummyauthenticator.cpp
+new file mode 100644
+index 0000000..4e4fb28
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyauthenticator.cpp
+@@ -0,0 +1,57 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummyauthenticator.h"
++
++#include "dummyconfiguration.h"
++
++#include <qmailauthenticator.h>
++#include <qmailtransport.h>
++
++
++bool DummySourceAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
++{
++#ifdef QT_NO_OPENSSL
++    return false;
++#else
++    DummySourceConfiguration dummyCfg(svcCfg);
++    bool useTLS(dummyCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
++
++    if (!capabilities.contains("STLS")) {
++        if (useTLS) {
++            qWarning() << "Server does not support TLS - continuing unencrypted";
++        }
++    } else {
++        if (useTLS) {
++            return true;
++        } else {
++            if (!capabilities.contains("USER")) {
++                qWarning() << "Server does not support unencrypted USER - using encryption";
++                return true;
++            }
++        }
++    }
++
++    return QMailAuthenticator::useEncryption(svcCfg, capabilities);
++#endif
++}
++
++QList<QByteArray> DummySourceAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
++{
++    QList<QByteArray> result;
++
++    return result;
++}
++
++QByteArray DummySourceAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
++{
++    return QMailAuthenticator::getResponse(svcCfg, challenge);
++}
++
+diff --git a/src/plugins/messageservices/dummysource/dummyauthenticator.h b/src/plugins/messageservices/dummysource/dummyauthenticator.h
+new file mode 100644
+index 0000000..f3ff1f9
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyauthenticator.h
+@@ -0,0 +1,28 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMYAUTHENTICATOR_H
++#define DUMMYAUTHENTICATOR_H
++
++#include <qmailaccountconfiguration.h>
++
++#include <QByteArray>
++#include <QStringList>
++
++class DummySourceAuthenticator
++{
++public:
++    static bool useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);
++    static QList<QByteArray> getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);
++    static QByteArray getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge);
++};
++
++#endif
++
+diff --git a/src/plugins/messageservices/dummysource/dummyclient.cpp b/src/plugins/messageservices/dummysource/dummyclient.cpp
+new file mode 100644
+index 0000000..783e322
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyclient.cpp
+@@ -0,0 +1,446 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummyclient.h"
++#include "dummyservice.h"
++#include "dummyauthenticator.h"
++#include "dummyconfiguration.h"
++
++#include <longstream_p.h>
++#include <longstring_p.h>
++#include <qmailstore.h>
++#include <qmailtransport.h>
++#include <qmaillog.h>
++
++#include <limits.h>
++
++DummySourceClient::DummySourceClient(QObject* parent)
++    : QObject(parent),
++      ConnectionActive(false),
++      transport(NULL),
++      timer(NULL)
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::DummySourceClient(QObject* parent) called" << flush;
++
++    // If timer is not created, create for the first time.
++    int timerInterval = 7;
++    if(!timer)
++    {
++        // Create timer and set interval to timerInterval seconds.
++        timer = new QTimer(this);
++        timer->setInterval(timerInterval * 1000);
++
++        // Connect the slot to call when interval elapses.
++        connect(timer, SIGNAL(timeout()), SLOT(incomingData()));
++    }
++}
++
++DummySourceClient::~DummySourceClient()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::~DummySourceClient(QObject* parent) called" << flush;
++
++    // Free allocated memory.
++    delete timer;
++    delete transport;
++}
++
++QMailMessage::MessageType DummySourceClient::messageType() const
++{
++    return QMailMessage::Email;
++}
++
++void DummySourceClient::newConnection()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::newConnection() called" << flush;
++
++    // Check if a connection is already open.
++    if(ConnectionActive)
++    {
++        qMailLog(DUMMYSOURCE) << "Connection is busy, please try later." << flush;
++        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, "Connection is busy");
++        return;
++    }
++
++    // Initliaze data members.
++    serverSize.clear();
++
++    // Re-load the configuration for this account
++    config = QMailAccountConfiguration(config.id());
++
++    DummySourceConfiguration dummyCfg(config);
++    if ( dummyCfg.mailServer().isEmpty() )
++    {
++        retrieveOperationCompleted();
++        return;
++    }
++
++    if (!transport)
++    {
++            // Set up the transport
++            transport = new QMailTransport("DUMMYSOURCE");
++
++            connect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
++            connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
++            connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
++            connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
++    }
++
++    //  transport->open(dummyCfg.mailServer(), dummyCfg.mailPort(), static_cast<QMailTransport::EncryptType>(dummyCfg.mailEncryption()));
++        emit connected(QMailTransport::Encrypt_NONE);
++}
++
++void DummySourceClient::setAccount(const QMailAccountId &id)
++{
++        qMailLog(DUMMYSOURCE) << "DummySourceClient::setAccount() called" << flush;
++
++    if ((transport && transport->inUse()) && (id != config.id())) {
++        QString msg("Cannot open account; transport in use");
++        emit errorOccurred(QMailServiceAction::Status::ErrConnectionInUse, msg);
++        return;
++    }
++
++    config = QMailAccountConfiguration(id);
++}
++
++QMailAccountId DummySourceClient::account() const
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::account() called" << flush;
++
++    return config.id();
++}
++
++void DummySourceClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
++{
++    Q_UNUSED(spec);
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::setOperation() called" << flush;
++}
++
++void DummySourceClient::setDeleteOperation()
++{
++}
++
++void DummySourceClient::setSelectedMails(const SelectionMap& data)
++{
++    Q_UNUSED(data);
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::setSelectedMails() called" << flush;
++}
++
++void DummySourceClient::connected(QMailTransport::EncryptType encryptType)
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::connected() called" << flush;
++
++    DummySourceConfiguration dummyCfg(config);
++    if (dummyCfg.mailEncryption() == encryptType) {
++        qMailLog(DUMMYSOURCE) << "Connected" << flush;
++        emit updateStatus(tr("Connected"));
++    }
++
++    // Set connection is busy.
++    ConnectionActive = true;
++
++    // If timer not active, start timer.
++    if(timer && !timer->isActive())
++    {
++        timer->start();
++
++        // Update request status.
++        emit updateStatus(tr("Logging in"));
++    }
++}
++
++void DummySourceClient::transportError(int status, QString msg)
++{
++    operationFailed(status, msg);
++}
++
++void DummySourceClient::closeConnection()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::closeConnection() called" << flush;
++
++    if(transport && transport->connected())
++        transport->close();
++}
++
++void DummySourceClient::sendCommand(const char *data, int len)
++{
++    Q_UNUSED(data);
++    Q_UNUSED(len);
++}
++
++void DummySourceClient::sendCommand(const QString& cmd)
++{
++    Q_UNUSED(cmd);
++}
++
++void DummySourceClient::sendCommand(const QByteArray& cmd)
++{
++    Q_UNUSED(cmd);
++}
++
++QString DummySourceClient::readResponse()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::readResponse() called" << flush;
++
++    QString response = transport->readLine();
++
++    if (response.length() > 1) {
++        qMailLog(DUMMYSOURCE) << "RECV:" << qPrintable(response.left(response.length() - 2));
++    }
++
++    return response;
++}
++
++void DummySourceClient::incomingData()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::incomingData() called" << flush;
++
++    int MaxMsgs = 7;
++    static int mailCount = 1;
++
++    // Call action to be taken.
++    nextAction();
++
++    // Resets the service request expiry timer.
++    emit progressChanged(mailCount, MaxMsgs);
++
++    if(mailCount >= MaxMsgs)
++    {
++        qMailLog(DUMMYSOURCE) << " Sent " << MaxMsgs << "messages, now clearing timer." << flush;
++
++        mailCount = 1;
++        timer->stop();
++        emit updateStatus(tr("Logging out"));
++
++        retrieveOperationCompleted();
++
++        return;
++    }
++
++    mailCount++;
++}
++
++void DummySourceClient::processResponse(const QString &response)
++{
++    Q_UNUSED(response);
++
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::processResponse() called" << flush;
++}
++
++void DummySourceClient::nextAction()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::nextAction() called" << flush;
++
++    createMail();
++}
++
++int DummySourceClient::msgPosFromUidl(QString uidl)
++{
++    Q_UNUSED(uidl);
++    return 0;
++}
++
++int DummySourceClient::nextMsgServerPos()
++{
++    return 0;
++}
++
++// get the reported server size from stored list
++uint DummySourceClient::getSize(int pos)
++{
++    QMap<int, uint>::const_iterator it = serverSize.find(pos);
++    if (it != serverSize.end())
++        return it.value();
++
++    return -1;
++}
++
++void DummySourceClient::uidlIntegrityCheck()
++{
++}
++
++namespace {
++
++bool hasAttachments(const QMailMessagePartContainer &partContainer)
++{
++    for (uint i = 0; i < partContainer.partCount(); ++i) {
++        const QMailMessagePart &part(partContainer.partAt(i));
++
++        QMailMessageContentDisposition disposition(part.contentDisposition());
++        if (!disposition.isNull() && (disposition.type() == QMailMessageContentDisposition::Attachment)) {
++            return true;
++        } else if (part.multipartType() != QMailMessage::MultipartNone) {
++            if (hasAttachments(part))
++                return true;
++        }
++    }
++    return false;
++}
++
++}
++
++void DummySourceClient::createMail()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::createMail() called" << flush;
++
++    // Create mail message instance.
++    QMailMessage mail;
++
++    // Set basic mail parameters.
++    mail.setMessageType( QMailMessage::Email );
++    mail.setServerUid("DummyMsgUid");
++    mail.setStatus(QMailMessage::New, true);
++    mail.setStatus(QMailMessage::Incoming, true);
++    mail.setParentFolderId(QMailFolderId(QMailFolder::InboxFolder));
++    mail.setDate(QMailTimeStamp::currentDateTime());
++    mail.setReceivedDate(QMailTimeStamp::currentDateTime());
++    mail.setParentAccountId(config.id());
++
++    // Set mail recipient address.
++    QMailAddress To("Happu User", "HappyUser@Happy.com");
++    mail.setTo(To);
++
++    // Set mail sender address.
++    QMailAddress From("GrooveMail Dummy Spammer", "Spammer@groovemail.com");
++    mail.setFrom(From);
++
++    // Set mail subject text.
++    QString Subject("[");
++    Subject.append(QMailTimeStamp::currentDateTime().toString());
++    Subject.append("]");
++    Subject.append(" Greetings from our moden spam bot.");
++    mail.setSubject(Subject);
++
++    // Set mail mime header type.
++    mail.setMultipartType(QMailMessagePartContainer::MultipartMixed);
++
++    // Set mail content type and compose mail body text.
++    QMailMessageContentType Bodytype("text/plain; charset=UTF-8");
++    QString MsgTxt("This message has been generated by [");
++    MsgTxt.append(QMailTimeStamp::currentDateTime().toString());
++    MsgTxt.append("].");
++
++    // Add mail body text to first mime part and add to mail.
++    QMailMessagePart bodyPart;
++    QMailMessageBody MsgBody = QMailMessageBody::fromData(MsgTxt.toUtf8(), Bodytype, QMailMessageBody::EightBit);
++    bodyPart.setBody(MsgBody);
++    mail.appendPart(bodyPart);
++    qMailLog(DUMMYSOURCE) << " MsgBody = " << bodyPart.body().data() << flush;
++
++    // Now add a image attachment to mail.
++    QString fileName = "penguin.jpg";
++    QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
++    disposition.setFilename(fileName.toLatin1());
++
++    QMailMessageContentType attachmentType("image/jpg");
++
++    QMailMessagePart attachmentPart;
++    attachmentPart = QMailMessagePart::fromFile("/home/suman/ScratchBoxProjects/messagingframework/penguin.jpg", disposition, attachmentType, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
++    mail.appendPart(attachmentPart);
++    qMailLog(DUMMYSOURCE) << " attachmentPart = " << attachmentPart.body().data() << flush;
++
++    // Set mail contents availability parameters.
++    bool isComplete = 1;
++    mail.setStatus(QMailMessage::ContentAvailable, isComplete);
++    mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
++    mail.setContentSize(attachmentPart.body().length()+bodyPart.body().length());
++
++    // Calculate mail size.
++    mail.setSize(mail.contentSize());
++
++    // Classify mail content type for multipart existance based on contents.
++    classifier.classifyMessage(mail);
++
++    // Add mail message to store to simulate incoming mail.
++    QMailStore::instance()->addMessage(&mail);
++
++    if (isComplete && !mail.serverUid().isEmpty())
++    {
++        // We have now retrieved the entire message
++        messageProcessed(mail.serverUid());
++    }
++}
++
++void DummySourceClient::checkForNewMessages()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::checkForNewMessages() called" << flush;
++
++    // We can't have new messages without contacting the server
++    emit allMessagesReceived();
++}
++
++void DummySourceClient::cancelTransfer()
++{
++    operationFailed(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
++}
++
++void DummySourceClient::retrieveOperationCompleted()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::retrieveOperationCompleted() called" << flush;
++
++    // This retrieval may have been asynchronous
++    emit allMessagesReceived();
++
++    // Or it may have been requested by a waiting client
++    emit retrievalCompleted();
++
++    deactivateConnection();
++}
++
++void DummySourceClient::deactivateConnection()
++{
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::deactivateConnection() called" << flush;
++
++    // Shutdown timer if active.
++    if(timer && timer->isActive())
++        timer->stop();
++
++    // Close connection.
++    if(transport && transport->connected())
++        transport->close();
++
++    // Set connection is free.
++    ConnectionActive = false;
++}
++
++void DummySourceClient::connectionInactive()
++{
++    deactivateConnection();
++}
++
++void DummySourceClient::messageProcessed(const QString &uid)
++{
++    emit messageActionCompleted(uid);
++}
++
++void DummySourceClient::operationFailed(int code, const QString &text)
++{
++    if (transport && transport->inUse()) {
++        transport->close();
++    }
++
++    deactivateConnection();
++
++    emit errorOccurred(code, text);
++}
++
++void DummySourceClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
++{
++    QString msg;
++    if (code == QMailServiceAction::Status::ErrUnknownResponse) {
++        if (config.id().isValid()) {
++            DummySourceConfiguration dummyCfg(config);
++            msg = dummyCfg.mailServer() + ": ";
++        }
++    }
++    msg.append(text);
++
++    deactivateConnection();
++    emit errorOccurred(code, msg);
++}
+diff --git a/src/plugins/messageservices/dummysource/dummyclient.h b/src/plugins/messageservices/dummysource/dummyclient.h
+new file mode 100644
+index 0000000..70c44e8
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyclient.h
+@@ -0,0 +1,115 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMY_SOURCE_CLIENT_H
++#define DUMMY_SOURCE_CLIENT_H
++
++#include <qstring.h>
++#include <qstringlist.h>
++#include <qobject.h>
++#include <qlist.h>
++#include <qtimer.h>
++#include <qmailaccountconfiguration.h>
++#include <qmailmessage.h>
++#include <qmailmessageclassifier.h>
++#include <qmailmessageserver.h>
++#include <qmailtransport.h>
++
++class LongStream;
++class QMailTransport;
++class QMailAccount;
++
++typedef QMap<QString, QMailMessageId> SelectionMap;
++
++class DummySourceClient : public QObject
++{
++    Q_OBJECT
++
++public:
++    DummySourceClient(QObject* parent);
++    ~DummySourceClient();
++
++    QMailMessage::MessageType messageType() const;
++
++    void setAccount(const QMailAccountId &accountId);
++    QMailAccountId account() const;
++
++    void newConnection();
++    void closeConnection();
++    void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
++    void setDeleteOperation();
++    void setSelectedMails(const SelectionMap& data);
++    void checkForNewMessages();
++    void cancelTransfer();
++
++signals:
++    void errorOccurred(int, const QString &);
++    void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
++    void updateStatus(const QString &);
++
++    void messageActionCompleted(const QString &uid);
++
++    void progressChanged(uint, uint);
++    void retrievalCompleted();
++    void allMessagesReceived();
++
++protected slots:
++    void connected(QMailTransport::EncryptType encryptType);
++    void transportError(int, QString msg);
++
++    void connectionInactive();
++    void incomingData();
++
++private:
++    void deactivateConnection();
++    int nextMsgServerPos();
++    int msgPosFromUidl(QString uidl);
++    uint getSize(int pos);
++    void uidlIntegrityCheck();
++    void createMail();
++    void sendCommand(const char *data, int len = -1);
++    void sendCommand(const QString& cmd);
++    void sendCommand(const QByteArray& cmd);
++    QString readResponse();
++    void processResponse(const QString &response);
++    void nextAction();
++    void retrieveOperationCompleted();
++    void messageProcessed(const QString &uid);
++
++    void operationFailed(int code, const QString &text);
++    void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
++
++    bool ConnectionActive;
++
++private:
++    enum TransferStatus
++    {
++        Init, CapabilityTest, Capabilities, 
++        StartTLS, TLS, Connected, Auth, 
++        RequestUids, Uidl, UidList,
++        RequestSizes, List, SizeList,
++        RequestMessage, Retr, MessageData,
++        DeleteMessage, Dele,
++        Done, Quit, Exit
++    };
++
++    QMailAccountConfiguration config;
++
++    QMap<int, uint> serverSize;
++
++    QMailTransport *transport;
++
++    QMailMessageClassifier classifier;
++
++    // Added for simulating mail retrieving.
++    QTimer *timer;
++};
++
++#endif
+diff --git a/src/plugins/messageservices/dummysource/dummyconfiguration.cpp b/src/plugins/messageservices/dummysource/dummyconfiguration.cpp
+new file mode 100644
+index 0000000..625ddd0
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyconfiguration.cpp
+@@ -0,0 +1,133 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummyconfiguration.h"
++
++
++DummySourceConfiguration::DummySourceConfiguration(const QMailAccountConfiguration &config)
++    : QMailServiceConfiguration(config, "dummysource")
++{
++}
++
++DummySourceConfiguration::DummySourceConfiguration(const QMailAccountConfiguration::ServiceConfiguration &svcCfg)
++    : QMailServiceConfiguration(svcCfg)
++{
++}
++
++QString DummySourceConfiguration::mailUserName() const
++{
++    return value("username");
++}
++
++QString DummySourceConfiguration::mailPassword() const
++{
++    return decodeValue(value("password"));
++}
++
++QString DummySourceConfiguration::mailServer() const
++{
++    return value("server");
++}
++
++int DummySourceConfiguration::mailPort() const
++{
++    return value("port", "143").toInt();
++}
++
++int DummySourceConfiguration::mailEncryption() const
++{
++    return value("encryption", "0").toInt();
++}
++
++bool DummySourceConfiguration::canDeleteMail() const
++{
++    return (value("canDelete", "0").toInt() != 0);
++}
++
++bool DummySourceConfiguration::isAutoDownload() const
++{
++    return (value("autoDownload", "0").toInt() != 0);
++}
++
++int DummySourceConfiguration::maxMailSize() const
++{
++    return value("maxSize", "102400").toInt();
++}
++
++int DummySourceConfiguration::checkInterval() const
++{
++    return value("checkInterval", "-1").toInt();
++}
++
++bool DummySourceConfiguration::intervalCheckRoamingEnabled() const
++{
++    return (value("intervalCheckRoamingEnabled", "0").toInt() != 0);
++}
++
++
++DummySourceConfigurationEditor::DummySourceConfigurationEditor(QMailAccountConfiguration *config)
++    : DummySourceConfiguration(*config)
++{
++}
++
++void DummySourceConfigurationEditor::setMailUserName(const QString &str)
++{
++    setValue("username", str);
++}
++
++void DummySourceConfigurationEditor::setMailPassword(const QString &str)
++{
++    setValue("password", encodeValue(str));
++}
++
++void DummySourceConfigurationEditor::setMailServer(const QString &str)
++{
++    setValue("server", str);
++}
++
++void DummySourceConfigurationEditor::setMailPort(int i)
++{
++    setValue("port", QString::number(i));
++}
++
++#ifndef QT_NO_OPENSSL
++
++void DummySourceConfigurationEditor::setMailEncryption(int t)
++{
++    setValue("encryption", QString::number(t));
++}
++
++#endif
++
++void DummySourceConfigurationEditor::setDeleteMail(bool b)
++{
++    setValue("canDelete", QString::number(b ? 1 : 0));
++}
++
++void DummySourceConfigurationEditor::setAutoDownload(bool b)
++{
++    setValue("autoDownload", QString::number(b ? 1 : 0));
++}
++
++void DummySourceConfigurationEditor::setMaxMailSize(int i)
++{
++    setValue("maxSize", QString::number(i));
++}
++
++void DummySourceConfigurationEditor::setCheckInterval(int i)
++{
++    setValue("checkInterval", QString::number(i));
++}
++
++void DummySourceConfigurationEditor::setIntervalCheckRoamingEnabled(bool b)
++{
++    setValue("intervalCheckRoamingEnabled", QString::number(b ? 1 : 0));
++}
++
+diff --git a/src/plugins/messageservices/dummysource/dummyconfiguration.h b/src/plugins/messageservices/dummysource/dummyconfiguration.h
+new file mode 100644
+index 0000000..a75466c
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyconfiguration.h
+@@ -0,0 +1,70 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMYCONFIGURATION_H
++#define DUMMYCONFIGURATION_H
++
++//
++//  W A R N I N G
++//  -------------
++//
++// This file is not part of the Qt Extended API.  It exists purely as an
++// implementation detail.  This header file may change from version to
++// version without notice, or even be removed.
++//
++// We mean it.
++//
++
++#include <qmailserviceconfiguration.h>
++
++class QTOPIAMAIL_EXPORT DummySourceConfiguration : public QMailServiceConfiguration
++{
++public:
++    explicit DummySourceConfiguration(const QMailAccountConfiguration &config);
++    explicit DummySourceConfiguration(const QMailAccountConfiguration::ServiceConfiguration &svcCfg);
++
++    QString mailUserName() const;
++    QString mailPassword() const;
++    QString mailServer() const;
++    int mailPort() const;
++    int mailEncryption() const;
++
++    bool canDeleteMail() const;
++
++    bool isAutoDownload() const;
++    int maxMailSize() const;
++
++    int checkInterval() const;
++    bool intervalCheckRoamingEnabled() const;
++};
++
++class QTOPIAMAIL_EXPORT DummySourceConfigurationEditor : public DummySourceConfiguration
++{
++public:
++    explicit DummySourceConfigurationEditor(QMailAccountConfiguration *config);
++
++    void setMailUserName(const QString &str);
++    void setMailPassword(const QString &str);
++    void setMailServer(const QString &str);
++    void setMailPort(int i);
++#ifndef QT_NO_OPENSSL
++    void setMailEncryption(int t);
++#endif
++
++    void setDeleteMail(bool b);
++
++    void setAutoDownload(bool autodl);
++    void setMaxMailSize(int i);
++
++    void setCheckInterval(int i);
++    void setIntervalCheckRoamingEnabled(bool enabled);
++};
++
++#endif
+diff --git a/src/plugins/messageservices/dummysource/dummyservice.cpp b/src/plugins/messageservices/dummysource/dummyservice.cpp
+new file mode 100644
+index 0000000..f1a3e40
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyservice.cpp
+@@ -0,0 +1,452 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummyservice.h"
++#include "dummyconfiguration.h"
++#include "dummysettings.h"
++#include <QTimer>
++#include <QtPlugin>
++
++#include <qmaillog.h>
++
++namespace { const QString serviceKey("dummysource"); }
++
++class DummySourceService::Source : public QMailMessageSource
++{
++    Q_OBJECT
++
++public:
++    Source(DummySourceService *service)
++        : QMailMessageSource(service),
++          _service(service),
++          _deleting(false),
++          _unavailable(false),
++          _mailCheckQueued(false),
++          _queuedMailCheckInProgress(false)
++    {
++        connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
++        connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
++        connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
++        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
++
++        qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source called";
++    }
++
++    void setIntervalTimer(int interval)
++    {
++        _intervalTimer.stop();
++        if (interval > 0)
++            _intervalTimer.start(interval*1000*60); // interval minutes
++    }
++
++    virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
++
++public slots:
++    virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
++    virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
++
++    virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
++
++    virtual bool retrieveAll(const QMailAccountId &accountId);
++    virtual bool exportUpdates(const QMailAccountId &accountId);
++
++    virtual bool synchronize(const QMailAccountId &accountId);
++
++    virtual bool deleteMessages(const QMailMessageIdList &ids);
++
++    void messageActionCompleted(const QString &uid);
++    void retrievalCompleted();
++    void retrievalTerminated();
++    void queueMailCheck();
++
++private:
++    DummySourceService *_service;
++    bool _deleting;
++    bool _unavailable;
++    bool _mailCheckQueued;
++    bool _queuedMailCheckInProgress;
++    QTimer _intervalTimer;
++};
++
++bool DummySourceService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveFolderList() called";
++
++    if (!accountId.isValid()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    if (folderId.isValid()) {
++        // Folders don't make sense for POP
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    // Just report success
++    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
++    return true;
++
++    Q_UNUSED(descending)
++}
++
++bool DummySourceService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveMessageList() called";
++
++    if (!accountId.isValid()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    if (folderId.isValid()) {
++        // Folders don't make sense for POP
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    _service->_client.setOperation(QMailRetrievalAction::MetaData);
++    _service->_client.newConnection();
++    _unavailable = true;
++    return true;
++
++    Q_UNUSED(minimum)
++    Q_UNUSED(sort)
++}
++
++bool DummySourceService::Source::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveMessages() called";
++
++    if (messageIds.isEmpty()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to retrieve"));
++        return false;
++    }
++
++    if (spec == QMailRetrievalAction::Flags) {
++        // Just report success
++        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
++        return true;
++    }
++
++    SelectionMap selectionMap;
++    foreach (const QMailMessageId& id, messageIds) {
++        QMailMessageMetaData message(id);
++        selectionMap.insert(message.serverUid(), id);
++    }
++
++    _service->_client.setOperation(spec);
++    _service->_client.setSelectedMails(selectionMap);
++    _service->_client.newConnection();
++    _unavailable = true;
++    return true;
++}
++
++bool DummySourceService::Source::retrieveAll(const QMailAccountId &accountId)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveAll() called";
++
++    if (!accountId.isValid()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    _service->_client.setOperation(QMailRetrievalAction::MetaData);
++    _service->_client.newConnection();
++    _unavailable = true;
++    return true;
++}
++
++bool DummySourceService::Source::exportUpdates(const QMailAccountId &accountId)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::exportUpdates() called";
++
++    if (!accountId.isValid()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
++        return false;
++    }
++
++    // Just report success
++    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
++    return true;
++}
++
++bool DummySourceService::Source::synchronize(const QMailAccountId &accountId)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::synchronize() called";
++
++    return retrieveAll(accountId);
++}
++
++bool DummySourceService::Source::deleteMessages(const QMailMessageIdList &messageIds)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::deleteMessages() called";
++
++    if (messageIds.isEmpty()) {
++        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to delete"));
++        return false;
++    }
++
++    QMailAccountConfiguration accountCfg(_service->accountId());
++   DummySourceConfiguration dummyCfg(accountCfg);
++    if (dummyCfg.canDeleteMail()) {
++        // Delete the messages from the server
++        SelectionMap selectionMap;
++        foreach (const QMailMessageId& id, messageIds) {
++            QMailMessageMetaData message(id);
++            selectionMap.insert(message.serverUid(), id);
++        }
++
++        _deleting = true;
++        _service->_client.setDeleteOperation();
++        _service->_client.setSelectedMails(selectionMap);
++        _service->_client.newConnection();
++        _unavailable = true;
++        return true;
++    }
++
++    // Just delete the local copies
++    return QMailMessageSource::deleteMessages(messageIds);
++}
++
++void DummySourceService::Source::messageActionCompleted(const QString &uid)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::messageActionCompleted() called";
++
++    if (_deleting) {
++        QMailMessageMetaData metaData(uid, _service->accountId());
++        if (metaData.id().isValid()) {
++            QMailMessageIdList messageIds;
++            messageIds.append(metaData.id());
++
++            emit messagesDeleted(messageIds);
++        }
++    }
++}
++
++void DummySourceService::Source::retrievalCompleted()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrievalCompleted() called";
++
++    _unavailable = false;
++
++    if (_queuedMailCheckInProgress) {
++        _queuedMailCheckInProgress = false;
++        emit _service->availabilityChanged(true);
++    }
++
++    emit _service->activityChanged(QMailServiceAction::Successful);
++    emit _service->actionCompleted(true);
++
++    _deleting = false;
++
++    if (_mailCheckQueued) {
++        queueMailCheck();
++    }
++}
++
++void DummySourceService::Source::queueMailCheck()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::queueMailCheck() called";
++
++    if (_unavailable) {
++        _mailCheckQueued = true;
++        return;
++    }
++
++    _mailCheckQueued = false;
++    _queuedMailCheckInProgress = true;
++
++    emit _service->availabilityChanged(false);
++    synchronize(_service->accountId());
++}
++
++void DummySourceService::Source::retrievalTerminated()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrievalTerminated() called";
++
++    _unavailable = false;
++    if (_queuedMailCheckInProgress) {
++        _queuedMailCheckInProgress = false;
++        emit _service->availabilityChanged(true);
++    }
++
++    // Just give up if an error occurs
++    _mailCheckQueued = false;
++}
++
++DummySourceService::DummySourceService(const QMailAccountId &accountId)
++    : QMailMessageService(),
++      _client(this),
++      _source(new Source(this))
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::DummySourceService() called";
++
++    connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
++
++    connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
++    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
++    connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
++
++    _client.setAccount(accountId);
++    QMailAccountConfiguration accountCfg(accountId);
++    DummySourceConfiguration dummyCfg(accountCfg);
++    _source->setIntervalTimer(dummyCfg.checkInterval());
++}
++
++DummySourceService::~DummySourceService()
++{
++    delete _source;
++}
++
++QString DummySourceService::service() const
++{
++    return serviceKey;
++}
++
++QMailAccountId DummySourceService::accountId() const
++{
++    return _client.account();
++}
++
++bool DummySourceService::hasSource() const
++{
++    return true;
++}
++
++QMailMessageSource &DummySourceService::source() const
++{
++    return *_source;
++}
++
++bool DummySourceService::available() const
++{
++    return true;
++}
++
++bool DummySourceService::cancelOperation()
++{
++    _client.cancelTransfer();
++    _client.closeConnection();
++    _source->retrievalTerminated();
++    return true;
++}
++
++void DummySourceService::errorOccurred(int code, const QString &text)
++{
++    updateStatus(code, text, _client.account());
++    _source->retrievalTerminated();
++    emit actionCompleted(false);
++}
++
++void DummySourceService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
++{
++    updateStatus(code, text, _client.account());
++    _source->retrievalTerminated();
++    emit actionCompleted(false);
++}
++
++void DummySourceService::updateStatus(const QString &text)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceService::updateStatus() called";
++
++    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
++}
++
++
++class DummySourceServiceConfigurator : public QMailMessageServiceConfigurator
++{
++public:
++    DummySourceServiceConfigurator();
++    ~DummySourceServiceConfigurator();
++
++    virtual QString service() const;
++    virtual QString displayName() const;
++
++    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
++};
++
++DummySourceServiceConfigurator::DummySourceServiceConfigurator()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::DummySourceServiceConfigurator() called";
++}
++
++DummySourceServiceConfigurator::~DummySourceServiceConfigurator()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::~DummySourceServiceConfigurator() called";
++}
++
++QString DummySourceServiceConfigurator::service() const
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::service() called";
++    return serviceKey;
++}
++
++QString DummySourceServiceConfigurator::displayName() const
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::displayName() called";
++    return qApp->translate("QMailMessageService", "DUMMYSOURCE");
++}
++
++QMailMessageServiceEditor *DummySourceServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type) called";
++
++    if (type == QMailMessageServiceFactory::Source)
++        return new DummySourceSettings;
++
++    return 0;
++}
++
++Q_EXPORT_PLUGIN2(dummysource,DummySourceServicePlugin)
++
++DummySourceServicePlugin::DummySourceServicePlugin()
++    : QMailMessageServicePlugin()
++{
++        qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::DummySourceServicePlugin() called";
++}
++
++QString DummySourceServicePlugin::key() const
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::key() called";
++
++    return serviceKey;
++}
++
++bool DummySourceServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) const
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) called";
++
++    return (type == QMailMessageServiceFactory::Source);
++}
++
++bool DummySourceServicePlugin::supports(QMailMessage::MessageType type) const
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::supports(QMailMessage::MessageType type) called";
++
++    return (type == QMailMessage::Email);
++}
++
++QMailMessageService *DummySourceServicePlugin::createService(const QMailAccountId &id)
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::createService() called";
++
++    return new DummySourceService(id);
++}
++
++QMailMessageServiceConfigurator *DummySourceServicePlugin::createServiceConfigurator()
++{
++    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::createServiceConfigurator() called";
++    return new DummySourceServiceConfigurator();
++}
++
++
++#include "dummyservice.moc"
++
+diff --git a/src/plugins/messageservices/dummysource/dummyservice.h b/src/plugins/messageservices/dummysource/dummyservice.h
+new file mode 100644
+index 0000000..f8e685e
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummyservice.h
+@@ -0,0 +1,72 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMYSERVICE_H
++#define DUMMYSERVICE_H
++
++#include "dummyclient.h"
++#include <qmailmessageservice.h>
++#include <qmaillog.h>
++
++QLOG_ENABLE(DUMMYSOURCE)
++
++class DummySourceService : public QMailMessageService
++{
++    Q_OBJECT
++
++public:
++    using QMailMessageService::updateStatus;
++
++    DummySourceService(const QMailAccountId &accountId);
++    ~DummySourceService();
++
++    virtual QString service() const;
++    virtual QMailAccountId accountId() const;
++
++    virtual bool hasSource() const;
++    virtual QMailMessageSource &source() const;
++
++    virtual bool available() const;
++
++public slots:
++    virtual bool cancelOperation();
++
++protected slots:
++    void errorOccurred(int code, const QString &text);
++    void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
++
++    void updateStatus(const QString& text);
++
++private:
++    class Source;
++    friend class Source;
++
++    DummySourceClient _client;
++    Source *_source;
++};
++
++
++class DummySourceServicePlugin : public QMailMessageServicePlugin
++{
++    Q_OBJECT
++
++public:
++    DummySourceServicePlugin();
++
++    virtual QString key() const;
++    virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;
++    virtual bool supports(QMailMessage::MessageType type) const;
++
++    virtual QMailMessageService *createService(const QMailAccountId &id);
++    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
++};
++
++
++#endif
+diff --git a/src/plugins/messageservices/dummysource/dummysettings.cpp b/src/plugins/messageservices/dummysource/dummysettings.cpp
+new file mode 100644
+index 0000000..90e80a5
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummysettings.cpp
+@@ -0,0 +1,157 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#include "dummysettings.h"
++#include "dummyconfiguration.h"
++#include <QLineEdit>
++#include <QMessageBox>
++#include <qmailaccount.h>
++#include <qmailaccountconfiguration.h>
++#include <qmailtransport.h>
++
++namespace {
++
++const QString serviceKey("dummysource");
++
++class PortValidator : public QValidator
++{
++public:
++    PortValidator(QWidget *parent = 0, const char *name = 0);
++
++    QValidator::State validate(QString &str, int &) const;
++};
++
++PortValidator::PortValidator(QWidget *parent, const char *name)
++    : QValidator(parent) 
++{
++    setObjectName(name);
++}
++
++QValidator::State PortValidator::validate(QString &str, int &) const
++{
++    // allow empty strings, as it's a bit awkward to edit otherwise
++    if ( str.isEmpty() )
++        return QValidator::Acceptable;
++
++    bool ok = false;
++    int i = str.toInt(&ok);
++    if ( !ok )
++        return QValidator::Invalid;
++
++    if ( i <= 0 || i >= 65536 )
++        return QValidator::Invalid;
++
++    return QValidator::Acceptable;
++}
++
++}
++
++
++DummySourceSettings::DummySourceSettings()
++    : QMailMessageServiceEditor(),
++      warningEmitted(false)
++{
++    setupUi(this);
++    setLayoutDirection(qApp->layoutDirection());
++
++    connect(intervalCheckBox, SIGNAL(stateChanged(int)), this, SLOT(intervalCheckChanged(int)));
++
++    const QString uncapitalised("email noautocapitalization");
++
++    // These fields should not be autocapitalised
++
++    mailPortInput->setValidator(new PortValidator(this));
++    mailPasswInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
++
++#ifdef QT_NO_OPENSSL
++    encryptionIncoming->hide();
++    lblEncryptionIncoming->hide();
++#endif
++
++}
++
++void DummySourceSettings::intervalCheckChanged(int enabled)
++{
++    intervalPeriod->setEnabled(enabled);
++    roamingCheckBox->setEnabled(enabled);
++}
++
++void DummySourceSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
++{
++    if (!config.services().contains(serviceKey)) {
++        // New account
++        mailUserInput->setText("");
++        mailPasswInput->setText("");
++        mailServerInput->setText("");
++        mailPortInput->setText("110");
++#ifndef QT_NO_OPENSSL
++        encryptionIncoming->setCurrentIndex(0);
++#endif
++        intervalCheckBox->setChecked(false);
++        roamingCheckBox->setChecked(false);
++    } else {
++        DummySourceConfiguration dummyConfig(config);
++
++        mailUserInput->setText(dummyConfig.mailUserName());
++        mailPasswInput->setText(dummyConfig.mailPassword());
++        mailServerInput->setText(dummyConfig.mailServer());
++        mailPortInput->setText(QString::number(dummyConfig.mailPort()));
++#ifndef QT_NO_OPENSSL
++        encryptionIncoming->setCurrentIndex(static_cast<int>(dummyConfig.mailEncryption()));
++#endif
++        deleteCheckBox->setChecked(dummyConfig.canDeleteMail());
++        maxSize->setValue(dummyConfig.maxMailSize());
++        thresholdCheckBox->setChecked(dummyConfig.maxMailSize() != -1);
++        intervalCheckBox->setChecked(dummyConfig.checkInterval() > 0);
++        intervalPeriod->setValue(qAbs(dummyConfig.checkInterval() ));
++        roamingCheckBox->setChecked(!dummyConfig.intervalCheckRoamingEnabled());
++    }
++
++    intervalPeriod->setEnabled(false);
++    roamingCheckBox->setEnabled(intervalCheckBox->isChecked());
++}
++
++bool DummySourceSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration *config)
++{
++    bool result;
++    int port = mailPortInput->text().toInt(&result);
++    if ( (!result) ) {
++        // should only happen when the string is empty, since we use a validator.
++        port = -1;
++    }
++
++    if (!config->services().contains(serviceKey))
++        config->addServiceConfiguration(serviceKey);
++
++    DummySourceConfigurationEditor dummyConfig(config);
++
++    dummyConfig.setVersion(100 );
++    dummyConfig.setType(QMailServiceConfiguration::Source );
++
++    dummyConfig.setMailUserName(mailUserInput->text());
++    dummyConfig.setMailPassword(mailPasswInput->text());
++    dummyConfig.setMailServer(mailServerInput->text());
++    dummyConfig.setMailPort(port == -1 ? 110 : port);
++#ifndef QT_NO_OPENSSL
++    dummyConfig.setMailEncryption(static_cast<QMailTransport::EncryptType>(encryptionIncoming->currentIndex()));
++#endif
++    dummyConfig.setDeleteMail(deleteCheckBox->isChecked());
++    dummyConfig.setMaxMailSize(thresholdCheckBox->isChecked() ? maxSize->value() : -1);
++    dummyConfig.setAutoDownload(false );
++    dummyConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));
++    dummyConfig.setIntervalCheckRoamingEnabled(!roamingCheckBox->isChecked());
++
++    // Do we have a configuration we can use?
++    if (!dummyConfig.mailServer().isEmpty() && !dummyConfig.mailUserName().isEmpty())
++        account->setStatus(QMailAccount::CanRetrieve, true);
++
++    return true;
++}
++
+diff --git a/src/plugins/messageservices/dummysource/dummysettings.h b/src/plugins/messageservices/dummysource/dummysettings.h
+new file mode 100644
+index 0000000..a02608e
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummysettings.h
+@@ -0,0 +1,36 @@
++/****************************************************************************
++**
++** This file is part of the $PACKAGE_NAME$.
++**
++** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
++**
++** $QT_EXTENDED_DUAL_LICENSE$
++**
++****************************************************************************/
++
++#ifndef DUMMYSETTINGS_H
++#define DUMMYSETTINGS_H
++
++#include "ui_dummysettings.h"
++#include <qmailmessageservice.h>
++
++class DummySourceSettings : public QMailMessageServiceEditor, private Ui::DummySourceSettings
++{
++    Q_OBJECT
++
++public:
++    DummySourceSettings();
++
++    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
++    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
++
++private slots:
++    void pushCheckChanged(int enabled);
++    void intervalCheckChanged(int enabled);
++
++private:
++    bool warningEmitted;
++};
++
++#endif
++
+diff --git a/src/plugins/messageservices/dummysource/dummysettings.ui b/src/plugins/messageservices/dummysource/dummysettings.ui
+new file mode 100644
+index 0000000..4bbcf6b
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummysettings.ui
+@@ -0,0 +1,351 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<ui version="4.0">
++ <class>DummySourceSettings</class>
++ <widget class="QWidget" name="DummySourceSettings">
++  <property name="geometry">
++   <rect>
++    <x>0</x>
++    <y>0</y>
++    <width>365</width>
++    <height>256</height>
++   </rect>
++  </property>
++  <property name="windowTitle">
++   <string>Form</string>
++  </property>
++  <layout class="QVBoxLayout" name="verticalLayout">
++   <property name="margin">
++    <number>0</number>
++   </property>
++   <item>
++    <widget class="QScrollArea" name="scrollArea_2">
++     <property name="focusPolicy">
++      <enum>Qt::NoFocus</enum>
++     </property>
++     <property name="frameShape">
++      <enum>QFrame::NoFrame</enum>
++     </property>
++     <property name="lineWidth">
++      <number>0</number>
++     </property>
++     <property name="horizontalScrollBarPolicy">
++      <enum>Qt::ScrollBarAlwaysOff</enum>
++     </property>
++     <property name="widgetResizable">
++      <bool>true</bool>
++     </property>
++     <widget class="QWidget" name="scrollAreaWidgetContents_2">
++      <property name="geometry">
++       <rect>
++        <x>0</x>
++        <y>0</y>
++        <width>347</width>
++        <height>299</height>
++       </rect>
++      </property>
++      <layout class="QGridLayout">
++       <item row="0" column="0">
++        <widget class="QLabel" name="usernameLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Username</string>
++         </property>
++         <property name="buddy">
++          <cstring>mailUserInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="0" column="1">
++        <widget class="QLineEdit" name="mailUserInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="1" column="0">
++        <widget class="QLabel" name="passwordLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Password</string>
++         </property>
++         <property name="buddy">
++          <cstring>mailPasswInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="1" column="1">
++        <widget class="QLineEdit" name="mailPasswInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="echoMode">
++          <enum>QLineEdit::Password</enum>
++         </property>
++        </widget>
++       </item>
++       <item row="2" column="0">
++        <widget class="QLabel" name="serverLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Server</string>
++         </property>
++         <property name="buddy">
++          <cstring>mailServerInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="2" column="1">
++        <widget class="QLineEdit" name="mailServerInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="3" column="0">
++        <widget class="QLabel" name="portLabel">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Port</string>
++         </property>
++         <property name="buddy">
++          <cstring>mailPortInput</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="3" column="1">
++        <widget class="QLineEdit" name="mailPortInput">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++        </widget>
++       </item>
++       <item row="4" column="0">
++        <widget class="QLabel" name="lblEncryptionIncoming">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Encryption</string>
++         </property>
++         <property name="buddy">
++          <cstring>encryptionIncoming</cstring>
++         </property>
++        </widget>
++       </item>
++       <item row="4" column="1">
++        <widget class="QComboBox" name="encryptionIncoming">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <item>
++          <property name="text">
++           <string>None</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>SSL</string>
++          </property>
++         </item>
++         <item>
++          <property name="text">
++           <string>TLS</string>
++          </property>
++         </item>
++        </widget>
++       </item>
++       <item row="5" column="0" colspan="2">
++        <widget class="QCheckBox" name="deleteCheckBox">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="text">
++          <string>Remove deleted mail from server</string>
++         </property>
++         <property name="checked">
++          <bool>true</bool>
++         </property>
++        </widget>
++       </item>
++       <item row="6" column="0">
++        <widget class="QCheckBox" name="thresholdCheckBox">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="minimumSize">
++          <size>
++           <width>0</width>
++           <height>0</height>
++          </size>
++         </property>
++         <property name="text">
++          <string>Skip larger</string>
++         </property>
++         <property name="checked">
++          <bool>true</bool>
++         </property>
++        </widget>
++       </item>
++       <item row="7" column="0">
++        <widget class="QCheckBox" name="intervalCheckBox">
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="minimumSize">
++          <size>
++           <width>0</width>
++           <height>0</height>
++          </size>
++         </property>
++         <property name="text">
++          <string>Interval</string>
++         </property>
++        </widget>
++       </item>
++       <item row="8" column="1">
++        <widget class="QCheckBox" name="roamingCheckBox">
++         <property name="enabled">
++          <bool>false</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="minimumSize">
++          <size>
++           <width>0</width>
++           <height>0</height>
++          </size>
++         </property>
++         <property name="text">
++          <string>Disable when Roaming</string>
++         </property>
++        </widget>
++       </item>
++       <item row="7" column="1">
++        <widget class="QSpinBox" name="intervalPeriod">
++         <property name="enabled">
++          <bool>false</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="suffix">
++          <string comment="short for minutes">min</string>
++         </property>
++         <property name="minimum">
++          <number>10</number>
++         </property>
++         <property name="maximum">
++          <number>1440</number>
++         </property>
++         <property name="singleStep">
++          <number>10</number>
++         </property>
++         <property name="value">
++          <number>60</number>
++         </property>
++        </widget>
++       </item>
++       <item row="6" column="1">
++        <widget class="QSpinBox" name="maxSize">
++         <property name="enabled">
++          <bool>true</bool>
++         </property>
++         <property name="sizePolicy">
++          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
++           <horstretch>0</horstretch>
++           <verstretch>0</verstretch>
++          </sizepolicy>
++         </property>
++         <property name="suffix">
++          <string>K</string>
++         </property>
++         <property name="minimum">
++          <number>5</number>
++         </property>
++         <property name="maximum">
++          <number>5000</number>
++         </property>
++         <property name="singleStep">
++          <number>5</number>
++         </property>
++         <property name="value">
++          <number>20</number>
++         </property>
++        </widget>
++       </item>
++      </layout>
++     </widget>
++    </widget>
++   </item>
++  </layout>
++ </widget>
++ <tabstops>
++  <tabstop>mailUserInput</tabstop>
++  <tabstop>mailPasswInput</tabstop>
++  <tabstop>mailServerInput</tabstop>
++  <tabstop>mailPortInput</tabstop>
++  <tabstop>encryptionIncoming</tabstop>
++  <tabstop>deleteCheckBox</tabstop>
++  <tabstop>thresholdCheckBox</tabstop>
++  <tabstop>maxSize</tabstop>
++  <tabstop>intervalCheckBox</tabstop>
++  <tabstop>intervalPeriod</tabstop>
++  <tabstop>roamingCheckBox</tabstop>
++ </tabstops>
++ <resources/>
++ <connections/>
++</ui>
+diff --git a/src/plugins/messageservices/dummysource/dummysource.pro b/src/plugins/messageservices/dummysource/dummysource.pro
+new file mode 100644
+index 0000000..747a057
+--- /dev/null
++++ b/src/plugins/messageservices/dummysource/dummysource.pro
+@@ -0,0 +1,31 @@
++TEMPLATE = lib 
++
++TARGET = dummysource
++
++target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
++INSTALLS += target
++
++QT += network
++
++DEPENDPATH += .
++
++INCLUDEPATH += . ../../../libraries/qtopiamail \
++               ../../../libraries/messageserver \
++               ../../../libraries/qtopiamail/support
++
++LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
++        -L../../../libraries/messageserver -lmessageserver
++
++HEADERS += dummyclient.h \
++           dummyconfiguration.h \
++           dummyservice.h \
++           dummysettings.h \
++           dummyauthenticator.h
++
++SOURCES += dummyclient.cpp \
++           dummyconfiguration.cpp \
++           dummyservice.cpp \
++           dummysettings.cpp \
++           dummyauthenticator.cpp
++
++FORMS += dummysettings.ui
+diff --git a/src/settings/messagingaccounts/messagingaccounts.pro b/src/settings/messagingaccounts/messagingaccounts.pro
+index 03c3e8e..a1d46c0 100644
+--- a/src/settings/messagingaccounts/messagingaccounts.pro
++++ b/src/settings/messagingaccounts/messagingaccounts.pro
+@@ -7,11 +7,19 @@ INSTALLS += target
+ DEPENDPATH += .
+ 
+ INCLUDEPATH += . ../../libraries/qtopiamail \
+-../../libraries/qtopiamail/support \
+-../../libraries/messageserver
++                 ../../libraries/qtopiamail/support \
++                 ../../libraries/messageserver
+ 
+-LIBS += -L../../libraries/qtopiamail -lqtopiamail \
+--L../../libraries/messageserver -lmessageserver
++LIBS += -L../../libraries/qtopiamail    -lqtopiamail \
++        -L../../libraries/messageserver -lmessageserver
++
++sparql {
++
++LIBS += -L../../libraries/sparql -lsparql
++
++QMAKE_LFLAGS += -Wl,-rpath,../../libraries/sparql
++
++}
+ 
+ HEADERS += accountsettings.h \
+            editaccount.h \
+diff --git a/src/tools/messageserver/etc/messageserver b/src/tools/messageserver/etc/messageserver
+new file mode 100644
+index 0000000..900d1a9
+--- /dev/null
++++ b/src/tools/messageserver/etc/messageserver
+@@ -0,0 +1,34 @@
++description "QMF Message Server"                                                                                                            
++author "Dmitry Zelenkovsky"                                                                                                                 
++                                                                                                                                            
++start on console                                                                                                                            
++stop on console                                                                                                                             
++                                                                                                                                            
++console output                                                                                                                              
++                                                                                                                                            
++pre-start script                                                                                                                            
++    if [ -f /var/tmp/messageserver-instance.lock ]; then                                                                                    
++        rm /var/tmp/messageserver-instance.lock                                                                                             
++    fi                                                                                                                                      
++    if [ -f /var/tmp/qcop-server-0 ]; then                                                                                                  
++        rm /var/tmp/qcop-server-0                                                                                                           
++    fi
++    if [ -f /tmp/qcop-server-0 ]; then
++        rm /tmp/qcop-server-0
++    fi                                                                                                                                      
++end script                                                                                                                                  
++                                                                                                                                            
++script                                                                                                                                      
++    echo "Starting message server..."                                                                                                       
++    if id user >/dev/null 2>&1;  then                                                                                                       
++        su user -c "export DISPLAY=0:0; messageserver &"                                                                                    
++    else                                                                                                                                    
++        echo "ERROR: Failed to start message server, there is no user with name: user"                                                      
++        echo "Please use \"adduser user user\" to create new user account."                                                                 
++    fi                                                                                                                                      
++end script                                                                                                                                  
++                                                                                                                                            
++# TBD: Uncomment this string to respawn message server.                                                                                     
++#      In case of failure messageserver refuses to start                                                                                    
++#      and that leads to recourcive respawn.                                                                                                
++# respawn
+diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
+index 337ff9c..b6a33b7 100644
+--- a/src/tools/messageserver/messageserver.pro
++++ b/src/tools/messageserver/messageserver.pro
+@@ -1,8 +1,6 @@
+ TEMPLATE = app
+ 
+ TARGET = messageserver
+-target.path += $$QMF_INSTALL_ROOT/bin
+-INSTALLS += target
+ 
+ DEPENDPATH += . 
+ 
+@@ -38,3 +36,12 @@ TRANSLATIONS += messageserver-ar.ts \
+                 messageserver-pt_BR.ts \
+                 messageserver-zh_CN.ts \
+                 messageserver-zh_TW.ts
++
++target.path += $$QMF_INSTALL_ROOT/bin
++
++upstart.files = etc/messageserver
++upstart.path  = /etc/event.d
++
++INSTALLS += target upstart
++
++
 diff --git a/tools/sparql-import/main.cpp b/tools/sparql-import/main.cpp
 new file mode 100644
 index 0000000..4fcdd02
