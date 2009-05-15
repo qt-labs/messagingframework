@@ -399,9 +399,16 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
 /*!
     Invoked by the message server to initiate a folder listing operation.
 
-    Retrieve folders available for the account \a accountId; if \a folderId is valid, folders 
-    within that folder should be retieved, otherwise in the root folder of the account.
-    If \a descending is true, also retrieve folders located by descending the folder hierarchy.
+    Retrieve the set of folders available for the account \a accountId.  
+    If \a folderId is valid, only the identified folder is searched for child folders; 
+    otherwise the search begins at the root of the account.  If \a descending is true, 
+    the search should also recursively search for child folders within folders 
+    discovered during the search.
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each 
+    folder that is searched for child folders; these properties need not be updated 
+    for folders that are merely discovered by searching.
 
     Return true if an operation is initiated.
 
@@ -420,17 +427,26 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 /*!
     Invoked by the message server to initiate a message listing operation.
 
-    Retrieve messages available for the account \a accountId; 
-    if \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved. If a folder messages are being 
-    retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
-    least \a minimum messages are available from the mail store for that folder; otherwise if the
-    folder contains less than \a minimum messages the messageserver should ensure all the messages for 
-    that folder are available from the mail store.   
+    Retrieve the list of messages available for the account \a accountId.
+    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
+    messages within all folders in the account should be retrieved.  If \a minimum is non-zero,
+    then that value will be used to restrict the number of messages to be retrieved from
+    each folder; otherwise, all messages will be retrieved.
     
-    If \a sort is not empty, messages should be discovered by locating messages in the 
-    ordering indicated by the sort criterion, if possible.
+    If \a sort is not empty, reported the discovered messages in the ordering indicated by the 
+    sort criterion, if possible.  Message sources are not required to support this facility.
 
+    If a folder messages are being retrieved from contains at least \a minimum messages then the 
+    messageserver should ensure that at least \a minimum messages are available from the mail 
+    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    messageserver should ensure all the messages for that folder are available from the mail store.
+    If a folder has messages locally available, then all previously undiscovered messages should be
+    retrieved for that folder, even if that number exceeds \a minimum.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+    from which messages are retrieved.
+    
     New messages should be added to the mail store in meta data form as they are discovered, 
     and marked with the \l QMailMessage::New status flag.  Messages that are present
     in the mail store but found to be no longer available should be marked with the 
@@ -466,6 +482,10 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     
     If \a spec is \l QMailRetrievalAction::Content, then the message server should 
     retrieve the entirety of each message listed in \a ids.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+    from which messages are retrieved.
 
     Return true if an operation is initiated.
 */
@@ -482,6 +502,10 @@ bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRe
     Invoked by the message server to initiate a message part retrieval operation.
 
     Retrieve the content of the message part indicated by the location \a partLocation.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+    from which the part is retrieved.
 
     Return true if an operation is initiated.
 */
@@ -498,6 +522,10 @@ bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &p
 
     Retrieve a portion of the content of the message identified by \a messageId, ensuring
     that at least \a minimum bytes are available in the mail store.
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+    from which the message is retrieved.
 
     Return true if an operation is initiated.
 */
@@ -516,6 +544,10 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
     Retrieve a portion of the content of the message part indicated by the location 
     \a partLocation, ensuring that at least \a minimum bytes are available in the mail store.
 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+    from which the part is retrieved.
+
     Return true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
@@ -531,6 +563,16 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
     Invoked by the message server to initiate a retrieval operation.
 
     Retrieve all folders and meta data for all messages available for the account \a accountId. 
+
+    All folders within the account should be discovered and searched for child folders.
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+    in the account.
+
+    New messages should be added to the mail store in meta data form as they are discovered, 
+    and marked with the \l QMailMessage::New status flag.  Messages that are present
+    in the mail store but found to be no longer available should be marked with the 
+    \l QMailMessage::Removed status flag.  
 
     Return true if an operation is initiated.
     
@@ -569,6 +611,15 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
     available for the account identified by \a accountId.
     Newly discovered messages should have their meta data retrieved,
     and local changes to message status should be exported to the external server.
+
+    New messages should be added to the mail store in meta data form as they are discovered, 
+    and marked with the \l QMailMessage::New status flag.  Messages that are present
+    in the mail store but found to be no longer available should be marked with the 
+    \l QMailMessage::Removed status flag.  
+
+    The folder structure of the account should be synchronized with that available from 
+    the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder.
 
     Return true if an operation is initiated.
 
