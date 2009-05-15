@@ -263,6 +263,7 @@ protected:
     virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
 
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
+    virtual void previewingCompleted(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
@@ -370,6 +371,8 @@ protected:
 
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
+
+    virtual void previewingCompleted(ImapStrategyContextBase *context);
 
 protected:
     QStringList _readUids;

@@ -122,8 +122,8 @@ public:
     static QMailMessageKey receptionTimeStamp(const QDateTime &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey receptionTimeStamp(const QDateTime &value, QMailDataComparator::RelationComparator cmp);
 
-    static QMailMessageKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailMessageKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp);
+    static QMailMessageKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp);
 
     static QMailMessageKey serverUid(const QString &uid, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey serverUid(const QString &uid, QMailDataComparator::InclusionComparator cmp);

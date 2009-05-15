@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <QtPlugin>
+#include <QUrl>
 
 namespace {
 
@@ -62,7 +63,7 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
     // Format: seconds_epoch.pid.randomchars
     bool exists = true;
     const qint64 pid = ::getpid();
-    
+
     QString filename;
     QString path;
 
@@ -209,10 +210,11 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
 
     // Write the message to file (not including sub-part contents)
     QDataStream out(&file);
-    message->toRfc2822(out, QMailMessage::StorageFormat); 
+    message->toRfc2822(out, QMailMessage::StorageFormat);
+    bool isOk = out.status() != QDataStream::Ok;
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
-        ((message->multipartType() != QMailMessagePartContainer::MultipartNone) && 
+        ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
          !addOrRenameParts(message, *message, message->contentIdentifier(), existingIdentifier))) {
         // Remove the file
         qMailLog(Messaging) << "Unable to save message content, removing temporary file:" << filePath;
@@ -416,6 +418,12 @@ QString QtopiamailfileManager::messagePartDirectory(const QString &fileName)
     return fileName + "-parts";
 }
 
+static bool isLocalAttachment(const QMailMessagePart& part)
+{
+    QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
+    return QFile::exists(QUrl(contentLocation).toLocalFile()) && !part.hasBody();
+}
+
 bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing)
 {
     // Ensure that the part directory exists
@@ -445,7 +453,7 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                             additionRequired = true;
                     }
 
-                    if (additionRequired) {
+                    if (additionRequired && !isLocalAttachment(part)) {
                         // We can only write the content in decoded form if it is complete
                         QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
 
@@ -463,7 +471,7 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                                 }
                             }
                         }
-                            
+
                         QFile file(partFilePath);
                         if (!file.open(QIODevice::WriteOnly)) {
                             qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
@@ -533,7 +541,13 @@ bool QtopiamailfileManager::loadParts(QMailMessage *message, QMailMessagePartCon
             }
         } else {
             if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-                QString partFilePath(messagePartFilePath(part, fileName));
+                QString partFilePath;
+                bool localAttachment = QFile::exists(QUrl(part.contentLocation()).toLocalFile()) && !part.hasBody();
+                if(localAttachment)
+                    partFilePath = QUrl(part.contentLocation()).toLocalFile();
+                else
+                    partFilePath = (messagePartFilePath(part, fileName));
+
                 if (QFile::exists(partFilePath)) {
                     // Is the file content in encoded or decoded form?  Since we're delivering
                     // server-side data, the parameter seems reversed...

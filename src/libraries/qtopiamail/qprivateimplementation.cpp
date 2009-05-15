@@ -10,7 +10,6 @@
 
 /*!
     \class QPrivateImplementationBase
-    \inpublicgroup QtMessagingModule
 
     \brief The QPrivateImplementationBase provides a base class for implicitly
         shared implementation classes.
@@ -21,7 +20,6 @@
 
 /*!
     \class QPrivateImplementationPointer
-    \inpublicgroup QtMessagingModule
 
     \brief The QPrivateImplementationPointer is a smart pointer which manages
         implicit sharing of classes derived from QPrivateImplementationBase.
@@ -32,7 +30,6 @@
 
 /*!
     \class QPrivatelyImplemented
-    \inpublicgroup QtMessagingModule
 
     \brief The QPrivatelyImplemented class template allows a class to delegate
         its implementation to an incomplete template parameter class.

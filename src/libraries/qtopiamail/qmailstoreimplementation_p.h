@@ -37,8 +37,8 @@ class QMailStoreImplementationBase : public QObject
 public:
     QMailStoreImplementationBase(QMailStore* parent);
 
-    virtual bool initStore();
-    static bool initialized();
+    void initialize();
+    static QMailStore::InitializationState initializationState();
 
     QMailStore::ErrorCode lastError() const;
     void setLastError(QMailStore::ErrorCode code) const;
@@ -99,13 +99,15 @@ protected:
     typedef QMap<QString, MessageUpdateSignal> MessageUpdateSignalMap;
     static MessageUpdateSignalMap initMessageUpdateSignals();
 
-    static bool init;
+    static QMailStore::InitializationState initState;
     
     virtual void emitIpcNotification(AccountUpdateSignal signal, const QMailAccountIdList &ids);
     virtual void emitIpcNotification(FolderUpdateSignal signal, const QMailFolderIdList &ids);
     virtual void emitIpcNotification(MessageUpdateSignal signal, const QMailMessageIdList &ids);
 
 private:
+    virtual bool initStore() = 0;
+
     bool emitIpcNotification();
 
     QMailStore* q;
@@ -151,7 +153,6 @@ class QMailStoreImplementation : public QMailStoreImplementationBase
 public:
     QMailStoreImplementation(QMailStore* parent);
 
-    virtual bool initStore() = 0;
     virtual void clearContent() = 0;
 
     virtual bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,

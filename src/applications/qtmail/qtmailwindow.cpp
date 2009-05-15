@@ -21,6 +21,7 @@
 #include <QStatusBar>
 #include <QMenuBar>
 #include <QApplication>
+#include <QToolBar>
 
 QTMailWindow *QTMailWindow::self = 0;
 
@@ -52,6 +53,9 @@ void QTMailWindow::init()
     connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
 
     m_contextMenu = file;
+
+    m_toolBar = new QToolBar(this);
+    addToolBar(m_toolBar);
 
 
     // Add the email client to our central widget stack
@@ -109,6 +113,11 @@ QWidget* QTMailWindow::currentWidget() const
 QMenu* QTMailWindow::contextMenu() const
 {
     return m_contextMenu;
+}
+
+QToolBar* QTMailWindow::toolBar() const
+{
+    return m_toolBar;
 }
 
 QTMailWindow* QTMailWindow::singleton()

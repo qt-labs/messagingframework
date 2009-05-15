@@ -2029,7 +2029,7 @@ bool QMailStorePrivate::initStore()
     ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
     MutexGuard guard(creationMutex);
     if (!guard.lock(1000)) {
-        return init;
+        return false;
     }
 
     if (database.isOpenError()) {
@@ -2095,7 +2095,6 @@ bool QMailStorePrivate::initStore()
     }
 
     // We are now correctly initialized
-    init = true;
     return true;
 }
 

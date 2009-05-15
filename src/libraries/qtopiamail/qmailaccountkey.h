@@ -89,8 +89,8 @@ public:
     static QMailAccountKey fromAddress(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailAccountKey fromAddress(const QString &value, QMailDataComparator::InclusionComparator cmp);
 
-    static QMailAccountKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailAccountKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp);
+    static QMailAccountKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailAccountKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp);
 
     static QMailAccountKey customField(const QString &name, QMailDataComparator::PresenceComparator cmp = QMailDataComparator::Present);
     static QMailAccountKey customField(const QString &name, const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);

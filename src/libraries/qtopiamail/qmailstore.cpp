@@ -15,7 +15,6 @@
 
 /*!
     \class QMailStore
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailStore class represents the main interface for storage and retrieval
@@ -29,7 +28,58 @@
     QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts and QMailMessages
     when used in conjunction with QMailMessageKey, QMailFolderKey and QMailAccountKey classes.
 
-    \sa QMailMessage, QMailFolder, QMailMessageKey, QMailFolderKey, QMailAccountKey
+    If a QMailStore operation fails, the lastError() function will return an error code
+    value indicating the failure mode encountered.  A successful operation will set the 
+    lastError() result to QMailStore::NoError.
+
+    Messaging accounts are represented by QMailAccountId objects.  The data associated with
+    accounts is separated into two components: QMailAccount objects hold account properties
+    exported to mail store client applications, and QMailAccountConfiguration objects hold
+    data used only by the messageserver and the protocol plugins it loads.
+
+    Account objects are accessed via the account(), accountConfiguration(), countAccounts()
+    and queryAccounts() functions.  Accounts in the mail store can be manipulated via the 
+    addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
+    affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
+    accountContentsModified() and accountsRemoved() signals.
+
+    Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
+    The data associated with folders is held by instances of the QMailFolder class.
+
+    Folder objects are accessed via the folder(), countFolders() and queryFolders() functions.  
+    Folders in the mail store can be manipulated via the addFolder(), updateFolder() and 
+    removeFolder() functions.  Mail store manipulations affecting folders are reported via 
+    the foldersAdded(), foldersUpdated(), folderContentsModified() and foldersRemoved() signals.
+
+    Messages in the mail store are represented by QMailMessageId objects.  The data associated
+    with a message can be retrieved in two forms: QMailMessageMetaData objects contain only
+    the meta data fields associated with a message, and QMailMessage objects contain both
+    the meta data fields and the message content proper.
+
+    Message objects are accessed via the message(), messageMetaData(), countMessages()
+    and queryMessages() functions.  Additionally, the messagesMetaData() function can be
+    used to retrieve subsets of meta data pertaining to a set of messages.  Messages in 
+    the mail store can be manipulated via the addMessage(), updateMessage() and removeMessage() 
+    functions.  Multiple messages can have their meta data fields updated together via 
+    the updateMessagesMetaData() function.  Mail store manipulations affecting messages are 
+    reported via the messagesAdded(), messagesUpdated(), messageContentsModified() and 
+    messagesRemoved() signals.
+
+    Messages that have been removed can be represented by removal records, which persist 
+    only to assist in keeping mail store content synchronized with the content of
+    an external message source.  QMailMessageRemovalRecord objects can be accessed
+    via the messageRemovalRecords() function.
+
+    \sa QMailAccount, QMailFolder, QMailMessage
+*/
+
+/*!
+    \enum QMailStore::InitializationState
+    This enum defines the initialization states that the mail store can assume.
+
+    \value Uninitialized        The mail store has not yet been instantiated and initialized.
+    \value InitializationFailed The mail store has been instantiated and initization was unsuccessful.
+    \value Initialized          The mail store has been instantiated and successfully initialized.
 */
 
 /*!
@@ -90,19 +140,11 @@ QMailStore::~QMailStore()
 }
 
 /*!
-    Returns true if the QMailStore object was correctly initialized.
+    Returns the initialization state of the QMailStore.
 */
-bool QMailStore::initialized() const
+QMailStore::InitializationState QMailStore::initializationState()
 {
-    return QMailStore::storeInitialized();
-}
-
-/*!
-    Returns true if the QMailStore was correctly initialized.
-*/
-bool QMailStore::storeInitialized()
-{
-    return QMailStorePrivate::initialized();
+    return QMailStorePrivate::initializationState();
 }
 
 /*!
@@ -934,15 +976,18 @@ void QMailStore::emitTransmissionInProgress(const QMailAccountIdList &ids)
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
 
 /*!
-    Returns an instance of the QMailStore object.
-*/
+    Returns the single instance of the QMailStore class.
 
+    If necessary, the store will be instantiated and initialized.
+
+    \sa initializationState()
+*/
 QMailStore* QMailStore::instance()
 {
     static bool init = false;
     if (!init) {
         init = true;
-        QMailStoreInstance()->d->initStore();
+        QMailStoreInstance()->d->initialize();
     }
     return QMailStoreInstance();
 }

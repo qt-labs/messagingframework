@@ -1091,6 +1091,12 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
                 parseFlags(str, fp.mNewMsgFlags);
             }
 
+            if (fp.mNewMsgFlags & MFlag_Deleted) {
+                // This message has been deleted - there is no more information to process
+                emit nonexistentUid(fp.mNewMsgUid);
+                return;
+            }
+
             if (fp.mDataItems & F_Date) {
                 fp.mDate = extractDate(str);
             }

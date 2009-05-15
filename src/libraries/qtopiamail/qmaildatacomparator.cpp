@@ -10,7 +10,6 @@
 
 /*!
     \namespace QMailDataComparator
-    \inpublicgroup QtMessagingModule
     \ingroup messaginglibrary
 
     \brief The QMailDataComparator namespace contains types used in specifying the comparison

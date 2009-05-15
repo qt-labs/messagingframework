@@ -503,7 +503,6 @@ int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 
 /*!
   \class QMailMessageListModel 
-    \inpublicgroup QtMessagingModule
 
   \preliminary
   \ingroup messaginglibrary 

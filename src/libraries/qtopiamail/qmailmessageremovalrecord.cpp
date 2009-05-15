@@ -34,7 +34,6 @@ public:
 
 /*!
     \class QMailMessageRemovalRecord
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary

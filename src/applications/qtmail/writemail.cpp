@@ -118,7 +118,7 @@ void WriteMail::init()
     m_toolbar->addAction(m_draftAction);
     m_toolbar->addSeparator();
 
-    setWindowTitle(tr("Composer"));
+    setWindowTitle(tr("Compose"));
 }
 
 bool WriteMail::sendStage()
@@ -587,6 +587,31 @@ bool WriteMail::forcedClosure()
 
     discard();
     return false;
+}
+
+void WriteMail::setVisible(bool visible)
+{
+    if (visible) {
+
+        //center the window on the parent
+    QWidget* w = qobject_cast<QWidget*>(parent());
+
+    QPoint p;
+
+    if (w) {
+        // Use mapToGlobal rather than geometry() in case w might
+        // be embedded in another application
+        QPoint pp = w->mapToGlobal(QPoint(0,0));
+        p = QPoint(pp.x() + w->width()/2,
+                    pp.y() + w->height()/ 2);
+    }
+
+    p = QPoint(p.x()-width()/2,
+            p.y()-height()/2);
+
+    move(p);
+    }
+    QWidget::setVisible(visible);
 }
 
 bool WriteMail::largeAttachments()
