@@ -1165,6 +1165,9 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
     } else {
         static ErrorMap socketErrorMap(socketErrorInit());
 
+        // Code has been offset by +2 on transmit to normalise range
+        code -= 2;
+
         // See if we can convert the error code into a system error message
         QString message(text);
         decorate(&message, code, (ErrorSet() << socketErrorMap));

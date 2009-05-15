@@ -409,8 +409,11 @@ void QMailTransport::errorHandling(int status, QString msg)
     mConnected = false;
     mInUse = false;
     mSocket->abort();
+
     emit updateStatus(tr("Error occurred"));
-    emit errorOccurred(status, msg);
+
+    // Socket errors run from -1; offset this value by +2
+    emit errorOccurred(status + 2, msg);
 }
 
 /*! \internal */
