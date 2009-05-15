@@ -867,7 +867,9 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
     if (QMailMessageSink *sink = accountSink(accountId)) {
         // Transmit any messages in the Outbox for this account
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
-        QMailMessageKey folderKey(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
+
+        QMailAccount account(accountId);
+        QMailMessageKey folderKey(QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
 
         // TODO: Prepare any unresolved messages for transmission
 

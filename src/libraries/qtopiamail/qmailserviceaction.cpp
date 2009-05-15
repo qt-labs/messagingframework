@@ -998,8 +998,9 @@ void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountI
 {
     _server->transmitMessages(newAction(), accountId);
 
+    QMailAccount account(accountId);
     _ids = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId) & 
-                                                 QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
+                                                 QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
 
     emitChanges();
 }
