@@ -25,7 +25,6 @@ using namespace QMailKey;
 
 /*!
     \class QMailMessageKey
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailMessageKey class defines the parameters used for querying a subset of
@@ -593,6 +592,14 @@ QMailMessageKey QMailMessageKey::serverUid(const QString &uid, QMailDataComparat
 */
 QMailMessageKey QMailMessageKey::serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp)
 {
+#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
+    if (uids.count() >= IdLookupThreshold) {
+        // If there are a large number of UIDs, they will be inserted into a temporary table
+        // with a uniqueness constraint; ensure only unique values are supplied
+        return QMailMessageKey(uids.toSet().toList(), ServerUid, QMailKey::comparator(cmp));
+    }
+#endif
+
     return QMailMessageKey(uids, ServerUid, QMailKey::comparator(cmp));
 }
 

@@ -54,7 +54,6 @@ static QMailViewerInterface* mapping(const QString& key)
 
 /*!
     \class QMailViewerInterface
-    \inpublicgroup QtMessagingModule
     \ingroup qmfutil
 
     \brief The QMailViewerInterface class defines the interface to objects that can display a mail message.
@@ -275,7 +274,6 @@ void QMailViewerInterface::setResource(const QUrl& name, QVariant value)
 
 /*!
     \class QMailViewerFactory
-    \inpublicgroup QtMessagingModule
     \ingroup qmfutil
 
     \brief The QMailViewerFactory class creates objects implementing the QMailViewerInterface interface.

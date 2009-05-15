@@ -109,7 +109,6 @@ public:
 
 /*!
   \class QMailMessageDelegate 
-  \inpublicgroup QtMessagingModule
   \ingroup qmfutil 
 
   \preliminary
@@ -387,7 +386,6 @@ public:
 
 /*!
   \class QtopiaHomeMailMessageDelegate 
-  \inpublicgroup QtMessagingModule
   \ingroup qmfutil 
 
   \preliminary

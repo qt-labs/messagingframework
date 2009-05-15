@@ -92,20 +92,11 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         context->completedMessageAction(uid);
     }
 
-    // Compensate for MS exchange temporarily failing to report existence of messages
-    QMailMessageKey existentUidKey(storedKey & reportedKey);
-    QMailMessageKey removedUidKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
-    QMailMessageKey onServerButRemovedInStore(removedUidKey & existentUidKey);
-    if (!QMailStore::instance()->updateMessagesMetaData(onServerButRemovedInStore, QMailMessage::Removed, false)) {
-        qWarning() << "Unable to update unremoved message metadata for account:" << context->config().id();
-    }
-
     // Update any messages that are reported as read elsewhere, that previously were not
     if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 }
-
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -164,6 +155,9 @@ void ImapStrategy::newConnection(ImapStrategyContextBase *context)
 {
     _transferState = Init;
 
+    ImapConfiguration imapCfg(context->config());
+    _baseFolder = imapCfg.baseFolder();
+
     initialAction(context);
 }
 
@@ -180,11 +174,18 @@ void ImapStrategy::initialAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder, const QString &flags)
+void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder, const QString &flags, const QString &delimiter)
 {
     if (!folder.id().isValid()) {
-        if (!QMailStore::instance()->addFolder(&folder)) {
-            qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+        // Only folders beneath the base folder are relevant
+        QString path(folder.path());
+
+        if (_baseFolder.isEmpty() || 
+            (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
+            (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+            if (!QMailStore::instance()->addFolder(&folder)) {
+                qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+            }
         }
     }
 
@@ -263,7 +264,7 @@ void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString 
 
 
 /* A strategy that provides an interface for defining a set of messages 
-   or message parts to operate on, and an abstract interface messageAction() 
+   or message parts to operate on, and an abstract interface messageListMessageAction() 
    for operating on messages.
    
    Also implements logic to determine which messages or message part to operate 
@@ -272,6 +273,7 @@ void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString 
 void ImapMessageListStrategy::clearSelection()
 {
     _selectionMap.clear();
+    _folderItr = _selectionMap.end();
 }
 
 void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids) 
@@ -345,13 +347,13 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
 
 void ImapMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     // We're completing a message or section
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *context)
@@ -384,6 +386,11 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     QMailMessagePart::Location location;
     int minimum = SectionProperties::All;
 
+    if (_folderItr == _selectionMap.end()) {
+        messageListCompleted(context);
+        return false;
+    }
+        
     FolderMap::ConstIterator selectionEnd = _folderItr.value().end();
     while (_selectionItr == selectionEnd) {
         ++_folderItr;
@@ -396,7 +403,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     if ((_folderItr == _selectionMap.end()) || !_folderItr.key().isValid()) {
         _currentMailbox = QMailFolder();
         _selectionMap.clear();
-        folderAction(context);
+        messageListFolderAction(context);
         return false;
     }
 
@@ -404,7 +411,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     mailboxId = _folderItr.key();
     if (mailboxId != _currentMailbox.id()) {
         _currentMailbox = QMailFolder(mailboxId);
-        folderAction(context);
+        messageListFolderAction(context);
         return false;
     }
     mailboxIdStr = QString::number(mailboxId.toULongLong()) + '|';
@@ -443,7 +450,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     return true;
 }
 
-void ImapMessageListStrategy::folderAction(ImapStrategyContextBase *context)
+void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *context)
 {
     if (_currentMailbox.id().isValid()) {
         if (_currentMailbox.id() == context->mailbox().id) {
@@ -453,11 +460,11 @@ void ImapMessageListStrategy::folderAction(ImapStrategyContextBase *context)
             context->protocol().sendSelect(_currentMailbox);
         }
     } else {
-        completedAction(context);
+        messageListCompleted(context);
     }
 }
 
-void ImapMessageListStrategy::completedAction(ImapStrategyContextBase *context)
+void ImapMessageListStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     context->operationCompleted();
 }
@@ -586,15 +593,15 @@ void ImapFetchSelectedMessagesStrategy::handleLogin(ImapStrategyContextBase *con
     if (_totalRetrievalSize)
         context->progressChanged(0, _totalRetrievalSize);
 
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 void ImapFetchSelectedMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
-void ImapFetchSelectedMessagesStrategy::messageAction(ImapStrategyContextBase *context)
+void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
     if (selectNextMessageSequence(context)) {
         QStringList uids;
@@ -712,14 +719,14 @@ void ImapFolderListStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     _transferState = List;
 
-    processNextMailbox(context);
+    processNextFolder(context);
 }
 
 void ImapFolderListStrategy::handleList(ImapStrategyContextBase *context)
 {
     if (!_currentMailbox.id().isValid()) {
         // Try to proceed to another mailbox
-        processNextMailbox(context);
+        processNextFolder(context);
     } else {
         // If the current folder is not yet selected
         if (_currentMailbox.id() != context->mailbox().id) {
@@ -727,7 +734,7 @@ void ImapFolderListStrategy::handleList(ImapStrategyContextBase *context)
                 FolderStatus folderState = _folderStatus[_currentMailbox.id()];
                 if (folderState & NoSelect) {
                     // We can't select this folder
-                    processNextMailbox(context);
+                    processNextFolder(context);
                 } else {
                     // Select this folder
                     context->protocol().sendSelect( _currentMailbox );
@@ -735,11 +742,11 @@ void ImapFolderListStrategy::handleList(ImapStrategyContextBase *context)
                 }
             } else {
                 // This folder does not exist, according to the listing...
-                processNextMailbox(context);
+                processNextFolder(context);
             }
         } else {
             // This mailbox is selected
-            processMailbox(context);
+            folderListFolderAction(context);
         }
     }
 }
@@ -750,14 +757,19 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         // We have selected this folder - find out how many undiscovered messages exist
 
         // We need the UID of the most recent message we have previously discovered in this folder
-        QMailMessageKey key(QMailMessageKey::parentFolderId(_currentMailbox.id()));
-        QMailMessageSortKey sortKey(QMailMessageSortKey::id(Qt::DescendingOrder));
+        QMailFolderId folderId(context->mailbox().id);
+        QMailFolder folder(folderId);
 
-        QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sortKey));
-        if (!messageIds.isEmpty()) {
-            // Find this message's MSN
-            QMailMessageMetaData message(messageIds.first());
-            context->protocol().sendSearch(0, QString("UID ") + ImapProtocol::uid(message.serverUid()));
+        // toUint returns 0 on error, which is an invalid IMAP uid
+        int clientMax(folder.customField("qmf-max-serveruid").toUInt());
+
+        if (clientMax && context->mailbox().exists) {
+            if (context->mailbox().uidNext > (clientMax + 1)) {
+                context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(context->mailbox().uidNext));
+            } else {
+                // There's no need to search if (clientMax <= (UIDNEXT - 1))
+                handleSearch(context);
+            }
         } else {
             // No messages - nothing to discover...
             handleSearch(context);
@@ -772,29 +784,28 @@ void ImapFolderListStrategy::handleSearch(ImapStrategyContextBase *context)
     updateUndiscoveredCount(context);
 
     // We have finished with this folder
-    processMailbox(context);
+    folderListFolderAction(context);
 }
 
-void ImapFolderListStrategy::processMailbox(ImapStrategyContextBase *context)
+void ImapFolderListStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     // The current mailbox is now selected - subclasses clients should do something now
 
     // Go onto the next mailbox
-    processNextMailbox(context);
+    processNextFolder(context);
 }
 
-void ImapFolderListStrategy::processNextMailbox(ImapStrategyContextBase *context)
+void ImapFolderListStrategy::processNextFolder(ImapStrategyContextBase *context)
 {
-    if (getnextMailbox()) {
-        newfolderAction(context);
+    if (nextFolder()) {
+        processFolder(context);
         return;
     }
 
-    listCompleted(context);
+    folderListCompleted(context);
 }
 
-// TODO: change this name
-bool ImapFolderListStrategy::getnextMailbox()
+bool ImapFolderListStrategy::nextFolder()
 {
     while (!_mailboxIds.isEmpty()) {
         QMailFolderId folderId(_mailboxIds.takeFirst());
@@ -818,70 +829,57 @@ bool ImapFolderListStrategy::getnextMailbox()
     return false;
 }
 
-// TODO: change this name
-void ImapFolderListStrategy::newfolderAction(ImapStrategyContextBase *context)
+void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
-    if (_folderStatus.contains(_currentMailbox.id())) {
-        // We already have the status for this folder - select it
-        context->protocol().sendSelect(_currentMailbox);
-    } else {
-        // List the contents of the parent of this folder, to see if we can select it
-        QMailFolderId parentFolderId(_currentMailbox.parentFolderId());
-        if (parentFolderId.isValid()) {
-            context->protocol().sendList(QMailFolder(parentFolderId), "%");
-        } else {
-            QMailFolder root;
-            ImapConfiguration imapCfg(context->config());
-            if (!imapCfg.baseFolder().isEmpty()) {
-                root.setPath(imapCfg.baseFolder());
-            }
+    // Attempt to select the current folder
+    context->protocol().sendSelect(_currentMailbox);
+}
 
-            context->protocol().sendList(root, "%");
-        }
+void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    // We have retrieved all the folders - process any messages
+    messageListMessageAction(context);
+}
+
+void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
+{
+    ImapStrategy::mailboxListed(context, folder, flags, delimiter);
+
+    if (folder.id().isValid()) {
+        // Record the status of the listed mailbox
+        int status = 0;
+        if (flags.indexOf("NoInferiors", 0, Qt::CaseInsensitive) != -1)
+            status |= NoInferiors;
+        if (flags.indexOf("NoSelect", 0, Qt::CaseInsensitive) != -1)
+            status |= NoSelect;
+        if (flags.indexOf("Marked", 0, Qt::CaseInsensitive) != -1)
+            status |= Marked;
+        if (flags.indexOf("Unmarked", 0, Qt::CaseInsensitive) != -1)
+            status |= Unmarked;
+        if (flags.indexOf("HasChildren", 0, Qt::CaseInsensitive) != -1)
+            status |= HasChildren;
+        if (flags.indexOf("HasNoChildren", 0, Qt::CaseInsensitive) != -1)
+            status |= HasNoChildren;
+
+        _folderStatus[folder.id()] = static_cast<FolderStatus>(status);
     }
-}
-
-void ImapFolderListStrategy::listCompleted(ImapStrategyContextBase *context)
-{
-    // We have retrieved all the folders
-    completedAction(context);
-}
-
-void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
-{
-    ImapStrategy::mailboxListed(context, folder, flags);
-
-    // Record the status of the listed mailbox
-    int status = 0;
-    if (flags.indexOf("NoInferiors", 0, Qt::CaseInsensitive) != -1)
-        status |= NoInferiors;
-    if (flags.indexOf("NoSelect", 0, Qt::CaseInsensitive) != -1)
-        status |= NoSelect;
-    if (flags.indexOf("Marked", 0, Qt::CaseInsensitive) != -1)
-        status |= Marked;
-    if (flags.indexOf("Unmarked", 0, Qt::CaseInsensitive) != -1)
-        status |= Unmarked;
-    if (flags.indexOf("HasChildren", 0, Qt::CaseInsensitive) != -1)
-        status |= HasChildren;
-    if (flags.indexOf("HasNoChildren", 0, Qt::CaseInsensitive) != -1)
-        status |= HasNoChildren;
-
-    _folderStatus[folder.id()] = static_cast<FolderStatus>(status);
 }
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
 {
-    // We should have the MSN of the our most recent message
-    uint msn = 0;
-    if (!context->mailbox().msnList.isEmpty()) {
-        msn = context->mailbox().msnList.first();
-    }
+    // Initial case set the undiscovered count to exists in the case of no 
+    // max-serveruid set for the folder
+    int undiscovered(context->mailbox().exists);
 
-    // The difference between the server count and the MSN of our message should yield the undiscovered count
-    // Note: MSN is 1-based, count is 0-based.
     QMailFolder folder(_currentMailbox.id());
-    int undiscovered = folder.serverCount() - msn;
-    if ((undiscovered >= 0) && (uint(undiscovered) != folder.serverUndiscoveredCount())) {
+    int clientMax(folder.customField("qmf-max-serveruid").toUInt());
+    if (clientMax) {
+        // The undiscovered count for a folder is the number of messages on the server newer 
+        // than the most recent (highest server uid) message in the folder.
+        undiscovered = context->mailbox().msnList.count();
+    }
+    
+    if (uint(undiscovered) != folder.serverUndiscoveredCount()) {
         folder.setServerUndiscoveredCount(undiscovered);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -917,7 +915,7 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {
         // We're completing a message or section
-        messageAction(context);
+        messageListMessageAction(context);
     } else {
         ImapFolderListStrategy::handleSelect(context);
     }
@@ -928,7 +926,7 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
     if (_transferState == Preview) {    //getting headers
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {    //getting complete messages
-        messageAction(context);
+        messageListMessageAction(context);
     }
 }
 
@@ -952,52 +950,44 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
 
     _transferState = Preview;
 
-    if (!selectNextMailbox(context)) {
+    if (!selectNextPreviewFolder(context)) {
         // Could be no mailbox has been selected to be stored locally
-        completedAction(context);
+        messageListCompleted(context);
     }
 }
 
-bool ImapSynchronizeBaseStrategy::selectNextMailbox(ImapStrategyContextBase *context)
+bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)
 {
-    _newUids = QStringList();
-
-    if (nextMailbox(context)) {
-        FolderStatus folderState = _folderStatus[_currentMailbox.id()];
-        if (folderState & NoSelect) {
-            // Bypass the select and UID search, and go directly to the search result handler
-            processUidSearchResults(context);
-        } else {
-            if (_currentMailbox.id() == context->mailbox().id) {
-                // We already have the appropriate mailbox selected
-                handleSelect(context);
-            } else {
-                if (_transferState == List) {
-                    QString status = QObject::tr("Checking", "Checking <mailbox name>") + QChar(' ') + _currentMailbox.displayName();
-                    context->updateStatus( status );
-                }
-
-                context->protocol().sendSelect( _currentMailbox );
-            }
-        }
-        return true;
-    } else {
+    if (_retrieveUids.isEmpty()) {
+        _currentMailbox = QMailFolder();
+        _newUids = QStringList();
         return false;
     }
-}
 
-bool ImapSynchronizeBaseStrategy::nextMailbox(ImapStrategyContextBase *)
-{
-    if ((_transferState == Preview) && !_retrieveUids.isEmpty()) {
-        // In fetch mode, return the mailboxes where retrievable messages are located
-        QPair<QMailFolderId, QStringList> next = _retrieveUids.takeFirst();
-        _currentMailbox = QMailFolder(next.first);
-        _newUids = next.second;
-        return true;
+    // In preview mode, select the mailboxes where retrievable messages are located
+    QPair<QMailFolderId, QStringList> next = _retrieveUids.takeFirst();
+    _currentMailbox = QMailFolder(next.first);
+    _newUids = next.second;
+
+    FolderStatus folderState = _folderStatus[_currentMailbox.id()];
+    if (folderState & NoSelect) {
+        // Bypass the select and UID search, and go directly to the search result handler
+        processUidSearchResults(context);
+    } else {
+        if (_currentMailbox.id() == context->mailbox().id) {
+            // We already have the appropriate mailbox selected
+            handleSelect(context);
+        } else {
+            if (_transferState == List) {
+                QString status = QObject::tr("Checking", "Checking <mailbox name>") + QChar(' ') + _currentMailbox.displayName();
+                context->updateStatus( status );
+            }
+
+            context->protocol().sendSelect( _currentMailbox );
+        }
     }
 
-    _currentMailbox = QMailFolder();
-    return false;
+    return true;
 }
 
 void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
@@ -1010,13 +1000,19 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
 
         context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
         _newUids = _newUids.mid(uidList.count());
-    } else if (!selectNextMailbox(context)) {
+        return;
+    }
+    
+    previewingCompleted(context);
+    if (!selectNextPreviewFolder(context)) {
+        // No more messages to preview
         if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
             if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
                 // Fetch the messages that need completion
                 clearSelection();
+
                 selectedMailsAppend(_completionList);
-                _completionList.clear();
+
                 QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
                 for ( ; it != end; ++it) {
                     if (it->second != 0) {
@@ -1025,13 +1021,21 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                         selectedSectionsAppend(it->first);
                     }
                 }
+
+                _completionList.clear();
                 _completionSectionList.clear();
-                messageAction(context);
+
+                messageListMessageAction(context);
             } else {
-                completedAction(context);
+                // No messages to be completed
+                messageListCompleted(context);
             }
         }
     }
+}
+
+void ImapSynchronizeBaseStrategy::previewingCompleted(ImapStrategyContextBase *)
+{
 }
 
 void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
@@ -1137,6 +1141,7 @@ void ImapRetrieveFolderListStrategy::setDescending(bool descending)
 void ImapRetrieveFolderListStrategy::newConnection(ImapStrategyContextBase *context)
 {
     _mailboxList.clear();
+    _ancestorPaths.clear();
 
     ImapSynchronizeBaseStrategy::newConnection(context);
 }
@@ -1151,8 +1156,6 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
     ImapConfiguration imapCfg(context->config());
     if (_baseId.isValid()) {
         folderId = _baseId;
-    } else {
-        folderId = context->client()->mailboxId(imapCfg.baseFolder());
     }
 
     _transferState = List;
@@ -1163,12 +1166,7 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
         ImapSynchronizeBaseStrategy::handleLogin(context);
     } else {
         // We need to search for folders at the account root
-        QMailFolder root;
-        if (!imapCfg.baseFolder().isEmpty()) {
-            root.setPath(imapCfg.baseFolder());
-        }
-
-        context->protocol().sendList(root, "%");
+        context->protocol().sendList(QMailFolder(), "%");
     }
 }
 
@@ -1182,41 +1180,73 @@ void ImapRetrieveFolderListStrategy::handleSearch(ImapStrategyContextBase *conte
         // Find the child folders of this mailbox
         context->protocol().sendList(_currentMailbox, "%");
     } else {
-        processMailbox(context);
+        folderListFolderAction(context);
     }
 }
 
-void ImapRetrieveFolderListStrategy::processNextMailbox(ImapStrategyContextBase *context)
+void ImapRetrieveFolderListStrategy::handleList(ImapStrategyContextBase *context)
 {
-    if (getnextMailbox()) {
-        newfolderAction(context);
+    if (!_currentMailbox.id().isValid()) {
+        // See if there are any more ancestors to search
+        if (!_ancestorSearchPaths.isEmpty()) {
+            QMailFolder ancestor;
+            ancestor.setPath(_ancestorSearchPaths.takeFirst());
+
+            context->protocol().sendList(ancestor, "%");
+            return;
+        }
+    }
+
+    ImapSynchronizeBaseStrategy::handleList(context);
+}
+
+void ImapRetrieveFolderListStrategy::processNextFolder(ImapStrategyContextBase *context)
+{
+    if (nextFolder()) {
+        processFolder(context);
         return;
     }
 
     // We should have discovered all available mailboxes now
     _mailboxList = context->client()->mailboxIds();
 
-    listCompleted(context);
+    folderListCompleted(context);
 }
 
-void ImapRetrieveFolderListStrategy::listCompleted(ImapStrategyContextBase *context)
+void ImapRetrieveFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
 {
     removeDeletedMailboxes(context);
 
-    // We have retrieved all the folders
-    completedAction(context);
+    // We have retrieved all the folders - process any messages
+    messageListMessageAction(context);
 }
 
-void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
+void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
 {
-    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags);
+    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags, delimiter);
 
     _mailboxPaths.append(folder.path());
 
     if (_descending) {
-        if (folder.id() != _currentMailbox.id()) {
-            // We need to list this folder's contents, too
-            selectedFoldersAppend(QMailFolderIdList() << folder.id());
+        QString path(folder.path());
+
+        if (folder.id().isValid()) {
+            if (folder.id() != _currentMailbox.id()) {
+                if (_baseFolder.isEmpty() || 
+                    (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
+                    (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+                    // We need to list this folder's contents, too
+                    selectedFoldersAppend(QMailFolderIdList() << folder.id());
+                }
+            }
+        } else {
+            if (!_ancestorPaths.contains(path)) {
+                if (_baseFolder.startsWith(path + delimiter, Qt::CaseInsensitive)) {
+                    // This folder must be an ancestor of the base folder - list its contents
+                    _ancestorPaths.insert(path);
+                    _ancestorSearchPaths.append(path);
+                }
+            }
         }
     }
 }
@@ -1258,7 +1288,7 @@ void ImapRetrieveFolderListStrategy::removeDeletedMailboxes(ImapStrategyContextB
 */
 ImapSynchronizeAllStrategy::ImapSynchronizeAllStrategy()
 {
-    _options = (Options)(RetrieveMail | ImportChanges | ExportChanges);
+    _options = static_cast<Options>(RetrieveMail | ImportChanges | ExportChanges);
 }
 
 void ImapSynchronizeAllStrategy::setOptions(Options options)
@@ -1295,42 +1325,6 @@ void ImapSynchronizeAllStrategy::transition(ImapStrategyContextBase *context, Im
     }
 }
 
-void ImapSynchronizeAllStrategy::listCompleted(ImapStrategyContextBase *context)
-{
-    removeDeletedMailboxes(context);
-
-    previewDiscoveredMessages(context);
-}
-
-bool ImapSynchronizeAllStrategy::selectNextMailbox(ImapStrategyContextBase *context)
-{
-    _seenUids = QStringList();
-    _unseenUids = QStringList();
-    _readUids = QStringList();
-    _removedUids = QStringList();
-    _expungeRequired = false;
-    
-    _searchState = Seen;
-    return ImapRetrieveFolderListStrategy::selectNextMailbox(context);
-}
-
-void ImapSynchronizeAllStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    // We have selected the current mailbox
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            // Start by looking for previously-seen and unseen messages
-            context->protocol().sendUidSearch(MFlag_Seen);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapRetrieveFolderListStrategy::handleSelect(context);
-    }
-}
-
 void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     switch(_searchState)
@@ -1339,8 +1333,14 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     {
         _seenUids = context->mailbox().uidList;
 
-        _searchState = Unseen;
-        context->protocol().sendUidSearch(MFlag_Unseen);
+        if (_seenUids.count() == context->mailbox().exists) {
+            // All of the messages are seen
+            _unseenUids.clear();
+            processUidSearchResults(context);
+        } else {
+            _searchState = Unseen;
+            context->protocol().sendUidSearch(MFlag_Unseen);
+        }
         break;
     }
     case Unseen:
@@ -1378,15 +1378,54 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     }
 }
 
+void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
+    if (!(_options & ExportChanges)) {
+        processNextFolder(context);
+        return;
+    }
+    if (!setNextSeen(context))
+        if (!setNextDeleted(context))
+            processNextFolder(context);
+}
+
+void ImapSynchronizeAllStrategy::handleExpunge(ImapStrategyContextBase *context)
+{
+    processNextFolder(context);
+}
+
+void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase *context)
+{
+    _seenUids = QStringList();
+    _unseenUids = QStringList();
+    _readUids = QStringList();
+    _removedUids = QStringList();
+    _expungeRequired = false;
+    
+    // Search for messages in the current mailbox
+    _searchState = Seen;
+
+    if (context->mailbox().exists > 0) {
+        // Start by looking for previously-seen and unseen messages
+        context->protocol().sendUidSearch(MFlag_Seen);
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+void ImapSynchronizeAllStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    removeDeletedMailboxes(context);
+
+    previewDiscoveredMessages(context);
+}
+
 void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase *context)
 {
     QMailFolderId boxId = _currentMailbox.id();
     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
     QMailFolder folder(boxId);
-    
-    // Folder min/max invalidated
-    folder.removeCustomField("qmf-min-serveruid");
-    folder.removeCustomField("qmf-max-serveruid");
     
     if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
         !(_currentMailbox.status() & QMailFolder::Synchronized)) {
@@ -1446,18 +1485,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
 
 void ImapSynchronizeAllStrategy::searchInconclusive(ImapStrategyContextBase *context)
 {
-    fetchNextMailPreview(context);
-}
-
-void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context)
-{
-    if (!(_options & ExportChanges)) {
-        fetchNextMailPreview(context);
-        return;
-    }
-    if (!setNextSeen(context))
-        if (!setNextDeleted(context))
-            fetchNextMailPreview(context);
+    processNextFolder(context);
 }
 
 bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
@@ -1503,15 +1531,20 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     return false;
 }
 
-void ImapSynchronizeAllStrategy::handleExpunge(ImapStrategyContextBase *context)
+void ImapSynchronizeAllStrategy::previewingCompleted(ImapStrategyContextBase *context)
 {
-    fetchNextMailPreview(context);
+    QMailFolder folder(context->mailbox().id);
+    if (context->mailbox().exists > 0) {
+        folder.setCustomField("qmf-min-serveruid", QString::number(1));
+        folder.setCustomField("qmf-max-serveruid", QString::number(context->mailbox().uidNext - 1));
+        folder.setServerUndiscoveredCount(0);
+
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            qWarning() << "Unable to update folder for account:" << context->config().id();
+        }
+    }
 }
 
-void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
-{
-    ImapRetrieveFolderListStrategy::fetchNextMailPreview(context);
-}
 
 /* A strategy to retrieve all messages from an account.
    
@@ -1520,91 +1553,92 @@ void ImapSynchronizeAllStrategy::fetchNextMailPreview(ImapStrategyContextBase *c
 */
 ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
 {
-    setOptions((Options)(RetrieveMail | ImportChanges));
+    // This is just synchronize without update-exporting
+    setOptions(static_cast<Options>(RetrieveMail | ImportChanges));
 }
+
 
 /* A strategy to exports changes made on the client to the server.
    That is to export flag changes (unseen -> seen) and deletes.
 */
 ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 {
-    setOptions((Options)(ExportChanges));
+    setOptions(ExportChanges);
 }
 
 void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    ImapConfiguration imapCfg(context->config());
+    _transferState = List;
     _completionList.clear();
     _completionSectionList.clear();
-    _mailboxList.clear();
-    if (!imapCfg.canDeleteMail()) {
-        QMailAccountId id(context->config().id());
-        QString name(QMailAccount(id).name());
-        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is "
-            "disabled for account name" << name << "id" << id;
-    }
-    QMailFolderIdList folders(context->client()->mailboxIds());
-    QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
-    statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
-    ImapClient *c(context->client());
-    foreach(QMailFolderId folderId, folders) {
-        QStringList deletedUids;
-        if (imapCfg.canDeleteMail())
-            deletedUids = context->client()->deletedMessages(folderId);
-        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
-        QStringList readUids = c->serverUids(folderKey & statusKey);
-        if (!deletedUids.isEmpty() || !readUids.isEmpty())
-            _mailboxList.append(folderId);
-    }
-    _transferState = List;
-    
-    if (!selectNextMailbox(context)) {
-        // No changes to export
-        completedAction(context);
-    }
-}
 
-void ImapExportUpdatesStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    _clientDeletedUids = QStringList();
-    _clientReadUids = QStringList();
-    _serverReportedUids = QStringList();
-    
-    // We have selected the current mailbox
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            // Only interested in messages that are going to be operated on
-            ImapConfiguration imapCfg(context->config());
-            QMailFolderId folderId(_currentMailbox.id());
-            QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read,  QMailDataComparator::Includes));
-            statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere,  QMailDataComparator::Includes);
-            ImapClient *c(context->client());
-            QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
-            _clientReadUids = c->serverUids(folderKey & statusKey);
-            if (imapCfg.canDeleteMail())
-                _clientDeletedUids = context->client()->deletedMessages(folderId);
-            
-            if (_clientDeletedUids.isEmpty() && _clientReadUids.isEmpty()) {
-                processUidSearchResults(context);
-                return;
-            }
-            QStringList changedUids = _clientDeletedUids + _clientReadUids;
-            QString uidList = "UID " + stripFolderPrefix(changedUids).join(",");
-            context->protocol().sendUidSearch(MFlag_All, uidList);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapRetrieveFolderListStrategy::handleSelect(context);
+    ImapConfiguration imapCfg(context->config());
+    if (!imapCfg.canDeleteMail()) {
+        QString name(QMailAccount(context->config().id()).name());
+        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is disabled for account name" << name;
     }
+
+    QMailMessageKey statusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
+    statusKey &= ~QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
+
+    _folderMessageUids.clear();
+
+    ImapClient *c(context->client());
+    foreach (const QMailFolderId &folderId, context->client()->mailboxIds()) {
+        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
+
+        // Find messages marked as read locally
+        QStringList deletedUids;
+        QStringList readUids = c->serverUids(folderKey & statusKey);
+
+        if (imapCfg.canDeleteMail()) {
+            // Also find messages deleted locally
+            deletedUids = context->client()->deletedMessages(folderId);
+        }
+
+        if (!readUids.isEmpty() || !deletedUids.isEmpty())
+            _folderMessageUids.insert(folderId, qMakePair(readUids, deletedUids));
+    }
+    
+    processNextFolder(context);
 }
 
 void ImapExportUpdatesStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     _serverReportedUids = context->mailbox().uidList;
+
     processUidSearchResults(context);
+}
+
+void ImapExportUpdatesStrategy::folderListFolderAction(ImapStrategyContextBase *context)
+{
+    _serverReportedUids = QStringList();
+    
+    // We have selected the current mailbox
+    if (context->mailbox().exists > 0) {
+        // Find which of our messages-of-interest are still on the server
+        IntegerRegion clientRegion(stripFolderPrefix(_clientReadUids + _clientDeletedUids));
+        context->protocol().sendUidSearch(MFlag_All, "UID " + clientRegion.toString());
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+bool ImapExportUpdatesStrategy::nextFolder()
+{
+    if (_folderMessageUids.isEmpty()) {
+        return false;
+    }
+
+    QMap<QMailFolderId, QPair<QStringList, QStringList> >::iterator it = _folderMessageUids.begin();
+
+    _currentMailbox = QMailFolder(it.key());
+    _clientReadUids = it.value().first;
+    _clientDeletedUids = it.value().second;
+
+    _folderMessageUids.erase(it);
+    return true;
 }
 
 void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase *context)
@@ -1628,7 +1662,9 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
 void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapFolderListStrategy::clearSelection();
+
     _monitoredFoldersIds.clear();
+    _selectedMessageIds.clear();
     _folderMessageUids.clear();
 }
 
@@ -1656,9 +1692,9 @@ void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *contex
 
 void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    _serverUids.clear();
     _transferState = List;
-    _searchState = Seen;
+    _serverUids.clear();
+    _searchState = Unseen;
 
     // Associate each message to the relevant folder
     _folderMessageUids.clear();
@@ -1671,55 +1707,71 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
         }
     }
 
-    processNextMailbox(context);
-}
-
-void ImapUpdateMessagesFlagsStrategy::handleSelect(ImapStrategyContextBase *context)
-{
-    if (_transferState == List) {
-        // We're searching mailboxes
-        if (context->mailbox().exists > 0) {
-            IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
-            _filter = clientRegion.toString();
-            _searchState = Seen;
-
-            // Start by looking for previously-seen and unseen messages
-            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-        } else {
-            // No messages, so no need to perform search
-            processUidSearchResults(context);
-        }
-    } else {
-        ImapFolderListStrategy::handleSelect(context);
-    }
+    processNextFolder(context);
 }
 
 void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     switch(_searchState)
     {
-    case Seen:
-    {
-        _seenUids = context->mailbox().uidList;
-
-        _searchState = Unseen;
-        context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-        break;
-    }
     case Unseen:
     {
         _unseenUids = context->mailbox().uidList;
+
+        if (_unseenUids.count() == _serverUids.count()) {
+            // All of the messages are unseen
+            _seenUids.clear();
+            processUidSearchResults(context);
+        } else {
+            _searchState = Seen;
+            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        }
+        break;
+    }
+    case Seen:
+    {
+        _seenUids = context->mailbox().uidList;
         processUidSearchResults(context);
         break;
     }
     default:
         qMailLog(IMAP) << "Unknown search status in transition";
         Q_ASSERT(0);
-        completedAction(context);
+
+        processNextFolder(context);
     }
 }
 
-bool ImapUpdateMessagesFlagsStrategy::getnextMailbox()
+void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContextBase *context)
+{
+    if (context->mailbox().exists > 0) {
+        IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
+        _filter = clientRegion.toString();
+        _searchState = Unseen;
+
+        // Start by looking for previously-unseen messages
+        // If a message is moved from Unseen to Seen between our two searches, then we will
+        // miss this change by searching Unseen first; if, however, we were to search Seen first,
+        // then we would miss the message altogether and mark it as deleted...
+        context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
+    } else {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+    }
+}
+
+void ImapUpdateMessagesFlagsStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    // Only allow monitoring of one folder other than the inbox
+    if (_monitoredFoldersIds.count() > 1)
+        _monitoredFoldersIds.clear();
+
+    context->client()->monitor(_monitoredFoldersIds);
+
+    messageListCompleted(context);
+}
+
+bool ImapUpdateMessagesFlagsStrategy::nextFolder()
 {
     if (_folderMessageUids.isEmpty()) {
         return false;
@@ -1734,7 +1786,7 @@ bool ImapUpdateMessagesFlagsStrategy::getnextMailbox()
     return true;
 }
 
-void ImapUpdateMessagesFlagsStrategy::newfolderAction(ImapStrategyContextBase *context)
+void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *context)
 {
     QMailFolderId folderId(_currentMailbox.id());
     if ((folderId != context->client()->mailboxId("INBOX")) && 
@@ -1750,7 +1802,7 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailFolderId folderId(_currentMailbox.id());
     if (!folderId.isValid()) {
         // Folder was removed while we were updating messages flags in it
-        processNextMailbox(context);
+        processNextFolder(context);
         return;
     }
     
@@ -1765,18 +1817,7 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     
     updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
 
-    processNextMailbox(context);
-}
-
-void ImapUpdateMessagesFlagsStrategy::listCompleted(ImapStrategyContextBase *context)
-{
-    // Only allow monitoring of one folder other than the inbox
-    if (_monitoredFoldersIds.count() > 1)
-        _monitoredFoldersIds.clear();
-
-    context->client()->monitor(_monitoredFoldersIds);
-
-    completedAction(context);
+    processNextFolder(context);
 }
 
 
@@ -1819,7 +1860,7 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     ImapSynchronizeBaseStrategy::handleLogin(context);
 }
 
-void ImapRetrieveMessageListStrategy::completedAction(ImapStrategyContextBase *context)
+void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     foreach (const QMailFolderId &folderId, _updatedFolders) {
         QMailFolder folder(folderId);
@@ -1843,10 +1884,10 @@ void ImapRetrieveMessageListStrategy::completedAction(ImapStrategyContextBase *c
 
     _updatedFolders.clear();
     _newMinMaxMap.clear();
-    ImapSynchronizeBaseStrategy::completedAction(context);
+    ImapSynchronizeBaseStrategy::messageListCompleted(context);
 }
 
-void ImapRetrieveMessageListStrategy::listCompleted(ImapStrategyContextBase *context)
+void ImapRetrieveMessageListStrategy::folderListCompleted(ImapStrategyContextBase *context)
 {
     previewDiscoveredMessages(context);
 }
@@ -1909,7 +1950,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     processUidSearchResults(context);
 }
 
-void ImapRetrieveMessageListStrategy::processMailbox(ImapStrategyContextBase *context)
+void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     // The current mailbox is now selected
     QMailFolderId folderId(context->mailbox().id);
@@ -1975,7 +2016,7 @@ void ImapRetrieveMessageListStrategy::processMailbox(ImapStrategyContextBase *co
 
 void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContextBase *context)
 {
-    processNextMailbox(context);
+    processNextFolder(context);
 }
 
 
@@ -2044,7 +2085,7 @@ void ImapCopyMessagesStrategy::handleSelect(ImapStrategyContextBase *context)
         //_uidNext = context->mailbox().uidNext;
 
         // Begin copying messages
-        messageAction(context);
+        messageListMessageAction(context);
     } else if (_transferState == Search) {
         // We have selected the destination folder - find the newly added messages
         //context->protocol().sendUidSearch(MFlag_Recent, QString("UID %1:*").arg(ImapProtocol::uid(_uidNext)));
@@ -2056,7 +2097,7 @@ void ImapCopyMessagesStrategy::handleSelect(ImapStrategyContextBase *context)
 
 void ImapCopyMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
 {
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 void ImapCopyMessagesStrategy::handleUidSearch(ImapStrategyContextBase *context)
@@ -2070,7 +2111,7 @@ void ImapCopyMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
     fetchNextCopy(context);
 }
 
-void ImapCopyMessagesStrategy::messageAction(ImapStrategyContextBase *context)
+void ImapCopyMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
     if (selectNextMessageSequence(context, 1)) {
         QStringList uids;
@@ -2086,10 +2127,10 @@ void ImapCopyMessagesStrategy::messageAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapCopyMessagesStrategy::completedAction(ImapStrategyContextBase *context)
+void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     if (_transferState == Search) {
-        ImapFetchSelectedMessagesStrategy::completedAction(context);
+        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
     } else {
         // We have copied all the messages - now we need to retrieve the copies
         _transferState = Search;
@@ -2146,7 +2187,7 @@ void ImapCopyMessagesStrategy::fetchNextCopy(ImapStrategyContextBase *context)
         QString firstUid = ImapProtocol::uid(_createdUids.takeFirst());
         context->protocol().sendUidFetch(MetaDataFetchFlags, firstUid);
     } else {
-        completedAction(context);
+        messageListCompleted(context);
     }
 }
 
@@ -2206,7 +2247,7 @@ void ImapMoveMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
 void ImapMoveMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
     _lastMailbox = _currentMailbox;
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 void ImapMoveMessagesStrategy::handleClose(ImapStrategyContextBase *context)
@@ -2218,7 +2259,7 @@ void ImapMoveMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 void ImapMoveMessagesStrategy::handleExamine(ImapStrategyContextBase *context)
 {
     // Select the next folder
-    ImapCopyMessagesStrategy::folderAction(context);
+    ImapCopyMessagesStrategy::messageListFolderAction(context);
 }
 
 void ImapMoveMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
@@ -2227,17 +2268,17 @@ void ImapMoveMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
     fetchNextCopy(context);
 }
 
-void ImapMoveMessagesStrategy::folderAction(ImapStrategyContextBase *context)
+void ImapMoveMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
 {
     // If we're already in a mailbox, we need to close it to expunge the messages
     if ((context->mailbox().isSelected()) && (_lastMailbox.id().isValid())) {
         context->protocol().sendClose();
     } else {
-        ImapCopyMessagesStrategy::folderAction(context);
+        ImapCopyMessagesStrategy::messageListFolderAction(context);
     }
 }
 
-void ImapMoveMessagesStrategy::messageAction(ImapStrategyContextBase *context)
+void ImapMoveMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
     if (selectNextMessageSequence(context, 1)) {
         QStringList uids;
@@ -2253,7 +2294,7 @@ void ImapMoveMessagesStrategy::messageAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapMoveMessagesStrategy::completedAction(ImapStrategyContextBase *context)
+void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     if (_transferState == Search) {
         // We don't need to keep the source messages any longer
@@ -2266,7 +2307,7 @@ void ImapMoveMessagesStrategy::completedAction(ImapStrategyContextBase *context)
         }
     }
 
-    ImapCopyMessagesStrategy::completedAction(context);
+    ImapCopyMessagesStrategy::messageListCompleted(context);
 }
 
 static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
@@ -2346,7 +2387,7 @@ void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context
     _storedList += _retrieveUid.split("\n");
     _lastMailbox = _currentMailbox;
 
-    messageAction(context);
+    messageListMessageAction(context);
 }
 
 void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
@@ -2369,10 +2410,10 @@ void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 void ImapDeleteMessagesStrategy::handleExamine(ImapStrategyContextBase *context)
 {
     // Select the next folder
-    ImapFetchSelectedMessagesStrategy::folderAction(context);
+    ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
 }
 
-void ImapDeleteMessagesStrategy::messageAction(ImapStrategyContextBase *context)
+void ImapDeleteMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
     if (selectNextMessageSequence(context, 1000)) {
         QStringList uids;
@@ -2383,7 +2424,7 @@ void ImapDeleteMessagesStrategy::messageAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapDeleteMessagesStrategy::folderAction(ImapStrategyContextBase *context)
+void ImapDeleteMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
 {
     // If we're already in a mailbox, we need to close it to expunge the messages
     if ((context->mailbox().isSelected()) && (_lastMailbox.id().isValid())) {
@@ -2391,17 +2432,17 @@ void ImapDeleteMessagesStrategy::folderAction(ImapStrategyContextBase *context)
     } else {
         // Select the next folder, and clear the stored list
         _storedList.clear();
-        ImapFetchSelectedMessagesStrategy::folderAction(context);
+        ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
     }
 }
 
-void ImapDeleteMessagesStrategy::completedAction(ImapStrategyContextBase *context)
+void ImapDeleteMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     // If we're already in a mailbox, we need to close it to expunge the messages
     if ((context->mailbox().isSelected()) && (_lastMailbox.id().isValid())) {
         context->protocol().sendClose();
     } else {
-        ImapFetchSelectedMessagesStrategy::completedAction(context);
+        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
     }
 }
 

@@ -62,8 +62,42 @@ class QCopLoopbackDevice;
 class QCopClient : public QObject
 {
     Q_OBJECT
+
+    struct MemberInvokerBase
+    {
+        virtual ~MemberInvokerBase() {}
+
+        virtual void operator()() = 0;
+    };
+
+    template<typename T>
+    struct MemberInvoker : public MemberInvokerBase
+    {
+        T* instance;
+        void (T::*function)();
+
+        MemberInvoker(T* inst, void (T::*func)())
+            : instance(inst), function(func) {}
+
+        virtual void operator()() { (instance->*function)(); }
+    };
+
 public:
-    QCopClient();
+    template<typename T>
+    QCopClient(bool connectImmediately, T *instance = 0, void (T::*func)() = 0)
+        : QObject(),
+          server(false),
+          socket(new QCopLocalSocket(this)),
+          device(socket),
+          disconnectHandler(instance ? new MemberInvoker<T>(instance, func) : 0)
+    {
+        init();
+
+        if (connectImmediately) {
+            connectToServer();
+        }
+    }
+
     QCopClient(QIODevice *device, QCopLocalSocket *socket);
     QCopClient(QIODevice *device, bool isServer);
     ~QCopClient();
@@ -88,6 +122,8 @@ public:
 
     bool isStartupComplete;
 
+    void reconnect();
+
 signals:
     void startupComplete();
 
@@ -100,9 +136,10 @@ private slots:
 private:
     bool server;
     bool finished;
-    QIODevice *device;
     QCopLoopbackDevice *loopback;
     QCopLocalSocket *socket;
+    QIODevice *device;
+    MemberInvokerBase *disconnectHandler;
 
     void init();
 
@@ -116,6 +153,7 @@ private:
     QByteArray pendingData;
     int retryCount;
     bool connecting;
+    bool reconnecting;
     int channelCount;
 
     void detachAll();
@@ -316,8 +354,9 @@ public:
     // Get the client connection object for this thread.
     inline QCopClient *clientConnection()
     {
-        if (!conn)
-            conn = new QCopClient();
+        if (!conn) {
+            conn = new QCopClient(true, this, &QCopThreadData::disconnected);
+        }
         return conn;
     }
 
@@ -346,6 +385,17 @@ public:
     QCopServer *server;
 
     QCopClient *conn;
+
+private:
+    void disconnected()
+    {
+        if (conn) {
+            conn->deleteLater();
+
+            conn = new QCopClient(false, this, &QCopThreadData::disconnected);
+            conn->reconnect();
+        }
+    }
 };
 
 #endif

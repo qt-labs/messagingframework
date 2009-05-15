@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+CONFIG += ordered
 SUBDIRS = \
       tst_python_email \
       tst_qmailaddress \

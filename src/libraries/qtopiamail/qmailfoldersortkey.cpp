@@ -14,7 +14,6 @@
 
 /*!
     \class QMailFolderSortKey
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailFolderSortKey class defines the parameters used for sorting a subset of 

@@ -75,7 +75,7 @@ public:
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) = 0;
 
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags, const QString &delimiter);
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
     virtual void nonexistentUid(ImapStrategyContextBase *context, const QString &uid);
@@ -89,6 +89,7 @@ protected:
     enum TransferState { Init, List, Search, Preview, Complete };
 
     TransferState _transferState;
+    QString _baseFolder;
 };
 
 class ImapMessageListStrategy : public ImapStrategy
@@ -110,9 +111,9 @@ protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
 
-    virtual void folderAction(ImapStrategyContextBase *context);
-    virtual void messageAction(ImapStrategyContextBase *context) = 0;
-    virtual void completedAction(ImapStrategyContextBase *context);
+    virtual void messageListFolderAction(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context) = 0;
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual bool computeStartEndPartRange(ImapStrategyContextBase *context);
     virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize);
@@ -149,7 +150,7 @@ protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
-    virtual void messageAction(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
 
     virtual void itemFetched(ImapStrategyContextBase *context, const QString &uid);
 
@@ -176,7 +177,7 @@ public:
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags, const QString &delimiter);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
@@ -184,13 +185,12 @@ protected:
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleSearch(ImapStrategyContextBase *context);
 
-    virtual void listCompleted(ImapStrategyContextBase *context);
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
 
-    virtual void processMailbox(ImapStrategyContextBase *context);
-
-    virtual void processNextMailbox(ImapStrategyContextBase *context);
-    virtual bool getnextMailbox();
-    virtual void newfolderAction(ImapStrategyContextBase *context);
+    virtual void processNextFolder(ImapStrategyContextBase *context);
+    virtual bool nextFolder();
+    virtual void processFolder(ImapStrategyContextBase *context);
 
     void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
@@ -221,15 +221,15 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
 
-    virtual bool getnextMailbox();
-    virtual void newfolderAction(ImapStrategyContextBase *context);
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
+
+    virtual bool nextFolder();
+    virtual void processFolder(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void listCompleted(ImapStrategyContextBase *context);
 
 private:
     QMailMessageIdList _selectedMessageIds;
@@ -260,10 +260,10 @@ protected:
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
     virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
-    virtual bool nextMailbox(ImapStrategyContextBase *context);
+    virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
 
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
+    virtual void previewingCompleted(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
@@ -291,21 +291,24 @@ public:
 
     virtual void newConnection(ImapStrategyContextBase *context);
     
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags, const QString &delimiter);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleSearch(ImapStrategyContextBase *context);
+    virtual void handleList(ImapStrategyContextBase *context);
 
-    virtual void listCompleted(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
 
-    virtual void processNextMailbox(ImapStrategyContextBase *context);
+    virtual void processNextFolder(ImapStrategyContextBase *context);
 
     void removeDeletedMailboxes(ImapStrategyContextBase *context);
 
     QMailFolderId _baseId;
     bool _descending;
     QStringList _mailboxPaths;
+    QSet<QString> _ancestorPaths;
+    QStringList _ancestorSearchPaths;
     QMailFolderIdList _mailboxList;
 };
 
@@ -323,11 +326,11 @@ protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
 
-    virtual void completedAction(ImapStrategyContextBase *context);
-    virtual void listCompleted(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
-    virtual void processMailbox(ImapStrategyContextBase *context);
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
 
     uint _minimum;
     bool _fillingGap;
@@ -355,17 +358,21 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
 protected:
-    virtual void listCompleted(ImapStrategyContextBase *context);
-    virtual bool selectNextMailbox(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void handleUidStore(ImapStrategyContextBase *context);
+    virtual void handleExpunge(ImapStrategyContextBase *context);
+
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
     virtual void searchInconclusive(ImapStrategyContextBase *context);
-    virtual void handleUidStore(ImapStrategyContextBase *context);
+
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
+
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
-    virtual void handleExpunge(ImapStrategyContextBase *context);
-    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
+
+    virtual void previewingCompleted(ImapStrategyContextBase *context);
 
 protected:
     QStringList _readUids;
@@ -397,13 +404,18 @@ public:
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual bool nextFolder();
+
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
     QStringList _serverReportedUids;
     QStringList _clientDeletedUids;
     QStringList _clientReadUids;
+
+    QMap<QMailFolderId, QPair<QStringList, QStringList> > _folderMessageUids;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy
@@ -427,8 +439,8 @@ protected:
     virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
-    virtual void messageAction(ImapStrategyContextBase *context);
-    virtual void completedAction(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
@@ -458,9 +470,9 @@ protected:
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     virtual void handleExamine(ImapStrategyContextBase *context);
 
-    virtual void folderAction(ImapStrategyContextBase *context);
-    virtual void messageAction(ImapStrategyContextBase *context);
-    virtual void completedAction(ImapStrategyContextBase *context);
+    virtual void messageListFolderAction(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
@@ -482,9 +494,9 @@ protected:
     virtual void handleClose(ImapStrategyContextBase *context);
     virtual void handleExamine(ImapStrategyContextBase *context);
 
-    virtual void messageAction(ImapStrategyContextBase *context);
-    virtual void folderAction(ImapStrategyContextBase *context);
-    virtual void completedAction(ImapStrategyContextBase *context);
+    virtual void messageListFolderAction(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     QStringList _storedList;
     bool _removal;
@@ -510,7 +522,7 @@ public:
     void newConnection() { _strategy->newConnection(this); }
     void commandTransition(const ImapCommand command, const OperationStatus status) { _strategy->transition(this, command, status); }
 
-    void mailboxListed(QMailFolder& folder, const QString &flags) { _strategy->mailboxListed(this, folder, flags); }
+    void mailboxListed(QMailFolder& folder, const QString &flags, const QString &delimiter) { _strategy->mailboxListed(this, folder, flags, delimiter); }
     void messageFetched(QMailMessage &message) { _strategy->messageFetched(this, message); } 
     void dataFetched(QMailMessage &message, const QString &uid, const QString &section) { _strategy->dataFetched(this, message, uid, section); } 
     void nonexistentUid(const QString &uid) { _strategy->nonexistentUid(this, uid); } 

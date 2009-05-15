@@ -1,3 +1,13 @@
+/****************************************************************************
+**
+** This file is part of the $PACKAGE_NAME$.
+**
+** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
+**
+** $QT_EXTENDED_DUAL_LICENSE$
+**
+****************************************************************************/
+
 #ifndef ATTACHMENTLISTWIDGET_H
 #define ATTACHMENTLISTWIDGET_H
 
@@ -19,6 +29,8 @@ class AttachmentListWidget : public QWidget
 public:
     AttachmentListWidget(QWidget* parent = 0);
     QStringList attachments() const;
+    QString attachmentAt(int index) const;
+    int count() const;
     bool isEmpty() const;
 
 public slots:

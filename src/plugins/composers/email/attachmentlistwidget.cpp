@@ -1,3 +1,13 @@
+/****************************************************************************
+**
+** This file is part of the $PACKAGE_NAME$.
+**
+** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
+**
+** $QT_EXTENDED_DUAL_LICENSE$
+**
+****************************************************************************/
+
 #include "attachmentlistwidget.h"
 #include <QStringListModel>
 #include <QListView>
@@ -46,6 +56,7 @@ protected:
     void mouseMoveEvent(QMouseEvent* e);
     void mousePressEvent(QMouseEvent* e);
     bool overRemoveLink(QMouseEvent* e);
+
 
 private:
     AttachmentListWidget* m_parent;
@@ -108,10 +119,14 @@ bool AttachmentListHeader::overRemoveLink(QMouseEvent* e)
 
 class AttachmentListDelegate : public QItemDelegate
 {
+    Q_OBJECT
 public:
     AttachmentListDelegate(AttachmentListWidget* parent = 0);
     void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     bool isOverRemoveLink(const QRect& parentRect, const QPoint& pos) const;
+
+protected slots:
+    bool helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index);
 
 private:
     QPointer<AttachmentListWidget> m_parent;
@@ -148,6 +163,16 @@ bool AttachmentListDelegate::isOverRemoveLink(const QRect& parentRect, const QPo
     QFontMetrics fm(font);
     QRect textRect = fm.boundingRect(parentRect,Qt::AlignHCenter,"Remove");
     return textRect.contains(pos);
+}
+
+bool AttachmentListDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index )
+{
+    if(!index.isValid())
+        view->setToolTip(QString());
+
+    QString attachment = m_parent->attachmentAt(index.row());
+    view->setToolTip(attachment);
+    return false;
 }
 
 class AttachmentListView : public QTreeView
@@ -342,6 +367,16 @@ m_clearLink(new QLabel(this))
 QStringList AttachmentListWidget::attachments() const
 {
     return m_attachments;
+}
+
+QString AttachmentListWidget::attachmentAt(int index) const
+{
+    return m_attachments.at(index);
+}
+
+int AttachmentListWidget::count() const
+{
+    return m_attachments.count();
 }
 
 bool AttachmentListWidget::isEmpty() const

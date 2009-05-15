@@ -44,6 +44,7 @@
 #include <qmailnamespace.h>
 #include <QSplitter>
 #include <QListView>
+#include <QToolBar>
 
 static const int defaultWidth = 1024;
 static const int defaultHeight = 768;
@@ -282,7 +283,7 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
 WriteMail* MessageUiBase::createWriteMailWidget()
 {
     WriteMail* writeMail = new WriteMail(this);
-    writeMail->setGeometry(0,0,400,400);
+    writeMail->setGeometry(0,0,500,400);
     writeMail->setObjectName("write-mail");
 
     connect(writeMail, SIGNAL(enqueueMail(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)));
@@ -650,6 +651,14 @@ void EmailClient::initActions()
                 this,SLOT(quit()));
         connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
 
+        QToolBar* toolBar = mw->toolBar();
+        toolBar->addAction( composeButton );
+        toolBar->addAction( getMailButton );
+        toolBar->addAction( cancelButton );
+        toolBar->addAction( searchButton );
+        toolBar->addSeparator();
+        toolBar->addAction( settingsAction );
+
         updateGetMailButton();
 
         folderView()->addAction( synchronizeAction );
@@ -702,7 +711,9 @@ void EmailClient::delayedInit()
 
     // Whenever these actions occur, we need to reload accounts that may have changed
     connect(store, SIGNAL(accountsAdded(QMailAccountIdList)), this, SLOT(accountsAdded(QMailAccountIdList)));
+    connect(store, SIGNAL(accountsAdded(QMailAccountIdList)), this, SLOT(updateActions()));
     connect(store, SIGNAL(accountsRemoved(QMailAccountIdList)), this, SLOT(accountsRemoved(QMailAccountIdList)));
+    connect(store, SIGNAL(accountsRemoved(QMailAccountIdList)), this, SLOT(updateActions()));
     connect(store, SIGNAL(accountsUpdated(QMailAccountIdList)), this, SLOT(accountsUpdated(QMailAccountIdList)));
 
     // We need to detect when messages are marked as deleted during downloading
@@ -713,6 +724,7 @@ void EmailClient::delayedInit()
     // Ideally would make actions functions methods and delay their
     // creation until context menu is shown.
     initActions();
+    updateActions();
 
     QTimer::singleShot(0, this, SLOT(openFiles()) );
 }
@@ -786,6 +798,10 @@ void EmailClient::cancelOperation()
     if (isRetrieving()) {
         retrievalAction->cancelOperation();
         setRetrievalInProgress( false );
+    }
+
+    if (flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
+        flagRetrievalAction->cancelOperation();
     }
 }
 
@@ -1819,7 +1835,11 @@ void EmailClient::composeActivated()
 {
     delayedInit();
     if(writeMailWidget()->prepareComposer())
+    {
         writeMailWidget()->show();
+        writeMailWidget()->raise();
+        writeMailWidget()->activateWindow();
+    }
 }
 
 void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::MessageType type)
@@ -1993,6 +2013,7 @@ void EmailClient::transferStatusUpdate(int status)
         // UI updates
         setActionVisible(cancelButton, transferStatus != Inactive);
         updateGetMailButton();
+        updateActions();
     }
 }
 

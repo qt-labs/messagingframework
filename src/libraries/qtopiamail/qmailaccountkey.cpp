@@ -17,7 +17,6 @@ using namespace QMailDataComparator;
 
 /*!
     \class QMailAccountKey
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailAccountKey class defines the parameters used for querying a subset of

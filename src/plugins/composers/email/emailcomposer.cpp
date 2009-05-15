@@ -39,6 +39,7 @@
 #include <QFileDialog>
 #include "attachmentlistwidget.h"
 #include <support/qmailnamespace.h>
+#include <QUrl>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -313,16 +314,6 @@ void RecipientListWidget::removeRecipientWidget()
             return;
         int index = m_widgetList.indexOf(r);
 
-        /*
-        bool isEmptySlot = (r->isEmpty() && emptyRecipientSlots() == 1);
-        if(r->isEmpty())
-        {
-            //just move focus back to previous slot
-            if(index > 0)
-                m_widgetList.at(index-1)->setFocus();
-            return;
-        }
-*/
         r->deleteLater();
         m_widgetList.removeAll(r);
 
@@ -458,49 +449,10 @@ void EmailComposerInterface::setCursorPosition()
     }
 }
 
-void EmailComposerInterface::updateAttachmentsLabel()
-{
-    /*
-    int count = 0;
-    int sizeKB = 0;
-
-    foreach (const AttachmentItem* item, m_addAttDialog->attachedFiles()) {
-        ++count;
-        sizeKB += item->sizeKB();
-    }
-
-    if (count == 0) {
-        m_attachmentsLabel->hide();
-    } else {
-        m_attachmentsLabel->setText(QString("<center><small>") + tr("%n Attachment(s): %1KB","", count).arg(sizeKB)+"</small></center>");
-        m_attachmentsLabel->show();
-    }
-    */
-}
-
 void EmailComposerInterface::selectAttachment()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Select attachments"));
     m_attachmentListWidget->addAttachments(fileNames);
-
-    /*
-    if (m_attachments.isEmpty() && m_addAttDialog->documentSelector()->documents().isEmpty()) {
-        QMessageBox::warning(this,
-                             tr("No documents"),
-                             tr("There are no existing documents to attach"),
-                             tr("OK") );
-    } else {
-        if (QtopiaApplication::execDialog(m_addAttDialog) == QDialog::Accepted) {
-            m_attachments.clear();
-            foreach (const AttachmentItem *item, m_addAttDialog->attachedFiles())
-                m_attachments.append(qMakePair(item->document(), item->action()));
-        } else {
-            m_addAttDialog->clear();
-            foreach (const AttachmentDetail &att, m_attachments)
-                m_addAttDialog->attach(att.first, att.second);
-        }
-    }
-    */
 }
 
 EmailComposerInterface::EmailComposerInterface( QWidget *parent )
@@ -521,14 +473,6 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
 
 EmailComposerInterface::~EmailComposerInterface()
 {
-    /*
-    // Delete any temporary files we don't need
-    foreach (const AttachmentDetail &att, m_attachments) {
-        if (att.second == QMailMessage::CopyAndDeleteAttachments) {
-            const_cast<QContent&>(att.first).removeFiles();
-        }
-    }
-    */
 }
 
 void EmailComposerInterface::init()
@@ -569,11 +513,6 @@ void EmailComposerInterface::init()
     layout->addWidget(m_attachmentsLabel);
     m_attachmentsLabel->hide();
     layout->addWidget(m_attachmentListWidget = new AttachmentListWidget(this));
-
-//    m_addAttDialog = new AddAttDialog(this, "attachmentDialog");
-//    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SLOT(updateAttachmentsLabel()));
-//    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SLOT(updateLabel()));
-//    connect(m_addAttDialog,SIGNAL(attachmentsChanged()),this,SIGNAL(changed()));
 
     //menus
     m_attachmentAction = new QAction( QIcon( ":icon/attach" ), tr("Attachments") + "...", this);
@@ -665,6 +604,7 @@ QMailMessage EmailComposerInterface::message() const
             disposition.setFilename(partName.toLatin1());
 
             QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
+            part.setContentLocation(QUrl::fromLocalFile(filePath).toString());
             mail.appendPart(part);
         }
     }
@@ -682,27 +622,7 @@ void EmailComposerInterface::clear()
 
     m_bodyEdit->clear();
     m_attachmentListWidget->clear();
-    //m_addAttDialog->clear();
-
-    // Delete any temporary files we don't need
-    /*
-    foreach (const AttachmentDetail &att, m_attachments) {
-        if (att.second == QMailMessage::CopyAndDeleteAttachments) {
-            const_cast<QContent&>(att.first).removeFiles();
-        }
-    }
-
-    m_attachments.clear();
-    */
 }
-
-/*
-void EmailComposerInterface::attach( const QContent &lnk, QMailMessage::AttachmentsAction action )
-{
-    m_attachments.append(qMakePair(lnk, action));
-    m_addAttDialog->attach(lnk, action);
-}
-*/
 
 void EmailComposerInterface::setSignature( const QString &sig )
 {
@@ -760,42 +680,16 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
         int textPart = -1;
         for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
             QMailMessagePart &part = const_cast<QMailMessagePart&>(sourceMail.partAt(i));
+            QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
+            bool isLocalAttachment = part.hasBody() && QFile::exists(QUrl(contentLocation).toLocalFile());
 
-            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text")) {
+            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text") && !isLocalAttachment) {
                 // This is the first text part, we will use as the forwarded text body
                 textPart = i;
-            } else {
-                // Save the existing part data to a temporary file
-                QString fileName(part.writeBodyTo(QMail::tempPath()));
-                if (fileName.isEmpty()) {
-                    qWarning() << "Unable to save part to temporary file!";
-                } else {
-                    /*
-                    // Create a content object for the file
-                    QContent doc(fileName);
-
-                    if (part.referenceType() == QMailMessagePart::None) {
-                        QMailMessageContentType type(part.contentType());
-
-                        if (doc.drmState() == QContent::Unprotected)
-                            doc.setType(type.content());
-                    } else {
-                        QString partLocation = part.location().toString(true);
-                        if (!partLocation.isEmpty()) {
-                            doc.setProperty("qtopiamail/partLocation", partLocation);
-                        }
-                    }
-
-                    doc.setName(part.displayName());
-                    doc.setRole(QContent::Data);
-                    doc.commit();
-
-                    attach(doc, QMailMessage::CopyAndDeleteAttachments);
-                    */
+            } else if(isLocalAttachment) {
+                    m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
                 }
             }
-        }
-
         if (textPart != -1) {
             const QMailMessagePart& part = sourceMail.partAt(textPart);
             setPlainText( part.body().data(), m_signature );

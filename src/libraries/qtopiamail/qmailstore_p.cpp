@@ -948,7 +948,11 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
         break;
 
     case QMailMessageKey::ServerUid:
-        values += extractor.serverUid();
+        if (a.valueList.count() < IdLookupThreshold) {
+            values += extractor.serverUid();
+        } else {
+            // This value match has been replaced by a table lookup
+        }
         break;
 
     case QMailMessageKey::Size:
@@ -1526,6 +1530,14 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             }
             break;
 
+        case QMailMessageKey::ServerUid:
+            if (a.valueList.count() >= IdLookupThreshold) {
+                q << baseExpression(columnName, a.op, true) << "( SELECT id FROM " << QMailStorePrivate::temporaryTableName(a) << ")";
+            } else {
+                q << expression;
+            }
+            break;
+
         case QMailMessageKey::Type:
         case QMailMessageKey::Status:
         case QMailMessageKey::Sender:
@@ -1533,7 +1545,6 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
         case QMailMessageKey::Subject:
         case QMailMessageKey::TimeStamp:
         case QMailMessageKey::ReceptionTimeStamp:
-        case QMailMessageKey::ServerUid:
         case QMailMessageKey::Size:
         case QMailMessageKey::ContentType:
         case QMailMessageKey::ContentScheme:
@@ -1988,7 +1999,7 @@ bool QMailStorePrivate::initStore()
     ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
     MutexGuard guard(creationMutex);
     if (!guard.lock(1000)) {
-        return init;
+        return false;
     }
 
     if (database.isOpenError()) {
@@ -2042,7 +2053,6 @@ bool QMailStorePrivate::initStore()
     }
 
     // We are now correctly initialized
-    init = true;
     return true;
 }
 
@@ -2054,6 +2064,8 @@ void QMailStorePrivate::clearContent()
     messageCache.clear();
     uidCache.clear();
 
+    Transaction t(this);
+
     // Drop all data
     foreach (const QString &table, database.tables()) {
         if (table != "versioninfo") {
@@ -2063,6 +2075,10 @@ void QMailStorePrivate::clearContent()
                 qMailLog(Messaging) << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
             }
         }
+    }
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << "Could not commit clearContent operation to database";
     }
     
     // Remove all content
@@ -2128,22 +2144,27 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
 
     clearQueryError();
 
-    QSqlQuery query(database);
-    
     // Create any temporary tables needed for this query
     while (!requiredTableKeys.isEmpty()) {
-        const QMailMessageKey::ArgumentType *arg = requiredTableKeys.takeFirst();
+        QPair<const QMailMessageKey::ArgumentType *, QString> key(requiredTableKeys.takeFirst());
+        const QMailMessageKey::ArgumentType *arg = key.first;
         if (!temporaryTableKeys.contains(arg)) {
             QString tableName = temporaryTableName(*arg);
 
-            QSqlQuery tableQuery(database);
-            if (!tableQuery.exec(QString("CREATE TEMP TABLE %1 ( id INTEGER PRIMARY KEY )").arg(tableName))) { 
-                setQueryError(tableQuery.lastError(), "Failed to create temporary table", queryText(tableQuery));
-                qMailLog(Messaging) << "Unable to prepare query:" << sql;
-                return query;
-            } else {
-                temporaryTableKeys.append(arg);
+            {
+                QSqlQuery createQuery(database);
+                if (!createQuery.exec(QString("CREATE TEMP TABLE %1 ( id %2 PRIMARY KEY )").arg(tableName).arg(key.second))) { 
+                    setQueryError(createQuery.lastError(), "Failed to create temporary table", queryText(createQuery));
+                    qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                    return QSqlQuery();
+                }
+            }
 
+            temporaryTableKeys.append(arg);
+
+            QVariantList idValues;
+
+            if (key.second == "INTEGER") {
                 int type = 0;
                 if (qVariantCanConvert<QMailMessageId>(arg->valueList.first())) {
                     type = 1;
@@ -2153,7 +2174,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     type = 3;
                 }
 
-                // Add the ID values to the temp table
+                // Extract the ID values to INTEGER variants
                 foreach (const QVariant &var, arg->valueList) {
                     quint64 id = 0;
 
@@ -2170,20 +2191,43 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     default:
                         qMailLog(Messaging) << "Unable to extract ID value from valuelist!";
                         qMailLog(Messaging) << "Unable to prepare query:" << sql;
-                        return query;
+                        return QSqlQuery();
                     }
 
-                    tableQuery = QSqlQuery(database);
-                    if (!tableQuery.exec(QString("INSERT INTO %1 VALUES (%2)").arg(tableName).arg(id))) { 
-                        setQueryError(tableQuery.lastError(), "Failed to populate temporary table", queryText(tableQuery));
+                    idValues.append(QVariant(id));
+                }
+
+                // Add the ID values to the temp table
+                {
+                    QSqlQuery insertQuery(database);
+                    insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
+                    insertQuery.addBindValue(idValues);
+                    if (!insertQuery.execBatch()) { 
+                        setQueryError(insertQuery.lastError(), "Failed to populate integer temporary table", queryText(insertQuery));
                         qMailLog(Messaging) << "Unable to prepare query:" << sql;
-                        return query;
+                        return QSqlQuery();
+                    }
+                }
+            } else if (key.second == "VARCHAR") {
+                foreach (const QVariant &var, arg->valueList) {
+                    idValues.append(QVariant(var.value<QString>()));
+                }
+
+                {
+                    QSqlQuery insertQuery(database);
+                    insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
+                    insertQuery.addBindValue(idValues);
+                    if (!insertQuery.execBatch()) { 
+                        setQueryError(insertQuery.lastError(), "Failed to populate varchar temporary table", queryText(insertQuery));
+                        qMailLog(Messaging) << "Unable to prepare query:" << sql;
+                        return QSqlQuery();
                     }
                 }
             }
         }
     }
 
+    QSqlQuery query(database);
     query.setForwardOnly(true);
     if (!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
@@ -2270,7 +2314,7 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
 
 void QMailStorePrivate::clearQueryError(void) 
 {
-    lastQueryError = 0;
+    lastQueryError = QSqlError::NoError;
 }
 
 template<bool PtrSizeExceedsLongSize>
@@ -2291,9 +2335,9 @@ QString QMailStorePrivate::temporaryTableName(const QMailMessageKey::ArgumentTyp
     return QString("qtopiamail_idmatch_%1").arg(numericPtrValue<(sizeof(void*) > sizeof(unsigned long))>(ptr));
 }
 
-void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType& arg) const
+void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType& arg, const QString &dataType) const
 {
-    requiredTableKeys.append(&arg);
+    requiredTableKeys.append(qMakePair(&arg, dataType));
 }
 
 void QMailStorePrivate::destroyTemporaryTables()
@@ -2574,7 +2618,9 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
         // See if we need to create any temporary tables to use in this query
         foreach (const QMailMessageKey::ArgumentType &a, messageKey.arguments()) {
             if (a.property == QMailMessageKey::Id && a.valueList.count() >= IdLookupThreshold) {
-                createTemporaryTable(a);
+                createTemporaryTable(a, "INTEGER");
+            } else if (a.property == QMailMessageKey::ServerUid && a.valueList.count() >= IdLookupThreshold) {
+                createTemporaryTable(a, "VARCHAR");
             }
         }
 
@@ -5964,7 +6010,7 @@ QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, 
     }
 
     QSqlQuery query(prepare(statement + keyStatements));
-    if (query.lastError().type() != QSqlError::NoError) {
+    if (queryError() != QSqlError::NoError) {
         qMailLog(Messaging) << "Could not prepare query" << descriptor;
     } else {
         foreach (const QVariant& value, bindValues)

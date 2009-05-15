@@ -154,7 +154,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
 /*!
     \class QMailMessageServer
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \brief The QMailMessageServer class provides signals and slots which implement a convenient
@@ -174,10 +173,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     For most messaging client applications, the QMailServiceAction objects offer a simpler
     interface for requesting actions from the messageserver, and assessing their results.
 
-    Note: the functions performed by the message server and the interface to them provided
-    by the QMailMessageServer class are expected to change in a future release of Qt Extended,
-    to provide a finer-grained interface for communicating with external services.
-
     \section1 New Messages
 
     When a client initiates communication with the MessageServer, the server informs the
@@ -192,44 +187,22 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     To send messages, the client should construct instances of the QMailMessage class
     formulated to contain the desired content.  These messages should be stored to the
-    mail store, then submitted for transmission by their QMailMessageId values, via the send()
-    slot.  The MessageServer will determine how to transmit each message by inspecting
-    the account associated with the message.
+    mail store, within the Outbox folder configured for the parent account.
 
-    If the MessageServer application succeeds in sending a message, the messageSent()
-    signal is emitted to notify the client.  After transmission has been attempted for
-    each message in the list, the sendCompleted() signal is emitted; any messages
-    for which a messageSent() signal was not emitted were not successfully transmitted.
-
-    After a send operation is initiated, the MessageServer emits the sendTotal() signal
-    to indicate the approximate extent of the transmission effort.  As progress is made
-    in performing the transmission operation, the sendProgress() signal is repeatedly
-    emitted to report the progress toward completion of the operation.
+    An instance of QMailTransmitAction should be used to request transmission of the 
+    outgoing messages.
 
     \section1 Retrieving Messages
 
-    TODO
+    There are a variety of mechanisms for retrieving messages, at various levels of
+    granularity.  In all cases, retrieved messages are added directly to the mail 
+    store by the message server, from where clients can retrieve their meta data or
+    content.
 
-    \section2 Folder Retrieval
+    An instance of QMailRetrievalAction should be used to request retrievel of 
+    folders and messages.
 
-    It is possible to retrieve only the folder structure of an account rather than the
-    messages contained by the folders, by invoking retrieve() retrieve slot with the 
-    \c foldersOnly option set to true.  When the folder retrieval operation is complete,
-    it is not necessary to invoke the completeRetrieval() operation.
-
-    \section1 Cancellation
-
-    In order to cancel an operation previously initiated, the client can invoke the
-    cancelTransfer() slot.
-
-    \section1 Server Status
-
-    As the MessageServer application performs the operations requested of it, it indicates
-    the tasks it is performing by emitting the statusChanged() signal.  If it encounters
-    an error that prevents an operation from being performed, the actionCompleted(bool) signal
-    is emitted with the parameter \c false.
-
-    \sa QMailServiceAction, QMailMessage
+    \sa QMailServiceAction, QMailStore
 */
 
 /*!

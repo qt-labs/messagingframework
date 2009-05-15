@@ -37,8 +37,8 @@ class QMailStoreImplementationBase : public QObject
 public:
     QMailStoreImplementationBase(QMailStore* parent);
 
-    virtual bool initStore();
-    static bool initialized();
+    void initialize();
+    static QMailStore::InitializationState initializationState();
 
     QMailStore::ErrorCode lastError() const;
     void setLastError(QMailStore::ErrorCode code) const;
@@ -51,6 +51,11 @@ public:
     void notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids);
     void notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids);
     void notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
+    void notifyRetrievalInProgress(const QMailAccountIdList& ids);
+    void notifyTransmissionInProgress(const QMailAccountIdList& ids);
+
+    bool setRetrievalInProgress(const QMailAccountIdList &ids);
+    bool setTransmissionInProgress(const QMailAccountIdList &ids);
 
     static QString accountAddedSig();
     static QString accountRemovedSig();
@@ -69,6 +74,9 @@ public:
 
     static QString messageRemovalRecordsAddedSig();
     static QString messageRemovalRecordsRemovedSig();
+
+    static QString retrievalInProgressSig();
+    static QString transmissionInProgressSig();
 
     static const int maxNotifySegmentSize = 0;
 
@@ -91,13 +99,15 @@ protected:
     typedef QMap<QString, MessageUpdateSignal> MessageUpdateSignalMap;
     static MessageUpdateSignalMap initMessageUpdateSignals();
 
-    static bool init;
+    static QMailStore::InitializationState initState;
     
     virtual void emitIpcNotification(AccountUpdateSignal signal, const QMailAccountIdList &ids);
     virtual void emitIpcNotification(FolderUpdateSignal signal, const QMailFolderIdList &ids);
     virtual void emitIpcNotification(MessageUpdateSignal signal, const QMailMessageIdList &ids);
 
 private:
+    virtual bool initStore() = 0;
+
     bool emitIpcNotification();
 
     QMailStore* q;
@@ -127,6 +137,12 @@ private:
     QSet<QMailAccountId> accountContentsModifiedBuffer;
     QSet<QMailMessageId> messageContentsModifiedBuffer;
 
+    bool retrievalSetInitialized;
+    bool transmissionSetInitialized;
+
+    QSet<QMailAccountId> retrievalInProgressIds;
+    QSet<QMailAccountId> transmissionInProgressIds;
+
     QTimer queueTimer;
     QList<QPair<QString, QByteArray> > messageQueue;
 };
@@ -137,7 +153,6 @@ class QMailStoreImplementation : public QMailStoreImplementationBase
 public:
     QMailStoreImplementation(QMailStore* parent);
 
-    virtual bool initStore() = 0;
     virtual void clearContent() = 0;
 
     virtual bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,

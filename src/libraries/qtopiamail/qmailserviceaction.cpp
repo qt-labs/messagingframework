@@ -310,7 +310,6 @@ template class QPrivatelyNoncopyable<QMailServiceActionPrivate>;
 
 /*!
     \class QMailServiceAction::Status
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -450,7 +449,6 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 
 /*!
     \class QMailServiceAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -472,6 +470,15 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 
     A user may attempt to cancel an operation after it has been initiated.  The cancelOperation()
     slot is provided for this purpose.
+
+    A QMailServiceAction instance supports only a single request at any time.  An application
+    may, however, use multiple QMailServiceAction instances to send independent requests concurrently.
+    Each QMailServiceAction instance will report only the changes pertaining to the request
+    that instance delivered.  Whether or not concurrent requests are concurrently serviced by 
+    the message server depends on whether those requests must be serviced by the same 
+    QMailMessageService instance.
+
+    \sa QMailMessageService
 */
 
 /*!
@@ -720,7 +727,6 @@ template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
 
 /*!
     \class QMailRetrievalAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -783,10 +789,17 @@ QMailRetrievalAction::~QMailRetrievalAction()
 }
 
 /*!
-    Requests that the message server retrieve the list of folders available for the account \a accountId.
-    If \a folderId is valid, the folders within that folder should be retrieved.  If \a descending is true,
-    the search should also recursively retrieve the folders available within the previously retrieved folders.
+    Requests that the message server retrieve the list of folders available for the 
+    account \a accountId.  If \a folderId is valid, only the identified folder is 
+    searched for child folders; otherwise the search begins at the root of the
+    account.  If \a descending is true, the search should also recursively search 
+    for child folders within folders discovered during the search.
 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each 
+    folder that is searched for child folders; these properties are not updated 
+    for folders that are merely discovered by searching.
+    
     \sa retrieveAll()
 */
 void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -797,23 +810,28 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
     If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved. 
+    messages within all folders in the account should be retrieved.  If \a minimum is non-zero,
+    then that value will be used to restrict the number of messages to be retrieved from
+    each folder; otherwise, all messages will be retrieved.
     
+    If \a sort is not empty, the external service will report the discovered messages in the 
+    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+    this facility.
+
     If a folder messages are being retrieved from contains at least \a minimum messages then the 
     messageserver should ensure that at least \a minimum messages are available from the mail 
-    store for that folder; otherwise if the folder contains less than \a minimum messages the messageserver 
-    should ensure all the messages for that folder are available from the mail store.
+    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    messageserver should ensure all the messages for that folder are available from the mail store.
+    If a folder has messages locally available, then all previously undiscovered messages will be
+    retrieved for that folder, even if that number exceeds \a minimum.
     
-    Even if minimum is zero for each folder operated on \link QMailFolder::serverCount() 
-    QMailFolder::serverCount() \endlink  and \link QMailFolder::serverUnreadCount() 
-    QMailFolder::serverUnreadCount() \endlink will be updated.
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    from which messages are retrieved.
     
-    If \a sort is not empty, the external service will 
-    discover the listed messages in the ordering indicated by the sort criterion, if possible.
-
     New messages will be added to the mail store as they are discovered, and 
     marked with the \l QMailMessage::New status flag. Messages that are present
-    in the mail store but found to be no longer available should be marked with the 
+    in the mail store but found to be no longer available are marked with the 
     \l QMailMessage::Removed status flag.
 
     \sa retrieveAll()
@@ -836,6 +854,10 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
     
     If \a spec is \l QMailRetrievalAction::Content, then the message server should 
     retrieve the entirety of each message listed in \a messageIds.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    from which messages are retrieved.
 */
 void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds, RetrievalSpecification spec)
 {
@@ -845,6 +867,10 @@ void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds
 /*!
     Requests that the message server retrieve the message part that is indicated by the 
     location \a partLocation.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+    from which the part is retrieved.
 */
 void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
 {
@@ -854,6 +880,10 @@ void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location 
 /*!
     Requests that the message server retrieve a subset of the message \a messageId, such that
     at least \a minimum bytes are available from the mail store.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+    from which the message is retrieved.
 */
 void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
 {
@@ -867,6 +897,10 @@ void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId,
     
     The total size of the part on the server is given by QMailMessagePart::contentDisposition().size(),
     the amount of the part available locally is given by QMailMessagePart::body().length().
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+    from which the part is retrieved.
 */
 void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
@@ -876,6 +910,16 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
 /*!
     Requests that the message server retrieve all folders and meta data for messages available 
     for the account \a accountId.
+    
+    All folders within the account will be discovered and searched for child folders.
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    in the account.
+
+    Meta data will be retrieved for every message found in the account.
+    New messages will be added to the mail store as they are retrieved, and 
+    marked with the \l QMailMessage::New status flag.  Messages that are no longer 
+    available will be marked with the \l QMailMessage::Removed status flag.  
 
     \sa retrieveFolderList(), retrieveMessageList(), synchronize()
 */
@@ -904,8 +948,10 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
     New messages will be added to the mail store as they are discovered, and 
     marked with the \l QMailMessage::New status flag.  Messages that are no longer 
     available will be marked with the \l QMailMessage::Removed status flag.  
-    The folder structure of the account will also be synchronized with that
-    available from the external service.
+
+    The folder structure of the account will be synchronized with that available from 
+    the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
 
     \sa retrieveAll(), exportUpdates()
 */
@@ -952,8 +998,9 @@ void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountI
 {
     _server->transmitMessages(newAction(), accountId);
 
+    QMailAccount account(accountId);
     _ids = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId) & 
-                                                 QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
+                                                 QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
 
     emitChanges();
 }
@@ -987,7 +1034,6 @@ template class QPrivatelyNoncopyable<QMailTransmitActionPrivate>;
 
 /*!
     \class QMailTransmitAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1134,7 +1180,6 @@ template class QPrivatelyNoncopyable<QMailStorageActionPrivate>;
 
 /*!
     \class QMailStorageAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1304,7 +1349,6 @@ template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
 
 /*!
     \class QMailSearchAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary
@@ -1446,7 +1490,6 @@ template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
 
 /*!
     \class QMailProtocolAction
-    \inpublicgroup QtMessagingModule
 
     \preliminary
     \ingroup messaginglibrary

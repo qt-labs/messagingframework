@@ -100,8 +100,8 @@ public:
     static QMailFolderKey displayName(const QString &value, QMailDataComparator::InclusionComparator cmp);
     static QMailFolderKey displayName(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailFolderKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailFolderKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp);
+    static QMailFolderKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailFolderKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp);
 
     static QMailFolderKey ancestorFolderIds(const QMailFolderId &id, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailFolderKey ancestorFolderIds(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);

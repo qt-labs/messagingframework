@@ -165,11 +165,15 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
 /* !
   \internal
 
-  Resend all channel registrations  This function is obsolete.
+  Resend all channel registrations.
   */
 void QCopChannel::reregisterAll()
 {
-    // Exists for backwards-compatibility only.  Not needed any more.
+    QCopThreadData *td = qcopThreadData();
+
+    foreach (const QString &channel, td->clientMap.keys()) {
+        td->clientConnection()->registerChannel(channel);
+    }
 }
 
 /* !
@@ -632,22 +636,13 @@ struct QCopPacketHeader
     int forwardToLength;
 };
 
-QCopClient::QCopClient()
-    : QObject()
-{
-    socket = new QCopLocalSocket(this);
-    device = socket;
-    server = false;
-    init();
-    connectToServer();
-}
-
 QCopClient::QCopClient(QIODevice *device, QCopLocalSocket *socket)
     : QObject()
 {
     this->device = device;
     this->socket = socket;
     server = true;
+    disconnectHandler = 0;
     init();
 }
 
@@ -657,6 +652,7 @@ QCopClient::QCopClient(QIODevice *device, bool isServer)
     this->device = device;
     this->socket = 0;
     server = isServer;
+    disconnectHandler = 0;
     init();
 }
 
@@ -676,6 +672,7 @@ void QCopClient::init()
 
     retryCount = 0;
     connecting = false;
+    reconnecting = false;
 
     channelCount = 0;
 
@@ -686,8 +683,14 @@ void QCopClient::init()
 
 QCopClient::~QCopClient()
 {
-    if (socket)
+    if (disconnectHandler) {
+        delete disconnectHandler;
+        disconnectHandler = 0;
+    }
+    if (socket) {
         delete socket;
+        socket = 0;
+    }
 }
 
 void QCopClient::registerChannel(const QString& ch)
@@ -986,10 +989,19 @@ void QCopClient::disconnected()
     if (!finished) {
         finished = true;
         if (server) {
-	    detachAll();
+            detachAll();
             deleteLater();
+        } else if (disconnectHandler) {
+            (*disconnectHandler)();
         }
     }
+}
+
+void QCopClient::reconnect()
+{
+    // Attempt to reconnect after a pause
+    reconnecting = true;
+    QTimer::singleShot(1000, this, SLOT(connectToServer()));
 }
 
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
@@ -1023,7 +1035,14 @@ void QCopClient::connectToServer()
     socket->connectToHost(QHostAddress::LocalHost, QCopThreadData::listenPort());
 #endif
     if (socket->waitForConnected()) {
+        if (reconnecting) {
+            reconnecting = false;
+            foreach (const QString &channel, qcopThreadData()->clientMap.keys()) {
+                registerChannel(channel);
+            }
+        }
         connecting = false;
+        retryCount = 0;
         device = socket;
         connectSignals();
         if (pendingData.size() > 0) {
@@ -1035,10 +1054,17 @@ void QCopClient::connectToServer()
         delete socket;
         socket = 0;
         device = 0;
-        if (++retryCount < 30)
-            QTimer::singleShot(200, this, SLOT(connectToServer()));
-        else
-            qWarning() << "Could not connect to QCop server; probably not running.";
+
+        if ((++retryCount % 30) == 0) {
+            if (reconnecting) {
+                qWarning() << "Cannot connect to QCop server; retrying...";
+            } else {
+                qWarning() << "Could not connect to QCop server; probably not running.";
+                return;
+            }
+        }
+
+        QTimer::singleShot(retryCount <= 30 ? 200 : 1000, this, SLOT(connectToServer()));
     }
 }
 
