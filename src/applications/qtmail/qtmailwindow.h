@@ -21,6 +21,7 @@ class StatusDisplay;
 class QStackedWidget;
 class EmailClient;
 class QMenu;
+class QToolBar;
 
 class QTMailWindow : public QMainWindow
 {
@@ -36,8 +37,8 @@ public:
     void setVisible(bool visible);
 
     QWidget* currentWidget() const;
-
     QMenu* contextMenu() const;
+    QToolBar* toolBar() const;
 
 public slots:
     void closeEvent(QCloseEvent *e);
@@ -54,6 +55,7 @@ protected:
 
 private:
     QMenu* m_contextMenu;
+    QToolBar* m_toolBar;
 };
 
 #endif
