@@ -1030,13 +1030,13 @@ void ImapClient::cancelTransfer()
 
 void ImapClient::retrieveOperationCompleted()
 {
+    deactivateConnection();
+    
     // This retrieval may have been asynchronous
     emit allMessagesReceived();
 
     // Or it may have been requested by a waiting client
     emit retrievalCompleted();
-
-    deactivateConnection();
 }
 
 void ImapClient::deactivateConnection()
