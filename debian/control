@@ -85,7 +85,7 @@ Description: Plugins for Qt Messaging Framework Library and Messaging Server
 
 Package: qmfserver
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libqt4-sql-sqlite (>= 4.5.1), ${shlibs:Depends}, ${misc:Depends}
 Recommends: libqmf-plugins
 Description: The Qt Messaging Server
  The Message server daemon can send and retrieve

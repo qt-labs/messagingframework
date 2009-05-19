@@ -1,0 +1,8 @@
+#!/bin/sh
+# Check if there is message server installed already, stop it first.
+#
+
+if [ -x /etc/init.d/messageserver ]; then
+    /etc/init.d/messageserver stop
+fi
+
