@@ -246,7 +246,7 @@ protected:
     void drawRow ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     void mouseMoveEvent(QMouseEvent* e);
     void mousePressEvent(QMouseEvent* e);
-    bool overRemoveLink(QMouseEvent* e);
+    bool overMoreLink(QMouseEvent* e);
 
 private:
     MessageListModel* sourceModel() const;
@@ -323,7 +323,7 @@ void MessageList::drawRow( QPainter * painter, const QStyleOptionViewItem & opti
 
 void MessageList::mouseMoveEvent(QMouseEvent* e)
 {
-    if(overRemoveLink(e))
+    if(overMoreLink(e))
     {
         QCursor handCursor(Qt::PointingHandCursor);
         setCursor(handCursor);
@@ -335,7 +335,7 @@ void MessageList::mouseMoveEvent(QMouseEvent* e)
 
 void MessageList::mousePressEvent(QMouseEvent* e)
 {
-    if(overRemoveLink(e))
+    if(overMoreLink(e))
     {
         QModelIndex index = indexAt(e->pos());
         emit moreButtonClicked();
@@ -343,7 +343,7 @@ void MessageList::mousePressEvent(QMouseEvent* e)
     QTreeView::mousePressEvent(e);
 }
 
-bool MessageList::overRemoveLink(QMouseEvent* e)
+bool MessageList::overMoreLink(QMouseEvent* e)
 {
     if(!sourceModel()->moreButtonVisible())
         return false;
