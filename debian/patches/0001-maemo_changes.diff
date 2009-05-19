@@ -4594,10 +4594,18 @@ index 9d61887..81373e8 100644
  
  #endif //QMAILLOG_H
 diff --git a/src/libraries/qtopiamail/support/qmailnamespace.cpp b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-index d63acdf..8bad4af 100644
+index d63acdf..64933f0 100644
 --- a/src/libraries/qtopiamail/support/qmailnamespace.cpp
 +++ b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-@@ -130,6 +130,7 @@ int QMail::fileLock(const QString& lockFile)
+@@ -9,6 +9,7 @@
+ ****************************************************************************/
+ 
+ #include "qmailnamespace.h"
++#include "qmaillog.h"
+ #include <QSqlDatabase>
+ #include <stdio.h>
+ #include <unistd.h>
+@@ -130,6 +131,7 @@ int QMail::fileLock(const QString& lockFile)
      int fdlock = -1;
  
      QString path = QDir::tempPath() + "/" + lockFile;
@@ -4605,7 +4613,7 @@ index d63acdf..8bad4af 100644
      if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT, 0666)) == -1)
          return -1;
  
-@@ -178,9 +179,9 @@ QString QMail::pluginsPath()
+@@ -178,9 +180,9 @@ QString QMail::pluginsPath()
  {
      static QString pluginsEnv(getenv(QMF_PLUGINS_ENV));
      if(!pluginsEnv.isEmpty())
@@ -4618,7 +4626,7 @@ index d63acdf..8bad4af 100644
  }
  
  QString QMail::sslCertsPath()
-@@ -194,11 +195,16 @@ QSqlDatabase QMail::createDatabase()
+@@ -194,11 +196,16 @@ QSqlDatabase QMail::createDatabase()
      QSqlDatabase db;
      if(!init)
      {
@@ -5711,10 +5719,10 @@ index 0000000..6ea3f51
 +
 diff --git a/src/plugins/messageservices/dummysink/dummysinkclient.cpp b/src/plugins/messageservices/dummysink/dummysinkclient.cpp
 new file mode 100644
-index 0000000..232ef60
+index 0000000..fd5447b
 --- /dev/null
 +++ b/src/plugins/messageservices/dummysink/dummysinkclient.cpp
-@@ -0,0 +1,348 @@
+@@ -0,0 +1,351 @@
 +/****************************************************************************
 +**
 +** This file is part of the $PACKAGE_NAME$.
@@ -5957,8 +5965,12 @@ index 0000000..232ef60
 +
 +        qMailLog(DUMMYSINK) << "Sending to: " << flush;
 +        foreach(const QMailAddress& Addr, NewMail.recipients())
-+        if (Addr.isEmailAddress())
-+            qMailLog(DUMMYSINK) << "    " << Addr.address() << flush;
++        {
++            if (Addr.isEmailAddress())
++            {
++                qMailLog(DUMMYSINK) << "    " << Addr.address() << flush;
++            }
++        }
 +
 +        qMailLog(DUMMYSINK) << "";
 +        qMailLog(DUMMYSINK) << "Subject: " << NewMail.subject() << flush;
@@ -5978,27 +5990,26 @@ index 0000000..232ef60
 +    		qWarning() << "Unable to update message after transmission:" << msgId;
 +    	}
 +
-+
 +        progressSendSize += (mailItr->mail.body()).data().length();
-+    	mailItr->mail.setStatus(Sent, true);
++        mailItr->mail.setStatus(Sent, true);
 +        mailItr->mail.setParentFolderId(QMailFolderId(QMailFolder::SentFolder));
-+        NewMail.setPreviousParentFolderId(QMailFolderId(QMailFolder::OutboxFolder));
++        mailItr->mail.setPreviousParentFolderId(QMailFolderId(QMailFolder::OutboxFolder));
 +
 +        emit sent(progressSendSize);
 +
-+    	if (!QMailStore::instance()->updateMessage(&mailItr->mail))
-+    	{
-+    		qWarning() << "Unable to update message after transmission:" << msgId;
-+    	}
++        if (!QMailStore::instance()->updateMessage(&mailItr->mail))
++        {
++            qWarning() << "Unable to update message after transmission:" << msgId;
++        }
 +
-+    	emit messageTransmitted(msgId);
-+    	messageProcessed(msgId);
++        emit messageTransmitted(msgId);
++        messageProcessed(msgId);
 +        sendingId = QMailMessageId();
 +    }
 +
 +    mailList.clear();
-+    emit sendCompleted();
 +    deactivateConnection();
++    emit sendCompleted();
 +}
 +
 +void DummySinkClient::cancelTransfer()
@@ -6053,7 +6064,7 @@ index 0000000..232ef60
 +
 +void DummySinkClient::deactivateConnection()
 +{
-+    qMailLog(DUMMYSINK) << "****************DummySinkClient::deactivateConnection() called" << flush;
++    qMailLog(DUMMYSINK) << "DummySinkClient::deactivateConnection() called" << flush;
 +
 +    // Close connection.
 +    if(transport && transport->connected())
@@ -6061,7 +6072,7 @@ index 0000000..232ef60
 +
 +    // Set connection is free.
 +    ConnectionActive = false;
-+    emit sendCompleted();
++    emit progressChanged(0, 0);
 +}
 diff --git a/src/plugins/messageservices/dummysink/dummysinkclient.h b/src/plugins/messageservices/dummysink/dummysinkclient.h
 new file mode 100644
@@ -6385,7 +6396,7 @@ index 0000000..0264830
 +#endif
 diff --git a/src/plugins/messageservices/dummysink/dummysinkservice.cpp b/src/plugins/messageservices/dummysink/dummysinkservice.cpp
 new file mode 100644
-index 0000000..920bdf0
+index 0000000..7e4e9d7
 --- /dev/null
 +++ b/src/plugins/messageservices/dummysink/dummysinkservice.cpp
 @@ -0,0 +1,264 @@
@@ -6469,8 +6480,8 @@ index 0000000..920bdf0
 +{
 +    qMailLog(DUMMYSINK) << "DummySinkService::Sink::sendCompleted() called" << flush;
 +
-+    emit _service->actionCompleted(true);
-+    emit _service->activityChanged(QMailServiceAction::Successful);
++   emit _service->activityChanged(QMailServiceAction::Successful);
++   emit _service->actionCompleted(true);
 +}
 +
 +
@@ -7545,10 +7556,10 @@ index 0000000..f3ff1f9
 +
 diff --git a/src/plugins/messageservices/dummysource/dummyclient.cpp b/src/plugins/messageservices/dummysource/dummyclient.cpp
 new file mode 100644
-index 0000000..783e322
+index 0000000..3cf74cd
 --- /dev/null
 +++ b/src/plugins/messageservices/dummysource/dummyclient.cpp
-@@ -0,0 +1,446 @@
+@@ -0,0 +1,471 @@
 +/****************************************************************************
 +**
 +** This file is part of the $PACKAGE_NAME$.
@@ -7597,6 +7608,9 @@ index 0000000..783e322
 +{
 +    qMailLog(DUMMYSOURCE) << "DummySourceClient::~DummySourceClient(QObject* parent) called" << flush;
 +
++    // Close all connections and disable timer.
++    deactivateConnection();
++
 +    // Free allocated memory.
 +    delete timer;
 +    delete transport;
@@ -7614,8 +7628,8 @@ index 0000000..783e322
 +    // Check if a connection is already open.
 +    if(ConnectionActive)
 +    {
-+        qMailLog(DUMMYSOURCE) << "Connection is busy, please try later." << flush;
-+        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, "Connection is busy");
++        qMailLog(DUMMYSOURCE) << "Plugin instance already running." << flush;
++        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, "Plugin instance already running");
 +        return;
 +    }
 +
@@ -7642,14 +7656,18 @@ index 0000000..783e322
 +            connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
 +            connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
 +    }
++    emit updateStatus(tr("Connecting..."));
 +
 +    //  transport->open(dummyCfg.mailServer(), dummyCfg.mailPort(), static_cast<QMailTransport::EncryptType>(dummyCfg.mailEncryption()));
-+        emit connected(QMailTransport::Encrypt_NONE);
++    emit connected(QMailTransport::Encrypt_NONE);
++
++    // Acknowledge to application and keep adding mails in background.
++    //retrievalCompleted();
 +}
 +
 +void DummySourceClient::setAccount(const QMailAccountId &id)
 +{
-+        qMailLog(DUMMYSOURCE) << "DummySourceClient::setAccount() called" << flush;
++    qMailLog(DUMMYSOURCE) << "DummySourceClient::setAccount() called" << flush;
 +
 +    if ((transport && transport->inUse()) && (id != config.id())) {
 +        QString msg("Cannot open account; transport in use");
@@ -7752,6 +7770,14 @@ index 0000000..783e322
 +{
 +    qMailLog(DUMMYSOURCE) << "DummySourceClient::incomingData() called" << flush;
 +
++    // Show update and progress status.
++    emit updateStatus(tr("Connecting..."));
++    emit progressChanged(100, 0);
++
++    // Call action to be taken.
++    nextAction();
++
++    #if 0
 +    int MaxMsgs = 7;
 +    static int mailCount = 1;
 +
@@ -7775,6 +7801,7 @@ index 0000000..783e322
 +    }
 +
 +    mailCount++;
++#endif
 +}
 +
 +void DummySourceClient::processResponse(const QString &response)
@@ -7788,7 +7815,16 @@ index 0000000..783e322
 +{
 +    qMailLog(DUMMYSOURCE) << "DummySourceClient::nextAction() called" << flush;
 +
++    // Show update and progress status.
++    emit progressChanged(100, 25);
++    emit updateStatus(tr("Retrieving new mail."));
++
++    // Create and add a new mail to store.
 +    createMail();
++
++    // Show update and progress status.
++    emit updateStatus(tr("Message received"));
++    emit progressChanged(100, 100);    
 +}
 +
 +int DummySourceClient::msgPosFromUidl(QString uidl)
@@ -7892,7 +7928,7 @@ index 0000000..783e322
 +    QMailMessageContentType attachmentType("image/jpg");
 +
 +    QMailMessagePart attachmentPart;
-+    attachmentPart = QMailMessagePart::fromFile("/home/suman/ScratchBoxProjects/messagingframework/penguin.jpg", disposition, attachmentType, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
++    attachmentPart = QMailMessagePart::fromFile("/home/penguin.jpg", disposition, attachmentType, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
 +    mail.appendPart(attachmentPart);
 +    qMailLog(DUMMYSOURCE) << " attachmentPart = " << attachmentPart.body().data() << flush;
 +
@@ -8333,10 +8369,10 @@ index 0000000..a75466c
 +#endif
 diff --git a/src/plugins/messageservices/dummysource/dummyservice.cpp b/src/plugins/messageservices/dummysource/dummyservice.cpp
 new file mode 100644
-index 0000000..f1a3e40
+index 0000000..57a0bae
 --- /dev/null
 +++ b/src/plugins/messageservices/dummysource/dummyservice.cpp
-@@ -0,0 +1,452 @@
+@@ -0,0 +1,455 @@
 +/****************************************************************************
 +**
 +** This file is part of the $PACKAGE_NAME$.
@@ -8375,7 +8411,7 @@ index 0000000..f1a3e40
 +        connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
 +        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
 +
-+        qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source called";
++        qMailLog(DUMMYSOURCE) << "DummySourceService::Source called";
 +    }
 +
 +    void setIntervalTimer(int interval)
@@ -8416,7 +8452,7 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveFolderList() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrieveFolderList() called";
 +
 +    if (!accountId.isValid()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -8438,7 +8474,7 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveMessageList() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrieveMessageList() called";
 +
 +    if (!accountId.isValid()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -8462,7 +8498,7 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveMessages() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrieveMessages() called";
 +
 +    if (messageIds.isEmpty()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to retrieve"));
@@ -8490,7 +8526,7 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::retrieveAll(const QMailAccountId &accountId)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrieveAll() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrieveAll() called";
 +
 +    if (!accountId.isValid()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -8505,7 +8541,7 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::exportUpdates(const QMailAccountId &accountId)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::exportUpdates() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::exportUpdates() called";
 +
 +    if (!accountId.isValid()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -8519,14 +8555,14 @@ index 0000000..f1a3e40
 +
 +bool DummySourceService::Source::synchronize(const QMailAccountId &accountId)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::synchronize() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::synchronize() called";
 +
 +    return retrieveAll(accountId);
 +}
 +
 +bool DummySourceService::Source::deleteMessages(const QMailMessageIdList &messageIds)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::deleteMessages() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::deleteMessages() called";
 +
 +    if (messageIds.isEmpty()) {
 +        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to delete"));
@@ -8557,7 +8593,7 @@ index 0000000..f1a3e40
 +
 +void DummySourceService::Source::messageActionCompleted(const QString &uid)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::messageActionCompleted() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::messageActionCompleted() called";
 +
 +    if (_deleting) {
 +        QMailMessageMetaData metaData(uid, _service->accountId());
@@ -8572,7 +8608,7 @@ index 0000000..f1a3e40
 +
 +void DummySourceService::Source::retrievalCompleted()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrievalCompleted() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrievalCompleted() called";
 +
 +    _unavailable = false;
 +
@@ -8593,7 +8629,7 @@ index 0000000..f1a3e40
 +
 +void DummySourceService::Source::queueMailCheck()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::queueMailCheck() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::queueMailCheck() called";
 +
 +    if (_unavailable) {
 +        _mailCheckQueued = true;
@@ -8609,7 +8645,7 @@ index 0000000..f1a3e40
 +
 +void DummySourceService::Source::retrievalTerminated()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::Source::retrievalTerminated() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::Source::retrievalTerminated() called";
 +
 +    _unavailable = false;
 +    if (_queuedMailCheckInProgress) {
@@ -8626,7 +8662,7 @@ index 0000000..f1a3e40
 +      _client(this),
 +      _source(new Source(this))
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::DummySourceService() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::DummySourceService() called";
 +
 +    connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
 +
@@ -8638,6 +8674,9 @@ index 0000000..f1a3e40
 +    QMailAccountConfiguration accountCfg(accountId);
 +    DummySourceConfiguration dummyCfg(accountCfg);
 +    _source->setIntervalTimer(dummyCfg.checkInterval());
++
++    // Run the service daemon.
++   _source->synchronize(accountId);
 +}
 +
 +DummySourceService::~DummySourceService()
@@ -8694,7 +8733,7 @@ index 0000000..f1a3e40
 +
 +void DummySourceService::updateStatus(const QString &text)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceService::updateStatus() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceService::updateStatus() called";
 +
 +    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
 +}
@@ -8714,17 +8753,17 @@ index 0000000..f1a3e40
 +
 +DummySourceServiceConfigurator::DummySourceServiceConfigurator()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::DummySourceServiceConfigurator() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServiceConfigurator::DummySourceServiceConfigurator() called";
 +}
 +
 +DummySourceServiceConfigurator::~DummySourceServiceConfigurator()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::~DummySourceServiceConfigurator() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServiceConfigurator::~DummySourceServiceConfigurator() called";
 +}
 +
 +QString DummySourceServiceConfigurator::service() const
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::service() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServiceConfigurator::service() called";
 +    return serviceKey;
 +}
 +
@@ -8736,7 +8775,7 @@ index 0000000..f1a3e40
 +
 +QMailMessageServiceEditor *DummySourceServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type) called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type) called";
 +
 +    if (type == QMailMessageServiceFactory::Source)
 +        return new DummySourceSettings;
@@ -8749,40 +8788,40 @@ index 0000000..f1a3e40
 +DummySourceServicePlugin::DummySourceServicePlugin()
 +    : QMailMessageServicePlugin()
 +{
-+        qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::DummySourceServicePlugin() called";
++        qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::DummySourceServicePlugin() called";
 +}
 +
 +QString DummySourceServicePlugin::key() const
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::key() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::key() called";
 +
 +    return serviceKey;
 +}
 +
 +bool DummySourceServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) const
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) called";
 +
 +    return (type == QMailMessageServiceFactory::Source);
 +}
 +
 +bool DummySourceServicePlugin::supports(QMailMessage::MessageType type) const
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::supports(QMailMessage::MessageType type) called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::supports(QMailMessage::MessageType type) called";
 +
 +    return (type == QMailMessage::Email);
 +}
 +
 +QMailMessageService *DummySourceServicePlugin::createService(const QMailAccountId &id)
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::createService() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::createService() called";
 +
 +    return new DummySourceService(id);
 +}
 +
 +QMailMessageServiceConfigurator *DummySourceServicePlugin::createServiceConfigurator()
 +{
-+    qMailLog(DUMMYSOURCE) << "************* DummySourceServicePlugin::createServiceConfigurator() called";
++    qMailLog(DUMMYSOURCE) << "DummySourceServicePlugin::createServiceConfigurator() called";
 +    return new DummySourceServiceConfigurator();
 +}
 +
@@ -9494,48 +9533,113 @@ index 03c3e8e..a1d46c0 100644
  
  HEADERS += accountsettings.h \
             editaccount.h \
+diff --git a/src/tools/messageserver/etc/Xsession/51messageserver b/src/tools/messageserver/etc/Xsession/51messageserver
+new file mode 100755
+index 0000000..cf1c939
+--- /dev/null
++++ b/src/tools/messageserver/etc/Xsession/51messageserver
+@@ -0,0 +1,7 @@
++#!/bin/sh
++#
++# Start messageserver as soon as it was installed
++#
++set -e
++
++/etc/init.d/messageserver start
 diff --git a/src/tools/messageserver/etc/messageserver b/src/tools/messageserver/etc/messageserver
-new file mode 100644
-index 0000000..900d1a9
+new file mode 100755
+index 0000000..e9ccb1a
 --- /dev/null
 +++ b/src/tools/messageserver/etc/messageserver
-@@ -0,0 +1,34 @@
-+description "QMF Message Server"                                                                                                            
-+author "Dmitry Zelenkovsky"                                                                                                                 
-+                                                                                                                                            
-+start on console                                                                                                                            
-+stop on console                                                                                                                             
-+                                                                                                                                            
-+console output                                                                                                                              
-+                                                                                                                                            
-+pre-start script                                                                                                                            
-+    if [ -f /var/tmp/messageserver-instance.lock ]; then                                                                                    
-+        rm /var/tmp/messageserver-instance.lock                                                                                             
-+    fi                                                                                                                                      
-+    if [ -f /var/tmp/qcop-server-0 ]; then                                                                                                  
-+        rm /var/tmp/qcop-server-0                                                                                                           
+@@ -0,0 +1,86 @@
++#!/bin/sh
++### BEGIN INIT INFO
++# Provides:          messageserver
++# Required-Start:    Xsession
++# Required-Stop:
++# Should-Start:      
++# Should-Stop:
++# Default-Start:     0
++# Default-Stop:
++# Short-Description: Starts QMF message server
++# Description:
++### END INIT INFO
++
++DAEMON=/usr/bin/messageserver
++NAME=messageserver
++DESC="QMF Message Server"
++RESPAWN="-c 3 -T 180 -f"
++
++set -e
++
++clean_pid() {
++    if [ -f /var/tmp/messageserver-instance.lock ]; then
++        rm /var/tmp/messageserver-instance.lock
 +    fi
++
++    if [ -f /var/tmp/qcop-server-0 ]; then
++        rm /var/tmp/qcop-server-0
++    fi
++
 +    if [ -f /tmp/qcop-server-0 ]; then
 +        rm /tmp/qcop-server-0
-+    fi                                                                                                                                      
-+end script                                                                                                                                  
-+                                                                                                                                            
-+script                                                                                                                                      
-+    echo "Starting message server..."                                                                                                       
-+    if id user >/dev/null 2>&1;  then                                                                                                       
-+        su user -c "export DISPLAY=0:0; messageserver &"                                                                                    
-+    else                                                                                                                                    
-+        echo "ERROR: Failed to start message server, there is no user with name: user"                                                      
-+        echo "Please use \"adduser user user\" to create new user account."                                                                 
-+    fi                                                                                                                                      
-+end script                                                                                                                                  
-+                                                                                                                                            
-+# TBD: Uncomment this string to respawn message server.                                                                                     
-+#      In case of failure messageserver refuses to start                                                                                    
-+#      and that leads to recourcive respawn.                                                                                                
-+# respawn
++    fi
++
++    if [ -z $DISPLAY ]; then
++        export DISPLAY=0:0
++    fi
++}
++
++# abort if no executable exists
++test -x $DAEMON || exit 0
++
++# When inside scratchbox we are not really root nor do we have 'user' user
++if [ ! -f /targets/links/scratchbox.config ]; then
++  USER=user
++  HOME=/home/$USER
++  if [ `id -u` = 0 ]; then
++    CHUID="--chuid $USER"
++    NICE="--nice=19"
++  fi
++fi
++
++# Setup X display if it is not defined yet
++if [ -z $DISPLAY ]; then
++    export DISPLAY=0:0
++fi
++
++# Start/stop or restart messageserver daemon.
++case "$1" in
++  start)
++    printf "Starting $DESC: $NAME"
++    clean_pid
++    dsmetool $NICE -U $USER $RESPAWN $DAEMON
++    printf ".\n"
++    ;;
++  stop)
++    printf "Stopping: $DESC: $NAME"
++    dsmetool -k $DAEMON
++    printf ".\n"
++    ;;
++  restart|force-reload)
++    printf "Restarting $DESC: $NAME"
++    dsmetool -k $DAEMON
++    sleep 1
++    clean_pid
++    dsmetool $NICE -U $USER $RESPAWN $DAEMON
++    printf ".\n"
++    ;;
++  *)
++    N=/etc/init.d/$NAME
++    echo "Usage: $N {start|stop|restart|force-reload}" >&2
++    exit 1
++    ;;
++esac
++
++exit 0
++
 diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
-index 337ff9c..b6a33b7 100644
+index 337ff9c..1f675e0 100644
 --- a/src/tools/messageserver/messageserver.pro
 +++ b/src/tools/messageserver/messageserver.pro
 @@ -1,8 +1,6 @@
@@ -9547,18 +9651,23 @@ index 337ff9c..b6a33b7 100644
  
  DEPENDPATH += . 
  
-@@ -38,3 +36,12 @@ TRANSLATIONS += messageserver-ar.ts \
+@@ -38,3 +36,17 @@ TRANSLATIONS += messageserver-ar.ts \
                  messageserver-pt_BR.ts \
                  messageserver-zh_CN.ts \
                  messageserver-zh_TW.ts
 +
 +target.path += $$QMF_INSTALL_ROOT/bin
 +
-+upstart.files = etc/messageserver
-+upstart.path  = /etc/event.d
++initstart.files = etc/messageserver
++initstart.path  = /etc/init.d
 +
-+INSTALLS += target upstart
++xsessionpost.files = etc/Xsession/51messageserver
++xsessionpost.path  = /etc/X11/Xsession.post
 +
++xsessionactdead.files = etc/Xsession/51messageserver
++xsessionactdead.path  = /etc/X11/Xsession.actdead
++
++INSTALLS += target initstart xsessionpost xsessionactdead
 +
 diff --git a/tools/sparql-import/main.cpp b/tools/sparql-import/main.cpp
 new file mode 100644

@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W20-0maemo2) hardy; urgency=low
+
+  * Made changes to debianazation as required.
+  * Updated patch file.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Mon, 19 May 2009 17:31:22 +1000
+
 qt4-messagingframework (2009W20-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
