@@ -18,7 +18,7 @@
 class QMailStoreAccountFilterPrivate;
 class QMailStoreEvents;
 
-class QTOPIAMAIL_EXPORT QMailStoreAccountFilter : public QObject
+class MESSAGESERVER_EXPORT QMailStoreAccountFilter : public QObject
 {
     Q_OBJECT
 

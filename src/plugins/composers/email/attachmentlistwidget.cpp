@@ -52,8 +52,10 @@ signals:
 
 protected:
     void paintSection(QPainter * painter, const QRect & rect, int logicalIndex) const;
+#ifndef QT_NO_CURSOR    
     bool viewportEvent(QEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
+#endif    
     void mousePressEvent(QMouseEvent* e);
     bool overRemoveLink(QMouseEvent* e);
 
@@ -86,6 +88,7 @@ void AttachmentListHeader::paintSection(QPainter * painter, const QRect & rect, 
         QHeaderView::paintSection(painter,rect,logicalIndex);
 }
 
+#ifndef QT_NO_CURSOR    
 bool AttachmentListHeader::viewportEvent(QEvent* e)
 {
     if(e->type() == QEvent::Leave)
@@ -104,6 +107,7 @@ void AttachmentListHeader::mouseMoveEvent(QMouseEvent* e)
     else if(cursor().shape() == Qt::PointingHandCursor)
         setCursor(QCursor());
 }
+#endif
 
 void AttachmentListHeader::mousePressEvent(QMouseEvent* e)
 {
@@ -186,8 +190,10 @@ signals:
     void removeAttachmentAtIndex(int index);
 
 protected:
+#ifndef QT_NO_CURSOR    
     bool viewportEvent(QEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
+#endif    
     void mousePressEvent(QMouseEvent* e);
     bool overRemoveLink(QMouseEvent* e);
 };
@@ -200,6 +206,7 @@ QTreeView(parent)
     installEventFilter(this);
 }
 
+#ifndef QT_NO_CURSOR    
 bool AttachmentListView::viewportEvent(QEvent* e)
 {
     if(e->type() == QEvent::Leave)
@@ -218,6 +225,7 @@ void AttachmentListView::mouseMoveEvent(QMouseEvent* e)
         setCursor(QCursor());
     QTreeView::mouseMoveEvent(e);
 }
+#endif
 
 void AttachmentListView::mousePressEvent(QMouseEvent* e)
 {

@@ -14,8 +14,13 @@
 #include <QIODevice>
 #include <QTextStream>
 #include <QTemporaryFile>
-#include <sys/vfs.h>
 #include <QDir>
+
+#if defined(Q_OS_SYMBIAN)
+#include <f32file.h>
+#elif !defined(Q_OS_WIN)
+#include <sys/vfs.h>
+#endif
 
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
@@ -145,15 +150,52 @@ bool LongStream::freeSpace( const QString &path, int min)
     unsigned long long boundary = minFree;
     if (min >= 0)
         boundary = min;
-    struct statfs stats;
+
     QString partitionPath = tempDir() + "/.";
     if (!path.isEmpty())
         partitionPath = path;
+    
+#if defined(Q_OS_SYMBIAN)
+    bool result(false);
+   
+    RFs fsSession;
+    TInt rv;
+    if ((rv = fsSession.Connect()) != KErrNone) {
+        qDebug() << "Unable to connect to FS:" << rv;
+    } else {
+        TParse parse;
+        TPtrC name(path.utf16(), path.length());
+
+        if ((rv = fsSession.Parse(name, parse)) != KErrNone) {
+            qDebug() << "Unable to parse:" << path << rv;
+        } else {
+            TInt drive;
+            if ((rv = fsSession.CharToDrive(parse.Drive()[0], drive)) != KErrNone) {
+                qDebug() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
+            } else {
+                TVolumeInfo info;
+                if ((rv = fsSession.Volume(info, drive)) != KErrNone) {
+                    qDebug() << "Unable to volume:" << drive << rv;
+                } else {
+                    result = (info.iFree > boundary);
+                }
+            }
+        }
+        
+        fsSession.Close();
+    }
+    
+    return result;
+#elif !defined(Q_OS_WIN)
+    struct statfs stats;
 
     statfs( QString( partitionPath ).toLocal8Bit(), &stats);
     unsigned long long bavail = ((unsigned long long)stats.f_bavail);
     unsigned long long bsize = ((unsigned long long)stats.f_bsize);
     return (bavail * bsize) > boundary;
+#else
+    return false;
+#endif
 }
 
 QString LongStream::errorMessage( const QString &prefix )

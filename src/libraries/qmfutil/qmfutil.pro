@@ -6,6 +6,11 @@ INSTALLS += target
 
 CONFIG += warn_on
 
+DEFINES += QMFUTIL_INTERNAL
+symbian: {
+	MMP_RULES += EXPORTUNFROZEN
+}
+
 DEPENDPATH += .
 
 INCLUDEPATH += . ../qtopiamail ../qtopiamail/support

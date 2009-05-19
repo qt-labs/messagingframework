@@ -36,7 +36,7 @@ class QMailMessageService;
 class QMailMessageServiceConfigurator;
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceFactory
+class MESSAGESERVER_EXPORT QMailMessageServiceFactory
 {
 public:
     enum ServiceType { Any = 0, Source, Sink, Storage };
@@ -51,7 +51,7 @@ public:
 };
 
 
-struct QTOPIAMAIL_EXPORT QMailMessageServicePluginInterface : public QFactoryInterface
+struct MESSAGESERVER_EXPORT QMailMessageServicePluginInterface : public QFactoryInterface
 {
     virtual QString key() const = 0;
     virtual bool supports(QMailMessageServiceFactory::ServiceType type) const = 0;
@@ -66,7 +66,7 @@ struct QTOPIAMAIL_EXPORT QMailMessageServicePluginInterface : public QFactoryInt
 Q_DECLARE_INTERFACE(QMailMessageServicePluginInterface, QMailMessageServicePluginInterface_iid)
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
+class MESSAGESERVER_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(QMailMessageServicePluginInterface:QFactoryInterface)
@@ -81,7 +81,7 @@ public:
 
 class QMailMessageSourcePrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSource : public QObject
+class MESSAGESERVER_EXPORT QMailMessageSource : public QObject
 {
     Q_OBJECT
 
@@ -150,7 +150,7 @@ private:
 
 class QMailMessageSinkPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSink : public QObject
+class MESSAGESERVER_EXPORT QMailMessageSink : public QObject
 {
     Q_OBJECT
 
@@ -177,7 +177,7 @@ private:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageService : public QObject
+class MESSAGESERVER_EXPORT QMailMessageService : public QObject
 {
     Q_OBJECT
 
@@ -231,7 +231,7 @@ private:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceEditor : public QWidget
+class MESSAGESERVER_EXPORT QMailMessageServiceEditor : public QWidget
 {
     Q_OBJECT
 
@@ -244,7 +244,7 @@ public:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceConfigurator
+class MESSAGESERVER_EXPORT QMailMessageServiceConfigurator
 {
 public:
     QMailMessageServiceConfigurator();

@@ -17,7 +17,7 @@
 class QMailMessageMetaData;
 class QMailMessage;
 
-class QTOPIAMAIL_EXPORT QMailMessageClassifier
+class MESSAGESERVER_EXPORT QMailMessageClassifier
 {
 public:
     QMailMessageClassifier();

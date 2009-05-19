@@ -581,7 +581,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
                     if (tokenEncoded)
                         heldWhitespace.append(chars);
                     else
-                        result.append(chars);
+                        result.append(chars.toAscii());
                 }
             }
         }

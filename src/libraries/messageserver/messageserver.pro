@@ -8,6 +8,12 @@ QT *= network
 
 CONFIG += warn_on
 
+symbian: {
+    MMP_RULES += EXPORTUNFROZEN
+}
+
+DEFINES += MESSAGESERVER_INTERNAL
+
 DEPENDPATH += .
 
 INCLUDEPATH += . ../qtopiamail ../qtopiamail/support

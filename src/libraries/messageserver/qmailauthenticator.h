@@ -16,7 +16,7 @@
 #include <QByteArray>
 #include <QStringList>
 
-class QTOPIAMAIL_EXPORT QMailAuthenticator
+class MESSAGESERVER_EXPORT QMailAuthenticator
 {
 public:
     static bool useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);

@@ -115,7 +115,7 @@ QMailFolderKey::QMailFolderKey(Property p, const QVariant& value, QMailKey::Comp
     \internal 
 */
 template <typename ListType>
-QMailFolderKey::QMailFolderKey(const ListType &valueList, Property p, QMailKey::Comparator c)
+QMailFolderKey::QMailFolderKey(const ListType &valueList, QMailFolderKey::Property p, QMailKey::Comparator c)
     : d(new QMailFolderKeyPrivate(valueList, p, c))
 {
 }

@@ -104,7 +104,7 @@ QMailAccountKey::QMailAccountKey(Property p, const QVariant& value, QMailKey::Co
     \internal 
 */
 template <typename ListType>
-QMailAccountKey::QMailAccountKey(const ListType &valueList, Property p, QMailKey::Comparator c)
+QMailAccountKey::QMailAccountKey(const ListType &valueList, QMailAccountKey::Property p, QMailKey::Comparator c)
     : d(new QMailAccountKeyPrivate(valueList, p, c))
 {
 }

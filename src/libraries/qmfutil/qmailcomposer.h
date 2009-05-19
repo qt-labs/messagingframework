@@ -22,7 +22,7 @@
 class QMenu;
 class QMailAccount;
 
-class QTOPIAMAIL_EXPORT QMailComposerInterface : public QWidget
+class QMFUTIL_EXPORT QMailComposerInterface : public QWidget
 {
     Q_OBJECT
 
@@ -68,7 +68,7 @@ signals:
     void statusChanged(const QString& status);
 };
 
-class QTOPIAMAIL_EXPORT QMailComposerFactory
+class QMFUTIL_EXPORT QMailComposerFactory
 {
 public:
     // Yield the key for each interface supporting the supplied type

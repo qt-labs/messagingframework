@@ -4,11 +4,17 @@ TARGET = qtopiamail
 target.path += $$QMF_INSTALL_ROOT/lib 
 INSTALLS += target
 
-DEFINES += QT_BUILD_QCOP_LIB
+DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
 
 QT *= sql network
+symbian: {
+    LIBS += -lefsrv
+    MMP_RULES += EXPORTUNFROZEN
+}
 
 CONFIG += warn_on
+
+DEPENDPATH += .
 
 INCLUDEPATH += support
 

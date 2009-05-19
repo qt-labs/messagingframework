@@ -25,7 +25,6 @@ public:
     bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
 
 private slots:
-    void pushCheckChanged(int enabled);
     void intervalCheckChanged(int enabled);
 
 private:

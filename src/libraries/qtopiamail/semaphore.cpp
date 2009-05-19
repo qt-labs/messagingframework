@@ -17,9 +17,11 @@
 #include <errno.h>
 
 
+#if !defined(Q_OS_SYMBIAN)
 union semun {
     int val;
 };
+#endif
 
 Semaphore::Semaphore(int id, bool remove, int initial)
     : m_id(id),

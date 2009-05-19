@@ -148,12 +148,12 @@ public:
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
 
+    enum AttemptResult { Success = 0, Failure, DatabaseFailure };
+    
 private:
     friend class Transaction;
     friend class ReadLock;
 
-    enum AttemptResult { Success = 0, Failure, DatabaseFailure };
-    
     static ProcessMutex& contentManagerMutex(void);
 
     ProcessMutex& databaseMutex(void) const;

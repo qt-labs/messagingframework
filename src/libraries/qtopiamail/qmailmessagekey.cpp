@@ -130,7 +130,7 @@ QMailMessageKey::QMailMessageKey(Property p, const QVariant& value, QMailKey::Co
     \internal
 */
 template <typename ListType>
-QMailMessageKey::QMailMessageKey(const ListType &valueList, Property p, QMailKey::Comparator c)
+QMailMessageKey::QMailMessageKey(const ListType &valueList, QMailMessageKey::Property p, QMailKey::Comparator c)
     : d(new QMailMessageKeyPrivate(valueList, p, c))
 {
 }

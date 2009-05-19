@@ -24,8 +24,14 @@
 #include <messageserver.h>
 #include "benchmarkcontext.h"
 #include "qscopedconnection.h"
+#ifdef HAVE_VALGRIND
 #include "3rdparty/callgrind_p.h"
 #include "3rdparty/valgrind_p.h"
+#else
+#define RUNNING_ON_VALGRIND 0
+#define CALLGRIND_ZERO_STATS
+#define CALLGRIND_DUMP_STATS
+#endif
 
 /*
     This file is $TROLLTECH_INTERNAL$
@@ -244,6 +250,10 @@ void tst_MessageServer::runInCallgrind(QString const& testfunc)
 
 void tst_MessageServer::runInChildProcess(TestFunction fn)
 {
+#ifdef Q_OS_SYMBIAN
+    // No fork on Symbian
+    (this->*fn)();
+#else
     if (RUNNING_ON_VALGRIND) {
         qWarning(
             "Test is being run under valgrind. Testfunctions will not be run in child processes.\n"
@@ -296,6 +306,7 @@ void tst_MessageServer::runInChildProcess(TestFunction fn)
     fflush(stdout);
     fflush(stderr);
     _exit(exitcode);
+#endif
 }
 
 /* Test full retrieval of all messages from a specific account */

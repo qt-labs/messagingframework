@@ -24,7 +24,7 @@ class QWidget;
 
 class QMailViewerInterface;
 
-class QTOPIAMAIL_EXPORT QMailViewerFactory
+class QMFUTIL_EXPORT QMailViewerFactory
 {
 public:
     enum PresentationType
@@ -47,7 +47,7 @@ public:
 };
 
 // The interface for objects able to view mail messages
-class QTOPIAMAIL_EXPORT QMailViewerInterface : public QObject
+class QMFUTIL_EXPORT QMailViewerInterface : public QObject
 {
     Q_OBJECT
 

@@ -86,7 +86,6 @@ public:
 
 #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
 
-QLOG_DISABLE() //uncategorized logging
 QLOG_DISABLE(Messaging)
 QLOG_DISABLE(IMAP)
 QLOG_DISABLE(SMTP)
