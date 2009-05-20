@@ -22,8 +22,6 @@
 // We mean it.
 //
 
-struct sembuf;
-
 // We need slightly different semantics to those of QSystemMutex - all users of
 // the qtopiamail library are peers, so no single caller is the owner.  We will
 // allow the first library user to create the semaphore, and any subsequent users
@@ -31,43 +29,42 @@ struct sembuf;
 // we will rely on process undo to maintain sensible semaphore values as
 // clients come and go...
 
-class Semaphore
+class ProcessMutexPrivate;
+
+class ProcessMutex
 {
-    int m_id;
-    bool m_remove;
-    int m_semId;
-    int m_initialValue;
-
-    bool operation(struct sembuf *op, int milliSec);
-
 public:
-    Semaphore(int id, bool remove, int initial);
-    ~Semaphore();
+    ProcessMutex(int id);
+    ~ProcessMutex();
 
-    bool decrement(int milliSec = -1);
-    bool increment(int milliSec = -1);
+    bool lock(int milliSec);
+    void unlock();
 
-    bool waitForZero(int milliSec = -1);
+private:
+    ProcessMutex(const ProcessMutex &);
+    const ProcessMutex& operator=(const ProcessMutex &);
+
+    ProcessMutexPrivate* d;
 };
 
-class ProcessMutex : public Semaphore
+class ProcessReadLockPrivate;
+
+class ProcessReadLock
 {
 public:
-    ProcessMutex(int id) : Semaphore(id, false, 1) {}
+    ProcessReadLock(int id);
+    ~ProcessReadLock();
 
-    bool lock(int milliSec) { return decrement(milliSec); }
-    void unlock() { increment(); }
-};
+    void lock();
+    void unlock();
 
-class ProcessReadLock : public Semaphore
-{
-public:
-    ProcessReadLock(int id) : Semaphore(id, false, 0) {}
+    bool wait(int milliSec);
 
-    void lock() { increment(); }
-    void unlock() { decrement(); }
+private:
+    ProcessReadLock(const ProcessReadLock &);
+    const ProcessReadLock& operator=(const ProcessReadLock &);
 
-    bool wait(int milliSec) { return waitForZero(milliSec); }
+    ProcessReadLockPrivate* d;
 };
 
 #endif

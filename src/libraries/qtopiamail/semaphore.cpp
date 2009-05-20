@@ -23,6 +23,27 @@ union semun {
 };
 #endif
 
+namespace {
+
+class Semaphore
+{
+    int m_id;
+    bool m_remove;
+    int m_semId;
+    int m_initialValue;
+
+    bool operation(struct sembuf *op, int milliSec);
+
+public:
+    Semaphore(int id, bool remove, int initial);
+    ~Semaphore();
+
+    bool decrement(int milliSec = -1);
+    bool increment(int milliSec = -1);
+
+    bool waitForZero(int milliSec = -1);
+};
+
 Semaphore::Semaphore(int id, bool remove, int initial)
     : m_id(id),
       m_remove(false),
@@ -144,5 +165,74 @@ bool Semaphore::operation(struct sembuf *op, int milliSec)
 #endif
 
     return (::semop(m_semId, op, 1) != -1);
+}
+
+}
+
+
+class ProcessMutexPrivate : private Semaphore
+{
+public:
+    ProcessMutexPrivate(int id) : Semaphore(id, false, 1) {}
+
+    bool lock(int milliSec) { return decrement(milliSec); }
+    void unlock() { increment(); }
+};
+
+ProcessMutex::ProcessMutex(int id)
+    : d(new ProcessMutexPrivate(id))
+{
+}
+
+ProcessMutex::~ProcessMutex()
+{
+    delete d;
+}
+
+bool ProcessMutex::lock(int milliSec)
+{
+    return d->lock(milliSec);
+}
+
+void ProcessMutex::unlock()
+{
+    d->unlock();
+}
+
+
+class ProcessReadLockPrivate : private Semaphore
+{
+public:
+    ProcessReadLockPrivate(int id) : Semaphore(id, false, 0) {}
+
+    void lock() { increment(); }
+    void unlock() { decrement(); }
+
+    bool wait(int milliSec) { return waitForZero(milliSec); }
+};
+
+ProcessReadLock::ProcessReadLock(int id)
+    : d(new ProcessReadLockPrivate(id))
+{
+}
+
+ProcessReadLock::~ProcessReadLock()
+{
+    delete d;
+}
+
+void ProcessReadLock::lock()
+{
+    d->lock();
+}
+
+void ProcessReadLock::unlock()
+{
+    d->unlock();
+}
+
+bool ProcessReadLock::wait(int milliSec)
+{
+    return d->wait(milliSec);
 }
 
