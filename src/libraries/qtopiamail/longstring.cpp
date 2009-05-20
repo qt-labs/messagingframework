@@ -14,13 +14,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-#include <limits.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <QtDebug>
 
 #ifndef USE_FANCY_MATCH_ALGORITHM
@@ -136,8 +129,6 @@ static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source
 }
 
 
-static const int PageSize = ::getpagesize();
-
 class LongStringFileMapping : public QSharedData
 {
 public:
@@ -156,7 +147,21 @@ private:
     QString filename;
     const char* buffer;
     int len;
+
+    // We need to keep these in an external map, because QFile is noncopyable
+    struct QFileMapping
+    {
+        QFileMapping() : file(0), mapping(0), refCount(0) {}
+
+        QFile* file;
+        char* mapping;
+        int refCount;
+    };
+
+    static QMap<QString, QFileMapping> fileMap;
 };
+
+QMap<QString, LongStringFileMapping::QFileMapping> LongStringFileMapping::fileMap;
 
 template <typename Stream> 
 Stream& operator<<(Stream &stream, const LongStringFileMapping& mapping) { mapping.serialize(stream); return stream; }
@@ -184,10 +189,21 @@ LongStringFileMapping::~LongStringFileMapping()
 {
     if (buffer)
     {
-        int mapLength = ((len + (PageSize - 1)) / PageSize) * PageSize;
-        if (munmap(const_cast<char*>(buffer), mapLength) == -1)
-        {
-            qWarning() << "Unable to munmap" << mapLength << "bytes from buffer at" << reinterpret_cast<const void*>(buffer) << ':' << errno;
+        QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
+        if (it == fileMap.end()) {
+            qWarning() << "Unable to find mapped file:" << filename;
+        } else {
+            QFileMapping& fileMapping(it.value());
+
+            Q_ASSERT(buffer == fileMapping.mapping);
+
+            if (fileMapping.refCount > 1) {
+                fileMapping.refCount -= 1;
+            } else {
+                // We're the last user - delete the file and it's mappings
+                delete fileMapping.file;
+                fileMap.erase(it);
+            }
         }
     }
 }
@@ -195,34 +211,44 @@ LongStringFileMapping::~LongStringFileMapping()
 void LongStringFileMapping::init()
 {
     QFileInfo fi(filename);
-    if (fi.exists() && fi.isFile() && fi.isReadable())
-    {
+    if (fi.exists() && fi.isFile() && fi.isReadable()) {
         if (fi.size() == 0) {
             // Nothing to map 
             return;
         }
 
-        int fd = ::open(QFile::encodeName(fi.absoluteFilePath()), O_RDONLY);
-        if (fd != -1)
-        {
-            int mapLength = ((fi.size() + (PageSize - 1)) / PageSize) * PageSize;
-            void* address = ::mmap(0, mapLength, PROT_READ, MAP_SHARED, fd, 0);
-            if (address == MAP_FAILED)
-            {
-                qWarning() << "Unable to mmap" << mapLength << "bytes from" << fi.absoluteFilePath() << ':' << errno;
-            }
-            else
-            {
-                buffer = reinterpret_cast<char*>(address);
-                len = fi.size();
-            }
+        filename = fi.absoluteFilePath();
 
-            ::close(fd);
+        QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
+        if (it == fileMap.end()) {
+            QFileMapping fileMapping;
+
+            fileMapping.file = new QFile(filename);
+            if (fileMapping.file->open(QIODevice::ReadOnly)) {
+                uchar* address = fileMapping.file->map(0, fi.size());
+                if (address) {
+                    fileMapping.mapping = reinterpret_cast<char*>(address);
+                    it = fileMap.insert(filename, fileMapping);
+                }
+
+                fileMapping.file->close();
+
+                if (!fileMapping.mapping) {
+                    qWarning() << "Unable to map file:" << filename;
+                    delete fileMapping.file;
+                }
+            } else {
+                qWarning() << "Unable to open file for mapping:" << filename;
+            }
+        }
+
+        if (it != fileMap.end()) {
+            buffer = it.value().mapping;
+            len = fi.size();
+
+            it.value().refCount += 1;
         }
     }
-
-    if (!buffer)
-        qWarning() << "Unable to mmap:" << fi.absoluteFilePath();
 }
 
 const QByteArray LongStringFileMapping::toQByteArray() const
