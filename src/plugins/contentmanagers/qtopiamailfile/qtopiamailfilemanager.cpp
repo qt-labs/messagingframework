@@ -244,10 +244,12 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message)
         return code;
     } 
 
-    // Try to remove the existing data
-    code = remove(existingIdentifier);
-    if (code != QMailStore::NoError) {
-        qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+    if (!existingIdentifier.isEmpty()) {
+        // Try to remove the existing data
+        code = remove(existingIdentifier);
+        if (code != QMailStore::NoError) {
+            qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+        }
     }
 
     return QMailStore::NoError;
