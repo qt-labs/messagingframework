@@ -27,7 +27,6 @@
 #include <qevent.h>
 #include <qimagereader.h>
 #include <qalgorithms.h>
-#include "qtmailwindow.h"
 #include <qmailaccount.h>
 #include <qmailcomposer.h>
 #include <qmailfolder.h>

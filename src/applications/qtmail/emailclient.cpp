@@ -36,7 +36,6 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSettings>
-#include "qtmailwindow.h"
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
@@ -45,6 +44,70 @@
 #include <QSplitter>
 #include <QListView>
 #include <QToolBar>
+#include <QMovie>
+#include <QStatusBar>
+#include <statusdisplay_p.h>
+
+class ActivityIcon : public QLabel
+{
+    Q_OBJECT
+
+public:
+    ActivityIcon(QList<const QMailServiceAction*> actions,
+                 QWidget* parent = 0);
+
+private slots:
+    void activityChanged(QMailServiceAction::Activity a);
+    void showActivity(bool val);
+
+private:
+    QMovie m_activeIcon;
+    QPixmap m_inactiveIcon;
+    QList<QObject*> m_activeActions;
+};
+
+ActivityIcon::ActivityIcon(const QList<const QMailServiceAction*> actions,
+                           QWidget* parent)
+:
+QLabel(parent),
+m_activeIcon(":icon/activity_working"),
+m_inactiveIcon(":icon/activity_idle")
+{
+    foreach(const QMailServiceAction* a, actions)
+        connect(a,SIGNAL(activityChanged(QMailServiceAction::Activity)),
+                this,SLOT(activityChanged(QMailServiceAction::Activity)));
+
+    setPixmap(m_inactiveIcon);
+}
+
+void ActivityIcon::activityChanged(QMailServiceAction::Activity a)
+{
+    bool active = (a == QMailServiceAction::InProgress);
+    if(active && !m_activeActions.contains(sender()))
+        m_activeActions.append(sender());
+    else if(!active)
+        m_activeActions.removeAll(sender());
+
+    showActivity(!m_activeActions.isEmpty());
+}
+
+void ActivityIcon::showActivity(bool val)
+{
+    if(val)
+    {
+        if(m_activeIcon.state() == QMovie::Running)
+            return;
+        setMovie(&m_activeIcon);
+        m_activeIcon.start();
+    }
+    else
+    {
+        if(m_activeIcon.state() == QMovie::NotRunning)
+            return;
+        m_activeIcon.stop();
+        setPixmap(m_inactiveIcon);
+    }
+}
 
 static const int defaultWidth = 1024;
 static const int defaultHeight = 768;
@@ -156,8 +219,8 @@ void AcknowledgmentBox::keyPressEvent(QKeyEvent* event)
     }
 }
 
-MessageUiBase::MessageUiBase(QWidget* parent)
-    : QWidget(parent),
+MessageUiBase::MessageUiBase(QWidget *parent, Qt::WindowFlags f)
+    : QMainWindow(parent,f),
       appTitle(tr("Messages")),
       suspendMailCount(true),
       markingMode(false),
@@ -364,7 +427,7 @@ EmailFolderModel* MessageUiBase::createEmailFolderModel()
     return model;
 }
 
-EmailClient::EmailClient( QWidget* parent )
+EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     : MessageUiBase( parent ),
       filesRead(false),
       transferStatus(Inactive),
@@ -379,7 +442,8 @@ EmailClient::EmailClient( QWidget* parent )
       preSearchWidgetId(-1),
       searchAction(0),
       m_messageServerProcess(0),
-      syncState(ExportUpdates)
+      syncState(ExportUpdates),
+      m_contextMenu(0)
 {
     setObjectName( "EmailClient" );
 
@@ -532,6 +596,67 @@ bool EmailClient::closeImmediately()
     return true;
 }
 
+void EmailClient::setVisible(bool visible)
+{
+    if(visible)
+    {
+        QPoint p(0, 0);
+        int extraw = 0, extrah = 0, scrn = 0;
+        QWidget* w = 0;
+        if (w)
+            w = w->window();
+        QRect desk;
+        if (w) {
+            scrn = QApplication::desktop()->screenNumber(w);
+        } else if (QApplication::desktop()->isVirtualDesktop()) {
+            scrn = QApplication::desktop()->screenNumber(QCursor::pos());
+        } else {
+            scrn = QApplication::desktop()->screenNumber(this);
+        }
+        desk = QApplication::desktop()->availableGeometry(scrn);
+
+        QWidgetList list = QApplication::topLevelWidgets();
+        for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
+            QWidget * current = list.at(i);
+            if (current->isVisible()) {
+                int framew = current->geometry().x() - current->x();
+                int frameh = current->geometry().y() - current->y();
+
+                extraw = qMax(extraw, framew);
+                extrah = qMax(extrah, frameh);
+            }
+        }
+
+        // sanity check for decoration frames. With embedding, we
+        // might get extraordinary values
+        if (extraw == 0 || extrah == 0 || extraw >= 10 || extrah >= 40) {
+            extrah = 40;
+            extraw = 10;
+        }
+
+        p = QPoint(desk.x() + desk.width()/2, desk.y() + desk.height()/2);
+
+        // p = origin of this
+        p = QPoint(p.x()-width()/2 - extraw,
+                p.y()-height()/2 - extrah);
+
+
+        if (p.x() + extraw + width() > desk.x() + desk.width())
+            p.setX(desk.x() + desk.width() - width() - extraw);
+        if (p.x() < desk.x())
+            p.setX(desk.x());
+
+        if (p.y() + extrah + height() > desk.y() + desk.height())
+            p.setY(desk.y() + desk.height() - height() - extrah);
+        if (p.y() < desk.y())
+            p.setY(desk.y());
+
+        move(p);
+    }
+    QWidget::setVisible(visible);
+}
+
+
 void EmailClient::closeAfterTransmissionsFinished()
 {
     closeAfterWrite = false;
@@ -543,11 +668,10 @@ void EmailClient::closeApplication()
     cleanExit(false);
 
     // If we're still transmitting, just hide until it completes
-    if (isTransmitting()) {
-        QTMailWindow::singleton()->hide();
-    } else {
-        QTMailWindow::singleton()->close();
-    }
+    if (isTransmitting())
+        hide();
+    else
+        close();
 }
 
 void EmailClient::allWindowsClosed()
@@ -635,8 +759,7 @@ void EmailClient::initActions()
         connect(markAction, SIGNAL(triggered()), this, SLOT(markMessages()));
         setActionVisible(markAction, true);
 
-    QTMailWindow* mw = QTMailWindow::singleton();
-        QMenu* fileMenu = mw->contextMenu();
+        QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
         fileMenu->addAction( getAccountButton );
@@ -651,7 +774,7 @@ void EmailClient::initActions()
                 this,SLOT(quit()));
         connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
 
-        QToolBar* toolBar = mw->toolBar();
+        QToolBar* toolBar = m_toolBar;
         toolBar->addAction( composeButton );
         toolBar->addAction( getMailButton );
         toolBar->addAction( cancelButton );
@@ -1873,6 +1996,13 @@ void EmailClient::quit()
     else QApplication::quit();
 }
 
+void EmailClient::closeEvent(QCloseEvent *e)
+{
+    if (closeImmediately())
+        quit();
+    e->ignore();
+}
+
 bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
 {
     Q_UNUSED(userRequest);
@@ -1912,7 +2042,9 @@ bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
 
 void EmailClient::setupUi()
 {
-    QVBoxLayout* vb = new QVBoxLayout( this );
+    QWidget* f = new QWidget(this);
+    setCentralWidget(f);
+    QVBoxLayout* vb = new QVBoxLayout(f);
     vb->setContentsMargins( 0, 0, 0, 0 );
     vb->setSpacing( 0 );
 
@@ -1927,12 +2059,46 @@ void EmailClient::setupUi()
 
     vb->addWidget( verticalSplitter );
 
-    QTMailWindow* qmw = QTMailWindow::singleton();
-    qmw->setGeometry(0,0,defaultWidth,defaultHeight);
-    int thirdHeight = qmw->height() /3;
-    horizontalSplitter->setSizes(QList<int>() << thirdHeight << (qmw->height()- thirdHeight));
-    int quarterWidth = qmw->width() /4;
-    verticalSplitter->setSizes(QList<int>() << quarterWidth << (qmw->width()- quarterWidth));
+    setGeometry(0,0,defaultWidth,defaultHeight);
+    int thirdHeight = height() /3;
+    horizontalSplitter->setSizes(QList<int>() << thirdHeight << (height()- thirdHeight));
+    int quarterWidth = width() /4;
+    verticalSplitter->setSizes(QList<int>() << quarterWidth << (width()- quarterWidth));
+
+    QStatusBar* mainStatusBar = new QStatusBar();
+    StatusDisplay* status = new StatusDisplay;
+    mainStatusBar->addPermanentWidget(status,0);
+    setStatusBar(status);
+    connect(this, SIGNAL(statusVisible(bool)),
+            status, SLOT(showStatus(bool)) );
+    connect(this, SIGNAL(updateStatus(QString)),
+            status, SLOT(displayStatus(QString)) );
+    connect(this, SIGNAL(updateProgress(uint,uint)),
+            status, SLOT(displayProgress(uint,uint)) );
+    connect(this, SIGNAL(clearStatus()),
+            status, SLOT(clearStatus()) );
+
+    QMenuBar* mainMenuBar = new QMenuBar();
+    QMenu* file = mainMenuBar->addMenu("File");
+    QMenu* help = mainMenuBar->addMenu("Help");
+    QAction* aboutQt = help->addAction("About Qt");
+    connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
+
+    QWidget* menuWidget = new QWidget(this);
+    QHBoxLayout*  menuLayout = new QHBoxLayout(menuWidget);
+    menuLayout->setSpacing(0);
+    menuLayout->setContentsMargins(0,0,5,0);
+    menuLayout->addWidget(mainMenuBar);
+
+    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << retrievalAction
+                                                                             << transmitAction
+                                                                             << flagRetrievalAction,this);
+    menuLayout->addWidget(statusIcon);
+    setMenuWidget(menuWidget);
+    m_contextMenu = file;
+
+    m_toolBar = new QToolBar(this);
+    addToolBar(m_toolBar);
 }
 
 void EmailClient::showEvent(QShowEvent* e)
@@ -2007,7 +2173,7 @@ void EmailClient::transferStatusUpdate(int status)
 
         if (transferStatus == Inactive) {
             if (closeAfterTransmissions)
-                QTMailWindow::singleton()->close();
+                close();
         }
 
         // UI updates
