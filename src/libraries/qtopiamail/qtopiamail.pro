@@ -19,6 +19,7 @@ DEPENDPATH += .
 INCLUDEPATH += support
 
 HEADERS += bind_p.h \
+           locks_p.h \
            longstream_p.h \
            longstring_p.h \
            mailkeyimpl_p.h \
@@ -59,7 +60,6 @@ HEADERS += bind_p.h \
            qmailtimestamp.h \
            qprivateimplementation.h \
            qprivateimplementationdef.h \
-           semaphore_p.h \
            support/qmailglobal.h \
            support/qmaillog.h \
            support/qmailnamespace.h \
@@ -72,7 +72,8 @@ HEADERS += bind_p.h \
            support/qmailpluginmanager.h \
            support/qringbuffer_p.h
 
-SOURCES += longstream.cpp \
+SOURCES += locks.cpp \
+           longstream.cpp \
            longstring.cpp \
            qmailaccount.cpp \
            qmailaccountconfiguration.cpp \
@@ -104,7 +105,6 @@ SOURCES += longstream.cpp \
            qmailstoreimplementation_p.cpp \
            qmailtimestamp.cpp \
            qprivateimplementation.cpp \
-           semaphore.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
            support/qcopadaptor.cpp \

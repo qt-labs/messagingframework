@@ -9,20 +9,16 @@
 ****************************************************************************/
 
 #include "qmailstore_p.h"
+#include "locks_p.h"
 #include "qmailcontentmanager.h"
 #include "qmailmessageremovalrecord.h"
 #include "qmailtimestamp.h"
-#include "semaphore_p.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QTextCodec>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <unistd.h>
-#include <time.h>
 #include <QFile>
 #include <QCoreApplication>
 #include <QDir>
@@ -1964,17 +1960,9 @@ const QString &QMailStorePrivate::defaultContentScheme()
     return scheme;
 }
 
-int QMailStorePrivate::pathIdentifier(const QString &filePath)
+QString QMailStorePrivate::databaseIdentifier() const
 {
-    return static_cast<int>(::ftok(filePath.toAscii(), 1));
-}
-
-int QMailStorePrivate::databaseIdentifier(int n) const
-{
-    int result = static_cast<int>(::ftok(database.databaseName().toAscii(), n));
-    if (result == -1)
-        qFatal("Could not create database semaphore. Database could not be found.");
-    return result;
+    return database.databaseName();
 }
 
 
@@ -1990,16 +1978,16 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       lastQueryError(0),
       mutex(0)
 {
-    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
+    ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
     if (guard.lock(1000)) {
         //open the database
         database = QMail::createDatabase();
     }
-    mutex = new ProcessMutex(databaseIdentifier(1));
-    readLock = new ProcessReadLock(databaseIdentifier(2));
+    mutex = new ProcessMutex(databaseIdentifier(), 1);
+    readLock = new ProcessReadLock(databaseIdentifier(), 2);
     if (contentMutex == 0) {
-        contentMutex = new ProcessMutex(databaseIdentifier(3));
+        contentMutex = new ProcessMutex(databaseIdentifier(), 3);
     }
 }
 
@@ -2026,7 +2014,7 @@ ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
 
 bool QMailStorePrivate::initStore()
 {
-    ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
+    ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
     if (!guard.lock(1000)) {
         return false;

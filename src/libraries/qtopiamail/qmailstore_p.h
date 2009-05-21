@@ -170,7 +170,7 @@ private:
 
     QString expandProperties(const QMailMessageKey::Properties& p, bool update = false) const;
 
-    int databaseIdentifier(int n) const;
+    QString databaseIdentifier() const;
 
     bool ensureVersionInfo();
     qint64 tableVersion(const QString &name) const;
@@ -449,7 +449,6 @@ private:
     static const QString &defaultContentScheme();
     static const QString &messagesBodyPath();
     static QString messageFilePath(const QString &fileName);
-    static int pathIdentifier(const QString &filePath);
 
     static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 

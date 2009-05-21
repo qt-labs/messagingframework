@@ -29,12 +29,14 @@
 // we will rely on process undo to maintain sensible semaphore values as
 // clients come and go...
 
+class QString;
+
 class ProcessMutexPrivate;
 
 class ProcessMutex
 {
 public:
-    ProcessMutex(int id);
+    ProcessMutex(const QString &path, int id = 0);
     ~ProcessMutex();
 
     bool lock(int milliSec);
@@ -52,7 +54,7 @@ class ProcessReadLockPrivate;
 class ProcessReadLock
 {
 public:
-    ProcessReadLock(int id);
+    ProcessReadLock(const QString &path, int id = 0);
     ~ProcessReadLock();
 
     void lock();

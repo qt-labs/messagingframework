@@ -8,8 +8,9 @@
 **
 ****************************************************************************/
 
-#include "semaphore_p.h"
+#include "locks_p.h"
 #include "qmaillog.h"
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -24,6 +25,11 @@ union semun {
 #endif
 
 namespace {
+
+int pathIdentifier(const QString &filePath, int id)
+{
+    return static_cast<int>(::ftok(filePath.toAscii(), id));
+}
 
 class Semaphore
 {
@@ -179,8 +185,8 @@ public:
     void unlock() { increment(); }
 };
 
-ProcessMutex::ProcessMutex(int id)
-    : d(new ProcessMutexPrivate(id))
+ProcessMutex::ProcessMutex(const QString &path, int id)
+    : d(new ProcessMutexPrivate(pathIdentifier(path, id)))
 {
 }
 
@@ -211,8 +217,8 @@ public:
     bool wait(int milliSec) { return waitForZero(milliSec); }
 };
 
-ProcessReadLock::ProcessReadLock(int id)
-    : d(new ProcessReadLockPrivate(id))
+ProcessReadLock::ProcessReadLock(const QString &path, int id)
+    : d(new ProcessReadLockPrivate(pathIdentifier(path, id)))
 {
 }
 
