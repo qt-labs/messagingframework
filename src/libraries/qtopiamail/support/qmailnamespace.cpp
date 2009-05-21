@@ -10,20 +10,25 @@
 
 #include "qmailnamespace.h"
 #include <QSqlDatabase>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <QDir>
 #include <QDebug>
-#include <errno.h>
 #include <QDir>
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
-#include <unistd.h>
+#include <stdio.h>
+
+#ifdef Q_OS_WIN
+#include <windef.h>
+#include <winbase.h>
+#else
 #include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
 
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
@@ -32,6 +37,12 @@ static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
   \namespace QMail
 
   \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
+*/
+
+/*!
+  \fn QString QMail::lastSystemErrorMessage()
+
+  Returns the text describing the last error reported by the underlying platform.
 */
 
 /*!
@@ -118,9 +129,36 @@ static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
     \sa QMail::fileLock()
 */
 
+#ifdef Q_OS_WIN
+static QMap<int, HANDLE> lockedFiles;
+#endif
 
 int QMail::fileLock(const QString& lockFile)
 {
+#ifdef Q_OS_WIN
+    static int lockedCount = 0;
+
+    HANDLE handle = ::CreateFile(reinterpret_cast<const wchar_t*>(lockFile.utf16()),
+                                 GENERIC_READ,
+                                 FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                 NULL,
+                                 OPEN_EXISTING,
+                                 FILE_ATTRIBUTE_NORMAL,
+                                 NULL);
+    if (handle == INVALID_HANDLE_VALUE) {
+        qWarning() << "Unable to open file for locking:" << lockFile;
+    } else {
+        if (::LockFile(handle, 0, 0, 1, 0) == FALSE) {
+            qWarning() << "Unable to lock file:" << lockFile;
+        } else {
+            ++lockedCount;
+            lockedFiles.insert(lockedCount, handle);
+            return lockedCount;
+        }
+    }
+
+    return -1;
+#else
     struct flock fl;
 
     fl.l_type = F_WRLCK;
@@ -138,10 +176,28 @@ int QMail::fileLock(const QString& lockFile)
         return -1;
 
     return fdlock;
+#endif
 }
 
 bool QMail::fileUnlock(int id)
 {
+#ifdef Q_OS_WIN
+    QMap<int, HANDLE>::iterator it = lockedFiles.find(id);
+    if (it != lockedFiles.end()) {
+        if (::UnlockFile(it.value(), 0, 0, 1, 0) == FALSE) {
+            qWarning() << "Unable to unlock file:" << lastSystemErrorMessage();
+        } else {
+            if (::CloseHandle(it.value()) == FALSE) {
+                qWarning() << "Unable to close handle:" << lastSystemErrorMessage();
+            }
+
+            lockedFiles.erase(it);
+            return true;
+        }
+    }
+
+    return false;
+#else
     struct flock fl;
 
     fl.l_type = F_UNLCK;
@@ -158,6 +214,7 @@ bool QMail::fileUnlock(int id)
         return false;
 
     return true;
+#endif
 }
 
 
@@ -339,9 +396,21 @@ QStringList QMail::extensionsForMimeType(const QString& mimeType)
 
 void QMail::usleep(unsigned long usecs)
 {
-    if ( usecs >= 1000000 )
-        ::sleep( usecs / 1000000 );
-    ::usleep( usecs % 1000000 );
+#ifdef Q_OS_WIN
+    ::Sleep((usecs + 500) / 1000);
+#else
+    static const int factor(1000 * 1000);
+
+    unsigned long seconds(usecs / factor);
+    usecs = (usecs % factor);
+
+    if (seconds) {
+        ::sleep(seconds);
+    }
+    if (!seconds || usecs) {
+        ::usleep(usecs);
+    }
+#endif
 }
 
 QString QMail::baseSubject(const QString& subject)
@@ -457,5 +526,27 @@ QStringList QMail::messageIdentifiers(const QString& str)
     }
 
     return result;
+}
+
+QString QMail::lastSystemErrorMessage()
+{
+#ifdef Q_OS_WIN
+    LPVOID buffer;
+
+    ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,
+                    ::GetLastError(),
+                    0,
+                    reinterpret_cast<LPTSTR>(&buffer),
+                    0,
+                    NULL);
+
+    QString result(QString::fromUtf16(reinterpret_cast<const ushort*>(buffer)));
+    ::LocalFree(buffer);
+
+    return result;
+#else
+    return QString(::strerror(errno));
+#endif
 }
 

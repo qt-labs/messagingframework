@@ -15,13 +15,20 @@
 #include "qmailtimestamp.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
+#include <QCoreApplication>
+#include <QDir>
+#include <QFile>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QTextCodec>
-#include <QFile>
-#include <QCoreApplication>
-#include <QDir>
+#ifdef Q_OS_WIN
+#include <windef.h>
+#include <winbase.h>
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 
 #define Q_USE_SQLITE
 
@@ -129,6 +136,13 @@ const int Sqlite3BusyErrorNumber = 5;
 
 const int Sqlite3ConstraintErrorNumber = 19;
 
+#ifdef Q_OS_WIN
+static int getpid()
+{
+    static int pid(static_cast<int>(::GetCurrentProcessId()));
+    return pid;
+}
+#endif
 
 // Helper class for automatic unlocking
 template<typename Mutex>

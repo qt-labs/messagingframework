@@ -72,8 +72,7 @@ HEADERS += bind_p.h \
            support/qmailpluginmanager.h \
            support/qringbuffer_p.h
 
-SOURCES += locks.cpp \
-           longstream.cpp \
+SOURCES += longstream.cpp \
            longstring.cpp \
            qmailaccount.cpp \
            qmailaccountconfiguration.cpp \
@@ -113,6 +112,12 @@ SOURCES += locks.cpp \
            support/qcopchannelmonitor.cpp \
            support/qcopserver.cpp \
            support/qmailpluginmanager.cpp
+
+win32: {
+    SOURCES += locks_win32.cpp
+} else {
+    SOURCES += locks.cpp
+}
 
 RESOURCES += qtopiamail.qrc \
              qtopiamail_qt.qrc
