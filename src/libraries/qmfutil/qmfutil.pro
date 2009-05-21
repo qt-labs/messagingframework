@@ -1,10 +1,10 @@
 TEMPLATE = lib 
+CONFIG += warn_on
+CONFIG -= debug_and_release
 
 TARGET = qmfutil 
 target.path += $$QMF_INSTALL_ROOT/lib
 INSTALLS += target
-
-CONFIG += warn_on
 
 DEFINES += QMFUTIL_INTERNAL
 symbian: {

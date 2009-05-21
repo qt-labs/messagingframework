@@ -1,4 +1,5 @@
 CONFIG += qtestlib unittest
+CONFIG -= debug_and_release
 TEMPLATE = app
 TARGET = tst_qmailmessageheader
 target.path += $$QMF_INSTALL_ROOT/tests

@@ -1,4 +1,5 @@
 TEMPLATE = lib 
+CONFIG -= debug_and_release
 
 TARGET = genericviewer 
 target.path += $$QMF_INSTALL_ROOT/plugins/viewers

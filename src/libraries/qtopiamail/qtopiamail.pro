@@ -1,4 +1,6 @@
 TEMPLATE = lib 
+CONFIG += warn_on
+CONFIG -= debug_and_release
 
 TARGET = qtopiamail
 target.path += $$QMF_INSTALL_ROOT/lib 
@@ -11,8 +13,6 @@ symbian: {
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN
 }
-
-CONFIG += warn_on
 
 DEPENDPATH += .
 

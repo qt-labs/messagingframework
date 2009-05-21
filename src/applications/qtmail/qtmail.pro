@@ -1,4 +1,5 @@
 TEMPLATE = app
+CONFIG -= debug_and_release
 
 TARGET = qtmail 
 target.path += $$QMF_INSTALL_ROOT/bin

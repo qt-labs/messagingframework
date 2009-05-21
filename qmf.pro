@@ -16,6 +16,7 @@ SUBDIRS = src/libraries/qtopiamail \
           benchmarks \
 
 CONFIG += ordered
+CONFIG -= debug_and_release
 
 # Make it so projects can find our specific features
 system(touch $$OUT_PWD/.qmake.cache)

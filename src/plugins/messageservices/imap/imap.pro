@@ -1,4 +1,5 @@
 TEMPLATE = lib 
+CONFIG -= debug_and_release
 
 TARGET = imap 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices

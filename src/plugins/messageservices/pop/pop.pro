@@ -1,4 +1,5 @@
 TEMPLATE = lib 
+CONFIG -= debug_and_release
 
 TARGET = pop 
 target.path = $$QMF_INSTALL_ROOT/plugins/messageservices

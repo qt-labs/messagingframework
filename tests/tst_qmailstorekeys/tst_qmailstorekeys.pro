@@ -1,4 +1,5 @@
 CONFIG += qtestlib unittest
+CONFIG -= debug_and_release
 QT += sql
 TEMPLATE = app
 TARGET = tst_qmailstorekeys

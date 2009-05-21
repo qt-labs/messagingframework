@@ -1,12 +1,12 @@
 TEMPLATE = lib 
+CONFIG += warn_on
+CONFIG -= debug_and_release
 
 TARGET = messageserver
 target.path += $$QMF_INSTALL_ROOT/lib
 INSTALLS += target
 
 QT *= network
-
-CONFIG += warn_on
 
 symbian: {
     MMP_RULES += EXPORTUNFROZEN
