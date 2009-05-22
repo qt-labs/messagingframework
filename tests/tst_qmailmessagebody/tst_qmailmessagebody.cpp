@@ -25,7 +25,7 @@ Q_DECLARE_METATYPE(QMailMessageBody::EncodingFormat)
  * a static constructor, so we can't just set it in initTestCase().
  * Need to hijack qgetenv to make sure we set LANG before it can
  * possibly be read. */
-QByteArray (const char *varName)
+QByteArray qgetenv(const char *varName)
 {
     static char firstInvoke = 1;
     if (firstInvoke) {
