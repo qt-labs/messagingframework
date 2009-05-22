@@ -1025,19 +1025,22 @@ void tst_QMailStore::removeMessage()
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    // Verify that retrieval yields matching result
-    QMailMessage message2(message1.id());
-    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    QCOMPARE(message2.id(), message1.id());
-    QCOMPARE(message2.parentFolderId(), message1.parentFolderId());
-    QCOMPARE(message2.messageType(), message1.messageType());
-    QCOMPARE(message2.subject(), message1.subject());
-    QCOMPARE(message2.to(), message1.to());
-    QCOMPARE(message2.from(), message1.from());
-    QCOMPARE(message2.body().data(), message1.body().data());
-    QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
-    QCOMPARE(message2.customFields(), message1.customFields());
-    QCOMPARE(message2.customField("answer"), QString("Fido"));
+	// On win32, the message cannot be removed while someone has the body object open!
+	{
+		// Verify that retrieval yields matching result
+		QMailMessage message2(message1.id());
+		QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+		QCOMPARE(message2.id(), message1.id());
+		QCOMPARE(message2.parentFolderId(), message1.parentFolderId());
+		QCOMPARE(message2.messageType(), message1.messageType());
+		QCOMPARE(message2.subject(), message1.subject());
+		QCOMPARE(message2.to(), message1.to());
+		QCOMPARE(message2.from(), message1.from());
+		QCOMPARE(message2.body().data(), message1.body().data());
+		QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
+		QCOMPARE(message2.customFields(), message1.customFields());
+		QCOMPARE(message2.customField("answer"), QString("Fido"));
+	}
 
     // Verify that removal is successful 
     QVERIFY(QMailStore::instance()->removeMessage(message1.id()));
