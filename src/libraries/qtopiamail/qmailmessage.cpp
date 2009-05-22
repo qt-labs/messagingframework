@@ -679,14 +679,10 @@ static QByteArray generateEncodedParameter(const QByteArray& charset, const QByt
     // We could encode the exact set of permissible characters here, but they're basically the alphanumerics
     const char* it = text.constData();
     const char* const end = it + text.length();
-    for ( ; it != end; ++it)
-    {
-        if (::isalnum(*it))
-        {
+    for ( ; it != end; ++it) {
+        if (::isalnum(static_cast<unsigned char>(*it))) {
             result.append(*it);
-        }
-        else
-        {
+        } else {
             // Encode to hex
             int value = (*it);
             result.append('%').append(hexRepresentation(value >> 4)).append(hexRepresentation(value));
