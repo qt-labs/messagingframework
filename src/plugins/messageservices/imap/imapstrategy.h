@@ -172,6 +172,7 @@ public:
     ImapFolderListStrategy() {}
     virtual ~ImapFolderListStrategy() {}
 
+    virtual void clearSelection();
     virtual void selectedFoldersAppend(const QMailFolderIdList &ids);
 
     virtual void newConnection(ImapStrategyContextBase *context);
