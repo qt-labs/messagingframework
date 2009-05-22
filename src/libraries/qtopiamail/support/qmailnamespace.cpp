@@ -19,8 +19,7 @@
 #include <stdio.h>
 
 #ifdef Q_OS_WIN
-#include <windef.h>
-#include <winbase.h>
+#include <windows.h>
 #else
 #include <stdlib.h>
 #include <unistd.h>
@@ -37,6 +36,12 @@ static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
   \namespace QMail
 
   \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
+*/
+
+/*!
+  \fn uint QMail::processId()
+
+  Returns the identifier of the running process.
 */
 
 /*!
@@ -526,6 +531,15 @@ QStringList QMail::messageIdentifiers(const QString& str)
     }
 
     return result;
+}
+
+uint QMail::processId()
+{
+#ifdef Q_OS_WIN
+	return ::GetCurrentProcessId();
+#else
+	return static_cast<uint>(::getpid());
+#endif
 }
 
 QString QMail::lastSystemErrorMessage()

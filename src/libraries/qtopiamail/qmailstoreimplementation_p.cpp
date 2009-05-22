@@ -9,10 +9,10 @@
 ****************************************************************************/
 
 #include "qmailstoreimplementation_p.h"
-#include "qmaillog.h"
 #include "qmailipc.h"
+#include "qmaillog.h"
+#include "qmailnamespace.h"
 #include <QCoreApplication>
-#include <unistd.h>
 
 namespace {
 
@@ -21,6 +21,8 @@ const int preFlushTimeout = 250;
 
 // Events occurring within this period are batched
 const int flushTimeout = 1000;
+
+const uint pid = QMail::processId();
 
 typedef QPair<int,int> Segment; //start,end - end non inclusive
 typedef QList<Segment> SegmentList;
@@ -57,14 +59,14 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
 
                 QCopAdaptor a("QPE/Qtopiamail");
                 QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-                e << ::getpid();
+				e << pid;
                 e << idSegment; 
             }
         } else {
 
             QCopAdaptor a("QPE/Qtopiamail");
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << ::getpid();
+            e << pid;
             e << ids;
         }
     } else {
@@ -160,7 +162,7 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     // Tell the recipients to process the notifications synchronously
     QCopAdaptor a("QPE/Qtopiamail");
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
-    e << ::getpid();
+    e << pid;
 
     if (flushTimer.isActive()) {
         // We interrupted a batching period - reset the flush timer to its full period
@@ -570,10 +572,10 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
 {
     QDataStream ds(data);
 
-    int pid;
-    ds >> pid;
+    int origin;
+    ds >> origin;
 
-    if(::getpid() == pid) //dont notify ourselves 
+    if (pid == origin) //dont notify ourselves 
         return;
 
     if (message == "forceIpcFlush") {

@@ -22,13 +22,6 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QTextCodec>
-#ifdef Q_OS_WIN
-#include <windef.h>
-#include <winbase.h>
-#else
-#include <sys/types.h>
-#include <unistd.h>
-#endif
 
 #define Q_USE_SQLITE
 
@@ -136,13 +129,7 @@ const int Sqlite3BusyErrorNumber = 5;
 
 const int Sqlite3ConstraintErrorNumber = 19;
 
-#ifdef Q_OS_WIN
-static int getpid()
-{
-    static int pid(static_cast<int>(::GetCurrentProcessId()));
-    return pid;
-}
-#endif
+const uint pid = QMail::processId();
 
 // Helper class for automatic unlocking
 template<typename Mutex>
@@ -208,7 +195,7 @@ QString contentUri(const QMailMessageMetaData &message)
     return contentUri(message.contentScheme(), message.contentIdentifier());
 }
 
-QPair<QString, QString> uriElements(const QString &uri)
+QPair<QString, QString> extractUriElements(const QString &uri)
 {
     int index = uri.indexOf(':');
     while ((index != -1) && (uri.at(index - 1) == '\\'))
@@ -293,7 +280,7 @@ public:
 
     QMailMessageId id() const { return QMailMessageId(QMailStorePrivate::extractValue<quint64>(_value)); }
 
-    QMailMessage::MessageType messageType() const { return QMailMessage::MessageType(QMailStorePrivate::extractValue<int>(_value)); }
+    QMailMessage::MessageType messageType() const { return static_cast<QMailMessage::MessageType>(QMailStorePrivate::extractValue<int>(_value)); }
 
     QMailFolderId parentFolderId() const { return QMailFolderId(QMailStorePrivate::extractValue<quint64>(_value)); }
 
@@ -315,7 +302,7 @@ public:
 
     int size() const { return QMailStorePrivate::extractValue<int>(_value); }
 
-    QMailMessage::ContentType content() const { return QMailMessage::ContentType(QMailStorePrivate::extractValue<int>(_value)); }
+    QMailMessage::ContentType content() const { return static_cast<QMailMessage::ContentType>(QMailStorePrivate::extractValue<int>(_value)); }
 
     QMailFolderId previousParentFolderId() const { return QMailFolderId(QMailStorePrivate::extractValue<quint64>(_value)); }
 
@@ -323,7 +310,7 @@ public:
 
     QMailMessageId inResponseTo() const { return QMailMessageId(QMailStorePrivate::extractValue<quint64>(_value)); }
 
-    QMailMessage::ResponseType responseType() const { return QMailMessage::ResponseType(QMailStorePrivate::extractValue<int>(_value)); }
+    QMailMessage::ResponseType responseType() const { return static_cast<QMailMessage::ResponseType>(QMailStorePrivate::extractValue<int>(_value)); }
 };
 
 
@@ -624,9 +611,9 @@ protected:
         if (!s.isEmpty()) {
             // Delimit data for sql "LIKE" operator
             if (((arg.op == Includes) || (arg.op == Excludes)) || (((arg.op == Equal) || (arg.op == NotEqual)) && valueMinimalised))
-                return QString("\%" + s + "\%");
+                return QString("%" + s + "%");
         } else if ((arg.op == Includes) || (arg.op == Excludes)) {
-            return QString("\%");
+            return QString("%");
         }
 
         return s;
@@ -776,7 +763,7 @@ public:
 
     QMailMessageId id() const { return QMailMessageId(value<quint64>(QMailMessageKey::Id)); }
 
-    QMailMessage::MessageType messageType() const { return QMailMessage::MessageType(value<int>(QMailMessageKey::Type, QMailMessage::None)); }
+    QMailMessage::MessageType messageType() const { return static_cast<QMailMessage::MessageType>(value<int>(QMailMessageKey::Type, QMailMessage::None)); }
 
     QMailFolderId parentFolderId() const { return QMailFolderId(value<quint64>(QMailMessageKey::ParentFolderId)); }
 
@@ -798,14 +785,14 @@ public:
 
     int size() const { return value<int>(QMailMessageKey::Size); }
 
-    QMailMessage::ContentType content() const { return QMailMessage::ContentType(value<int>(QMailMessageKey::ContentType, QMailMessage::UnknownContent)); }
+    QMailMessage::ContentType content() const { return static_cast<QMailMessage::ContentType>(value<int>(QMailMessageKey::ContentType, QMailMessage::UnknownContent)); }
 
     QMailFolderId previousParentFolderId() const { return QMailFolderId(value<quint64>(QMailMessageKey::PreviousParentFolderId)); }
 
     QString contentScheme() const 
     { 
         if (_uriElements.first.isNull()) 
-            _uriElements = ::uriElements(value<QString>(QMailMessageKey::ContentScheme)); 
+            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentScheme)); 
 
         return _uriElements.first;
     }
@@ -813,14 +800,14 @@ public:
     QString contentIdentifier() const 
     { 
         if (_uriElements.first.isNull()) 
-            _uriElements = ::uriElements(value<QString>(QMailMessageKey::ContentIdentifier)); 
+            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentIdentifier)); 
 
         return _uriElements.second;
     }
 
     QMailMessageId inResponseTo() const { return QMailMessageId(value<quint64>(QMailMessageKey::InResponseTo)); }
 
-    QMailMessage::ResponseType responseType() const { return QMailMessage::ResponseType(value<int>(QMailMessageKey::ResponseType, QMailMessage::NoResponse)); }
+    QMailMessage::ResponseType responseType() const { return static_cast<QMailMessage::ResponseType>(value<int>(QMailMessageKey::ResponseType, QMailMessage::NoResponse)); }
 
 private:
     int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
@@ -880,7 +867,7 @@ public:
     QVariant contentScheme() const 
     { 
         // Any colons in the field will be stored in escaped format
-        QString value(::escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
+        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
 
         if ((arg.op == Includes) || (arg.op == Excludes)) {
             value.prepend('%').append('%');
@@ -893,7 +880,7 @@ public:
     QVariant contentIdentifier() const 
     { 
         // Any colons in the field will be stored in escaped format
-        QString value(::escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
+        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
 
         if ((arg.op == Includes) || (arg.op == Excludes)) {
             value.prepend('%').append('%');
@@ -1025,7 +1012,7 @@ public:
 
     QString name() const { return value<QString>(QMailAccountKey::Name); }
 
-    QMailMessage::MessageType messageType() const { return QMailMessage::MessageType(value<int>(QMailAccountKey::MessageType, -1)); }
+    QMailMessage::MessageType messageType() const { return static_cast<QMailMessage::MessageType>(value<int>(QMailAccountKey::MessageType, -1)); }
 
     QString fromAddress() const { return value<QString>(QMailAccountKey::FromAddress); }
 
@@ -1902,7 +1889,7 @@ QMailStorePrivate::AttemptResult evaluate(QMailStorePrivate::WriteAccess, Functi
 
     // Ensure that the transaction was committed
     if ((result == QMailStorePrivate::Success) && !t.committed()) {
-        qMailLog(Messaging) << ::getpid() << "Failed to commit successful" << qPrintable(description) << "!";
+		qMailLog(Messaging) << pid << "Failed to commit successful" << qPrintable(description) << "!";
     }
 
     return result;
@@ -2132,7 +2119,7 @@ void QMailStorePrivate::clearContent()
 bool QMailStorePrivate::transaction(void)
 {
     if (inTransaction) {
-        qMailLog(Messaging) << "(" << ::getpid() << ")" << "Transaction already exists at begin!";
+        qMailLog(Messaging) << "(" << pid << ")" << "Transaction already exists at begin!";
         qWarning() << "Transaction already exists at begin!";
     }
 
@@ -2289,7 +2276,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
     }
 
 #ifdef QMAILSTORE_LOG_SQL 
-    qMailLog(Messaging) << "(" << ::getpid() << ")" << qPrintable(queryText(query));
+    qMailLog(Messaging) << "(" << pid << ")" << qPrintable(queryText(query));
 #endif
 
     if (!inTransaction) {
@@ -2304,7 +2291,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
 bool QMailStorePrivate::commit(void)
 {
     if (!inTransaction) {
-        qMailLog(Messaging) << "(" << ::getpid() << ")" << "Transaction does not exist at commit!";
+        qMailLog(Messaging) << "(" << pid << ")" << "Transaction does not exist at commit!";
         qWarning() << "Transaction does not exist at commit!";
     }
     
@@ -2325,7 +2312,7 @@ bool QMailStorePrivate::commit(void)
 void QMailStorePrivate::rollback(void)
 {
     if (!inTransaction) {
-        qMailLog(Messaging) << "(" << ::getpid() << ")" << "Transaction does not exist at rollback!";
+        qMailLog(Messaging) << "(" << pid << ")" << "Transaction does not exist at rollback!";
         qWarning() << "Transaction does not exist at rollback!";
     }
     
@@ -2352,7 +2339,7 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
     if (!statement.isEmpty())
         ts << "; statement:\"" << statement.simplified() << '"';
 
-    qMailLog(Messaging) << "(" << ::getpid() << ")" << qPrintable(s);
+    qMailLog(Messaging) << "(" << pid << ")" << qPrintable(s);
     qWarning() << qPrintable(s);
 }
 
@@ -2395,7 +2382,7 @@ void QMailStorePrivate::destroyTemporaryTables()
             QString sql = queryText(query);
             QString err = query.lastError().text();
 
-            qMailLog(Messaging) << "(" << ::getpid() << ")" << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
+            qMailLog(Messaging) << "(" << pid << ")" << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
             qWarning() << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
         }
     }
@@ -2598,7 +2585,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
 
     QString contentUri(r.value("mailfile").toString());
     if (!contentUri.isEmpty()) {
-        QPair<QString, QString> elements(::uriElements(contentUri));
+        QPair<QString, QString> elements(extractUriElements(contentUri));
 
         MutexGuard lock(contentManagerMutex());
         if (!lock.lock(1000)) {
@@ -2878,7 +2865,7 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
 
             case QMailMessageKey::ContentScheme:
                 if (uriElements.first.isEmpty()) {
-                    uriElements = ::uriElements(extractor.contentUri());
+                    uriElements = extractUriElements(extractor.contentUri());
                 } else {
                     valueConsumed = false;
                 }
@@ -2887,7 +2874,7 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
 
             case QMailMessageKey::ContentIdentifier:
                 if (uriElements.first.isEmpty()) {
-                    uriElements = ::uriElements(extractor.contentUri());
+                    uriElements = extractUriElements(extractor.contentUri());
                 } else {
                     valueConsumed = false;
                 }
@@ -3734,7 +3721,7 @@ void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, 
             qMailLog(Messaging) << "Unable to acquire message body mutex in removeExpiredData!";
         } else {
             foreach (const QString& contentUri, contentUris) {
-                QPair<QString, QString> elements(::uriElements(contentUri));
+                QPair<QString, QString> elements(extractUriElements(contentUri));
 
                 if (QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first)) {
                     QMailStore::ErrorCode code = contentManager->remove(elements.second);
@@ -3781,11 +3768,11 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
 
         if (result == Success) {
             if (attemptCount > 0) {
-                qMailLog(Messaging) << ::getpid() << "Able to" << qPrintable(description) << "after" << attemptCount << "failed attempts";
+                qMailLog(Messaging) << pid << "Able to" << qPrintable(description) << "after" << attemptCount << "failed attempts";
             }
             return true;
         } else if (result == Failure) {
-            qMailLog(Messaging) << ::getpid() << "Unable to" << qPrintable(description);
+            qMailLog(Messaging) << pid << "Unable to" << qPrintable(description);
             if (lastError() == QMailStore::NoError) {
                 setLastError(errorType(AccessType()));
             }
@@ -3794,7 +3781,7 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
             // result == DatabaseFailure
             if (queryError() == Sqlite3BusyErrorNumber) {
                 if (attemptCount < MaxAttempts) {
-                    qMailLog(Messaging) << ::getpid() << "Failed to" << qPrintable(description) << "- busy, pausing to retry";
+                    qMailLog(Messaging) << pid << "Failed to" << qPrintable(description) << "- busy, pausing to retry";
 
                     // Pause before we retry
                     QMail::usleep(delay * 1000);
@@ -3803,15 +3790,15 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
 
                     ++attemptCount;
                 } else {
-                    qMailLog(Messaging) << ::getpid() << "Retry count exceeded - failed to" << qPrintable(description);
+                    qMailLog(Messaging) << pid << "Retry count exceeded - failed to" << qPrintable(description);
                     break;
                 }
             } else if (queryError() == Sqlite3ConstraintErrorNumber) {
-                qMailLog(Messaging) << ::getpid() << "Unable to" << qPrintable(description) << "- constraint failure";
+                qMailLog(Messaging) << pid << "Unable to" << qPrintable(description) << "- constraint failure";
                 setLastError(QMailStore::ConstraintFailure);
                 break;
             } else {
-                qMailLog(Messaging) << ::getpid() << "Unable to" << qPrintable(description) << "- code:" << queryError();
+                qMailLog(Messaging) << pid << "Unable to" << qPrintable(description) << "- code:" << queryError();
                 break;
             }
         }

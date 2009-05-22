@@ -15,17 +15,16 @@
 #include "qmailipc.h"
 #include "qmailmessagekey.h"
 #include "qmailmessageserver.h"
+#include "qmailnamespace.h"
 #include "qmailstore.h"
+#include "qmaillog.h"
 #include <QPair>
 #include <QTimer>
-#include "qmaillog.h"
-#include <sys/types.h>
-#include <unistd.h>
 
 namespace {
 
 uint messageCounter = 0;
-const uint pid = ::getpid();
+const uint pid = QMail::processId();
 
 quint64 nextMessageAction()
 {

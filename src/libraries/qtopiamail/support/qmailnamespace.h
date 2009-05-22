@@ -21,6 +21,7 @@ class QSqlDatabase;
 
 namespace QMail
 {
+    QTOPIAMAIL_EXPORT uint processId();
     QTOPIAMAIL_EXPORT QString lastSystemErrorMessage();
     QTOPIAMAIL_EXPORT void usleep(unsigned long usecs);
     QTOPIAMAIL_EXPORT QSqlDatabase createDatabase();

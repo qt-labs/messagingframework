@@ -11,14 +11,11 @@
 #include "qtopiamailfilemanager.h"
 #include "qmailmessage.h"
 #include "qmailstore.h"
-#include <qmailnamespace.h>
-#include <qmaillog.h>
-#include <QFile>
+#include "qmailnamespace.h"
+#include "qmaillog.h"
+#include <QDateTime>
 #include <QDir>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <unistd.h>
-#include <time.h>
+#include <QFile>
 #include <QtPlugin>
 #include <QUrl>
 
@@ -62,18 +59,20 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
 {
     // Format: seconds_epoch.pid.randomchars
     bool exists = true;
-    const qint64 pid = ::getpid();
+    const uint pid = QMail::processId();
+	const uint time = QDateTime::currentDateTime().toTime_t();
 
     QString filename;
     QString path;
 
-    while (exists) {
-        filename = name;
-        filename.sprintf("%ld.%ld.",(unsigned long)time(0), (long)pid);
-        filename.prepend(name);
-        filename.append(randomString(5));
-        path = QtopiamailfileManager::messageFilePath(filename, accountId);
+    filename = name;
+	filename.append(QString::number(time));
+	filename.append('.');
+	filename.append(QString::number(pid));
+	filename.append('.');
 
+    while (exists) {
+        path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
         exists = QFile::exists(path);
     }
 
@@ -211,7 +210,6 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     // Write the message to file (not including sub-part contents)
     QDataStream out(&file);
     message->toRfc2822(out, QMailMessage::StorageFormat);
-    bool isOk = out.status() != QDataStream::Ok;
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
