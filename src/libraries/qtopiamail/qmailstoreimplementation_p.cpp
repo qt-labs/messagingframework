@@ -411,90 +411,91 @@ bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountI
 
 QString QMailStoreImplementationBase::accountAddedSig()
 {
-    static QString s("accountAdded(int,QList<quint64>)");
+    static QString s("accountAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountRemovedSig()
 {
-    static QString s("accountRemoved(int,QList<quint64>)");
+    static QString s("accountRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountUpdatedSig()
 {
-    static QString s("accountUpdated(int,QList<quint64>)");
+    static QString s("accountUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountContentsModifiedSig()
 {
-    static QString s("accountContentsModified(int,QList<quint64>)");
+    static QString s("accountContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageAddedSig()
 {
-    static QString s("messageAdded(int,QList<quint64>)");
+    static QString s("messageAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovedSig()
 {
-    static QString s("messageRemoved(int,QList<quint64>)");
+    static QString s("messageRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageUpdatedSig()
 {
-    static QString s("messageUpdated(int,QList<quint64>)");
+    static QString s("messageUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageContentsModifiedSig()
 {
-    static QString s("messageContentsModified(int,QList<quint64>)");
+    static QString s("messageContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderAddedSig()
 {
-    static QString s("folderAdded(int,QList<quint64>)");
+    static QString s("folderAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderRemovedSig()
 {
-    static QString s("folderRemoved(int,QList<quint64>)");
+    static QString s("folderRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderUpdatedSig()
 {
-    static QString s("folderUpdated(int,QList<quint64>)");
+    static QString s("folderUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderContentsModifiedSig()
 {
-    static QString s("folderContentsModified(int,QList<quint64>)");
+    static QString s("folderContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsAddedSig()
 {
-    static QString s("messageRemovalRecordsAdded(int,QList<quint64>)");
+    static QString s("messageRemovalRecordsAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()
 {
-    static QString s("messageRemovalRecordsRemoved(int,QList<quint64>)");
+    static QString s("messageRemovalRecordsRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::retrievalInProgressSig()
 {
+	// TODO: why no PID in theses messages?
     static QString s("retrievalInProgress(QList<quint64>)");
     return s;
 }
@@ -572,7 +573,7 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
 {
     QDataStream ds(data);
 
-    int origin;
+    uint origin;
     ds >> origin;
 
     if (pid == origin) //dont notify ourselves 
@@ -610,8 +611,8 @@ bool QMailStoreImplementationBase::emitIpcNotification()
 
     QDataStream ds(data);
 
-    int pid;
-    ds >> pid;
+    uint origin;
+    ds >> origin;
 
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
     static FolderUpdateSignalMap folderUpdateSignals(initFolderUpdateSignals());

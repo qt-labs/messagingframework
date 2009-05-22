@@ -207,13 +207,13 @@ public:
 private:
     inline void increment(T*& p)
     {
-        if (p) p->ref();
+        if (p) reinterpret_cast<QPrivateImplementationBase*>(p)->ref();
     }
 
     inline void decrement(T*& p)
     {
         if (p) {
-            if (p->deref())  {
+            if (reinterpret_cast<QPrivateImplementationBase*>(p)->deref())  {
                 p = reinterpret_cast<T*>(~0);
             }
         }
@@ -252,23 +252,23 @@ public:
     QPrivatelyImplemented(const QPrivatelyImplemented& other);
 
     template<typename A1>
-    QPrivatelyImplemented(ImplementationType* p, A1 a1);
+    QTOPIAMAIL_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyImplemented();
 
     const QPrivatelyImplemented<ImplementationType>& operator=(const QPrivatelyImplemented<ImplementationType>& other);
 
     template<typename ImplementationSubclass>
-    ImplementationSubclass* impl();
+    QTOPIAMAIL_EXPORT ImplementationSubclass* impl();
 
     template<typename InterfaceType>
-    typename InterfaceType::ImplementationType* impl(InterfaceType*);
+    QTOPIAMAIL_EXPORT typename InterfaceType::ImplementationType* impl(InterfaceType*);
 
     template<typename ImplementationSubclass>
-    const ImplementationSubclass* impl() const;
+    QTOPIAMAIL_EXPORT const ImplementationSubclass* impl() const;
 
     template<typename InterfaceType>
-    const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
+    QTOPIAMAIL_EXPORT const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
 
     /* Comparison functions passed through to the implementation type?
     bool operator== (const QPrivatelyImplemented<ImplementationType>& other) const;
@@ -352,7 +352,7 @@ public:
 
     inline ~QPrivateNoncopyablePointer()
     {
-        d->delete_self();
+        reinterpret_cast<QPrivateNoncopyableBase*>(d)->delete_self();
     }
 
     inline bool operator!() const { return !d; }
@@ -378,21 +378,21 @@ public:
     QPrivatelyNoncopyable(ImplementationType* p);
 
     template<typename A1>
-    QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
+    QTOPIAMAIL_EXPORT QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyNoncopyable();
 
     template<typename ImplementationSubclass>
-    ImplementationSubclass* impl();
+    QTOPIAMAIL_EXPORT ImplementationSubclass* impl();
 
     template<typename InterfaceType>
-    typename InterfaceType::ImplementationType* impl(InterfaceType*);
+    QTOPIAMAIL_EXPORT typename InterfaceType::ImplementationType* impl(InterfaceType*);
 
     template<typename ImplementationSubclass>
-    const ImplementationSubclass* impl() const;
+    QTOPIAMAIL_EXPORT const ImplementationSubclass* impl() const;
 
     template<typename InterfaceType>
-    const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
+    QTOPIAMAIL_EXPORT const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
 
     /* Comparison functions passed through to the implementation type?
     bool operator== (const QPrivatelyNoncopyable<ImplementationType>& other) const;

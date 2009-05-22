@@ -6,6 +6,7 @@ target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
 INSTALLS += target
 
 QT += network
+DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 

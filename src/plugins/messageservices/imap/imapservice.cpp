@@ -80,7 +80,7 @@ public slots:
     void queueFlagsChangedCheck();
     
 private:
-    virtual bool setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&) = 0);
+    virtual bool setStrategy(ImapStrategy *strategy, QMailMessageSource::MessageSignal signal = 0);
 
     enum MailCheckPhase { RetrieveFolders = 0, RetrieveMessages, CheckFlags };
 
@@ -94,7 +94,7 @@ private:
     QTimer _intervalTimer;
     QList<QMailFolderId> _queuedFolders;
 
-    void (ImapService::Source::*_actionCompletedSignal)(const QMailMessageIdList&);
+    QMailMessageSource::MessageSignal _actionCompletedSignal;
 };
 
 bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -281,7 +281,7 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &messageIds)
         _service->_client.strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(true);
         _service->_client.strategyContext()->deleteMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->deleteMessagesStrategy.selectedMailsAppend(messageIds);
-        return setStrategy(&_service->_client.strategyContext()->deleteMessagesStrategy, &ImapService::Source::messagesDeleted);
+        return setStrategy(&_service->_client.strategyContext()->deleteMessagesStrategy, deletedSignal());
     }
 
     // Just delete the local copies
@@ -304,7 +304,7 @@ bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, con
         _service->_client.strategyContext()->copyMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->copyMessagesStrategy.selectedMailsAppend(messageIds);
         _service->_client.strategyContext()->copyMessagesStrategy.setDestination(destinationId);
-        return setStrategy(&_service->_client.strategyContext()->copyMessagesStrategy, &ImapService::Source::messagesCopied);
+        return setStrategy(&_service->_client.strategyContext()->copyMessagesStrategy, copiedSignal());
     }
 
     // Otherwise create local copies
@@ -327,7 +327,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
         _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->moveMessagesStrategy.selectedMailsAppend(messageIds);
         _service->_client.strategyContext()->moveMessagesStrategy.setDestination(destinationId);
-        return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, &ImapService::Source::messagesMoved);
+        return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, movedSignal());
     }
 
     // Otherwise - if any of these messages are in folders on the server, we should remove them
@@ -373,7 +373,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     return true;
 }
 
-bool ImapService::Source::setStrategy(ImapStrategy *strategy, void (ImapService::Source::*signal)(const QMailMessageIdList&))
+bool ImapService::Source::setStrategy(ImapStrategy *strategy, QMailMessageSource::MessageSignal signal)
 {
     _actionCompletedSignal = signal;
     _unavailable = true;

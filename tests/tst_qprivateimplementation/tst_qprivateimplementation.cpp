@@ -8,7 +8,10 @@
 **
 ****************************************************************************/
 
+// We're effectively part of the QTOPIAMAIL library for this test:
+#define QTOPIAMAIL_INTERNAL
 #include "qprivateimplementationdef.h"
+
 #include <QObject>
 #include <QString>
 #include <QTest>

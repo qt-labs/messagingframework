@@ -24,7 +24,7 @@
 
 #include <qmailserviceconfiguration.h>
 
-class QTOPIAMAIL_EXPORT ImapConfiguration : public QMailServiceConfiguration
+class PLUGIN_EXPORT ImapConfiguration : public QMailServiceConfiguration
 {
 public:
     explicit ImapConfiguration(const QMailAccountConfiguration &config);
@@ -49,7 +49,7 @@ public:
     bool intervalCheckRoamingEnabled() const;
 };
 
-class QTOPIAMAIL_EXPORT ImapConfigurationEditor : public ImapConfiguration
+class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration
 {
 public:
     explicit ImapConfigurationEditor(QMailAccountConfiguration *config);

@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QMap>
+#include <QUrl>
 #include <QWidget>
 #include <qmaillog.h>
 #include <qmailpluginmanager.h>

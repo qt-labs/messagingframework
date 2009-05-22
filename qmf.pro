@@ -19,6 +19,6 @@ CONFIG += ordered
 CONFIG -= debug_and_release
 
 # Make it so projects can find our specific features
-system(touch $$OUT_PWD/.qmake.cache)
-system(if ! [ -e $$OUT_PWD/features ]; then ln -s $$PWD/features $$OUT_PWD/features; fi)
+#system(touch $$OUT_PWD/.qmake.cache)
+#system(if ! [ -e $$OUT_PWD/features ]; then ln -s $$PWD/features $$OUT_PWD/features; fi)
 

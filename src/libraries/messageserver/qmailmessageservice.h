@@ -86,7 +86,7 @@ class MESSAGESERVER_EXPORT QMailMessageSource : public QObject
     Q_OBJECT
 
 public:
-    ~QMailMessageSource();
+    virtual ~QMailMessageSource();
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const;
 
@@ -139,6 +139,13 @@ protected:
 
     void notImplemented();
 
+	typedef void (QMailMessageSource::*MessageSignal)(const QMailMessageIdList&);
+	MessageSignal deletedSignal() { return &QMailMessageSource::messagesDeleted; }
+	MessageSignal copiedSignal() { return &QMailMessageSource::messagesCopied; }
+	MessageSignal movedSignal() { return &QMailMessageSource::messagesMoved; }
+	MessageSignal matchingSignal() { return &QMailMessageSource::matchingMessageIds; }
+	MessageSignal preparedSignal() { return &QMailMessageSource::messagesPrepared; }
+
 private:
     QMailMessageSource();
     QMailMessageSource(const QMailMessageSource &other);
@@ -146,7 +153,6 @@ private:
 
     QMailMessageSourcePrivate *d;
 };
-
 
 class QMailMessageSinkPrivate;
 
@@ -167,6 +173,9 @@ protected:
     QMailMessageSink(QMailMessageService *service);
 
     void notImplemented();
+
+	typedef void (QMailMessageSink::*MessageSignal)(const QMailMessageIdList&);
+	MessageSignal transmittedSignal() { return &QMailMessageSink::messagesTransmitted; }
 
 private:
     QMailMessageSink();
@@ -257,6 +266,5 @@ public:
 
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) = 0;
 };
-
 
 #endif

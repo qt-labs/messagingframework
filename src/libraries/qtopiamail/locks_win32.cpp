@@ -11,8 +11,7 @@
 #include "locks_p.h"
 #include "qmaillog.h"
 #include "qmailnamespace.h"
-#include <windef.h>
-#include <winbase.h>
+#include <windows.h>
 
 // Because we don't guarantee that a server process will start before
 // clients, and not restart without them, we need our locking mechanism

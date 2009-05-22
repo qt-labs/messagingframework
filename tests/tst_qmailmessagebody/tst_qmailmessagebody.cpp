@@ -19,12 +19,13 @@
 Q_DECLARE_METATYPE(QMailMessageBody::EncodingStatus)
 Q_DECLARE_METATYPE(QMailMessageBody::EncodingFormat)
 
+#ifndef Q_OS_WIN
 /* Need to enforce en_US.UTF-8 locale for this test.
  * Unfortunately Qt reads the LANG env var in some code called from
  * a static constructor, so we can't just set it in initTestCase().
  * Need to hijack qgetenv to make sure we set LANG before it can
  * possibly be read. */
-QByteArray qgetenv(const char *varName)
+QByteArray (const char *varName)
 {
     static char firstInvoke = 1;
     if (firstInvoke) {
@@ -33,7 +34,7 @@ QByteArray qgetenv(const char *varName)
     }
     return QByteArray(getenv(varName));
 }
-
+#endif
 
 //TESTED_CLASS=QMailMessageBody
 //TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp

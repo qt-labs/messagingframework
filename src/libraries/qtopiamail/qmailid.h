@@ -71,8 +71,9 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-    friend QDebug& operator<<(QDebug&, const QMailAccountId&);
-    friend QTextStream& operator <<(QTextStream&, const QMailAccountId&);
+
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailAccountId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailAccountId&);
 };
 
 
@@ -97,8 +98,9 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-    friend QDebug& operator<<(QDebug&, const QMailFolderId&);
-    friend QTextStream& operator<<(QTextStream&, const QMailFolderId&);
+
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailFolderId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator<<(QTextStream&, const QMailFolderId&);
 };
 
 
@@ -124,8 +126,8 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    friend QDebug& operator<<(QDebug&, const QMailMessageId&);
-    friend QTextStream& operator <<(QTextStream&, const QMailMessageId&);
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailMessageId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailMessageId&);
 };
 
 

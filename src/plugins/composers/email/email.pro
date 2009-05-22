@@ -5,6 +5,8 @@ TARGET = emailcomposer
 target.path += $$QMF_INSTALL_ROOT/plugins/composers
 INSTALLS += target
 
+DEFINES += PLUGIN_INTERNAL
+
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qmfutil \

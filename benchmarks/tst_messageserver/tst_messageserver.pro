@@ -6,7 +6,9 @@ target.path += $$QMF_INSTALL_ROOT/tests
 INSTALLS += target
 DEPENDPATH += . 3rdparty
 
-!symbian: {
+DEFINES += PLUGIN_STATIC_LINK
+
+!symbian:!win32 {
 	DEFINES += HAVE_VALGRIND
 }
 
@@ -47,7 +49,7 @@ SOURCES += benchmarkcontext.cpp \
            $$MESSAGE_SERVER/servicehandler.cpp \
            $$MESSAGE_SERVER/newcountnotifier.cpp
 
-!symbian: {
+!symbian:!win32 {
 	HEADERS += testmalloc.h 3rdparty/cycle_p.h
 	SOURCES += testmalloc.cpp
 }

@@ -24,7 +24,6 @@
 
 #include "qprivateimplementation.h"
 
-
 template<typename ImplementationType>
 QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p)
     : d(p)
@@ -176,6 +175,5 @@ QTOPIAMAIL_EXPORT bool QPrivatelyNoncopyable<ImplementationType>::operator< (con
             (*impl<ImplementationType>() < *other.impl<ImplementationType>()));
 }
 */
-
 
 #endif

@@ -8,22 +8,25 @@
 **
 ****************************************************************************/
 
+#include "benchmarkcontext.h"
+#include "qscopedconnection.h"
+#include <imapconfiguration.h>
+#include <messageserver.h>
+#include <qmailnamespace.h>
+#include <qmailserviceaction.h>
+#include <qmailstore.h>
 #include <QTest>
 #include <QtCore>
+#ifdef Q_OS_WIN
+#else
 #include <errno.h>
-#include <qmailnamespace.h>
 #include <stdio.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <imapconfiguration.h>
-#include <qmailserviceaction.h>
-#include <qmailstore.h>
-#include <messageserver.h>
-#include "benchmarkcontext.h"
-#include "qscopedconnection.h"
+#endif
 #ifdef HAVE_VALGRIND
 #include "3rdparty/callgrind_p.h"
 #include "3rdparty/valgrind_p.h"
@@ -250,8 +253,11 @@ void tst_MessageServer::runInCallgrind(QString const& testfunc)
 
 void tst_MessageServer::runInChildProcess(TestFunction fn)
 {
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
     // No fork on Symbian
+    (this->*fn)();
+#elif defined(Q_OS_WIN)
+	// No advantage to forking?
     (this->*fn)();
 #else
     if (RUNNING_ON_VALGRIND) {
