@@ -25,8 +25,12 @@ namespace {
 
 QString pathIdentifier(const QString &path, int id)
 {
+	// Paths are not permitted to include backslash
+	QString key(path);
+	key.replace(QChar('\\'), QChar('/'));
+
     // Object names do not need to correspond to paths that actually exist on Win32
-    return QString("qtopiamail-%1-%2").arg(path).arg(id);
+    return QString("qtopiamail-%1-%2").arg(key).arg(id);
 }
 
 }
