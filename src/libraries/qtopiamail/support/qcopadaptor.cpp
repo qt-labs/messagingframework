@@ -698,6 +698,7 @@ bool QCopAdaptor::connectRemoteToLocal
         name = QMetaObject::normalizedSignature(member.constData());
     }
     info->receiver = receiver;
+    info->destroyed = false;
     info->returnType = 0;
     info->types = 0;
     info->numArgs = 0;
