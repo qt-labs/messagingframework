@@ -30,6 +30,8 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QItemDelegate>
+#include <QPainter>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 static const QColor newMessageColor(Qt::blue);
@@ -64,21 +66,29 @@ static QString sizeString(uint size)
 
 class MessageListModel : public MessageListView::ModelType
 {
+    Q_OBJECT
 public:
     MessageListModel(QWidget* parent );
     QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const;
     QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
     bool markingMode() const;
     void setMarkingMode(bool val);
+
+    bool moreButtonVisible() const;
+    void setMoreButtonVisible(bool val);
+
 private:
     bool m_markingMode;
+    bool m_moreButtonVisible;
 };
 
 MessageListModel::MessageListModel(QWidget* parent)
 :
 MessageListView::ModelType(parent),
-m_markingMode(false)
+m_markingMode(false),
+m_moreButtonVisible(false)
 {
 }
 
@@ -97,6 +107,16 @@ int MessageListModel::columnCount(const QModelIndex & parent ) const
 {
     Q_UNUSED(parent);
     return headers.count();
+}
+
+int MessageListModel::rowCount(const QModelIndex& parent) const
+{
+    int actualRows = MessageListView::ModelType::rowCount(parent);
+
+    if (!parent.isValid() && (actualRows > 0) && m_moreButtonVisible)
+        actualRows++;
+
+    return actualRows;
 }
 
 QVariant MessageListModel::data( const QModelIndex & index, int role) const
@@ -194,6 +214,17 @@ bool MessageListModel::markingMode() const
     return m_markingMode;
 }
 
+bool MessageListModel::moreButtonVisible() const
+{
+    return m_moreButtonVisible;
+}
+
+void MessageListModel::setMoreButtonVisible(bool val)
+{
+    m_moreButtonVisible = val;
+    reset();
+}
+
 class MessageList : public QTreeView
 {
     Q_OBJECT
@@ -207,12 +238,22 @@ public:
 signals:
     void backPressed();
     void scrolled();
+    void moreButtonClicked();
 
 protected:
     void keyPressEvent(QKeyEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
     void scrollContentsBy(int dx, int dy);
+    void mouseMoveEvent(QMouseEvent* e);
+    void mousePressEvent(QMouseEvent* e);
+    bool mouseOverMoreLink(QMouseEvent* e);
 
+    void drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+private:
+    MessageListModel* sourceModel() const;
+
+private:
     QPoint pos;
 };
 
@@ -220,6 +261,7 @@ MessageList::MessageList(QWidget* parent)
 :
     QTreeView(parent)
 {
+    setMouseTracking(true);
 }
 
 MessageList::~MessageList()
@@ -259,6 +301,79 @@ void MessageList::scrollContentsBy(int dx, int dy)
     emit scrolled();
 }
 
+void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    bool isMoreEntry = ((!index.parent().isValid()) && index.row() == (model()->rowCount(QModelIndex()) - 1));
+    if (isMoreEntry && sourceModel()->moreButtonVisible()) {
+        QLinearGradient lg(option.rect.topLeft(), option.rect.topRight());
+        lg.setColorAt(0,option.palette.color(QPalette::Base));
+        lg.setColorAt(0.5,option.palette.color(QPalette::Button));
+        lg.setColorAt(1,option.palette.color(QPalette::Base));
+
+        QFont font = painter->font();
+        font.setUnderline(true);
+
+        painter->save();
+        painter->setFont(font);
+        painter->fillRect(option.rect, QBrush(lg));
+        painter->drawText(option.rect, Qt::AlignHCenter | Qt::AlignVCenter, tr("Get more messages"));
+        painter->restore();
+    } else {
+        QTreeView::drawRow(painter, option, index);
+    }
+}
+
+void MessageList::mouseMoveEvent(QMouseEvent* e)
+{
+    if (mouseOverMoreLink(e)) {
+        QCursor handCursor(Qt::PointingHandCursor);
+        setCursor(handCursor);
+    } else if (cursor().shape() == Qt::PointingHandCursor) {
+        setCursor(QCursor());
+    }
+
+    QTreeView::mouseMoveEvent(e);
+}
+
+void MessageList::mousePressEvent(QMouseEvent* e)
+{
+    // TODO: Should be in release event?
+    if (mouseOverMoreLink(e)) {
+        QModelIndex index = indexAt(e->pos());
+        emit moreButtonClicked();
+    }
+
+    QTreeView::mousePressEvent(e);
+}
+
+bool MessageList::mouseOverMoreLink(QMouseEvent* e)
+{
+    if (!sourceModel()->moreButtonVisible())
+        return false;
+
+    QModelIndex index = indexAt(e->pos());
+    if (index.isValid() && ((!index.parent().isValid()) && (index.row() == model()->rowCount(QModelIndex()) - 1))) {
+        QFont font;
+        font.setUnderline(true);
+        QFontMetrics fm(font);
+        QItemSelection fakeSelection(index.sibling(index.row(),0), index.sibling(index.row(),3));
+        QRegion r = visualRegionForSelection(fakeSelection);
+        QRect brect = r.boundingRect();
+        QRect textRect = fm.boundingRect(brect, Qt::AlignHCenter, tr("Get more messages"));
+        return textRect.contains(e->pos());
+    }
+
+    return false;
+}
+
+MessageListModel* MessageList::sourceModel() const
+{
+    QSortFilterProxyModel* m = qobject_cast<QSortFilterProxyModel*>(model());
+    MessageListModel* sm = qobject_cast<MessageListModel*>(m->sourceModel());
+    Q_ASSERT(sm);
+    return sm;
+}
+
 MessageListView::MessageListView(QWidget* parent)
 :
     QWidget(parent),
@@ -267,7 +382,6 @@ MessageListView::MessageListView(QWidget* parent)
     mFilterEdit(new QLineEdit(this)),
     mCloseFilterButton(0),
     mTabs(new QTabBar(this)),
-    mMoreButton(new QPushButton(this)),
     mModel(new MessageListModel(this)),
     mFilterModel(new QSortFilterProxyModel(this)),
     mDisplayMode(DisplayMessages),
@@ -313,7 +427,7 @@ QMailFolderId MessageListView::folderId() const
 void MessageListView::setFolderId(const QMailFolderId& folderId)
 {
     mFolderId = folderId;
-    mMoreButton->setVisible(mFolderId.isValid());
+    mModel->setMoreButtonVisible(mFolderId.isValid());
 }
 
 MessageListView::ModelType* MessageListView::model() const
@@ -323,8 +437,6 @@ MessageListView::ModelType* MessageListView::model() const
 
 void MessageListView::init()
 {
-    mMoreButton->hide();
-
     mFilterModel->setSourceModel(mModel);
     mFilterModel->setFilterRole(QMailMessageModelBase::MessageFilterTextRole);
     mFilterModel->setDynamicSortFilter(true);
@@ -345,9 +457,6 @@ void MessageListView::init()
     mCloseFilterButton->setText(tr("Done"));
     mCloseFilterButton->setFocusPolicy(Qt::NoFocus);
 
-    mMoreButton->setText(tr("Get more messages"));
-    mMoreButton->installEventFilter(this);
-
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
             this, SLOT(indexClicked(QModelIndex)));
     connect(mMessageList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
@@ -361,7 +470,7 @@ void MessageListView::init()
     connect(mCloseFilterButton, SIGNAL(clicked()),
             this, SLOT(closeFilterButtonClicked()));
 
-    connect(mMoreButton, SIGNAL(clicked()),
+    connect(mMessageList, SIGNAL(moreButtonClicked()),
             this, SIGNAL(moreClicked()));
 
     connect(mTabs, SIGNAL(currentChanged(int)),
@@ -399,7 +508,6 @@ void MessageListView::init()
     vLayout->addWidget(mTabs);
     vLayout->addWidget(mFilterFrame);
     vLayout->addWidget(mMessageList);
-    vLayout->addWidget(mMoreButton);
 
     this->setLayout(vLayout);
     setFocusProxy(mMessageList);

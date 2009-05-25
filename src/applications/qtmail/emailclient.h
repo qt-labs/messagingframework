@@ -40,13 +40,14 @@ class QMailTransmitAction;
 class QMailStorageAction;
 class QStackedWidget;
 class QStringList;
+class QToolBar;
 
-class MessageUiBase : public QWidget
+class MessageUiBase : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MessageUiBase(QWidget* parent);
+    MessageUiBase(QWidget *parent = 0, Qt::WindowFlags f = 0);
     virtual ~MessageUiBase() {}
 
 signals:
@@ -107,15 +108,18 @@ class EmailClient : public MessageUiBase
     Q_OBJECT
 
 public:
-    EmailClient(QWidget* parent);
+    EmailClient(QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~EmailClient();
 
     bool cleanExit(bool force);
     bool closeImmediately();
 
+    void setVisible(bool visible);
+
 public slots:
     void sendMessageTo(const QMailAddress &address, QMailMessage::MessageType type);
     void quit();
+    void closeEvent(QCloseEvent *e);
 
 protected:
     void setupUi();
@@ -354,6 +358,8 @@ private:
 
     QMailRetrievalAction *flagRetrievalAction;
     QSet<QMailMessageId> flagMessageIds;
+    QMenu* m_contextMenu;
+    QToolBar* m_toolBar;
 };
 
 #endif

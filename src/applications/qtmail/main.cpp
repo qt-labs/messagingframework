@@ -10,7 +10,7 @@
 
 #include <QApplication>
 #include <qmailnamespace.h>
-#include "qtmailwindow.h"
+#include "emailclient.h"
 #include <QIcon>
 
 int main(int argc, char** argv)
@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     QApplication app(argc,argv);
     app.setWindowIcon(QIcon(":icon/qtmail"));
 
-    QTMailWindow appWindow;
+    EmailClient appWindow;
     appWindow.show();
 
     return app.exec();

@@ -680,6 +680,12 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
 
 /* A strategy that provides an interface for processing a set of folders.
 */
+void ImapFolderListStrategy::clearSelection()
+{
+    ImapFetchSelectedMessagesStrategy::clearSelection();
+    _mailboxIds.clear();
+}
+
 void ImapFolderListStrategy::selectedFoldersAppend(const QMailFolderIdList& ids) 
 {
     _mailboxIds += ids;
@@ -968,7 +974,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
     QPair<QMailFolderId, QStringList> next = _retrieveUids.takeFirst();
     _currentMailbox = QMailFolder(next.first);
     _newUids = next.second;
-
+    
     FolderStatus folderState = _folderStatus[_currentMailbox.id()];
     if (folderState & NoSelect) {
         // Bypass the select and UID search, and go directly to the search result handler

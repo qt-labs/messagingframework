@@ -80,7 +80,6 @@ private:
     QMenu* m_sendViaMenu;
     QToolButton* m_sendButton;
     QStackedWidget* m_widgetStack;
-    QWidget *m_mainWindow;
     bool m_hasMessageChanged;
     SelectComposerWidget* m_selectComposerWidget;
     QMailMessageId m_precursorId;

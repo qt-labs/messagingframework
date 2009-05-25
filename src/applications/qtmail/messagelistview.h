@@ -134,7 +134,6 @@ private:
     QLineEdit* mFilterEdit;
     QToolButton* mCloseFilterButton;
     QTabBar* mTabs;
-    QPushButton* mMoreButton;
     MessageListModel* mModel;
     QSortFilterProxyModel* mFilterModel;
     DisplayMode mDisplayMode;

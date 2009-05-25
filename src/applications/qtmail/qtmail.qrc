@@ -29,5 +29,7 @@
 <file alias="flag_tosend">pics/flag_tosend.png</file>
 <file alias="flag_unfinished">pics/flag_unfinished.png</file>
 <file alias="flag_removed">pics/flag_removed.png</file>
+<file alias="activity_working">pics/activity_working.gif</file>
+<file alias="activity_idle">pics/activity_idle.gif</file>
 </qresource>
 </RCC>

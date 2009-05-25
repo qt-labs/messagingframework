@@ -18,7 +18,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QSettings>
-#include <qtmailwindow.h>
 #include <QMenuBar>
 #include <QToolBar>
 #include "readmail.h"
@@ -50,13 +49,6 @@ WriteMail::WriteMail(QWidget* parent)
     m_replyAction(0),
     m_toolbar(0)
 {
-    /*
-      because of the way QtMail has been structured, even though
-      because its parent is also a main window. have to set it through
-      the real main window.
-    */
-    m_mainWindow = QTMailWindow::singleton();
-
     init();
 }
 
