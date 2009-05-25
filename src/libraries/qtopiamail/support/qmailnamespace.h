@@ -29,6 +29,7 @@ namespace QMail
     QTOPIAMAIL_EXPORT QString tempPath();
     QTOPIAMAIL_EXPORT QString pluginsPath();
     QTOPIAMAIL_EXPORT QString sslCertsPath();
+    QTOPIAMAIL_EXPORT QString messageServerPath();
     QTOPIAMAIL_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QTOPIAMAIL_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
     QTOPIAMAIL_EXPORT int fileLock(const QString& filePath);
