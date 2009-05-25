@@ -9,10 +9,11 @@
 ****************************************************************************/
 
 #include "qmailnamespace.h"
-#include <QSqlDatabase>
+#include <QApplication>
 #include <QDir>
 #include <QDebug>
 #include <QDir>
+#include <QSqlDatabase>
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
@@ -31,6 +32,7 @@
 
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
+static const char* QMF_SERVER_ENV="QMF_SERVER";
 
 /*!
   \namespace QMail
@@ -140,10 +142,18 @@ static QMap<int, HANDLE> lockedFiles;
 
 int QMail::fileLock(const QString& lockFile)
 {
+    QString path = QDir::tempPath() + "/" + lockFile;
+
 #ifdef Q_OS_WIN
     static int lockedCount = 0;
 
-    HANDLE handle = ::CreateFile(reinterpret_cast<const wchar_t*>(lockFile.utf16()),
+	if (!QFile::exists(path)) {
+		QFile file(path);
+		file.open(QIODevice::WriteOnly);
+		file.close();
+	}
+
+    HANDLE handle = ::CreateFile(reinterpret_cast<const wchar_t*>(path.utf16()),
                                  GENERIC_READ,
                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
                                  NULL,
@@ -151,10 +161,10 @@ int QMail::fileLock(const QString& lockFile)
                                  FILE_ATTRIBUTE_NORMAL,
                                  NULL);
     if (handle == INVALID_HANDLE_VALUE) {
-        qWarning() << "Unable to open file for locking:" << lockFile;
+        qWarning() << "Unable to open file for locking:" << path;
     } else {
         if (::LockFile(handle, 0, 0, 1, 0) == FALSE) {
-            qWarning() << "Unable to lock file:" << lockFile;
+            qWarning() << "Unable to lock file:" << path;
         } else {
             ++lockedCount;
             lockedFiles.insert(lockedCount, handle);
@@ -172,8 +182,6 @@ int QMail::fileLock(const QString& lockFile)
     fl.l_len = 0;
 
     int fdlock = -1;
-
-    QString path = QDir::tempPath() + "/" + lockFile;
     if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT, 0666)) == -1)
         return -1;
 
@@ -225,11 +233,11 @@ bool QMail::fileUnlock(int id)
 
 QString QMail::dataPath()
 {
-    static QString dataEnv(getenv(QMF_DATA_ENV));
+    static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
         return dataEnv + "/";
     //default to ~/.qmf if not env set
-    return QDir::homePath() + "/.qmf";
+    return QDir::homePath() + "/.qmf/";
 }
 
 QString QMail::tempPath()
@@ -239,7 +247,7 @@ QString QMail::tempPath()
 
 QString QMail::pluginsPath()
 {
-    static QString pluginsEnv(getenv(QMF_PLUGINS_ENV));
+    static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + "/";
     //default to "." if no env set
@@ -248,7 +256,15 @@ QString QMail::pluginsPath()
 
 QString QMail::sslCertsPath()
 {
-    return "/etc/ssl/certs";
+    return "/etc/ssl/certs/";
+}
+
+QString QMail::messageServerPath()
+{
+	static QString serverEnv(qgetenv(QMF_SERVER_ENV));
+	if(!serverEnv.isEmpty())
+		return serverEnv + "/";
+	return QApplication::applicationDirPath() + "/";
 }
 
 QSqlDatabase QMail::createDatabase()
@@ -262,7 +278,7 @@ QSqlDatabase QMail::createDatabase()
         if(!dp.exists())
             if(!dp.mkpath(dataPath()))
                 qCritical() << "Cannot create data path";
-        db.setDatabaseName(dataPath() + "/qmailstore.db");
+        db.setDatabaseName(dataPath() + "qmailstore.db");
         if(!db.open())
             qCritical() << "Cannot open database";
         else
