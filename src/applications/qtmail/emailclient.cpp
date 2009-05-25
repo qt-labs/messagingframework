@@ -462,7 +462,14 @@ bool EmailClient::startMessageServer()
     m_messageServerProcess = new QProcess(this);
     connect(m_messageServerProcess,SIGNAL(error(QProcess::ProcessError)),
             this,SLOT(messageServerProcessError(QProcess::ProcessError)));
-    m_messageServerProcess->start(QApplication::applicationDirPath() + "/messageserver");
+
+#ifdef Q_OS_WIN
+	const QString binary("/messageserver.exe");
+#else
+	const QString binary("/messageserver");
+#endif
+
+	m_messageServerProcess->start(QMail::messageServerPath() + binary);
     return m_messageServerProcess->waitForStarted();
 }
 
@@ -489,8 +496,11 @@ bool EmailClient::isMessageServerRunning() const
 {
     QString lockfile = "messageserver-instance.lock";
     int lockid = QMail::fileLock(lockfile);
+	if (lockid == -1)
+		return true;
+
     QMail::fileUnlock(lockid);
-    return (lockid == -1);
+    return false;
 }
 
 bool EmailClient::cleanExit(bool force)
