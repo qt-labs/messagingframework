@@ -27,7 +27,6 @@ HEADERS += foldermodel.h \
            searchview.h \
            readmail.h \
            writemail.h \
-           qtmailwindow.h \
            selectcomposerwidget.h
 
 SOURCES += main.cpp \
@@ -45,7 +44,6 @@ SOURCES += main.cpp \
            searchview.cpp \
            readmail.cpp \
            writemail.cpp \
-           qtmailwindow.cpp \
            selectcomposerwidget.cpp
 
 FORMS += searchviewbasephone.ui

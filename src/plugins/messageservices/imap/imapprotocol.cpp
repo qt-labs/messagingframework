@@ -1591,6 +1591,7 @@ bool ImapProtocol::open( const ImapConfiguration& config )
         return false;
     }
 
+    _fsm->reset(); // Recover from previously severed connection
     _fsm->setState(&_fsm->initState);
 
     _errorList.clear();

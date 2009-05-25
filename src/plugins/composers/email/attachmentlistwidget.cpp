@@ -145,7 +145,7 @@ void AttachmentListDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     {
         painter->save();
         QFont font = painter->font();
-        QColor c = m_parent->palette().brush(QPalette::Link).color();
+        QColor c = option.palette.brush(QPalette::Link).color();
         font.setUnderline(true);
         painter->setPen(c);
         painter->setFont(font);
