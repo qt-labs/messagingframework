@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W21-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Mon, 25 May 2009 20:55:32 +1000
+
 qt4-messagingframework (2009W20-0maemo2) hardy; urgency=low
 
   * Made changes to debianazation as required.

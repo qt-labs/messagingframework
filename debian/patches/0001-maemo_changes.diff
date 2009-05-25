@@ -18,7 +18,7 @@ index cd9a51e..f7e97ed 100644
            src/plugins/contentmanagers/qtopiamailfile \
            src/plugins/viewers/generic \
 diff --git a/src/applications/qtmail/qtmail.pro b/src/applications/qtmail/qtmail.pro
-index 74c79bc..2ec5e71 100644
+index 04db3ad..343c98f 100644
 --- a/src/applications/qtmail/qtmail.pro
 +++ b/src/applications/qtmail/qtmail.pro
 @@ -11,7 +11,18 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
