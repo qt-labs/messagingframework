@@ -131,11 +131,7 @@ QMailTransport::QMailTransport(const char* name)
     mSocket = 0;
     mStream = 0;
     connectToHostTimeOut = new QTimer(this);
-    connect( connectToHostTimeOut, SIGNAL(timeout()),
-	     this, SLOT(hostConnectionTimeOut()) );
-#ifdef QT_NO_OPENSSL
-    createSocket(Encrypt_NONE);
-#endif
+    connect( connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
 }
 
 /*! \internal */
@@ -199,10 +195,8 @@ void QMailTransport::createSocket(EncryptType encryptType)
     mSocket = new Socket(this);
 #ifndef QT_NO_OPENSSL
     encryption = encryptType;
-    connect(mSocket, SIGNAL(encrypted()),
-            this, SLOT(encryptionEstablished()));
-    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)),
-            this, SLOT(connectionFailed(QList<QSslError>)));
+    connect(mSocket, SIGNAL(encrypted()), this, SLOT(encryptionEstablished()));
+    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(connectionFailed(QList<QSslError>)));
 #else
     Q_UNUSED(encryptType);
 #endif
@@ -210,14 +204,10 @@ void QMailTransport::createSocket(EncryptType encryptType)
     const int bufferLimit = 65536; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
     mSocket->setObjectName(QString(mName) + "-socket");
-    connect(mSocket, SIGNAL(connected()),
-            this, SLOT(connectionEstablished()));
-    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(socketError(QAbstractSocket::SocketError)));
-    connect(mSocket, SIGNAL(readyRead()),
-            this, SIGNAL(readyRead()));
-    connect(mSocket, SIGNAL(bytesWritten(qint64)),
-            this, SIGNAL(bytesWritten(qint64)));
+    connect(mSocket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
+    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+    connect(mSocket, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
+    connect(mSocket, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
 
     mStream = new QDataStream(mSocket);
 }
@@ -245,8 +235,11 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     if (mailEncryption() == Encrypt_SSL)
         mSocket->connectToHostEncrypted(url, port);
     else
-#endif
         mSocket->connectToHost(url, port);
+#else
+    qMailLog(Messaging) << "Opening connection - " << url << ':' << port;
+    mSocket->connectToHost(url, port);
+#endif
 }
 
 #ifndef QT_NO_OPENSSL
