@@ -7,6 +7,10 @@ target.path += $$QMF_INSTALL_ROOT/lib
 INSTALLS += target
 
 DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
+win32: {
+    # QLocalSocket seems to have problems on win32
+    DEFINES += QT_NO_QCOP_LOCAL_SOCKET
+}
 
 QT *= sql network
 symbian: {
