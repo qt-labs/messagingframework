@@ -5,7 +5,7 @@ TEMPLATE = app
 TARGET = tst_python_email
 target.path += $$QMF_INSTALL_ROOT/tests
 
-DEFINES += SRCDIR=\"$$PWD\"
+DEFINES += SRCDIR=\\\"$$_PRO_FILE_PWD_\\\"
 
 testdata.path = $$QMF_INSTALL_ROOT/tests/testdata 
 testdata.files = testdata/
