@@ -41,12 +41,6 @@ static const char* QMF_SERVER_ENV="QMF_SERVER";
 */
 
 /*!
-  \fn uint QMail::processId()
-
-  Returns the identifier of the running process.
-*/
-
-/*!
   \fn QString QMail::lastSystemErrorMessage()
 
   Returns the text describing the last error reported by the underlying platform.
@@ -547,15 +541,6 @@ QStringList QMail::messageIdentifiers(const QString& str)
     }
 
     return result;
-}
-
-uint QMail::processId()
-{
-#ifdef Q_OS_WIN
-	return ::GetCurrentProcessId();
-#else
-	return static_cast<uint>(::getpid());
-#endif
 }
 
 QString QMail::lastSystemErrorMessage()

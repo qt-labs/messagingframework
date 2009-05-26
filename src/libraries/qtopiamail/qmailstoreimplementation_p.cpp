@@ -11,7 +11,6 @@
 #include "qmailstoreimplementation_p.h"
 #include "qmailipc.h"
 #include "qmaillog.h"
-#include "qmailnamespace.h"
 #include <QCoreApplication>
 
 namespace {
@@ -22,7 +21,7 @@ const int preFlushTimeout = 250;
 // Events occurring within this period are batched
 const int flushTimeout = 1000;
 
-const uint pid = QMail::processId();
+const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
 typedef QPair<int,int> Segment; //start,end - end non inclusive
 typedef QList<Segment> SegmentList;

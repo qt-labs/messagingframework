@@ -25,6 +25,7 @@
 
 #include <qmailnamespace.h>
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QTest>
@@ -70,7 +71,7 @@ BenchmarkContext::~BenchmarkContext()
             // look for callgrind.out.<PID>.<NUM> in CWD
             QDir dir;
             QFile file;
-            QString match = QString("callgrind.out.%1.").arg(QMail::processId());
+            QString match = QString("callgrind.out.%1.").arg(QCoreApplication::applicationPid());
             foreach (QString const& entry, dir.entryList(QDir::Files,QDir::Name)) {
                 if (entry.startsWith(match)) {
                     file.setFileName(entry);

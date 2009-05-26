@@ -129,7 +129,7 @@ const int Sqlite3BusyErrorNumber = 5;
 
 const int Sqlite3ConstraintErrorNumber = 19;
 
-const uint pid = QMail::processId();
+const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
 // Helper class for automatic unlocking
 template<typename Mutex>

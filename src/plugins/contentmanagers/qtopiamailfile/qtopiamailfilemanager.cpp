@@ -13,6 +13,7 @@
 #include "qmailstore.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -57,26 +58,25 @@ QString randomString(int length)
 
 QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString())
 {
-    // Format: seconds_epoch.pid.randomchars
-    bool exists = true;
-    const uint pid = QMail::processId();
-	const uint time = QDateTime::currentDateTime().toTime_t();
+    static const quint64 pid = QCoreApplication::applicationPid();
 
     QString filename;
-    QString path;
 
+    // Format: [name]seconds_epoch.pid.randomchars
     filename = name;
-	filename.append(QString::number(time));
-	filename.append('.');
-	filename.append(QString::number(pid));
-	filename.append('.');
+    filename.append(QString::number(QDateTime::currentDateTime().toTime_t()));
+    filename.append('.');
+    filename.append(QString::number(pid));
+    filename.append('.');
 
-    while (exists) {
-        path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
-        exists = QFile::exists(path);
+    while (true) {
+        QString path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
+        if (!QFile::exists(path)) {
+            return path;
+        }
     }
 
-    return path;
+    return QString();
 }
 
 void recursivelyRemovePath(const QString &path, bool preserveTopDirectory = true)
