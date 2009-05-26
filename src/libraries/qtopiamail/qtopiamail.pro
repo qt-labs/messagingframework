@@ -41,6 +41,7 @@ HEADERS += bind_p.h \
            qmailfoldersortkey_p.h \
            qmailid.h \
            qmailkeyargument.h \
+           qmailmessage_p.h \
            qmailmessage.h \
            qmailmessagefwd.h \
            qmailmessagekey.h \
@@ -49,10 +50,12 @@ HEADERS += bind_p.h \
            qmailmessagemodelbase.h \
            qmailmessageremovalrecord.h \
            qmailmessageserver.h \
+           qmailmessageset_p.h \
            qmailmessageset.h \
            qmailmessagesortkey.h \
            qmailmessagesortkey_p.h \
            qmailmessagethreadedmodel.h \
+           qmailserviceaction_p.h \
            qmailserviceaction.h \
            qmailstore.h \
            qmailstore_p.h \
@@ -87,6 +90,7 @@ SOURCES += longstream.cpp \
            qmailfolderkey.cpp \
            qmailfoldersortkey.cpp \
            qmailid.cpp \
+           qmailinstantiations.cpp \
            qmailkeyargument.cpp \
            qmailmessage.cpp \
            qmailmessagefwd.cpp \

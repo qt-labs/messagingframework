@@ -8,35 +8,13 @@
 **
 ****************************************************************************/
 
-#include "qmailmessageset.h"
-
-// Ensure we don't try to instantiate types defined in qmailmessage.h
-#define SUPPRESS_REGISTER_QMAILMESSAGE_METATYPES
-#include "qprivateimplementationdef.h"
+#include "qmailmessageset_p.h"
 
 #include "qmailaccount.h"
 #include "qmailfolder.h"
 #include "qmailstore.h"
-#include <QTimer>
 #include "qmaillog.h"
-
-/* QMailMessageSetContainer */
-
-class QMailMessageSetContainerPrivate : public QPrivateNoncopyableBase
-{
-public:
-    template<typename Subclass>
-    QMailMessageSetContainerPrivate(Subclass *p, QMailMessageSetContainer *parent)
-        : QPrivateNoncopyableBase(p),
-          _container(parent)
-    {
-    }
-
-    QMailMessageSetContainer *_container;
-    QList<QMailMessageSet*> _children;
-};
-
-template class QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>;
+#include <QTimer>
 
 
 /*!

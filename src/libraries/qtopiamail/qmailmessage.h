@@ -665,7 +665,6 @@ Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ContentType)
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ResponseType)
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::AttachmentsAction)
 
-#ifndef SUPPRESS_REGISTER_QMAILMESSAGE_METATYPES
 Q_DECLARE_USER_METATYPE(QMailMessage)
 Q_DECLARE_USER_METATYPE(QMailMessageMetaData)
 Q_DECLARE_USER_METATYPE(QMailMessagePart::Location)
@@ -677,6 +676,5 @@ Q_DECLARE_METATYPE(QMailMessageTypeList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageList, QMailMessageList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageMetaDataList, QMailMessageMetaDataList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageTypeList, QMailMessageTypeList)
-#endif
 
 #endif

@@ -24,6 +24,22 @@
 
 #include "qprivateimplementation.h"
 
+template <typename T>
+void QPrivateImplementationPointer<T>::increment(T*& p)
+{
+    if (p) p->ref();
+}
+
+template <typename T>
+void QPrivateImplementationPointer<T>::decrement(T*& p)
+{
+    if (p) {
+        if (p->deref())  {
+            p = reinterpret_cast<T*>(~0);
+        }
+    }
+}
+
 template<typename ImplementationType>
 QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p)
     : d(p)
@@ -55,57 +71,12 @@ QTOPIAMAIL_EXPORT const QPrivatelyImplemented<ImplementationType>& QPrivatelyImp
     return *this;
 }
 
-template<typename ImplementationType>
-template<typename ImplementationSubclass>
-QTOPIAMAIL_EXPORT ImplementationSubclass* QPrivatelyImplemented<ImplementationType>::impl()
-{
-    return static_cast<ImplementationSubclass*>(static_cast<ImplementationType*>(d));
-}
 
-template<typename ImplementationType>
-template<typename InterfaceType>
-QTOPIAMAIL_EXPORT typename InterfaceType::ImplementationType* QPrivatelyImplemented<ImplementationType>::impl(InterfaceType*)
+template<typename T>
+QPrivateNoncopyablePointer<T>::~QPrivateNoncopyablePointer()
 {
-    return impl<typename InterfaceType::ImplementationType>();
+    if (d) d->delete_self();
 }
-
-template<typename ImplementationType>
-template<typename ImplementationSubclass>
-QTOPIAMAIL_EXPORT const ImplementationSubclass* QPrivatelyImplemented<ImplementationType>::impl() const
-{
-    return static_cast<const ImplementationSubclass*>(static_cast<const ImplementationType*>(d));
-}
-
-template<typename ImplementationType>
-template<typename InterfaceType>
-QTOPIAMAIL_EXPORT const typename InterfaceType::ImplementationType* QPrivatelyImplemented<ImplementationType>::impl(const InterfaceType*) const
-{
-    return impl<const typename InterfaceType::ImplementationType>();
-}
-
-/* We could probably use SFINAE to make these work, but I won't try now...
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyImplemented<ImplementationType>::operator== (const QPrivatelyImplemented<ImplementationType>& other) const
-{
-    return ((d == other.d) ||
-            (*(impl<ImplementationType>()) == *(other.impl<ImplementationType>())));
-}
-
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyImplemented<ImplementationType>::operator!= (const QPrivatelyImplemented<ImplementationType>& other) const
-{
-    return ((d != other.d) &&
-            !(*(impl<ImplementationType>()) == *(other.impl<ImplementationType>())));
-}
-
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyImplemented<ImplementationType>::operator< (const QPrivatelyImplemented<ImplementationType>& other) const
-{
-    return ((d != other.d) &&
-            (*impl<ImplementationType>() < *other.impl<ImplementationType>()));
-}
-*/
-
 
 template<typename ImplementationType>
 QTOPIAMAIL_EXPORT QPrivatelyNoncopyable<ImplementationType>::QPrivatelyNoncopyable(ImplementationType* p)
@@ -124,56 +95,5 @@ template<typename ImplementationType>
 QTOPIAMAIL_EXPORT QPrivatelyNoncopyable<ImplementationType>::~QPrivatelyNoncopyable()
 {
 }
-
-template<typename ImplementationType>
-template<typename ImplementationSubclass>
-QTOPIAMAIL_EXPORT ImplementationSubclass* QPrivatelyNoncopyable<ImplementationType>::impl()
-{
-    return static_cast<ImplementationSubclass*>(static_cast<ImplementationType*>(d));
-}
-
-template<typename ImplementationType>
-template<typename InterfaceType>
-QTOPIAMAIL_EXPORT typename InterfaceType::ImplementationType* QPrivatelyNoncopyable<ImplementationType>::impl(InterfaceType*)
-{
-    return impl<typename InterfaceType::ImplementationType>();
-}
-
-template<typename ImplementationType>
-template<typename ImplementationSubclass>
-QTOPIAMAIL_EXPORT const ImplementationSubclass* QPrivatelyNoncopyable<ImplementationType>::impl() const
-{
-    return static_cast<const ImplementationSubclass*>(static_cast<const ImplementationType*>(d));
-}
-
-template<typename ImplementationType>
-template<typename InterfaceType>
-QTOPIAMAIL_EXPORT const typename InterfaceType::ImplementationType* QPrivatelyNoncopyable<ImplementationType>::impl(const InterfaceType*) const
-{
-    return impl<const typename InterfaceType::ImplementationType>();
-}
-
-/* We could probably use SFINAE to make these work, but I won't try now...
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyNoncopyable<ImplementationType>::operator== (const QPrivatelyNoncopyable<ImplementationType>& other) const
-{
-    return ((d == other.d) ||
-            (*(impl<ImplementationType>()) == *(other.impl<ImplementationType>())));
-}
-
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyNoncopyable<ImplementationType>::operator!= (const QPrivatelyNoncopyable<ImplementationType>& other) const
-{
-    return ((d != other.d) &&
-            !(*(impl<ImplementationType>()) == *(other.impl<ImplementationType>())));
-}
-
-template<typename ImplementationType>
-QTOPIAMAIL_EXPORT bool QPrivatelyNoncopyable<ImplementationType>::operator< (const QPrivatelyNoncopyable<ImplementationType>& other) const
-{
-    return ((d != other.d) &&
-            (*impl<ImplementationType>() < *other.impl<ImplementationType>()));
-}
-*/
 
 #endif
