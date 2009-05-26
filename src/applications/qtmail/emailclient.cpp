@@ -178,7 +178,6 @@ public:
 
 private:
     AcknowledgmentBox(const QString& title, const QString& text);
-    ~AcknowledgmentBox();
 
     virtual void keyPressEvent(QKeyEvent* event);
 
@@ -193,15 +192,9 @@ AcknowledgmentBox::AcknowledgmentBox(const QString& title, const QString& text)
     setIcon(QMessageBox::Information);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    //QSoftMenuBar::setLabel(this, Qt::Key_Back, QSoftMenuBar::Cancel);
-
     QDialog::show();
 
     QTimer::singleShot(_timeout, this, SLOT(accept()));
-}
-
-AcknowledgmentBox::~AcknowledgmentBox()
-{
 }
 
 void AcknowledgmentBox::show(const QString& title, const QString& text)
@@ -1771,7 +1764,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
                 folder = QMailFolder();
             }
         }
-
         messageListView()->setFolderId(folder.id());
         updateActions();
     }
