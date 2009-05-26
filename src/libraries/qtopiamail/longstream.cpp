@@ -18,7 +18,9 @@
 
 #if defined(Q_OS_SYMBIAN)
 #include <f32file.h>
-#elif !defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN)
+#include <windows.h>
+#else
 #include <sys/vfs.h>
 #endif
 
@@ -27,13 +29,18 @@ LongStream::LongStream()
 {
     QString tmpName( LongStream::tempDir() + QLatin1String( "/qtopiamail" ) );
 
-    tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
-    tmpFile->open(); // todo error checking
-    tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-
-    ts = new QDataStream( tmpFile );
     len = 0;
     appendedBytes = minCheck;
+
+    tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
+    if (tmpFile->open()) {
+        tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+        ts = new QDataStream( tmpFile );
+    } else {
+        qWarning() << "Unable to open temporary file:" << tmpFile->fileName();
+        ts = 0;
+        setStatus( LongStream::OutOfSpace );
+    }
 }
 
 LongStream::~LongStream()
@@ -87,13 +94,15 @@ QString LongStream::detach()
 
 void LongStream::append(QString str)
 {
-    ts->writeRawData(str.toAscii().constData(), str.length());
+    if (ts) {
+        ts->writeRawData(str.toAscii().constData(), str.length());
 
-    len += str.length();
-    appendedBytes += str.length();
-    if (appendedBytes >= minCheck) {
-        appendedBytes = 0;
-        updateStatus();
+        len += str.length();
+        appendedBytes += str.length();
+        if (appendedBytes >= minCheck) {
+            appendedBytes = 0;
+            updateStatus();
+        }
     }
 }
 
@@ -111,13 +120,15 @@ QString LongStream::readAll()
 {
     QString result;
 
-    while (!ts->atEnd()) {
-        char buffer[1024];
-        int len = ts->readRawData(buffer, 1024);
-        if (len == -1) {
-            break;
-        } else {
-            result.append(QString::fromAscii(buffer, len));
+    if (ts) {
+        while (!ts->atEnd()) {
+            char buffer[1024];
+            int len = ts->readRawData(buffer, 1024);
+            if (len == -1) {
+                break;
+            } else {
+                result.append(QString::fromAscii(buffer, len));
+            }
         }
     }
 
@@ -189,12 +200,25 @@ bool LongStream::freeSpace( const QString &path, int min)
 #elif !defined(Q_OS_WIN)
     struct statfs stats;
 
-    statfs( QString( partitionPath ).toLocal8Bit(), &stats);
+    statfs(partitionPath.toLocal8Bit(), &stats);
     unsigned long long bavail = ((unsigned long long)stats.f_bavail);
     unsigned long long bsize = ((unsigned long long)stats.f_bsize);
-    return (bavail * bsize) > boundary;
+
+    return ((bavail * bsize) > boundary);
 #else
-    return false;
+    // MS recommend the use of GetDiskFreeSpaceEx, but this is not available on early versions
+    // of windows 95.  GetDiskFreeSpace is unable to report free space larger than 2GB, but we're 
+    // only concerned with much smaller amounts of free space, so this is not a hindrance.
+    DWORD bytesPerSector(0);
+    DWORD sectorsPerCluster(0);
+    DWORD freeClusters(0);
+    DWORD totalClusters(0);
+
+    if (::GetDiskFreeSpace(partitionPath.utf16(), &bytesPerSector, &sectorsPerCluster, &freeClusters, &totalClusters) == FALSE) {
+        qWarning() << "Unable to get free disk space:" << partitionPath;
+    }
+
+    return ((bytesPerSector * sectorsPerCluster * freeClusters) > boundary);
 #endif
 }
 
