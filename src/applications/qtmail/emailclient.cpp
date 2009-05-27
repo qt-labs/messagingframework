@@ -2246,9 +2246,15 @@ void EmailClient::settings()
     clearStatusText();
     contextStatusUpdate();
 
+#ifdef Q_OS_WIN
+	const QString binary("/messagingaccounts.exe");
+#else
+	const QString binary("/messagingaccounts");
+#endif
+
     qDebug() << "Starting messagingaccounts process...";
     QProcess settingsAppProcess(this);
-    settingsAppProcess.startDetached(QApplication::applicationDirPath() + "/messagingaccounts");
+    settingsAppProcess.startDetached(QMail::messageSettingsPath() + binary);
 }
 
 void EmailClient::accountsAdded(const QMailAccountIdList&)

@@ -33,6 +33,7 @@
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
 static const char* QMF_SERVER_ENV="QMF_SERVER";
+static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
 /*!
   \namespace QMail
@@ -258,6 +259,14 @@ QString QMail::messageServerPath()
 	static QString serverEnv(qgetenv(QMF_SERVER_ENV));
 	if(!serverEnv.isEmpty())
 		return serverEnv + "/";
+	return QApplication::applicationDirPath() + "/";
+}
+
+QString QMail::messageSettingsPath()
+{
+	static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
+	if(!settingsEnv.isEmpty())
+		return settingsEnv + "/";
 	return QApplication::applicationDirPath() + "/";
 }
 
