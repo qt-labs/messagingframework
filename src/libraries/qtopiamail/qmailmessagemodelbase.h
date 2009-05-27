@@ -20,6 +20,8 @@
 class QMailMessageModelImplementation
 {
 public:
+    virtual ~QMailMessageModelImplementation();
+
     virtual QMailMessageKey key() const = 0;
     virtual void setKey(const QMailMessageKey& key) = 0;
 
