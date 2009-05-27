@@ -188,6 +188,9 @@ private:
     bool setupFolders(const QList<FolderInfo> &folderList);
 
     bool purgeMissingAncestors();
+    bool purgeObsoleteFiles();
+
+    bool performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void));
 
     bool performMaintenance();
 
@@ -264,6 +267,8 @@ private:
                            const QStringList& mailfiles,
                            const QMailFolderIdList& folderIds = QMailFolderIdList(),
                            const QMailAccountIdList& accountIds = QMailAccountIdList());
+
+    bool obsoleteContent(const QString& identifier);
 
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description) const;

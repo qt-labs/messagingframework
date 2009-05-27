@@ -120,6 +120,7 @@
     \value ConstraintFailure    The operation failed due to the violation of a database constraint.
     \value ContentInaccessible  The operation failed because the content data cannot be accessed by the mail store.
     \value NotYetImplemented    The operation failed because the mail store does not yet implement the operation.
+    \value ContentNotRemoved    The operation failed only because content could not be removed from storage.
     \value FrameworkFault       The operation failed because the mail store encountered an error in performing the operation.
 */
 

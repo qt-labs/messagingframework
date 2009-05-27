@@ -70,6 +70,7 @@ public:
         ConstraintFailure,
         ContentInaccessible,
         NotYetImplemented,
+        ContentNotRemoved,
         FrameworkFault
     };
 

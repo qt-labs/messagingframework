@@ -36,5 +36,6 @@
 <file alias="missingancestors">resources/missingancestors.sqlite.sql</file>
 <file alias="missingancestors-100-101">resources/missingancestors-100-101.sqlite.sql</file>
 <file alias="maintenancerecord">resources/maintenancerecord.sqlite.sql</file>
+<file alias="obsoletefiles">resources/obsoletefiles.sqlite.sql</file>
 </qresource>
 </RCC>

@@ -247,6 +247,7 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message)
         code = remove(existingIdentifier);
         if (code != QMailStore::NoError) {
             qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+            return code;
         }
     }
 
@@ -261,12 +262,12 @@ QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
     QDir path(fi.dir());
     if (!path.remove(fi.fileName())) {
         qMailLog(Messaging) << "Unable to remove content file:" << identifier;
-        result = QMailStore::FrameworkFault;
+        result = QMailStore::ContentNotRemoved;
     }
 
     if (!removeParts(identifier)) {
         qMailLog(Messaging) << "Unable to remove part content files for:" << identifier;
-        result = QMailStore::FrameworkFault;
+        result = QMailStore::ContentNotRemoved;
     }
 
     return result;

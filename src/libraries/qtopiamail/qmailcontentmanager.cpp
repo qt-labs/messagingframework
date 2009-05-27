@@ -240,14 +240,23 @@ QStringList QMailContentManagerPlugin::keys() const
     If the updated content is not stored to the existing location, the content manager should 
     use an alternate location and update \a message with the new 
     \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}.
+
+    The existing content should be removed if the update causes a new content identifier to 
+    be allocated.  If the previous content cannot be removed, but the update was otherwise 
+    successful, the content manager should return \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} 
+    to indicate that removal of the content should be retried at a later time.
 */
 
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::remove(const QString &identifier)
 
     Requests that the content manager remove the message content stored at the location indicated
-    by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content has been successfully
-    removed.
+    by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content 
+    has been successfully removed.
+
+    If the content cannot be removed, the content manager should return 
+    \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
+    should be retried at a later time.
 
     If the identified content does not already exist, the content manager should return \l{QMailStore::InvalidId}{InvalidId}.
 */

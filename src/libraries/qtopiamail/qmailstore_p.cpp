@@ -2048,7 +2048,8 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailthreadmessages", 100)
                                             << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
-                                            << tableInfo("deletedmessages", 101)) ||
+                                            << tableInfo("deletedmessages", 101)
+                                            << tableInfo("obsoletefiles", 100)) ||
             !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::InboxFolder, tr("Inbox"))
                                               << folderInfo(QMailFolder::OutboxFolder, tr("Outbox"))
                                               << folderInfo(QMailFolder::DraftsFolder, tr("Drafts"))
@@ -3132,7 +3133,53 @@ bool QMailStorePrivate::purgeMissingAncestors()
     return true;
 }
 
-bool QMailStorePrivate::performMaintenance()
+bool QMailStorePrivate::purgeObsoleteFiles()
+{
+    QStringList identifiers;
+
+    {
+        QString sql("SELECT mailfile FROM obsoletefiles");
+
+        QSqlQuery query(database);
+        query.prepare(sql);
+        if (!query.exec()) {
+            qMailLog(Messaging) << "Failed to purge obsolete files - query:" << sql << "- error:" << query.lastError().text();
+            return false;
+        } else {
+            while (query.next()) {
+                identifiers.append(query.value(0).toString());
+            }
+        }
+    }
+
+    if (!identifiers.isEmpty()) {
+        foreach (const QString& contentUri, identifiers) {
+            QPair<QString, QString> elements(extractUriElements(contentUri));
+
+            if (QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first)) {
+                QMailStore::ErrorCode code = contentManager->remove(elements.second);
+                if (code != QMailStore::NoError) {
+                    qMailLog(Messaging) << "Unable to remove obsolete message content:" << contentUri;
+                } else {
+                    QString sql("DELETE FROM obsoletefiles WHERE mailfile=?");
+
+                    QSqlQuery query(database);
+                    query.prepare(sql);
+                    if (!query.exec()) {
+                        qMailLog(Messaging) << "Failed to purge obsolete file - query:" << sql << "- error:" << query.lastError().text();
+                        return false;
+                    }
+                }
+            } else {
+                qMailLog(Messaging) << "Unable to create content manager for scheme:" << elements.first;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void))
 {
     QDateTime lastPerformed(QDateTime::fromTime_t(0));
 
@@ -3141,7 +3188,7 @@ bool QMailStorePrivate::performMaintenance()
 
         QSqlQuery query(database);
         query.prepare(sql);
-        query.addBindValue("purge missing ancestors");
+        query.addBindValue(task);
         if (!query.exec()) {
             qMailLog(Messaging) << "Failed to query performed timestamp - query:" << sql << "- error:" << query.lastError().text();
             return false;
@@ -3152,10 +3199,10 @@ bool QMailStorePrivate::performMaintenance()
         }
     }
 
-    // Perform this task no more than once every 24 hours
-    QDateTime nextTime(lastPerformed.addDays(1));
-    if (QDateTime::currentDateTime() >= nextTime) {
-        if (!purgeMissingAncestors()) {
+    QDateTime nextTime(lastPerformed.addSecs(secondsFrequency));
+    QDateTime currentTime(QDateTime::currentDateTime());
+    if (currentTime >= nextTime) {
+        if (!(this->*func)()) {
             return false;
         }
 
@@ -3169,13 +3216,26 @@ bool QMailStorePrivate::performMaintenance()
 
         QSqlQuery query(database);
         query.prepare(sql);
-        query.addBindValue(QDateTime::currentDateTime());
-        query.addBindValue("purge missing ancestors");
+        query.addBindValue(currentTime);
+        query.addBindValue(task);
         if (!query.exec()) {
             qMailLog(Messaging) << "Failed to update performed timestamp - query:" << sql << "- error:" << query.lastError().text();
             return false;
         }
     }
+
+    return true;
+}
+
+bool QMailStorePrivate::performMaintenance()
+{
+    // Perform this task no more than once every 24 hours
+    if (!performMaintenanceTask("purge missing ancestors", 24*60*60, &QMailStorePrivate::purgeMissingAncestors))
+        return false;
+
+    // Perform this task no more than once every hour
+    if (!performMaintenanceTask("purge obsolete files", 60*60, &QMailStorePrivate::purgeObsoleteFiles))
+        return false;
 
     return true;
 }
@@ -3306,11 +3366,18 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
                                      "addMessage")) {
             QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
             if (code != QMailStore::NoError) {
-                setLastError(code);
                 qMailLog(Messaging) << "Could not remove extraneous message content:" << ::contentUri(*message);
+                if (code == QMailStore::ContentNotRemoved) {
+                    // The existing content could not be removed - try again later
+                    if (!obsoleteContent(message->contentIdentifier())) {
+                        setLastError(QMailStore::FrameworkFault);
+                        return false;
+                    }
+                } else {
+                    setLastError(code);
+                    return false;
+                }
             }
-
-            return false;
         }
     } else {
         qMailLog(Messaging) << "Unable to create content manager for scheme:" << message->contentScheme();
@@ -3726,13 +3793,14 @@ void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, 
                 if (QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first)) {
                     QMailStore::ErrorCode code = contentManager->remove(elements.second);
                     if (code != QMailStore::NoError) {
-                        setLastError(code);
                         qMailLog(Messaging) << "Unable to remove expired message content:" << contentUri;
-                        continue;
+                        if (code == QMailStore::ContentNotRemoved) {
+                            // The existing content could not be removed - try again later
+                            obsoleteContent(contentUri);
+                        }
                     }
                 } else {
                     qMailLog(Messaging) << "Unable to create content manager for scheme:" << elements.first;
-                    continue;
                 }
             }
         }
@@ -4758,20 +4826,30 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             } 
 
             if (QMailContentManager *contentManager = QMailContentManagerFactory::create(metaData->contentScheme())) {
+                QString contentUri(::contentUri(*metaData));
+
                 if (addContent) {
                     // We need to add this content to the message
                     QMailStore::ErrorCode code = contentManager->add(message);
                     if (code != QMailStore::NoError) {
                         setLastError(code);
-                        qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*metaData);
+                        qMailLog(Messaging) << "Unable to add message content to URI:" << contentUri;
                         return Failure;
                     }
                 } else {
                     QMailStore::ErrorCode code = contentManager->update(message);
                     if (code != QMailStore::NoError) {
-                        setLastError(code);
                         qMailLog(Messaging) << "Unable to update message content:" << contentUri;
-                        return Failure;
+                        if (code == QMailStore::ContentNotRemoved) {
+                            // The existing content could not be removed - try again later
+                            if (!obsoleteContent(contentUri)) {
+                                setLastError(QMailStore::FrameworkFault);
+                                return Failure;
+                            }
+                        } else {
+                            setLastError(code);
+                            return Failure;
+                        }
                     }
                 }
 
@@ -6914,6 +6992,19 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
         } else {
             ++ait;
         }
+    }
+
+    return true;
+}
+
+bool QMailStorePrivate::obsoleteContent(const QString& identifier)
+{
+    QSqlQuery query(simpleQuery("INSERT INTO obsoletefiles (mailfile) VALUES (?)",
+                                QVariantList() << QVariant(identifier),
+                                "obsoleteContent files insert query"));
+    if (query.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Unable to record obsolete content:" << identifier;
+        return false;
     }
 
     return true;
