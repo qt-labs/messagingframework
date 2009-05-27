@@ -13,19 +13,31 @@
 #include "qmailserviceaction_p.h"
 #include "qprivateimplementationdef.h"
 
+template class QPrivateImplementationPointer<QMailMessageHeaderFieldPrivate>;
 template class QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>;
+template class QPrivateImplementationPointer<QMailMessageHeaderPrivate>;
 template class QPrivatelyImplemented<QMailMessageHeaderPrivate>;
+template class QPrivateImplementationPointer<QMailMessageBodyPrivate>;
 template class QPrivatelyImplemented<QMailMessageBodyPrivate>;
+template class QPrivateImplementationPointer<QMailMessagePartContainerPrivate>;
 template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
+template class QPrivateImplementationPointer<QMailMessageMetaDataPrivate>;
 template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 
+template class QPrivateNoncopyablePointer<QMailMessageSetContainerPrivate>;
 template class QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>;
 
+template class QPrivateNoncopyablePointer<QMailServiceActionPrivate>;
 template class QPrivatelyNoncopyable<QMailServiceActionPrivate>;
+template class QPrivateNoncopyablePointer<QMailRetrievalActionPrivate>;
 template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
+template class QPrivateNoncopyablePointer<QMailTransmitActionPrivate>;
 template class QPrivatelyNoncopyable<QMailTransmitActionPrivate>;
+template class QPrivateNoncopyablePointer<QMailStorageActionPrivate>;
 template class QPrivatelyNoncopyable<QMailStorageActionPrivate>;
+template class QPrivateNoncopyablePointer<QMailSearchActionPrivate>;
 template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
+template class QPrivateNoncopyablePointer<QMailProtocolActionPrivate>;
 template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)

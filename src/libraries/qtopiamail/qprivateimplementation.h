@@ -333,9 +333,9 @@ public:
     inline bool operator!() const { return !d; }
 
 private:
-    inline QPrivateNoncopyablePointer<T> &operator=(T *p);
+    inline QPrivateNoncopyablePointer<T> &operator=(T *) { return *this; }
 
-    inline QPrivateNoncopyablePointer<T> &operator=(const QPrivateNoncopyablePointer<T> &o);
+    inline QPrivateNoncopyablePointer<T> &operator=(const QPrivateNoncopyablePointer<T> &) { return *this; }
 
 public:
     T *d;
