@@ -61,7 +61,7 @@ protected:
 static QString messageId(const QString& uid)
 {
     int index = 0;
-    if ((index = uid.lastIndexOf('|')) != -1)
+    if ((index = uid.lastIndexOf(UID_SEPARATOR)) != -1)
         return uid.mid(index + 1);
     else
         return uid;
@@ -69,7 +69,7 @@ static QString messageId(const QString& uid)
 
 static QString messageUid(const QMailFolderId &folderId, const QString &id)
 {
-    return QString::number(folderId.toULongLong()) + '|' + id;
+    return QString::number(folderId.toULongLong()) + UID_SEPARATOR + id;
 }
 
 static QString extractUid(const QString &field, const QMailFolderId &folderId)
@@ -444,6 +444,8 @@ void StartTlsState::taggedResponse(ImapContext *c, const QString &)
 #ifndef QT_NO_OPENSSL
     // Switch to encrypted comms mode
     c->switchToEncrypted();
+#else
+    Q_UNUSED(c)
 #endif
 }
 
@@ -1076,7 +1078,7 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
             fp.mNewMsgUid = extractUid(str, c->mailbox().id);
 
             bool ok = false;
-            int index = fp.mNewMsgUid.lastIndexOf('|');
+            int index = fp.mNewMsgUid.lastIndexOf(UID_SEPARATOR);
             if (index == -1)
                 return;
             int uid = fp.mNewMsgUid.mid(index + 1).toInt(&ok);

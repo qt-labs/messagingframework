@@ -20,6 +20,13 @@
 #include <qmailserviceaction.h>
 #include <qmailtransport.h>
 
+#ifdef Q_OS_WIN
+// Pipe is not a legal filename char in Windows
+#define UID_SEPARATOR '#'
+#else
+#define UID_SEPARATOR '|'
+#endif
+
 class QMailMessage;
 
 enum ImapCommand

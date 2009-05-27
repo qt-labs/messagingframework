@@ -32,7 +32,7 @@ static QString stripFolderPrefix(const QString &str)
 {
     QString result;
     int index;
-    if ((index = str.lastIndexOf('|')) != -1)
+    if ((index = str.lastIndexOf(UID_SEPARATOR)) != -1)
         return str.mid(index + 1);
     return str;
 }
@@ -414,7 +414,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         messageListFolderAction(context);
         return false;
     }
-    mailboxIdStr = QString::number(mailboxId.toULongLong()) + '|';
+    mailboxIdStr = QString::number(mailboxId.toULongLong()) + UID_SEPARATOR;
 
     //TODO Leave parts to last to reduce roundtrips. Get all parts in one message in one roundtrip.
     while ((_selectionItr != selectionEnd) 
