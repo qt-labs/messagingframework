@@ -23,7 +23,7 @@ class FolderDelegate : public QItemDelegate
 
 public:
     FolderDelegate(QAbstractItemView *parent = 0);
-    FolderDelegate(QWidget *parent = 0);
+    FolderDelegate(QWidget *parent);
 
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;

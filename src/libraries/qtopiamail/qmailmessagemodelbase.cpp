@@ -42,6 +42,12 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
 }
 
 
+/*! \internal */
+QMailMessageModelImplementation::~QMailMessageModelImplementation()
+{
+}
+
+
 /*!
     \enum QMailMessageModelBase::Roles
 

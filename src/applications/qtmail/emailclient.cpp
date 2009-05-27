@@ -428,7 +428,7 @@ EmailFolderModel* MessageUiBase::createEmailFolderModel()
 }
 
 EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
-    : MessageUiBase( parent ),
+    : MessageUiBase( parent, f ),
       filesRead(false),
       transferStatus(Inactive),
       primaryActivity(Inactive),
