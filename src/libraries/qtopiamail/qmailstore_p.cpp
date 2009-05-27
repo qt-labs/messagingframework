@@ -1889,7 +1889,7 @@ QMailStorePrivate::AttemptResult evaluate(QMailStorePrivate::WriteAccess, Functi
 
     // Ensure that the transaction was committed
     if ((result == QMailStorePrivate::Success) && !t.committed()) {
-		qMailLog(Messaging) << pid << "Failed to commit successful" << qPrintable(description) << "!";
+        qMailLog(Messaging) << pid << "Failed to commit successful" << qPrintable(description) << "!";
     }
 
     return result;
@@ -3165,6 +3165,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
 
                     QSqlQuery query(database);
                     query.prepare(sql);
+                    query.addBindValue(contentUri);
                     if (!query.exec()) {
                         qMailLog(Messaging) << "Failed to purge obsolete file - query:" << sql << "- error:" << query.lastError().text();
                         return false;
