@@ -339,7 +339,6 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
 WriteMail* MessageUiBase::createWriteMailWidget()
 {
     WriteMail* writeMail = new WriteMail(this);
-    writeMail->setGeometry(0,0,500,400);
     writeMail->setObjectName("write-mail");
 
     connect(writeMail, SIGNAL(enqueueMail(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)));
@@ -1863,6 +1862,8 @@ void EmailClient::resend(const QMailMessage& message, int replyType)
         writeMailWidget()->forward(message);
     else if(replyType == ReadMail::Reply)
         writeMailWidget()->reply(message);
+    else if(replyType == ReadMail::ReplyToAll)
+        writeMailWidget()->replyToAll(message);
 
     if ( writeMailWidget()->composer().isEmpty() ) {
         // failed to create new composer, maybe due to no email account
@@ -1970,6 +1971,7 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
     if (writeMailWidget()->prepareComposer(type)) {
         QMailMessage newMessage;
         newMessage.setTo(QMailAddressList() << address);
+        newMessage.setMessageType(type);
         writeMailWidget()->create(newMessage);
         viewComposer();
     }

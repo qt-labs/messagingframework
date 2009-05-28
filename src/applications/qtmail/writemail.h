@@ -29,11 +29,11 @@ class WriteMail : public QMainWindow
 
 public:
     WriteMail(QWidget* parent = 0);
-    virtual ~WriteMail();
 
     void create(const QMailMessage& initMessage = QMailMessage());
     void forward(const QMailMessage& forwardMail);
     void reply(const QMailMessage& replyMail);
+    void replyToAll(const QMailMessage& replyMail);
     void modify(const QMailMessage& previousMessage);
 
     bool hasContent();
