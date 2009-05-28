@@ -245,7 +245,7 @@ void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addr
         if(r->isEmpty())
         {
             m_widgetList.removeAll(r);
-            r->deleteLater();
+            delete r;
         }
     }
 
@@ -272,7 +272,7 @@ void RecipientListWidget::clear()
 	foreach(RecipientWidget* r, m_widgetList)
 	{
 		m_widgetList.removeAll(r);
-		r->deleteLater();
+        delete r;
 	}
 }
 
@@ -322,9 +322,8 @@ void RecipientListWidget::removeRecipientWidget()
         if(m_widgetList.count() <= 1)
             return;
         int index = m_widgetList.indexOf(r);
-
-        r->deleteLater();
         m_widgetList.removeAll(r);
+        delete r;
 
         if(index >= m_widgetList.count())
             index = m_widgetList.count()-1;
