@@ -707,7 +707,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
 
     m_bodyEdit->setFocus();
     m_bodyEdit->moveCursor(QTextCursor::Start);
-
+    emit changed();
 }
 
 void EmailComposerInterface::reply(const QMailMessage& source, int action)
