@@ -233,6 +233,8 @@ void MessageUiBase::viewSearchResults(const QMailMessageKey&, const QString& tit
 
 void MessageUiBase::viewComposer()
 {
+    writeMailWidget()->raise();
+    writeMailWidget()->activateWindow();
     writeMailWidget()->show();
 }
 
@@ -991,7 +993,6 @@ void EmailClient::mailResponded()
     repliedFlags = 0;
 }
 
-// send all messages in outbox, by looping through the outbox, sending
 // each message that belongs to the current found account
 void EmailClient::sendAllQueuedMail(bool userRequest)
 {
@@ -1870,7 +1871,7 @@ void EmailClient::resend(const QMailMessage& message, int replyType)
         // being present.
         return;
     }
-    writeMailWidget()->show();
+    viewComposer();
 }
 
 void EmailClient::modify(const QMailMessage& message)
@@ -1951,11 +1952,7 @@ void EmailClient::composeActivated()
 {
     delayedInit();
     if(writeMailWidget()->prepareComposer())
-    {
-        writeMailWidget()->show();
-        writeMailWidget()->raise();
-        writeMailWidget()->activateWindow();
-    }
+        viewComposer();
 }
 
 void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::MessageType type)
