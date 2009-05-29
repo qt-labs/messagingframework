@@ -259,8 +259,8 @@ QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
     QMailStore::ErrorCode result(QMailStore::NoError);
 
     QFileInfo fi(identifier);
-    QDir path(fi.dir());
-    if (!path.remove(fi.fileName())) {
+    QString path(fi.absoluteFilePath());
+    if (QFile::exists(path) && !QFile::remove(path)) {
         qMailLog(Messaging) << "Unable to remove content file:" << identifier;
         result = QMailStore::ContentNotRemoved;
     }
