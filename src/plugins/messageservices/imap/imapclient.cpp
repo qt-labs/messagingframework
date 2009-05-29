@@ -772,7 +772,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 
 class TemporaryFile
 {
-    enum { AppendBufferSize = 4096 };
+    enum { BufferSize = 4096 };
 
     QString _fileName;
 
@@ -803,33 +803,104 @@ public:
         return true;
     }
 
-    bool appendAndReplace(const QString &fileName)
+    static bool copyFileData(QFile &srcFile, QFile &dstFile, qint64 maxLength = -1)
     {
-        QFile existingFile(_fileName);
-        QFile dataFile(fileName);
+        char buffer[BufferSize];
 
-        if (!existingFile.exists()) {
-            if (!QFile::copy(fileName, _fileName)) {
+        while (!srcFile.atEnd() && (maxLength != 0)) {
+            qint64 readSize = ((maxLength > 0) ? qMin<qint64>(maxLength, BufferSize) : BufferSize);
+            readSize = srcFile.read(buffer, readSize);
+            if (readSize == -1) {
                 return false;
             }
-        } else if (existingFile.open(QIODevice::Append) && dataFile.open(QIODevice::ReadOnly)) {
-            char buffer[AppendBufferSize];
-            qint64 readSize;
-            while (!dataFile.atEnd()) {
-                readSize = dataFile.read(buffer, AppendBufferSize);
-                if (readSize == -1)
-                    return false;
-                if (existingFile.write(buffer, readSize) != readSize)
-                    return false;
+
+            if (maxLength > 0) {
+                maxLength -= readSize;
             }
-        } else {
-            return false;
+            if (dstFile.write(buffer, readSize) != readSize) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool appendAndReplace(const QString &fileName)
+    {
+        {
+            QFile existingFile(_fileName);
+            QFile dataFile(fileName);
+
+            if (!existingFile.exists()) {
+                if (!QFile::copy(fileName, _fileName)) {
+                    qWarning() << "Unable to copy - fileName:" << fileName << "_fileName:" << _fileName;
+                    return false;
+                }
+            } else if (existingFile.open(QIODevice::Append)) {
+                // On windows, this file will be unwriteable if it is open elsewhere
+                if (dataFile.open(QIODevice::ReadOnly)) {
+                    if (!copyFileData(dataFile, existingFile)) {
+                        qWarning() << "Unable to append data to file:" << _fileName;
+                        return false;
+                    }
+                } else {
+                    qWarning() << "Unable to open new data for read:" << fileName;
+                    return false;
+                }
+            } else if (existingFile.open(QIODevice::ReadOnly)) {
+                if (dataFile.open(QIODevice::WriteOnly)) {
+                    qint64 existingLength = QFileInfo(existingFile).size();
+                    qint64 dataLength = QFileInfo(dataFile).size();
+
+                    if (!dataFile.resize(existingLength + dataLength)) {
+                        qWarning() << "Unable to resize data file:" << fileName;
+                        return false;
+                    } else {
+                        QFile readDataFile(fileName);
+                        if (!readDataFile.open(QIODevice::ReadOnly)) {
+                            qWarning() << "Unable to reopen data file for read:" << fileName;
+                            return false;
+                        }
+
+                        // Copy the data to the end of the file
+                        dataFile.seek(existingLength);
+                        if (!copyFileData(readDataFile, dataFile, dataLength)) {
+                            qWarning() << "Unable to copy existing data in file:" << fileName;
+                            return false;
+                        }
+                    }
+
+                    // Copy the existing data before the new data
+                    dataFile.seek(0);
+                    if (!copyFileData(existingFile, dataFile, existingLength)) {
+                        qWarning() << "Unable to copy existing data to file:" << fileName;
+                        return false;
+                    }
+                } else {
+                    qWarning() << "Unable to open new data for write:" << fileName;
+                    return false;
+                }
+
+                // The complete data is now in the new file
+                if (!QFile::remove(_fileName)) {
+                    qWarning() << "Unable to remove pre-existing:" << _fileName;
+                    return false;
+                }
+
+                _fileName = fileName;
+                return true;
+            } else {
+                qWarning() << "Unable to open:" << _fileName;
+                return false;
+            }
         }
 
         if (!QFile::remove(fileName)) {
+            qWarning() << "Unable to remove:" << fileName;
             return false;
         }
         if (!QFile::rename(_fileName, fileName)) {
+            qWarning() << "Unable to rename:" << _fileName << fileName;
             return false;
         }
 
