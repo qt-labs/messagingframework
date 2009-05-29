@@ -35,6 +35,8 @@ public:
     bool isEmpty() const;
     int length() const;
 
+    void close();
+
     int indexOf(const QByteArray &ba, int from = 0) const;
 
     LongString mid(int i, int len = -1) const;

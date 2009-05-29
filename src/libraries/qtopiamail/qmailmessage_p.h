@@ -105,6 +105,8 @@ public:
     bool isEmpty() const;
     int length() const;
 
+	void close();
+
     uint indicativeSize() const;
 
     void output(QDataStream& out, bool includeAttachments) const;

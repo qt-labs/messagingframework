@@ -2664,6 +2664,11 @@ int QMailMessageBodyPrivate::length() const
     return _bodyData.length();
 }
 
+void QMailMessageBodyPrivate::close()
+{
+    _bodyData.close();
+}
+
 uint QMailMessageBodyPrivate::indicativeSize() const
 {
     // Treat the body as a part at least comparable to the header block.  We need to
@@ -2898,7 +2903,6 @@ QByteArray QMailMessageBody::data(EncodingFormat format) const
     {
         QDataStream out(&result, QIODevice::WriteOnly);
         impl(this)->toStream(out, format);
-		
     }
     return result;
 }
@@ -2981,6 +2985,15 @@ bool QMailMessageBody::isEmpty() const
 int QMailMessageBody::length() const
 {
     return impl(this)->length();
+}
+
+/*!
+    Closes any file object held open by this body.
+    If the file is open held open by other objects, it will not actually be closed.
+*/
+void QMailMessageBody::close()
+{
+    return impl(this)->close();
 }
 
 /*! \internal */
@@ -3494,6 +3507,7 @@ void QMailMessagePartContainerPrivate::parseMimeSinglePart(const QMailMessageHea
     }
 
     part.setBody(QMailMessageBody::fromLongString(body, contentType, encoding, QMailMessageBody::AlreadyEncoded));
+    part.body().close();
 
     appendPart(part);
 }
@@ -5900,6 +5914,7 @@ void QMailMessagePrivate::fromRfc2822(const LongString &ls)
                 encoding = QMailMessageBody::SevenBit;
 
             setBody( QMailMessageBody::fromStream(in, contentType, encoding, QMailMessageBody::AlreadyEncoded) );
+            body().close();
         }
     }
 }

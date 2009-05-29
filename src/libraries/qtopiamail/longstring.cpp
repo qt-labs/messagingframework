@@ -140,9 +140,9 @@ class LongStringFileMapping
 public:
     LongStringFileMapping();
     LongStringFileMapping(const QString& name);
-    LongStringFileMapping(const LongStringFileMapping* other);
     ~LongStringFileMapping();
 
+    const QString &fileName() const { return filename; }
     int length() const { return len; }
     bool mapped() const { return (buffer != 0); }
 
@@ -162,11 +162,12 @@ private:
     // We need to keep these in an external map, because QFile is noncopyable
     struct QFileMapping
     {
-        QFileMapping() : file(0), mapping(0), refCount(0), size(0) {}
+        QFileMapping() : file(0), mapping(0), refCount(0), mapCount(0), size(0) {}
 
         QFile* file;
         char* mapping;
         int refCount;
+        int mapCount;
         qint64 size;
     };
 
@@ -195,14 +196,6 @@ LongStringFileMapping::LongStringFileMapping(const QString& name)
     init();
 }
 
-LongStringFileMapping::LongStringFileMapping(const LongStringFileMapping* other)
-    : filename(other ? other->filename : QString()),
-      buffer(other ? other->buffer : 0),
-      len(other ? other->len : 0)
-{
-    init();
-}
-
 LongStringFileMapping::~LongStringFileMapping()
 {
     if (!filename.isEmpty()) {
@@ -212,18 +205,27 @@ LongStringFileMapping::~LongStringFileMapping()
         } else {
             QFileMapping& fileMapping(it.value());
 
-            Q_ASSERT(buffer == fileMapping.mapping);
-
             if (fileMapping.refCount > 1) {
                 fileMapping.refCount -= 1;
+
+                // See if we're the last user with a mapping
+                if (mapped() && (fileMapping.mapCount > 0)) {
+                    fileMapping.mapCount -= 1;
+                    if (fileMapping.mapCount == 0) {
+                        // Unmap this file
+                        if (fileMapping.file->unmap(reinterpret_cast<uchar*>(fileMapping.mapping))) {
+                            fileMapping.mapping = 0;
+                        } else {
+                            qWarning() << "Unable to unmap file:" << filename;
+                        }
+                    }
+                } 
             } else {
-                // We're the last user - delete the file and its mappings
+                // We're the last user - delete the file
                 delete fileMapping.file;
                 fileMap.erase(it);
             }
         }
-
-        buffer = 0;
     }
 }
 
@@ -248,9 +250,12 @@ void LongStringFileMapping::init()
         }
 
         if (it != fileMap.end()) {
-            buffer = it.value().mapping;
             len = it.value().size;
             it.value().refCount += 1;
+
+            if (buffer) {
+                it.value().mapCount += 1;
+            }
         }
     }
 }
@@ -261,6 +266,7 @@ void LongStringFileMapping::map() const
         QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
         if (it != fileMap.end()) {
             QFileMapping &fileMapping(it.value());
+
             if (fileMapping.mapping == 0) {
                 if (fileMapping.file->open(QIODevice::ReadOnly)) {
                     fileMapping.mapping = reinterpret_cast<char*>(fileMapping.file->map(0, fileMapping.size));
@@ -275,6 +281,7 @@ void LongStringFileMapping::map() const
             }
 
             buffer = fileMapping.mapping;
+            fileMapping.mapCount += 1;
         }
     }
 }
@@ -313,6 +320,7 @@ public:
 
     const LongStringPrivate &operator=(const LongStringPrivate &);
 
+    QString fileName() const;
     int length() const;
     bool isEmpty() const;
 
@@ -383,13 +391,22 @@ const LongStringPrivate &LongStringPrivate::operator=(const LongStringPrivate &o
     if (&other != this) {
         delete mapping;
 
-        mapping = (other.mapping ? new LongStringFileMapping(other.mapping) : 0);
+        mapping = (other.mapping ? new LongStringFileMapping(other.mapping->fileName()) : 0);
         data = (other.mapping ? QByteArray() : other.data);
         offset = other.offset;
         len = other.len;
     }
 
     return *this;
+}
+
+QString LongStringPrivate::fileName() const
+{
+    if (mapping) {
+        return mapping->fileName();
+    }
+
+    return QString();
 }
 
 int LongStringPrivate::length() const
@@ -461,6 +478,7 @@ const QByteArray LongStringPrivate::toQByteArray() const
 
 QDataStream* LongStringPrivate::dataStream() const
 {
+    // This is safe because QByteArray has shared implementation objects:
     const QByteArray input = toQByteArray();
     return new QDataStream(input);
 }
@@ -546,6 +564,18 @@ int LongString::length() const
 bool LongString::isEmpty() const
 {
     return d->isEmpty();
+}
+
+void LongString::close()
+{
+    QString filename(d->fileName());
+    delete d;
+
+    if (filename.isEmpty()) {
+        d = new LongStringPrivate();
+    } else {
+        d = new LongStringPrivate(filename);
+    }
 }
 
 int LongString::indexOf(const QByteArray &target, int from) const
