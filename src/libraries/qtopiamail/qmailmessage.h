@@ -227,8 +227,6 @@ public:
     bool isEmpty() const;
     int length() const;
 
-    void close();
-
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 

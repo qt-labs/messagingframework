@@ -252,10 +252,6 @@ void LongStringFileMapping::init()
         if (it != fileMap.end()) {
             len = it.value().size;
             it.value().refCount += 1;
-
-            if (buffer) {
-                it.value().mapCount += 1;
-            }
         }
     }
 }
