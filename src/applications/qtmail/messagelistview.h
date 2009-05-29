@@ -31,6 +31,7 @@ class QItemDelegate;
 class QMailMessageDelegate;
 class QtopiaHomeMailMessageDelegate;
 class MessageListModel;
+class QuickSearchWidget;
 
 class MessageListView : public QWidget
 {
@@ -43,16 +44,6 @@ public:
     typedef QMailMessageListModel ModelType;
 #endif
 
-    enum DisplayMode
-    {
-        DisplayMessages = 0,
-        DisplayReceived = 1,
-        DisplaySent = 2,
-        DisplayDrafts = 3,
-        DisplayTrash = 4,
-        DisplayFilter = 5
-    };
-
     MessageListView(QWidget* parent = 0);
     virtual ~MessageListView();
 
@@ -62,13 +53,10 @@ public:
     QMailMessageSortKey sortKey() const;
     void setSortKey(const QMailMessageSortKey& sortKey);
 
-    DisplayMode displayMode() const;
-    void setDisplayMode(const DisplayMode& m);
-
     QMailFolderId folderId() const;
     void setFolderId(const QMailFolderId &id);
 
-    ModelType* model() const;
+    MessageListModel* model() const;
 
     QMailMessageId current() const;
     void setCurrent(const QMailMessageId& id);
@@ -100,7 +88,6 @@ signals:
     void clicked(const QMailMessageId& id);
     void currentChanged(const QMailMessageId& oldId, const QMailMessageId& newId);
     void selectionChanged();
-    void displayModeChanged(MessageListView::DisplayMode);
     void backPressed();
     void resendRequested(const QMailMessage&, int);
     void moreClicked();
@@ -109,14 +96,12 @@ signals:
 protected slots:
     void indexClicked(const QModelIndex& index);
     void currentIndexChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
-    void filterTextChanged(const QString& text);
-    void closeFilterButtonClicked();
-    void tabSelected(int index);
     void modelChanged();
     void rowsAboutToBeRemoved(const QModelIndex&, int, int);
     void layoutChanged();
     void reviewVisibleMessages();
     void scrollTimeout();
+    void quickSearch(const QMailMessageKey& key);
 
 protected:
     void showEvent(QShowEvent* e);
@@ -130,19 +115,16 @@ private:
 
 private:
     MessageList* mMessageList;
-    QFrame* mFilterFrame;
-    QLineEdit* mFilterEdit;
-    QToolButton* mCloseFilterButton;
-    QTabBar* mTabs;
     MessageListModel* mModel;
-    QSortFilterProxyModel* mFilterModel;
-    DisplayMode mDisplayMode;
     bool mMarkingMode;
     bool mIgnoreWhenHidden;
     bool mSelectedRowsRemoved;
     QMailFolderId mFolderId;
     QTimer mScrollTimer;
     QMailMessageIdList mPreviousVisibleItems;
+    QuickSearchWidget* mQuickSearchWidget;
+    QMailMessageKey mKey;
+    bool mShowMoreButton;
 };
 
 #endif

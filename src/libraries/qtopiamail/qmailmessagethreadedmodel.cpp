@@ -671,15 +671,22 @@ QModelIndex QMailMessageThreadedModelPrivate::index(int row, int column, const Q
 {
     init();
 
-    QMailMessageThreadedModelItem *parent;
-    if (parentIndex.isValid()) {
-        parent = itemFromIndex(parentIndex);
-    } else {
-        parent = &_root;
-    }
+    if (row >= 0) {
+        QMailMessageThreadedModelItem *parent;
+        if (parentIndex.isValid()) {
+            parent = itemFromIndex(parentIndex);
+        } else {
+            parent = &_root;
+        }
 
-    if (parent && (parent->_children.count() > row))
-        return _model.generateIndex(row, column, static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(parent->_children.at(row)))));
+        // Allow excessive row values (although these indices won't be dereferencable)
+        void *item = 0;
+        if (parent && (parent->_children.count() > row)) {
+            item = static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(parent->_children.at(row))));
+        }
+
+        return _model.generateIndex(row, column, item);
+    }
 
     return QModelIndex();
 }

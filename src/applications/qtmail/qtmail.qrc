@@ -3,7 +3,7 @@
 <file alias="qtmail">pics/EMail_48.png</file>
 <file alias="quit">pics/icons/16x16/exit.png</file>
 <file alias="allfields">pics/icons/14x14/allfields.png</file>
-<file alias="attach">pics/icons/14x14/attach.png</file>
+<file alias="attach">pics/attach.png</file>
 <file alias="new">pics/icons/16x16/mail_new.png</file>
 <file alias="trash">pics/icons/16x16/trash.png</file>
 <file alias="settings">pics/icons/16x16/configure.png</file>
@@ -15,7 +15,7 @@
 <file alias="folder">pics/icons/16x16/folder.png</file>
 <file alias="cancel">pics/icons/14x14/cancel.png</file>
 <file alias="reset">pics/icons/14x14/reset.png</file>
-<file alias="find">pics/icons/14x14/find.png</file>
+<file alias="find">pics/mail_find.png</file>
 <file alias="edit">pics/icons/14x14/edit.png</file>
 <file alias="compose">pics/icons/14x14/compose.png</file>
 <file alias="draft">pics/icons/14x14/draft.png</file>
@@ -31,5 +31,10 @@
 <file alias="flag_removed">pics/flag_removed.png</file>
 <file alias="activity_working">pics/activity_working.gif</file>
 <file alias="activity_idle">pics/activity_idle.gif</file>
+<file alias="clear_right">pics/clear_right.png</file>
+<file alias="mail_generic">pics/mail_generic.png</file>
+<file alias="mail_forward">pics/mail_forward.png</file>
+<file alias="mail_reply">pics/mail_reply.png</file>
+<file alias="exec">pics/exec.png</file>
 </qresource>
 </RCC>

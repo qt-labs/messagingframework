@@ -178,7 +178,6 @@ public:
 
 private:
     AcknowledgmentBox(const QString& title, const QString& text);
-    ~AcknowledgmentBox();
 
     virtual void keyPressEvent(QKeyEvent* event);
 
@@ -193,15 +192,9 @@ AcknowledgmentBox::AcknowledgmentBox(const QString& title, const QString& text)
     setIcon(QMessageBox::Information);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    //QSoftMenuBar::setLabel(this, Qt::Key_Back, QSoftMenuBar::Cancel);
-
     QDialog::show();
 
     QTimer::singleShot(_timeout, this, SLOT(accept()));
-}
-
-AcknowledgmentBox::~AcknowledgmentBox()
-{
 }
 
 void AcknowledgmentBox::show(const QString& title, const QString& text)
@@ -240,6 +233,8 @@ void MessageUiBase::viewSearchResults(const QMailMessageKey&, const QString& tit
 
 void MessageUiBase::viewComposer()
 {
+    writeMailWidget()->raise();
+    writeMailWidget()->activateWindow();
     writeMailWidget()->show();
 }
 
@@ -346,7 +341,6 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
 WriteMail* MessageUiBase::createWriteMailWidget()
 {
     WriteMail* writeMail = new WriteMail(this);
-    writeMail->setGeometry(0,0,500,400);
     writeMail->setObjectName("write-mail");
 
     connect(writeMail, SIGNAL(enqueueMail(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)));
@@ -1014,7 +1008,6 @@ void EmailClient::mailResponded()
     repliedFlags = 0;
 }
 
-// send all messages in outbox, by looping through the outbox, sending
 // each message that belongs to the current found account
 void EmailClient::sendAllQueuedMail(bool userRequest)
 {
@@ -1802,7 +1795,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
                 folder = QMailFolder();
             }
         }
-
         messageListView()->setFolderId(folder.id());
         updateActions();
     }
@@ -1902,13 +1894,15 @@ void EmailClient::resend(const QMailMessage& message, int replyType)
         writeMailWidget()->forward(message);
     else if(replyType == ReadMail::Reply)
         writeMailWidget()->reply(message);
+    else if(replyType == ReadMail::ReplyToAll)
+        writeMailWidget()->replyToAll(message);
 
     if ( writeMailWidget()->composer().isEmpty() ) {
         // failed to create new composer, maybe due to no email account
         // being present.
         return;
     }
-    writeMailWidget()->show();
+    viewComposer();
 }
 
 void EmailClient::modify(const QMailMessage& message)
@@ -1989,11 +1983,7 @@ void EmailClient::composeActivated()
 {
     delayedInit();
     if(writeMailWidget()->prepareComposer())
-    {
-        writeMailWidget()->show();
-        writeMailWidget()->raise();
-        writeMailWidget()->activateWindow();
-    }
+        viewComposer();
 }
 
 void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::MessageType type)
@@ -2009,6 +1999,7 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
     if (writeMailWidget()->prepareComposer(type)) {
         QMailMessage newMessage;
         newMessage.setTo(QMailAddressList() << address);
+        newMessage.setMessageType(type);
         writeMailWidget()->create(newMessage);
         viewComposer();
     }

@@ -21,17 +21,18 @@
 #include <QKeyEvent>
 #include <QLayout>
 #include <QLabel>
-#include <QLineEdit>
 #include <QMap>
 #include <QModelIndex>
 #include <QPushButton>
-#include <QSortFilterProxyModel>
 #include <QTabBar>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QItemDelegate>
 #include <QPainter>
+#include <QComboBox>
+#include <QLineEdit>
+#include <qmaildatacomparator.h>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 static const QColor newMessageColor(Qt::blue);
@@ -64,9 +65,93 @@ static QString sizeString(uint size)
         return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
 }
 
+class QuickSearchWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    QuickSearchWidget(QWidget* parent = 0);
+
+public slots:
+    void reset();
+
+signals:
+    void quickSearch(const QMailMessageKey& key);
+
+private slots:
+    void searchTermsChanged();
+
+private:
+    QMailMessageKey buildSearchKey() const;
+
+private:
+    QLineEdit* m_searchTerms;
+    QComboBox* m_statusCombo;
+    QToolButton* m_fullSearchButton;
+    QToolButton* m_clearButton;
+};
+
+QuickSearchWidget::QuickSearchWidget(QWidget* parent)
+:
+QWidget(parent)
+{
+    QHBoxLayout* layout = new QHBoxLayout(this);
+
+    m_clearButton = new QToolButton(this);
+    m_clearButton->setIcon(QIcon(":icon/clear_right"));
+    connect(m_clearButton,SIGNAL(clicked()),this,SLOT(reset()));
+    layout->addWidget(m_clearButton);
+
+    layout->addWidget(new QLabel("Search:"));
+    m_searchTerms = new QLineEdit(this);
+    connect(m_searchTerms,SIGNAL(textChanged(QString)),this,SLOT(searchTermsChanged()));
+    layout->addWidget(m_searchTerms);
+
+    layout->addWidget(new QLabel("Status:"));
+
+    m_statusCombo = new QComboBox(this);
+    m_statusCombo->addItem(QIcon(":icon/exec"),"Any Status",QMailMessageKey());
+    m_statusCombo->addItem(QIcon(":icon/mail_generic"),"Unread",QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes));
+    m_statusCombo->addItem(QIcon(":icon/new"),"New",QMailMessageKey::status(QMailMessage::New));
+    m_statusCombo->addItem(QIcon(":icon/mail_reply"),"Replied",QMailMessageKey::status(QMailMessage::Replied));
+    m_statusCombo->addItem(QIcon(":icon/mail_forward"),"Forwarded",QMailMessageKey::status(QMailMessage::Forwarded));
+    m_statusCombo->addItem(QIcon(":/icon/attach"),"Has Attachment",QMailMessageKey::status(QMailMessage::HasAttachments));
+    connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
+    layout->addWidget(m_statusCombo);
+
+    m_fullSearchButton = new QToolButton(this);
+    m_fullSearchButton->setIcon(QIcon(":icon/find"));
+    layout->addWidget(m_fullSearchButton);
+}
+
+void QuickSearchWidget::reset()
+{
+    m_statusCombo->setCurrentIndex(0);
+    m_searchTerms->clear();
+}
+
+void QuickSearchWidget::searchTermsChanged()
+{
+    QMailMessageKey key = buildSearchKey();
+    emit quickSearch(key);
+}
+
+QMailMessageKey QuickSearchWidget::buildSearchKey() const
+{
+    if(m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
+        return QMailMessageKey();
+    QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
+    QMailMessageKey senderKey = QMailMessageKey::sender(m_searchTerms->text(),QMailDataComparator::Includes);
+
+    QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
+    if(!statusKey.isEmpty())
+        return ((subjectKey | senderKey) & statusKey);
+    return subjectKey | senderKey;
+}
+
 class MessageListModel : public MessageListView::ModelType
 {
     Q_OBJECT
+
 public:
     MessageListModel(QWidget* parent );
     QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
@@ -121,12 +206,10 @@ int MessageListModel::rowCount(const QModelIndex& parent) const
 
 QVariant MessageListModel::data( const QModelIndex & index, int role) const
 {
-    if(index.isValid())
-    {
-        if(role == Qt::DisplayRole && index.isValid())
-        {
+    if (index.isValid()) {
+        if (role == Qt::DisplayRole && index.isValid()) {
             QMailMessageMetaData message(idFromIndex(index));
-            if(!message.id().isValid())
+            if (!message.id().isValid())
                 return QVariant();
 
             switch(index.column())
@@ -141,17 +224,13 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
                 return sizeString(message.size());
             break;
             }
-        }
-        else if((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
+        } else if ((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0) {
             return QVariant();
-        else if(role == Qt::CheckStateRole && !m_markingMode)
-        {
+        } else if (role == Qt::CheckStateRole && !m_markingMode) {
             Qt::CheckState state = static_cast<Qt::CheckState>(MessageListView::ModelType::data(index,role).toInt());
-            if(state == Qt::Unchecked)
+            if (state == Qt::Unchecked)
                 return QVariant();
-        }
-        else if(role == Qt::DecorationRole)
-        {
+        } else if (role == Qt::DecorationRole) {
             static QIcon readIcon(":icon/flag_normal");
             static QIcon unreadIcon(":icon/flag_unread");
             static QIcon toGetIcon(":icon/flag_toget");
@@ -166,7 +245,7 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
             bool sent(message.status() & QMailMessage::Sent);
             bool incoming(message.status() & QMailMessage::Incoming);
 
-            if (incoming){
+            if (incoming) {
                 quint64 status = message.status();
                 if ( status & QMailMessage::Removed ) {
                     return removedIcon;
@@ -189,15 +268,14 @@ QVariant MessageListModel::data( const QModelIndex & index, int role) const
                     return toSendIcon;
                 }
             }
-        }
-        else if(role == Qt::ForegroundRole)
-        {
+        } else if(role == Qt::ForegroundRole) {
             QMailMessageMetaData message(idFromIndex(index));
-            if(!message.id().isValid())
+            if (!message.id().isValid())
                 return QVariant();
+
             quint64 status = message.status();
             bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
-            if(status & QMailMessage::PartialContentAvailable && unread)
+            if (status & QMailMessage::PartialContentAvailable && unread)
                 return newMessageColor;
         }
     }
@@ -303,8 +381,10 @@ void MessageList::scrollContentsBy(int dx, int dy)
 
 void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    bool isMoreEntry = ((!index.parent().isValid()) && index.row() == (model()->rowCount(QModelIndex()) - 1));
-    if (isMoreEntry && sourceModel()->moreButtonVisible()) {
+    bool isMoreEntry = ((!index.parent().isValid()) && 
+                        (sourceModel()->moreButtonVisible()) &&
+                        (index.row() == (sourceModel()->rowCount(QModelIndex()) - 1)));
+    if (isMoreEntry) {
         QLinearGradient lg(option.rect.topLeft(), option.rect.topRight());
         lg.setColorAt(0,option.palette.color(QPalette::Base));
         lg.setColorAt(0.5,option.palette.color(QPalette::Button));
@@ -339,7 +419,6 @@ void MessageList::mousePressEvent(QMouseEvent* e)
 {
     // TODO: Should be in release event?
     if (mouseOverMoreLink(e)) {
-        QModelIndex index = indexAt(e->pos());
         emit moreButtonClicked();
     }
 
@@ -352,14 +431,14 @@ bool MessageList::mouseOverMoreLink(QMouseEvent* e)
         return false;
 
     QModelIndex index = indexAt(e->pos());
-    if (index.isValid() && ((!index.parent().isValid()) && (index.row() == model()->rowCount(QModelIndex()) - 1))) {
+    if (index.isValid() && ((!index.parent().isValid()) && (index.row() == sourceModel()->rowCount(QModelIndex()) - 1))) {
         QFont font;
         font.setUnderline(true);
         QFontMetrics fm(font);
         QItemSelection fakeSelection(index.sibling(index.row(),0), index.sibling(index.row(),3));
         QRegion r = visualRegionForSelection(fakeSelection);
         QRect brect = r.boundingRect();
-        QRect textRect = fm.boundingRect(brect, Qt::AlignHCenter, tr("Get more messages"));
+        QRect textRect = fm.boundingRect(brect, Qt::AlignHCenter | Qt::AlignVCenter, tr("Get more messages"));
         return textRect.contains(e->pos());
     }
 
@@ -368,8 +447,7 @@ bool MessageList::mouseOverMoreLink(QMouseEvent* e)
 
 MessageListModel* MessageList::sourceModel() const
 {
-    QSortFilterProxyModel* m = qobject_cast<QSortFilterProxyModel*>(model());
-    MessageListModel* sm = qobject_cast<MessageListModel*>(m->sourceModel());
+    MessageListModel* sm = qobject_cast<MessageListModel*>(model());
     Q_ASSERT(sm);
     return sm;
 }
@@ -378,18 +456,12 @@ MessageListView::MessageListView(QWidget* parent)
 :
     QWidget(parent),
     mMessageList(new MessageList(this)),
-    mFilterFrame(new QFrame(this)),
-    mFilterEdit(new QLineEdit(this)),
-    mCloseFilterButton(0),
-    mTabs(new QTabBar(this)),
     mModel(new MessageListModel(this)),
-    mFilterModel(new QSortFilterProxyModel(this)),
-    mDisplayMode(DisplayMessages),
     mMarkingMode(false),
     mIgnoreWhenHidden(true),
-    mSelectedRowsRemoved(false)
+    mSelectedRowsRemoved(false),
+    mShowMoreButton(false)
 {
-
     init();
 }
 
@@ -407,6 +479,10 @@ void MessageListView::setKey(const QMailMessageKey& key)
     mModel->setKey(key);
     mScrollTimer.stop();
     QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
+    mQuickSearchWidget->blockSignals(true);
+    mQuickSearchWidget->reset();
+    mQuickSearchWidget->blockSignals(false);
+    mKey = key;
 }
 
 QMailMessageSortKey MessageListView::sortKey() const
@@ -428,19 +504,16 @@ void MessageListView::setFolderId(const QMailFolderId& folderId)
 {
     mFolderId = folderId;
     mModel->setMoreButtonVisible(mFolderId.isValid());
+    mShowMoreButton = mModel->moreButtonVisible();
 }
 
-MessageListView::ModelType* MessageListView::model() const
+MessageListModel* MessageListView::model() const
 {
     return mModel;
 }
 
 void MessageListView::init()
 {
-    mFilterModel->setSourceModel(mModel);
-    mFilterModel->setFilterRole(QMailMessageModelBase::MessageFilterTextRole);
-    mFilterModel->setDynamicSortFilter(true);
-
     mMessageList->setUniformRowHeights(true);
 #ifndef USE_NONTHREADED_MODEL
     mMessageList->setRootIsDecorated(true);
@@ -449,13 +522,8 @@ void MessageListView::init()
 #endif
     mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);
-    mMessageList->setModel(mFilterModel);
-
-    mTabs->setFocusPolicy(Qt::NoFocus);
-
-    mCloseFilterButton = new QToolButton(this);
-    mCloseFilterButton->setText(tr("Done"));
-    mCloseFilterButton->setFocusPolicy(Qt::NoFocus);
+    mMessageList->setModel(mModel);
+    mMessageList->setAlternatingRowColors(true);
 
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
             this, SLOT(indexClicked(QModelIndex)));
@@ -464,24 +532,15 @@ void MessageListView::init()
     connect(mMessageList, SIGNAL(backPressed()),
             this, SIGNAL(backPressed()));
 
-    connect(mFilterEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(filterTextChanged(QString)));
-
-    connect(mCloseFilterButton, SIGNAL(clicked()),
-            this, SLOT(closeFilterButtonClicked()));
-
     connect(mMessageList, SIGNAL(moreButtonClicked()),
             this, SIGNAL(moreClicked()));
-
-    connect(mTabs, SIGNAL(currentChanged(int)),
-            this, SLOT(tabSelected(int)));
 
     connect(mModel, SIGNAL(modelChanged()),
             this, SLOT(modelChanged()));
 
-    connect(mFilterModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+    connect(mModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
             this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(mFilterModel, SIGNAL(layoutChanged()),
+    connect(mModel, SIGNAL(layoutChanged()),
             this, SLOT(layoutChanged()));
 
     mScrollTimer.setSingleShot(true);
@@ -489,30 +548,21 @@ void MessageListView::init()
             this, SLOT(reviewVisibleMessages()));
     connect(&mScrollTimer, SIGNAL(timeout()),
             this, SLOT(scrollTimeout()));
-    connect(mFilterModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+    connect(mModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(reviewVisibleMessages()));
-    connect(mFilterModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+    connect(mModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(reviewVisibleMessages()));
-
-    QHBoxLayout* hLayout = new QHBoxLayout(mFilterFrame);
-    hLayout->setContentsMargins(0,0,0,0);
-    hLayout->setSpacing(0);
-    hLayout->addWidget(new QLabel(tr("Search"),this));
-    hLayout->addWidget(mFilterEdit);
-    hLayout->addWidget(mCloseFilterButton);
-    mFilterFrame->setLayout(hLayout);
 
     QVBoxLayout* vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0,0,0,0);
     vLayout->setSpacing(0);
-    vLayout->addWidget(mTabs);
-    vLayout->addWidget(mFilterFrame);
+    mQuickSearchWidget = new QuickSearchWidget(this);
+    connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+    vLayout->addWidget(mQuickSearchWidget);
     vLayout->addWidget(mMessageList);
 
     this->setLayout(vLayout);
     setFocusProxy(mMessageList);
-
-    setDisplayMode(DisplayMessages);
 }
 
 QMailMessageId MessageListView::current() const
@@ -524,9 +574,7 @@ void MessageListView::setCurrent(const QMailMessageId& id)
 {
     QModelIndex index = mModel->indexFromId(id);
     if (index.isValid()) {
-        QModelIndex filteredIndex = mFilterModel->mapFromSource(index);
-        if (filteredIndex.isValid())
-            mMessageList->setCurrentIndex(filteredIndex);
+        mMessageList->setCurrentIndex(index);
     }
 }
 
@@ -563,18 +611,18 @@ bool MessageListView::hasParent() const
 
 bool MessageListView::hasChildren() const
 {
-    return (mFilterModel->rowCount(mMessageList->currentIndex()) > 0);
+    return (mModel->rowCount(mMessageList->currentIndex()) > 0);
 }
 
 int MessageListView::rowCount() const
 {
-    return mFilterModel->rowCount();
+    return mModel->rowCount();
 }
 
 void MessageListView::selectedChildren(const QModelIndex &parentIndex, QMailMessageIdList *selectedIds) const
 {
-    for (int i = 0, count = mFilterModel->rowCount(parentIndex); i < count; ++i) {
-        QModelIndex idx(mFilterModel->index(i, 0, parentIndex));
+    for (int i = 0, count = mModel->rowCount(parentIndex); i < count; ++i) {
+        QModelIndex idx(mModel->index(i, 0, parentIndex));
         if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Checked) {
             selectedIds->append(idx.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         }
@@ -612,24 +660,22 @@ void MessageListView::setSelected(const QMailMessageId& id)
         if (mMarkingMode) {
             mModel->setData(index, static_cast<int>(Qt::Checked), Qt::CheckStateRole);
         } else {
-            QModelIndex filteredIndex(mFilterModel->mapFromSource(index));
-            if (filteredIndex.isValid())
-                mMessageList->setCurrentIndex(filteredIndex);
+            mMessageList->setCurrentIndex(index);
         }
     }
 }
 
 void MessageListView::selectChildren(const QModelIndex &parentIndex, bool selected, bool *modified)
 {
-    for (int i = 0, count = mFilterModel->rowCount(parentIndex); i < count; ++i) {
-        QModelIndex idx(mFilterModel->index(i, 0, parentIndex));
+    for (int i = 0, count = mModel->rowCount(parentIndex); i < count; ++i) {
+        QModelIndex idx(mModel->index(i, 0, parentIndex));
         Qt::CheckState state(static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()));
 
         if (selected && (state == Qt::Unchecked)) {
-            mFilterModel->setData(idx, static_cast<int>(Qt::Checked), Qt::CheckStateRole);
+            mModel->setData(idx, static_cast<int>(Qt::Checked), Qt::CheckStateRole);
             *modified = true;
         } else if (!selected && (state == Qt::Checked)) {
-            mFilterModel->setData(idx, static_cast<int>(Qt::Unchecked), Qt::CheckStateRole);
+            mModel->setData(idx, static_cast<int>(Qt::Unchecked), Qt::CheckStateRole);
             *modified = true;
         }
 
@@ -701,41 +747,6 @@ void MessageListView::hideEvent(QHideEvent* e)
     QWidget::hideEvent(e);
 }
 
-void MessageListView::filterTextChanged(const QString& text)
-{
-    mFilterModel->setFilterRegExp(QRegExp(QRegExp::escape(text)));
-}
-
-MessageListView::DisplayMode MessageListView::displayMode() const
-{
-    return mDisplayMode;
-}
-
-void MessageListView::setDisplayMode(const DisplayMode& m)
-{
-    if(m == DisplayFilter) {
-        mFilterFrame->setVisible(true);
-        mTabs->setVisible(false);
-        mFilterEdit->setFocus();
-    } else {
-        mDisplayMode = m;
-        mFilterEdit->clear();
-        mFilterFrame->setVisible(false);
-        mTabs->setVisible(true);
-        mTabs->setCurrentIndex(static_cast<int>(mDisplayMode));
-    }
-}
-
-void MessageListView::closeFilterButtonClicked()
-{
-    setDisplayMode(DisplayMessages);
-}
-
-void MessageListView::tabSelected(int index)
-{
-    emit displayModeChanged(static_cast<DisplayMode>(index));
-}
-
 void MessageListView::modelChanged()
 {
     mMarkingMode = false;
@@ -745,7 +756,7 @@ void MessageListView::indexClicked(const QModelIndex& index)
 {
     if (mMarkingMode) {
         bool checked(static_cast<Qt::CheckState>(index.data(Qt::CheckStateRole).toInt()) == Qt::Checked);
-        mFilterModel->setData(index, static_cast<int>(checked ? Qt::Unchecked : Qt::Checked), Qt::CheckStateRole);
+        mModel->setData(index, static_cast<int>(checked ? Qt::Unchecked : Qt::Checked), Qt::CheckStateRole);
         emit selectionChanged();
     } else {
         QMailMessageId id(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
@@ -772,7 +783,7 @@ void MessageListView::rowsAboutToBeRemoved(const QModelIndex &parentIndex, int s
     if (mMarkingMode && !mSelectedRowsRemoved) {
         // See if any of the removed rows are currently selected
         for (int row = start; row <= end; ++row) {
-            QModelIndex idx(mFilterModel->index(row, 0, parentIndex));
+            QModelIndex idx(mModel->index(row, 0, parentIndex));
             if (static_cast<Qt::CheckState>(idx.data(Qt::CheckStateRole).toInt()) == Qt::Checked) {
                 mSelectedRowsRemoved = true;
                 break;
@@ -792,13 +803,13 @@ void MessageListView::layoutChanged()
 void MessageListView::reviewVisibleMessages()
 {
     const int maximumRefreshRate = 15; //seconds
-    
+
     if (mScrollTimer.isActive())
         return;
 
     mPreviousVisibleItems = visibleMessagesIds();
     emit visibleMessagesChanged();
-    
+
     mScrollTimer.start(maximumRefreshRate*1000);
 }
 
@@ -819,6 +830,26 @@ void MessageListView::scrollTimeout()
     }
 }
 
+void MessageListView::quickSearch(const QMailMessageKey& key)
+{
+    if(key.isEmpty())
+    {
+        mModel->setKey(mKey);
+        mModel->setMoreButtonVisible(mShowMoreButton);
+        mKey = QMailMessageKey();
+    }
+    else
+    {
+        if(mKey.isEmpty())
+        {
+            mKey = mModel->key();
+            mShowMoreButton = mModel->moreButtonVisible();
+        }
+        mModel->setKey(key & mKey);
+        mModel->setMoreButtonVisible(false);
+    }
+}
+
 QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
 {
     QMailMessageIdList visibleIds;
@@ -836,7 +867,7 @@ QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
     }
     if (!buffer)
         return visibleIds;
-    
+
     int i = bufferWidth;
     while (index.isValid() && (i > 0)) { // Add succeeding items
         visibleIds.append(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
