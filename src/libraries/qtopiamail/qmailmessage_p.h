@@ -366,8 +366,6 @@ public:
 
 private:
     void outputHeaders(QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool stripInternal) const;
-
-    LongString _rawMessageBody;
 };
 
 #endif

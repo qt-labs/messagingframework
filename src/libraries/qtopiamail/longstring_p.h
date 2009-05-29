@@ -14,7 +14,6 @@
 #include <QString>
 #include <QByteArray>
 #include <QFile>
-#include <QSharedDataPointer>
 #include "qmailglobal.h"
 
 class QDataStream;
@@ -53,7 +52,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 private:
-    QSharedDataPointer<LongStringPrivate> d;
+    LongStringPrivate* d;
 };
 
 template <typename Stream>

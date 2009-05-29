@@ -5872,7 +5872,6 @@ QMailMessagePrivate::QMailMessagePrivate()
 void QMailMessagePrivate::fromRfc2822(const LongString &ls)
 {
     _messageParts.clear();
-    _rawMessageBody = ls;
 
     if (ls.length()) {
         QMailMessageContentType contentType(headerField("Content-Type"));
@@ -5883,16 +5882,16 @@ void QMailMessagePrivate::fromRfc2822(const LongString &ls)
         if (!mimeVersion.isEmpty() && (minimalVersion != "1.0")) {
             qWarning() << "Unknown MIME-Version:" << mimeVersion;
         } else if (_multipartType != QMailMessagePartContainer::MultipartNone) {
-            parseMimeMultipart(_header, _rawMessageBody, true);
+            parseMimeMultipart(_header, ls, true);
         } else {
             QByteArray bodyData;
 
             // Remove the pop-style terminator if present
             const QByteArray popTerminator((QByteArray(QMailMessage::CRLF) + '.' + QMailMessage::CRLF));
-            if ( _rawMessageBody.indexOf(popTerminator, -popTerminator.length()) != -1)
-                bodyData = _rawMessageBody.left( _rawMessageBody.length() - popTerminator.length() ).toQByteArray();
+            if ( ls.indexOf(popTerminator, -popTerminator.length()) != -1)
+                bodyData = ls.left( ls.length() - popTerminator.length() ).toQByteArray();
             else
-                bodyData = _rawMessageBody.toQByteArray();
+                bodyData = ls.toQByteArray();
 
             // The body data is already encoded
             QDataStream in(bodyData);
@@ -6014,7 +6013,7 @@ void QMailMessagePrivate::toRfc2822(QDataStream& out, QMailMessage::EncodingForm
 
     bool addTimeStamp = (format != QMailMessage::IdentityFormat);
     bool addContentHeaders = ((format != QMailMessage::IdentityFormat) && 
-                              ((format != QMailMessage::StorageFormat) || isOutgoing || _rawMessageBody.isEmpty()));
+                              ((format != QMailMessage::StorageFormat) || isOutgoing || !hasBody()));
     bool includeBcc = (format != QMailMessage::TransmissionFormat);
     bool includePreamble = (format == QMailMessage::TransmissionFormat);
     bool includeAttachments = ((format != QMailMessage::HeaderOnlyFormat) && (format != QMailMessage::StorageFormat));
@@ -6081,16 +6080,12 @@ template <typename Stream>
 void QMailMessagePrivate::serialize(Stream &stream) const
 {
     QMailMessagePartContainerPrivate::serialize(stream);
-
-    stream << _rawMessageBody;
 }
 
 template <typename Stream> 
 void QMailMessagePrivate::deserialize(Stream &stream)
 {
     QMailMessagePartContainerPrivate::deserialize(stream);
-
-    stream >> _rawMessageBody;
 }
 
 
