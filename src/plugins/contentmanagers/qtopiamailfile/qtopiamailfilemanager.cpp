@@ -228,6 +228,8 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
         return QMailStore::FrameworkFault;
     }
 
+    file.flush();
+
     message->removeCustomField("qtopiamail-detached-filename");
     return QMailStore::NoError;
 }
@@ -488,6 +490,8 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
 
                             return false;
                         }
+
+                        file.flush();
                     }
                 }
             } else {
