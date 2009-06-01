@@ -21,6 +21,7 @@
 #include <QUrl>
 #if defined(Q_OS_WIN)
 #include <windows.h>
+#include <io.h>
 #elif defined(Q_OS_UNIX)
 #include <unistd.h>
 #endif
@@ -160,7 +161,7 @@ void sync(QFile &file)
     file.flush();
 
 #if defined(Q_OS_WIN)
-    ::FlushFileBuffers(reinterpret_cast<HANDLE>(file.handle()));
+    ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file.handle())));
 #elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     ::fdatasync(file.handle());
