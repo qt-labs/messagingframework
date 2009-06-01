@@ -149,6 +149,18 @@ bool migrateAccountToVersion101(const QMailAccountId &accountId)
     return true;
 }
 
+void sync(QFile &file)
+{
+    // Ensure data is flushed to OS before attempting sync
+    file.flush();
+
+#if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
+    ::fdatasync(file.handle());
+#else
+    ::fsync(file.handle());
+#endif
+}
+
 }
 
 
@@ -225,6 +237,8 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
 
         return QMailStore::FrameworkFault;
     }
+
+    sync(file);
 
     message->removeCustomField("qtopiamail-detached-filename");
     return QMailStore::NoError;
@@ -489,6 +503,8 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
 
                             return false;
                         }
+
+                        sync(file);
                     }
                 }
             } else {
