@@ -19,6 +19,11 @@
 #include <QFile>
 #include <QtPlugin>
 #include <QUrl>
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#elif defined(Q_OS_UNIX)
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -154,10 +159,14 @@ void sync(QFile &file)
     // Ensure data is flushed to OS before attempting sync
     file.flush();
 
+#if defined(Q_OS_WIN)
+    ::FlushFileBuffers(reinterpret_cast<HANDLE>(file.handle()));
+#elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     ::fdatasync(file.handle());
 #else
     ::fsync(file.handle());
+#endif
 #endif
 }
 
