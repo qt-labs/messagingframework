@@ -61,6 +61,7 @@ public:
     QString recipient() const;
     void setRecipient(const QString& r);
     bool isEmpty() const;
+    void reset();
     void clear();
 
     RecipientType recipientType() const;
@@ -97,7 +98,7 @@ m_removeButton(new QToolButton(this))
     m_typeCombo->setFocusPolicy(Qt::NoFocus);
     m_typeCombo->setMinimumWidth(minimumLeftWidth);
 
-    connect(m_recipientEdit,SIGNAL(textChanged(QString)),this,SIGNAL(recipientChanged()));
+    connect(m_recipientEdit,SIGNAL(textEdited(QString)),this,SIGNAL(recipientChanged()));
     layout->addWidget(m_recipientEdit);
     setFocusProxy(m_recipientEdit);
     m_recipientEdit->installEventFilter(this);
@@ -182,6 +183,7 @@ public:
     QStringList recipients(RecipientType t) const;
     QStringList recipients() const;
     void setRecipients(RecipientType, const QStringList& list);
+    void reset();
     void clear();
 
 signals:
@@ -208,7 +210,7 @@ m_layout(new QVBoxLayout(this))
 {
     m_layout->setSpacing(0);
     m_layout->setContentsMargins(0,0,0,0);
-    addRecipientWidget();
+    reset();
 }
 
 QStringList RecipientListWidget::recipients(RecipientType t) const
@@ -235,14 +237,16 @@ QStringList RecipientListWidget::recipients() const
 
 void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addresses)
 {
-    if(!addresses.isEmpty())
+    if(addresses.isEmpty())
+        return;
+
+    foreach(RecipientWidget* r, m_widgetList)
     {
-        foreach(RecipientWidget* r, m_widgetList)
-            if(r->isEmpty())
-            {
-                m_widgetList.removeAll(r);
-                r->deleteLater();
-            }
+        if(r->isEmpty())
+        {
+            m_widgetList.removeAll(r);
+            delete r;
+        }
     }
 
     foreach(QString address, addresses)
@@ -254,6 +258,13 @@ void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addr
             r->setRecipient(address);
         }
     }
+    addRecipientWidget();
+}
+
+void RecipientListWidget::reset()
+{
+    clear();
+    addRecipientWidget();
 }
 
 void RecipientListWidget::clear()
@@ -261,10 +272,8 @@ void RecipientListWidget::clear()
 	foreach(RecipientWidget* r, m_widgetList)
 	{
 		m_widgetList.removeAll(r);
-		r->deleteLater();
+        delete r;
 	}
-
-    addRecipientWidget();
 }
 
 int RecipientListWidget::emptyRecipientSlots() const
@@ -313,9 +322,8 @@ void RecipientListWidget::removeRecipientWidget()
         if(m_widgetList.count() <= 1)
             return;
         int index = m_widgetList.indexOf(r);
-
-        r->deleteLater();
         m_widgetList.removeAll(r);
+        delete r;
 
         if(index >= m_widgetList.count())
             index = m_widgetList.count()-1;
@@ -495,7 +503,7 @@ void EmailComposerInterface::init()
     l->setMinimumWidth(minimumLeftWidth);
     subjectLayout->addWidget(l);
     subjectLayout->addWidget(m_subjectEdit = new QLineEdit(subjectPanel));
-    connect(m_subjectEdit,SIGNAL(textChanged(QString)),this,SIGNAL(statusChanged(QString)));
+    connect(m_subjectEdit,SIGNAL(textEdited(QString)),this,SIGNAL(statusChanged(QString)));
     subjectPanel->setLayout(subjectLayout);
     layout->addWidget(subjectPanel);
 
@@ -544,7 +552,6 @@ void EmailComposerInterface::setPlainText( const QString& text, const QString& s
         QTimer::singleShot(0, this, SLOT(setCursorPosition()));
     } else {
         m_bodyEdit->setPlainText(text);
-        m_bodyEdit->moveCursor(QTextCursor::End);
     }
 }
 
@@ -618,7 +625,7 @@ QMailMessage EmailComposerInterface::message() const
 void EmailComposerInterface::clear()
 {
     m_subjectEdit->clear();
-    m_recipientListWidget->clear();
+    m_recipientListWidget->reset();
 
     m_bodyEdit->clear();
     m_attachmentListWidget->clear();
@@ -698,6 +705,9 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
     //set the details
     setDetails(sourceMail);
 
+    m_bodyEdit->setFocus();
+    m_bodyEdit->moveCursor(QTextCursor::Start);
+    emit changed();
 }
 
 void EmailComposerInterface::reply(const QMailMessage& source, int action)

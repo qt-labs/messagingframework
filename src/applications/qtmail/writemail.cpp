@@ -25,6 +25,9 @@
 #include <qmailstore.h>
 #include <QToolButton>
 
+static const int defaultWidth = 500;
+static const int defaultHeight = 400;
+
 static QMailAccountIdList sendingAccounts(QMailMessage::MessageType messageType)
 {
     QMailAccountKey statusKey(QMailAccountKey::status(QMailAccount::CanTransmit, QMailDataComparator::Includes));
@@ -50,12 +53,6 @@ WriteMail::WriteMail(QWidget* parent)
     m_toolbar(0)
 {
     init();
-}
-
-WriteMail::~WriteMail()
-{
-    //delete m_composerInterface;
-    //m_composerInterface = 0;
 }
 
 void WriteMail::init()
@@ -111,6 +108,8 @@ void WriteMail::init()
     m_toolbar->addSeparator();
 
     setWindowTitle(tr("Compose"));
+
+    setGeometry(0,0,defaultWidth,defaultHeight);
 }
 
 bool WriteMail::sendStage()
@@ -308,6 +307,19 @@ void WriteMail::reply(const QMailMessage& replyMail)
     m_replyAction = ReadMail::Reply;
 }
 
+void WriteMail::replyToAll(const QMailMessage& replyMail)
+{
+    prepareComposer(replyMail.messageType());
+    if (composer().isEmpty())
+        return;
+
+    m_composerInterface->compose(QMailComposerInterface::ReplyToAll ,replyMail);
+    m_hasMessageChanged = true;
+    m_precursorId = replyMail.id();
+    m_replyAction = ReadMail::ReplyToAll;
+
+}
+
 void WriteMail::modify(const QMailMessage& previousMessage)
 {
     QString recipients = "";
@@ -330,18 +342,6 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     m_replyAction = mail.responseType();
 }
 
-/*
-void WriteMail::setRecipient(const QString &recipient)
-{
-    if (m_composerInterface) {
-//        m_composerInterface->setTo( recipient );
-    } else {
-        qWarning("WriteMail::setRecipient called with no composer interface present.");
-    }
-}
-
-*/
-
 bool WriteMail::hasContent()
 {
     // Be conservative when returning false, which means the message can
@@ -350,26 +350,6 @@ bool WriteMail::hasContent()
         return true;
     return !m_composerInterface->isEmpty();
 }
-
-/*
-void WriteMail::setRecipients(const QString &emails, const QString & numbers)
-{
-    QString to;
-    to += emails;
-    to = to.trimmed();
-    if (to.right( 1 ) != "," && !numbers.isEmpty()
-        && !numbers.trimmed().startsWith( "," ))
-        to += ", ";
-    to +=  numbers;
-
- if (m_composerInterface) {
-    //    m_composerInterface->setTo( to );
-    } else {
-        qWarning("WriteMail::setRecipients called with no composer interface present.");
-    }
-}
-
-*/
 
 void WriteMail::reset()
 {
