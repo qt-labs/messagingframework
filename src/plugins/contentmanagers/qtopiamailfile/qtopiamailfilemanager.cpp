@@ -150,8 +150,11 @@ bool migrateAccountToVersion101(const QMailAccountId &accountId)
     return true;
 }
 
-void sync(const QFile &file)
+void sync(QFile &file)
 {
+    // Ensure data is flushed to OS before attempting sync
+    file.flush();
+
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     ::fdatasync(file.handle());
 #else
@@ -220,7 +223,6 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     // Write the message to file (not including sub-part contents)
     QDataStream out(&file);
     message->toRfc2822(out, QMailMessage::StorageFormat);
-    bool isOk = out.status() != QDataStream::Ok;
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
