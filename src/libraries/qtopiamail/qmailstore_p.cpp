@@ -1753,6 +1753,11 @@ QPair<quint64, QString> folderInfo(QMailFolder::StandardFolder id, const QString
     return qMakePair(static_cast<quint64>(id), name);
 }
 
+QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
+{
+    return (commitOnSuccess ? QMailContentManager::EnsureDurability : QMailContentManager::DeferDurability);
+}
+
 } // namespace
 
 
@@ -3343,6 +3348,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
 {
     // Resolve from overloaded member functions:
     AttemptResult (QMailStorePrivate::*func)(QMailMessage*, const QString&, const QStringList&, QMailMessageIdList*, QMailMessageIdList*, QMailFolderIdList*, QMailAccountIdList*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
+    QSet<QString> contentSchemes;
 
     Transaction t(this);
 
@@ -3362,6 +3368,24 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
                                           addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
                                      "addMessages",
                                      &t)) {
+            return false;
+        }
+
+        contentSchemes.insert(message->contentScheme());
+    }
+
+    // Ensure that the content manager makes the changes durable before we return
+    foreach (const QString &scheme, contentSchemes) {
+        if (QMailContentManager *contentManager = QMailContentManagerFactory::create(scheme)) {
+            QMailStore::ErrorCode code = contentManager->ensureDurability();
+            if (code != QMailStore::NoError) {
+                setLastError(code);
+                qMailLog(Messaging) << "Unable to ensure message content durability for scheme:" << scheme;
+                return false;
+            }
+        } else {
+            setLastError(QMailStore::FrameworkFault);
+            qMailLog(Messaging) << "Unable to create content manager for scheme:" << scheme;
             return false;
         }
     }
@@ -3460,16 +3484,36 @@ bool QMailStorePrivate::updateFolder(QMailFolder *folder,
 bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> > &messages,
                                        QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
+    QSet<QString> contentSchemes;
+
     Transaction t(this);
 
     typedef QPair<QMailMessageMetaData*, QMailMessage*> PairType;
 
-    foreach (PairType pair, messages) {
+    foreach (const PairType &pair, messages) {
         if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessage, this, 
                                           pair.first, pair.second,
                                           updatedMessageIds, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds), 
                                      "updateMessages",
                                      &t)) {
+            return false;
+        }
+
+        contentSchemes.insert(pair.first->contentScheme());
+    }
+
+    // Ensure that the content manager makes the changes durable before we return
+    foreach (const QString &scheme, contentSchemes) {
+        if (QMailContentManager *contentManager = QMailContentManagerFactory::create(scheme)) {
+            QMailStore::ErrorCode code = contentManager->ensureDurability();
+            if (code != QMailStore::NoError) {
+                setLastError(code);
+                qMailLog(Messaging) << "Unable to ensure message content durability for scheme:" << scheme;
+                return false;
+            }
+        } else {
+            setLastError(QMailStore::FrameworkFault);
+            qMailLog(Messaging) << "Unable to create content manager for scheme:" << scheme;
             return false;
         }
     }
@@ -4220,7 +4264,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     } 
 
     if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
-        QMailStore::ErrorCode code = contentManager->add(message);
+        QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
         if (code != QMailStore::NoError) {
             setLastError(code);
             qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*message);
@@ -4910,14 +4954,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                 if (addContent) {
                     // We need to add this content to the message
-                    QMailStore::ErrorCode code = contentManager->add(message);
+                    QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
                     if (code != QMailStore::NoError) {
                         setLastError(code);
                         qMailLog(Messaging) << "Unable to add message content to URI:" << contentUri;
                         return Failure;
                     }
                 } else {
-                    QMailStore::ErrorCode code = contentManager->update(message);
+                    QMailStore::ErrorCode code = contentManager->update(message, durability(commitOnSuccess));
                     if (code != QMailStore::NoError) {
                         qMailLog(Messaging) << "Unable to update message content:" << contentUri;
                         if (code == QMailStore::ContentNotRemoved) {

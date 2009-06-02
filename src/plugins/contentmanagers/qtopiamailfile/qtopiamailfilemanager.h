@@ -13,11 +13,13 @@
 
 #include <qmailid.h>
 #include <qmailcontentmanager.h>
+#include <QList>
 #include <QMap>
 
 
 class QMailMessagePart;
 class QMailMessagePartContainer;
+class QFile;
 
 class QtopiamailfileManager : public QObject, public QMailContentManager
 {
@@ -25,9 +27,13 @@ class QtopiamailfileManager : public QObject, public QMailContentManager
 
 public:
     QtopiamailfileManager();
+    ~QtopiamailfileManager();
 
-    QMailStore::ErrorCode add(QMailMessage *message);
-    QMailStore::ErrorCode update(QMailMessage *message);
+    QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
+    QMailStore::ErrorCode update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
+
+    QMailStore::ErrorCode ensureDurability();
+
     QMailStore::ErrorCode remove(const QString &identifier);
     QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message);
 
@@ -43,11 +49,13 @@ protected slots:
     void clearAccountPath(const QMailAccountIdList&);
 
 private:
-    QMailStore::ErrorCode addOrRename(QMailMessage *message, const QString &existingIdentifier);
+    QMailStore::ErrorCode addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable);
 
-    bool addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing);
+    bool addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing, bool durable);
     bool loadParts(QMailMessage *message, QMailMessagePartContainer *container, const QString &fileName);
     bool removeParts(const QString &fileName);
+
+    QList<QFile*> _openFiles;
 };
 
 
