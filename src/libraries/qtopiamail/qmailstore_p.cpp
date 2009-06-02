@@ -1881,11 +1881,25 @@ QMailStorePrivate::ReadLock::~ReadLock()
 
 
 template<typename FunctionType>
+QMailStorePrivate::AttemptResult evaluate(QMailStorePrivate::WriteAccess, FunctionType func, QMailStorePrivate::Transaction &t)
+{
+    // Use the supplied transaction, and do not commit
+    return func(t, false);
+}
+
+template<typename FunctionType>
+QMailStorePrivate::AttemptResult evaluate(QMailStorePrivate::ReadAccess, FunctionType, QMailStorePrivate::Transaction &)
+{
+    return QMailStorePrivate::Failure;
+}
+
+template<typename FunctionType>
 QMailStorePrivate::AttemptResult evaluate(QMailStorePrivate::WriteAccess, FunctionType func, const QString& description, QMailStorePrivate* d)
 {
     QMailStorePrivate::Transaction t(d);
 
-    QMailStorePrivate::AttemptResult result = func(t);
+    // Perform the task and commit the transaction
+    QMailStorePrivate::AttemptResult result = func(t, true);
 
     // Ensure that the transaction was committed
     if ((result == QMailStorePrivate::Success) && !t.committed()) {
@@ -3324,34 +3338,16 @@ bool QMailStorePrivate::addFolder(QMailFolder *folder,
                                    "addFolder");
 }
 
-bool QMailStorePrivate::addMessage(QMailMessage *message,
-                                   QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
+                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
-    if (!message->parentAccountId().isValid()) {
-        // Require a parent account - possibly relax this later
-        qMailLog(Messaging) << "Unable to add message without parent account";
-        return false;
-    }
+    // Resolve from overloaded member functions:
+    AttemptResult (QMailStorePrivate::*func)(QMailMessage*, const QString&, const QStringList&, QMailMessageIdList*, QMailMessageIdList*, QMailFolderIdList*, QMailAccountIdList*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
 
-    if (message->contentScheme().isEmpty()) {
-        // Use the default storage scheme
-        message->setContentScheme(defaultContentScheme());
-    }
+    Transaction t(this);
 
-    MutexGuard lock(contentManagerMutex());
-    if (!lock.lock(1000)) {
-        qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
-        return false;
-    } 
-
-    if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
-        QMailStore::ErrorCode code = contentManager->add(message);
-        if (code != QMailStore::NoError) {
-            setLastError(code);
-            qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*message);
-            return false;
-        }
-
+    foreach (QMailMessage *message, messages) {
+        // Find the message identifier and references from the header
         QString identifier(identifierValue(message->headerFieldText("Message-ID")));
         QStringList references(identifierValues(message->headerFieldText("References")));
         QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
@@ -3361,43 +3357,50 @@ bool QMailStorePrivate::addMessage(QMailMessage *message,
             }
         }
 
-        if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this,
+        if (!repeatedly<WriteAccess>(bind(func, this, 
                                           message, cref(identifier), cref(references),
-                                          addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds),
-                                     "addMessage")) {
-            QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
-            if (code != QMailStore::NoError) {
-                qMailLog(Messaging) << "Could not remove extraneous message content:" << ::contentUri(*message);
-                if (code == QMailStore::ContentNotRemoved) {
-                    // The existing content could not be removed - try again later
-                    if (!obsoleteContent(message->contentIdentifier())) {
-                        setLastError(QMailStore::FrameworkFault);
-                        return false;
-                    }
-                } else {
-                    setLastError(code);
-                    return false;
-                }
-            }
+                                          addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                     "addMessages",
+                                     &t)) {
+            return false;
         }
-    } else {
-        qMailLog(Messaging) << "Unable to create content manager for scheme:" << message->contentScheme();
+    }
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << ::getpid() << "Unable to commit successful addMessages!";
         return false;
     }
 
     return true;
 }
 
-bool QMailStorePrivate::addMessage(QMailMessageMetaData *metaData,
-                                   QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &messages,
+                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
-    QString identifier;
-    QStringList references;
+    // Resolve from overloaded member functions:
+    AttemptResult (QMailStorePrivate::*func)(QMailMessageMetaData*, const QString&, const QStringList&, QMailMessageIdList*, QMailMessageIdList*, QMailFolderIdList*, QMailAccountIdList*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
 
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddMessage, this,
-                                        metaData, cref(identifier), cref(references),
-                                        addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
-                                   "addMessage");
+    Transaction t(this);
+
+    foreach (QMailMessageMetaData *metaData, messages) {
+        QString identifier;
+        QStringList references;
+
+        if (!repeatedly<WriteAccess>(bind(func, this, 
+                                          metaData, cref(identifier), cref(references),
+                                          addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                     "addMessages",
+                                     &t)) {
+            return false;
+        }
+    }
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << ::getpid() << "Unable to commit successful addMessages!";
+        return false;
+    }
+
+    return true;
 }
 
 bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
@@ -3454,13 +3457,29 @@ bool QMailStorePrivate::updateFolder(QMailFolder *folder,
                                    "updateFolder");
 }
 
-bool QMailStorePrivate::updateMessage(QMailMessageMetaData *metaData, QMailMessage *message,
-                                      QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, bool *modifiedContent)
+bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> > &messages,
+                                       QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessage, this, 
-                                        metaData, message, 
-                                        updatedMessageIds, modifiedFolderIds, modifiedAccountIds, modifiedContent), 
-                                   "updateMessage");
+    Transaction t(this);
+
+    typedef QPair<QMailMessageMetaData*, QMailMessage*> PairType;
+
+    foreach (PairType pair, messages) {
+        if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessage, this, 
+                                          pair.first, pair.second,
+                                          updatedMessageIds, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                     "updateMessages",
+                                     &t)) {
+            return false;
+        }
+    }
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << ::getpid() << "Unable to commit successful updateMessages!";
+        return false;
+    }
+
+    return true;
 }
 
 bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
@@ -3817,7 +3836,7 @@ void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, 
 }
 
 template<typename AccessType, typename FunctionType>
-bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description) const
+bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description, Transaction *t) const
 {
     static const unsigned int MinRetryDelay = 64;
     static const unsigned int MaxRetryDelay = 2048;
@@ -3833,7 +3852,12 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
     unsigned int delay = MinRetryDelay;
 
      while (true) {
-        AttemptResult result = evaluate(AccessType(), func, description, const_cast<QMailStorePrivate*>(this));
+        AttemptResult result;
+        if (t) {
+            result = evaluate(AccessType(), func, *t);
+        } else {
+            result = evaluate(AccessType(), func, description, const_cast<QMailStorePrivate*>(this));
+        }
 
         if (result == Success) {
             if (attemptCount > 0) {
@@ -4001,7 +4025,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::customFields(quint64 id, QMa
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccount *account, QMailAccountConfiguration* config, 
                                                                       QMailAccountIdList *addedAccountIds, 
-                                                                      Transaction &t)
+                                                                      Transaction &t, bool commitOnSuccess)
 {
     if (account->id().isValid() && idExists(account->id())) {
         qMailLog(Messaging) << "Account already exists in database, use update instead";
@@ -4089,7 +4113,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
 
     account->setId(insertId);
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit account changes to database";
 
         account->setId(QMailAccountId()); //revert the id
@@ -4102,7 +4126,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder *folder, 
                                                                      QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                     Transaction &t)
+                                                                     Transaction &t, bool commitOnSuccess)
 {   
     //check that the parent folder actually exists
     if (!checkPreconditions(*folder))
@@ -4161,7 +4185,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
         }
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit folder changes to database";
 
         folder->setId(QMailFolderId()); //revert the id
@@ -4174,9 +4198,64 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
     return Success;
 }
 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
+                                                                      QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                      Transaction &t, bool commitOnSuccess)
+{
+    if (!message->parentAccountId().isValid()) {
+        // Require a parent account - possibly relax this later
+        qMailLog(Messaging) << "Unable to add message without parent account";
+        return Failure;
+    }
+
+    if (message->contentScheme().isEmpty()) {
+        // Use the default storage scheme
+        message->setContentScheme(defaultContentScheme());
+    }
+
+    MutexGuard lock(contentManagerMutex());
+    if (!lock.lock(1000)) {
+        qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
+        return Failure;
+    } 
+
+    if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
+        QMailStore::ErrorCode code = contentManager->add(message);
+        if (code != QMailStore::NoError) {
+            setLastError(code);
+            qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*message);
+            return Failure;
+        }
+
+        AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds, t, commitOnSuccess);
+        if (result != Success) {
+            // Try to remove the content file we added
+            QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
+            if (code != QMailStore::NoError) {
+                qMailLog(Messaging) << "Could not remove extraneous message content:" << ::contentUri(*message);
+                if (code == QMailStore::ContentNotRemoved) {
+                    // The existing content could not be removed - try again later
+                    if (!obsoleteContent(message->contentIdentifier())) {
+                        setLastError(QMailStore::FrameworkFault);
+                    }
+                } else {
+                    setLastError(code);
+                }
+            }
+
+            return result;
+        }
+    } else {
+        qMailLog(Messaging) << "Unable to create content manager for scheme:" << message->contentScheme();
+        return Failure;
+    }
+
+    return Success;
+}
+
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                                                       QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                                      Transaction &t)
+                                                                      Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->parentFolderId().isValid()) {
         qMailLog(Messaging) << "Unable to add message. Invalid parent folder id";
@@ -4340,7 +4419,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     if (result != Success)
         return result;
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit message changes to database";
         return DatabaseFailure;
     }
@@ -4355,12 +4434,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const QMailAccountKey &key, 
                                                                           QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                          Transaction &t)
+                                                                          Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
     if (deleteAccounts(key, *deletedAccountIds, *deletedFolderIds, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
-        if (t.commit()) {
+        if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent, *deletedFolderIds, *deletedAccountIds);
             return Success;
@@ -4372,12 +4451,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const 
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
                                                                          QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                         Transaction &t)
+                                                                         Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
     if (deleteFolders(key, option, *deletedFolderIds, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
-        if (t.commit()) {
+        if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent, *deletedFolderIds);
             return Success;
@@ -4389,12 +4468,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const Q
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option, 
                                                                           QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                          Transaction &t)
+                                                                          Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
     if (deleteMessages(key, option, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
-        if (t.commit()) {
+        if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent);
             return Success;
@@ -4406,7 +4485,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const 
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAccount *account, QMailAccountConfiguration *config, 
                                                                          QMailAccountIdList *updatedAccountIds,
-                                                                         Transaction &t)
+                                                                         Transaction &t, bool commitOnSuccess)
 {
     QMailAccountId id(account ? account->id() : config ? config->id() : QMailAccountId());
     if (!id.isValid())
@@ -4617,7 +4696,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
         }
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit account update to database";
         return DatabaseFailure;
     }
@@ -4634,7 +4713,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFolder *folder, 
                                                                         QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                        Transaction &t)
+                                                                        Transaction &t, bool commitOnSuccess)
 {
     //check that the parent folder actually exists
     if(!checkPreconditions(*folder, true))
@@ -4716,7 +4795,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
         }
     }
         
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit folder update to database";
         return DatabaseFailure;
     }
@@ -4730,8 +4809,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *message, 
-                                                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, bool *modifiedContent,
-                                                                         Transaction &t)
+                                                                         QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                         Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->id().isValid())
         return Failure;
@@ -5093,7 +5172,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         }
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit message update to database";
         return DatabaseFailure;
     }
@@ -5124,14 +5203,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         }
     }
 
-    *modifiedContent = updateContent;
+    if (updateContent) {
+        modifiedMessageIds->append(metaData->id());
+    }
 
     return Success;
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data, 
                                                                                   QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                                                  Transaction &t) 
+                                                                                  Transaction &t, bool commitOnSuccess) 
 {
     //do some checks first
     if (props & QMailMessageKey::Id) {
@@ -5224,7 +5305,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
         }
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit metadata update to database";
         return DatabaseFailure;
     }
@@ -5245,7 +5326,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(const QMailMessageKey &key, quint64 status, bool set, 
                                                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                                                Transaction &t)
+                                                                                Transaction &t, bool commitOnSuccess)
 {
     //get the valid ids
     *updatedMessageIds = queryMessages(key, QMailMessageSortKey());
@@ -5266,7 +5347,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
         }
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit metadata status update to database";
         return DatabaseFailure;
     }
@@ -5289,7 +5370,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
                                                                                    QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                                                   Transaction &t)
+                                                                                   Transaction &t, bool commitOnSuccess)
 {
     // Find the message and folders that are affected by this update
     QSqlQuery query(simpleQuery("SELECT t0.id, t0.parentfolderid, t0.previousparentfolderid FROM mailmessages t0",
@@ -5324,7 +5405,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFold
             return DatabaseFailure;
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit message folder restoration to database";
         return DatabaseFailure;
     }
@@ -5345,7 +5426,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFold
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
-                                                                                      Transaction &t)
+                                                                                      Transaction &t, bool commitOnSuccess)
 {
     QMailMessageIdList removalIds;
 
@@ -5385,7 +5466,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
             return DatabaseFailure;
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit message removal record deletion to database";
         return DatabaseFailure;
     }
@@ -5995,7 +6076,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptStatusBit(const QStri
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
-                                                                             Transaction &t)
+                                                                             Transaction &t, bool commitOnSuccess)
 {
     int highest = 0;
 
@@ -6021,7 +6102,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
             return DatabaseFailure;
     }
 
-    if (!t.commit()) {
+    if (commitOnSuccess && !t.commit()) {
         qMailLog(Messaging) << "Could not commit statusflag changes to database";
         return DatabaseFailure;
     }
