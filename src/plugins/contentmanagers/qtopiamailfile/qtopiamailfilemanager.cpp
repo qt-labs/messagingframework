@@ -150,15 +150,15 @@ bool migrateAccountToVersion101(const QMailAccountId &accountId)
     return true;
 }
 
-void sync(QFile &file)
+void sync(QFile *file)
 {
     // Ensure data is flushed to OS before attempting sync
-    file.flush();
+    file->flush();
 
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
-    ::fdatasync(file.handle());
+    ::fdatasync(file->handle());
 #else
-    ::fsync(file.handle());
+    ::fsync(file->handle());
 #endif
 }
 
@@ -181,18 +181,24 @@ QtopiamailfileManager::QtopiamailfileManager()
     }
 }
 
+QtopiamailfileManager::~QtopiamailfileManager()
+{
+    // Finalise any changes we have pending
+    ensureDurability();
+}
+
 void QtopiamailfileManager::clearAccountPath(const QMailAccountIdList &ids)
 {
     foreach (const QMailAccountId &id, ids)
         gAccountPath.remove(id);
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::add(QMailMessage *message)
+QMailStore::ErrorCode QtopiamailfileManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 {
-    return addOrRename(message, QString());
+    return addOrRename(message, QString(), (durability == QMailContentManager::EnsureDurability));
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, const QString &existingIdentifier)
+QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
 {
     QString filePath;
     if (message->contentIdentifier().isEmpty()) {
@@ -204,7 +210,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
 
     message->setContentIdentifier(filePath);
 
-    QFile file(filePath);
+    QFile *file = new QFile(filePath);
 
     QString detachedFile = message->customField("qtopiamail-detached-filename");
     if (!detachedFile.isEmpty() && (message->multipartType() == QMailMessagePartContainer::MultipartNone)) {
@@ -215,19 +221,20 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
         }
     }
 
-    if (!file.open(QIODevice::WriteOnly)) {
+    if (!file->open(QIODevice::WriteOnly)) {
         qMailLog(Messaging) << "Unable to open new message content file:" << filePath;
         return (pathOnDefault(filePath) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
     // Write the message to file (not including sub-part contents)
-    QDataStream out(&file);
+    QDataStream out(file);
     message->toRfc2822(out, QMailMessage::StorageFormat);
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
-         !addOrRenameParts(message, *message, message->contentIdentifier(), existingIdentifier))) {
+         !addOrRenameParts(message, *message, message->contentIdentifier(), existingIdentifier, durable))) {
         // Remove the file
+        file->close();
         qMailLog(Messaging) << "Unable to save message content, removing temporary file:" << filePath;
         if (!QFile::remove(filePath)){
             qMailLog(Messaging) << "Unable to remove temporary message content file:" << filePath;
@@ -239,19 +246,24 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
         return QMailStore::FrameworkFault;
     }
 
-    sync(file);
+    if (durable) {
+        sync(file);
+        delete file;
+    } else {
+        _openFiles.append(file);
+    }
 
     message->removeCustomField("qtopiamail-detached-filename");
     return QMailStore::NoError;
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message)
+QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 {
     QString existingIdentifier(message->contentIdentifier());
 
     // Store to a new file
     message->setContentIdentifier(QString());
-    QMailStore::ErrorCode code = addOrRename(message, existingIdentifier);
+    QMailStore::ErrorCode code = addOrRename(message, existingIdentifier, (durability == QMailContentManager::EnsureDurability));
     if (code != QMailStore::NoError) {
         message->setContentIdentifier(existingIdentifier);
         return code;
@@ -263,6 +275,17 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message)
         qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
     }
 
+    return QMailStore::NoError;
+}
+
+QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
+{
+    foreach (QFile *file, _openFiles) {
+        sync(file);
+        delete file;
+    }
+
+    _openFiles.clear();
     return QMailStore::NoError;
 }
 
@@ -437,7 +460,7 @@ static bool isLocalAttachment(const QMailMessagePart& part)
     return QFile::exists(QUrl(contentLocation).toLocalFile()) && !part.hasBody();
 }
 
-bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing)
+bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing, bool durable)
 {
     // Ensure that the part directory exists
     QString partDirectory(messagePartDirectory(fileName));
@@ -485,16 +508,17 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                             }
                         }
 
-                        QFile file(partFilePath);
-                        if (!file.open(QIODevice::WriteOnly)) {
+                        QFile *file = new QFile(partFilePath);
+                        if (!file->open(QIODevice::WriteOnly)) {
                             qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
                             return false;
                         }
 
                         // Write the part content to file
-                        QDataStream out(&file);
+                        QDataStream out(file);
                         if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
                             qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+                            file->close();
                             if (!QFile::remove(partFilePath)){
                                 qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
                             }
@@ -502,12 +526,17 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                             return false;
                         }
 
-                        sync(file);
+                        if (durable) {
+                            sync(file);
+                            delete file;
+                        } else {
+                            _openFiles.append(file);
+                        }
                     }
                 }
             } else {
                 // Write any sub-parts of this part out
-                if (!addOrRenameParts(message, part, fileName, existing))
+                if (!addOrRenameParts(message, part, fileName, existing, durable))
                     return false;
             }
         } else {

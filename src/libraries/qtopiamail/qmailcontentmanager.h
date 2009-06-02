@@ -67,8 +67,16 @@ protected:
     virtual ~QMailContentManager();
 
 public:
-    virtual QMailStore::ErrorCode add(QMailMessage *message) = 0;
-    virtual QMailStore::ErrorCode update(QMailMessage *message) = 0;
+    enum DurabilityRequirement { 
+        EnsureDurability = 0,
+        DeferDurability
+    };
+
+    virtual QMailStore::ErrorCode add(QMailMessage *message, DurabilityRequirement durability) = 0;
+    virtual QMailStore::ErrorCode update(QMailMessage *message, DurabilityRequirement durability) = 0;
+
+    virtual QMailStore::ErrorCode ensureDurability() = 0;
+
     virtual QMailStore::ErrorCode remove(const QString &identifier) = 0;
     virtual QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message) = 0;
 
