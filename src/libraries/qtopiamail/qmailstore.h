@@ -84,6 +84,8 @@ public:
     bool addFolder(QMailFolder* f);
     bool addMessage(QMailMessage* m);
     bool addMessage(QMailMessageMetaData* m);
+    bool addMessages(const QList<QMailMessage*>& m);
+    bool addMessages(const QList<QMailMessageMetaData*>& m);
 
     bool removeAccount(const QMailAccountId& id);
     bool removeAccounts(const QMailAccountKey& key);
@@ -99,6 +101,8 @@ public:
     bool updateFolder(QMailFolder* f);
     bool updateMessage(QMailMessage* m);
     bool updateMessage(QMailMessageMetaData* m);
+    bool updateMessages(const QList<QMailMessage*>& m);
+    bool updateMessages(const QList<QMailMessageMetaData*>& m);
     bool updateMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data);
     bool updateMessagesMetaData(const QMailMessageKey& key, quint64 messageStatus, bool set);
 
@@ -184,7 +188,7 @@ private:
 
     QMailStore();
 
-    bool updateMessage(QMailMessageMetaData* m, QMailMessage* mail);
+    bool updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> >&);
 
     void clearContent();
 
