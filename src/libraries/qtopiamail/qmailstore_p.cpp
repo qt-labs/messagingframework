@@ -3391,7 +3391,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
     }
 
     if (!t.commit()) {
-        qMailLog(Messaging) << ::getpid() << "Unable to commit successful addMessages!";
+        qMailLog(Messaging) << "Unable to commit successful addMessages!";
         return false;
     }
 
@@ -3420,7 +3420,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
     }
 
     if (!t.commit()) {
-        qMailLog(Messaging) << ::getpid() << "Unable to commit successful addMessages!";
+        qMailLog(Messaging) << "Unable to commit successful addMessages!";
         return false;
     }
 
@@ -3519,7 +3519,7 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
     }
 
     if (!t.commit()) {
-        qMailLog(Messaging) << ::getpid() << "Unable to commit successful updateMessages!";
+        qMailLog(Messaging) << "Unable to commit successful updateMessages!";
         return false;
     }
 
