@@ -54,6 +54,14 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 */
 
 /*!
+  \fn QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
+
+  Returns the 'base' form of \a subject, using the transformation defined by RFC5256.
+  If the original subject contains any variant of the tokens "Re" or "Fwd" recognized by
+  RFC5256, then \a replyOrForward will be set to true.
+*/
+
+/*!
   \fn QSqlDatabase QMail::createDatabase()
 
   Returns the database where the Messaging framework will store its message meta-data. If the database
@@ -437,7 +445,7 @@ void QMail::usleep(unsigned long usecs)
 #endif
 }
 
-QString QMail::baseSubject(const QString& subject)
+QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
 {
     // Implements the conversion from subject to 'base subject' defined by RFC 5256
     int pos = 0;
@@ -448,12 +456,15 @@ QString QMail::baseSubject(const QString& subject)
         repeat = false;
 
         // Remove any subj-trailer
-        QRegExp subjTrailer("("
+        QRegExp subjTrailer("(?:"
                                 "[ \\t]+"               // WSP
                             "|"
-                                "\\([Ff][Ww][Dd]\\)"    // "(fwd)"
+                                "(\\([Ff][Ww][Dd]\\))"    // "(fwd)"
                             ")$");
         while ((pos = subjTrailer.indexIn(result)) != -1) {
+            if (!subjTrailer.cap(1).isEmpty()) {
+                *replyOrForward = true;
+            }
             result = result.left(pos);
         }
 
@@ -462,15 +473,18 @@ QString QMail::baseSubject(const QString& subject)
             modified = false;
 
             // Remove any subj-leader
-            QRegExp subjLeader("^("
+            QRegExp subjLeader("^(?:"
                                     "[ \\t]+"       // WSP
                                "|"
-                                    "(\\[[^\\[\\]]*\\][ \\t]*)*"        // ( '[' 'blobchar'* ']' WSP* )*
+                                    "(?:\\[[^\\[\\]]*\\][ \\t]*)*"        // ( '[' 'blobchar'* ']' WSP* )*
                                     "([Rr][Ee]|[Ff][Ww][Dd]?)[ \\t]*"   // ( "Re" | "Fw" | "Fwd") WSP*
-                                    "(\\[[^\\[\\]]*\\][ \\t]*)?"        // optional: ( '[' 'blobchar'* ']' WSP* )
+                                    "(?:\\[[^\\[\\]]*\\][ \\t]*)?"        // optional: ( '[' 'blobchar'* ']' WSP* )
                                     ":"                                 // ':'
                                ")");
             while ((pos = subjLeader.indexIn(result)) == 0) {
+                if (!subjLeader.cap(1).isEmpty()) {
+                    *replyOrForward = true;
+                }
                 result = result.mid(subjLeader.cap(0).length());
                 modified = true;
             }
@@ -487,6 +501,7 @@ QString QMail::baseSubject(const QString& subject)
         QRegExp subjFwdHdr("^\\[[Ff][Ww][Dd]:");
         QRegExp subjFwdTrl("\\]$");
         if ((subjFwdHdr.indexIn(result) == 0) && (subjFwdTrl.indexIn(result) != -1)) {
+            *replyOrForward = true;
             result = result.mid(subjFwdHdr.cap(0).length(), result.length() - (subjFwdHdr.cap(0).length() + subjFwdTrl.cap(0).length()));
             repeat = true;
         }

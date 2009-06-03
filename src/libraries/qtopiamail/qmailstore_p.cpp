@@ -4311,13 +4311,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         return Failure;
     }
 
-    QString baseSubject(QMail::baseSubject(metaData->subject()));
+    bool replyOrForward(false);
+    QString baseSubject(QMail::baseSubject(metaData->subject(), &replyOrForward));
     QStringList missingReferences;
     bool missingAncestor(false);
 
     if (!metaData->inResponseTo().isValid()) {
         // Does this message have any references to resolve?
-        AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences, &missingAncestor);
+        AttemptResult result = messagePredecessor(metaData, references, baseSubject, replyOrForward, &missingReferences, &missingAncestor);
         if (result != Success)
             return result;
     }
@@ -4911,7 +4912,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
         }
 
-        QString baseSubject(QMail::baseSubject(metaData->subject()));
+        bool replyOrForward(false);
+        QString baseSubject(QMail::baseSubject(metaData->subject(), &replyOrForward));
         QStringList missingReferences;
         bool missingAncestor(false);
 
@@ -4925,7 +4927,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
             }
 
-            AttemptResult result = messagePredecessor(metaData, references, baseSubject, (baseSubject == metaData->subject()), &missingReferences, &missingAncestor);
+            AttemptResult result = messagePredecessor(metaData, references, baseSubject, replyOrForward, &missingReferences, &missingAncestor);
             if (result != Success)
                 return result;
         }
@@ -6215,7 +6217,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
     return result;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject,
+QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool replyOrForward,
                                                                        QStringList *missingReferences, bool *missingAncestor)
 {
     QList<quint64> potentialPredecessors;
@@ -6268,37 +6270,33 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                 }
             }
         }
-    } else if (!baseSubject.isEmpty()) {
-        if (sameSubject) {
-            // The base subject does not differ from the actual subject - probably not a reply
-        } else {
-            // This message has a thread ancestor, but we can only estimate which is the best choice
-            *missingAncestor = true;
+    } else if (!baseSubject.isEmpty() && replyOrForward) {
+        // This message has a thread ancestor, but we can only estimate which is the best choice
+        *missingAncestor = true;
 
-            // Find the preceding messages of all thread matching this base subject
-            QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
-                                        "WHERE id!=? "
-                                        "AND parentaccountid=? "
-                                        "AND stamp<? "
-                                        "AND id IN ("
-                                            "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
-                                                "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
-                                                    "SELECT id FROM mailsubjects WHERE basesubject=?"
-                                                ")"
+        // Find the preceding messages of all thread matching this base subject
+        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
+                                    "WHERE id!=? "
+                                    "AND parentaccountid=? "
+                                    "AND stamp<? "
+                                    "AND id IN ("
+                                        "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
+                                            "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
+                                                "SELECT id FROM mailsubjects WHERE basesubject=?"
                                             ")"
-                                        ") "
-                                        "ORDER BY stamp DESC",
-                                        QVariantList() << metaData->id().toULongLong() 
-                                                       << metaData->parentAccountId().toULongLong() 
-                                                       << metaData->date().toLocalTime() 
-                                                       << baseSubject,
-                                        "messagePredecessor mailmessages select query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
+                                        ")"
+                                    ") "
+                                    "ORDER BY stamp DESC",
+                                    QVariantList() << metaData->id().toULongLong() 
+                                                    << metaData->parentAccountId().toULongLong() 
+                                                    << metaData->date().toLocalTime() 
+                                                    << baseSubject,
+                                    "messagePredecessor mailmessages select query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
 
-            while (query.next()) {
-                potentialPredecessors.append(extractValue<quint64>(query.value(0)));
-            }
+        while (query.next()) {
+            potentialPredecessors.append(extractValue<quint64>(query.value(0)));
         }
     }
 
