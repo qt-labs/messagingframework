@@ -759,7 +759,7 @@ void QMailMessageThreadedModelPrivate::init() const
                     // Determine where this message should sort amongst its siblings
                     int index = 0;
                     for ( ; index < container.count(); ++index) {
-                        if (ids.indexOf(container.at(index)._id) > (iit - ids.begin())) {
+                        if (ids.indexOf(container.at(index)._id) > ids.indexOf(messageId)) {
                             break;
                         }
                     }
