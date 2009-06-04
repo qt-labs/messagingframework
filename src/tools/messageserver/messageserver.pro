@@ -38,3 +38,6 @@ TRANSLATIONS += messageserver-ar.ts \
                 messageserver-pt_BR.ts \
                 messageserver-zh_CN.ts \
                 messageserver-zh_TW.ts
+
+include(../../common.pri)
+

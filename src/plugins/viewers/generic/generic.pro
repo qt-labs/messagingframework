@@ -30,3 +30,6 @@ TRANSLATIONS += libgenericviewer-ar.ts \
                 libgenericviewer-pt_BR.ts \
                 libgenericviewer-zh_CN.ts \
                 libgenericviewer-zh_TW.ts
+
+include(../../../common.pri)
+

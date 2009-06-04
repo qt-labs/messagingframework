@@ -34,3 +34,6 @@ TRANSLATIONS += libemailcomposer-ar.ts \
                 libemailcomposer-zh_TW.ts
 
 RESOURCES += email.qrc                
+
+include(../../../common.pri)
+

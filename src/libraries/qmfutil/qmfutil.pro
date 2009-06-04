@@ -31,3 +31,6 @@ TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-pt_BR.ts \
                 libqmfutil-zh_CN.ts \
                 libqmfutil-zh_TW.ts
+
+include(../../common.pri)
+

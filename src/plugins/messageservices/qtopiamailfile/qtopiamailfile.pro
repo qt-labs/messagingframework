@@ -20,3 +20,6 @@ HEADERS += service.h settings.h
 FORMS += settings.ui
 
 SOURCES += service.cpp settings.cpp storagelocations.cpp
+
+include(../../../common.pri)
+
