@@ -357,14 +357,14 @@ void SmtpClient::nextAction(const QString &response)
         QByteArray authCmd(SmtpAuthenticator::getAuthentication(config.serviceConfiguration("smtp"), capabilities));
         if (!authCmd.isEmpty()) {
             sendCommand(authCmd);
-            status = Auth;
+            status = Authenticating;
         } else {
-            status = From;
+            status = Authenticated;
             nextAction(QString());
         }
         break;
     }
-    case Auth:
+    case Authenticating:
     {
         if (responseCode == 334) {
             // This is a continuation containing a challenge string (in Base64)
@@ -378,13 +378,24 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else if (responseCode == 235) {
             // We are now authenticated
-            status = From;
+            status = Authenticated;
             nextAction(QString());
         } else {
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
         }
 
         // Otherwise, we're authenticated
+        break;
+    }
+    case Authenticated:
+    {
+        if (mailItr == mailList.end()) {
+            // Nothing to send
+            status = Quit;
+        } else {
+            status = From;
+        }
+        nextAction(QString());
         break;
     }
 
@@ -477,26 +488,36 @@ void SmtpClient::nextAction(const QString &response)
 
             mailItr++;
             if (mailItr == mailList.end()) {
-                // Completed successfully
-                sendCommand("QUIT");
-
-                sending = false;
-                status = Done;
-                transport->close();
-                qMailLog(SMTP) << "Closed connection" << flush;
-
-                int count = mailList.count();
-                mailList.clear();
-
-                emit updateStatus(tr("Sent %n messages", "", count));
+                status = Quit;
             } else {
                 // More messages to send
                 status = From;
-                nextAction(QString());
             }
+            nextAction(QString());
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
             messageProcessed(msgId);
+        }
+        break;
+    }
+
+    case Quit:  
+    {
+        // Completed successfully
+        sendCommand("QUIT");
+
+        sending = false;
+        status = Done;
+        transport->close();
+        qMailLog(SMTP) << "Closed connection" << flush;
+
+        int count = mailList.count();
+        if (count) {
+            mailList.clear();
+            emit updateStatus(tr("Sent %n messages", "", count));
+        } else {
+            // There was nothing to send
+            emit sendCompleted();
         }
         break;
     }

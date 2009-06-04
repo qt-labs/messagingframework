@@ -74,8 +74,8 @@ private:
 private:
     enum TransferStatus
     {
-        Init, Helo, Extension, StartTLS, TLS, Connected, Auth,
-        From, Recv, MRcv, Data, Body, Sent, Done
+        Init, Helo, Extension, StartTLS, TLS, Connected, Authenticating, Authenticated,
+        From, Recv, MRcv, Data, Body, Sent, Quit, Done
     };
 
     QMailAccountConfiguration config;
