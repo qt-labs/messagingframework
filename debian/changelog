@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W22-0maemo3) hardy; urgency=low
+
+  * Make changes for auto-testing.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Thu, 04 Jun 2009 18:10:53 +1000
+
 qt4-messagingframework (2009W22-0maemo2) hardy; urgency=low
 
   * Testing the auto-test.
