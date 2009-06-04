@@ -61,7 +61,7 @@ QString SigEntry::entry() const
     return input->toPlainText();
 }
 
-void SigEntry::closeEvent(QCloseEvent *event)
+void SigEntry::closeEvent(QCloseEvent *)
 {
     accept();
 }
