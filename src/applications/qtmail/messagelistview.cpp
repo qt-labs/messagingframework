@@ -194,11 +194,11 @@ int MessageListModel::columnCount(const QModelIndex & parent ) const
     return headers.count();
 }
 
-int MessageListModel::rowCount(const QModelIndex &) const
+int MessageListModel::rowCount(const QModelIndex &parentIndex) const
 {
-    int actualRows = MessageListView::ModelType::rowCount(parent);
+    int actualRows = MessageListView::ModelType::rowCount(parentIndex);
 
-    if (!parent.isValid() && (actualRows > 0) && m_moreButtonVisible)
+    if (!parentIndex.isValid() && (actualRows > 0) && m_moreButtonVisible)
         actualRows++;
 
     return actualRows;
