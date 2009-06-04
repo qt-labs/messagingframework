@@ -71,7 +71,8 @@ void processChars(Processor p, const QString& field, QString::const_iterator ori
     } while (++it != end);
     
     if ((it != begin) && (depth >= 0)) {
-        p(EOF, depth, quoted, field, begin, it);
+        // Terminate the sequence
+        p('\0', depth, quoted, field, begin, it);
     }
 }
 
@@ -85,7 +86,7 @@ struct StructureDecomposer
 
     bool operator()(char c, int depth, bool, const QString &field, QString::const_iterator begin, QString::const_iterator it)
     {
-        if ((c == ')') || (c == EOF)) {
+        if ((c == ')') || (c == '\0')) {
             if (depth == reportDepth) {
                 result.append(field.mid(begin - field.begin(), it - begin).trimmed());
 
@@ -137,7 +138,7 @@ struct ElementDecomposer
 
     bool operator()(char c, int depth, bool quoted, const QString &field, QString::const_iterator begin, QString::const_iterator it)
     {
-        if (((c == ' ') && !quoted) || (c == EOF)) {
+        if (((c == ' ') && !quoted) || (c == '\0')) {
             if (depth == 0) {
                 if (it != begin) {
                     append(field, begin - field.begin(), it - begin, depth);

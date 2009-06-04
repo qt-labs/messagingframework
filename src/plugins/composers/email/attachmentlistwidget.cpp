@@ -169,7 +169,7 @@ bool AttachmentListDelegate::isOverRemoveLink(const QRect& parentRect, const QPo
     return textRect.contains(pos);
 }
 
-bool AttachmentListDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index )
+bool AttachmentListDelegate::helpEvent(QHelpEvent *, QAbstractItemView *view, const QStyleOptionViewItem &, const QModelIndex &index)
 {
     if(!index.isValid())
         view->setToolTip(QString());

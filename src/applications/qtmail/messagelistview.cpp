@@ -194,7 +194,7 @@ int MessageListModel::columnCount(const QModelIndex & parent ) const
     return headers.count();
 }
 
-int MessageListModel::rowCount(const QModelIndex& parent) const
+int MessageListModel::rowCount(const QModelIndex &) const
 {
     int actualRows = MessageListView::ModelType::rowCount(parent);
 
