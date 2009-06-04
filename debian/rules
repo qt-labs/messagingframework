@@ -59,6 +59,6 @@ clean::
 	rm -f src/libraries/qtopiamail/libqtopiamail.prl
 
 install/libqmf-tests::
-	mkdir -p $(CURDIR)/debian/tmp/usr/tests/qmf
-	cp $(CURDIR)/debian/runtests.sh $(CURDIR)/debian/tmp/usr/tests/qmf/.
-	cp $(CURDIR)/debian/test_script.sh $(CURDIR)/debian/tmp/usr/tests/qmf/.
+	mkdir -p $(CURDIR)/debian/tmp/usr/tests
+	cp $(CURDIR)/debian/runtests.sh $(CURDIR)/debian/tmp/usr/tests/.
+	cp $(CURDIR)/debian/test_script.sh $(CURDIR)/debian/tmp/usr/tests/.
