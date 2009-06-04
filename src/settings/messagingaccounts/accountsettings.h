@@ -47,7 +47,7 @@ private slots:
     void updateActions();
     void displayProgress(uint, uint);
     void activityChanged(QMailServiceAction::Activity activity);
-    void retrieveFolders();
+    void testConfiguration();
     void deleteMessages();
 
 private:
@@ -64,6 +64,7 @@ private:
     QPoint cPos;
     bool preExisting;
     QMailRetrievalAction *retrievalAction;
+    QMailTransmitAction *transmitAction;
     QMailAccountId deleteAccountId;
     QMailMessageIdList deleteMessageIds;
     int deleteBatchSize;

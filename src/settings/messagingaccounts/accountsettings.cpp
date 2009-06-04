@@ -81,6 +81,12 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
             this, SLOT(activityChanged(QMailServiceAction::Activity)));
     connect(retrievalAction, SIGNAL(progressChanged(uint, uint)), 
             this, SLOT(displayProgress(uint, uint)));
+
+    transmitAction = new QMailTransmitAction(this);
+    connect(transmitAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+            this, SLOT(activityChanged(QMailServiceAction::Activity)));
+    connect(transmitAction, SIGNAL(progressChanged(uint, uint)), 
+            this, SLOT(displayProgress(uint, uint)));
 }
 
 void AccountSettings::addAccount()
@@ -245,46 +251,76 @@ void AccountSettings::editAccount(QMailAccount *account)
             }
         }
 
-        if (config.services().contains("imap4", Qt::CaseInsensitive)) {
-            QTimer::singleShot(0, this, SLOT(retrieveFolders()));
-        }
+        QTimer::singleShot(0, this, SLOT(testConfiguration()));
     }
 }
 
-void AccountSettings::retrieveFolders()
+void AccountSettings::testConfiguration()
 {
     QModelIndex index(accountView->currentIndex());
     if (index.isValid()) {
         QMailAccountId id(accountModel->idFromIndex(index));
         
-        // See if the user wants to retrieve the folders for this account
-        if (QMessageBox::question(qApp->activeWindow(),
-                                  preExisting ? tr("Account Modified") : tr("Account Added"),
-                                  tr("Do you wish to retrieve the folder structure for this account?"),
-                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
-            statusDisplay->setVisible(true);
-            statusDisplay->displayStatus(tr("Retrieving folders..."));
+        QMailAccount account(id);
+        if (account.status() & (QMailAccount::MessageSource | QMailAccount::MessageSink)) {
+            // See if the user wants to test the configuration for this account
+            if (QMessageBox::question(qApp->activeWindow(),
+                                      preExisting ? tr("Account Modified") : tr("Account Added"),
+                                      tr("Do you wish to test the configuration for this account?"),
+                                      QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+                statusDisplay->setVisible(true);
+                statusDisplay->displayStatus(tr("Testing configuration..."));
 
-            retrievalAction->retrieveFolderList(id, QMailFolderId(), true);
+                if (account.status() & QMailAccount::MessageSource) {
+                    retrievalAction->retrieveFolderList(id, QMailFolderId(), true);
+                } else if (account.status() & QMailAccount::MessageSink) {
+                    transmitAction->transmitMessages(id);
+                }
+            }
         }
     }
 }
 
 void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
 {
-    if (activity == QMailServiceAction::Successful) {
-        statusDisplay->displayStatus(tr("Folders retrieved"));
-    } else if (activity == QMailServiceAction::Failed) {
-        QString caption(tr("Retrieve Failure"));
-        QString action(tr("%1 - Error retrieving folders: %2", "%1: account name, %2: error text"));
-
+    if (sender() == static_cast<QObject*>(retrievalAction)) {
         const QMailServiceAction::Status status(retrievalAction->status());
-        QMailAccount account(status.accountId);
-        action = action.arg(account.name()).arg(status.text);
+        if (status.accountId.isValid()) {
+            QMailAccount account(status.accountId);
 
-        qMailLog(Messaging) << "retrieveFolders failed:" << action;
-        statusDisplay->setVisible(false);
-        QMessageBox::warning(0, caption, action, QMessageBox::Ok);
+            if (activity == QMailServiceAction::Successful) {
+                if (account.status() & QMailAccount::MessageSink) {
+                    transmitAction->transmitMessages(account.id());
+                } else {
+                    statusDisplay->displayStatus(tr("Configuration tested."));
+                }
+            } else if (activity == QMailServiceAction::Failed) {
+                QString caption(tr("Retrieve Failure"));
+                QString action(tr("%1 - Error retrieving folders: %2", "%1: account name, %2: error text"));
+
+                action = action.arg(account.name()).arg(status.text);
+
+                qMailLog(Messaging) << "retrieveFolders failed:" << action;
+                statusDisplay->setVisible(false);
+                QMessageBox::warning(0, caption, action, QMessageBox::Ok);
+            }
+        }
+    } else if (sender() == static_cast<QObject*>(transmitAction)) {
+        if (activity == QMailServiceAction::Successful) {
+            statusDisplay->displayStatus(tr("Configuration tested."));
+        } else if (activity == QMailServiceAction::Failed) {
+            const QMailServiceAction::Status status(transmitAction->status());
+            QMailAccount account(status.accountId);
+
+            QString caption(tr("Transmission Failure"));
+            QString action(tr("%1 - Error testing connection: %2", "%1: account name, %2: error text"));
+
+            action = action.arg(account.name()).arg(status.text);
+
+            qMailLog(Messaging) << "transmitMessages failed:" << action;
+            statusDisplay->setVisible(false);
+            QMessageBox::warning(0, caption, action, QMessageBox::Ok);
+        }
     }
 }
 
