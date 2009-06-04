@@ -30,3 +30,6 @@ SOURCES += smtpauthenticator.cpp \
            smtpconfiguration.cpp \
            smtpservice.cpp \
            smtpsettings.cpp
+
+include(../../../common.pri)
+

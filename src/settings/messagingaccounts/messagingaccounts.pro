@@ -27,3 +27,6 @@ SOURCES += accountsettings.cpp \
            statusdisplay.cpp
 
 RESOURCES += messagingaccounts.qrc
+
+include(../../common.pri)
+

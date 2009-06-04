@@ -39,3 +39,6 @@ SOURCES += imapclient.cpp \
            imapauthenticator.cpp \
            imapstrategy.cpp \
            integerregion.cpp
+
+include(../../../common.pri)
+

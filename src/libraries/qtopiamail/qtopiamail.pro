@@ -143,3 +143,6 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-pt_BR.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
+
+include(../../common.pri)
+

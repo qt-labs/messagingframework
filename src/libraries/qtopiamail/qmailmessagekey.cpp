@@ -329,7 +329,7 @@ QMailMessageKey QMailMessageKey::nonMatchingKey()
 }
 
 /*!
-    Returns a key matching messages whose identfier matches \a id, according to \a cmp.
+    Returns a key matching messages whose identifier matches \a id, according to \a cmp.
 
     \sa QMailMessage::id()
 */
@@ -339,7 +339,7 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageId &id, QMailDataComparato
 }
 
 /*!
-    Returns a key matching messages whose identfier is a member of \a ids, according to \a cmp.
+    Returns a key matching messages whose identifier is a member of \a ids, according to \a cmp.
 
     \sa QMailMessage::id()
 */
@@ -357,7 +357,7 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageIdList &ids, QMailDataComp
 }
 
 /*!
-    Returns a key matching messages whose identfier is a member of the set yielded by \a key, according to \a cmp.
+    Returns a key matching messages whose identifier is a member of the set yielded by \a key, according to \a cmp.
 
     \sa QMailMessage::id()
 */

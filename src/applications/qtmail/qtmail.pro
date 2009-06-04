@@ -50,3 +50,6 @@ SOURCES += main.cpp \
 FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
+
+include(../../common.pri)
+
