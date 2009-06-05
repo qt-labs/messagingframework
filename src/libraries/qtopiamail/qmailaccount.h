@@ -73,6 +73,8 @@ public:
     static const quint64 &MessageSink;
     static const quint64 &CanTransmit;
     static const quint64 &Enabled;
+    static const quint64 &CanReferenceExternalData;
+    static const quint64 &CanTransmitViaReference;
 
     QMailAccount();
     explicit QMailAccount(const QMailAccountId& id);

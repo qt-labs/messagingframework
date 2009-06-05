@@ -32,6 +32,8 @@ static quint64 canRetrieveFlag = 0;
 static quint64 messageSinkFlag = 0;
 static quint64 canTransmitFlag = 0;
 static quint64 enabledFlag = 0;
+static quint64 canReferenceExternalDataFlag = 0;
+static quint64 canTransmitViaReferenceFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -116,6 +118,8 @@ public:
             messageSinkFlag = registerFlag("MessageSink");
             canTransmitFlag = registerFlag("CanTransmit");
             enabledFlag = registerFlag("Enabled");
+            canReferenceExternalDataFlag = registerFlag("CanReferenceExternalData");
+            canTransmitViaReferenceFlag = registerFlag("CanTransmitViaReference");
         }
     }
 
@@ -309,6 +313,8 @@ const quint64 &QMailAccount::CanRetrieve = canRetrieveFlag;
 const quint64 &QMailAccount::MessageSink = messageSinkFlag;
 const quint64 &QMailAccount::CanTransmit = canTransmitFlag;
 const quint64 &QMailAccount::Enabled = enabledFlag;
+const quint64 &QMailAccount::CanReferenceExternalData = canReferenceExternalDataFlag;
+const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFlag;
 
 /*!
     Creates an uninitialised account object.

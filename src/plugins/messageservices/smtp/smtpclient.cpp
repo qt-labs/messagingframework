@@ -298,7 +298,26 @@ void SmtpClient::nextAction(const QString &response)
             if (response[3] == '-') {
                 // More to follow
             } else {
-                // This is the terminating extension - proceed to TLS negotiation
+                // This is the terminating extension
+                // Now that we know the capabilities, check for Reference support
+                bool supportsReferences(false);
+                foreach (const QString &capability, capabilities) {
+                    if ((capability == "BURL") || (capability.startsWith("BURL "))) {
+                        supportsReferences = true;
+                        break;
+                    }
+                }
+
+                QMailAccount account(config.id());
+                if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences) ||
+                    (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences)) {
+                    account.setStatus(QMailAccount::CanTransmitViaReference, supportsReferences);
+                    if (!QMailStore::instance()->updateAccount(&account)) {
+                        qWarning() << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
+                    }
+                }
+
+                // Proceed to TLS negotiation
                 status = StartTLS;
                 nextAction(QString());
             }

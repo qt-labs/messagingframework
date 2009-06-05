@@ -536,6 +536,18 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         
         case IMAP_Capability:
         {
+            // Now that we know the capabilities, check for Reference support
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
+
+            QMailAccount account(_config.id());
+            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
+                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)) {
+                account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
+                if (!QMailStore::instance()->updateAccount(&account)) {
+                    qWarning() << "Unable to update account" << account.id() << "to set CanReferenceExternalData";
+                }
+            }
+
             if (!_protocol.encrypted()) {
                 if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _protocol.capabilities())) {
                     // Switch to encrypted mode
@@ -604,7 +616,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
 
                 if (modified) {
-                    QMailStore::instance()->updateFolder(&folder);
+                    if (!QMailStore::instance()->updateFolder(&folder)) {
+                        qWarning() << "Unable to update folder" << folder.id() << "to update server counts!";
+                    }
                 }
             }
             // fall through
@@ -808,7 +822,7 @@ public:
         char buffer[BufferSize];
 
         while (!srcFile.atEnd() && (maxLength != 0)) {
-            qint64 readSize = ((maxLength > 0) ? qMin<qint64>(maxLength, BufferSize) : BufferSize);
+            qint64 readSize = ((maxLength > 0) ? qMin<qint64>(maxLength, BufferSize) : static_cast<qint64>(BufferSize));
             readSize = srcFile.read(buffer, readSize);
             if (readSize == -1) {
                 return false;
