@@ -58,7 +58,7 @@ clean::
 	rm -f src/libraries/qmfutil/libqmfutil.prl
 	rm -f src/libraries/qtopiamail/libqtopiamail.prl
 
-install/libqmf-tests::
+install:
 	mkdir -p $(CURDIR)/debian/tmp/usr/tests
 	cp $(CURDIR)/debian/runtests.sh $(CURDIR)/debian/tmp/usr/tests/.
 	chmod 755 $(CURDIR)/debian/tmp/usr/tests/runtests.sh
