@@ -18,7 +18,7 @@ index cd9a51e..f7e97ed 100644
            src/plugins/contentmanagers/qtopiamailfile \
            src/plugins/viewers/generic \
 diff --git a/src/applications/qtmail/qtmail.pro b/src/applications/qtmail/qtmail.pro
-index 04db3ad..343c98f 100644
+index 5c83e96..0d4729d 100644
 --- a/src/applications/qtmail/qtmail.pro
 +++ b/src/applications/qtmail/qtmail.pro
 @@ -11,7 +11,18 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
@@ -118,43 +118,7 @@ index 0000000..1b390c9
 +++ b/src/libraries/messageserver/include/QMailTransport
 @@ -0,0 +1 @@
 +#include "qmailtransport.h"
-diff --git a/src/libraries/messageserver/messageserver.pro b/src/libraries/messageserver/messageserver.pro
-index 2b02a7b..1677d4d 100644
---- a/src/libraries/messageserver/messageserver.pro
-+++ b/src/libraries/messageserver/messageserver.pro
-@@ -1,12 +1,10 @@
- TEMPLATE = lib 
- 
- TARGET = messageserver
--target.path += $$QMF_INSTALL_ROOT/lib
--INSTALLS += target
- 
- QT *= network
- 
--CONFIG += warn_on
-+CONFIG += warn_on create_pc create_prl
- 
- DEPENDPATH += .
- 
-@@ -27,3 +25,18 @@ SOURCES += qmailauthenticator.cpp \
-            qmailserviceconfiguration.cpp \
-            qmailstoreaccountfilter.cpp \
-            qmailtransport.cpp
-+
-+target.path += $$QMF_INSTALL_ROOT/lib
-+INSTALLS += target
-+
-+# Install headers
-+headers.files = $$HEADERS include/*
-+headers.path  = $$QMF_INSTALL_ROOT/include/qmf
-+
-+INSTALLS += headers 
-+
-+# Install pkgconfig file
-+QMAKE_PKGCONFIG_LIBDIR  = $$target.path
-+QMAKE_PKGCONFIG_INCDIR  = $$headers.path
-+QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-+
+* Unmerged path src/libraries/messageserver/messageserver.pro
 diff --git a/src/libraries/qmfutil/include/QMailComposerFactory b/src/libraries/qmfutil/include/QMailComposerFactory
 new file mode 100644
 index 0000000..23b68f1
@@ -202,41 +166,7 @@ index 0000000..6d19eb2
 @@ -0,0 +1 @@
 +#include "qmailmessagedelegate.h"
 \ No newline at end of file
-diff --git a/src/libraries/qmfutil/qmfutil.pro b/src/libraries/qmfutil/qmfutil.pro
-index c58af12..c01a180 100644
---- a/src/libraries/qmfutil/qmfutil.pro
-+++ b/src/libraries/qmfutil/qmfutil.pro
-@@ -1,10 +1,8 @@
- TEMPLATE = lib 
- 
- TARGET = qmfutil 
--target.path += $$QMF_INSTALL_ROOT/lib
--INSTALLS += target
- 
--CONFIG += warn_on
-+CONFIG += warn_on create_pc create_prl
- 
- DEPENDPATH += .
- 
-@@ -31,3 +29,18 @@ TRANSLATIONS += libqmfutil-ar.ts \
-                 libqmfutil-pt_BR.ts \
-                 libqmfutil-zh_CN.ts \
-                 libqmfutil-zh_TW.ts
-+
-+target.path += $$QMF_INSTALL_ROOT/lib
-+INSTALLS += target
-+
-+# Install headers
-+headers.files = $$HEADERS include/*
-+headers.path  = $$QMF_INSTALL_ROOT/include/qmf
-+
-+INSTALLS += headers 
-+
-+# Install pkgconfig file
-+QMAKE_PKGCONFIG_LIBDIR  = $$target.path
-+QMAKE_PKGCONFIG_INCDIR  = $$headers.path
-+QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-+
+* Unmerged path src/libraries/qmfutil/qmfutil.pro
 diff --git a/src/libraries/qtopiamail/include/MailId b/src/libraries/qtopiamail/include/MailId
 new file mode 100644
 index 0000000..e2db656
@@ -609,10 +539,10 @@ index 0000000..cfbd6ca
 @@ -0,0 +1 @@
 +#include "qmailserviceaction.h"
 diff --git a/src/libraries/qtopiamail/qmailstore.cpp b/src/libraries/qtopiamail/qmailstore.cpp
-index d0a8cdb..300f5bd 100644
+index dea4500..b062e80 100644
 --- a/src/libraries/qtopiamail/qmailstore.cpp
 +++ b/src/libraries/qtopiamail/qmailstore.cpp
-@@ -11,7 +11,12 @@
+@@ -42,7 +42,12 @@
  // Needed to give friend access to the function defined by Q_GLOBAL_STATIC
  #define QMAILSTOREINSTANCE_DEFINED_HERE
  #include "qmailstore.h"
@@ -626,10 +556,10 @@ index d0a8cdb..300f5bd 100644
  /*!
      \class QMailStore
 diff --git a/src/libraries/qtopiamail/qmailstore_p.cpp b/src/libraries/qtopiamail/qmailstore_p.cpp
-index 016f218..62eb13f 100644
+index 75a0dc6..ef6a1d3 100644
 --- a/src/libraries/qtopiamail/qmailstore_p.cpp
 +++ b/src/libraries/qtopiamail/qmailstore_p.cpp
-@@ -1941,6 +1941,7 @@ int QMailStorePrivate::pathIdentifier(const QString &filePath)
+@@ -1991,6 +1991,7 @@ int QMailStorePrivate::pathIdentifier(const QString &filePath)
  
  int QMailStorePrivate::databaseIdentifier(int n) const
  {
@@ -637,7 +567,7 @@ index 016f218..62eb13f 100644
      int result = static_cast<int>(::ftok(database.databaseName().toAscii(), n));
      if (result == -1)
          qFatal("Could not create database semaphore. Database could not be found.");
-@@ -1960,12 +1961,17 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
+@@ -2010,12 +2011,17 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
        lastQueryError(0),
        mutex(0)
  {
@@ -656,7 +586,7 @@ index 016f218..62eb13f 100644
      mutex = new ProcessMutex(databaseIdentifier(1));
      readLock = new ProcessReadLock(databaseIdentifier(2));
      if (contentMutex == 0) {
-@@ -1996,7 +2002,7 @@ ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
+@@ -2046,7 +2052,7 @@ ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
  
  bool QMailStorePrivate::initStore()
  {
@@ -666,10 +596,10 @@ index 016f218..62eb13f 100644
      if (!guard.lock(1000)) {
          return false;
 diff --git a/src/libraries/qtopiamail/qmailstore_p.h b/src/libraries/qtopiamail/qmailstore_p.h
-index 4b011d7..c9c1071 100644
+index c904bf9..839edf6 100644
 --- a/src/libraries/qtopiamail/qmailstore_p.h
 +++ b/src/libraries/qtopiamail/qmailstore_p.h
-@@ -26,7 +26,7 @@
+@@ -57,7 +57,7 @@
  #include <QSqlDatabase>
  #include <QCache>
  
@@ -4474,130 +4404,13 @@ index 0000000..fe05e08
 +}
 +
 +#endif
-diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
-index c715160..069f2cd 100644
---- a/src/libraries/qtopiamail/qtopiamail.pro
-+++ b/src/libraries/qtopiamail/qtopiamail.pro
-@@ -1,17 +1,35 @@
- TEMPLATE = lib 
- 
- TARGET = qtopiamail
--target.path += $$QMF_INSTALL_ROOT/lib 
--INSTALLS += target
- 
- DEFINES += QT_BUILD_QCOP_LIB
- 
- QT *= sql network
- 
--CONFIG += warn_on
-+CONFIG += warn_on create_pc create_prl
- 
- INCLUDEPATH += support
- 
-+sparql {
-+
-+DEFINES += SPARQL_STORE
-+
-+HEADERS += qmailstore_sparql.h
-+
-+SOURCES += qmailstore_sparql.cpp
-+
-+INCLUDEPATH += ../sparql ../sparql/tracker
-+
-+LIBS += -L../sparql -lsparql
-+
-+} else {
-+
-+HEADERS += qmailstore_p.h
-+
-+SOURCES += qmailstore_p.cpp
-+
-+}
-+
- HEADERS += bind_p.h \
-            longstream_p.h \
-            longstring_p.h \
-@@ -46,12 +64,11 @@ HEADERS += bind_p.h \
-            qmailmessagesortkey_p.h \
-            qmailserviceaction.h \
-            qmailstore.h \
--           qmailstore_p.h \
-+           semaphore_p.h \
-            qmailstoreimplementation_p.h \
-            qmailtimestamp.h \
-            qprivateimplementation.h \
-            qprivateimplementationdef.h \
--           semaphore_p.h \
-            support/qmailglobal.h \
-            support/qmaillog.h \
-            support/qmailnamespace.h \
-@@ -62,7 +79,8 @@ HEADERS += bind_p.h \
-            support/qcopchannelmonitor.h \
-            support/qcopserver.h \
-            support/qmailpluginmanager.h \
--           support/qringbuffer_p.h
-+           support/qringbuffer_p.h \
-+           support/qmailipc.h
- 
- SOURCES += longstream.cpp \
-            longstring.cpp \
-@@ -90,7 +108,6 @@ SOURCES += longstream.cpp \
-            qmailmessagesortkey.cpp \
-            qmailserviceaction.cpp \
-            qmailstore.cpp \
--           qmailstore_p.cpp \
-            qmailstoreimplementation_p.cpp \
-            qmailtimestamp.cpp \
-            qprivateimplementation.cpp \
-@@ -120,3 +137,19 @@ TRANSLATIONS += libqtopiamail-ar.ts \
-                 libqtopiamail-pt_BR.ts \
-                 libqtopiamail-zh_CN.ts \
-                 libqtopiamail-zh_TW.ts
-+
-+
-+target.path += $$QMF_INSTALL_ROOT/lib 
-+INSTALLS += target
-+
-+# Install headers
-+headers.files = $$HEADERS include/*
-+headers.path  = $$QMF_INSTALL_ROOT/include/qmf
-+
-+INSTALLS += headers 
-+
-+# Install pkgconfig file
-+QMAKE_PKGCONFIG_LIBDIR  = $$target.path
-+QMAKE_PKGCONFIG_INCDIR  = $$headers.path
-+QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-+
-diff --git a/src/libraries/qtopiamail/support/qmaillog.h b/src/libraries/qtopiamail/support/qmaillog.h
-index 9d61887..81373e8 100644
---- a/src/libraries/qtopiamail/support/qmaillog.h
-+++ b/src/libraries/qtopiamail/support/qmaillog.h
-@@ -86,12 +86,12 @@ public:
- 
- #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
- 
--QLOG_DISABLE() //uncategorized logging
--QLOG_DISABLE(Messaging)
--QLOG_DISABLE(IMAP)
--QLOG_DISABLE(SMTP)
--QLOG_DISABLE(POP)
--QLOG_DISABLE(ImapData)
--QLOG_DISABLE(MessagingState)
-+QLOG_ENABLE() //uncategorized logging
-+QLOG_ENABLE(Messaging)
-+QLOG_ENABLE(IMAP)
-+QLOG_ENABLE(SMTP)
-+QLOG_ENABLE(POP)
-+QLOG_ENABLE(ImapData)
-+QLOG_ENABLE(MessagingState)
- 
- #endif //QMAILLOG_H
+* Unmerged path src/libraries/qtopiamail/qtopiamail.pro
+* Unmerged path src/libraries/qtopiamail/support/qmaillog.h
 diff --git a/src/libraries/qtopiamail/support/qmailnamespace.cpp b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-index d63acdf..64933f0 100644
+index ca46279..03a1840 100644
 --- a/src/libraries/qtopiamail/support/qmailnamespace.cpp
 +++ b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-@@ -9,6 +9,7 @@
+@@ -40,6 +40,7 @@
  ****************************************************************************/
  
  #include "qmailnamespace.h"
@@ -4605,7 +4418,7 @@ index d63acdf..64933f0 100644
  #include <QSqlDatabase>
  #include <stdio.h>
  #include <unistd.h>
-@@ -130,6 +131,7 @@ int QMail::fileLock(const QString& lockFile)
+@@ -161,6 +162,7 @@ int QMail::fileLock(const QString& lockFile)
      int fdlock = -1;
  
      QString path = QDir::tempPath() + "/" + lockFile;
@@ -4613,7 +4426,7 @@ index d63acdf..64933f0 100644
      if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT, 0666)) == -1)
          return -1;
  
-@@ -178,9 +180,9 @@ QString QMail::pluginsPath()
+@@ -209,9 +211,9 @@ QString QMail::pluginsPath()
  {
      static QString pluginsEnv(getenv(QMF_PLUGINS_ENV));
      if(!pluginsEnv.isEmpty())
@@ -4626,7 +4439,7 @@ index d63acdf..64933f0 100644
  }
  
  QString QMail::sslCertsPath()
-@@ -194,11 +196,16 @@ QSqlDatabase QMail::createDatabase()
+@@ -225,11 +227,16 @@ QSqlDatabase QMail::createDatabase()
      QSqlDatabase db;
      if(!init)
      {
@@ -9506,7 +9319,7 @@ index 0000000..747a057
 +
 +FORMS += dummysettings.ui
 diff --git a/src/settings/messagingaccounts/messagingaccounts.pro b/src/settings/messagingaccounts/messagingaccounts.pro
-index 03c3e8e..a1d46c0 100644
+index 318aaf5..d62644e 100644
 --- a/src/settings/messagingaccounts/messagingaccounts.pro
 +++ b/src/settings/messagingaccounts/messagingaccounts.pro
 @@ -7,11 +7,19 @@ INSTALLS += target
@@ -9638,37 +9451,7 @@ index 0000000..e9ccb1a
 +
 +exit 0
 +
-diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
-index 337ff9c..1f675e0 100644
---- a/src/tools/messageserver/messageserver.pro
-+++ b/src/tools/messageserver/messageserver.pro
-@@ -1,8 +1,6 @@
- TEMPLATE = app
- 
- TARGET = messageserver
--target.path += $$QMF_INSTALL_ROOT/bin
--INSTALLS += target
- 
- DEPENDPATH += . 
- 
-@@ -38,3 +36,17 @@ TRANSLATIONS += messageserver-ar.ts \
-                 messageserver-pt_BR.ts \
-                 messageserver-zh_CN.ts \
-                 messageserver-zh_TW.ts
-+
-+target.path += $$QMF_INSTALL_ROOT/bin
-+
-+initstart.files = etc/messageserver
-+initstart.path  = /etc/init.d
-+
-+xsessionpost.files = etc/Xsession/51messageserver
-+xsessionpost.path  = /etc/X11/Xsession.post
-+
-+xsessionactdead.files = etc/Xsession/51messageserver
-+xsessionactdead.path  = /etc/X11/Xsession.actdead
-+
-+INSTALLS += target initstart xsessionpost xsessionactdead
-+
+* Unmerged path src/tools/messageserver/messageserver.pro
 diff --git a/tools/sparql-import/main.cpp b/tools/sparql-import/main.cpp
 new file mode 100644
 index 0000000..4fcdd02

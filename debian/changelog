@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W23-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+
+ -- Gareth Pethig <gareth.pethig@nokia.com>  Fri, 06 Jun 2009 20:13:49 +1000
+
 qt4-messagingframework (2009W22-0maemo6) hardy; urgency=low
 
   * Make changes for auto-testing.
