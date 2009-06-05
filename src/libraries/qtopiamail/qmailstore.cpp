@@ -1,10 +1,41 @@
 /****************************************************************************
 **
-** This file is part of the $PACKAGE_NAME$.
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
+** This file is part of the Qt Messaging Framework.
 **
-** $QT_EXTENDED_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -198,13 +229,33 @@ bool QMailStore::addFolder(QMailFolder* folder)
 */
 bool QMailStore::addMessage(QMailMessage* msg)
 {
+    return addMessages(QList<QMailMessage*>() << msg);
+}
+
+/*!
+    Adds a new QMailMessageMetaData object \a metaData into the message store, performing
+    respective integrity checks. Returns \c true if the operation completed 
+    successfully, \c false otherwise. 
+*/
+bool QMailStore::addMessage(QMailMessageMetaData* metaData)
+{
+    return addMessages(QList<QMailMessageMetaData*>() << metaData);
+}
+
+/*!
+    Adds a new QMailMessage object into the message store for each entry in
+    the list \a messages, performing all respective integrity checks. 
+    Returns \c true if the operation completed successfully, \c false otherwise. 
+*/
+bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
+{
     QMailMessageIdList addedMessageIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessage(msg, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -215,11 +266,11 @@ bool QMailStore::addMessage(QMailMessage* msg)
 }
 
 /*!
-    Adds a new QMailMessageMetaData object \a metaData into the message store, performing
-    respective integrity checks. Returns \c true if the operation completed 
-    successfully, \c false otherwise. 
+    Adds a new QMailMessageMetData object into the message store for each entry in
+    the list \a messages, performing all respective integrity checks. 
+    Returns \c true if the operation completed successfully, \c false otherwise. 
 */
-bool QMailStore::addMessage(QMailMessageMetaData* metaData)
+bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
 {
     QMailMessageIdList addedMessageIds;
     QMailMessageIdList updatedMessageIds;
@@ -227,7 +278,7 @@ bool QMailStore::addMessage(QMailMessageMetaData* metaData)
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessage(metaData, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -414,7 +465,7 @@ bool QMailStore::updateFolder(QMailFolder* folder)
 */
 bool QMailStore::updateMessage(QMailMessage* msg)
 {
-    return updateMessage(msg, msg);
+    return updateMessages(QList<QMailMessage*>() << msg);
 }
 
 /*!
@@ -423,23 +474,51 @@ bool QMailStore::updateMessage(QMailMessage* msg)
 */
 bool QMailStore::updateMessage(QMailMessageMetaData* metaData)
 {
-    return updateMessage(metaData, NULL);
+    return updateMessages(QList<QMailMessageMetaData*>() << metaData);
+}
+
+/*!
+    Updates the existing QMailMessage in the message store, for each message listed in \a messages.
+    Returns \c true if the operation completed successfully, or \c false otherwise. 
+*/
+bool QMailStore::updateMessages(const QList<QMailMessage*>& messages)
+{
+    QList<QPair<QMailMessageMetaData*, QMailMessage*> > msgs;
+    foreach (QMailMessage* message, messages) {
+        msgs.append(qMakePair(static_cast<QMailMessageMetaData*>(message), message));
+    }
+
+    return updateMessages(msgs);
+}
+
+/*!
+    Updates the meta data of the existing message in the message store, to match each 
+    of the messages listed in \a messages.
+    Returns \c true if the operation completed successfully, or \c false otherwise. 
+*/
+bool QMailStore::updateMessages(const QList<QMailMessageMetaData*>& messages)
+{
+    QList<QPair<QMailMessageMetaData*, QMailMessage*> > msgs;
+    foreach (QMailMessageMetaData* metaData, messages) {
+        msgs.append(qMakePair(metaData, reinterpret_cast<QMailMessage*>(0)));
+    }
+
+    return updateMessages(msgs);
 }
 
 /*! \internal */
-bool QMailStore::updateMessage(QMailMessageMetaData* metaData, QMailMessage* mail)
+bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> >& messages)
 {
     QMailMessageIdList updatedMessages;
+    QMailMessageIdList modifiedMessages;
     QMailFolderIdList modifiedFolders;
     QMailAccountIdList modifiedAccounts;
-    bool modifiedContent;
 
     d->setLastError(NoError);
-    if (!d->updateMessage(metaData, mail, &updatedMessages, &modifiedFolders, &modifiedAccounts, &modifiedContent))
+    if (!d->updateMessages(messages, &updatedMessages, &modifiedMessages, &modifiedFolders, &modifiedAccounts))
         return false;
 
-    if (modifiedContent)
-        emitMessageNotification(ContentsModified, updatedMessages);
+    emitMessageNotification(ContentsModified, modifiedMessages);
     emitMessageNotification(Updated, updatedMessages);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
@@ -861,23 +940,26 @@ void QMailStore::emitErrorNotification(QMailStore::ErrorCode code)
 void QMailStore::emitAccountNotification(ChangeType type, const QMailAccountIdList &ids)
 {
     if (!ids.isEmpty()) {
-        d->notifyAccountsChange(type, ids);
+        // Ensure there are no duplicates in the list
+        QMailAccountIdList idList(ids.toSet().toList());
+
+        d->notifyAccountsChange(type, idList);
 
         switch (type) {
         case Added:
-            emit accountsAdded(ids);
+            emit accountsAdded(idList);
             break;
 
         case Removed:
-            emit accountsRemoved(ids);
+            emit accountsRemoved(idList);
             break;
 
         case Updated:
-            emit accountsUpdated(ids);
+            emit accountsUpdated(idList);
             break;
 
         case ContentsModified:
-            emit accountContentsModified(ids);
+            emit accountContentsModified(idList);
             break;
         }
     }
@@ -887,23 +969,26 @@ void QMailStore::emitAccountNotification(ChangeType type, const QMailAccountIdLi
 void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList &ids)
 {
     if (!ids.isEmpty()) {
-        d->notifyFoldersChange(type, ids);
+        // Ensure there are no duplicates in the list
+        QMailFolderIdList idList(ids.toSet().toList());
+
+        d->notifyFoldersChange(type, idList);
 
         switch (type) {
         case Added:
-            emit foldersAdded(ids);
+            emit foldersAdded(idList);
             break;
 
         case Removed:
-            emit foldersRemoved(ids);
+            emit foldersRemoved(idList);
             break;
 
         case Updated:
-            emit foldersUpdated(ids);
+            emit foldersUpdated(idList);
             break;
 
         case ContentsModified:
-            emit folderContentsModified(ids);
+            emit folderContentsModified(idList);
             break;
         }
     }
@@ -913,23 +998,26 @@ void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList
 void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdList &ids)
 {
     if (!ids.isEmpty()) {
-        d->notifyMessagesChange(type, ids);
+        // Ensure there are no duplicates in the list
+        QMailMessageIdList idList(ids.toSet().toList());
+
+        d->notifyMessagesChange(type, idList);
 
         switch (type) {
         case Added:
-            emit messagesAdded(ids);
+            emit messagesAdded(idList);
             break;
 
         case Removed:
-            emit messagesRemoved(ids);
+            emit messagesRemoved(idList);
             break;
 
         case Updated:
-            emit messagesUpdated(ids);
+            emit messagesUpdated(idList);
             break;
 
         case ContentsModified:
-            emit messageContentsModified(ids);
+            emit messageContentsModified(idList);
             break;
         }
     }
@@ -939,15 +1027,18 @@ void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdLi
 void QMailStore::emitRemovalRecordNotification(ChangeType type, const QMailAccountIdList &ids)
 {
     if (!ids.isEmpty()) {
-        d->notifyMessageRemovalRecordsChange(type, ids);
+        // Ensure there are no duplicates in the list
+        QMailAccountIdList idList(ids.toSet().toList());
+
+        d->notifyMessageRemovalRecordsChange(type, idList);
 
         switch (type) {
         case Added:
-            emit messageRemovalRecordsAdded(ids);
+            emit messageRemovalRecordsAdded(idList);
             break;
 
         case Removed:
-            emit messageRemovalRecordsRemoved(ids);
+            emit messageRemovalRecordsRemoved(idList);
             break;
 
         case Updated:

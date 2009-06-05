@@ -16,3 +16,6 @@ LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
 HEADERS += qtopiamailfilemanager.h
 
 SOURCES += qtopiamailfilemanager.cpp
+
+include(../../../common.pri)
+

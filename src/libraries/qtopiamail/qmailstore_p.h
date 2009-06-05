@@ -1,10 +1,41 @@
 /****************************************************************************
 **
-** This file is part of the $PACKAGE_NAME$.
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** Copyright (C) $THISYEAR$ $COMPANY_NAME$.
+** This file is part of the Qt Messaging Framework.
 **
-** $QT_EXTENDED_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -64,11 +95,11 @@ public:
     bool addFolder(QMailFolder *f,
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool addMessage(QMailMessage *m,
-                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    bool addMessages(const QList<QMailMessage *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool addMessage(QMailMessageMetaData *m,
-                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    bool addMessages(const QList<QMailMessageMetaData *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool removeAccounts(const QMailAccountKey &key,
                         QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
@@ -88,8 +119,8 @@ public:
     bool updateFolder(QMailFolder* f,
                       QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool updateMessage(QMailMessageMetaData *metaData, QMailMessage *mail,
-                       QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, bool *modifiedContent);
+    bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
+                        QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     bool updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
@@ -262,7 +293,7 @@ private:
                            const QMailAccountIdList& accountIds = QMailAccountIdList());
 
     template<typename AccessType, typename FunctionType>
-    bool repeatedly(FunctionType func, const QString &description) const;
+    bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
 
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
@@ -270,43 +301,47 @@ private:
 
     AttemptResult attemptAddAccount(QMailAccount *account, QMailAccountConfiguration* config, 
                                     QMailAccountIdList *addedAccountIds, 
-                                    Transaction &t);
+                                    Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptAddFolder(QMailFolder *folder, 
                                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                   Transaction &t);
+                                   Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptAddMessage(QMailMessage *message,
+                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+                                    Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptAddMessage(QMailMessageMetaData *metaData,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                    Transaction &t);
+                                    Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveAccounts(const QMailAccountKey &key, 
                                         QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                        Transaction &t);
+                                        Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
                                        QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                       Transaction &t);
+                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option, 
                                         QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                        Transaction &t);
+                                        Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateAccount(QMailAccount *account, QMailAccountConfiguration *config, 
                                        QMailAccountIdList *updatedAccountIds,
-                                       Transaction &t);
+                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateAccountConfiguration(QMailAccountConfiguration *config, 
                                                     QMailAccountIdList *updatedAccountIds,
-                                                    Transaction &t);
+                                                    Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateFolder(QMailFolder *folder, 
                                       QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                      Transaction &t);
+                                      Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *mail, 
-                                       QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, bool *modifiedContent,
-                                       Transaction &t);
+                                       QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
 
@@ -314,18 +349,18 @@ private:
 
     AttemptResult attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data, 
                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
-                                                Transaction &t); 
+                                                Transaction &t, bool commitOnSuccess); 
 
     AttemptResult attemptUpdateMessagesStatus(const QMailMessageKey &key, quint64 status, bool set, 
                                               QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                              Transaction &t);
+                                              Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
                                                  QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                 Transaction &t);
+                                                 Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
-                                                    Transaction &t);
+                                                    Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptCountAccounts(const QMailAccountKey &key, int *result, 
                                        ReadLock &);
@@ -406,7 +441,7 @@ private:
                                    ReadLock &);
 
     AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
-                                           Transaction &t);
+                                           Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId, 
                                    quint64 *result, 

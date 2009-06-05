@@ -28,3 +28,6 @@ SOURCES += popclient.cpp \
            popauthenticator.cpp
 
 FORMS += popsettings.ui
+
+include(../../../common.pri)
+
