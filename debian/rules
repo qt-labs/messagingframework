@@ -61,4 +61,6 @@ clean::
 install/libqmf-tests::
 	mkdir -p $(CURDIR)/debian/tmp/usr/tests
 	cp $(CURDIR)/debian/runtests.sh $(CURDIR)/debian/tmp/usr/tests/.
+	chmod 755 $(CURDIR)/debian/tmp/usr/tests/runtests.sh
 	cp $(CURDIR)/debian/test_script.sh $(CURDIR)/debian/tmp/usr/tests/.
+	chmod 755 $(CURDIR)/debian/tmp/usr/tests/test_script.sh
