@@ -1811,9 +1811,9 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
     _fsm->setState(&_fsm->listState);
 }
 
-void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, const QString &mechanism)
+void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism)
 {
-    QString dataUrl(url(location, true));
+    QString dataUrl(url(location, bodyOnly));
     dataUrl.append(";urlauth=anonymous");
 
     _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);

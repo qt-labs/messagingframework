@@ -159,7 +159,7 @@ public:
 
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);
-    void sendGenUrlAuth(const QMailMessagePart::Location &location, const QString &mechanism = QString());
+    void sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism = QString());
     void sendSelect(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
 

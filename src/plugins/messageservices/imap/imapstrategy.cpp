@@ -355,7 +355,16 @@ void ImapPrepareMessagesStrategy::nextMessageAction(ImapStrategyContextBase *con
         const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
 
         // Generate an authorized URL for this message content
-        context->protocol().sendGenUrlAuth(pair.first);
+        bool bodyOnly(false);
+        if (!pair.first.isValid(false)) {
+            // This is a full-message reference - for a single-part message, we should forward
+            // only the body text; for multi-part we want the whole message
+            QMailMessage message(pair.first.containingMessageId());
+            if (message.multipartType() == QMailMessage::MultipartNone) {
+                bodyOnly = true;
+            }
+        }
+        context->protocol().sendGenUrlAuth(pair.first, bodyOnly);
     } else {
         messageListCompleted(context);
     }
