@@ -174,8 +174,9 @@ private:
     typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
     typedef void (ServiceHandler::*CompletionSignal)(quint64);
 
-    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion);
+    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
+    bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
     bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
     bool dispatchRetrieveFolderListAccount(quint64, const QByteArray &data);
     bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
@@ -235,6 +236,7 @@ private:
         quint64 action;
         QByteArray data;
         QSet<QMailMessageService*> services;
+        QSet<QMailMessageService*> preconditions;
         RequestServicer servicer;
         CompletionSignal completion;
     };

@@ -143,7 +143,7 @@ public slots:
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
 
-    virtual bool prepareMessages(const QMailMessageIdList &ids);
+    virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
     virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
 

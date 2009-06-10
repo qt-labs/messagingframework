@@ -751,7 +751,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     Invoked by the message server to initiate a message preparation operation.
 
     Prepare each message listed in \a ids for transmission by resolving any external 
-    references into URLs.
+    references into URLs, and updating the reference in the associated location.
 
     Messages successfully prepared for transmission should be progressively reported via messagesPrepared().
 
@@ -759,7 +759,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     
     \sa messagesPrepared()
 */
-bool QMailMessageSource::prepareMessages(const QMailMessageIdList &ids)
+bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
 {
     notImplemented();
     return false;
