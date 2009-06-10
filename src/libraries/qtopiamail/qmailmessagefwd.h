@@ -42,6 +42,7 @@
 #define QMAILMESSAGEFWD_H
 
 #include "qmailglobal.h"
+#include <QPair>
 
 class QMailMessageHeaderField;
 
@@ -186,13 +187,19 @@ public:
         CopyAndDeleteAttachments
     };
 
-    enum EncodingFormat
-    {
+    enum EncodingFormat {
         HeaderOnlyFormat = 1,
         StorageFormat = 2,
         TransmissionFormat = 3,
         IdentityFormat = 4,
     }; 
+
+    enum ChunkType {
+        Text = 0,
+        Reference
+    };
+
+    typedef QPair<ChunkType, QByteArray> MessageChunk;
 };
 
 #endif

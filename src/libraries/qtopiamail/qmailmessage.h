@@ -609,6 +609,8 @@ public:
     QByteArray toRfc2822(EncodingFormat format = TransmissionFormat) const;
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;
 
+    QList<QMailMessage::MessageChunk> toRfc2822Chunks(EncodingFormat format = TransmissionFormat) const;
+
     using QMailMessagePartContainer::partAt;
 
     const QMailMessagePart& partAt(const QMailMessagePart::Location& location) const;

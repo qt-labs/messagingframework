@@ -215,7 +215,9 @@ protected:
 
     void defaultContentType(const QMailMessagePartContainerPrivate* parent);
 
-    void outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const;
+    template <typename F>
+    void outputParts(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const;
+
     void outputBody(QDataStream& out, bool includeAttachments) const;
 
     QString headerFieldText( const QString &id ) const;
@@ -271,7 +273,8 @@ public:
     bool contentAvailable() const;
     bool partialContentAvailable() const;
 
-    void output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const;
+    template <typename F>
+    void output(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const;
 
     bool contentModified() const;
     void setUnmodified();
@@ -381,7 +384,9 @@ public:
     QMailMessagePrivate();
 
     void fromRfc2822(const LongString &ls);
-    void toRfc2822(QDataStream& out, QMailMessage::EncodingFormat format, quint64 messageStatus) const;
+
+    template <typename F>
+    void toRfc2822(QDataStream **out, QMailMessage::EncodingFormat format, quint64 messageStatus, F *func) const;
 
     void setMessageType(QMailMessage::MessageType type);
 

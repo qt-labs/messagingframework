@@ -3202,7 +3202,8 @@ uint QMailMessagePartContainerPrivate::indicativeSize() const
     return size;
 }
 
-void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
+template <typename F>
+void QMailMessagePartContainerPrivate::outputParts(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const
 {
     static const DataString newLine('\n');
     static const DataString marker("--");
@@ -3212,12 +3213,12 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includ
 
     if (includePreamble) {
         // This is a preamble (not for conformance, to assist readibility on non-conforming renderers):
-        out << DataString("This is a multipart message in Mime 1.0 format"); // No tr
-        out << newLine;
+        **out << DataString("This is a multipart message in Mime 1.0 format"); // No tr
+        **out << newLine;
     }
 
     for ( int i = 0; i < _messageParts.count(); i++ ) {
-        out << newLine << marker << DataString(_boundary) << newLine;
+        **out << newLine << marker << DataString(_boundary) << newLine;
 
         QMailMessagePart& part = const_cast<QMailMessagePart&>(_messageParts[i]);
 
@@ -3237,10 +3238,11 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includ
                 part.setBoundary(to7BitAscii(subBoundary));
             }
         }
-        part.output(out, includeAttachments, stripInternal);
+        QMailMessagePartPrivate *partImpl(part.impl<QMailMessagePartPrivate>());
+        partImpl->output<F>(out, false, includeAttachments, stripInternal, func);
     }
 
-    out << newLine << marker << DataString(_boundary) << marker << newLine;
+    **out << newLine << marker << DataString(_boundary) << marker << newLine;
 }
 
 void QMailMessagePartContainerPrivate::outputBody(QDataStream& out, bool includeAttachments) const
@@ -4020,10 +4022,16 @@ uint QMailMessagePartContainer::indicativeSize() const
     return impl(this)->indicativeSize();
 }
 
+struct DummyChunkProcessor
+{
+    void operator()(QMailMessage::ChunkType) {}
+};
+
 /*! \internal */
 void QMailMessagePartContainer::outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
 {
-    impl(this)->outputParts(out, includePreamble, includeAttachments, stripInternal);
+    QDataStream* ds(&out);
+    impl(this)->outputParts<DummyChunkProcessor>(&ds, includePreamble, includeAttachments, stripInternal, 0);
 }
 
 /*! \internal */
@@ -4101,26 +4109,36 @@ bool QMailMessagePartPrivate::partialContentAvailable() const
     return ((_multipartType != QMailMessage::MultipartNone) || !_body.isEmpty());
 }
 
-void QMailMessagePartPrivate::output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
+template <typename F>
+void QMailMessagePartPrivate::output(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const
 {
     static const DataString newLine('\n');
 
-    _header.output( out, QList<QByteArray>(), stripInternal );
-    out << DataString('\n');
+    _header.output( **out, QList<QByteArray>(), stripInternal );
+    **out << DataString('\n');
 
     QMailMessagePart::ReferenceType type(referenceType());
     if (type == QMailMessagePart::None) {
         if ( hasBody() ) {
-            outputBody( out, includeAttachments );
+            outputBody( **out, includeAttachments );
         } else {
-            outputParts( out, includePreamble, includeAttachments, stripInternal );
+            outputParts<F>( out, includePreamble, includeAttachments, stripInternal, func );
         }
     } else {
         if (includeAttachments) {
+            // The next part must be a different chunk
+            if (func) {
+                (*func)(QMailMessage::Text);
+            }
+
             if (!_resolution.isEmpty()) {
-                out << _resolution;
+                **out << DataString(_resolution.toAscii());
             } else {
                 qWarning() << "QMailMessagePartPrivate::output - unresolved reference part!";
+            }
+
+            if (func) {
+                (*func)(QMailMessage::Reference);
             }
         }
     }
@@ -4856,7 +4874,8 @@ bool QMailMessagePart::partialContentAvailable() const
 /*! \internal */
 void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool stripInternal) const
 {
-    return impl(this)->output(out, false, includeAttachments, stripInternal);
+    QDataStream *ds(&out);
+    return impl(this)->output<DummyChunkProcessor>(&ds, false, includeAttachments, stripInternal, 0);
 }
 
 /*! 
@@ -6043,7 +6062,8 @@ static QByteArray boundaryString(const QByteArray &hash)
     return boundaryLeader + "qtopiamail:" + QByteArray::number(randomNumber()) + hash.toBase64() + boundaryTrailer;
 }
 
-void QMailMessagePrivate::toRfc2822(QDataStream& out, QMailMessage::EncodingFormat format, quint64 messageStatus) const
+template <typename F>
+void QMailMessagePrivate::toRfc2822(QDataStream **out, QMailMessage::EncodingFormat format, quint64 messageStatus, F *func) const
 {
     bool isOutgoing = (messageStatus & (QMailMessage::Outgoing | QMailMessage::Sent));
 
@@ -6064,14 +6084,14 @@ void QMailMessagePrivate::toRfc2822(QDataStream& out, QMailMessage::EncodingForm
         const_cast<QMailMessagePrivate*>(this)->setBoundary(boundaryString(hash.result()));
     }
 
-    outputHeaders(out, addTimeStamp, addContentHeaders, includeBcc, stripInternal);
-    out << DataString('\n');
+    outputHeaders(**out, addTimeStamp, addContentHeaders, includeBcc, stripInternal);
+    **out << DataString('\n');
 
     if (format != QMailMessage::HeaderOnlyFormat) {
         if ( hasBody() ) {
-            outputBody( out, true); //not multipart so part should not be an attachment
+            outputBody( **out, true); //not multipart so part should not be an attachment
         } else {
-            outputParts( out, includePreamble, includeAttachments, stripInternal );
+            outputParts<F>( out, includePreamble, includeAttachments, stripInternal, func );
         }
     }
 }
@@ -6295,7 +6315,61 @@ QByteArray QMailMessage::toRfc2822(EncodingFormat format) const
 */
 void QMailMessage::toRfc2822(QDataStream& out, EncodingFormat format) const
 {
-    partContainerImpl()->toRfc2822(out, format, status());
+    QDataStream *ds(&out);
+    partContainerImpl()->toRfc2822<DummyChunkProcessor>(&ds, format, status(), 0);
+}
+
+struct ChunkStore
+{
+    QList<QMailMessage::MessageChunk> chunks;
+    QByteArray chunk;
+    QDataStream *ds;
+
+    ChunkStore()
+        : ds(new QDataStream(&chunk, QIODevice::WriteOnly | QIODevice::Unbuffered))
+    {
+    }
+
+    ~ChunkStore()
+    {
+        close();
+    }
+
+    void close() 
+    {
+        if (ds) {
+            delete ds;
+            ds = 0;
+
+            if (!chunk.isEmpty()) {
+                chunks.append(qMakePair(QMailMessage::Text, chunk));
+            }
+        }
+    }
+
+    void operator()(QMailMessage::ChunkType type)
+    {
+        // This chunk is now complete
+        delete ds;
+        chunks.append(qMakePair(type, chunk));
+
+        chunk.clear();
+        ds = new QDataStream(&chunk, QIODevice::WriteOnly | QIODevice::Unbuffered);
+    }
+};
+
+/*!
+    Returns the message in RFC 2822 format, separated into chunks that can
+    be individually transferred by a mechanism such as that defined by RFC 3030.
+*/
+QList<QMailMessage::MessageChunk> QMailMessage::toRfc2822Chunks(EncodingFormat format) const
+{
+    ChunkStore store;
+
+    partContainerImpl()->toRfc2822<ChunkStore>(&store.ds, format, status(), &store);
+    store.close();
+
+    return store.chunks;
 }
 
 /*! \reimp */
