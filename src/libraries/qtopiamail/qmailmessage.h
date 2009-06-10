@@ -666,6 +666,34 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
+    template <typename F>
+    static void foreachPart(QMailMessagePartContainer &container, F func)
+    {
+        for (uint i = 0; i < container.partCount(); ++i) {
+            QMailMessagePart &part(container.partAt(i));
+            
+            if (part.multipartType() == QMailMessage::MultipartNone) {
+                func(part);
+            } else {
+                foreachPart(part, func);
+            }
+        }
+    }
+
+    template <typename F>
+    static void foreachPart(const QMailMessagePartContainer &container, F func)
+    {
+        for (uint i = 0; i < container.partCount(); ++i) {
+            const QMailMessagePart &part(container.partAt(i));
+            
+            if (part.multipartType() == QMailMessage::MultipartNone) {
+                func(part);
+            } else {
+                foreachPart(part, func);
+            }
+        }
+    }
+
 protected:
     virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = 0);
 
