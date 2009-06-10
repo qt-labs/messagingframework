@@ -284,8 +284,12 @@ class AttachmentListModel : public QAbstractListModel
 public:
     AttachmentListModel(QWidget* parent );
     QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
+
+    bool isEmpty() const;
+
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
+
     QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
 
     QStringList attachments() const;
@@ -310,6 +314,11 @@ QVariant AttachmentListModel::headerData(int section, Qt::Orientation o, int rol
     }
 
    return QAbstractListModel::headerData(section,o,role);
+}
+
+bool AttachmentListModel::isEmpty() const
+{
+    return m_attachments.isEmpty();
 }
 
 int AttachmentListModel::columnCount(const QModelIndex & parent ) const
@@ -366,7 +375,14 @@ QStringList AttachmentListModel::attachments() const
 
 void AttachmentListModel::setAttachments(const QStringList& attachments)
 {
-    m_attachments = attachments;
+    m_attachments.clear();
+
+    foreach (const QString &att, attachments) {
+        if (!att.startsWith("ref:") && !att.startsWith("partRef:")) {
+            m_attachments.append(att);
+        }
+    }
+
     reset();
 }
 
@@ -427,29 +443,39 @@ void AttachmentListWidget::addAttachment(const QString& attachment)
 {
     if(m_attachments.contains(attachment))
         return;
+
     m_attachments.append(attachment);
+
     m_model->setAttachments(m_attachments);
-    setVisible(!m_attachments.isEmpty());
+    setVisible(!m_model->isEmpty());
+
     emit attachmentsAdded(QStringList() << attachment);
 }
 
 void AttachmentListWidget::addAttachments(const QStringList& attachments)
 {
-    QSet<QString> result  = attachments.toSet() - m_attachments.toSet();
-    m_attachments += result.toList();
-    m_model->setAttachments(m_attachments);
-    setVisible(!m_attachments.isEmpty());
-    emit attachmentsAdded(result.toList());
+    QSet<QString> newAttachments = attachments.toSet() - m_attachments.toSet();
+
+    if (!newAttachments.isEmpty()) {
+        m_attachments += newAttachments.toList();
+
+        m_model->setAttachments(m_attachments);
+        setVisible(!m_model->isEmpty());
+
+        emit attachmentsAdded(newAttachments.toList());
+    }
 }
 
 void AttachmentListWidget::removeAttachment(const QString& attachment)
 {
-    if(!m_attachments.contains(attachment))
+    if (!m_attachments.contains(attachment))
         return;
 
     m_attachments.removeAll(attachment);
+
     m_model->setAttachments(m_attachments);
-    setVisible(!m_attachments.isEmpty());
+    setVisible(!m_model->isEmpty());
+
     emit attachmentsRemoved(attachment);
 }
 
@@ -473,10 +499,13 @@ void AttachmentListWidget::removeAttachmentAtIndex(int index)
 {
     if(index >= m_attachments.count())
         return;
+
     QString attachment = m_attachments.at(index);
     m_attachments.removeAt(index);
+
     m_model->setAttachments(m_attachments);
-    setVisible(!m_attachments.isEmpty());
+    setVisible(!m_model->isEmpty());
+
     emit attachmentsRemoved(attachment);
 }
 
