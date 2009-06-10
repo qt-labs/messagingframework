@@ -293,6 +293,116 @@ void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString 
     Q_UNUSED(length)
 }
 
+void ImapStrategy::urlAuthorized(ImapStrategyContextBase *context, const QString &url)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(url)
+}
+
+
+/* A strategy to traverse a list of messages, preparing each one for transmission
+   by generating a URLAUTH token.
+*/
+void ImapPrepareMessagesStrategy::setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
+{
+    _locations = ids;
+}
+
+void ImapPrepareMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
+{
+    switch( command ) {
+        case IMAP_Login:
+        {
+            handleLogin(context);
+            break;
+        }
+        
+        case IMAP_GenUrlAuth:
+        {
+            handleGenUrlAuth(context);
+            break;
+        }
+        
+        case IMAP_Logout:
+        {
+            break;
+        }
+        
+        default:
+        {
+            qWarning() << "Unhandled IMAP response:" << command;
+            break;
+        }
+    }
+}
+
+void ImapPrepareMessagesStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    nextMessageAction(context);
+}
+
+void ImapPrepareMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
+{
+    // We're finished with the previous location
+    _locations.takeFirst();
+
+    nextMessageAction(context);
+}
+
+void ImapPrepareMessagesStrategy::nextMessageAction(ImapStrategyContextBase *context)
+{
+    if (!_locations.isEmpty()) {
+        const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+        // Generate an authorized URL for this message content
+        context->protocol().sendGenUrlAuth(pair.first);
+    } else {
+        messageListCompleted(context);
+    }
+}
+
+void ImapPrepareMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
+{
+    context->operationCompleted();
+}
+
+struct ReferenceDetector
+{
+    bool unresolvedRemaining;
+
+    ReferenceDetector() : unresolvedRemaining(false) {}
+
+    void operator()(const QMailMessagePart &part)
+    {
+        if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
+            unresolvedRemaining = true;
+        }
+    }
+};
+
+void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const QString &url)
+{
+    const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+    // We now have an authorized URL for this location
+    QMailMessage referer(pair.second.containingMessageId());
+    QMailMessagePart &part(referer.partAt(pair.second));
+
+    part.setReferenceResolution(url);
+
+    // Have we resolved all references in this message?
+    ReferenceDetector detector;
+    QMailMessage::foreachPart<ReferenceDetector&>(referer, detector);
+
+    if (detector.unresolvedRemaining == false) {
+        referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
+    }
+
+    if (!QMailStore::instance()->updateMessage(&referer)) {
+        qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+    }
+}
+
 
 /* A strategy that provides an interface for defining a set of messages 
    or message parts to operate on, and an abstract interface messageListMessageAction() 

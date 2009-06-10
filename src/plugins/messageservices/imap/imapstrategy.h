@@ -113,6 +113,7 @@ public:
     virtual void messageStored(ImapStrategyContextBase *context, const QString &uid);
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
     virtual void downloadSize(ImapStrategyContextBase *context, const QString &uid, int length);
+    virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
 
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);
@@ -123,6 +124,28 @@ protected:
     QString _baseFolder;
 };
 
+class ImapPrepareMessagesStrategy : public ImapStrategy
+{
+public:
+    ImapPrepareMessagesStrategy() {}
+    virtual ~ImapPrepareMessagesStrategy() {}
+
+    virtual void setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
+
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+
+    virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
+
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleGenUrlAuth(ImapStrategyContextBase *context);
+
+    virtual void nextMessageAction(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
+
+    QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > _locations;
+};
+    
 class ImapMessageListStrategy : public ImapStrategy
 {
 public:
@@ -540,6 +563,7 @@ class ImapStrategyContext : public ImapStrategyContextBase
 public:
     ImapStrategyContext(ImapClient *client);
 
+    ImapPrepareMessagesStrategy prepareMessagesStrategy;
     ImapFetchSelectedMessagesStrategy selectedStrategy;
     ImapRetrieveFolderListStrategy foldersOnlyStrategy;
     ImapExportUpdatesStrategy exportUpdatesStrategy;
@@ -561,6 +585,7 @@ public:
     void messageStored(const QString &uid) { _strategy->messageStored(this, uid); }
     void messageCopied(const QString &copiedUid, const QString &createdUid) { _strategy->messageCopied(this, copiedUid, createdUid); }
     void downloadSize(const QString &uid, int length) { _strategy->downloadSize(this, uid, length); }
+    void urlAuthorized(const QString &url) { _strategy->urlAuthorized(this, url); }
 
     ImapStrategy *strategy() const { return _strategy; }
     void setStrategy(ImapStrategy *strategy) { _strategy = strategy; }

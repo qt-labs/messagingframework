@@ -117,6 +117,7 @@ public slots:
     void messageStored(const QString &);
     void messageCopied(const QString &, const QString &);
     void downloadSize(const QString &uid, int);
+    void urlAuthorized(const QString &url);
 
 protected slots:
     void connectionInactive();

@@ -103,6 +103,8 @@ public slots:
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
+    virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
+
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
     void retrievalTerminated();
@@ -402,6 +404,17 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
     }
     return true;
+}
+
+bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
+{
+    if (ids.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to prepare"));
+        return false;
+    }
+
+    _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(ids);
+    return setStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy);
 }
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, QMailMessageSource::MessageSignal signal)
