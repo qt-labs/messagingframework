@@ -488,6 +488,8 @@ public:
     static const quint64 &Trash;
     static const quint64 &PartialContentAvailable;
     static const quint64 &HasAttachments;
+    static const quint64 &HasReferences;
+    static const quint64 &HasUnresolvedReferences;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);

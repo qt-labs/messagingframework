@@ -4912,6 +4912,8 @@ static quint64 readReplyRequestedFlag = 0;
 static quint64 trashFlag = 0;
 static quint64 partialContentAvailableFlag = 0;
 static quint64 hasAttachmentsFlag = 0;
+static quint64 hasReferencesFlag = 0;
+static quint64 hasUnresolvedReferencesFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -4950,6 +4952,8 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         trashFlag = registerFlag("Trash");
         partialContentAvailableFlag = registerFlag("PartialContentAvailable");
         hasAttachmentsFlag = registerFlag("HasAttachments");
+        hasReferencesFlag = registerFlag("HasReferences");
+        hasUnresolvedReferencesFlag = registerFlag("HasUnresolvedReferences");
     }
 }
 
@@ -5368,6 +5372,8 @@ const quint64 &QMailMessageMetaData::ReadReplyRequested = readReplyRequestedFlag
 const quint64 &QMailMessageMetaData::Trash = trashFlag;
 const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAvailableFlag;
 const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
+const quint64 &QMailMessageMetaData::HasReferences = hasReferencesFlag;
+const quint64 &QMailMessageMetaData::HasUnresolvedReferences = hasUnresolvedReferencesFlag;
 
 /*!
     Constructs an empty message meta data object.
