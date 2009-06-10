@@ -670,6 +670,63 @@ void ListState::taggedResponse(ImapContext *c, const QString &line)
 }
 
 
+class GenUrlAuthState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    GenUrlAuthState() : ImapState(IMAP_GenUrlAuth, "GenUrlAuth") {}
+
+    void setUrl(const QString &url, const QString &mechanism);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+
+signals:
+    void urlAuthorized(const QString &url);
+
+private:
+    QList<QPair<QString, QString> > _parameters;
+};
+
+void GenUrlAuthState::setUrl(const QString &url, const QString &mechanism)
+{
+    _parameters.append(qMakePair(url, (mechanism.isEmpty() ? "INTERNAL" : mechanism)));
+}
+
+void GenUrlAuthState::init()
+{
+    ImapState::init();
+    _parameters.clear();
+}
+
+QString GenUrlAuthState::transmit(ImapContext *c)
+{
+    const QPair<QString, QString> &params(_parameters.first());
+
+    return c->sendCommand("GENURLAUTH \"" + params.first + "\" " + params.second);
+}
+
+void GenUrlAuthState::leave(ImapContext *)
+{
+    ImapState::init();
+    _parameters.removeFirst();
+}
+
+void GenUrlAuthState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    if (!line.startsWith("* GENURLAUTH")) {
+        ImapState::untaggedResponse(c, line);
+        return;
+    }
+
+    emit urlAuthorized(QMail::unquoteString(line.mid(13).trimmed()));
+}
+
+
 // Handles untagged responses in the selected IMAP state
 class SelectedState : public ImapState
 {
@@ -1492,6 +1549,7 @@ public:
     LoginState loginState;
     LogoutState logoutState;
     ListState listState;
+    GenUrlAuthState genUrlAuthState;
     SelectState selectState;
     ExamineState examineState;
     SearchState searchState;
@@ -1600,6 +1658,8 @@ ImapProtocol::ImapProtocol()
             this, SLOT(incomingData()));
     connect(&_fsm->listState, SIGNAL(mailboxListed(QString &, QString &, QString &)),
             this, SIGNAL(mailboxListed(QString &, QString &, QString &)));
+    connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
+            this, SIGNAL(urlAuthorized(QString)));
     connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)), 
             this, SIGNAL(downloadSize(QString, int)));
     connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)), 
@@ -1749,6 +1809,15 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
     // Now request the actual list
     _fsm->listState.setParameters(path, mailbox);
     _fsm->setState(&_fsm->listState);
+}
+
+void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, const QString &mechanism)
+{
+    QString dataUrl(url(location, true));
+    dataUrl.append(";urlauth=anonymous");
+
+    _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);
+    _fsm->setState(&_fsm->genUrlAuthState);
 }
 
 void ImapProtocol::sendSelect(const QMailFolder &mailbox)
@@ -2098,6 +2167,46 @@ OperationStatus ImapProtocol::commandResponse( QString in )
 QString ImapProtocol::uid( const QString &identifier )
 {
     return messageId(identifier);
+}
+
+QString ImapProtocol::url(const QMailMessagePart::Location &location, bool bodyOnly)
+{
+    QString result("imap://");
+
+    QMailMessageId id(location.containingMessageId());
+    QMailMessageMetaData metaData(id);
+
+    if (metaData.parentAccountId().isValid()) {
+        QMailAccountConfiguration config(metaData.parentAccountId());
+        ImapConfiguration imapCfg(config);
+
+        if (!imapCfg.mailUserName().isEmpty()) {
+            result.append(imapCfg.mailUserName()).append('@');
+        }
+
+        result.append(imapCfg.mailServer());
+        if (imapCfg.mailPort() != 143) {
+            result.append(':').append(QString::number(imapCfg.mailPort()));
+        }
+        
+        result.append('/');
+
+        if (metaData.parentFolderId().isValid()) {
+            QMailFolder folder(metaData.parentFolderId());
+
+            result.append(folder.path()).append('/');
+        }
+
+        result.append(";uid=").append(uid(metaData.serverUid()));
+
+        if (location.isValid(false)) {
+            result.append("/;section=").append(location.toString(false));
+        } else if (bodyOnly) {
+            result.append("/;section=TEXT");
+        }
+    }
+
+    return result;
 }
 
 // Ensure a string is quoted, if required for IMAP transmission

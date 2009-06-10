@@ -78,6 +78,7 @@ enum ImapCommand
     IMAP_UIDStore,
     IMAP_UIDCopy,
     IMAP_Expunge,
+    IMAP_GenUrlAuth,
     IMAP_Close,
     IMAP_Full,
     IMAP_Idle
@@ -158,6 +159,7 @@ public:
 
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);
+    void sendGenUrlAuth(const QMailMessagePart::Location &location, const QString &mechanism = QString());
     void sendSelect(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
 
@@ -178,6 +180,8 @@ public:
 
     static QString uid(const QString &identifier);
 
+    static QString url(const QMailMessagePart::Location &location, bool bodyOnly);
+
     static QString quoteString(const QString& input);
     static QByteArray quoteString(const QByteArray& input);
 
@@ -189,6 +193,7 @@ signals:
     void nonexistentUid(const QString& uid);
     void messageStored(const QString& uid);
     void messageCopied(const QString& copiedUid, const QString& createdUid);
+    void urlAuthorized(const QString& url);
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);
