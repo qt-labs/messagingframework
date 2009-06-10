@@ -4273,6 +4273,41 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
     return Success;
 }
 
+struct ReferenceStorer
+{
+    QMailMessage *message;
+
+    ReferenceStorer(QMailMessage *m) : message(m) {}
+
+    void operator()(const QMailMessagePart &part)
+    {
+        QString value;
+
+        if (part.referenceType() == QMailMessagePart::MessageReference) {
+            value = "message:" + QString::number(part.messageReference().toULongLong());
+        } else if (part.referenceType() == QMailMessagePart::PartReference) {
+            value = "part:" + part.partReference().toString(true);
+        }
+
+        if (!value.isEmpty()) {
+            QString loc(part.location().toString(false));
+
+            // Store the reference location into the message
+            QString key("qtopiamail-reference-location-" + loc);
+            if (message->customField(key) != value) {
+                message->setCustomField(key, value);
+            }
+
+            // Store the reference resolution into the message
+            key = "qtopiamail-reference-resolution-" + loc;
+            value = part.referenceResolution();
+            if (message->customField(key) != value) {
+                message->setCustomField(key, value);
+            }
+        }
+    }
+};
+
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
                                                                       QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                       Transaction &t, bool commitOnSuccess)
@@ -4293,6 +4328,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
         return Failure;
     } 
+
+    ReferenceStorer refStorer(message);
+    QMailMessage::foreachPart<ReferenceStorer&>(const_cast<const QMailMessage&>(*message), refStorer);
 
     if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
         QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
@@ -4901,6 +4939,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
     QMailMessageKey::Properties updateProperties;
     QVariantList extractedValues;
+
+    if (message) {
+        // Ensure the part reference info is stored into the message
+        ReferenceStorer refStorer(message);
+        QMailMessage::foreachPart<ReferenceStorer&>(const_cast<const QMailMessage&>(*message), refStorer);
+    }
 
     if (metaData->dataModified()) {
         // Assume all the meta data fields have been updated

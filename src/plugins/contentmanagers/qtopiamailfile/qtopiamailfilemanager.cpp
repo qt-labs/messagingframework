@@ -351,6 +351,48 @@ QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
     return result;
 }
 
+struct ReferenceLoader
+{
+    const QMailMessage *message;
+
+    ReferenceLoader(const QMailMessage *m) : message(m) {}
+
+    void operator()(QMailMessagePart &part)
+    {
+        QString loc = part.location().toString(false);
+
+        // See if this part is a reference
+        QString name("qtopiamail-reference-location-" + loc);
+        QString value(message->customField(name));
+        if (!value.isEmpty()) {
+            // This part is a reference
+            QString reference;
+            int index = value.indexOf(':');
+            if (index != -1) {
+                reference = value.mid(index + 1);
+                QString referenceType = value.left(index);
+
+                if (referenceType == "part") {
+                    part.setReference(QMailMessagePart::Location(reference), part.contentType(), part.transferEncoding());
+                } else if (referenceType == "message") {
+                    part.setReference(QMailMessageId(reference.toULongLong()), part.contentType(), part.transferEncoding());
+                }
+            }
+
+            if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
+                qMailLog(Messaging) << "Unable to resolve reference from:" << value;
+            }
+
+            // Is this reference resolved?
+            name = QString("qtopiamail-reference-resolution-" + loc);
+            value = message->customField(name);
+            if (!value.isEmpty()) {
+                part.setReferenceResolution(value);
+            }
+        }
+    }
+};
+
 QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMailMessage *message)
 {
     QString path(identifier);
@@ -369,6 +411,11 @@ QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMa
     }
 
     QMailMessage result(QMailMessage::fromRfc2822File(path));
+
+    // Load the reference information from the meta data into our content object
+    ReferenceLoader refLoader(message);
+    QMailMessage::foreachPart<ReferenceLoader&>(result, refLoader);
+
     if (!loadParts(message, &result, path))
         return QMailStore::FrameworkFault;
 
@@ -582,17 +629,6 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
                 if (!addOrRenameParts(message, part, fileName, existing, durable))
                     return false;
             }
-        } else {
-            // Mark this as a reference in the container message
-            QString value;
-            if (part.referenceType() == QMailMessagePart::PartReference) {
-                value = "part:" + part.partReference().toString(true);
-            } else if (part.referenceType() == QMailMessagePart::MessageReference) {
-                value = "message:" + QString::number(part.messageReference().toULongLong());
-            }
-
-            QString name(gKey + "-reference-location-" + loc);
-            message->setCustomField(name, value);
         }
     }
 
@@ -603,30 +639,8 @@ bool QtopiamailfileManager::loadParts(QMailMessage *message, QMailMessagePartCon
 {
     for (uint i = 0; i < container->partCount(); ++i) {
         QMailMessagePart &part(container->partAt(i));
-        QString loc = part.location().toString(false);
 
-        // See if this part is a reference
-        QString name(gKey + "-reference-location-" + loc);
-        QString value(message->customField(name));
-        if (!value.isEmpty()) {
-            // This part is just a reference
-            QString reference;
-            int index = value.indexOf(':');
-            if (index != -1) {
-                reference = value.mid(index + 1);
-                QString referenceType = value.left(index);
-
-                if (referenceType == "part") {
-                    part.setReference(QMailMessagePart::Location(reference), part.contentType(), part.transferEncoding());
-                } else if (referenceType == "message") {
-                    part.setReference(QMailMessageId(reference.toULongLong()), part.contentType(), part.transferEncoding());
-                }
-            }
-
-            if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
-                qMailLog(Messaging) << "Unable to resolve reference from:" << value;
-            }
-        } else {
+        if (part.referenceType() == QMailMessagePart::None) {
             if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
                 QString partFilePath;
                 bool localAttachment = QFile::exists(QUrl(part.contentLocation()).toLocalFile()) && !part.hasBody();
