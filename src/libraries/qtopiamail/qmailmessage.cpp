@@ -3345,7 +3345,11 @@ void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body)
 void QMailMessagePartContainerPrivate::setBodyProperties(const QMailMessageContentType &type, QMailMessageBody::TransferEncoding encoding)
 {
     updateHeaderField(type.id(), type.toString(false, false));
-    updateHeaderField("Content-Transfer-Encoding", QByteArray(nameForEncoding(encoding)));
+
+    QByteArray encodingName(nameForEncoding(encoding));
+    if (!encodingName.isEmpty()) {
+        updateHeaderField("Content-Transfer-Encoding", encodingName);
+    }
 
     setDirty();
 }
