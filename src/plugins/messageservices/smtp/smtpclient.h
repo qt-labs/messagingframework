@@ -106,13 +106,14 @@ private:
     enum TransferStatus
     {
         Init, Helo, Extension, StartTLS, TLS, Connected, Authenticating, Authenticated,
-        From, Recv, MRcv, Data, Body, Sent, Quit, Done
+        From, Recv, MRcv, Data, Body, Chunk, ChunkSent, Sent, Quit, Done
     };
 
     QMailAccountConfiguration config;
     TransferStatus status;
     QList<RawEmail> mailList;
     QList<RawEmail>::Iterator mailItr;
+    QList<QMailMessage::MessageChunk> mailChunks;
     QMailMessageId sendingId;
     uint messageLength;
     uint sentLength;

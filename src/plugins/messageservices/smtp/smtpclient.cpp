@@ -169,6 +169,11 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
         sendSize.clear();
     }
 
+    if (mail.status() & QMailMessage::HasUnresolvedReferences) {
+        qMailLog(Messaging) << "Cannot send SMTP message with unresolved references!";
+        return QMailServiceAction::Status::ErrInvalidData;
+    }
+
     if (mail.from().address().isEmpty()) {
         qMailLog(Messaging) << "Cannot send SMTP message with empty from address!";
         return QMailServiceAction::Status::ErrInvalidAddress;
@@ -324,20 +329,26 @@ void SmtpClient::nextAction(const QString &response)
     case Extension:
     {
         if (responseCode == 250) {
-            capabilities.append(response.mid(4));
+            capabilities.append(response.mid(4).trimmed());
 
             if (response[3] == '-') {
                 // More to follow
             } else {
                 // This is the terminating extension
                 // Now that we know the capabilities, check for Reference support
-                bool supportsReferences(false);
+                bool supportsBURL(false);
+                bool supportsChunking(false);
                 foreach (const QString &capability, capabilities) {
+                    // Although technically only BURL is needed for Reference support, CHUNKING
+                    // is also necessary to allow any additional data to accompany the reference
                     if ((capability == "BURL") || (capability.startsWith("BURL "))) {
-                        supportsReferences = true;
-                        break;
+                        supportsBURL = true;
+                    } else if (capability == "CHUNKING") {
+                        supportsChunking = true;
                     }
                 }
+
+                const bool supportsReferences(supportsBURL && supportsChunking);
 
                 QMailAccount account(config.id());
                 if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences) ||
@@ -479,7 +490,17 @@ void SmtpClient::nextAction(const QString &response)
             if ( it != mailItr->to.end() ) {
                 sendCommand("RCPT TO: <" + *it + ">");
             } else  {
-                status = Data;
+                if (mailItr->mail.status() & QMailMessage::HasReferences) {
+                    mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
+                    if (mailChunks.isEmpty()) {
+                        // Nothing to send?
+                        status = Sent;
+                    } else {
+                        status = Chunk;
+                    }
+                } else {
+                    status = Data;
+                }
                 nextAction(QString());
             }
         } else {
@@ -517,6 +538,40 @@ void SmtpClient::nextAction(const QString &response)
         }
         break;
     }
+
+    case Chunk:
+    {
+        const bool isLast(mailChunks.count() == 1);
+        QMailMessage::MessageChunk chunk(mailChunks.takeFirst());
+
+        QByteArray command;
+        if (chunk.first == QMailMessage::Text) {
+            sendCommand("BDAT " + QByteArray::number(chunk.second.size()) + (isLast ? " LAST" : ""));
+
+            // The data follows immediately
+            transport->stream().writeRawData(chunk.second.constData(), chunk.second.size());
+        } else if (chunk.first == QMailMessage::Reference) {
+            sendCommand("BURL " + chunk.second + (isLast ? " LAST" : ""));
+        }
+
+        status = (isLast ? Sent : ChunkSent);
+        break;
+    }
+    case ChunkSent:
+    {
+        if (responseCode == 250) {
+            // Move on to the next chunk
+            status = Chunk;
+            nextAction(QString());
+        } else {
+            QMailMessageId msgId(mailItr->mail.id());
+
+            operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
+            messageProcessed(msgId);
+        }
+        break;
+    }
+
     case Sent:  
     {
         QMailMessageId msgId(mailItr->mail.id());
