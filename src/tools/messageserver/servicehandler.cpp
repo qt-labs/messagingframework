@@ -740,9 +740,27 @@ void ServiceHandler::dispatchRequest()
             mServiceAction.insert(service, request.action);
 
         // The services required for this request are available
+        ActionData data;
+        data.services = request.services;
+        data.completion = request.completion;
+        data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
+        data.reported = false;
+
+        mActiveActions.insert(request.action, data);
+        qDebug() << "Added action:" << request.action;
+
         if ((this->*request.servicer)(request.action, request.data)) {
-            activateAction(request.action, request.services, request.completion);
+            // This action is now underway
+            emit activityChanged(request.action, QMailServiceAction::InProgress);
+
+            if (mActionExpiry.isEmpty()) {
+                // Start the expiry timer
+                QTimer::singleShot(ExpiryPeriod, this, SLOT(expireAction()));
+            }
+            mActionExpiry.append(request.action);
         } else {
+            mActiveActions.remove(request.action);
+
             qMailLog(Messaging) << "Unable to dispatch request:" << request.action << "to services:" << request.services;
             emit activityChanged(request.action, QMailServiceAction::Failed);
 
@@ -752,28 +770,6 @@ void ServiceHandler::dispatchRequest()
 
         mRequests.takeFirst();
     }
-}
-
-void ServiceHandler::activateAction(quint64 action, const QSet<QMailMessageService*> &services, CompletionSignal completion)
-{
-    // The specified services are now busy
-    ActionData data;
-    data.services = services;
-    data.completion = completion;
-    data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
-    data.reported = false;
-
-    mActiveActions.insert(action, data);
-
-    if (mActionExpiry.isEmpty()) {
-        // Start the expiry timer
-        QTimer::singleShot(ExpiryPeriod, this, SLOT(expireAction()));
-    }
-
-    mActionExpiry.append(action);
-
-    // This action is now underway
-    emit activityChanged(action, QMailServiceAction::InProgress);
 }
 
 void ServiceHandler::updateAction(quint64 action)
@@ -1664,7 +1660,6 @@ void ServiceHandler::messagesMoved(const QMailMessageIdList &messageIds)
 
 void ServiceHandler::messagesPrepared(const QMailMessageIdList &messageIds)
 {
-    // TODO: transmit messages after preparation
     Q_UNUSED(messageIds)
 }
 

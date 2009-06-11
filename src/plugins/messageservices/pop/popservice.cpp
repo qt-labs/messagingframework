@@ -251,7 +251,6 @@ void PopService::Source::retrievalCompleted()
         emit _service->availabilityChanged(true);
     }
 
-    emit _service->activityChanged(QMailServiceAction::Successful);
     emit _service->actionCompleted(true);
 
     _deleting = false;

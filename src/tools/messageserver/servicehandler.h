@@ -200,7 +200,6 @@ private:
     void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(), const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(), const QMailMessageId& = QMailMessageId());
     void reportFailure(quint64, const QMailServiceAction::Status);
 
-    void activateAction(quint64, const QSet<QMailMessageService*> &, CompletionSignal);
     void updateAction(quint64);
 
     void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);

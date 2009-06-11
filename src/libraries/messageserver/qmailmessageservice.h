@@ -170,12 +170,12 @@ protected:
 
     void notImplemented();
 
-	typedef void (QMailMessageSource::*MessageSignal)(const QMailMessageIdList&);
-	MessageSignal deletedSignal() { return &QMailMessageSource::messagesDeleted; }
-	MessageSignal copiedSignal() { return &QMailMessageSource::messagesCopied; }
-	MessageSignal movedSignal() { return &QMailMessageSource::messagesMoved; }
-	MessageSignal matchingSignal() { return &QMailMessageSource::matchingMessageIds; }
-	MessageSignal preparedSignal() { return &QMailMessageSource::messagesPrepared; }
+    typedef void (QMailMessageSource::*MessageSignal)(const QMailMessageIdList&);
+    MessageSignal deletedSignal() { return &QMailMessageSource::messagesDeleted; }
+    MessageSignal copiedSignal() { return &QMailMessageSource::messagesCopied; }
+    MessageSignal movedSignal() { return &QMailMessageSource::messagesMoved; }
+    MessageSignal matchingSignal() { return &QMailMessageSource::matchingMessageIds; }
+    MessageSignal preparedSignal() { return &QMailMessageSource::messagesPrepared; }
 
 private:
     QMailMessageSource();
@@ -205,8 +205,8 @@ protected:
 
     void notImplemented();
 
-	typedef void (QMailMessageSink::*MessageSignal)(const QMailMessageIdList&);
-	MessageSignal transmittedSignal() { return &QMailMessageSink::messagesTransmitted; }
+    typedef void (QMailMessageSink::*MessageSignal)(const QMailMessageIdList&);
+    MessageSignal transmittedSignal() { return &QMailMessageSink::messagesTransmitted; }
 
 private:
     QMailMessageSink();

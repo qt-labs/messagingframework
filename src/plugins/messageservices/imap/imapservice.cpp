@@ -398,6 +398,8 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
                 qWarning() << "Unable to mark messages as not trash!";
             }
         }
+
+        emit messagesMoved(messageIds);
     }
 
     if (serverMessages.isEmpty()) {
@@ -414,7 +416,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
     }
 
     _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(ids);
-    return setStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy);
+    return setStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, preparedSignal());
 }
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, QMailMessageSource::MessageSignal signal)
@@ -450,7 +452,6 @@ void ImapService::Source::retrievalCompleted()
         }
     }
 
-    emit _service->activityChanged(QMailServiceAction::Successful);
     emit _service->actionCompleted(true);
 
     if (_synchronizing) {
