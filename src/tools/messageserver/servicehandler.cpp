@@ -747,7 +747,6 @@ void ServiceHandler::dispatchRequest()
         data.reported = false;
 
         mActiveActions.insert(request.action, data);
-        qDebug() << "Added action:" << request.action;
 
         if ((this->*request.servicer)(request.action, request.data)) {
             // This action is now underway
