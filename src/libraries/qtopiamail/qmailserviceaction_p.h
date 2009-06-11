@@ -185,7 +185,7 @@ protected:
 
 protected slots:
     void messagesEffected(quint64, const QMailMessageIdList &id);
-    void actionCompleted(quint64);
+    void storageActionCompleted(quint64);
 
 private:
     friend class QMailStorageAction;

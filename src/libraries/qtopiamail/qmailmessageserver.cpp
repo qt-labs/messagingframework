@@ -162,6 +162,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(messagesCopied(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(messagesMoved(quint64, QMailMessageIdList)),
                parent, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(storageActionCompleted(quint64)),
+               parent, SIGNAL(storageActionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(retrievalCompleted(quint64)),
                parent, SIGNAL(retrievalCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(messagesTransmitted(quint64, QMailMessageIdList)),

@@ -1003,7 +1003,7 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
 
     connect(_server, SIGNAL(storageActionCompleted(quint64)),
-            this, SLOT(actionCompleted(quint64)));
+            this, SLOT(storageActionCompleted(quint64)));
 
     init();
 }
@@ -1051,7 +1051,7 @@ void QMailStorageActionPrivate::messagesEffected(quint64 action, const QMailMess
     }
 }
 
-void QMailStorageActionPrivate::actionCompleted(quint64 action)
+void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
 {
     if (validAction(action)) {
         QMailServiceAction::Activity result(_ids.isEmpty() ? QMailServiceAction::Successful : QMailServiceAction::Failed);
