@@ -52,6 +52,7 @@ class QStackedWidget;
 class DetailsPage;
 class RecipientListWidget;
 class QLineEdit;
+class QTextEdit;
 class AttachmentListWidget;
 
 class EmailComposerInterface : public QMailComposerInterface
@@ -101,6 +102,8 @@ private:
     int m_cursorIndex;
     QWidget* m_composerWidget;
     BodyTextEdit* m_bodyEdit;
+    QLabel* m_forwardLabel;
+    QTextEdit* m_forwardEdit;
     QLabel* m_attachmentsLabel;
     QStackedWidget* m_widgetStack;
     QAction* m_attachmentAction;

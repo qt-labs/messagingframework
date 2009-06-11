@@ -499,6 +499,8 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_cursorIndex( -1 ),
     m_composerWidget(0),
     m_bodyEdit(0),
+    m_forwardLabel(0),
+    m_forwardEdit(0),
     m_attachmentsLabel(0),
     m_widgetStack(0),
     m_attachmentAction(0),
@@ -529,7 +531,7 @@ void EmailComposerInterface::init()
     QHBoxLayout* subjectLayout = new QHBoxLayout(subjectPanel);
     subjectLayout->setSpacing(0);
     subjectLayout->setContentsMargins(0,0,0,0);
-    QLabel* l = new QLabel("Subject:");
+    QLabel* l = new QLabel(tr("Subject:"));
     l->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     l->setMinimumWidth(minimumLeftWidth);
     subjectLayout->addWidget(l);
@@ -547,6 +549,25 @@ void EmailComposerInterface::init()
     connect(m_bodyEdit->document(), SIGNAL(contentsChanged()), this, SLOT(updateLabel()));
     layout->addWidget(m_bodyEdit);
 
+    m_forwardLabel = new QLabel(tr("Forwarded content:"));
+    m_forwardLabel->setVisible(false);
+    layout->addWidget(m_forwardLabel);
+
+    //forwarded element edit
+    m_forwardEdit = new QTextEdit(m_composerWidget);
+    m_forwardEdit->setWordWrapMode(QTextOption::WordWrap);
+    m_forwardEdit->setReadOnly(true);
+
+    // Why doesn't this work?
+    //m_forwardEdit->setAutoFillBackground(true);
+    //m_forwardEdit->setBackgroundRole(QPalette::Window);
+    QPalette p(m_forwardEdit->palette());
+    p.setColor(QPalette::Active, QPalette::Base, p.color(QPalette::Window));
+    m_forwardEdit->setPalette(p);
+
+    m_forwardEdit->setVisible(false);
+    layout->addWidget(m_forwardEdit);
+
     //attachments label
     m_attachmentsLabel = new QLabel(this);
     layout->addWidget(m_attachmentsLabel);
@@ -560,8 +581,8 @@ void EmailComposerInterface::init()
 
     setTabOrder(m_recipientListWidget,m_subjectEdit);
     setTabOrder(m_subjectEdit,m_bodyEdit);
+    setTabOrder(m_bodyEdit,m_forwardEdit);
     setFocusProxy(m_bodyEdit);
-
 }
 
 void EmailComposerInterface::setPlainText( const QString& text, const QString& signature )
@@ -631,19 +652,48 @@ QMailMessage EmailComposerInterface::message() const
         mail.appendPart(textPart);
 
         foreach (const QString& attachment, m_attachmentListWidget->attachments()) {
-            QFileInfo fi(attachment);
-            QString partName(fi.fileName());
-            QString filePath(fi.absoluteFilePath());
+            if (attachment.startsWith("ref:")) {
+                const QMailMessage referencedMessage(QMailMessageId(attachment.mid(4).toULongLong()));
 
-            QMailMessageContentType type(QMail::mimeTypeFromFileName(attachment).toLatin1());
-            type.setName(partName.toLatin1());
+                QMailMessageContentType type;
+                if (referencedMessage.multipartType() == QMailMessage::MultipartNone) {
+                    // The part will have the same type as the original message
+                    type = referencedMessage.contentType();
+                } else {
+                    // Encapsulate the entire message
+                    type = QMailMessageContentType("message/rfc822");
+                }
 
-            QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
-            disposition.setFilename(partName.toLatin1());
+                QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+                mail.appendPart(QMailMessagePart::fromMessageReference(referencedMessage.id(), disposition, type, referencedMessage.transferEncoding()));
 
-            QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-            part.setContentLocation(QUrl::fromLocalFile(filePath).toString());
-            mail.appendPart(part);
+                mail.setStatus(QMailMessage::HasReferences, true);
+                mail.setStatus(QMailMessage::HasUnresolvedReferences, true);
+            } else if (attachment.startsWith("partRef:")) {
+                QMailMessagePart::Location partLocation(attachment.mid(8));
+                const QMailMessage referencedMessage(partLocation.containingMessageId());
+                const QMailMessagePart &existingPart(referencedMessage.partAt(partLocation));
+
+                QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+                mail.appendPart(QMailMessagePart::fromPartReference(existingPart.location(), disposition, existingPart.contentType(), existingPart.transferEncoding()));
+
+                mail.setStatus(QMailMessage::HasReferences, true);
+                mail.setStatus(QMailMessage::HasUnresolvedReferences, true);
+            } else {
+                QFileInfo fi(attachment);
+                QString partName(fi.fileName());
+                QString filePath(fi.absoluteFilePath());
+
+                QMailMessageContentType type(QMail::mimeTypeFromFileName(attachment).toLatin1());
+                type.setName(partName.toLatin1());
+
+                QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
+                disposition.setFilename(partName.toLatin1());
+
+                QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
+                part.setContentLocation(QUrl::fromLocalFile(filePath).toString());
+                mail.appendPart(part);
+            }
         }
     }
 
@@ -709,6 +759,9 @@ static void checkOutlookString(QString &str)
 
 void EmailComposerInterface::create(const QMailMessage& sourceMail)
 {
+    m_forwardLabel->setVisible(false);
+    m_forwardEdit->setVisible(false);
+
     if (sourceMail.multipartType() == QMailMessagePartContainer::MultipartNone) {
         if (sourceMail.hasBody())
             setPlainText( sourceMail.body().data(), m_signature );
@@ -719,20 +772,54 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
         for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
             QMailMessagePart &part = const_cast<QMailMessagePart&>(sourceMail.partAt(i));
             QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
+            bool isReference = (part.referenceType() != QMailMessagePart::None);
             bool isLocalAttachment = part.hasBody() && QFile::exists(QUrl(contentLocation).toLocalFile());
 
             if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text") && !isLocalAttachment) {
                 // This is the first text part, we will use as the forwarded text body
                 textPart = i;
-            } else if(isLocalAttachment) {
-                    m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
+            } else if (isReference) {
+                // Put the referenced data in the forwarded pane
+                if (part.referenceType() == QMailMessagePart::MessageReference) {
+                    QMailMessage referencedMessage(part.messageReference());
+
+                    m_attachmentListWidget->addAttachment(QString("ref:%1").arg(QString::number(referencedMessage.id().toULongLong())));
+
+                    if ((referencedMessage.multipartType() == QMailMessage::MultipartNone) &&
+                        (referencedMessage.hasBody()) &&
+                        (referencedMessage.contentType().type().toLower() == "text")) {
+                            m_forwardEdit->setPlainText(referencedMessage.body().data());
+                    } else {
+                        m_forwardEdit->setPlainText(tr("<Message content on server>"));
+                    }
+                } else {
+                    QMailMessagePart::Location partLocation(part.partReference());
+
+                    QMailMessage referencedMessage(partLocation.containingMessageId());
+                    const QMailMessagePart &referencedPart(referencedMessage.partAt(partLocation));
+
+                    m_attachmentListWidget->addAttachment(QString("partRef:%1").arg(referencedPart.location().toString(true)));
+
+                    if (referencedPart.hasBody() &&
+                        (referencedMessage.contentType().type().toLower() == "text")) {
+                        m_forwardEdit->setPlainText(referencedPart.body().data());
+                    } else {
+                        m_forwardEdit->setPlainText(tr("<Message content on server>"));
+                    }
                 }
+
+                m_forwardLabel->setVisible(true);
+                m_forwardEdit->setVisible(true);
+            } else if (isLocalAttachment) {
+                m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
             }
+        }
         if (textPart != -1) {
             const QMailMessagePart& part = sourceMail.partAt(textPart);
             setPlainText( part.body().data(), m_signature );
         }
     }
+
     //set the details
     setDetails(sourceMail);
 
@@ -750,21 +837,28 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
     const QString subject = source.subject().toLower();
 
     QString toAddress;
-    QString fromAddress;
     QString ccAddress;
     QString subjectText;
 
-    if (source.parentAccountId().isValid()) {
-        QMailAccount sendingAccount(source.parentAccountId());
-        fromAddress = sendingAccount.fromAddress().address();
+    // Use the default sending account if configured, or fallback to use the same account as the incoming message
+    QMailAccountId sendingAccountId;
+    QMailAccountIdList senders = QMailStore::instance()->queryAccounts(QMailAccountKey::status(QMailAccount::PreferredSender));
+    if (!senders.isEmpty()) {
+        sendingAccountId = senders.first();
+    } else {
+        senders = QMailStore::instance()->queryAccounts(QMailAccountKey::status(QMailAccount::CanTransmit));
+        if (!senders.isEmpty()) {
+            if (senders.contains(source.parentAccountId())) {
+                sendingAccountId = source.parentAccountId();
+            } else {
+                sendingAccountId = senders.first();
+            }
+        }
     }
 
-    // work out the kind of mail to response
-    // type of reply depends on the type of message
-    // a reply to an mms is just a new mms message with the sender as recipient
-    // a reply to an sms is a new sms message with the sender as recipient
+    QMailAccount sendingAccount(sendingAccountId);
+    QString fromAddress(sendingAccount.fromAddress().address());
 
-    // EMAIL
     QString originalText;
     int textPart = -1;
     QMailMessage mail;
@@ -818,14 +912,32 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
             mail.setInReplyTo( messageId );
     }
 
+    QMailMessageContentType textContentType("text/plain; charset=UTF-8");
+
     QString bodyText;
     if (action == Forward) {
-        bodyText = "\n------------ Forwarded Message ------------\n";
-        bodyText += "Date: " + source.date().toString() + "\n";
-        bodyText += "From: " + source.from().toString() + "\n";
-        bodyText += "To: " + QMailAddress::toStringList(source.to()).join(", ") + "\n";
-        bodyText += "Subject: " + source.subject() + "\n";
-        bodyText += "\n" + originalText;
+        QString forwardBlock = "\n------------ Forwarded Message ------------\n";
+        forwardBlock += "Date: " + source.date().toString() + "\n";
+        forwardBlock += "From: " + source.from().toString() + "\n";
+        forwardBlock += "To: " + QMailAddress::toStringList(source.to()).join(", ") + "\n";
+        forwardBlock += "Subject: " + source.subject() + "\n";
+
+        QMailAccount originAccount(source.parentAccountId());
+        if ((originAccount.status() & QMailAccount::CanReferenceExternalData) &&
+            (sendingAccount.status() & QMailAccount::CanTransmitViaReference)) {
+            // We can send this message by reference
+            mail.clearParts();
+            mail.setMultipartType(QMailMessage::MultipartMixed);
+
+            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+
+            mail.appendPart(QMailMessagePart::fromData(forwardBlock, disposition, textContentType, QMailMessageBody::Base64));
+            mail.appendPart(QMailMessagePart::fromMessageReference(source.id(), disposition, source.contentType(), source.transferEncoding()));
+
+            textPart = -1;
+        } else {
+            bodyText = forwardBlock + "\n" + originalText;
+        }
     } else {
         QDateTime dateTime = source.date().toLocalTime();
         bodyText = "\nOn " + dateTime.toString(Qt::ISODate) + ", ";
@@ -840,15 +952,13 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
     }
 
     // Whatever text subtype it was before, it's now plain...
-    QMailMessageContentType contentType("text/plain; charset=UTF-8");
-
     if (mail.partCount() == 0) {
         // Set the modified text as the body
-        mail.setBody(QMailMessageBody::fromData(bodyText, contentType, QMailMessageBody::Base64));
+        mail.setBody(QMailMessageBody::fromData(bodyText, textContentType, QMailMessageBody::Base64));
     } else if (textPart != -1) {
         // Replace the original text with our modified version
         QMailMessagePart& part = mail.partAt(textPart);
-        part.setBody(QMailMessageBody::fromData(bodyText, contentType, QMailMessageBody::Base64));
+        part.setBody(QMailMessageBody::fromData(bodyText, textContentType, QMailMessageBody::Base64));
     }
 
     if (action == ReplyToAll) {
@@ -884,8 +994,6 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
 bool EmailComposerInterface::isReadyToSend() const
 {
   bool ready = !m_recipientListWidget->recipients().isEmpty();
-  //QMailMessage m = message();
-  //ready &= m.parentAccountId().isValid();
   return ready;
 }
 
@@ -923,13 +1031,13 @@ void EmailComposerInterface::compose(ComposeContext context, const QMailMessage&
             create(sourceMail);
         break;
         case Reply:
-            reply(sourceMail,Reply);
+            reply(sourceMail, Reply);
         break;
         case ReplyToAll:
-            reply(sourceMail,ReplyToAll);
+            reply(sourceMail, ReplyToAll);
         break;
         case Forward:
-            reply(sourceMail,Forward);
+            reply(sourceMail, Forward);
     }
 }
 
