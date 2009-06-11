@@ -170,13 +170,6 @@ protected:
 
     void notImplemented();
 
-    typedef void (QMailMessageSource::*MessageSignal)(const QMailMessageIdList&);
-    MessageSignal deletedSignal() { return &QMailMessageSource::messagesDeleted; }
-    MessageSignal copiedSignal() { return &QMailMessageSource::messagesCopied; }
-    MessageSignal movedSignal() { return &QMailMessageSource::messagesMoved; }
-    MessageSignal matchingSignal() { return &QMailMessageSource::matchingMessageIds; }
-    MessageSignal preparedSignal() { return &QMailMessageSource::messagesPrepared; }
-
 private:
     QMailMessageSource();
     QMailMessageSource(const QMailMessageSource &other);
