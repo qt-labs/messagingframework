@@ -198,8 +198,10 @@ bool AttachmentListDelegate::isOverRemoveLink(const QRect& parentRect, const QPo
 
 bool AttachmentListDelegate::helpEvent(QHelpEvent *, QAbstractItemView *view, const QStyleOptionViewItem &, const QModelIndex &index)
 {
-    if(!index.isValid())
+    if (!index.isValid()) {
         view->setToolTip(QString());
+        return false;
+    }
 
     QString attachment = m_parent->attachmentAt(index.row());
     view->setToolTip(attachment);

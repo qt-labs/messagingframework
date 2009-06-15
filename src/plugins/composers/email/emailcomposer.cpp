@@ -648,8 +648,12 @@ QMailMessage EmailComposerInterface::message() const
             disposition.setFilename(partName.toLatin1());
 
             QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-            part.setContentLocation(QUrl::fromLocalFile(filePath).toString());
             mail.appendPart(part);
+
+            // Store the location of this file for future reference
+            const QMailMessagePart &mailPart(mail.partAt(mail.partCount() - 1));
+            QString name("qtopiamail-file-location-" + mailPart.location().toString(false));
+            mail.setCustomField(name, filePath);
         }
     }
 
@@ -732,9 +736,16 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
         for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
             const QMailMessagePart &part(sourceMail.partAt(i));
 
-            if (part.hasBody()) {
-                QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
-                bool localFile(!contentLocation.isEmpty() && QFile::exists(QUrl(contentLocation).toLocalFile()));
+            // See if we have a filename to link to
+            QString name("qtopiamail-file-location-" + part.location().toString(false));
+            QString contentLocation = sourceMail.customField(name);
+            if (contentLocation.isEmpty()) {
+                // See if we can use the value in the message (remove any folded whitespace)
+                contentLocation = QUrl(part.contentLocation().remove(QRegExp("\\s"))).toLocalFile();
+            }
+
+            if (part.hasBody() || !contentLocation.isEmpty()) {
+                bool localFile(!contentLocation.isEmpty() && QFile::exists(contentLocation));
 
                 if ((textPart == -1) && (!localFile) && (part.contentType().type().toLower() == "text")) {
                     // This is the first text part, we will use as the forwarded text body
@@ -752,7 +763,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
                         }
                     }
 
-                    m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
+                    m_attachmentListWidget->addAttachment(contentLocation);
                 }
             }
         }
