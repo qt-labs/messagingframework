@@ -514,6 +514,12 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
 
 EmailComposerInterface::~EmailComposerInterface()
 {
+    // Delete any temporary files we don't need
+    foreach (const QString file, m_temporaries) {
+        if (!QFile::remove(file)) {
+            qWarning() << "Unable to remove temporary file:" << file;
+        }
+    }
 }
 
 void EmailComposerInterface::init()
@@ -710,6 +716,13 @@ void EmailComposerInterface::clear()
 
     m_bodyEdit->clear();
     m_attachmentListWidget->clear();
+
+    // Delete any temporary files we don't need
+    foreach (const QString file, m_temporaries) {
+        if (!QFile::remove(file)) {
+            qWarning() << "Unable to remove temporary file:" << file;
+        }
+    }
 }
 
 void EmailComposerInterface::setSignature( const QString &sig )
@@ -770,15 +783,9 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
         // all but the first part as out-of-line attachments
         int textPart = -1;
         for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
-            QMailMessagePart &part = const_cast<QMailMessagePart&>(sourceMail.partAt(i));
-            QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
-            bool isReference = (part.referenceType() != QMailMessagePart::None);
-            bool isLocalAttachment = part.hasBody() && QFile::exists(QUrl(contentLocation).toLocalFile());
+            const QMailMessagePart &part(sourceMail.partAt(i));
 
-            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text") && !isLocalAttachment) {
-                // This is the first text part, we will use as the forwarded text body
-                textPart = i;
-            } else if (isReference) {
+            if (part.referenceType() != QMailMessagePart::None) {
                 // Put the referenced data in the forwarded pane
                 if (part.referenceType() == QMailMessagePart::MessageReference) {
                     QMailMessage referencedMessage(part.messageReference());
@@ -810,10 +817,31 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
 
                 m_forwardLabel->setVisible(true);
                 m_forwardEdit->setVisible(true);
-            } else if (isLocalAttachment) {
-                m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
+            } else if (part.hasBody()) {
+                QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
+                bool localFile(!contentLocation.isEmpty() && QFile::exists(QUrl(contentLocation).toLocalFile()));
+
+                if ((textPart == -1) && (!localFile) && (part.contentType().type().toLower() == "text")) {
+                    // This is the first text part, we will use as the forwarded text body
+                    textPart = i;
+                } else {
+                    if (!localFile) {
+                        // We need to create a temporary copy of this part's data to link to
+                        QString fileName(part.writeBodyTo(QMail::tempPath()));
+                        if (fileName.isEmpty()) {
+                            qWarning() << "Unable to save part to temporary file!";
+                            continue;
+                        } else {
+                            m_temporaries.append(fileName);
+                            contentLocation = fileName;
+                        }
+                    }
+
+                    m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
+                }
             }
         }
+
         if (textPart != -1) {
             const QMailMessagePart& part = sourceMail.partAt(textPart);
             setPlainText( part.body().data(), m_signature );
