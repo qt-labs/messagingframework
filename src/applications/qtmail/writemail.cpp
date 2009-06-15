@@ -80,7 +80,7 @@ WriteMail::WriteMail(QWidget* parent)
     m_sendButton(0),
     m_widgetStack(0),
     m_selectComposerWidget(0),
-    m_replyAction(0),
+    m_replyAction(QMailMessage::NoResponse),
     m_toolbar(0)
 {
     init();
@@ -265,7 +265,7 @@ bool WriteMail::buildMail(const QMailAccountId& accountId, bool includeSignature
 
     if (m_precursorId.isValid()) {
         mail.setInResponseTo(m_precursorId);
-        mail.setResponseType(static_cast<QMailMessage::ResponseType>(m_replyAction));
+        mail.setResponseType(m_replyAction);
 
         QMailMessage precursor(m_precursorId);
 
@@ -309,46 +309,34 @@ void WriteMail::create(const QMailMessage& initMessage)
     if (composer().isEmpty())
         return;
 
-    m_composerInterface->compose(QMailComposerInterface::Create,initMessage);
+    m_composerInterface->compose(QMailMessage::NoResponse, initMessage);
     m_hasMessageChanged = true;
 }
 
-void WriteMail::forward(const QMailMessage& forwardMail)
+void WriteMail::respond(const QMailMessage& source, QMailMessage::ResponseType type)
 {
-    prepareComposer(forwardMail.messageType());
+    prepareComposer(source.messageType());
     if (composer().isEmpty())
         return;
 
-    m_composerInterface->compose(QMailComposerInterface::Forward,forwardMail);
+    m_composerInterface->compose(type, source);
     m_hasMessageChanged = true;
-    m_precursorId = forwardMail.id();
-    m_replyAction = ReadMail::Forward;
-
+    m_precursorId = source.id();
+    m_replyAction = type;
 }
 
-void WriteMail::reply(const QMailMessage& replyMail)
+void WriteMail::respond(const QMailMessagePart::Location& sourceLocation, QMailMessage::ResponseType type)
 {
-    prepareComposer(replyMail.messageType());
+    QMailMessage source(sourceLocation.containingMessageId());
+
+    prepareComposer(source.messageType());
     if (composer().isEmpty())
         return;
 
-    m_composerInterface->compose(QMailComposerInterface::Reply ,replyMail);
+    m_composerInterface->compose(type, source, sourceLocation);
     m_hasMessageChanged = true;
-    m_precursorId = replyMail.id();
-    m_replyAction = ReadMail::Reply;
-}
-
-void WriteMail::replyToAll(const QMailMessage& replyMail)
-{
-    prepareComposer(replyMail.messageType());
-    if (composer().isEmpty())
-        return;
-
-    m_composerInterface->compose(QMailComposerInterface::ReplyToAll ,replyMail);
-    m_hasMessageChanged = true;
-    m_precursorId = replyMail.id();
-    m_replyAction = ReadMail::ReplyToAll;
-
+    m_precursorId = source.id();
+    m_replyAction = type;
 }
 
 void WriteMail::modify(const QMailMessage& previousMessage)
@@ -365,7 +353,7 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     mail.setTo(previousMessage.to());
     mail.setFrom(previousMessage.from());
     mail.setCustomFields(previousMessage.customFields());
-    m_composerInterface->compose(QMailComposerInterface::Create,previousMessage);
+    m_composerInterface->compose(QMailMessage::NoResponse, previousMessage);
 
     // ugh. we need to do this everywhere
     m_hasMessageChanged = false;
@@ -394,7 +382,7 @@ void WriteMail::reset()
 
     m_hasMessageChanged = false;
     m_precursorId = QMailMessageId();
-    m_replyAction = 0;
+    m_replyAction = QMailMessage::NoResponse;
 }
 
 bool WriteMail::prepareComposer(QMailMessage::MessageType type)

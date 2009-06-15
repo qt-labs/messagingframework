@@ -540,26 +540,33 @@ void ReadMail::viewMms()
 
 void ReadMail::reply()
 {
-    if (replyButton->isVisible())
-    {
-        emit resendRequested(mail, Reply);
+    if (replyButton->isVisible()) {
+        emit responseRequested(mail, QMailMessage::Reply);
     }
 }
 
 void ReadMail::replyAll()
 {
-    if (replyAllAction->isVisible())
-    {
-        emit resendRequested(mail, ReplyToAll);
+    if (replyAllAction->isVisible()) {
+        emit responseRequested(mail, QMailMessage::ReplyToAll);
     }
 }
 
 void ReadMail::forward()
 {
-    if (forwardAction->isVisible())
-    {
-        emit resendRequested(mail, Forward);
+    if (forwardAction->isVisible()) {
+        emit responseRequested(mail, QMailMessage::Forward);
     }
+}
+
+void ReadMail::respondToMessage(QMailMessage::ResponseType type)
+{
+    emit responseRequested(mail, type);
+}
+
+void ReadMail::respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type)
+{
+    emit responseRequested(partLocation, type);
 }
 
 void ReadMail::setStatus(int id)
@@ -730,9 +737,8 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             view->setObjectName("read-message");
             view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
 
-            connect(view, SIGNAL(replyToSender()), replyButton, SLOT(trigger()));
-            connect(view, SIGNAL(replyToAll()), replyAllAction, SLOT(trigger()));
-            connect(view, SIGNAL(forwardMessage()), forwardAction, SLOT(trigger()));
+            connect(view, SIGNAL(respondToMessage(QMailMessage::ResponseType)), this, SLOT(respondToMessage(QMailMessage::ResponseType)));
+            connect(view, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SLOT(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
             connect(view, SIGNAL(deleteMessage()), deleteButton, SLOT(trigger()));
             connect(view, SIGNAL(saveSender()), storeButton, SLOT(trigger()));
             connect(view, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));

@@ -828,7 +828,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
     emit changed();
 }
 
-void EmailComposerInterface::reply(const QMailMessage& source, int action)
+void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMailMessage& source, const QMailMessagePart::Location& partLocation)
 {
     const QString fwdIndicator(tr("Fwd"));
     const QString shortFwdIndicator(tr("Fw", "2 letter short version of Fwd for forward"));
@@ -879,12 +879,12 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
         }
     }
 
-    if ( action == Forward ) {
+    if ((type == QMailMessage::Forward) || (type == QMailMessage::ForwardPart)) {
         // Copy the existing mail
         mail = source;
 
         if ((subject.left(fwdIndicator.length() + 1) == (fwdIndicator.toLower() + ":")) ||
-                (subject.left(shortFwdIndicator.length() + 1) == (shortFwdIndicator.toLower() + ":"))) {
+            (subject.left(shortFwdIndicator.length() + 1) == (shortFwdIndicator.toLower() + ":"))) {
             subjectText = source.subject();
         } else {
             subjectText = fwdIndicator + ": " + source.subject();
@@ -915,7 +915,7 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
     QMailMessageContentType textContentType("text/plain; charset=UTF-8");
 
     QString bodyText;
-    if (action == Forward) {
+    if ((type == QMailMessage::Forward) || (type == QMailMessage::ForwardPart)) {
         QString forwardBlock = "\n------------ Forwarded Message ------------\n";
         forwardBlock += "Date: " + source.date().toString() + "\n";
         forwardBlock += "From: " + source.from().toString() + "\n";
@@ -923,20 +923,44 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
         forwardBlock += "Subject: " + source.subject() + "\n";
 
         QMailAccount originAccount(source.parentAccountId());
-        if ((originAccount.status() & QMailAccount::CanReferenceExternalData) &&
-            (sendingAccount.status() & QMailAccount::CanTransmitViaReference)) {
-            // We can send this message by reference
+        bool viaReference((originAccount.status() & QMailAccount::CanReferenceExternalData) &&
+                          (sendingAccount.status() & QMailAccount::CanTransmitViaReference));
+
+        if (type == QMailMessage::ForwardPart) {
             mail.clearParts();
             mail.setMultipartType(QMailMessage::MultipartMixed);
 
-            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+            mail.appendPart(QMailMessagePart::fromData(forwardBlock, QMailMessageContentDisposition(QMailMessageContentDisposition::Inline), textContentType, QMailMessageBody::Base64));
 
-            mail.appendPart(QMailMessagePart::fromData(forwardBlock, disposition, textContentType, QMailMessageBody::Base64));
-            mail.appendPart(QMailMessagePart::fromMessageReference(source.id(), disposition, source.contentType(), source.transferEncoding()));
-
+            // Add only the single relevant part
+            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
+            
+            const QMailMessagePart &sourcePart(source.partAt(partLocation));
+            if (viaReference) {
+                mail.appendPart(QMailMessagePart::fromPartReference(partLocation, disposition, sourcePart.contentType(), sourcePart.transferEncoding()));
+            } else {
+                // We need to create a copy of the original part
+                QByteArray partData(sourcePart.body().data(QMailMessageBody::Decoded));
+                mail.appendPart(QMailMessagePart::fromData(partData, disposition, sourcePart.contentType(), sourcePart.transferEncoding()));
+            }
+            
+            bodyText = forwardBlock + "\n" + originalText;
             textPart = -1;
         } else {
-            bodyText = forwardBlock + "\n" + originalText;
+            if (viaReference) {
+                // We can send this message by reference
+                mail.clearParts();
+                mail.setMultipartType(QMailMessage::MultipartMixed);
+
+                QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+
+                mail.appendPart(QMailMessagePart::fromData(forwardBlock, disposition, textContentType, QMailMessageBody::Base64));
+                mail.appendPart(QMailMessagePart::fromMessageReference(source.id(), disposition, source.contentType(), source.transferEncoding()));
+
+                textPart = -1;
+            } else {
+                bodyText = forwardBlock + "\n" + originalText;
+            }
         }
     } else {
         QDateTime dateTime = source.date().toLocalTime();
@@ -961,7 +985,7 @@ void EmailComposerInterface::reply(const QMailMessage& source, int action)
         part.setBody(QMailMessageBody::fromData(bodyText, textContentType, QMailMessageBody::Base64));
     }
 
-    if (action == ReplyToAll) {
+    if (type == QMailMessage::ReplyToAll) {
         // Set the reply-to-all address list
         QList<QMailAddress> all;
         foreach (const QMailAddress& addr, source.to() + source.cc())
@@ -1023,21 +1047,15 @@ QString EmailComposerInterface::displayName(QMailMessage::MessageType) const { r
 
 QIcon EmailComposerInterface::displayIcon(QMailMessage::MessageType) const { return QIcon(":icon/email"); }
 
-void EmailComposerInterface::compose(ComposeContext context, const QMailMessage& sourceMail, QMailMessage::MessageType)
+void EmailComposerInterface::compose(QMailMessage::ResponseType type, const QMailMessage& sourceMail, const QMailMessagePart::Location& sourceLocation, QMailMessage::MessageType)
 {
-    switch(context)
-    {
-        case Create:
-            create(sourceMail);
-        break;
-        case Reply:
-            reply(sourceMail, Reply);
-        break;
-        case ReplyToAll:
-            reply(sourceMail, ReplyToAll);
-        break;
-        case Forward:
-            reply(sourceMail, Forward);
+    if (type == QMailMessage::NoResponse) {
+        create(sourceMail);
+    } else if (type == QMailMessage::Redirect) {
+        // TODO: Implement redirect
+        qWarning() << "Unable to handle request to redirect!";
+    } else {
+        respond(type, sourceMail, sourceLocation);
     }
 }
 

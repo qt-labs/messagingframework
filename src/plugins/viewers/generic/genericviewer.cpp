@@ -182,6 +182,7 @@ void GenericViewer::linkClicked(const QUrl& link)
                 attachmentDialog->setAttachment(message->partAt(partLocation));
                 connect(attachmentDialog, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
                 connect(attachmentDialog, SIGNAL(retrievePortion(QMailMessagePart, uint)), this, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)));
+                connect(attachmentDialog, SIGNAL(respondToPart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
                 connect(attachmentDialog, SIGNAL(finished(int)), this, SLOT(dialogFinished(int)));
 
                 attachmentDialog->exec();

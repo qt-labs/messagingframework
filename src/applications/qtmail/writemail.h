@@ -62,9 +62,8 @@ public:
     WriteMail(QWidget* parent = 0);
 
     void create(const QMailMessage& initMessage = QMailMessage());
-    void forward(const QMailMessage& forwardMail);
-    void reply(const QMailMessage& replyMail);
-    void replyToAll(const QMailMessage& replyMail);
+    void respond(const QMailMessage& source, QMailMessage::ResponseType type);
+    void respond(const QMailMessagePart::Location& sourceLocation, QMailMessage::ResponseType type);
     void modify(const QMailMessage& previousMessage);
 
     bool hasContent();
@@ -114,7 +113,7 @@ private:
     bool m_hasMessageChanged;
     SelectComposerWidget* m_selectComposerWidget;
     QMailMessageId m_precursorId;
-    int m_replyAction;
+    QMailMessage::ResponseType m_replyAction;
     QToolBar *m_toolbar;
 };
 

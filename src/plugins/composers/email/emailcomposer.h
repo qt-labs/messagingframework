@@ -76,7 +76,8 @@ public:
     virtual QString displayName(QMailMessage::MessageType type) const;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const;
 
-    void compose(ComposeContext context, const QMailMessage& source, QMailMessage::MessageType mtype);
+    void compose(QMailMessage::ResponseType type, const QMailMessage& source, const QMailMessagePart::Location& sourceLocation, QMailMessage::MessageType messageType);
+
     QList<QAction*> actions() const;
     QString status() const;
 
@@ -90,9 +91,9 @@ protected slots:
     void setCursorPosition();
 
 private:
-    void create(const QMailMessage& source);
-    void reply(const QMailMessage& source, int action);
     void init();
+    void create(const QMailMessage& source);
+    void respond(QMailMessage::ResponseType type, const QMailMessage& source, const QMailMessagePart::Location& partLocation);
     void setPlainText( const QString& text, const QString& signature );
     void getDetails(QMailMessage& message) const;
     void setDetails(const QMailMessage& message);

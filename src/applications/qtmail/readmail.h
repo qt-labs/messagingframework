@@ -60,8 +60,6 @@ class ReadMail : public QFrame
     Q_OBJECT
 
 public:
-    enum ResendAction { Reply = 1, ReplyToAll = 2, Forward = 3 };
-
     ReadMail( QWidget* parent = 0, Qt::WFlags fl = 0 );
     ~ReadMail();
 
@@ -77,7 +75,8 @@ private slots:
     void messagesRemoved(const QMailMessageIdList& list);
 
 signals:
-    void resendRequested(const QMailMessage&, int);
+    void responseRequested(const QMailMessage&, QMailMessage::ResponseType type);
+    void responseRequested(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
     void sendMessageTo(const QMailAddress&, QMailMessage::MessageType);
     void modifyRequested(const QMailMessage&);
     void removeMessage(const QMailMessageId& id, bool userRequest);
@@ -112,6 +111,8 @@ protected slots:
     void retrieveMessagePortion(uint bytes);
     void retrieveMessagePart(const QMailMessagePart &part);
     void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
+    void respondToMessage(QMailMessage::ResponseType type);
+    void respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
 
 protected:
     void keyPressEvent(QKeyEvent *);

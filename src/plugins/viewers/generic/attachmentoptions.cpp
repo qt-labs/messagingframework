@@ -42,6 +42,7 @@
 
 #include "attachmentoptions.h"
 #include "browser.h"
+#include "qmailaccount.h"
 #include "qmailmessage.h"
 
 #include <QAction>
@@ -306,6 +307,7 @@ AttachmentOptions::AttachmentOptions(QWidget* parent)
       _save(new QPushButton()),
       _document(new QLabel()),
       _retrieve(new QPushButton()),
+      _forward(new QPushButton()),
       _part(0),
       _class(Other)
 {
@@ -342,6 +344,10 @@ AttachmentOptions::AttachmentOptions(QWidget* parent)
     _retrieve->setText(tr("Download attachment"));
     connect(_retrieve, SIGNAL(clicked()), this, SLOT(retrieveAttachment()));
     vb->addWidget(_retrieve);
+
+    _forward->setText(tr("Forward attachment"));
+    connect(_forward, SIGNAL(clicked()), this, SLOT(forwardAttachment()));
+    vb->addWidget(_forward);
 
     layout->addRow(vb);
 }
@@ -467,6 +473,16 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
     _save->setVisible(!isRetrievable && !isDocument && (size > 0));
     _retrieve->setVisible(isRetrievable);
     _document->setVisible(isDocument);
+
+    if (isRetrievable) {
+        // We can't forward this part unless the account supports transmission by reference 
+        QMailMessageMetaData metaData(_part->location().containingMessageId());
+        QMailAccount originAccount(metaData.parentAccountId());
+
+        _forward->setVisible(originAccount.status() & QMailAccount::CanReferenceExternalData);
+    } else {
+        _forward->setVisible(true);
+    }
 }
 
 void AttachmentOptions::viewAttachment()
@@ -606,6 +622,13 @@ void AttachmentOptions::retrieveAttachment()
     } else {
         emit retrieve(*_part);
     }
+
+    accept();
+}
+
+void AttachmentOptions::forwardAttachment()
+{
+    emit respondToPart(_part->location(), QMailMessage::ForwardPart);
 
     accept();
 }

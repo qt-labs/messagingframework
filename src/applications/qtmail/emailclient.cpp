@@ -391,7 +391,8 @@ ReadMail* MessageUiBase::createReadMailWidget()
 
     readMail->setGeometry(geometry());
 
-    connect(readMail, SIGNAL(resendRequested(QMailMessage,int)), this, SLOT(resend(QMailMessage,int)) );
+    connect(readMail, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
+    connect(readMail, SIGNAL(responseRequested(QMailMessagePart::Location,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessagePart::Location,QMailMessage::ResponseType)) );
     connect(readMail, SIGNAL(modifyRequested(QMailMessage)),this, SLOT(modify(QMailMessage)));
     connect(readMail, SIGNAL(removeMessage(QMailMessageId, bool)), this, SLOT(removeMessage(QMailMessageId, bool)) );
     connect(readMail, SIGNAL(getMailRequested(QMailMessageMetaData)),this, SLOT(getSingleMail(QMailMessageMetaData)) );
@@ -426,10 +427,9 @@ MessageListView* MessageUiBase::createMessageListView()
     // Default sort is by descending send timestamp
     view->setSortKey(QMailMessageSortKey::timeStamp(Qt::DescendingOrder));
 
-
     connect(view, SIGNAL(clicked(QMailMessageId)), this, SLOT(messageActivated()));
     connect(view, SIGNAL(selectionChanged()), this, SLOT(messageSelectionChanged()) );
-    connect(view, SIGNAL(resendRequested(QMailMessage,int)), this, SLOT(resend(QMailMessage,int)) );
+    connect(view, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
     connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );
 
@@ -1907,33 +1907,43 @@ bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
     return false;
 }
 
-void EmailClient::resend(const QMailMessage& message, int replyType)
+void EmailClient::respond(const QMailMessage& message, QMailMessage::ResponseType type)
 {
+    if ((type == QMailMessage::NoResponse) || 
+        (type == QMailMessage::ForwardPart)) {
+        qWarning() << "Invalid responseType:" << type;
+        return;
+    }
+
     repliedFromMailId = message.id();
 
-    if (replyType == ReadMail::Reply) {
+    if (type == QMailMessage::Reply) {
         repliedFlags = QMailMessage::Replied;
-    } else if (replyType == ReadMail::ReplyToAll) {
+    } else if (type == QMailMessage::ReplyToAll) {
         repliedFlags = QMailMessage::RepliedAll;
-    } else if (replyType == ReadMail::Forward) {
+    } else if (type == QMailMessage::Forward) {
         repliedFlags = QMailMessage::Forwarded;
-    } else {
+    }
+
+    writeMailWidget()->respond(message, type);
+    if (!writeMailWidget()->composer().isEmpty()) {
+        viewComposer();
+    }
+}
+
+void EmailClient::respond(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType type)
+{
+    if (type != QMailMessage::ForwardPart) {
+        qWarning() << "Invalid responseType:" << type;
         return;
     }
 
-    if(replyType == ReadMail::Forward)
-        writeMailWidget()->forward(message);
-    else if(replyType == ReadMail::Reply)
-        writeMailWidget()->reply(message);
-    else if(replyType == ReadMail::ReplyToAll)
-        writeMailWidget()->replyToAll(message);
+    repliedFromMailId = partLocation.containingMessageId();
 
-    if ( writeMailWidget()->composer().isEmpty() ) {
-        // failed to create new composer, maybe due to no email account
-        // being present.
-        return;
+    writeMailWidget()->respond(partLocation, type);
+    if (!writeMailWidget()->composer().isEmpty()) {
+        viewComposer();
     }
-    viewComposer();
 }
 
 void EmailClient::modify(const QMailMessage& message)

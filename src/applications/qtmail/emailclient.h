@@ -222,7 +222,8 @@ protected slots:
 
     void externalEdit(const QString &);
 
-    void resend(const QMailMessage& message, int);
+    void respond(const QMailMessage& message, QMailMessage::ResponseType type);
+    void respond(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType type);
     void modify(const QMailMessage& message);
 
     void retrieveMoreMessages();

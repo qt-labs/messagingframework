@@ -132,21 +132,16 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QMailViewerInterface::replyToSender()
+    \fn QMailViewerInterface::respondToMessage(QMailMessage::ResponseType type)
 
-    This signal is emitted by the viewer to initiate a reply action.
+    This signal is emitted by the viewer to initiate a response action, of type \a type.
 */
 
 /*!
-    \fn QMailViewerInterface::replyToAll()
+    \fn QMailViewerInterface::respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type)
 
-    This signal is emitted by the viewer to initiate a reply-to-all action.
-*/
-
-/*!
-    \fn QMailViewerInterface::forwardMessage()
-
-    This signal is emitted by the viewer to initiate a message forwarding action.
+    This signal is emitted by the viewer to initiate a response to the message
+    part indicated by \a partLocation, of type \a type.
 */
 
 /*!

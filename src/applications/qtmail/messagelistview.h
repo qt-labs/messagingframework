@@ -120,7 +120,7 @@ signals:
     void currentChanged(const QMailMessageId& oldId, const QMailMessageId& newId);
     void selectionChanged();
     void backPressed();
-    void resendRequested(const QMailMessage&, int);
+    void responseRequested(const QMailMessage&, QMailMessage::ResponseType);
     void moreClicked();
     void visibleMessagesChanged();
 
