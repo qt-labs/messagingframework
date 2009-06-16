@@ -1607,15 +1607,22 @@ public:
 };
 
 ImapContextFSM::ImapContextFSM(ImapProtocol *protocol)
-    : ImapContext(protocol)
+    : ImapContext(protocol),
+      mState(&unconnectedState)
 { 
     reset();
 }
 
 void ImapContextFSM::reset()
 {
+    // Clear any existing state we have accumulated
+    while (!mPendingStates.isEmpty()) {
+        QPair<ImapState*, QString> state(mPendingStates.takeFirst());
+        state.first->init();
+    }
+
+    mState->init();
     mState = &unconnectedState;  
-    mPendingStates.clear();
 }
 
 void ImapContextFSM::setState(ImapState* s)
