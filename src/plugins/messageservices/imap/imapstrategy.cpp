@@ -104,7 +104,8 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
                                    const QMailMessageKey &seenKey,
-                                   const QMailMessageKey &unreadElsewhereKey)
+                                   const QMailMessageKey &unreadElsewhereKey,
+                                   const QMailMessageKey &unavailableKey)
 {
     QMailMessageKey reportedKey(seenKey | unseenKey);
 
@@ -114,6 +115,12 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
     }
     
+    // Restore any messages thought to be unavailable that the server now reports
+    QMailMessageKey reexistentKey(unavailableKey & reportedKey);
+    if (!QMailStore::instance()->updateMessagesMetaData(reexistentKey, QMailMessage::Removed, false)) {
+        qWarning() << "Unable to update un-removed message metadata for account:" << context->config().id();
+    }
+
     foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
         const QString &uid(r.serverUid()); 
         // We might have a deletion record for this UID
@@ -462,7 +469,7 @@ void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Loc
 
 void ImapMessageListStrategy::newConnection(ImapStrategyContextBase *context)
 {
-    _currentMailbox = QMailFolder();
+    setCurrentMailbox(QMailFolderId());
 
     ImapStrategy::newConnection(context);
 }
@@ -551,7 +558,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     }
 
     if ((_folderItr == _selectionMap.end()) || !_folderItr.key().isValid()) {
-        _currentMailbox = QMailFolder();
+        setCurrentMailbox(QMailFolderId());
         _selectionMap.clear();
         messageListFolderAction(context);
         return false;
@@ -560,7 +567,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     _transferState = Complete;
     mailboxId = _folderItr.key();
     if (mailboxId != _currentMailbox.id()) {
-        _currentMailbox = QMailFolder(mailboxId);
+        setCurrentMailbox(mailboxId);
         messageListFolderAction(context);
         return false;
     }
@@ -617,6 +624,19 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
 void ImapMessageListStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     context->operationCompleted();
+}
+
+void ImapMessageListStrategy::setCurrentMailbox(const QMailFolderId &id)
+{
+    if (id.isValid()) { 
+        _currentMailbox = QMailFolder(id);
+
+        // Store the current modification sequence value for this folder, if we have one
+        _currentModSeq = _currentMailbox.customField("qmf-highestmodseq");
+    } else {
+        _currentMailbox = QMailFolder();
+        _currentModSeq = QString();
+    }
 }
 
 
@@ -911,25 +931,31 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     if (_transferState == List) {
         // We have selected this folder - find out how many undiscovered messages exist
+        const ImapMailboxProperties &properties(context->mailbox());
 
-        // We need the UID of the most recent message we have previously discovered in this folder
-        QMailFolderId folderId(context->mailbox().id);
-        QMailFolder folder(folderId);
+        // If CONDSTORE is available, we may know that no changes have occurred
+        if (properties.noModSeq || (properties.highestModSeq != _currentModSeq)) {
+            // We need the UID of the most recent message we have previously discovered in this folder
+            QMailFolder folder(properties.id);
 
-        // toUint returns 0 on error, which is an invalid IMAP uid
-        int clientMax(folder.customField("qmf-max-serveruid").toUInt());
+            // toUint returns 0 on error, which is an invalid IMAP uid
+            quint32 clientMax(folder.customField("qmf-max-serveruid").toUInt());
 
-        if (clientMax && context->mailbox().exists) {
-            if (context->mailbox().uidNext > (clientMax + 1)) {
-                context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(context->mailbox().uidNext));
+            if (clientMax && properties.exists) {
+                if (properties.uidNext > (clientMax + 1)) {
+                    context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(properties.uidNext));
+                    return;
+                } else {
+                    // There's no need to search if (clientMax <= (UIDNEXT - 1))
+                }
             } else {
-                // There's no need to search if (clientMax <= (UIDNEXT - 1))
-                handleSearch(context);
+                // No messages - nothing to discover...
             }
         } else {
-            // No messages - nothing to discover...
-            handleSearch(context);
+            // We know that the mod sequence has not changed, so nothing else can have changed, either
         }
+
+        handleSearch(context);
     } else {
         ImapMessageListStrategy::handleSelect(context);
     }
@@ -975,7 +1001,7 @@ bool ImapFolderListStrategy::nextFolder()
         }
 
         // Process this folder
-        _currentMailbox = QMailFolder(folderId);
+        setCurrentMailbox(folderId);
 
         // Bypass any folder for which synchronization is disabled
         if (_currentMailbox.status() & QMailFolder::SynchronizationEnabled)
@@ -1023,16 +1049,18 @@ void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMa
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     // Initial case set the undiscovered count to exists in the case of no 
     // max-serveruid set for the folder
-    int undiscovered(context->mailbox().exists);
+    int undiscovered(properties.exists);
 
     QMailFolder folder(_currentMailbox.id());
     int clientMax(folder.customField("qmf-max-serveruid").toUInt());
     if (clientMax) {
         // The undiscovered count for a folder is the number of messages on the server newer 
         // than the most recent (highest server uid) message in the folder.
-        undiscovered = context->mailbox().msnList.count();
+        undiscovered = properties.msnList.count();
     }
     
     if (uint(undiscovered) != folder.serverUndiscoveredCount()) {
@@ -1115,14 +1143,15 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
 bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)
 {
     if (_retrieveUids.isEmpty()) {
-        _currentMailbox = QMailFolder();
+        setCurrentMailbox(QMailFolderId());
         _newUids = QStringList();
         return false;
     }
 
     // In preview mode, select the mailboxes where retrievable messages are located
     QPair<QMailFolderId, QStringList> next = _retrieveUids.takeFirst();
-    _currentMailbox = QMailFolder(next.first);
+    setCurrentMailbox(next.first);
+
     _newUids = next.second;
     
     FolderStatus folderState = _folderStatus[_currentMailbox.id()];
@@ -1483,13 +1512,15 @@ void ImapSynchronizeAllStrategy::transition(ImapStrategyContextBase *context, Im
 
 void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     switch(_searchState)
     {
     case Seen:
     {
-        _seenUids = context->mailbox().uidList;
+        _seenUids = properties.uidList;
 
-        if (_seenUids.count() == context->mailbox().exists) {
+        if (static_cast<quint32>(_seenUids.count()) == properties.exists) {
             // All of the messages are seen
             _unseenUids.clear();
             processUidSearchResults(context);
@@ -1501,8 +1532,8 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     }
     case Unseen:
     {
-        _unseenUids = context->mailbox().uidList;
-        if ((_unseenUids.count() + _seenUids.count()) == context->mailbox().exists) {
+        _unseenUids = properties.uidList;
+        if (static_cast<quint32>((_unseenUids.count() + _seenUids.count())) == properties.exists) {
             // We have a consistent set of search results
             processUidSearchResults(context);
         } else {
@@ -1518,8 +1549,8 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     }
     case All:
     {
-        _unseenUids = context->mailbox().uidList;
-        if (_unseenUids.count() != context->mailbox().exists) {
+        _unseenUids = properties.uidList;
+        if (static_cast<quint32>(_unseenUids.count()) != properties.exists) {
             qMailLog(IMAP) << "Inconsistent UID SEARCH result";
 
             // No consistent search result, so don't delete anything
@@ -1615,7 +1646,9 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         searchInconclusive(context);
     } else {
         QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes));
+        QMailMessageKey removedStatusKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
         QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
+        QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
         QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
         QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
     
@@ -1624,7 +1657,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         _expungeRequired = !_removedUids.isEmpty();
 
         if (_options & ImportChanges) {
-            updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
+            updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
         }
 
         // Update messages on the server that are still flagged as unseen but have been read locally
@@ -1689,10 +1722,12 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
 
 void ImapSynchronizeAllStrategy::previewingCompleted(ImapStrategyContextBase *context)
 {
-    QMailFolder folder(context->mailbox().id);
-    if (context->mailbox().exists > 0) {
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    if (properties.exists > 0) {
+        QMailFolder folder(properties.id);
         folder.setCustomField("qmf-min-serveruid", QString::number(1));
-        folder.setCustomField("qmf-max-serveruid", QString::number(context->mailbox().uidNext - 1));
+        folder.setCustomField("qmf-max-serveruid", QString::number(properties.uidNext - 1));
         folder.setServerUndiscoveredCount(0);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -1789,7 +1824,8 @@ bool ImapExportUpdatesStrategy::nextFolder()
 
     QMap<QMailFolderId, QPair<QStringList, QStringList> >::iterator it = _folderMessageUids.begin();
 
-    _currentMailbox = QMailFolder(it.key());
+    setCurrentMailbox(it.key());
+
     _clientReadUids = it.value().first;
     _clientDeletedUids = it.value().second;
 
@@ -1868,11 +1904,13 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
 
 void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     switch(_searchState)
     {
     case Unseen:
     {
-        _unseenUids = context->mailbox().uidList;
+        _unseenUids = properties.uidList;
 
         if (_unseenUids.count() == _serverUids.count()) {
             // All of the messages are unseen
@@ -1886,7 +1924,7 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
     case Seen:
     {
-        _seenUids = context->mailbox().uidList;
+        _seenUids = properties.uidList;
         processUidSearchResults(context);
         break;
     }
@@ -1900,7 +1938,16 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
 
 void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
-    if (context->mailbox().exists > 0) {
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
+        // The mod sequence has not changed for this folder
+        processNextFolder(context);
+        return;
+    }
+
+    //  If we have messages, we need to discover any flag changes
+    if (properties.exists > 0) {
         IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
         _filter = clientRegion.toString();
         _searchState = Unseen;
@@ -1911,7 +1958,6 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
         // then we would miss the message altogether and mark it as deleted...
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
     } else {
-        // No messages, so no need to perform search
         processUidSearchResults(context);
     }
 }
@@ -1935,7 +1981,8 @@ bool ImapUpdateMessagesFlagsStrategy::nextFolder()
 
     QMap<QMailFolderId, QStringList>::iterator it = _folderMessageUids.begin();
 
-    _currentMailbox = QMailFolder(it.key());
+    setCurrentMailbox(it.key());
+
     _serverUids = it.value();
 
     _folderMessageUids.erase(it);
@@ -1968,10 +2015,12 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
     QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes));
+    QMailMessageKey removedStatusKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
     QMailMessageKey folderKey(context->client()->messagesKey(folderId) | context->client()->trashKey(folderId));
     QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
+    QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
     
-    updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
+    updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
 
     processNextFolder(context);
 }
@@ -2050,8 +2099,9 @@ void ImapRetrieveMessageListStrategy::folderListCompleted(ImapStrategyContextBas
 
 void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
-    QMailFolderId folderId(context->mailbox().id);
-    QMailFolder folder(folderId);
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    QMailFolder folder(properties.id);
 
     bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
     int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
@@ -2062,7 +2112,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     if ((clientMin != 0) && (clientMax != 0))
         clientRegion = IntegerRegion(clientMin, clientMax);
     IntegerRegion serverRegion;
-    foreach(const QString &uid, context->mailbox().uidList) {
+    foreach(const QString &uid, properties.uidList) {
         bool ok;
         uint number = stripFolderPrefix(uid).toUInt(&ok);
         if (ok)
@@ -2084,11 +2134,11 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
     
     // TODO: Why is all this code not in processUidSearchResults?
-    _updatedFolders.append(folderId);
+    _updatedFolders.append(properties.id);
 
     IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
-        _retrieveUids.append(qMakePair(folderId, difference.toStringList()));
+        _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
         int newClientMin;
         int newClientMax;
         if (clientMin > 0)
@@ -2100,7 +2150,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         else
             newClientMax = serverRegion.maximum();
         if ((newClientMin > 0) && (newClientMax > 0))
-            _newMinMaxMap.insert(folderId, IntegerRegion(newClientMin, newClientMax));
+            _newMinMaxMap.insert(properties.id, IntegerRegion(newClientMin, newClientMax));
     }
 
     processUidSearchResults(context);
@@ -2109,64 +2159,75 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
 void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     // The current mailbox is now selected
-    QMailFolderId folderId(context->mailbox().id);
+    const ImapMailboxProperties &properties(context->mailbox());
 
     // Could get flag changes mod sequences when CONDSTORE is available
     
-    bool comparable(true);
-    int uidNext(-1);
-    int exists(-1);
-    int lastUidNext(-1);
-    int lastExists(-1);
-    if (_lastUidNextMap.contains(folderId))
-        lastUidNext = _lastUidNextMap.value(folderId);
-    if (_lastExistsMap.contains(folderId))
-        lastExists = _lastExistsMap.value(folderId);
-    
-    // Cache uidnext and exists
-    if (context->mailbox().isSelected()) {
-        uidNext = context->mailbox().uidNext;
-        exists = context->mailbox().exists;
-        _lastUidNextMap.insert(folderId, uidNext);
-        _lastExistsMap.insert(folderId, exists);
+    if ((properties.exists == 0) || (_minimum <= 0)) {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+        return;
     }
-    if ((uidNext < 0) || (exists < 0) || (lastUidNext < 0) || (lastExists < 0)) {
-        comparable = false;
-    }
+
+    quint32 lastUidNext(0);
+    quint32 lastExists(0);
+    bool comparable(false);
+
     if (_minimum == 1) {
         // The don't select an already selected folder optimization is causing a problem,
         // we aren't picking up changes to uidNext or exists.
         // Work around this for push email at least for now.
         comparable = false;
+    } else {
+        if (properties.isSelected()) {
+            if (_lastUidNextMap.contains(properties.id) && _lastExistsMap.contains(properties.id)) {
+                lastUidNext = _lastUidNextMap.value(properties.id);
+                lastExists = _lastExistsMap.value(properties.id);
+            } else {
+                comparable = false;
+            }
+
+            // Update the cached values
+            _lastUidNextMap.insert(properties.id, properties.uidNext);
+            _lastExistsMap.insert(properties.id, properties.exists);
+
+            if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
+                // There have been no changes in this folder
+                processUidSearchResults(context);
+                return;
+            }
+        } else {
+            comparable = false;
+        }
     }
-    
-    // We're searching mailboxes
-    int start = context->mailbox().exists - _minimum + 1;
+
+    int start = static_cast<int>(properties.exists) - _minimum + 1;
     if (start < 1)
         start = 1;
-    if ((context->mailbox().exists <= 0) || (_minimum <= 0)) {
-        // No messages, so no need to perform search
-        processUidSearchResults(context);
-    } else if (!comparable || (lastExists != exists) || (lastUidNext != uidNext)) {
+
+    if (!comparable || (lastExists != properties.exists) || (lastUidNext != properties.uidNext)) {
+        // We need to determine these values again
         context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
+        return;
+    }
+
+    // No messages have been appended or expunged since we last retrieved messages
+    // should be safe to incrementally retrieve
+    QMailMessageKey folderKey(context->client()->messagesKey(properties.id));
+    QMailMessageKey folderTrashKey(context->client()->trashKey(properties.id));
+    uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
+    if ((onClient >= _minimum) || (onClient >= properties.exists)) {
+        // We already have _minimum mails
+        processUidSearchResults(context);
+        return;
+    }
+
+    int end = properties.exists - onClient;
+    if (end >= start) {
+        context->protocol().sendUidSearch(MFlag_All, QString("%1:%2").arg(start).arg(end));
     } else {
-        // No messages have been appended or expunged since we last retrieved messages
-        // should be safe to incrementally retrieve
-        QMailMessageKey folderKey(context->client()->messagesKey(folderId));
-        QMailMessageKey folderTrashKey(context->client()->trashKey(folderId));
-        uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
-        if (onClient >= _minimum) {
-            // We already have _minimum mails
-            processUidSearchResults(context);
-            return;
-        }
-        int end = context->mailbox().exists - onClient;
-        if (end >= start) {
-            context->protocol().sendUidSearch(MFlag_All, QString("%1:%2").arg(start).arg(end));
-        } else {
-            // We already have all the mails
-            processUidSearchResults(context);
-        }
+        // We already have all the mails
+        processUidSearchResults(context);
     }
 }
 

@@ -627,25 +627,30 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         case IMAP_Examine:
         {
             if (_protocol.mailbox().isSelected()) {
-                QString uidValidity(_protocol.mailbox().uidValidity);
-                uint serverCount(_protocol.mailbox().exists);
-                uint unreadCount(_protocol.mailbox().unseen);
-                
-                QMailFolder folder(_protocol.mailbox().id);
+                const ImapMailboxProperties &properties(_protocol.mailbox());
+
+                QMailFolder folder(properties.id);
 
                 bool modified(false);
-                if ((folder.serverCount() != serverCount) || (folder.serverUnreadCount() != unreadCount)) {
-                    folder.setServerCount(serverCount);
-                    folder.setServerUnreadCount(unreadCount);
+                if ((folder.serverCount() != properties.exists) || (folder.serverUnreadCount() != properties.unseen)) {
+                    folder.setServerCount(properties.exists);
+                    folder.setServerUnreadCount(properties.unseen);
                     modified = true;
 
                     // See how this compares to the local mailstore count
                     updateFolderCountStatus(&folder);
                 }
                 
-                if (folder.customField("qmf-uidvalidity") != uidValidity) {
-                    folder.setCustomField("qmf-uidvalidity", uidValidity);
+                if (folder.customField("qmf-uidvalidity") != properties.uidValidity) {
+                    folder.setCustomField("qmf-uidvalidity", properties.uidValidity);
                     modified = true;
+                }
+
+                if (!properties.noModSeq) {
+                    if (folder.customField("qmf-highestmodseq") != properties.highestModSeq) {
+                        folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
+                        modified = true;
+                    }
                 }
 
                 if (modified) {

@@ -172,10 +172,13 @@ protected:
     virtual bool computeStartEndPartRange(ImapStrategyContextBase *context);
     virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize);
 
+    virtual void setCurrentMailbox(const QMailFolderId &id);
+
     SelectionMap _selectionMap;
     SelectionMap::ConstIterator _folderItr;
     FolderMap::ConstIterator _selectionItr;
     QMailFolder _currentMailbox;
+    QString _currentModSeq;
     QString _retrieveUid;
     QMailMessagePart::Location _msgSection;
     int _sectionStart;
@@ -390,8 +393,8 @@ protected:
     uint _minimum;
     bool _fillingGap;
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
-    QMap<QMailFolderId, int> _lastExistsMap;
-    QMap<QMailFolderId, int> _lastUidNextMap;
+    QMap<QMailFolderId, quint32> _lastExistsMap;
+    QMap<QMailFolderId, quint32> _lastUidNextMap;
     QMailFolderIdList _updatedFolders;
 };
 

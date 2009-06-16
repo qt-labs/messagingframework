@@ -277,14 +277,16 @@ public:
 
     // Update the protocol's mailbox properties
     void setMailbox(const QMailFolder &mailbox) { mProtocol->_mailbox = ImapMailboxProperties(mailbox); }
-    void setExists(int n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
-    void setRecent(int n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
-    void setUnseen(int n) { mProtocol->_mailbox.unseen = n; }
+    void setExists(quint32 n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
+    void setRecent(quint32 n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
+    void setUnseen(quint32 n) { mProtocol->_mailbox.unseen = n; }
     void setUidValidity(const QString &validity) { mProtocol->_mailbox.uidValidity = validity; emit mProtocol->uidValidity(validity); }
-    void setUidNext(int n) { mProtocol->_mailbox.uidNext = n; }
+    void setUidNext(quint32 n) { mProtocol->_mailbox.uidNext = n; }
     void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
     void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
     void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
+    void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
+    void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -745,14 +747,14 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     if (line.indexOf("EXISTS", 0) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
-        int exists = temp.toInt(&result);
+        quint32 exists = temp.toUInt(&result);
         if (!result)
             exists = 0;
         c->setExists(exists);
     } else if (line.indexOf("RECENT", 0) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
-        int recent = temp.toInt(&result);
+        quint32 recent = temp.toUInt(&result);
         if (!result)
            recent = 0;
         c->setRecent(recent);
@@ -763,13 +765,12 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("UIDVALIDITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QString validity = temp.mid( 12 );
-        c->setUidValidity(validity);
+        c->setUidValidity(temp.mid(12).trimmed());
     } else if (line.indexOf("UIDNEXT", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString nextStr = temp.mid( 8 );
-        int next = nextStr.toInt(&result);
+        quint32 next = nextStr.toUInt(&result);
         if (!result)
             next = 0;
         c->setUidNext(next);
@@ -777,10 +778,16 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString unseenStr = temp.mid( 7 );
-        int unseen = unseenStr.toInt(&result);
+        quint32 unseen = unseenStr.toUInt(&result);
         if (!result)
             unseen = 0;
         c->setUnseen(unseen);
+    } else if (line.indexOf("HIGHESTMODSEQ", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        c->setHighestModSeq(temp.mid(14).trimmed());
+    } else if (line.indexOf("NOMODSEQ", 0) != -1) {
+        c->setNoModSeq();
     } else {
         ImapState::untaggedResponse(c, line);
     }
@@ -823,7 +830,13 @@ void SelectState::init()
 
 QString SelectState::transmit(ImapContext *c)
 {
-    return c->sendCommand("SELECT " + ImapProtocol::quoteString(_mailboxList.last().path()));
+    QString cmd("SELECT " + ImapProtocol::quoteString(_mailboxList.last().path()));
+
+    if (c->protocol()->capabilities().contains("CONDSTORE")) {
+        cmd.append(" (CONDSTORE)");
+    }
+
+    return c->sendCommand(cmd);
 }
 
 void SelectState::enter(ImapContext *c)
@@ -850,7 +863,13 @@ public:
 
 QString ExamineState::transmit(ImapContext *c)
 {
-    return c->sendCommand("EXAMINE " + ImapProtocol::quoteString(_mailboxList.last().path()));
+    QString cmd("EXAMINE " + ImapProtocol::quoteString(_mailboxList.last().path()));
+
+    if (c->protocol()->capabilities().contains("CONDSTORE")) {
+        cmd.append(" (CONDSTORE)");
+    }
+
+    return c->sendCommand(cmd);
 }
 
 

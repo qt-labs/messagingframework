@@ -207,6 +207,8 @@ signals:
     void recent(int);
     void uidValidity(const QString &);
     void flags(const QString &);
+    void highestModSeq(const QString &);
+    void noModSeq();
 
 protected slots:
     void connected(QMailTransport::EncryptType encryptType);
