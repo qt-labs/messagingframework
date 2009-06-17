@@ -1160,7 +1160,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
     } else {
         if (_currentMailbox.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
-            handleSelect(context);
+            fetchNextMailPreview(context);
         } else {
             if (_transferState == List) {
                 QString status = QObject::tr("Checking", "Checking <mailbox name>") + QChar(' ') + _currentMailbox.displayName();
