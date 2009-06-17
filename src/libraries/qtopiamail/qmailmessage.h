@@ -440,6 +440,8 @@ public:
     QString referenceResolution() const;
     void setReferenceResolution(const QString &uri);
 
+    virtual uint indicativeSize() const;
+
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 

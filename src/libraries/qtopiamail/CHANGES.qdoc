@@ -8,13 +8,20 @@
 **
 *****************************************************************************
 
-Changes since the 1.0 release:
+Changes since the QMF-1.0 release on 15/05/09:
 
 1. Added 'QMail::baseSubject(const QString &)'.
 
 2. Extracted 'QMailMessageModelBase' from 'QMailMessageListModel'.
 
 3. Added 'QMailMessageThreadedModel'.
+
+4. Added 'QMailMessagePart::indicativeSize() const'.
+
+
+*****************************************************************************
+
+Changes since the development preview release on 03/04/09:
 
 1. Added 'QMailFolder::serverUndiscoveredCount() const' and
          'QMailFolder::setServerUndiscoveredCount()'.

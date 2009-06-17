@@ -3189,12 +3189,9 @@ uint QMailMessagePartContainerPrivate::indicativeSize() const
 {
     uint size = 0;
 
-    if (hasBody()) 
-    {
+    if (hasBody()) {
         size = body().indicativeSize();
-    }
-    else
-    {
+    } else {
         for (int i = 0; i < _messageParts.count(); ++i)
             size += _messageParts[i].indicativeSize();
     }
@@ -4857,6 +4854,15 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
     }
     
     return filepath;
+}
+
+/*!
+    Returns an indication of the size of the part.  This measure should be used
+    only in comparing the relative size of parts with respect to transmission.
+*/  
+uint QMailMessagePart::indicativeSize() const
+{
+    return impl(this)->indicativeSize();
 }
 
 /*!
