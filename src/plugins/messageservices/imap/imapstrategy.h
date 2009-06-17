@@ -217,6 +217,7 @@ protected:
     int _listSize;
     int _messageCount;
     int _messageCountIncremental;
+    int _outstandingFetches;
 
     // RetrievalMap maps uid -> ((units, bytes) to be retrieved, percentage retrieved)
     typedef QMultiMap<QString, QPair< QPair<uint, uint>, uint> > RetrievalMap;
@@ -323,7 +324,7 @@ protected:
     virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
 
     virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
-    virtual void previewingCompleted(ImapStrategyContextBase *context);
+    virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
@@ -334,6 +335,7 @@ protected:
     QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
     QMailMessageIdList _completionList;
     QList<QPair<QMailMessagePart::Location, uint> > _completionSectionList;
+    int _outstandingPreviews;
 
 private:
     uint _progress;
@@ -432,7 +434,7 @@ protected:
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
 
-    virtual void previewingCompleted(ImapStrategyContextBase *context);
+    virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
 
 protected:
     QStringList _readUids;

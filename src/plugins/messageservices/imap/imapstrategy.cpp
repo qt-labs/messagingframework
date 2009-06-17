@@ -742,6 +742,7 @@ void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *c
 {
     _progressRetrievalSize = 0;
     _messageCount = 0;
+    _outstandingFetches = 0;
 
     ImapConfiguration imapCfg(context->config());
     if (!imapCfg.isAutoDownload()) {
@@ -778,7 +779,8 @@ void ImapFetchSelectedMessagesStrategy::handleLogin(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
-    if (_messageCountIncremental == _messageCount) {
+    --_outstandingFetches;
+    if (_outstandingFetches == 0) {
         messageListMessageAction(context);
     }
 }
@@ -801,8 +803,10 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
         _messageCount += uids.count();
 
         QString msgSectionStr;
-        if (_msgSection.isValid())
+        if (_msgSection.isValid()) {
             msgSectionStr = _msgSection.toString(false);
+        }
+
         if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
             context->protocol().sendUidFetchSection(IntegerRegion(uids).toString(),
                                                     msgSectionStr,
@@ -811,6 +815,8 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
         } else {
             context->protocol().sendUidFetch(ContentFetchFlags, IntegerRegion(uids).toString());
         }
+
+        ++_outstandingFetches;
     }
 }
 
@@ -1127,7 +1133,10 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
 void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
     if (_transferState == Preview) {    //getting headers
-        fetchNextMailPreview(context);
+        --_outstandingPreviews;
+        if (_outstandingPreviews == 0) {
+            fetchNextMailPreview(context);
+        }
     } else if (_transferState == Complete) {
         ImapFetchSelectedMessagesStrategy::handleUidFetch(context);
     }
@@ -1172,6 +1181,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
     setCurrentMailbox(next.first);
 
     _newUids = next.second;
+    _outstandingPreviews = 0;
     
     FolderStatus folderState = _folderStatus[_currentMailbox.id()];
     if (folderState & NoSelect) {
@@ -1199,49 +1209,54 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
 
 void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
 {
-    if (_newUids.count() > 0) {
-        QStringList uidList;
-        foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
-            uidList << ImapProtocol::uid(s);
+    if (!_newUids.isEmpty()) {
+        while (!_newUids.isEmpty()) {
+            QStringList uidList;
+            foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
+                uidList << ImapProtocol::uid(s);
+            }
+
+            context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
+            ++_outstandingPreviews;
+
+            _newUids = _newUids.mid(uidList.count());
         }
+    } else {
+        // We have previewed all messages from the current folder
+        folderPreviewCompleted(context);
 
-        context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
-        _newUids = _newUids.mid(uidList.count());
-        return;
-    }
-    
-    previewingCompleted(context);
-    if (!selectNextPreviewFolder(context)) {
-        // No more messages to preview
-        if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
-            if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
-                // Fetch the messages that need completion
-                clearSelection();
+        if (!selectNextPreviewFolder(context)) {
+            // No more messages to preview
+            if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
+                if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
+                    // Fetch the messages that need completion
+                    clearSelection();
 
-                selectedMailsAppend(_completionList);
+                    selectedMailsAppend(_completionList);
 
-                QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
-                for ( ; it != end; ++it) {
-                    if (it->second != 0) {
-                        selectedSectionsAppend(it->first, it->second);
-                    } else {
-                        selectedSectionsAppend(it->first);
+                    QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
+                    for ( ; it != end; ++it) {
+                        if (it->second != 0) {
+                            selectedSectionsAppend(it->first, it->second);
+                        } else {
+                            selectedSectionsAppend(it->first);
+                        }
                     }
+
+                    _completionList.clear();
+                    _completionSectionList.clear();
+
+                    messageListMessageAction(context);
+                } else {
+                    // No messages to be completed
+                    messageListCompleted(context);
                 }
-
-                _completionList.clear();
-                _completionSectionList.clear();
-
-                messageListMessageAction(context);
-            } else {
-                // No messages to be completed
-                messageListCompleted(context);
             }
         }
     }
 }
 
-void ImapSynchronizeBaseStrategy::previewingCompleted(ImapStrategyContextBase *)
+void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase *)
 {
 }
 
@@ -1737,7 +1752,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     return false;
 }
 
-void ImapSynchronizeAllStrategy::previewingCompleted(ImapStrategyContextBase *context)
+void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase *context)
 {
     const ImapMailboxProperties &properties(context->mailbox());
 
