@@ -1095,8 +1095,7 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     // We have selected the current mailbox
     if (_transferState == Preview) {
-        // We're retrieving message metadata
-        fetchNextMailPreview(context);
+        // The scheduled fetch command was pipelined
     } else if (_transferState == Complete) {
         // We're completing a message or section
         messageListMessageAction(context);
@@ -1169,6 +1168,9 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
             }
 
             context->protocol().sendSelect( _currentMailbox );
+
+            // Send fetch command without waiting for Select response
+            fetchNextMailPreview(context);
         }
     }
 
