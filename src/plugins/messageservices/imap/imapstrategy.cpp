@@ -1520,14 +1520,8 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     {
         _seenUids = properties.uidList;
 
-        if (static_cast<quint32>(_seenUids.count()) == properties.exists) {
-            // All of the messages are seen
-            _unseenUids.clear();
-            processUidSearchResults(context);
-        } else {
-            _searchState = Unseen;
-            context->protocol().sendUidSearch(MFlag_Unseen);
-        }
+        // The Unseen search command was pipelined
+        _searchState = Unseen;
         break;
     }
     case Unseen:
@@ -1595,6 +1589,7 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
     if (context->mailbox().exists > 0) {
         // Start by looking for previously-seen and unseen messages
         context->protocol().sendUidSearch(MFlag_Seen);
+        context->protocol().sendUidSearch(MFlag_Unseen);
     } else {
         // No messages, so no need to perform search
         processUidSearchResults(context);
@@ -1912,14 +1907,8 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     {
         _unseenUids = properties.uidList;
 
-        if (_unseenUids.count() == _serverUids.count()) {
-            // All of the messages are unseen
-            _seenUids.clear();
-            processUidSearchResults(context);
-        } else {
-            _searchState = Seen;
-            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-        }
+        // The Seen search command was pipelined
+        _searchState = Seen;
         break;
     }
     case Seen:
@@ -1957,6 +1946,7 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
         // miss this change by searching Unseen first; if, however, we were to search Seen first,
         // then we would miss the message altogether and mark it as deleted...
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
+        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
     } else {
         processUidSearchResults(context);
     }
