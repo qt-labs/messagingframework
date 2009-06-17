@@ -8,8 +8,8 @@ INSTALLS += target
 
 DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
 win32: {
-    # QLocalSocket seems to have problems on win32
-    DEFINES += QT_NO_QCOP_LOCAL_SOCKET
+    # QLocalSocket is broken on win32 prior to 4.5.2
+    lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
 }
 
 QT *= sql network
