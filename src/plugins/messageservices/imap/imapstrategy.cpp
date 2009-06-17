@@ -535,13 +535,19 @@ bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *
     return false;
 }
 
-bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum)
+bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum, bool folderActionPermitted)
 {
     QMailFolderId mailboxId;
     QString mailboxIdStr;
     QStringList uidList;
     QMailMessagePart::Location location;
     int minimum = SectionProperties::All;
+
+    if (!folderActionPermitted) {
+        if (messageListFolderActionRequired()) {
+            return false;
+        }
+    }
 
     if (_folderItr == _selectionMap.end()) {
         messageListCompleted(context);
@@ -600,11 +606,16 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
             if (_sectionStart <= _sectionEnd) {
                 qMailLog(Messaging) << "Could not complete part: invalid location or invalid uid";
             } // else already have retrieved minimum bytes, so nothing todo
-            return selectNextMessageSequence(context, maximum);
+            return selectNextMessageSequence(context, maximum, folderActionPermitted);
         }
     }
 
     return true;
+}
+
+bool ImapMessageListStrategy::messageListFolderActionRequired()
+{
+    return ((_folderItr == _selectionMap.end()) || (_selectionItr == _folderItr.value().end()));
 }
 
 void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *context)
@@ -683,7 +694,6 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
         }
     
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
-            // TODO - order messages within each folder by size ascending, or most recent first?
             QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
             bool ok;
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
@@ -768,18 +778,26 @@ void ImapFetchSelectedMessagesStrategy::handleLogin(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
-    messageListMessageAction(context);
+    if (_messageCountIncremental == _messageCount) {
+        messageListMessageAction(context);
+    }
 }
 
 void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (selectNextMessageSequence(context)) {
+    if (messageListFolderActionRequired()) {
+        // We need to change folders
+        selectNextMessageSequence(context, 1, true);
+        return;
+    }
+
+    _messageCountIncremental = _messageCount;
+
+    while (selectNextMessageSequence(context, DefaultBatchSize, false)) {
         QStringList uids;
         foreach (const QString &msgUid, _retrieveUid.split("\n"))
             uids.append(ImapProtocol::uid(msgUid));
 
-        _messageCountIncremental = _messageCount;
-        context->updateStatus(QObject::tr("Completing %1 / %2").arg(_messageCount + 1).arg(_listSize));
         _messageCount += uids.count();
 
         QString msgSectionStr;
@@ -840,10 +858,12 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
         _progressRetrievalSize += it.value().first.first;
         context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
 
+        _retrievalSize.erase(it);
+    }
+
+    if (_listSize) {
         int count = qMin(++_messageCountIncremental + 1, _listSize);
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
-
-        _retrievalSize.erase(it);
     }
 }
 
@@ -1108,8 +1128,8 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
 {
     if (_transferState == Preview) {    //getting headers
         fetchNextMailPreview(context);
-    } else if (_transferState == Complete) {    //getting complete messages
-        messageListMessageAction(context);
+    } else if (_transferState == Complete) {
+        ImapFetchSelectedMessagesStrategy::handleUidFetch(context);
     }
 }
 

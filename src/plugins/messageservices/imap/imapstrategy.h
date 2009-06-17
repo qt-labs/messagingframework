@@ -170,9 +170,11 @@ protected:
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual bool computeStartEndPartRange(ImapStrategyContextBase *context);
-    virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize);
+    virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize, bool folderActionPermitted = true);
 
     virtual void setCurrentMailbox(const QMailFolderId &id);
+
+    virtual bool messageListFolderActionRequired();
 
     SelectionMap _selectionMap;
     SelectionMap::ConstIterator _folderItr;
@@ -217,7 +219,7 @@ protected:
     int _messageCountIncremental;
 
     // RetrievalMap maps uid -> ((units, bytes) to be retrieved, percentage retrieved)
-    typedef QMap<QString, QPair< QPair<uint, uint>, uint> > RetrievalMap;
+    typedef QMultiMap<QString, QPair< QPair<uint, uint>, uint> > RetrievalMap;
     RetrievalMap _retrievalSize;
     uint _progressRetrievalSize;
     uint _totalRetrievalSize;
