@@ -115,7 +115,7 @@ public:
 
     QList<QMailMessageHeaderField> fields(const QByteArray& id, int maximum = -1) const;
 
-    void output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const;
+    void output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
@@ -216,7 +216,7 @@ protected:
     void defaultContentType(const QMailMessagePartContainerPrivate* parent);
 
     template <typename F>
-    void outputParts(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const;
+    void outputParts(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
 
     void outputBody(QDataStream& out, bool includeAttachments) const;
 
@@ -274,7 +274,7 @@ public:
     bool partialContentAvailable() const;
 
     template <typename F>
-    void output(QDataStream **out, bool includePreamble, bool includeAttachments, bool stripInternal, F *func) const;
+    void output(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
 
     bool contentModified() const;
     void setUnmodified();
@@ -412,7 +412,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 private:
-    void outputHeaders(QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool stripInternal) const;
+    void outputHeaders(QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool excludeInternalFields) const;
 };
 
 #endif
