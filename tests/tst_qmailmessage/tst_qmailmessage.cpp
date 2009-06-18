@@ -227,13 +227,19 @@ void tst_QMailMessage::cleanup()
 {
 }
 
+typedef QPair<QByteArray, QByteArray> pair_type;
+Q_DECLARE_METATYPE(pair_type)
+Q_DECLARE_METATYPE(QList<pair_type>)
+
 void tst_QMailMessage::toRfc2822_data()
 {
     QTest::addColumn<QString>( "from" );
     QTest::addColumn<QStringList>( "to" );
     QTest::addColumn<QString>( "subject" );
     QTest::addColumn<QString>( "time_stamp" );
+    QTest::addColumn<QByteArray>( "content_type" );
     QTest::addColumn<QString>( "plain_text" );
+    QTest::addColumn<QList<pair_type> >( "text_parts" );
     QTest::addColumn<QByteArray>( "rfc_header_text" );
     QTest::addColumn<QByteArray>( "rfc_body_text" );
 
@@ -253,17 +259,53 @@ void tst_QMailMessage::toRfc2822_data()
         /* to                */ << toAddressList
         /* subject           */ << "Test"
         /* time_stamp        */ << "Fri, 21 Nov 1997 09:55:06 -0600"
+        /* content_type      */ << QByteArray("text/plain; charset=UTF-8")
         /* plain_text        */ << "Plain text."
+        /* text_parts        */ << QList<pair_type>()
         /* rfc_header_text   */ << QByteArray(
 "From: =?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= <jdoe@example.net>" CRLF
 "To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>,mary@example.net" CRLF
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Content-Type: text/plain; charset=UTF-8" CRLF
-"Content-Transfer-Encoding: <ENCODING>" CRLF 
+"Content-Transfer-Encoding:<ENCODING>" CRLF 
 "MIME-Version: 1.0" CRLF )
         /* rfc_body_text     */ << QByteArray(
 "Plain text.");
+
+    QTest::newRow("multipart") 
+        /* from              */ << latin1Address
+        /* to                */ << toAddressList
+        /* subject           */ << "Test"
+        /* time_stamp        */ << "Fri, 21 Nov 1997 09:55:06 -0600"
+        /* content_type      */ << QByteArray("multipart/alternative; boundary=bound01")
+        /* plain_text        */ << ""
+        /* text_parts        */ << ( QList<pair_type>() << qMakePair(QByteArray("text/plain"), QByteArray("Hello."))
+                                                        << qMakePair(QByteArray("text/html"), QByteArray("<p>Hello.</p>")) )
+        /* rfc_header_text   */ << QByteArray(
+"From: =?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= <jdoe@example.net>" CRLF
+"To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>,mary@example.net" CRLF
+"Subject: Test" CRLF
+"Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
+"Content-Type: multipart/alternative; boundary=bound01" CRLF
+"Content-Transfer-Encoding: 7bit" CRLF 
+"MIME-Version: 1.0" CRLF
+CRLF
+"This is a multipart message in Mime 1.0 format" CRLF )
+        /* rfc_body_text     */ << QByteArray(
+"--bound01" CRLF
+"Content-Type: text/plain" CRLF
+"Content-Transfer-Encoding:<ENCODING>" CRLF 
+"Content-Disposition: inline" CRLF 
+CRLF
+"<ENCODED_TEXT_0>" CRLF
+"--bound01" CRLF
+"Content-Type: text/html" CRLF
+"Content-Transfer-Encoding:<ENCODING>" CRLF 
+"Content-Disposition: inline" CRLF 
+CRLF
+"<ENCODED_TEXT_1>" CRLF
+"--bound01--" CRLF);
 }
 
 //    virtual QString toRfc2822() const;
@@ -273,11 +315,13 @@ void tst_QMailMessage::toRfc2822()
     QFETCH(QStringList, to);
     QFETCH(QString, subject);
     QFETCH(QString, time_stamp);
+    QFETCH(QByteArray, content_type);
     QFETCH(QString, plain_text);
+    QFETCH(QList<pair_type>, text_parts);
     QFETCH(QByteArray, rfc_header_text);
     QFETCH(QByteArray, rfc_body_text);
 
-    QMailMessageBody::TransferEncoding te[2] = { QMailMessageBody::Base64, QMailMessageBody::QuotedPrintable };
+    QMailMessageBody::TransferEncoding te[3] = { QMailMessageBody::NoEncoding, QMailMessageBody::Base64, QMailMessageBody::QuotedPrintable };
     for (int i = 0; i < 2; ++i)
     {
         QMailMessage message;
@@ -285,30 +329,98 @@ void tst_QMailMessage::toRfc2822()
         message.setTo(QMailAddress::fromStringList(to));
         message.setSubject(subject);
         message.setDate(QMailTimeStamp(time_stamp));
-        QMailMessageContentType type("text/plain; charset=UTF-8");
-        message.setBody(QMailMessageBody::fromData(plain_text, type, te[i]));
+        QMailMessageContentType type(content_type);
+
+        if (type.type().toLower() == "multipart") {
+            message.setBody(QMailMessageBody::fromData(QString(), type, QMailMessageBody::SevenBit));
+
+            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+
+            foreach (const pair_type &pair, text_parts) {
+                QMailMessageContentType type(pair.first);
+                QMailMessagePart part = QMailMessagePart::fromData(pair.second, disposition, type, te[i]);
+                message.appendPart(part);
+            }
+        } else {
+            message.setBody(QMailMessageBody::fromData(plain_text, type, te[i]));
+        }
 
         QByteArray rfc_text(rfc_header_text);
         rfc_text.append(CRLF);
+
+        QByteArray body_text(rfc_body_text);
         {
-            if (te[i] == QMailMessageBody::Base64) 
-            {
-                rfc_text.replace("<ENCODING>", "base64");
+            if (te[i] == QMailMessageBody::Base64) {
+                rfc_text.replace("<ENCODING>", " base64");
+                body_text.replace("<ENCODING>", " base64");
 
-                QMailBase64Codec codec(QMailBase64Codec::Text);
-                rfc_text.append(codec.encode(rfc_body_text, "UTF-8"));
-            } 
-            else 
-            {
-                rfc_text.replace("<ENCODING>", "quoted-printable");
+                if (message.multipartType() == QMailMessage::MultipartNone) {
+                    QMailBase64Codec codec(QMailBase64Codec::Text);
+                    rfc_text.append(codec.encode(body_text, "UTF-8"));
+                } else {
+                    int i = 0;
+                    foreach (const pair_type &pair, text_parts) {
+                        QString tag("<ENCODED_TEXT_%1>");
+                        QMailBase64Codec codec(QMailBase64Codec::Text);
+                        body_text.replace(tag.arg(i), codec.encode(pair.second, "UTF-8"));
+                        ++i;
+                    }
+                    rfc_text.append(body_text);
+                }
+            } else if (te[i] == QMailMessageBody::QuotedPrintable ) {
+                rfc_text.replace("<ENCODING>", " quoted-printable");
+                body_text.replace("<ENCODING>", " quoted-printable");
 
-                QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
-                rfc_text.append(codec.encode(rfc_body_text, "UTF-8"));
+                if (message.multipartType() == QMailMessage::MultipartNone) {
+                    QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
+                    rfc_text.append(codec.encode(body_text, "UTF-8"));
+                } else {
+                    int i = 0;
+                    foreach (const pair_type &pair, text_parts) {
+                        QString tag("<ENCODED_TEXT_%1>");
+                        QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
+                        body_text.replace(tag.arg(i), codec.encode(pair.second, "UTF-8"));
+                        ++i;
+                    }
+                    rfc_text.append(body_text);
+                }
+            } else {
+                rfc_text.replace("<ENCODING>", "");
+                body_text.replace("<ENCODING>", "");
+
+                if (message.multipartType() == QMailMessage::MultipartNone) {
+                    rfc_text.append(body_text);
+                } else {
+                    int i = 0;
+                    foreach (const pair_type &pair, text_parts) {
+                        QString tag("<ENCODED_TEXT_%1>");
+                        body_text.replace(tag.arg(i), pair.second);
+                        ++i;
+                    }
+                    rfc_text.append(body_text);
+                }
             }
         }
 
         QByteArray encoded = message.toRfc2822();
         QCOMPARE(encoded, rfc_text);
+
+        // Test that conversion to-and-from RFC2822 yields equivalence
+        QByteArray identity = message.toRfc2822(QMailMessage::IdentityFormat);
+
+        QMailMessage reconstituted = QMailMessage::fromRfc2822(identity);
+        QCOMPARE( reconstituted.from(), message.from() );
+        QCOMPARE( QMailAddress::toStringList(reconstituted.to()), QMailAddress::toStringList(message.to()) );
+        QCOMPARE( QMailAddress::toStringList(reconstituted.cc()), QMailAddress::toStringList(message.cc()) );
+        QCOMPARE( QMailAddress::toStringList(reconstituted.bcc()), QMailAddress::toStringList(message.bcc()) );
+        QCOMPARE( reconstituted.subject(), message.subject() );
+        QCOMPARE( reconstituted.replyTo().toString(), message.replyTo().toString() );
+        QCOMPARE( reconstituted.inReplyTo(), message.inReplyTo() );
+        QCOMPARE( reconstituted.headerFieldText("Message-ID"), message.headerFieldText("Message-ID") );
+        QCOMPARE( QMailTimeStamp(reconstituted.date()), QMailTimeStamp(message.date()) );
+        QCOMPARE( reconstituted.hasBody(), message.hasBody() );
+        QCOMPARE( reconstituted.body().data(), message.body().data() );
+        QCOMPARE( reconstituted.partCount(), message.partCount() );
     }
 }
 
@@ -703,7 +815,6 @@ void tst_QMailMessage::fromRfc2822()
     QFETCH( QByteArray, rfc_text );
     QMailMessage m = QMailMessage::fromRfc2822( rfc_text );
 
-//    
     QTEST( m.from().toString(), "from" );
     QTEST( m.from().name(), "from_name" );
     QTEST( m.from().address(), "from_email" );
@@ -718,6 +829,23 @@ void tst_QMailMessage::fromRfc2822()
     QTEST( QMailTimeStamp(m.date()).toString(), "date_str" );
     QTEST( m.body().data(), "plain_text" );
     QTEST( int(m.partCount()), "message_part_count" );
+
+    // Test that conversion to-and-from RFC2822 yields equivalence
+    QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);
+
+    QMailMessage reconstituted = QMailMessage::fromRfc2822(identity);
+    QCOMPARE( reconstituted.from(), m.from() );
+    QCOMPARE( QMailAddress::toStringList(reconstituted.to()), QMailAddress::toStringList(m.to()) );
+    QCOMPARE( QMailAddress::toStringList(reconstituted.cc()), QMailAddress::toStringList(m.cc()) );
+    QCOMPARE( QMailAddress::toStringList(reconstituted.bcc()), QMailAddress::toStringList(m.bcc()) );
+    QCOMPARE( reconstituted.subject(), m.subject() );
+    QCOMPARE( reconstituted.replyTo().toString(), m.replyTo().toString() );
+    QCOMPARE( reconstituted.inReplyTo(), m.inReplyTo() );
+    QCOMPARE( reconstituted.headerFieldText("Message-ID"), m.headerFieldText("Message-ID") );
+    QCOMPARE( QMailTimeStamp(reconstituted.date()), QMailTimeStamp(m.date()) );
+    QCOMPARE( reconstituted.hasBody(), m.hasBody() );
+    QCOMPARE( reconstituted.body().data(), m.body().data() );
+    QCOMPARE( reconstituted.partCount(), m.partCount() );
 }
 
 void tst_QMailMessage::id()
