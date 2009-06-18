@@ -1252,6 +1252,42 @@ void tst_QMailMessage::multiMultipart()
         repeated = m3.toRfc2822();
     }
     QCOMPARE(repeated, rfcData);
+
+    // Test that conversion to-and-from RFC 2822 preserves all information
+    QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);
+
+    QMailMessage m4 = QMailMessage::fromRfc2822(identity);
+
+    QCOMPARE( m4.contentType().toString(), m.contentType().toString() );
+    QCOMPARE( m4.transferEncoding(), m.transferEncoding() );
+    QCOMPARE( m4.partCount(), m.partCount() );
+    for (uint i = 0; i < m.partCount(); ++i) {
+        const QMailMessagePart& p1 = m4.partAt(i);
+
+        QMailMessagePart::Location loc1(p1.location());
+        const QMailMessagePart& lp1 = m.partAt(loc1);
+
+        QCOMPARE( p1.partNumber(), lp1.partNumber());
+        QCOMPARE( p1.location().toString(true), lp1.location().toString(true));
+
+        QCOMPARE( p1.hasBody(), lp1.hasBody());
+        QCOMPARE( p1.partCount(), lp1.partCount());
+        QCOMPARE( p1.body().data(), lp1.body().data());
+
+        for (uint j = 0; j < p1.partCount(); ++j) {
+            const QMailMessagePart& p2 = p1.partAt(j);
+
+            QMailMessagePart::Location loc2(p2.location());
+            const QMailMessagePart& lp2 = m.partAt(loc2);
+
+            QCOMPARE( p2.partNumber(), lp2.partNumber());
+            QCOMPARE( p2.location().toString(true), lp2.location().toString(true));
+
+            QCOMPARE( p2.hasBody(), lp2.hasBody());
+            QCOMPARE( p2.partCount(), lp2.partCount());
+            QCOMPARE( p2.body().data(), lp2.body().data());
+        }
+    }
 }
 
 void tst_QMailMessage::copyAndAssign()
