@@ -4279,7 +4279,7 @@ struct ReferenceStorer
 
     ReferenceStorer(QMailMessage *m) : message(m) {}
 
-    void operator()(const QMailMessagePart &part)
+    bool operator()(const QMailMessagePart &part)
     {
         QString value;
 
@@ -4305,6 +4305,8 @@ struct ReferenceStorer
                 message->setCustomField(key, value);
             }
         }
+
+        return true;
     }
 };
 
@@ -4330,7 +4332,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     } 
 
     ReferenceStorer refStorer(message);
-    QMailMessage::foreachPart<ReferenceStorer&>(const_cast<const QMailMessage&>(*message), refStorer);
+    const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
 
     if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
         QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
@@ -4943,7 +4945,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     if (message) {
         // Ensure the part reference info is stored into the message
         ReferenceStorer refStorer(message);
-        QMailMessage::foreachPart<ReferenceStorer&>(const_cast<const QMailMessage&>(*message), refStorer);
+        const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
     }
 
     if (metaData->dataModified()) {

@@ -18,6 +18,9 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 4. Added 'QMailMessagePart::indicativeSize() const'.
 
+5. Added 'QMailMessagePartContainer::foreachPart(F)' and
+         'QMailMessagePartContainer::foreachPart(F) const'.
+
 
 *****************************************************************************
 

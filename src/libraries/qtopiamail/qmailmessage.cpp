@@ -4201,6 +4201,28 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
     return const_cast<QMailMessagePartPrivate*>(static_cast<const QMailMessagePartPrivate*>(part.d.constData()));
 }
 
+/*!
+    \fn bool QMailMessagePartContainer::foreachPart(F func)
+    
+    Applies the function or functor \a func to each part contained within the container.
+    \a func must implement the signature 'bool operator()(QMailMessagePart &)', and must
+    return true to indicate success, or false to end the traversal operation.
+
+    Returns true if all parts of the message were traversed, and \a func returned true for
+    every invocation; else returns false.
+*/
+
+/*!
+    \fn bool QMailMessagePartContainer::foreachPart(F func) const
+    
+    Applies the function or functor \a func to each part contained within the container.
+    \a func must implement the signature 'bool operator()(const QMailMessagePart &)', and must
+    return true to indicate success, or false to end the traversal operation.
+
+    Returns true if all parts of the message were traversed, and \a func returned true for
+    every invocation; else returns false.
+*/
+
 
 //===========================================================================
 /*      Mail Message Part   */

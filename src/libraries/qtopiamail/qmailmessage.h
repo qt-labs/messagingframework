@@ -329,6 +329,12 @@ public:
     virtual bool contentAvailable() const = 0;
     virtual bool partialContentAvailable() const = 0;
 
+    template <typename F>
+    bool foreachPart(F func);
+
+    template <typename F>
+    bool foreachPart(F func) const;
+
 protected:
     template<typename Subclass>
     QMailMessagePartContainer(Subclass* p);
@@ -466,6 +472,46 @@ Stream& operator<<(Stream &stream, const QMailMessagePart& part) { part.serializ
 
 template <typename Stream> 
 Stream& operator>>(Stream &stream, QMailMessagePart& part) { part.deserialize(stream); return stream; }
+
+template <typename F>
+bool QMailMessagePartContainer::foreachPart(F func)
+{
+    for (uint i = 0; i < partCount(); ++i) {
+        QMailMessagePart &part(partAt(i));
+        
+        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
+            if (!func(part)) {
+                return false;
+            }
+        } else {
+            if (!part.foreachPart(func)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+template <typename F>
+bool QMailMessagePartContainer::foreachPart(F func) const
+{
+    for (uint i = 0; i < partCount(); ++i) {
+        const QMailMessagePart &part(partAt(i));
+        
+        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
+            if (!func(part)) {
+                return false;
+            }
+        } else {
+            if (!part.foreachPart(func)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
 
 class QMailMessageMetaDataPrivate;
 
@@ -669,34 +715,6 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-
-    template <typename F>
-    static void foreachPart(QMailMessagePartContainer &container, F func)
-    {
-        for (uint i = 0; i < container.partCount(); ++i) {
-            QMailMessagePart &part(container.partAt(i));
-            
-            if (part.multipartType() == QMailMessage::MultipartNone) {
-                func(part);
-            } else {
-                foreachPart(part, func);
-            }
-        }
-    }
-
-    template <typename F>
-    static void foreachPart(const QMailMessagePartContainer &container, F func)
-    {
-        for (uint i = 0; i < container.partCount(); ++i) {
-            const QMailMessagePart &part(container.partAt(i));
-            
-            if (part.multipartType() == QMailMessage::MultipartNone) {
-                func(part);
-            } else {
-                foreachPart(part, func);
-            }
-        }
-    }
 
 protected:
     virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = 0);

@@ -388,11 +388,13 @@ struct ReferenceDetector
 
     ReferenceDetector() : unresolvedRemaining(false) {}
 
-    void operator()(const QMailMessagePart &part)
+    bool operator()(const QMailMessagePart &part)
     {
         if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
             unresolvedRemaining = true;
         }
+
+        return true;
     }
 };
 
@@ -408,7 +410,7 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
 
     // Have we resolved all references in this message?
     ReferenceDetector detector;
-    QMailMessage::foreachPart<ReferenceDetector&>(referer, detector);
+    referer.foreachPart<ReferenceDetector&>(detector);
 
     if (detector.unresolvedRemaining == false) {
         referer.setStatus(QMailMessage::HasUnresolvedReferences, false);

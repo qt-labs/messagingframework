@@ -357,7 +357,7 @@ struct ReferenceLoader
 
     ReferenceLoader(const QMailMessage *m) : message(m) {}
 
-    void operator()(QMailMessagePart &part)
+    bool operator()(QMailMessagePart &part)
     {
         QString loc = part.location().toString(false);
 
@@ -381,6 +381,7 @@ struct ReferenceLoader
 
             if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
                 qMailLog(Messaging) << "Unable to resolve reference from:" << value;
+                return false;
             }
 
             // Is this reference resolved?
@@ -390,6 +391,8 @@ struct ReferenceLoader
                 part.setReferenceResolution(value);
             }
         }
+
+        return true;
     }
 };
 
@@ -414,7 +417,9 @@ QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMa
 
     // Load the reference information from the meta data into our content object
     ReferenceLoader refLoader(message);
-    QMailMessage::foreachPart<ReferenceLoader&>(result, refLoader);
+    if (!result.foreachPart<ReferenceLoader&>(refLoader)) {
+        qMailLog(Messaging) << "Unable to resolve references for:" << identifier;
+    }
 
     if (!loadParts(message, &result, path))
         return QMailStore::FrameworkFault;

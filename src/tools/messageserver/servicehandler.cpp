@@ -182,7 +182,7 @@ struct ResolverSet
 {
     QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > map;
 
-    void operator()(const QMailMessagePart &part)
+    bool operator()(const QMailMessagePart &part)
     {
         if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
             // We need to resolve this part's reference
@@ -200,6 +200,8 @@ struct ResolverSet
                 map[referencedMessage.parentAccountId()].append(qMakePair(part.partReference(), part.location()));
             }
         }
+
+        return true;
     }
 };
 
@@ -209,7 +211,7 @@ QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::L
     ResolverSet set;
 
     foreach (const QMailMessageId id, ids) {
-        QMailMessage::foreachPart<ResolverSet&>(QMailMessage(id), set);
+        QMailMessage(id).foreachPart<ResolverSet&>(set);
     }
 
     return set.map;
