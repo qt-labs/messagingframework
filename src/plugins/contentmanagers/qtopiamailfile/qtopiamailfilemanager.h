@@ -82,8 +82,7 @@ protected slots:
 private:
     QMailStore::ErrorCode addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable);
 
-    bool addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing, bool durable);
-    bool loadParts(QMailMessage *message, QMailMessagePartContainer *container, const QString &fileName);
+    bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable);
     bool removeParts(const QString &fileName);
 
     QList<QFile*> _openFiles;
