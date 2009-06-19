@@ -870,21 +870,20 @@ void PopClient::uidlIntegrityCheck()
 
 namespace {
 
+struct AttachmentDetector 
+{
+    bool operator()(const QMailMessagePart &part)
+    {
+        // Return false if there is an attachment to stop traversal
+        QMailMessageContentDisposition disposition(part.contentDisposition());
+        return (disposition.isNull() || (disposition.type() != QMailMessageContentDisposition::Attachment));
+    }
+};
+
 bool hasAttachments(const QMailMessagePartContainer &partContainer)
 {
-    for (uint i = 0; i < partContainer.partCount(); ++i) {
-        const QMailMessagePart &part(partContainer.partAt(i));
-
-        QMailMessageContentDisposition disposition(part.contentDisposition());
-        if (!disposition.isNull() && (disposition.type() == QMailMessageContentDisposition::Attachment)) {
-            return true;
-        } else if (part.multipartType() != QMailMessage::MultipartNone) {
-            if (hasAttachments(part))
-                return true;
-        }
-    }
-
-    return false;
+    // If foreachPart yields false there is at least one attachment
+    return (partContainer.foreachPart(AttachmentDetector()) == false);
 }
 
 }

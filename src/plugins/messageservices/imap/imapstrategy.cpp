@@ -382,21 +382,24 @@ void ImapPrepareMessagesStrategy::messageListCompleted(ImapStrategyContextBase *
     context->operationCompleted();
 }
 
+namespace {
+
 struct ReferenceDetector
 {
-    bool unresolvedRemaining;
-
-    ReferenceDetector() : unresolvedRemaining(false) {}
-
     bool operator()(const QMailMessagePart &part)
     {
-        if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
-            unresolvedRemaining = true;
-        }
-
-        return true;
+        // Return false if there is an unresolved reference to stop traversal
+        return ((part.referenceType() == QMailMessagePart::None) || !part.referenceResolution().isEmpty());
     }
 };
+
+bool hasUnresolvedReferences(const QMailMessage &message)
+{
+    // If foreachPart yields false there is at least one unresolved reference
+    return (message.foreachPart(ReferenceDetector()) == false);
+}
+
+}
 
 void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const QString &url)
 {
@@ -409,10 +412,7 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
     part.setReferenceResolution(url);
 
     // Have we resolved all references in this message?
-    ReferenceDetector detector;
-    referer.foreachPart<ReferenceDetector&>(detector);
-
-    if (detector.unresolvedRemaining == false) {
+    if (!hasUnresolvedReferences(referer)) {
         referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
     }
 
