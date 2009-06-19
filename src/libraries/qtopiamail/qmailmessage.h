@@ -479,11 +479,9 @@ bool QMailMessagePartContainer::foreachPart(F func)
     for (uint i = 0; i < partCount(); ++i) {
         QMailMessagePart &part(partAt(i));
         
-        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-            if (!func(part)) {
-                return false;
-            }
-        } else {
+        if (!func(part)) {
+            return false;
+        } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
             if (!part.foreachPart(func)) {
                 return false;
             }
@@ -499,11 +497,9 @@ bool QMailMessagePartContainer::foreachPart(F func) const
     for (uint i = 0; i < partCount(); ++i) {
         const QMailMessagePart &part(partAt(i));
         
-        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-            if (!func(part)) {
-                return false;
-            }
-        } else {
+        if (!func(part)) {
+            return false;
+        } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
             if (!part.foreachPart(func)) {
                 return false;
             }
