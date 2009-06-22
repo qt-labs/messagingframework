@@ -611,10 +611,10 @@ void Browser::displayHtml(const QMailMessage* mail)
 
     QString headerTemplate = \
 "<div align=left>"
-    "<table border=0 cellspacing=0 cellpadding=0 width=100\%>"
+    "<table border=0 cellspacing=0 cellpadding=0 width=100%>"
         "<tr>"
             "<td bgcolor=\"#000000\">"
-                "<table border=0 width=100\% cellspacing=1 cellpadding=4>"
+                "<table border=0 width=100% cellspacing=1 cellpadding=4>"
                     "<tr>"
                         "<td align=left bgcolor=\"HIGHLIGHT_COLOR\">"
                             "<b><font color=\"LINK_COLOR\">SUBJECT_TEXT</font></b>"
@@ -663,7 +663,7 @@ void Browser::displayHtml(const QMailMessage* mail)
     pageData += replaceLast(bodyTemplate, "BODY_TEXT", bodyText);
 
     QString pageTemplate =
-"<table width=100\% height=100\% border=0 cellspacing=8 cellpadding=0>"
+"<table width=100% height=100% border=0 cellspacing=8 cellpadding=0>"
     "<tr>"
         "<td>"
             "PAGE_DATA"
