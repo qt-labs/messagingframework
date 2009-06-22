@@ -10,16 +10,35 @@
 
 Changes since the QMF-1.0 release on 15/05/09:
 
-1. Added 'QMail::baseSubject(const QString &)'.
+1. Added 'QMail::baseSubject(const QString &)',
+         'QMail::messageIdentifiers(const QString &)',
+         'QMail::messageServerPath()',
+         'QMail::messageSettingsPath()', and
+         'QMail::lastSystemErrorMessage()'.
 
 2. Extracted 'QMailMessageModelBase' from 'QMailMessageListModel'.
 
 3. Added 'QMailMessageThreadedModel'.
 
-4. Added 'QMailMessagePart::indicativeSize() const'.
+4. Added 'QMailMessageKey::conversation(...)'.
 
-5. Added 'QMailMessagePartContainer::foreachPart(F)' and
+5. Added 'QMailStore::ContentNotRemoved'.
+
+6. Added 'QMailMessagePart::indicativeSize() const'.
+
+7. Added 'QMailMessagePartContainer::foreachPart(F)' and
          'QMailMessagePartContainer::foreachPart(F) const'.
+
+8. Added 'QMailAccount::CanReferenceExternalData' and
+         'QMailAccount::CanTransmitViaReference'.
+
+9. Added 'QMailMessageMetaData::HasReferences' and
+         'QMailMessageMetaData::HasUnresolvedReferences'.
+
+10. Added 'QMailMessageFwd::ChunkType' and
+          'QMailMessageFwd::MessageChunk'.
+
+11. Added 'QMailMessage::toRfc2822Chunks(QMailMessage::EncodingFormat)'.
 
 
 *****************************************************************************

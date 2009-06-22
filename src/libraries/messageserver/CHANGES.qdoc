@@ -8,6 +8,14 @@
 **
 *****************************************************************************
 
+Changes since the QMF-1.0 release on 15/05/09:
+
+1. Changed 'QMailMessageSource::prepareMessages(const QMailMessageIdList&)' to
+           'QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> >&).
+
+
+*****************************************************************************
+
 Changes since the development preview release on 03/04/09:
 
 1. Added 'QMailTransport::socket()'.
