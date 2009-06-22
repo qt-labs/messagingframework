@@ -198,9 +198,6 @@ protected:
 
     void notImplemented();
 
-    typedef void (QMailMessageSink::*MessageSignal)(const QMailMessageIdList&);
-    MessageSignal transmittedSignal() { return &QMailMessageSink::messagesTransmitted; }
-
 private:
     QMailMessageSink();
     QMailMessageSink(const QMailMessageSink &other);
