@@ -5313,17 +5313,6 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 */
 
 /*!
-    \variable QMailMessageMetaData::HasAttachments
-
-    The status mask needed for testing the value of the registered status flag named 
-    \c "HasAttachments" against the result of QMailMessage::status().
-
-    This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.
-
-    \sa QMailMessageContentDisposition
-*/
-
-/*!
     \variable QMailMessageMetaData::Read
 
     The status mask needed for testing the value of the registered status flag named 
@@ -5408,6 +5397,39 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that some portion of the  content of the message has been retrieved from the originating server.
 
     \sa QMailMessagePartContainer::contentAvailable()
+*/
+
+/*!
+    \variable QMailMessageMetaData::HasAttachments
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "HasAttachments" against the result of QMailMessage::status().
+
+    This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.
+
+    \sa QMailMessageContentDisposition
+*/
+
+/*!
+    \variable QMailMessageMetaData::HasReferences
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "HasReferences" against the result of QMailMessage::status().
+
+    This flag indicates that the message contains at least one sub-part which is a reference to an external message element.
+
+    \sa QMailMessagePart::referenceType()
+*/
+
+/*!
+    \variable QMailMessageMetaData::HasUnresolvedReferences
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "HasUnresolvedReferences" against the result of QMailMessage::status().
+
+    This flag indicates that the message contains at least one sub-part which is a reference, that has no corresponding resolution value.
+
+    \sa QMailMessagePart::referenceType(), QMailMessagePart::referenceResolution()
 */
 
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
