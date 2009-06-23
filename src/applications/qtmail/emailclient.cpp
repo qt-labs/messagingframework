@@ -297,6 +297,12 @@ EmailFolderModel* MessageUiBase::emailFolderModel() const
     return model;
 }
 
+SearchView* MessageUiBase::searchView() const
+{
+    static SearchView* searchview = const_cast<MessageUiBase*>(this)->createSearchView();
+    return searchview;
+}
+
 void MessageUiBase::showFolderStatus(QMailMessageSet* item)
 {
     if (item)
@@ -434,6 +440,13 @@ EmailFolderModel* MessageUiBase::createEmailFolderModel()
     return model;
 }
 
+SearchView* MessageUiBase::createSearchView()
+{
+    SearchView* searchview = new SearchView(this);
+    searchview->setObjectName("searchview");
+    return searchview;
+}
+
 EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     : MessageUiBase( parent, f ),
       filesRead(false),
@@ -445,9 +458,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       fetchTimer(this),
       autoGetMail(false),
       initialAction(None),
-      searchView(0),
       preSearchWidgetId(-1),
-      searchAction(0),
       m_messageServerProcess(0),
       syncState(ExportUpdates),
       m_contextMenu(0)
@@ -668,7 +679,7 @@ void EmailClient::setVisible(bool visible)
 
         move(p);
     }
-    QWidget::setVisible(visible);
+    QMainWindow::setVisible(visible);
 }
 
 
@@ -735,7 +746,6 @@ void EmailClient::initActions()
         searchButton = new QAction( QIcon(":icon/find"), tr("Search"), this );
         connect(searchButton, SIGNAL(triggered()), this, SLOT(search()) );
         searchButton->setWhatsThis( tr("Search for messages in your folders.") );
-        searchButton->setEnabled(false);
 
         synchronizeAction = new QAction( this );
         connect(synchronizeAction, SIGNAL(triggered()), this, SLOT(synchronizeFolder()) );
@@ -903,17 +913,14 @@ void EmailClient::init()
     retrievalAction = new QMailRetrievalAction(this);
     storageAction = new QMailStorageAction(this);
     transmitAction = new QMailTransmitAction(this);
-    searchAction = new QMailSearchAction(this);
 
     foreach (QMailServiceAction *action, QList<QMailServiceAction*>() << retrievalAction
                                                                       << storageAction
-                                                                      << transmitAction
-                                                                      << searchAction) {
+                                                                      << transmitAction) {
         connect(action, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
         connect(action, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
         connect(action, SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(statusChanged(QMailServiceAction::Status)));
-        if (action != searchAction)
-            connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
+        connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
     }
 
     // Use a separate action for flag updates, which are not directed by the user
@@ -1180,13 +1187,6 @@ void EmailClient::storageActionCompleted()
     clearStatusText();
 }
 
-void EmailClient::searchCompleted()
-{
-    clearStatusText();
-    viewSearchResults(QMailMessageKey::id(searchAction->matchingMessageIds()));
-    searchProgressDialog()->hide();
-}
-
 void EmailClient::getNewMail()
 {
     // Try to preserve the message list selection
@@ -1418,6 +1418,11 @@ void EmailClient::messageActivated()
             readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
         }
     }
+}
+
+void EmailClient::searchResultSelected(const QMailMessageId& id)
+{
+    readMailWidget()->displayMessage(id,QMailViewerFactory::AnyPresentation,false,false);
 }
 
 void EmailClient::accessError(const QString &folderName)
@@ -1704,8 +1709,6 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
                 retrievalCompleted();
             } else if (action == storageAction) {
                 storageActionCompleted();
-            } else if (action == searchAction) {
-                searchCompleted();
             }
         } else if (activity == QMailServiceAction::Failed) {
             const QMailServiceAction::Status status(action->status());
@@ -1810,26 +1813,16 @@ void EmailClient::folderSelected(QMailMessageSet *item)
 
 void EmailClient::search()
 {
-    if (!searchView) {
-        searchView = new SearchView(this);
-        searchView->setObjectName("search"); // No tr
-        connect(searchView, SIGNAL(accepted()), this, SLOT(searchRequested()));
+    static bool init = false;
+    if(!init)
+    {
+        connect(searchView(),SIGNAL(searchResultSelected(const QMailMessageId&)),this,SLOT(searchResultSelected(const QMailMessageId&)));
+        init = true;
     }
-
-    searchView->reset();
-    searchView->exec();
-}
-
-void EmailClient::searchRequested()
-{
-    QString bodyText(searchView->bodyText());
-
-    QMailMessageKey searchKey(searchView->searchKey());
-    QMailMessageKey emailKey(QMailMessageKey::messageType(QMailMessage::Email, QMailDataComparator::Includes));
-    searchKey &= emailKey;
-    searchProgressDialog()->show();
-    searchAction->searchMessages(searchKey, bodyText, QMailSearchAction::Local);
-    emit updateStatus(tr("Searching"));
+    searchView()->raise();
+    searchView()->activateWindow();
+    searchView()->reset();
+    searchView()->show();
 }
 
 void EmailClient::automaticFetch()
@@ -2369,13 +2362,6 @@ QMailAccountIdList EmailClient::emailAccounts() const
     QMailAccountKey typeKey(QMailAccountKey::messageType(QMailMessage::Email));
     QMailAccountKey enabledKey(QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes));
     return QMailStore::instance()->queryAccounts(typeKey & enabledKey);
-}
-
-SearchProgressDialog* EmailClient::searchProgressDialog() const
-{
-    Q_ASSERT(searchAction);
-    static SearchProgressDialog* spd = new SearchProgressDialog(searchAction);
-    return spd;
 }
 
 void EmailClient::clearNewMessageStatus(const QMailMessageKey& key)

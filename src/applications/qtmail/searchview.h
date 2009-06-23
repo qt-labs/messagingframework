@@ -42,37 +42,60 @@
 #ifndef SEARCHVIEW_H
 #define SEARCHVIEW_H
 
-#include "ui_searchviewbasephone.h"
-#include <QDialog>
+#include <QMainWindow>
 #include <qmailmessagekey.h>
+#include <qmailserviceaction.h>
 
-class QScrollArea;
-class QAction;
+class QPushButton;
+class QRadioButton;
+class QCheckBox;
+class QLineEdit;
+class QToolButton;
+class MessageListView;
+class SearchTermsComposer;
+class FolderSelectorWidget;
+class QMailSearchAction;
+class QStatusBar;
+class SearchButton;
+class BodySearchWidget;
 
-class SearchView : public QDialog, public Ui::SearchViewBase
+class SearchView : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    SearchView(QWidget* parent = 0);
+    SearchView(QWidget * parent = 0, Qt::WindowFlags flags = 0);
     ~SearchView();
+    void setVisible(bool visible);
 
-    QMailMessageKey searchKey() const;
-    QString bodyText() const;
+signals:
+    void searchResultSelected(const QMailMessageId& id);
 
+public slots:
     void reset();
+    void close();
 
 private:
-    void init();
+    void setupUi();
+    QMailMessageKey searchKey() const;
 
 private slots:
-    void updateActions();
-    void pickAddressSlot();
+    void startSearch();
+    void stopSearch();
+    void messageIdsMatched(const QMailMessageIdList& ids);
+    void searchProgressChanged(uint value, uint total);
+    void searchActivityChanged(QMailServiceAction::Activity a);
 
 private:
-    QDate dateBefore, dateAfter;
-    QScrollArea *sv;
-    QAction *pickAddressAction;
+    SearchButton* m_searchButton;
+    QPushButton* m_resetButton;
+    QPushButton* m_closeButton;
+    FolderSelectorWidget* m_folderSelectorWidget;
+    SearchTermsComposer* m_searchTermsComposer;
+    BodySearchWidget* m_bodySearchWidget;
+    MessageListView* m_searchResults;
+    QMailSearchAction* m_searchAction;
+    QStatusBar* m_statusBar;
 };
 
 #endif

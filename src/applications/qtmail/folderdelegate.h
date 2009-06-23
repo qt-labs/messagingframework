@@ -62,12 +62,16 @@ public:
 
     virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
+    bool showStatus() const;
+    void setShowStatus(bool val);
+
 protected:
     virtual void init(const QStyleOptionViewItem &option, const QModelIndex &index);
 
     QWidget *_parent;
     QScrollBar *_scrollBar;
     QString _statusText;
+    bool m_showStatus;
 };
 
 #endif
