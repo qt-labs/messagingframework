@@ -43,42 +43,52 @@
 #include <QListWidget>
 #include <QLayout>
 #include <qmailfolder.h>
-
+#include "emailfolderview.h"
+#include <qmailmessageset.h>
+#include "folderdelegate.h"
+#include "emailfoldermodel.h"
+#include <QPushButton>
 
 SelectFolderDialog::SelectFolderDialog(const QMailFolderIdList &list, QWidget *parent)
-    : QDialog( parent ),
-      mFolderIds( list )
+    : QDialog( parent )
 {
     setWindowTitle( tr( "Select folder" ) );
 
-    mFolderList = new QListWidget( this );
+    m_folderList = new EmailFolderView(this);
+    m_model = new EmailFolderModel(list,this);
 
-    foreach (const QMailFolderId &folderId, mFolderIds) {
-        QMailFolder folder(folderId);
-        mFolderList->addItem(folder.path());
-    }
-
-    // Required for current item to be shown as selected(?)
-    if (mFolderList->count())
-        mFolderList->setCurrentRow( 0 );
-
-    connect(mFolderList, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(selected()) );
+    m_folderList->setModel(m_model);
+    FolderDelegate* del = new FolderDelegate(this);
+    del->setShowStatus(false);
+    m_folderList->setItemDelegate(del);
+    m_folderList->expandAll();
 
     QGridLayout *top = new QGridLayout( this );
-    top->addWidget( mFolderList, 0, 0 );
-}
+    top->addWidget(m_folderList);
 
-SelectFolderDialog::~SelectFolderDialog()
-{
+    QHBoxLayout* buttonsLayout = new QHBoxLayout(this);
+
+    buttonsLayout->addStretch();
+
+    QPushButton* okButton = new QPushButton("Ok",this);
+    buttonsLayout->addWidget(okButton);
+    connect(okButton,SIGNAL(clicked(bool)),this,SLOT(accept()));
+
+    QPushButton* cancelButton = new QPushButton("Cancel",this);
+    buttonsLayout->addWidget(cancelButton);
+    connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(reject()));
+
+
+    top->addLayout(buttonsLayout,1,0);
+
 }
 
 QMailFolderId SelectFolderDialog::selectedFolderId() const
 {
-    return mFolderIds[mFolderList->currentRow()];
+    return m_folderList->currentFolderId();
 }
 
-void SelectFolderDialog::selected()
+QMailAccountId SelectFolderDialog::selectedAccountId() const
 {
-    done(1);
+    return m_folderList->currentAccountId();
 }
-

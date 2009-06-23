@@ -106,8 +106,12 @@ public:
 
     QMailMessageIdList visibleMessagesIds(bool buffer = true) const;
 
+    bool showingQuickSearch() const;
+    void showQuickSearch(bool val);
+
 signals:
     void clicked(const QMailMessageId& id);
+    void activated(const QMailMessageId& id);
     void currentChanged(const QMailMessageId& oldId, const QMailMessageId& newId);
     void selectionChanged();
     void backPressed();
@@ -115,8 +119,12 @@ signals:
     void moreClicked();
     void visibleMessagesChanged();
 
+public slots:
+    void reset();
+
 protected slots:
     void indexClicked(const QModelIndex& index);
+    void indexActivated(const QModelIndex& index);
     void currentIndexChanged(const QModelIndex& currentIndex, const QModelIndex& previousIndex);
     void modelChanged();
     void rowsAboutToBeRemoved(const QModelIndex&, int, int);

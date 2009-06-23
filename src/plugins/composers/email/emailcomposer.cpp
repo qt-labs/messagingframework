@@ -336,12 +336,17 @@ RecipientWidget* RecipientListWidget::addRecipientWidget()
     connect(r,SIGNAL(removeClicked()),this,SIGNAL(changed()));
     connect(r,SIGNAL(recipientChanged()),this,SIGNAL(changed()));
 
+    setUpdatesEnabled(false);
+
     m_layout->addWidget(r);
     if(!m_widgetList.isEmpty())
         m_widgetList.last()->setTabOrder(m_widgetList.last(),r);
 
     r->setRemoveEnabled(!m_widgetList.isEmpty());
     m_widgetList.append(r);
+
+    updateGeometry();
+    setUpdatesEnabled(true);
 
     return r;
 }
@@ -352,9 +357,12 @@ void RecipientListWidget::removeRecipientWidget()
     {
         if(m_widgetList.count() <= 1)
             return;
+        setUpdatesEnabled(false);
         int index = m_widgetList.indexOf(r);
         m_widgetList.removeAll(r);
-        delete r;
+
+        m_layout->removeWidget(r);
+        r->deleteLater();
 
         if(index >= m_widgetList.count())
             index = m_widgetList.count()-1;
@@ -362,6 +370,9 @@ void RecipientListWidget::removeRecipientWidget()
         if(m_widgetList.at(index)->isEmpty() && index > 0)
             index--;
         m_widgetList.at(index)->setFocus();
+
+        updateGeometry();
+        setUpdatesEnabled(true);
 
     }
 }

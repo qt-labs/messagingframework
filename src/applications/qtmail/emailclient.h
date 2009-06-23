@@ -98,6 +98,7 @@ protected:
     MessageListView* messageListView() const;
     MessageStore* messageStore() const;
     EmailFolderModel* emailFolderModel() const;
+    SearchView* searchView() const;
 
     void suspendMailCounts();
     void resumeMailCounts();
@@ -112,6 +113,7 @@ protected:
     virtual MessageListView* createMessageListView();
     virtual MessageStore* createMessageStore();
     virtual EmailFolderModel* createEmailFolderModel();
+    virtual SearchView* createSearchView();
 
 protected slots:
     virtual void messageSelectionChanged();
@@ -172,6 +174,7 @@ protected slots:
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
     void messageActivated();
+    void searchResultSelected(const QMailMessageId& id);
     void emptyTrashFolder();
 
     void moveSelectedMessages();
@@ -194,7 +197,6 @@ protected slots:
     void transmitCompleted();
     void retrievalCompleted();
     void storageActionCompleted();
-    void searchCompleted();
 
     void folderSelected(QMailMessageSet*);
 
@@ -214,7 +216,6 @@ protected slots:
     void setStatusText(QString &);
 
     void search();
-    void searchRequested();
 
     void automaticFetch();
 
@@ -315,8 +316,6 @@ private:
 
     QMailAccountIdList emailAccounts() const;
 
-    SearchProgressDialog* searchProgressDialog() const;
-
     void clearNewMessageStatus(const QMailMessageKey& key);
 
 private:
@@ -365,7 +364,6 @@ private:
 
     QMap<QAction*, bool> actionVisibility;
 
-    SearchView *searchView;
     int preSearchWidgetId;
 
     QSet<QMailFolderId> locationSet;
@@ -378,7 +376,6 @@ private:
     QMailTransmitAction *transmitAction;
     QMailRetrievalAction *retrievalAction;
     QMailStorageAction *storageAction;
-    QMailSearchAction *searchAction;
 
     QProcess* m_messageServerProcess;
 

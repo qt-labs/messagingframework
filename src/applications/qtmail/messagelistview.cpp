@@ -494,6 +494,7 @@ MessageListView::MessageListView(QWidget* parent)
 {
 
     init();
+    showQuickSearch(true);
 }
 
 MessageListView::~MessageListView()
@@ -553,6 +554,8 @@ void MessageListView::init()
 
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
             this, SLOT(indexClicked(QModelIndex)));
+    connect(mMessageList, SIGNAL(activated(QModelIndex)),
+            this, SLOT(indexActivated(QModelIndex)));
     connect(mMessageList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
             this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
     connect(mMessageList, SIGNAL(backPressed()),
@@ -773,6 +776,18 @@ void MessageListView::indexClicked(const QModelIndex& index)
     }
 }
 
+void MessageListView::indexActivated(const QModelIndex& index)
+{
+    if (mMarkingMode) {
+        return;
+    } else {
+        QMailMessageId id(index.data(QMailMessageListModel::MessageIdRole).value<QMailMessageId>());
+        if (id.isValid()) {
+            emit activated(id);
+        }
+    }
+}
+
 void MessageListView::currentIndexChanged(const QModelIndex& currentIndex,
                                           const QModelIndex& previousIndex)
 {
@@ -893,6 +908,16 @@ QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
     return visibleIds;
 }
 
+bool MessageListView::showingQuickSearch() const
+{
+    return mQuickSearchWidget->isVisible();
+}
+
+void MessageListView::showQuickSearch(bool val)
+{
+    mQuickSearchWidget->setVisible(val);
+}
+
 bool MessageListView::eventFilter(QObject *, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
@@ -906,6 +931,15 @@ bool MessageListView::eventFilter(QObject *, QEvent *event)
 
     return false;
 }
+
+void MessageListView::reset()
+{
+    if(mQuickSearchWidget->isVisible())
+        mQuickSearchWidget->reset();
+    delete mModel; mModel = 0;
+    mMessageList->setModel(mModel = new MessageListModel(this));
+}
+
 
 #include "messagelistview.moc"
 

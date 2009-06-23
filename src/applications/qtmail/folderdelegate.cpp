@@ -48,14 +48,16 @@
 FolderDelegate::FolderDelegate(QAbstractItemView *parent)
     : QItemDelegate(parent),
       _parent(parent),
-      _scrollBar(parent ? parent->verticalScrollBar() : 0)
+      _scrollBar(parent ? parent->verticalScrollBar() : 0),
+      m_showStatus(true)
 {
 }
 
 FolderDelegate::FolderDelegate(QWidget *parent)
     : QItemDelegate(parent),
       _parent(parent),
-      _scrollBar(0)
+      _scrollBar(0),
+      m_showStatus(true)
 {
 }
 
@@ -92,8 +94,8 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
         QRect statusRect = option.direction == Qt::RightToLeft
             ? QRect(0, rect.top(), tw + margin, rect.height())
             : QRect(rect.left()+rect.width()-tw-margin, rect.top(), tw, rect.height());
-
-        painter->drawText(statusRect, Qt::AlignCenter, _statusText);
+        if(m_showStatus)
+            painter->drawText(statusRect, Qt::AlignCenter, _statusText);
     }
 }
 
@@ -120,6 +122,16 @@ QSize FolderDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelI
     // Ensure that we use the full width for our item
     QSize base(QItemDelegate::sizeHint(option,index));
     return QSize(qMax(base.width(), option.rect.width()), base.height());
+}
+
+bool FolderDelegate::showStatus() const
+{
+    return m_showStatus;
+}
+
+void FolderDelegate::setShowStatus(bool val)
+{
+    m_showStatus = val;
 }
 
 void FolderDelegate::init(const QStyleOptionViewItem &option, const QModelIndex &index)

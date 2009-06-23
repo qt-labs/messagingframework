@@ -44,9 +44,12 @@
 #include <QDialog>
 #include <QList>
 #include <qmailid.h>
+#include <qmailmessageset.h>
 
 
 class QListWidget;
+class EmailFolderView;
+class EmailFolderModel;
 
 class SelectFolderDialog : public QDialog
 {
@@ -54,16 +57,12 @@ class SelectFolderDialog : public QDialog
 
 public:
     SelectFolderDialog(const QMailFolderIdList &folderIds, QWidget *parent = 0);
-    virtual ~SelectFolderDialog();
-
     QMailFolderId selectedFolderId() const;
-
-private slots:
-    void selected();
+    QMailAccountId selectedAccountId() const;
 
 private:
-    QListWidget *mFolderList;
-    QMailFolderIdList mFolderIds;
+    EmailFolderView* m_folderList;
+    EmailFolderModel* m_model;
 };
 
 #endif

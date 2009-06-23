@@ -36,5 +36,9 @@
 <file alias="mail_forward">pics/mail_forward.png</file>
 <file alias="mail_reply">pics/mail_reply.png</file>
 <file alias="exec">pics/exec.png</file>
+<file alias="tick">pics/button_ok.png</file>
+<file alias="cross">pics/button_cancel.png</file>
+<file alias="close">pics/fileclose.png</file>
+<file alias="stop">pics/stop.png</file>
 </qresource>
 </RCC>
