@@ -534,6 +534,9 @@ public:
     static const quint64 &HasAttachments;
     static const quint64 &HasReferences;
     static const quint64 &HasUnresolvedReferences;
+    static const quint64 &Draft;
+    static const quint64 &Outbox;
+    static const quint64 &Junk;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);

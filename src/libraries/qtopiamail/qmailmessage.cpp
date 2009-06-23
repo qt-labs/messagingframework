@@ -4968,6 +4968,9 @@ static quint64 partialContentAvailableFlag = 0;
 static quint64 hasAttachmentsFlag = 0;
 static quint64 hasReferencesFlag = 0;
 static quint64 hasUnresolvedReferencesFlag = 0;
+static quint64 draftFlag = 0;
+static quint64 outboxFlag = 0;
+static quint64 junkFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5008,6 +5011,9 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         hasAttachmentsFlag = registerFlag("HasAttachments");
         hasReferencesFlag = registerFlag("HasReferences");
         hasUnresolvedReferencesFlag = registerFlag("HasUnresolvedReferences");
+        draftFlag = registerFlag("Draft");
+        outboxFlag = registerFlag("Outbox");
+        junkFlag = registerFlag("Junk");
     }
 }
 
@@ -5432,6 +5438,33 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     \sa QMailMessagePart::referenceType(), QMailMessagePart::referenceResolution()
 */
 
+/*!
+    \variable QMailMessageMetaData::Draft
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Draft" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been marked as a draft, and should be considered subject to further composition.
+*/
+
+/*!
+    \variable QMailMessageMetaData::Outbox
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Outbox" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been marked as ready for transmission.
+*/
+
+/*!
+    \variable QMailMessageMetaData::Junk
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Junk" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been marked as junk, and should be considered unsuitable for standard listings.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -5450,6 +5483,9 @@ const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAva
 const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
 const quint64 &QMailMessageMetaData::HasReferences = hasReferencesFlag;
 const quint64 &QMailMessageMetaData::HasUnresolvedReferences = hasUnresolvedReferencesFlag;
+const quint64 &QMailMessageMetaData::Draft = draftFlag;
+const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
+const quint64 &QMailMessageMetaData::Junk = junkFlag;
 
 /*!
     Constructs an empty message meta data object.
