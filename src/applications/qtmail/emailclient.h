@@ -53,8 +53,6 @@
 #include <QTimer>
 #include <QProcess>
 
-class MessageFolder;
-class MessageStore;
 class EmailFolderModel;
 class EmailFolderView;
 class SearchView;
@@ -96,7 +94,6 @@ protected:
     ReadMail* readMailWidget() const;
     EmailFolderView* folderView() const;
     MessageListView* messageListView() const;
-    MessageStore* messageStore() const;
     EmailFolderModel* emailFolderModel() const;
 
     void suspendMailCounts();
@@ -110,7 +107,6 @@ protected:
     virtual ReadMail* createReadMailWidget();
     virtual EmailFolderView* createFolderView();
     virtual MessageListView* createMessageListView();
-    virtual MessageStore* createMessageStore();
     virtual EmailFolderModel* createEmailFolderModel();
 
 protected slots:
@@ -179,8 +175,8 @@ protected slots:
     void restoreSelectedMessages();
     void deleteSelectedMessages();
 
-    void moveSelectedMessagesTo(MessageFolder* destination);
-    void copySelectedMessagesTo(MessageFolder* destination);
+    void moveSelectedMessagesTo(const QMailFolderId &destination);
+    void copySelectedMessagesTo(const QMailFolderId &destination);
 
     void selectAll();
 
@@ -279,9 +275,7 @@ private:
 
     void displayCachedMail();
 
-    void accessError(const MessageFolder &box);
-    void copyError(const MessageFolder &dest);
-    void moveError(const MessageFolder &dest);
+    void accessError(const QString &folderName);
 
     void getNextNewMail();
     bool verifyAccount(const QMailAccountId &accountId, bool outgoing);
@@ -300,16 +294,13 @@ private:
 
     void setActionVisible(QAction*, bool);
 
-    bool restoreMessages(const QMailMessageIdList& ids, MessageFolder*);
-    bool deleteMessages(const QMailMessageIdList& ids, MessageFolder*);
-
     void contextStatusUpdate();
 
     void setMarkingMode(bool set);
 
-    MessageFolder* containingFolder(const QMailMessageId& id);
+    QMailFolderId containingFolder(const QMailMessageId& id);
 
-    bool applyToSelectedFolder(void (EmailClient::*function)(MessageFolder*));
+    bool applyToSelectedFolder(void (EmailClient::*function)(const QMailFolderId&));
 
     void sendFailure(const QMailAccountId &accountId);
     void receiveFailure(const QMailAccountId &accountId);

@@ -41,8 +41,6 @@
 
 #include "emailclient.h"
 #include "selectfolder.h"
-#include "messagefolder.h"
-#include "messagestore.h"
 #include "emailfoldermodel.h"
 #include "emailfolderview.h"
 #include <longstream_p.h>
@@ -293,12 +291,6 @@ MessageListView* MessageUiBase::messageListView() const
     return view;
 }
 
-MessageStore* MessageUiBase::messageStore() const
-{
-    static MessageStore* list = const_cast<MessageUiBase*>(this)->createMessageStore();
-    return list;
-}
-
 EmailFolderModel* MessageUiBase::emailFolderModel() const
 {
     static EmailFolderModel* model = const_cast<MessageUiBase*>(this)->createEmailFolderModel();
@@ -436,16 +428,6 @@ MessageListView* MessageUiBase::createMessageListView()
     return view;
 }
 
-MessageStore* MessageUiBase::createMessageStore()
-{
-    MessageStore* list = new MessageStore(this);
-
-    connect(list, SIGNAL(stringStatus(QString&)), this, SLOT(setStatusText(QString&)) );
-    connect(list, SIGNAL(externalEdit(QString)), this,SLOT(externalEdit(QString)) );
-
-    return list;
-}
-
 EmailFolderModel* MessageUiBase::createEmailFolderModel()
 {
     EmailFolderModel* model = new EmailFolderModel(this);
@@ -500,10 +482,8 @@ void EmailClient::openFiles()
 
     filesRead = true;
 
-    messageStore()->openMailboxes();
-
-    MessageFolder* outbox = messageStore()->mailbox(QMailFolder::OutboxFolder);
-    if (outbox->messageCount(MessageFolder::All)) {
+    QMailMessageKey outboxFilter(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
+    if (QMailStore::instance()->countMessages(outboxFilter)) {
         // There are messages ready to be sent
         QTimer::singleShot( 0, this, SLOT(sendAllQueuedMail()) );
     }
@@ -851,11 +831,10 @@ void EmailClient::updateActions()
     setActionVisible(selectAllAction, (messageCount > 1 && messageCount != selectionCount));
 
     // Only enable empty trash action if the trash has messages in it
-    QMailMessage::MessageType type = QMailMessage::Email;
+    QMailMessageKey typeFilter(QMailMessageKey::messageType(QMailMessage::Email));
+    QMailMessageKey folderFilter(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)));
 
-    static MessageFolder const* trashFolder = messageStore()->mailbox(QMailFolder::TrashFolder);
-
-    messageCount = trashFolder->messageCount(MessageFolder::All, type);
+    messageCount = QMailStore::instance()->countMessages(typeFilter & folderFilter);
 
     setActionVisible(emptyTrashAction, (messageCount > 0) && !markingMode);
 
@@ -971,8 +950,6 @@ void EmailClient::cancelOperation()
 /*  Enqueue mail must always store the mail in the outbox   */
 void EmailClient::enqueueMail(const QMailMessage& mailIn)
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox(QMailFolder::OutboxFolder);
-
     QMailMessage mail(mailIn);
 
     // if uuid is not valid , it's a new mail
@@ -981,16 +958,27 @@ void EmailClient::enqueueMail(const QMailMessage& mailIn)
         mailResponded();
     }
 
-    if ( !outboxFolder->insertMessage(mail) ) {
-        accessError(*outboxFolder);
-        return;
+    // Move this message to the outbox
+    QMailFolder outbox(QMailFolder::OutboxFolder);
+    mail.setParentFolderId(outbox.id());
+
+    bool inserted(false);
+    if (isNew) {
+        inserted = QMailStore::instance()->addMessage(&mail);
+    } else {
+        inserted = QMailStore::instance()->updateMessage(&mail);
     }
 
-    sendAllQueuedMail(true);
+    if (inserted) {
+        sendAllQueuedMail(true);
 
-    if (closeAfterWrite) {
-        closeAfterTransmissionsFinished();
-        closeApplication();
+        if (closeAfterWrite) {
+            closeAfterTransmissionsFinished();
+            closeApplication();
+        }
+    } else {
+        accessError(outbox.displayName());
+        return;
     }
 }
 
@@ -1009,8 +997,6 @@ void EmailClient::discardMail()
 
 void EmailClient::saveAsDraft(const QMailMessage& mailIn)
 {
-    static MessageFolder* const draftsFolder = messageStore()->mailbox(QMailFolder::DraftsFolder);
-
     QMailMessage mail(mailIn);
 
     // if uuid is not valid, it's a new mail
@@ -1019,10 +1005,20 @@ void EmailClient::saveAsDraft(const QMailMessage& mailIn)
         mailResponded();
     }
 
-    if ( !draftsFolder->insertMessage(mail) ) {
-        accessError(*draftsFolder);
+    QMailFolder drafts(QMailFolder::DraftsFolder);
+    mail.setParentFolderId(drafts.id());
+
+    bool inserted(false);
+    if (isNew) {
+        inserted = QMailStore::instance()->addMessage(&mail);
     } else {
+        inserted = QMailStore::instance()->updateMessage(&mail);
+    }
+
+    if (inserted) {
         lastDraftId = mail.id();
+    } else {
+        accessError(drafts.displayName());
     }
 }
 
@@ -1042,13 +1038,11 @@ void EmailClient::mailResponded()
 // each message that belongs to the current found account
 void EmailClient::sendAllQueuedMail(bool userRequest)
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox(QMailFolder::OutboxFolder);
-    static MessageFolder* const draftsFolder = messageStore()->mailbox(QMailFolder::DraftsFolder);
+    QMailMessageKey outboxFilter(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
 
     if (transmitAccountIds.isEmpty()) {
         // Find which accounts have messages to transmit in the outbox
-        QMailMessageKey key(QMailMessageKey::parentFolderId(outboxFolder->id()));
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ParentAccountId, QMailStore::ReturnDistinct)) {
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(outboxFilter, QMailMessageKey::ParentAccountId, QMailStore::ReturnDistinct)) {
             transmitAccountIds.append(metaData.parentAccountId());
         }
         if (transmitAccountIds.isEmpty())
@@ -1057,7 +1051,7 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
 
     if (userRequest) {
         // See if the message viewer wants to suppress the 'Sending messages' notification
-        QMailMessageIdList outgoingIds = outboxFolder->messages();
+        QMailMessageIdList outgoingIds = QMailStore::instance()->queryMessages(outboxFilter);
         if (!readMailWidget()->handleOutgoingMessages(outgoingIds)) {
             // Tell the user we're responding
             QString detail;
@@ -1083,26 +1077,34 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
             return;
         } else {
             // Move this account's outbox messages to Drafts
-            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(transmitId) &
-                                                                                  QMailMessageKey::parentFolderId(outboxFolder->id()));
-            storageAction->moveMessages(messageIds, draftsFolder->id());
+            QMailMessageKey accountFilter(QMailMessageKey::parentAccountId(transmitId));
+            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(accountFilter & outboxFilter);
+            storageAction->moveMessages(messageIds, QMailFolderId(QMailFolder::DraftsFolder));
         }
     }
 }
 
 void EmailClient::sendSingleMail(QMailMessageMetaData& message)
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox(QMailFolder::OutboxFolder);
-
     if (isSending()) {
         qWarning("sending in progress, no action performed");
         return;
     }
 
     // Ensure the message is in the Outbox
-    if (message.parentFolderId() != outboxFolder->id()) {
-        if (!outboxFolder->insertMessage(message)) {
-            accessError(*outboxFolder);
+    QMailFolder outbox(QMailFolder::OutboxFolder);
+    if (message.parentFolderId() != outbox.id()) {
+        message.setParentFolderId(outbox.id());
+
+        bool inserted(false);
+        if (message.id().isValid()) {
+            inserted = QMailStore::instance()->updateMessage(&message);
+        } else {
+            inserted = QMailStore::instance()->addMessage(&message);
+        }
+
+        if (!inserted) {
+            accessError(outbox.displayName());
             return;
         }
     }
@@ -1401,32 +1403,27 @@ QString EmailClient::mailType(QMailMessage::MessageType type)
 
 void EmailClient::messageActivated()
 {
-    static const QMailFolderId draftsFolderId = messageStore()->mailbox(QMailFolder::DraftsFolder)->mailFolder().id();
-
     QMailMessageId currentId = messageListView()->current();
     if(!currentId.isValid())
         return;
 
-    MessageFolder* source(containingFolder(currentId));
-    if (source && (source->id() == draftsFolderId)) {
+    QMailFolderId source(containingFolder(currentId));
+    if (source == QMailFolderId(QMailFolder::DraftsFolder)) {
         QMailMessage message(currentId);
         modify(message);
     } else {
-
-    bool hasNext = false;
-    bool hasPrevious = false;
-    if (readMailWidget()->displayedMessage() != currentId)
-        readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
-
-        //viewMessage(currentId, true);
+        bool hasNext = false;
+        bool hasPrevious = false;
+        if (readMailWidget()->displayedMessage() != currentId) {
+            readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
+        }
     }
 }
 
-void EmailClient::accessError(const MessageFolder &box)
+void EmailClient::accessError(const QString &folderName)
 {
-    QString msg = tr("<qt>Cannot access %1. Either there is insufficient space, or another program is accessing the mailbox.</qt>").arg(box.mailbox());
-
-    QMessageBox::critical( 0, tr("Save error"), msg );
+    QString msg = tr("Cannot access %1. Either there is insufficient space, or another program is accessing the mailbox.").arg(folderName);
+    QMessageBox::critical( 0, tr("Access error"), msg );
 }
 
 void EmailClient::readSettings()
@@ -1497,19 +1494,10 @@ void EmailClient::updateAccounts()
     updateGetMailButton();
 }
 
-bool EmailClient::restoreMessages(const QMailMessageIdList& ids, MessageFolder*)
-{
-    QMailStore::instance()->restoreToPreviousFolder(QMailMessageKey::id(ids));
-    return true;
-}
-
 void EmailClient::deleteSelectedMessages()
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox( QMailFolder::OutboxFolder );
-    static MessageFolder* const trashFolder = messageStore()->mailbox( QMailFolder::TrashFolder );
-
     // Do not delete messages from the outbox folder while we're sending
-    if (locationSet.contains(outboxFolder->id()) && isSending())
+    if (locationSet.contains(QMailFolderId(QMailFolder::OutboxFolder)) && isSending())
         return;
 
     QMailMessageIdList deleteList = messageListView()->selected();
@@ -1517,7 +1505,7 @@ void EmailClient::deleteSelectedMessages()
     if (deleteCount == 0)
         return;
 
-    const bool deleting((locationSet.count() == 1) && (*locationSet.begin() == trashFolder->id()));
+    const bool deleting((locationSet.count() == 1) && (*locationSet.begin() == QMailFolderId(QMailFolder::TrashFolder)));
 
     // Tell the user we're doing what they asked for
     QString action;
@@ -1542,7 +1530,7 @@ void EmailClient::deleteSelectedMessages()
     if (deleting)
         storageAction->deleteMessages(deleteList);
     else
-        storageAction->moveMessages(deleteList, trashFolder->id());
+        storageAction->moveMessages(deleteList, QMailFolderId(QMailFolder::TrashFolder));
 
     if (markingMode) {
         // After deleting the messages, clear marking mode
@@ -1550,34 +1538,32 @@ void EmailClient::deleteSelectedMessages()
     }
 }
 
-void EmailClient::moveSelectedMessagesTo(MessageFolder* destination)
+void EmailClient::moveSelectedMessagesTo(const QMailFolderId &destination)
 {
     QMailMessageIdList moveList = messageListView()->selected();
     if (moveList.isEmpty())
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(moveList));
-    storageAction->moveMessages(moveList, destination->id());
+    storageAction->moveMessages(moveList, destination);
 
     AcknowledgmentBox::show(tr("Moving"), tr("Moving %n message(s)", "%1: number of messages", moveList.count()));
 }
 
-void EmailClient::copySelectedMessagesTo(MessageFolder* destination)
+void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
 {
     QMailMessageIdList copyList = messageListView()->selected();
     if (copyList.isEmpty())
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(copyList));
-    storageAction->copyMessages(copyList, destination->id());
+    storageAction->copyMessages(copyList, destination);
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
 }
 
-bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(MessageFolder*))
+bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(const QMailFolderId&))
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox( QMailFolder::OutboxFolder );
-
     if (!locationSet.isEmpty()) {
         QSet<QMailAccountId> locationAccountIds;
         foreach (const QMailFolderId &folderId, locationSet) {
@@ -1586,7 +1572,12 @@ bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(MessageFol
                 locationAccountIds.insert(folder.parentAccountId());
         }
 
-        QMailFolderIdList list = messageStore()->standardFolders();
+        QMailFolderIdList list;
+        list << QMailFolderId(QMailFolder::InboxFolder) 
+             << QMailFolderId(QMailFolder::SentFolder) 
+             << QMailFolderId(QMailFolder::DraftsFolder) 
+             << QMailFolderId(QMailFolder::TrashFolder);
+
         if (locationAccountIds.count() == 1) {
             // Add folders for the account
             QMailFolderKey accountFoldersKey(QMailFolderKey::parentAccountId(*locationAccountIds.begin()));
@@ -1599,21 +1590,12 @@ bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(MessageFol
             list.removeAll(folder.id());
         }
 
-        // Also, do not permit messages to be copied/moved to the Outbox manually
-        list.removeAll(outboxFolder->id());
-
         SelectFolderDialog selectFolderDialog(list);
         selectFolderDialog.exec();
 
         if (selectFolderDialog.result() == QDialog::Accepted) {
             // Apply the function to the selected messages, with the selected folder argument
-            MessageFolder *folder = messageStore()->mailbox(selectFolderDialog.selectedFolderId());
-            if (folder) {
-                (this->*function)(folder);
-            } else {
-                MessageFolder accountFolder(selectFolderDialog.selectedFolderId());
-                (this->*function)(&accountFolder);
-            }
+            (this->*function)(selectFolderDialog.selectedFolderId());
             return true;
         }
     }
@@ -1623,10 +1605,8 @@ bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(MessageFol
 
 void EmailClient::moveSelectedMessages()
 {
-    static MessageFolder* const outboxFolder = messageStore()->mailbox( QMailFolder::OutboxFolder );
-
     // Do not move messages from the outbox folder while we're sending
-    if (locationSet.contains(outboxFolder->id()) && isSending())
+    if (locationSet.contains(QMailFolderId(QMailFolder::OutboxFolder)) && isSending())
         return;
 
     if (applyToSelectedFolder(&EmailClient::moveSelectedMessagesTo)) {
@@ -1649,13 +1629,11 @@ void EmailClient::copySelectedMessages()
 
 void EmailClient::restoreSelectedMessages()
 {
-    static const QMailFolderId trashFolderId = messageStore()->mailbox(QMailFolder::TrashFolder)->id();
-
     QMailMessageIdList restoreList;
     foreach (const QMailMessageId &id, messageListView()->selected()) {
         // Only messages currently in the trash folder should be restored
         QMailMessageMetaData message(id);
-        if (message.parentFolderId() == trashFolderId)
+        if (message.parentFolderId() == QMailFolderId(QMailFolder::TrashFolder))
             restoreList.append(id);
     }
 
@@ -1678,11 +1656,10 @@ void EmailClient::selectAll()
 
 void EmailClient::emptyTrashFolder()
 {
-    QMailMessage::MessageType type = QMailMessage::Email;
+    QMailMessageKey typeFilter(QMailMessageKey::messageType(QMailMessage::Email));
+    QMailMessageKey folderFilter(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)));
 
-    static MessageFolder* const trashFolder = messageStore()->mailbox(QMailFolder::TrashFolder);
-
-    QMailMessageIdList trashIds = trashFolder->messages(type);
+    QMailMessageIdList trashIds = QMailStore::instance()->queryMessages(typeFilter & folderFilter);
     if (trashIds.isEmpty())
         return;
 
@@ -2069,13 +2046,11 @@ void EmailClient::closeEvent(QCloseEvent *e)
 bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
 {
     Q_UNUSED(userRequest);
-    static const QMailFolderId outboxFolderId = messageStore()->mailbox(QMailFolder::OutboxFolder)->id();
-    static MessageFolder* const trashFolder = messageStore()->mailbox(QMailFolder::TrashFolder);
 
-    MessageFolder* source(containingFolder(id));
+    QMailFolderId source(containingFolder(id));
     if (isSending()) {
         // Don't delete from Outbox when sending
-        if (source && (source->id() == outboxFolderId))
+        if (source == QMailFolderId(QMailFolder::OutboxFolder))
             return false;
     }
 
@@ -2084,7 +2059,7 @@ bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
     bool deleting(false);
     QString type = mailType(message.messageType());
     if (!deleting) {
-        if (source && (source->id() == trashFolder->id())) {
+        if (source == QMailFolderId(QMailFolder::TrashFolder)) {
             if (!confirmDelete( this, "Delete", type ))
                 return false;
 
@@ -2097,7 +2072,7 @@ bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
         storageAction->deleteMessages(QMailMessageIdList() << id);
     } else {
         AcknowledgmentBox::show(tr("Moving"), tr("Moving to Trash: %1", "%1=Email/Message/MMS").arg(type));
-        storageAction->moveMessages(QMailMessageIdList() << id, trashFolder->id());
+        storageAction->moveMessages(QMailMessageIdList() << id, QMailFolderId(QMailFolder::TrashFolder));
     }
 
     return true;
@@ -2249,20 +2224,18 @@ void EmailClient::transferStatusUpdate(int status)
 
 void EmailClient::clearOutboxFolder()
 {
-    static MessageFolder* const outbox = messageStore()->mailbox(QMailFolder::OutboxFolder);
-    static MessageFolder* const sent = messageStore()->mailbox(QMailFolder::SentFolder);
-    static MessageFolder* const drafts = messageStore()->mailbox(QMailFolder::DraftsFolder);
+    QMailMessageKey outboxFilter(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::OutboxFolder)));
 
-    QMailMessageIdList sentIds(outbox->messages(QMailMessage::Sent, true));
-    QMailMessageIdList unsentIds(outbox->messages(QMailMessage::Sent, false));
+    QMailMessageIdList sentIds(QMailStore::instance()->queryMessages(outboxFilter & QMailMessageKey::status(QMailMessage::Sent, QMailDataComparator::Includes)));
+    QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(outboxFilter & QMailMessageKey::status(QMailMessage::Sent, QMailDataComparator::Excludes)));
 
     // Move any sent messages to the sent folder
     if (!sentIds.isEmpty())
-        storageAction->moveMessages(sentIds, sent->id());
+        storageAction->moveMessages(sentIds, QMailFolderId(QMailFolder::SentFolder));
 
     // Move any messages stuck in the outbox to the drafts folder
     if (!unsentIds.isEmpty())
-        storageAction->moveMessages(unsentIds, drafts->id());
+        storageAction->moveMessages(unsentIds, QMailFolderId(QMailFolder::DraftsFolder));
 }
 
 void EmailClient::contextStatusUpdate()
@@ -2325,8 +2298,6 @@ void EmailClient::messagesUpdated(const QMailMessageIdList& ids)
 
 void EmailClient::messageSelectionChanged()
 {
-    static MessageFolder* const trashFolder = messageStore()->mailbox( QMailFolder::TrashFolder );
-
     if (!moveAction)
         return; // initActions hasn't been called yet
 
@@ -2344,7 +2315,7 @@ void EmailClient::messageSelectionChanged()
             locationSet.insert(message.parentFolderId());
 
         // We can delete only if all selected messages are in the Trash folder
-        if ((locationSet.count() == 1) && (*locationSet.begin() == trashFolder->id())) {
+        if ((locationSet.count() == 1) && (*locationSet.begin() == QMailFolderId(QMailFolder::TrashFolder))) {
             deleteMailAction->setText(tr("Delete message(s)", "", selectionCount));
         } else {
             deleteMailAction->setText(tr("Move to Trash"));
@@ -2359,7 +2330,7 @@ void EmailClient::messageSelectionChanged()
     setActionVisible(deleteMailAction, messagesSelected);
 
     // We cannot move/copy messages in the trash
-    const bool trashMessagesSelected(locationSet.contains(trashFolder->id()));
+    const bool trashMessagesSelected(locationSet.contains(QMailFolderId(QMailFolder::TrashFolder)));
     setActionVisible(moveAction, (messagesSelected && !trashMessagesSelected));
     setActionVisible(copyAction, (messagesSelected && !trashMessagesSelected));
     setActionVisible(restoreAction, (messagesSelected && trashMessagesSelected));
@@ -2387,9 +2358,10 @@ void EmailClient::setActionVisible(QAction* action, bool visible)
         actionVisibility[action] = visible;
 }
 
-MessageFolder* EmailClient::containingFolder(const QMailMessageId& id)
+QMailFolderId EmailClient::containingFolder(const QMailMessageId& id)
 {
-    return messageStore()->owner(id);
+    QMailMessageMetaData metaData(id);
+    return metaData.parentFolderId();
 }
 
 QMailAccountIdList EmailClient::emailAccounts() const

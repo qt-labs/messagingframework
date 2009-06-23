@@ -20,8 +20,6 @@ HEADERS += foldermodel.h \
            emailfoldermodel.h \
            emailfolderview.h \
            messagelistview.h \
-           messagestore.h \
-           messagefolder.h \
            emailclient.h \
            selectfolder.h \
            statusdisplay_p.h \
@@ -37,8 +35,6 @@ SOURCES += main.cpp \
            emailfoldermodel.cpp \
            emailfolderview.cpp \
            messagelistview.cpp \
-           messagestore.cpp \
-           messagefolder.cpp \
            emailclient.cpp \
            selectfolder.cpp \
            statusdisplay.cpp \
