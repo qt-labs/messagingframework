@@ -506,19 +506,17 @@ QStringList QMailAccount::messageSinks() const
 }
 
 /*! 
-    Returns the folder configured for the standard folder role \a folder for this account.
+    Returns the folder configured for the standard folder role \a folder for this account, if there is one.
 
     \sa setStandardFolder()
 */
 QMailFolderId QMailAccount::standardFolder(QMailFolder::StandardFolder folder) const
 {
-    if (folder != QMailFolder::OutboxFolder) {
-        const QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = d->_standardFolders.find(folder);
-        if (it != d->_standardFolders.end())
-            return it.value();
-    }
+    const QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = d->_standardFolders.find(folder);
+    if (it != d->_standardFolders.end())
+        return it.value();
 
-    return QMailFolderId(folder);
+    return QMailFolderId();
 }
 
 /*! 
@@ -531,7 +529,7 @@ void QMailAccount::setStandardFolder(QMailFolder::StandardFolder folder, const Q
     if (folder == QMailFolder::OutboxFolder) {
         qWarning() << "Cannot configure Outbox for account!";
     } else {
-        if (folderId == QMailFolderId(folder)) {
+        if (folderId == QMailFolderId()) {
             // Resetting to default
             d->_standardFolders.remove(folder);
         } else {

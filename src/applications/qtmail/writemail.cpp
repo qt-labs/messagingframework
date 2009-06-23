@@ -256,9 +256,11 @@ bool WriteMail::buildMail(const QMailAccountId& accountId, bool includeSignature
     mail.setStatus(QMailMessage::Outgoing, true);
     mail.setStatus(QMailMessage::ContentAvailable, true);
     mail.setStatus(QMailMessage::PartialContentAvailable, true);
-    mail.setStatus(QMailMessage::Read,true);
-    if(accountId.isValid())
-    {
+    mail.setStatus(QMailMessage::Read, true);
+
+    mail.setParentFolderId(QMailFolder::LocalStorageFolderId);
+
+    if (accountId.isValid()) {
         mail.setParentAccountId(accountId);
         mail.setFrom(QMailAccount(accountId).fromAddress());
     }

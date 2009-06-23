@@ -203,13 +203,15 @@ private:
     QToolButton* m_selectFolderButton;
     QCheckBox* m_includeSubFoldersCheckBox;
 
-    QMailFolderId m_selectedFolderId;
-    QMailAccountId m_selectedAccountId;
+    EmailFolderModel m_model;
+    QMailMessageSet* m_selectedItem;
 };
 
 FolderSelectorWidget::FolderSelectorWidget(QWidget* parent)
 :
-QWidget(parent)
+QWidget(parent),
+m_model(this),
+m_selectedItem(0)
 {
     setupUi();
     reset();
@@ -219,14 +221,12 @@ QMailMessageKey FolderSelectorWidget::searchKey() const
 {
     QMailMessageKey k;
 
-    if(m_selectedFolderId.isValid())
-    {
-        k = QMailMessageKey::parentFolderId(m_selectedFolderId);
-        if(m_includeSubFoldersCheckBox->checkState() == Qt::Checked)
-            k |= QMailMessageKey::parentFolderId(QMailFolderKey::parentFolderId(m_selectedFolderId));
+    if (m_selectedItem) {
+        k = m_selectedItem->messageKey();
+        if (m_includeSubFoldersCheckBox->checkState() == Qt::Checked) {
+            k |= m_selectedItem->descendantsMessageKey();
+        }
     }
-    else if(m_selectedAccountId.isValid())
-        k = QMailMessageKey::parentAccountId(m_selectedAccountId);
 
     return k;
 }
@@ -235,12 +235,14 @@ void FolderSelectorWidget::setupUi()
 {
     QVBoxLayout* vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0,0,0,0);
+
     m_localFolderRadio = new QRadioButton("Search in all local folders:",this);
     connect(m_localFolderRadio,SIGNAL(clicked()),this,SLOT(reset()));
     vlayout->addWidget(m_localFolderRadio);
 
-    QHBoxLayout* layout = new QHBoxLayout(this);
+    QHBoxLayout* layout = new QHBoxLayout;
     layout->setContentsMargins(0,0,0,0);
+
     m_specificFolderRadio = new QRadioButton("Search only in:",this);
     connect(m_specificFolderRadio,SIGNAL(clicked()),this,SLOT(specificFolderRadioClicked()));
     layout->addWidget(m_specificFolderRadio);
@@ -262,64 +264,46 @@ void FolderSelectorWidget::setupUi()
 
 void FolderSelectorWidget::selectFolder()
 {
-    SelectFolderDialog sfd(QMailFolderIdList(),this);
-    if(sfd.exec() == QDialog::Accepted)
-    {
-        if(sfd.selectedFolderId().isValid())
-        {
-            m_selectedAccountId = QMailAccountId();
-            m_selectedFolderId = sfd.selectedFolderId();
-        }
-        else if(sfd.selectedAccountId().isValid())
-        {
-            m_selectedFolderId = QMailFolderId();
-            m_selectedAccountId = sfd.selectedAccountId();
-        }
+    SelectFolderDialog sfd(&m_model, this);
+    if (sfd.exec() == QDialog::Accepted) {
+        m_selectedItem = sfd.selectedItem();
 
         m_specificFolderRadio->setChecked(true);
-    }
-    else if(!haveSelection())
+    } else if (!haveSelection()) {
         reset();
+    }
 
     updateDisplay();
 }
 
 void FolderSelectorWidget::reset()
 {
+    m_selectedItem = 0;
     m_localFolderRadio->setChecked(true);
-    m_selectedFolderId = QMailFolderId();
-    m_selectedAccountId = QMailAccountId();
     m_includeSubFoldersCheckBox->setChecked(false);
     updateDisplay();
 }
 
 void FolderSelectorWidget::specificFolderRadioClicked()
 {
-    if(!haveSelection())
+    if (!haveSelection())
         selectFolder();
 }
 
 void FolderSelectorWidget::updateDisplay()
 {
-    if(m_selectedFolderId.isValid())
-    {
-        QMailFolder folder(m_selectedFolderId);
-        m_specificFolderDisplay->setText(folder.path());
-    }
-    else if(m_selectedAccountId.isValid())
-    {
-        QMailAccount account(m_selectedAccountId);
-        m_specificFolderDisplay->setText(account.name());
-    }
-    else
+    if (m_selectedItem) {
+        m_specificFolderDisplay->setText(m_selectedItem->displayName());
+    } else {
         m_specificFolderDisplay->clear();
+    }
 
     m_includeSubFoldersCheckBox->setEnabled(!m_specificFolderDisplay->text().isEmpty());
 }
 
 bool FolderSelectorWidget::haveSelection() const
 {
-    return m_selectedFolderId.isValid() || m_selectedAccountId.isValid();
+    return m_selectedItem;
 }
 
 class SearchTermWidget : public QWidget
@@ -761,7 +745,7 @@ QWidget(parent)
     m_termsLayout->setContentsMargins(0,0,0,0);
     layout->addWidget(m_termsListWidget);
 
-    QHBoxLayout* controlButtonsLayout = new QHBoxLayout(this);
+    QHBoxLayout* controlButtonsLayout = new QHBoxLayout;
 
     m_moreButton = new QPushButton("More",this);
     m_moreButton->setIcon(QIcon(":icon/tick"));
@@ -905,8 +889,8 @@ void SearchView::setupUi()
     setCentralWidget(centralWidget);
 
     QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
-    QVBoxLayout* searchSettingsLayout = new QVBoxLayout(this);
-    QVBoxLayout* controlButtonsLayout = new QVBoxLayout(this);
+    QVBoxLayout* searchSettingsLayout = new QVBoxLayout;
+    QVBoxLayout* controlButtonsLayout = new QVBoxLayout;
 
     m_searchButton = new SearchButton(m_searchAction,this);
     connect(m_searchButton,SIGNAL(startSearch()),this,SLOT(startSearch()));

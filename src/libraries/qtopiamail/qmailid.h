@@ -42,12 +42,13 @@
 #ifndef QMAILID_H
 #define QMAILID_H
 
+#include "qmailglobal.h"
+#include "qmailipc.h"
+#include "qmailfolderfwd.h"
 #include <QDebug>
 #include <QString>
 #include <QVariant>
-#include "qmailglobal.h"
 #include <QSharedData>
-#include "qmailipc.h"
 
 class MailIdPrivate;
 
@@ -112,6 +113,7 @@ class QTOPIAMAIL_EXPORT QMailFolderId : private MailId
 {
 public:
     QMailFolderId();
+    QMailFolderId(QMailFolderFwd::PredefinedFolderId id);
     explicit QMailFolderId(quint64 value);
     QMailFolderId(const QMailFolderId& other);
     virtual ~QMailFolderId();

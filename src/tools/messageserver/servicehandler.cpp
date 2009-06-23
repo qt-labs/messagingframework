@@ -922,14 +922,12 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
     } else {
         // We need to see if any sources are required to prepare these messages
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
-
-        QMailAccount account(accountId);
-        QMailMessageKey folderKey(QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
         QMailMessageKey unresolvedKey(QMailMessageKey::status(QMailMessage::HasUnresolvedReferences, QMailDataComparator::Includes));
 
         QSet<QMailMessageService*> sources;
 
-        QMailMessageIdList unresolvedMessages(QMailStore::instance()->queryMessages(accountKey & folderKey & unresolvedKey));
+        QMailMessageIdList unresolvedMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey & unresolvedKey));
         if (!unresolvedMessages.isEmpty()) {
             // Find the accounts that own these messages
             QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists(messageResolvers(unresolvedMessages));
@@ -980,11 +978,9 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
     if (QMailMessageSink *sink = accountSink(accountId)) {
         // Transmit any messages in the Outbox for this account
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
 
-        QMailAccount account(accountId);
-        QMailMessageKey folderKey(QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
-
-        if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & folderKey))) {
+        if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey))) {
             qMailLog(Messaging) << "Unable to service request to add messages to sink for account:" << accountId;
             return false;
         } else {
@@ -1462,18 +1458,12 @@ void ServiceHandler::moveMessages(quint64 action, const QMailMessageIdList& mess
 {
     QSet<QMailMessageService*> sources;
 
-    if (destination == QMailFolderId(QMailFolder::TrashFolder)) {
-        // Special case - move to local Trash folder.  
-        // Note - if the account has configured an external trash folder, the above test is not true
-        enqueueRequest(action, serialize(messageIds, destination), sources, &ServiceHandler::dispatchMoveToTrash, &ServiceHandler::storageActionCompleted);
+    QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
+    sources = sourceServiceSet(messageLists.keys().toSet());
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
     } else {
-        QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
-        sources = sourceServiceSet(messageLists.keys().toSet());
-        if (sources.isEmpty()) {
-            reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
-        } else {
-            enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchMoveMessages, &ServiceHandler::storageActionCompleted);
-        }
+        enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchMoveMessages, &ServiceHandler::storageActionCompleted);
     }
 }
 
@@ -1498,35 +1488,6 @@ bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data
     }
 
     return true;
-}
-
-bool ServiceHandler::dispatchMoveToTrash(quint64 action, const QByteArray &data)
-{
-    QMailMessageIdList messageIds;
-    QMailFolderId destination;
-
-    deserialize(data, messageIds, destination);
-    if (messageIds.isEmpty())
-        return false;
-
-    emit progressChanged(action, 0, messageIds.count());
-
-    // Move these messages logically, but don't tell the source to physically move them
-    QMailMessageMetaData metaData;
-    metaData.setParentFolderId(destination);
-
-    QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
-    if (QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId, metaData)) {
-        // Mark these messages as Trash messages
-        if (QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::Trash, true)) {
-            emit progressChanged(action, messageIds.count(), messageIds.count());
-            emit activityChanged(action, QMailServiceAction::Successful);
-            return true;
-        }
-    }
-
-    reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to move messages to Trash folder"));
-    return false;
 }
 
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)

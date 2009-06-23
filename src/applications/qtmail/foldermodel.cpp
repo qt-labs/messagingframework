@@ -105,34 +105,10 @@ void FolderModel::removed(QMailMessageSet *item)
     updatedItems.removeAll(item);
 }
 
-static QMap<QMailFolderId, QIcon> iconMapInit()
-{
-    QMap<QMailFolderId, QIcon> map;
-
-    map[QMailFolderId(QMailFolder::InboxFolder)] = QIcon(":icon/inbox");
-    map[QMailFolderId(QMailFolder::SentFolder)] = QIcon(":icon/sent");
-    map[QMailFolderId(QMailFolder::DraftsFolder)] = QIcon(":icon/drafts");
-    map[QMailFolderId(QMailFolder::TrashFolder)] = QIcon(":icon/trash");
-    map[QMailFolderId(QMailFolder::OutboxFolder)] = QIcon(":icon/outbox");
-
-    return map;
-}
-
-static QIcon folderIcon(const QMailFolderId &id)
-{
-    const QMap<QMailFolderId, QIcon> iconMap(iconMapInit());
-
-    QMap<QMailFolderId, QIcon>::const_iterator it = iconMap.find(id);
-    if (it != iconMap.end())
-        return it.value();
-
-    return QIcon(":icon/folder");
-}
-
 QIcon FolderModel::itemIcon(QMailMessageSet *item) const
 {
-    if (QMailFolderMessageSet *folderItem = qobject_cast<QMailFolderMessageSet*>(item)) {
-        return folderIcon(folderItem->folderId());
+    if (qobject_cast<QMailFolderMessageSet*>(item)) {
+        return QIcon(":icon/folder");
     } else if (qobject_cast<QMailAccountMessageSet*>(item)) {
         return QIcon(":icon/account");
     } else if (qobject_cast<QMailFilterMessageSet*>(item)) {
@@ -173,7 +149,7 @@ FolderModel::StatusText FolderModel::itemStatusText(QMailMessageSet *item) const
     return qMakePair(QString(), QString());
 }
 
-static QString formatCounts(int total, int unread, bool excessTotal = false, bool excessUnread = false)
+QString FolderModel::formatCounts(int total, int unread, bool excessTotal, bool excessUnread)
 {
     QString countStr;
 
@@ -211,7 +187,7 @@ QString FolderModel::describeFolderCount(int total, int subTotal, SubTotalType t
     return desc;
 }
 
-static QMailMessageKey unreadKey()
+QMailMessageKey FolderModel::unreadKey()
 {
     // Both 'read' and 'read-elsewhere' mean !unread
     return (QMailMessageKey::status(QMailMessage::Read, Excludes) &
@@ -220,10 +196,6 @@ static QMailMessageKey unreadKey()
 
 FolderModel::StatusText FolderModel::folderStatusText(QMailFolderMessageSet *item) const
 {
-    static const QMailFolderId inboxFolderId(QMailFolder::InboxFolder);
-    static const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
-    static const QMailFolderId draftsFolderId(QMailFolder::DraftsFolder);
-
     QString status, detail;
 
     if (QMailStore* store = QMailStore::instance()) {
@@ -235,36 +207,15 @@ FolderModel::StatusText FolderModel::folderStatusText(QMailFolderMessageSet *ite
         int total = store->countMessages(itemKey);
         int unreadTotal = store->countMessages(itemKey & unreadKey());
 
-        // Find the subtotal for this folder
-        int subTotal = 0;
-        SubTotalType type = Unread;
+        // Determine whether there are messages lower in the hierarchy
+        QMailMessageKey inclusiveKey = item->descendantsMessageKey();
+        inclusiveTotal = total + store->countMessages(inclusiveKey);
 
-        QMailFolderId folderId(item->folderId());
-        if ((folderId == inboxFolderId) || (folderId == trashFolderId)) {
-            // For Inbox and Trash, report the 'new' count, or the 'unread' count
-            subTotal = store->countMessages(itemKey & QMailMessageKey::status(QMailMessage::New, Includes));
-            type = New;
-        } else if (folderId == draftsFolderId) {
-            // For Drafts, report the 'unsent' count, but not the 'unread' count
-            subTotal = store->countMessages(itemKey & QMailMessageKey::status(QMailMessage::Sent, Excludes));
-            type = Unsent;
-            unreadTotal = 0;
-        } else {
-            // Determine whether there are messages lower in the hierarchy
-            QMailMessageKey inclusiveKey = item->descendantsMessageKey();
-            inclusiveTotal = total + store->countMessages(inclusiveKey);
-
-            if (inclusiveTotal > total) {
-                inclusiveUnreadTotal = unreadTotal + store->countMessages(inclusiveKey & unreadKey());
-            }
+        if (inclusiveTotal > total) {
+            inclusiveUnreadTotal = unreadTotal + store->countMessages(inclusiveKey & unreadKey());
         }
 
-        if (subTotal) {
-            detail = describeFolderCount(total, subTotal, type);
-        } else {
-            detail = describeFolderCount(total, unreadTotal, Unread);
-        }
-
+        detail = describeFolderCount(total, unreadTotal, Unread);
         status = formatCounts(total, unreadTotal, (inclusiveTotal > total), (inclusiveUnreadTotal > unreadTotal));
     }
 

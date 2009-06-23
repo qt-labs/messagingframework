@@ -488,23 +488,25 @@ void ReadMail::deleteItem()
 
 void ReadMail::updateButtons()
 {
-    static const QMailFolder trashFolder(QMailFolder::TrashFolder);
-    static const QMailFolder draftsFolder(QMailFolder::DraftsFolder);
-
     if (!mail.id().isValid())
         return;
 
     bool incoming(mail.status() & QMailMessage::Incoming);
-    bool sent(mail.status() & QMailMessage::Sent);
-    bool outgoing(mail.status() & QMailMessage::Outgoing);
     bool downloaded(mail.status() & QMailMessage::ContentAvailable);
+
+    bool outgoing(mail.status() & QMailMessage::Outgoing);
+    bool draft(mail.status() & QMailMessage::Draft);
+    bool sent(mail.status() & QMailMessage::Sent);
+
+    bool trash(mail.status() & QMailMessage::Trash);
     bool removed(mail.status() & QMailMessage::Removed);
     bool system(mail.messageType() == QMailMessage::System);
+
     bool messageSent(sent || sending);
     bool messageReceived(downloaded || receiving);
 
     sendThisMailButton->setVisible( !messageSent && outgoing && mail.hasRecipients() );
-    modifyButton->setVisible( !messageSent && outgoing && (mail.parentFolderId() == draftsFolder.id()) );
+    modifyButton->setVisible( !messageSent && outgoing && draft );
 
     getThisMailButton->setVisible( !messageReceived && !removed && incoming );
 
@@ -525,7 +527,7 @@ void ReadMail::updateButtons()
         forwardAction->setVisible(true);
     }
 
-    deleteButton->setText( mail.parentFolderId() == trashFolder.id() ? tr("Delete") : tr("Move to Trash") );
+    deleteButton->setText(trash ? tr("Delete") : tr("Move to Trash"));
 
     // Show the 'Save Sender' action if we don't have a matching contact
     QMailAddress fromAddress(mail.from());

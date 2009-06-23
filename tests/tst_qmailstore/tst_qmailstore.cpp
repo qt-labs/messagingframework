@@ -114,7 +114,8 @@ void tst_QMailStore::addAccount()
     account1.setFromAddress(QMailAddress("Account 1", "account1@example.org"));
     account1.setStatus(QMailAccount::SynchronizationEnabled, true);
     account1.setStatus(QMailAccount::Synchronized, false);
-    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(QMailFolder::InboxFolder));
+    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(333));
+    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(666));
     account1.setCustomField("question", "What is your dog's name?");
     account1.setCustomField("answer", "Fido");
 
@@ -152,9 +153,9 @@ void tst_QMailStore::addAccount()
     QCOMPARE(account2.name(), account1.name());
     QCOMPARE(account2.fromAddress(), account1.fromAddress());
     QCOMPARE(account2.status(), account1.status());
-    QCOMPARE(account2.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(QMailFolder::SentFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), QMailFolderId(QMailFolder::InboxFolder));
+    QCOMPARE(account2.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
+    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(333));
+    QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), QMailFolderId(666));
     QCOMPARE(account2.customFields(), account1.customFields());
     QCOMPARE(account2.customField("answer"), QString("Fido"));
 
@@ -494,7 +495,7 @@ void tst_QMailStore::updateAccount()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     QCOMPARE(account1.standardFolders().count(), 2);
-    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
+    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
     QCOMPARE(account1.standardFolder(QMailFolder::SentFolder), folder.id());
     QCOMPARE(account1.standardFolder(QMailFolder::TrashFolder), folder.id());
 
@@ -503,7 +504,7 @@ void tst_QMailStore::updateAccount()
     account1.setFromAddress(QMailAddress("Not Account 1", "account2@somewhere.test"));
     account1.setStatus(QMailAccount::SynchronizationEnabled, false);
     account1.setStatus(QMailAccount::Synchronized, true);
-    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(QMailFolder::SentFolder));
+    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId());
     account1.setCustomField("answer", "Fido");
     account1.setCustomField("permanent", "true");
     account1.removeCustomField("temporary");
@@ -536,8 +537,8 @@ void tst_QMailStore::updateAccount()
     QCOMPARE(account2.status(), account1.status());
     QCOMPARE(account2.standardFolders(), account1.standardFolders());
     QCOMPARE(account2.standardFolders().count(), 1);
-    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(QMailFolder::SentFolder));
+    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
+    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId());
     QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), folder.id());
     QCOMPARE(account2.customFields(), account1.customFields());
     QCOMPARE(account2.customField("answer"), QString("Fido"));

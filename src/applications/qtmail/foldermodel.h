@@ -91,7 +91,10 @@ protected:
 
     enum SubTotalType { Unread, New, Unsent };
 
+    static QMailMessageKey unreadKey();
+
     static QString describeFolderCount(int total, int subTotal, SubTotalType type = Unread);
+    static QString formatCounts(int total, int unread, bool excessTotal = false, bool excessUnread = false);
 
     QMap<QMailMessageSet*, StatusText> statusMap;
 

@@ -39,6 +39,7 @@ HEADERS += bind_p.h \
            qmailcontentmanager.h \
            qmaildatacomparator.h \
            qmailfolder.h \
+           qmailfolderfwd.h \
            qmailfolderkey.h \
            qmailfolderkey_p.h \
            qmailfoldersortkey.h \

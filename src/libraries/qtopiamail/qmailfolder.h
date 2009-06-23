@@ -42,24 +42,25 @@
 #ifndef QMAILFOLDER_H
 #define QMAILFOLDER_H
 
+#include "qmailglobal.h"
 #include "qmailid.h"
+#include "qmailfolderfwd.h"
 #include <QString>
 #include <QList>
 #include <QSharedData>
-#include "qmailglobal.h"
 
 class QMailFolderPrivate;
 
-class QTOPIAMAIL_EXPORT QMailFolder
+class QTOPIAMAIL_EXPORT QMailFolder : public QMailFolderFwd
 {
 public:
-    enum StandardFolder
-    {
+    enum StandardFolder {
         InboxFolder = 1,
-        OutboxFolder = 2,
-        DraftsFolder = 3,
-        SentFolder = 4,
-        TrashFolder = 5
+        OutboxFolder,
+        DraftsFolder,
+        SentFolder,
+        TrashFolder,
+        JunkFolder
     };
 
     static const quint64 &SynchronizationEnabled;
@@ -69,7 +70,6 @@ public:
     QMailFolder();
 
     QMailFolder(const QString& name, const QMailFolderId& parentFolderId = QMailFolderId(), const QMailAccountId& parentAccountId = QMailAccountId());
-    explicit QMailFolder(const StandardFolder& sf);
     explicit QMailFolder(const QMailFolderId& id);
     QMailFolder(const QMailFolder& other);
 

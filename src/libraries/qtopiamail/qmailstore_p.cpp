@@ -1779,9 +1779,9 @@ QPair<QString, qint64> tableInfo(const QString &name, qint64 version)
     return qMakePair(name, version);
 }
 
-QPair<quint64, QString> folderInfo(QMailFolder::StandardFolder id, const QString &name)
+QPair<quint64, QString> folderInfo(quint64 id, const QString &name)
 {
-    return qMakePair(static_cast<quint64>(id), name);
+    return qMakePair(id, name);
 }
 
 QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
@@ -2085,7 +2085,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
-                                            << tableInfo("mailfolders", 103)
+                                            << tableInfo("mailfolders", 104)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
                                             << tableInfo("mailmessages", 105)
@@ -2100,11 +2100,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)
                                             << tableInfo("obsoletefiles", 100)) ||
-            !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::InboxFolder, tr("Inbox"))
-                                              << folderInfo(QMailFolder::OutboxFolder, tr("Outbox"))
-                                              << folderInfo(QMailFolder::DraftsFolder, tr("Drafts"))
-                                              << folderInfo(QMailFolder::SentFolder, tr("Sent"))
-                                              << folderInfo(QMailFolder::TrashFolder, tr("Trash")))) {
+            !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage")))) {
             return false;
         }
 
@@ -6780,7 +6776,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 {
     QString elements("id,mailfile,parentaccountid,parentfolderId");
     if (option == QMailStore::CreateRemovalRecord)
-        elements += ",serveruid,previousparentfolderid";
+        elements += ",serveruid";
 
     QVariantList removalAccountIds;
     QVariantList removalServerUids;
@@ -6814,11 +6810,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 // Extract the info needed to create removal records
                 removalAccountIds.append(parentAccountId.toULongLong());
                 removalServerUids.append(extractValue<QString>(query.value(4)));
-                if (folderId == QMailFolderId(QMailFolder::TrashFolder)) {
-                    removalFolderIds.append(extractValue<quint64>(query.value(5)));
-                } else {
-                    removalFolderIds.append(folderId.toULongLong());
-                }
+                removalFolderIds.append(folderId.toULongLong());
             }
         }
     }

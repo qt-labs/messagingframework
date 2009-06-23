@@ -40,55 +40,67 @@
 ****************************************************************************/
 
 #include "selectfolder.h"
-#include <QListWidget>
-#include <QLayout>
-#include <qmailfolder.h>
 #include "emailfolderview.h"
-#include <qmailmessageset.h>
 #include "folderdelegate.h"
 #include "emailfoldermodel.h"
+#include <qmailfolder.h>
+#include <qmailmessageset.h>
+#include <QLayout>
+#include <QListWidget>
 #include <QPushButton>
 
-SelectFolderDialog::SelectFolderDialog(const QMailFolderIdList &list, QWidget *parent)
+SelectFolderDialog::SelectFolderDialog(FolderModel *model, QWidget *parent)
     : QDialog( parent )
 {
     setWindowTitle( tr( "Select folder" ) );
 
-    m_folderList = new EmailFolderView(this);
-    m_model = new EmailFolderModel(list,this);
-
-    m_folderList->setModel(m_model);
     FolderDelegate* del = new FolderDelegate(this);
     del->setShowStatus(false);
-    m_folderList->setItemDelegate(del);
-    m_folderList->expandAll();
+
+    EmailFolderView *emailView = new EmailFolderView(this);
+    if (EmailFolderModel *emailModel = qobject_cast<EmailFolderModel*>(model)) {
+        emailView->setModel(emailModel);
+    } else {
+        qWarning() << "model must must be a non-abstract subclass of FolderModel";
+    }
+
+    m_folderView = emailView;
+    m_folderView->setItemDelegate(del);
+    m_folderView->expandAll();
+
+    connect(m_folderView, SIGNAL(selected(QMailMessageSet*)), this, SLOT(selected(QMailMessageSet*)));
 
     QGridLayout *top = new QGridLayout( this );
-    top->addWidget(m_folderList);
+    top->addWidget(m_folderView);
 
-    QHBoxLayout* buttonsLayout = new QHBoxLayout(this);
+    QHBoxLayout* buttonsLayout = new QHBoxLayout;
 
     buttonsLayout->addStretch();
 
-    QPushButton* okButton = new QPushButton("Ok",this);
-    buttonsLayout->addWidget(okButton);
-    connect(okButton,SIGNAL(clicked(bool)),this,SLOT(accept()));
+    m_okButton = new QPushButton("Ok",this);
+    buttonsLayout->addWidget(m_okButton);
+    connect(m_okButton,SIGNAL(clicked(bool)),this,SLOT(accept()));
 
     QPushButton* cancelButton = new QPushButton("Cancel",this);
     buttonsLayout->addWidget(cancelButton);
     connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(reject()));
 
-
     top->addLayout(buttonsLayout,1,0);
-
 }
 
-QMailFolderId SelectFolderDialog::selectedFolderId() const
+void SelectFolderDialog::setInvalidSelections(const QList<QMailMessageSet*> &invalidSelections)
 {
-    return m_folderList->currentFolderId();
+    m_invalidSelections = invalidSelections;
+    m_okButton->setEnabled(!m_invalidSelections.contains(m_folderView->currentItem()));
 }
 
-QMailAccountId SelectFolderDialog::selectedAccountId() const
+void SelectFolderDialog::selected(QMailMessageSet *item)
 {
-    return m_folderList->currentAccountId();
+    m_okButton->setEnabled(!m_invalidSelections.contains(item));
 }
+
+QMailMessageSet* SelectFolderDialog::selectedItem() const
+{
+    return m_folderView->currentItem();
+}
+

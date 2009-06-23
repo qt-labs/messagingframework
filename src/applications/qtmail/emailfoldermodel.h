@@ -45,6 +45,24 @@
 #include "foldermodel.h"
 #include <qmailfolder.h>
 
+// A message set that returns only the messages matching a specific status field
+
+class EmailStandardFolderMessageSet : public QMailFilterMessageSet
+{
+    Q_OBJECT
+
+public:
+    EmailStandardFolderMessageSet(QMailMessageSetContainer *container, QMailFolder::StandardFolder folderType, const QString &name);
+
+    virtual QMailFolder::StandardFolder standardFolderType() const;
+
+    static QMailMessageKey contentKey(QMailFolder::StandardFolder folderType);
+
+protected:
+    QMailFolder::StandardFolder _type;
+};
+
+
 // A message set that returns only the email messages within a folder:
 
 class EmailFolderMessageSet : public QMailFolderMessageSet
@@ -133,22 +151,37 @@ public:
     };
 
     EmailFolderModel(QObject *parent = 0);
-    EmailFolderModel(const QMailFolderIdList& specificSet, QObject* parent = 0);
-
     ~EmailFolderModel();
+
+    virtual void init();
 
     virtual QVariant data(QMailMessageSet *item, int role, int column) const;
     virtual QVariant headerData(int section, Qt::Orientation, int role) const;
 
 protected:
-    virtual void init(const QMailFolderIdList& specificSet = QMailFolderIdList());
-
+    virtual QIcon itemIcon(QMailMessageSet *item) const;
     virtual QString itemStatusDetail(QMailMessageSet *item) const;
+    virtual FolderModel::StatusText itemStatusText(QMailMessageSet *item) const;
+
+    virtual QIcon standardFolderIcon(EmailStandardFolderMessageSet *item) const;
+    virtual FolderModel::StatusText standardFolderStatusText(EmailStandardFolderMessageSet *item) const;
 
     virtual bool itemSynchronizationEnabled(QMailMessageSet *item) const;
     virtual QMailAccountId itemContextualAccountId(QMailMessageSet *item) const;
 };
 
+class AccountFolderModel : public EmailFolderModel
+{
+    Q_OBJECT
+
+public:
+    AccountFolderModel(const QMailAccountId &id, QObject *parent = 0);
+
+    virtual void init();
+
+protected:
+    QMailAccountId accountId;
+};
 
 #endif
 

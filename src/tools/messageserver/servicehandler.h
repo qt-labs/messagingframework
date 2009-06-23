@@ -193,7 +193,6 @@ private:
     bool dispatchCopyMessages(quint64 action, const QByteArray &data);
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
     bool dispatchMoveMessages(quint64 action, const QByteArray &data);
-    bool dispatchMoveToTrash(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 

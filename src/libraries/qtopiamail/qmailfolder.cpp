@@ -212,15 +212,6 @@ QMailFolder::QMailFolder()
 }
 
 /*!
-  Constructor that loads a standard QMailFolder specified by \a sf from the message store.
-*/
-
-QMailFolder::QMailFolder(const StandardFolder& sf)
-{
-    *this = QMailStore::instance()->folder(QMailFolderId(static_cast<quint64>(sf)));
-}
-
-/*!
   Constructor that creates a QMailFolder by loading the data from the message store as
   specified by the QMailFolderId \a id. If the folder does not exist in the message store, 
   then this constructor will create an empty and invalid QMailFolder.

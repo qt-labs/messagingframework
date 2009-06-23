@@ -62,11 +62,12 @@ void EmailFolderView::setModel(EmailFolderModel *model)
 
     if (!mModel->isEmpty()) {
         setCurrentIndex(mModel->index(0, 0, QModelIndex()));
-    }
 
-    // Expand the inbox to show accounts
-    QModelIndex inboxIndex(mModel->indexFromFolderId(QMailFolderId(QMailFolder::InboxFolder)));
-    expand(inboxIndex);
+        // Expand the inbox to show accounts
+        //QModelIndex inboxIndex(mModel->indexFromFolderId(QMailFolderId(QMailFolder::InboxFolder)));
+        QModelIndex inboxIndex(mModel->index(0, 0, QModelIndex()));
+        expand(inboxIndex);
+    }
 }
 
 void EmailFolderView::setModel(QAbstractItemModel *)

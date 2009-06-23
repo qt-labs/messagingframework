@@ -392,13 +392,6 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid, metaData)) {
         qWarning() << "Unable to update message metadata for move to folder:" << destinationId;
     } else {
-        if (destinationId != QMailFolderId(QMailFolder::TrashFolder)) {
-            // If they were in Trash folder before, they are trash no longer
-            if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::Trash, false)) {
-                qWarning() << "Unable to mark messages as not trash!";
-            }
-        }
-
         emit messagesMoved(messageIds);
     }
 

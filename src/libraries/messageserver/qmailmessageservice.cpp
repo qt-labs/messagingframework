@@ -920,13 +920,6 @@ void QMailMessageSource::moveMessages()
     if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId, metaData)) {
         qMailLog(Messaging) << "Unable to move messages to folder:" << d->_destinationId;
     } else {
-        if (d->_destinationId != QMailFolderId(QMailFolder::TrashFolder)) {
-            // If they were in Trash folder before, they are trash no longer
-            if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::Trash, false)) {
-                qMailLog(Messaging) << "Unable to mark messages as not Trash!";
-            }
-        }
-
         emit d->_service->progressChanged(total, total);
         emit messagesMoved(d->_ids);
         emit d->_service->activityChanged(QMailServiceAction::Successful);

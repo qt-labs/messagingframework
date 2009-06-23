@@ -1241,8 +1241,8 @@ QMailMessageKey ImapClient::messagesKey(const QMailFolderId &folderId) const
 QMailMessageKey ImapClient::trashKey(const QMailFolderId &folderId) const
 {
     return (QMailMessageKey::parentAccountId(_config.id()) &
-            QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)) &
-            QMailMessageKey::previousParentFolderId(folderId));
+            QMailMessageKey::parentFolderId(folderId) &
+            QMailMessageKey::status(QMailMessage::Trash));
 }
 
 QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
@@ -1259,11 +1259,8 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 {
     // Find the local mailstore count for this folder
     QMailMessageKey folderContent(QMailMessageKey::parentFolderId(folder->id()));
-    QMailMessageKey previousFolderContent(QMailMessageKey::previousParentFolderId(folder->id()));
-    QMailMessageKey trashContent(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)));
 
-    uint count = QMailStore::instance()->countMessages(folderContent | (previousFolderContent & trashContent));
-
+    uint count = QMailStore::instance()->countMessages(folderContent);
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 

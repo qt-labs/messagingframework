@@ -38,38 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef SELECTFOLDER_H
-#define SELECTFOLDER_H
 
-#include <QDialog>
-#include <QList>
-#include <qmailid.h>
-#include <qmailmessageset.h>
+#ifndef QMAILFOLDERFWD_H
+#define QMAILFOLDERFWD_H
 
+#include "qmailglobal.h"
 
-class QListWidget;
-class QPushButton;
-class FolderModel;
-class FolderView;
-
-class SelectFolderDialog : public QDialog
+class QTOPIAMAIL_EXPORT QMailFolderFwd
 {
-    Q_OBJECT
-
 public:
-    SelectFolderDialog(FolderModel *model, QWidget *parent = 0);
-
-    void setInvalidSelections(const QList<QMailMessageSet*> &invalid);
-
-    QMailMessageSet* selectedItem() const;
-
-protected slots:
-    void selected(QMailMessageSet *item);
-
-private:
-    FolderView* m_folderView;
-    QPushButton* m_okButton;
-    QList<QMailMessageSet*> m_invalidSelections;
+    enum PredefinedFolderId { LocalStorageFolderId = 1 };
 };
 
 #endif
+

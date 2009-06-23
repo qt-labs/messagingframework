@@ -918,7 +918,8 @@ void PopClient::createMail()
 
     mail.setMessageType(QMailMessage::Email);
     mail.setParentAccountId(config.id());
-    mail.setParentFolderId(QMailFolderId(QMailFolder::InboxFolder));
+
+    mail.setParentFolderId(QMailFolder::LocalStorageFolderId);
 
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
     mail.setStatus(QMailMessage::ContentAvailable, isComplete);

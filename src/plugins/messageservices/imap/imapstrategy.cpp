@@ -440,15 +440,11 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     if (ids.count() == 0)
         return;
 
-    const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
-
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         // TODO - order messages within each folder by size ascending, or most recent first?
-        QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-        bool ok;
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+        _selectionMap[metaData.parentFolderId()].insert(serverUid, SectionProperties());
     }
 
     _folderItr = _selectionMap.begin();
@@ -680,9 +676,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     if (_listSize == 0)
         return;
 
-    const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
-
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
 
     // Break retrieval of message meta data into chunks to reduce peak memory use
     QMailMessageIdList idsBatch;
@@ -696,10 +690,8 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
         }
     
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
-            QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-            bool ok;
-            uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-            _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
+            uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+            _selectionMap[metaData.parentFolderId()].insert(serverUid, SectionProperties());
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
