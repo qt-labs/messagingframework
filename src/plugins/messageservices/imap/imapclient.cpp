@@ -1213,6 +1213,11 @@ void ImapClient::idleOpenRequested(IdleProtocol *protocol)
 {
     if (protocol == _idleProtocol) {
         if (_protocol.inUse()) { // Setting up new idle connection may be in progress
+            const int oneHour = 60*60;
+            if (protocol->idleRetryDelay() == oneHour) {
+                operationFailed(QMailServiceAction::Status::ErrTimeout, tr("No response"));
+                return;
+            }
             qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
                 "busy. Retrying to establish IDLE state in" << protocol->idleRetryDelay()/2 << "seconds.";
             return;
