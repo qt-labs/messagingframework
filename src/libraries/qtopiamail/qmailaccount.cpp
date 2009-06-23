@@ -174,7 +174,7 @@ private:
     to support one more message sources, from which messages are imported into
     the mail store, and one or more message sinks by which messages are transmitted
     to external messaging services.  Although an account can support multiple 
-    source or sinks, this facility is for grouping those that are logically equivalent;
+    sources or sinks, this facility is for grouping those that are logically equivalent;
     for example, using one of multiple connectivity options to retrieve messages from 
     the same external server.
 
@@ -182,8 +182,8 @@ private:
     to dealing with the account's folders and messages, rather than for modifying 
     the account itself.  The QMailAccountConfiguration class allows for the configuration 
     details of the account itself to be modified.  A newly created account must also
-    have a QMailAccountConfiguration defined, in order to be used for transfer of
-    messages to or from Qt Extended.
+    have a QMailAccountConfiguration defined, in order to be used for the transfer of
+    messages.
 
     QMailAccount allows the communications properties of the account to be tested.
     The \l{QMailAccount::MessageSource}{MessageSource} status flag indicates that the
@@ -466,7 +466,7 @@ void QMailAccount::setId(const QMailAccountId& id)
 }
 
 /*!
-    Returns the types of messsages this account deals with.
+    Returns the types of messages this account deals with.
 */
 QMailMessageMetaDataFwd::MessageType QMailAccount::messageType() const
 {
@@ -474,7 +474,7 @@ QMailMessageMetaDataFwd::MessageType QMailAccount::messageType() const
 }
 
 /*!
-    Sets the types of messsages this account deals with to \a type.
+    Sets the types of messages this account deals with to \a type.
 */
 void QMailAccount::setMessageType(QMailMessageMetaDataFwd::MessageType type)
 {
