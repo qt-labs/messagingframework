@@ -1335,7 +1335,7 @@ QString UidCopyState::transmit(ImapContext *c)
 {
     const QPair<QString, QMailFolder> &params(_parameters.last());
 
-    return c->sendCommand(QString("UID COPY %1 %2").arg(params.first).arg(params.second.path()));
+    return c->sendCommand(QString("UID COPY %1 %2").arg(params.first).arg(ImapProtocol::quoteString(params.second.path())));
 }
 
 void UidCopyState::leave(ImapContext *)
