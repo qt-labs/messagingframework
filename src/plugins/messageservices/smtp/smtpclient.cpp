@@ -579,10 +579,9 @@ void SmtpClient::nextAction(const QString &response)
         // The last send operation is complete
         if (responseCode == 250) {
             if (msgId.isValid()) {
-                // Update the message to store the message-ID and mark as sent
-                mailItr->mail.setStatus(Sent, true);
+                // Update the message to store the message-ID
                 if (!QMailStore::instance()->updateMessage(&mailItr->mail)) {
-                    qWarning() << "Unable to update message after transmission:" << msgId;
+                    qWarning() << "Unable to update message with Message-ID:" << msgId;
                 }
 
                 emit messageTransmitted(msgId);

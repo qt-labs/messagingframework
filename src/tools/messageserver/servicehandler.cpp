@@ -1683,8 +1683,16 @@ void ServiceHandler::protocolResponse(const QString &response, const QVariant &d
 
 void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
 {
-    if (quint64 action = sinkAction(qobject_cast<QMailMessageSink*>(sender())))
-        emit messagesTransmitted(action, messageIds);
+    if (QMailMessageSink *sink = qobject_cast<QMailMessageSink*>(sender())) {
+        if (quint64 action = sinkAction(sink)) {
+            // Mark this message as Sent, via the source service
+            if (QMailMessageSource *source = accountSource(sinkService[sink]->accountId())) {
+                source->flagMessages(messageIds, QMailMessage::Sent, QMailMessage::Outbox);
+            }
+
+            emit messagesTransmitted(action, messageIds);
+        }
+    }
 }
 
 void ServiceHandler::availabilityChanged(bool available)
