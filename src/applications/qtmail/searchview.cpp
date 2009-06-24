@@ -213,6 +213,7 @@ QWidget(parent),
 m_model(this),
 m_selectedItem(0)
 {
+    m_model.init();
     setupUi();
     reset();
 }
