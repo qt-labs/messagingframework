@@ -12,10 +12,12 @@ DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qtopiamail \
                ../../../libraries/messageserver \
-               ../../../libraries/qtopiamail/support
+               ../../../libraries/qtopiamail/support \
+               ../../../libraries/qmfutil
 
 LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/messageserver -lmessageserver
+        -L../../../libraries/messageserver -lmessageserver \
+        -L../../../libraries/qmfutil -lqmfutil
 
 HEADERS += imapclient.h \
            imapconfiguration.h \

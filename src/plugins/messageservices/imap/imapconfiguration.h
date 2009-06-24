@@ -74,7 +74,11 @@ public:
     QString preferredTextSubtype() const;
 
     bool pushEnabled() const;
+
     QString baseFolder() const;
+    QString draftsFolder() const;
+    QString sentFolder() const;
+    QString trashFolder() const;
 
     int checkInterval() const;
     bool intervalCheckRoamingEnabled() const;
@@ -100,7 +104,11 @@ public:
     void setPreferredTextSubtype(const QString &str);
 
     void setPushEnabled(bool enabled);
+
     void setBaseFolder(const QString &s);
+    void setDraftsFolder(const QString &s);
+    void setSentFolder(const QString &s);
+    void setTrashFolder(const QString &s);
 
     void setCheckInterval(int i);
     void setIntervalCheckRoamingEnabled(bool enabled);

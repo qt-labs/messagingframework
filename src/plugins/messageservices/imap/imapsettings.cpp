@@ -41,11 +41,13 @@
 
 #include "imapsettings.h"
 #include "imapconfiguration.h"
-#include <QLineEdit>
-#include <QMessageBox>
+#include <emailfoldermodel.h>
 #include <qmailaccount.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailtransport.h>
+#include <selectfolder.h>
+#include <QLineEdit>
+#include <QMessageBox>
 
 namespace {
 
@@ -109,6 +111,9 @@ ImapSettings::ImapSettings()
     lblEncryptionIncoming->hide();
 #endif
 
+    connect(draftsButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(sentButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(trashButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
 }
 
 void ImapSettings::intervalCheckChanged(int enabled)
@@ -117,8 +122,60 @@ void ImapSettings::intervalCheckChanged(int enabled)
     roamingCheckBox->setEnabled(enabled);
 }
 
-void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
+void ImapSettings::selectFolder()
 {
+    AccountFolderModel model(accountId, this);
+    model.init();
+
+    // The account itself is not a selectable folder
+    QList<QMailMessageSet*> invalidItems;
+    invalidItems.append(model.itemFromIndex(model.indexFromAccountId(accountId)));
+
+    SelectFolderDialog selectFolderDialog(&model);
+    selectFolderDialog.setInvalidSelections(invalidItems);
+    selectFolderDialog.exec();
+
+    if (selectFolderDialog.result() == QDialog::Accepted) {
+        QMailFolder folder(model.folderIdFromIndex(model.indexFromItem(selectFolderDialog.selectedItem())));
+
+        if (sender() == static_cast<QObject*>(draftsButton)) {
+            imapDraftsDir->setText(folder.path());
+        } else if (sender() == static_cast<QObject*>(sentButton)) {
+            imapSentDir->setText(folder.path());
+        } else if (sender() == static_cast<QObject*>(trashButton)) {
+            imapTrashDir->setText(folder.path());
+        }
+    }
+}
+
+void ImapSettings::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config)
+{
+    accountId = account.id();
+    bool hasFolders(false);
+    if (accountId.isValid()) {
+        hasFolders = (QMailStore::instance()->countFolders(QMailFolderKey::parentAccountId(accountId)) > 0);
+    }
+
+    // Only allow the base folder to be specified before retrieval occurs
+    baseFolderLabel->setEnabled(!hasFolders);
+    imapBaseDir->setEnabled(!hasFolders);
+
+    // Only allow the other folders to be specified after we have a folder listing
+    draftsFolderLabel->setEnabled(hasFolders);
+    draftsButton->setEnabled(hasFolders);
+    imapDraftsDir->setEnabled(hasFolders);
+    imapDraftsDir->setReadOnly(true);
+
+    sentFolderLabel->setEnabled(hasFolders);
+    sentButton->setEnabled(hasFolders);
+    imapSentDir->setEnabled(hasFolders);
+    imapSentDir->setReadOnly(true);
+
+    trashFolderLabel->setEnabled(hasFolders);
+    trashButton->setEnabled(hasFolders);
+    imapTrashDir->setEnabled(hasFolders);
+    imapTrashDir->setReadOnly(true);
+
     if (!config.services().contains(serviceKey)) {
         // New account
         mailUserInput->setText("");
@@ -151,6 +208,9 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
         intervalPeriod->setValue(qAbs(imapConfig.checkInterval()));
         roamingCheckBox->setChecked(!imapConfig.intervalCheckRoamingEnabled());
         imapBaseDir->setText(imapConfig.baseFolder());
+        imapDraftsDir->setText(imapConfig.draftsFolder());
+        imapSentDir->setText(imapConfig.sentFolder());
+        imapTrashDir->setText(imapConfig.trashFolder());
     }
 }
 
@@ -186,6 +246,9 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));
     imapConfig.setIntervalCheckRoamingEnabled(!roamingCheckBox->isChecked());
     imapConfig.setBaseFolder(imapBaseDir->text());
+    imapConfig.setDraftsFolder(imapDraftsDir->text());
+    imapConfig.setSentFolder(imapSentDir->text());
+    imapConfig.setTrashFolder(imapTrashDir->text());
 
     // Do we have a configuration we can use?
     if (!imapConfig.mailServer().isEmpty() && !imapConfig.mailUserName().isEmpty())
