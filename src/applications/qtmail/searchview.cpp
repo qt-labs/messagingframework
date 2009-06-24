@@ -215,7 +215,6 @@ m_selectedItem(0)
 {
     m_model.init();
     setupUi();
-    m_model.init();
     reset();
 }
 
