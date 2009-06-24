@@ -78,14 +78,12 @@ signals:
     void responseRequested(const QMailMessage&, QMailMessage::ResponseType type);
     void responseRequested(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
     void sendMessageTo(const QMailAddress&, QMailMessage::MessageType);
-    void modifyRequested(const QMailMessage&);
     void removeMessage(const QMailMessageId& id, bool userRequest);
     void viewingMail(const QMailMessageMetaData&);
     void getMailRequested(const QMailMessageMetaData&);
-    void sendMailRequested(QMailMessageMetaData&);
     void readReplyRequested(const QMailMessageMetaData&);
     void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType);
-    void sendMessage(const QMailMessage &message);
+    void sendMessage(QMailMessage &message);
     void retrieveMessagePortion(const QMailMessageMetaData &message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location &partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location &partLocation, uint bytes);
@@ -103,11 +101,9 @@ protected slots:
     void reply();
     void replyAll();
     void forward();
-    void modify();
 
     void setStatus(int);
     void getThisMail();
-    void sendThisMail();
     void retrieveMessagePortion(uint bytes);
     void retrieveMessagePart(const QMailMessagePart &part);
     void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
@@ -153,8 +149,6 @@ private:
     QAction *replyAllAction;
     QAction *forwardAction;
     QAction *getThisMailButton;
-    QAction *sendThisMailButton;
-    QAction *modifyButton;
     QAction *storeButton;
     bool modelUpdatePending;
     QString lastTitle;

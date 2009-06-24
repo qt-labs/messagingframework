@@ -163,7 +163,6 @@ protected slots:
     void discardMail();
 
     void sendAllQueuedMail(bool userRequest = false);
-    void sendSingleMail(QMailMessageMetaData& message);
 
     void getSingleMail(const QMailMessageMetaData& message);
     void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);

@@ -156,10 +156,6 @@ void ReadMail::init()
     connect(getThisMailButton, SIGNAL(triggered()), this, SLOT(getThisMail()) );
     getThisMailButton->setWhatsThis( tr("Retrieve this message from the server.  You can use this option to retrieve individual messages that would normally not be automatically downloaded.") );
 
-    sendThisMailButton = new QAction( QIcon(":icon/sendmail"), tr("Send message"), this );
-    connect(sendThisMailButton, SIGNAL(triggered()), this, SLOT(sendThisMail()));
-    sendThisMailButton->setWhatsThis(  tr("Send this message.  This option will not send any other messages in your outbox.") );
-
     replyButton = new QAction( QIcon(":icon/reply"), tr("Reply"), this );
     connect(replyButton, SIGNAL(triggered()), this, SLOT(reply()));
     replyButton->setWhatsThis( tr("Reply to sender only.  Select Reply all from the menu if you want to reply to all recipients.") );
@@ -169,10 +165,6 @@ void ReadMail::init()
 
     forwardAction = new QAction(tr("Forward"), this );
     connect(forwardAction, SIGNAL(triggered()), this, SLOT(forward()));
-
-    modifyButton = new QAction( QIcon(":icon/edit"), tr("Modify"), this );
-    connect(modifyButton, SIGNAL(triggered()), this, SLOT(modify()));
-    modifyButton->setWhatsThis( tr("Opens this message in the composer so that you can make modifications to it.") );
 
     deleteButton = new QAction( QIcon( ":icon/trash" ), tr( "Delete" ), this );
     connect( deleteButton, SIGNAL(triggered()), this, SLOT(deleteItem()) );
@@ -360,11 +352,9 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
     view->setMessage(mail);
 
     view->widget()->addAction(getThisMailButton);
-    view->widget()->addAction(sendThisMailButton);
     view->widget()->addAction(replyButton);
     view->widget()->addAction(replyAllAction);
     view->widget()->addAction(forwardAction);
-    view->widget()->addAction(modifyButton);
     view->widget()->addAction(deleteButton);
     view->widget()->addAction(storeButton);
     view->widget()->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -385,9 +375,6 @@ void ReadMail::keyPressEvent(QKeyEvent *e)
         case Qt::Key_F:
             forward();
             break;
-        case Qt::Key_E:
-            if ( modifyButton->isEnabled() )
-                modify();
         default:
             QWidget::keyPressEvent( e );
     }
@@ -494,19 +481,11 @@ void ReadMail::updateButtons()
     bool incoming(mail.status() & QMailMessage::Incoming);
     bool downloaded(mail.status() & QMailMessage::ContentAvailable);
 
-    bool outgoing(mail.status() & QMailMessage::Outgoing);
-    bool draft(mail.status() & QMailMessage::Draft);
-    bool sent(mail.status() & QMailMessage::Sent);
-
     bool trash(mail.status() & QMailMessage::Trash);
     bool removed(mail.status() & QMailMessage::Removed);
     bool system(mail.messageType() == QMailMessage::System);
 
-    bool messageSent(sent || sending);
     bool messageReceived(downloaded || receiving);
-
-    sendThisMailButton->setVisible( !messageSent && outgoing && mail.hasRecipients() );
-    modifyButton->setVisible( !messageSent && outgoing && draft );
 
     getThisMailButton->setVisible( !messageReceived && !removed && incoming );
 
@@ -608,22 +587,10 @@ void ReadMail::setStatus(int id)
     updateButtons();
 }
 
-void ReadMail::modify()
-{
-    if (modifyButton->isVisible())
-        emit modifyRequested(mail);
-}
-
 void ReadMail::getThisMail()
 {
     if (getThisMailButton->isVisible())
         emit getMailRequested(mail);
-}
-
-void ReadMail::sendThisMail()
-{
-    if (sendThisMailButton->isVisible())
-        emit sendMailRequested(mail);
 }
 
 void ReadMail::retrieveMessagePortion(uint bytes)

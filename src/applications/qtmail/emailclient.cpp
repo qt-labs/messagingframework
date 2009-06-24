@@ -391,10 +391,8 @@ ReadMail* MessageUiBase::createReadMailWidget()
 
     connect(readMail, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
     connect(readMail, SIGNAL(responseRequested(QMailMessagePart::Location,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessagePart::Location,QMailMessage::ResponseType)) );
-    connect(readMail, SIGNAL(modifyRequested(QMailMessage)),this, SLOT(modify(QMailMessage)));
     connect(readMail, SIGNAL(removeMessage(QMailMessageId, bool)), this, SLOT(removeMessage(QMailMessageId, bool)) );
     connect(readMail, SIGNAL(getMailRequested(QMailMessageMetaData)),this, SLOT(getSingleMail(QMailMessageMetaData)) );
-    connect(readMail, SIGNAL(sendMailRequested(QMailMessageMetaData&)),this, SLOT(sendSingleMail(QMailMessageMetaData&)));
     connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)),this, SLOT(readReplyRequested(QMailMessageMetaData)));
     connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)) );
     connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)) );
@@ -1082,11 +1080,6 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
             storageAction->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
         }
     }
-}
-
-void EmailClient::sendSingleMail(QMailMessageMetaData&)
-{
-    // This function appears to be superfluous
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
