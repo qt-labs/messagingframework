@@ -179,9 +179,6 @@ bool QMailServiceActionPrivate::validAction(quint64 action)
     if (incoming.second == outstanding.second)
         return true;
 
-    if (incoming.second > outstanding.second)
-        qWarning() << "Weird - got response for:" << incoming.second << "while waiting for:" << outstanding.second;
-
     return false;
 }
 
