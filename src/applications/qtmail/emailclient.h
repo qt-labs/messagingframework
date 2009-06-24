@@ -158,8 +158,8 @@ protected slots:
     void cancelOperation();
 
     void noSendAccount(QMailMessage::MessageType);
-    void enqueueMail(const QMailMessage&);
-    void saveAsDraft(const QMailMessage&);
+    void enqueueMail(QMailMessage&);
+    void saveAsDraft(QMailMessage&);
     void discardMail();
 
     void sendAllQueuedMail(bool userRequest = false);

@@ -746,7 +746,7 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             connect(view, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
             connect(view, SIGNAL(messageChanged(QMailMessageId)), this, SLOT(messageChanged(QMailMessageId)));
             connect(view, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
-            connect(view, SIGNAL(sendMessage(QMailMessage)), this, SIGNAL(sendMessage(QMailMessage)));
+            connect(view, SIGNAL(sendMessage(QMailMessage&)), this, SIGNAL(sendMessage(QMailMessage&)));
             connect(view, SIGNAL(retrieveMessage()), getThisMailButton, SLOT(trigger()));
             connect(view, SIGNAL(retrieveMessagePortion(uint)), this, SLOT(retrieveMessagePortion(uint)));
             connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));

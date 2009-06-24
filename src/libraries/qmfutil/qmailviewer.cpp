@@ -184,7 +184,7 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QMailViewerInterface::sendMessage(const QMailMessage &message)
+    \fn QMailViewerInterface::sendMessage(QMailMessage &message)
 
     This signal is emitted by the viewer to send a new message, whose contents are held by \a message.
 */

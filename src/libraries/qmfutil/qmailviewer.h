@@ -125,7 +125,7 @@ signals:
 
     void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType type);
 
-    void sendMessage(const QMailMessage &message);
+    void sendMessage(QMailMessage &message);
 
     void retrieveMessage();
     void retrieveMessagePortion(uint bytes);

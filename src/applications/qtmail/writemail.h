@@ -74,13 +74,13 @@ public:
 
 public slots:
     bool saveChangesOnRequest();
-    bool prepareComposer( QMailMessage::MessageType = QMailMessage::AnyType);
+    bool prepareComposer(QMailMessage::MessageType = QMailMessage::AnyType);
 
 signals:
     void editAccounts();
-    void noSendAccount(const QMailMessage::MessageType);
-    void saveAsDraft(const QMailMessage&);
-    void enqueueMail(const QMailMessage&);
+    void noSendAccount(QMailMessage::MessageType);
+    void saveAsDraft(QMailMessage&);
+    void enqueueMail(QMailMessage&);
     void discardMail();
 
 protected slots:

@@ -372,9 +372,9 @@ WriteMail* MessageUiBase::createWriteMailWidget()
     WriteMail* writeMail = new WriteMail(this);
     writeMail->setObjectName("write-mail");
 
-    connect(writeMail, SIGNAL(enqueueMail(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)));
+    connect(writeMail, SIGNAL(enqueueMail(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)));
     connect(writeMail, SIGNAL(discardMail()), this, SLOT(discardMail()));
-    connect(writeMail, SIGNAL(saveAsDraft(QMailMessage)), this, SLOT(saveAsDraft(QMailMessage)));
+    connect(writeMail, SIGNAL(saveAsDraft(QMailMessage&)), this, SLOT(saveAsDraft(QMailMessage&)));
     connect(writeMail, SIGNAL(noSendAccount(QMailMessage::MessageType)), this, SLOT(noSendAccount(QMailMessage::MessageType)));
     connect(writeMail, SIGNAL(editAccounts()), this, SLOT(settings()));
 
@@ -398,7 +398,7 @@ ReadMail* MessageUiBase::createReadMailWidget()
     connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)),this, SLOT(readReplyRequested(QMailMessageMetaData)));
     connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)) );
     connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)) );
-    connect(readMail, SIGNAL(sendMessage(QMailMessage)), this, SLOT(enqueueMail(QMailMessage)) );
+    connect(readMail, SIGNAL(sendMessage(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)) );
     connect(readMail, SIGNAL(retrieveMessagePortion(QMailMessageMetaData, uint)),this, SLOT(retrieveMessagePortion(QMailMessageMetaData, uint)) );
     connect(readMail, SIGNAL(retrieveMessagePart(QMailMessagePart::Location)),this, SLOT(retrieveMessagePart(QMailMessagePart::Location)) );
     connect(readMail, SIGNAL(retrieveMessagePartPortion(QMailMessagePart::Location, uint)),this, SLOT(retrieveMessagePartPortion(QMailMessagePart::Location, uint)) );
@@ -956,10 +956,8 @@ void EmailClient::cancelOperation()
 }
 
 /*  Enqueue mail must always store the mail in the outbox   */
-void EmailClient::enqueueMail(const QMailMessage& mailIn)
+void EmailClient::enqueueMail(QMailMessage& mail)
 {
-    QMailMessage mail(mailIn);
-
     // Mark this message as ready for transmission
     mail.setStatus(QMailMessage::Draft, false);
     mail.setStatus(QMailMessage::Outbox, true);
@@ -1003,10 +1001,8 @@ void EmailClient::discardMail()
     }
 }
 
-void EmailClient::saveAsDraft(const QMailMessage& mailIn)
+void EmailClient::saveAsDraft(QMailMessage& mail)
 {
-    QMailMessage mail(mailIn);
-
     bool inserted(false);
     bool isNew(!mail.id().isValid());
     if (isNew) {
