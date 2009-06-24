@@ -17,11 +17,23 @@ INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
 
 LIBS += -L../qtopiamail -lqtopiamail
 
-HEADERS += qmailcomposer.h \
-           qmailviewer.h
+HEADERS += emailfoldermodel.h \
+           emailfolderview.h \
+           folderdelegate.h \
+           foldermodel.h \
+           folderview.h \
+           qmailcomposer.h \
+           qmailviewer.h \
+           selectfolder.h
 
-SOURCES += qmailcomposer.cpp \
-           qmailviewer.cpp
+SOURCES += emailfoldermodel.cpp \
+           emailfolderview.cpp \
+           folderdelegate.cpp \
+           foldermodel.cpp \
+           folderview.cpp \
+           qmailcomposer.cpp \
+           qmailviewer.cpp \
+           selectfolder.cpp
 
 TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-de.ts \

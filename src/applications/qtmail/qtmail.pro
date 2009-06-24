@@ -14,34 +14,22 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
 LIBS += -L../../libraries/qtopiamail -lqtopiamail \
         -L../../libraries/qmfutil -lqmfutil
 
-HEADERS += foldermodel.h \
-           folderdelegate.h \
-           folderview.h \
-           emailfoldermodel.h \
-           emailfolderview.h \
+HEADERS += emailclient.h \
            messagelistview.h \
-           emailclient.h \
-           selectfolder.h \
-           statusdisplay_p.h \
            searchview.h \
+           selectcomposerwidget.h \
+           statusdisplay_p.h \
            readmail.h \
-           writemail.h \
-           selectcomposerwidget.h
+           writemail.h
 
-SOURCES += main.cpp \
-           foldermodel.cpp \
-           folderdelegate.cpp \
-           folderview.cpp \
-           emailfoldermodel.cpp \
-           emailfolderview.cpp \
+SOURCES += emailclient.cpp \
+           main.cpp \
            messagelistview.cpp \
-           emailclient.cpp \
-           selectfolder.cpp \
-           statusdisplay.cpp \
            searchview.cpp \
+           selectcomposerwidget.cpp \
+           statusdisplay.cpp \
            readmail.cpp \
-           writemail.cpp \
-           selectcomposerwidget.cpp
+           writemail.cpp
 
 FORMS += searchviewbasephone.ui
 
