@@ -59,14 +59,46 @@ QMailFolder::StandardFolder EmailStandardFolderMessageSet::standardFolderType() 
 
 QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardFolder type)
 {
-    quint64 mask = ((type == QMailFolder::OutboxFolder ? QMailMessage::Outbox :
-                    (type == QMailFolder::DraftsFolder ? QMailMessage::Draft :
-                    (type == QMailFolder::TrashFolder ? QMailMessage::Trash :
-                    (type == QMailFolder::SentFolder ? QMailMessage::Sent :
-                    (type == QMailFolder::JunkFolder ? QMailMessage::Junk : 0))))));
+    quint64 setMask = 0;
+    quint64 unsetMask = 0;
 
-    // Only return messages matching the mask
-    return QMailMessageKey::status(mask, QMailDataComparator::Includes);
+    switch (type) {
+    case QMailFolder::OutboxFolder:
+        setMask = QMailMessage::Outbox;
+        break;
+
+    case QMailFolder::DraftsFolder:
+        setMask = QMailMessage::Draft;
+        unsetMask = QMailMessage::Trash | QMailMessage::Outbox;
+        break;
+
+    case QMailFolder::TrashFolder:
+        setMask = QMailMessage::Trash;
+        break;
+
+    case QMailFolder::SentFolder:
+        setMask = QMailMessage::Sent;
+        unsetMask = QMailMessage::Trash;
+        break;
+
+    case QMailFolder::JunkFolder:
+        setMask = QMailMessage::Junk;
+        unsetMask = QMailMessage::Trash;
+        break;
+
+    default:
+        break;
+    }
+
+    QMailMessageKey key;
+    if (setMask) {
+        key = QMailMessageKey(QMailMessageKey::status(setMask, QMailDataComparator::Includes));
+    }
+    if (unsetMask) {
+        key &= QMailMessageKey(QMailMessageKey::status(unsetMask, QMailDataComparator::Excludes));
+    }
+
+    return key;
 }
 
 
@@ -92,6 +124,7 @@ QMailMessageKey EmailFolderMessageSet::contentKey(const QMailFolderId &id, bool 
     // Only return email messages from this folder, and not Trash messages
     return (QMailFolderMessageSet::contentKey(id, descendants) &
             QMailMessageKey::status(QMailMessage::Trash, QMailDataComparator::Excludes) &
+            QMailMessageKey::status(QMailMessage::Junk, QMailDataComparator::Excludes) &
             QMailMessageKey::messageType(QMailMessage::Email));
 }
 
@@ -126,6 +159,7 @@ QMailMessageKey EmailAccountMessageSet::contentKey(const QMailAccountId &id)
     // Only return incoming messages from this account, and not Trash messages
     return (QMailAccountMessageSet::contentKey(id, false) &
             QMailMessageKey::status(QMailMessage::Trash, QMailDataComparator::Excludes) &
+            QMailMessageKey::status(QMailMessage::Junk, QMailDataComparator::Excludes) &
             QMailMessageKey::status(QMailMessage::Outgoing, QMailDataComparator::Excludes));
 }
 
