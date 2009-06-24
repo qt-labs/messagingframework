@@ -1000,6 +1000,8 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
     connect(_server, SIGNAL(messagesCopied(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
+    connect(_server, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
+            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
 
     connect(_server, SIGNAL(storageActionCompleted(quint64)),
             this, SLOT(storageActionCompleted(quint64)));
@@ -1031,6 +1033,13 @@ void QMailStorageActionPrivate::copyMessages(const QMailMessageIdList &ids, cons
 void QMailStorageActionPrivate::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination)
 {
     _server->moveMessages(newAction(), ids, destination);
+    _ids = ids;
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    _server->flagMessages(newAction(), ids, setMask, unsetMask);
     _ids = ids;
     emitChanges();
 }
@@ -1131,6 +1140,21 @@ void QMailStorageAction::copyMessages(const QMailMessageIdList &ids, const QMail
 void QMailStorageAction::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)
 {
     impl(this)->moveMessages(ids, destinationId);
+}
+
+/*!
+    Requests that the message server flag each message listed in \a ids, by setting any status flags
+    set in the \a setMask, and unsetting any status flags set in the \a unsetMask.  The status
+    flag values should correspond to those of QMailMessage::status().
+
+    The service implementing the account may choose to take further actions in response to flag
+    changes, such as moving or deleting messages.
+
+    \sa QMailMessage::setStatus(), QMailStore::updateMessagesMetaData()
+*/
+void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    impl(this)->flagMessages(ids, setMask, unsetMask);
 }
 
 

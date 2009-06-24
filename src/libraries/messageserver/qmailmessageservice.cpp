@@ -379,6 +379,8 @@ public:
     QMailMessageService *_service;
     QMailMessageIdList _ids;
     QMailFolderId _destinationId;
+    quint64 _setMask;
+    quint64 _unsetMask;
 };
 
 QMailMessageSourcePrivate::QMailMessageSourcePrivate(QMailMessageService *service)
@@ -719,6 +721,29 @@ bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMail
 }
 
 /*!
+    Invoked by the message server to initiate a message flag operation.
+
+    Modify each message listed in \a ids such that the status flags set in \a setMask are set, 
+    and the status flags set in \a unsetMask are unset.  If further changes are implied by 
+    modification of the flags (including message movement or deletion), thse actions should
+    also be performed by the service.
+
+    Successfully modified messages should be progressively reported via messagesFlagged().
+
+    Return true if an operation is initiated.
+
+    \sa messagesFlagged()
+*/
+bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    d->_ids = ids;
+    d->_setMask = setMask;
+    d->_unsetMask = unsetMask;
+    QTimer::singleShot(0, this, SLOT(flagMessages()));
+    return true;
+}
+
+/*!
     Invoked by the message server to initiate a remote message search operation.
 
     Search the remote server for messages that match the search criteria encoded by 
@@ -811,6 +836,12 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
     \fn void QMailMessageSource::messagesMoved(const QMailMessageIdList &ids);
 
     Signal emitted by the source to report the moving of the messages listed in \a ids.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesFlagged(const QMailMessageIdList &ids);
+
+    Signal emitted by the source to report the modification of the messages listed in \a ids.
 */
 
 /*!
@@ -928,6 +959,32 @@ void QMailMessageSource::moveMessages()
     }
 
     emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to move messages to folder"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
+    emit d->_service->activityChanged(QMailServiceAction::Failed);
+    emit d->_service->actionCompleted(false);
+}
+
+/*! \internal */
+void QMailMessageSource::flagMessages()
+{
+    uint total = d->_ids.count();
+    emit d->_service->progressChanged(0, total);
+
+    QMailMessageKey idsKey(QMailMessageKey::id(d->_ids));
+    if (d->_setMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, d->_setMask, true)) {
+        qMailLog(Messaging) << "Unable to flag messages:" << d->_destinationId;
+    } else {
+        if (d->_unsetMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, d->_unsetMask, false)) {
+            qMailLog(Messaging) << "Unable to flag messages:" << d->_destinationId;
+        } else {
+            emit d->_service->progressChanged(total, total);
+            emit messagesFlagged(d->_ids);
+            emit d->_service->activityChanged(QMailServiceAction::Successful);
+            emit d->_service->actionCompleted(true);
+            return;
+        }
+    } 
+
+    emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to flag messages"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
     emit d->_service->activityChanged(QMailServiceAction::Failed);
     emit d->_service->actionCompleted(false);
 }

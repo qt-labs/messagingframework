@@ -140,6 +140,7 @@ public slots:
 
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
 
@@ -153,6 +154,7 @@ signals:
     void messagesDeleted(const QMailMessageIdList &ids);
     void messagesCopied(const QMailMessageIdList &ids);
     void messagesMoved(const QMailMessageIdList &ids);
+    void messagesFlagged(const QMailMessageIdList &ids);
 
     void matchingMessageIds(const QMailMessageIdList &ids);
 
@@ -164,6 +166,7 @@ protected slots:
     void deleteMessages();
     void copyMessages();
     void moveMessages();
+    void flagMessages();
 
 protected:
     QMailMessageSource(QMailMessageService *service);

@@ -180,6 +180,8 @@ public:
     void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
 
+    void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
 protected:
     virtual void init();
 

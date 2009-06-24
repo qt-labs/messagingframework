@@ -78,6 +78,7 @@ public slots:
     void deleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
     void copyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
+    void flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void cancelSearch(quint64);
@@ -99,6 +100,7 @@ signals:
     void messagesDeleted(quint64 action, const QMailMessageIdList&);
     void messagesCopied(quint64 action, const QMailMessageIdList&);
     void messagesMoved(quint64 action, const QMailMessageIdList&);
+    void messagesFlagged(quint64 action, const QMailMessageIdList&);
     void storageActionCompleted(quint64 action);
 
     void matchingMessageIds(quint64 action, const QMailMessageIdList&);
@@ -123,6 +125,7 @@ private slots:
     void messagesDeleted(const QMailMessageIdList&);
     void messagesCopied(const QMailMessageIdList&);
     void messagesMoved(const QMailMessageIdList&);
+    void messagesFlagged(const QMailMessageIdList&);
     void messagesPrepared(const QMailMessageIdList&);
     void matchingMessageIds(const QMailMessageIdList&);
 
@@ -193,6 +196,7 @@ private:
     bool dispatchCopyMessages(quint64 action, const QByteArray &data);
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
     bool dispatchMoveMessages(quint64 action, const QByteArray &data);
+    bool dispatchFlagMessages(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 

@@ -76,6 +76,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
                adaptor, MESSAGE(messagesCopied(quint64, QMailMessageIdList)));
     connectIpc(this, SIGNAL(messagesMoved(quint64, QMailMessageIdList)), 
                adaptor, MESSAGE(messagesMoved(quint64, QMailMessageIdList)));
+    connectIpc(this, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
+               adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)));
     connectIpc(this, SIGNAL(storageActionCompleted(quint64)), 
                adaptor, MESSAGE(storageActionCompleted(quint64)));
     connectIpc(this, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
@@ -113,6 +115,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
                this, SIGNAL(copyMessages(quint64, QMailMessageIdList, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(moveMessages(quint64, QMailMessageIdList, QMailFolderId)),
                this, SIGNAL(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
+    connectIpc(adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
+               this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
     connectIpc(adaptor, MESSAGE(cancelTransfer(quint64)),
                this, SIGNAL(cancelTransfer(quint64)));
     connectIpc(adaptor, MESSAGE(cancelSearch(quint64)),

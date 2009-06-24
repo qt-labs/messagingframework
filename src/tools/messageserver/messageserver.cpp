@@ -95,6 +95,8 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(messagesCopied(quint64, QMailMessageIdList)));
         connect(handler, SIGNAL(messagesMoved(quint64, QMailMessageIdList)), 
                 client, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
+        connect(handler, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
+                client, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
         connect(handler, SIGNAL(storageActionCompleted(quint64)),
                 client, SIGNAL(storageActionCompleted(quint64)));
         connect(handler, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
@@ -140,6 +142,8 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(copyMessages(quint64, QMailMessageIdList, QMailFolderId)));
         connect(client, SIGNAL(moveMessages(quint64, QMailMessageIdList, QMailFolderId)),
                 handler, SLOT(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
+        connect(client, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
+                handler, SLOT(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
         connect(client, SIGNAL(cancelTransfer(quint64)),
                 handler, SLOT(cancelTransfer(quint64)));
         connect(client, SIGNAL(protocolRequest(quint64, QMailAccountId, QString, QVariant)),

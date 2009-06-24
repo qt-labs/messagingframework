@@ -536,6 +536,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(messagesDeleted(QMailMessageIdList)), this, SLOT(messagesDeleted(QMailMessageIdList)));
     connect(source, SIGNAL(messagesCopied(QMailMessageIdList)), this, SLOT(messagesCopied(QMailMessageIdList)));
     connect(source, SIGNAL(messagesMoved(QMailMessageIdList)), this, SLOT(messagesMoved(QMailMessageIdList)));
+    connect(source, SIGNAL(messagesFlagged(QMailMessageIdList)), this, SLOT(messagesFlagged(QMailMessageIdList)));
     connect(source, SIGNAL(messagesPrepared(QMailMessageIdList)), this, SLOT(messagesPrepared(QMailMessageIdList)));
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SLOT(matchingMessageIds(QMailMessageIdList)));
     connect(source, SIGNAL(protocolResponse(QString, QVariant)), this, SLOT(protocolResponse(QString, QVariant)));
@@ -1490,6 +1491,43 @@ bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data
     return true;
 }
 
+void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& messageIds, quint64 setMask, quint64 unsetMask)
+{
+    QSet<QMailMessageService*> sources;
+
+    QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
+    sources = sourceServiceSet(messageLists.keys().toSet());
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to flag messages for unconfigured account"));
+    } else {
+        enqueueRequest(action, serialize(messageLists, setMask, unsetMask), sources, &ServiceHandler::dispatchFlagMessages, &ServiceHandler::storageActionCompleted);
+    }
+}
+
+bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data)
+{
+    QMap<QMailAccountId, QMailMessageIdList> messageLists;
+    quint64 setMask;
+    quint64 unsetMask;
+
+    deserialize(data, messageLists, setMask, unsetMask);
+
+    QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
+    for ( ; it != end; ++it) {
+        if (QMailMessageSource *source = accountSource(it.key())) {
+            if (!source->flagMessages(it.value(), setMask, unsetMask)) {
+                qMailLog(Messaging) << "Unable to service request to flag messages for account:" << it.key();
+                return false;
+            }
+        } else {
+            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), it.key());
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     if (spec == QMailSearchAction::Remote) {
@@ -1618,6 +1656,12 @@ void ServiceHandler::messagesMoved(const QMailMessageIdList &messageIds)
 {
     if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
         emit messagesMoved(action, messageIds);
+}
+
+void ServiceHandler::messagesFlagged(const QMailMessageIdList &messageIds)
+{
+    if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
+        emit messagesFlagged(action, messageIds);
 }
 
 void ServiceHandler::messagesPrepared(const QMailMessageIdList &messageIds)

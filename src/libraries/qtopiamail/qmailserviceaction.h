@@ -223,6 +223,8 @@ public slots:
 
     void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+
+    void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 };
 
 
