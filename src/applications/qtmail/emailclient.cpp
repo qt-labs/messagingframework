@@ -1007,9 +1007,6 @@ void EmailClient::saveAsDraft(const QMailMessage& mailIn)
 {
     QMailMessage mail(mailIn);
 
-    mail.setStatus(QMailMessage::Outbox, false);
-    mail.setStatus(QMailMessage::Draft, true);
-
     bool inserted(false);
     bool isNew(!mail.id().isValid());
     if (isNew) {
@@ -1019,6 +1016,8 @@ void EmailClient::saveAsDraft(const QMailMessage& mailIn)
     }
 
     if (inserted) {
+        storageAction->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
+
         if (isNew) {
             mailResponded();
         }
@@ -1033,14 +1032,11 @@ void EmailClient::saveAsDraft(const QMailMessage& mailIn)
 /*  Mark a message as replied/repliedall/forwarded  */
 void EmailClient::mailResponded()
 {
-    if ( repliedFromMailId.isValid() ) {
-        QMailMessageMetaData replyMail(repliedFromMailId);
-        replyMail.setStatus(replyMail.status() | repliedFlags);
-        QMailStore::instance()->updateMessage(&replyMail);
+    if (repliedFromMailId.isValid()) {
+        storageAction->flagMessages(QMailMessageIdList() << repliedFromMailId, repliedFlags, 0);
+        repliedFromMailId = QMailMessageId();
+        repliedFlags = 0;
     }
-
-    repliedFromMailId = QMailMessageId();
-    repliedFlags = 0;
 }
 
 // each message that belongs to the current found account
@@ -1086,8 +1082,8 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
         } else {
             // Move this account's outbox messages to Drafts
             QMailMessageKey accountFilter(QMailMessageKey::parentAccountId(transmitId));
-            QMailStore::instance()->updateMessagesMetaData(accountFilter & outboxFilter, QMailMessage::Draft, true);
-            QMailStore::instance()->updateMessagesMetaData(accountFilter & outboxFilter, QMailMessage::Outbox, false);
+            QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(accountFilter & outboxFilter));
+            storageAction->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
         }
     }
 }
@@ -1512,7 +1508,7 @@ void EmailClient::deleteSelectedMessages()
     if (deleting) {
         storageAction->deleteMessages(deleteList);
     } else {
-        QMailStore::instance()->updateMessagesMetaData(idFilter, QMailMessage::Trash, true);
+        storageAction->flagMessages(deleteList, QMailMessage::Trash, 0);
     }
 
     if (markingMode) {
@@ -1641,7 +1637,7 @@ void EmailClient::restoreSelectedMessages()
         return;
 
     AcknowledgmentBox::show(tr("Restoring"), tr("Restoring %n message(s)", "%1: number of messages", restoreIds.count()));
-    QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(restoreIds), QMailMessage::Trash, false);
+    storageAction->flagMessages(restoreIds, 0, QMailMessage::Trash);
 }
 
 void EmailClient::selectAll()
@@ -2060,7 +2056,7 @@ bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
         storageAction->deleteMessages(QMailMessageIdList() << id);
     } else {
         AcknowledgmentBox::show(tr("Moving"), tr("Moving to Trash: %1", "%1=Email/Message/MMS").arg(type));
-        QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), QMailMessage::Trash, true);
+        storageAction->flagMessages(QMailMessageIdList() << id, QMailMessage::Trash, 0);
     }
 
     return true;
@@ -2213,13 +2209,12 @@ void EmailClient::transferStatusUpdate(int status)
 void EmailClient::clearOutboxFolder()
 {
     QMailMessageKey outboxFilter(QMailMessageKey::status(QMailMessage::Outbox));
-    QMailMessageKey unsentFilter(QMailMessageKey::status(QMailMessage::Sent, QMailDataComparator::Excludes));
+    QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(outboxFilter));
 
-    // Move any unsent messages back to drafts
-    QMailStore::instance()->updateMessagesMetaData(outboxFilter & unsentFilter, QMailMessage::Draft, true);
-
-    // Remove all messages from Outbox
-    QMailStore::instance()->updateMessagesMetaData(outboxFilter, QMailMessage::Outbox, false);
+    // Set any unsent messages back to draft, and remove Outbox status
+    if (!unsentIds.isEmpty()) {
+        storageAction->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
+    }
 }
 
 void EmailClient::contextStatusUpdate()
@@ -2236,9 +2231,9 @@ void EmailClient::settings()
     contextStatusUpdate();
 
 #ifdef Q_OS_WIN
-	const QString binary("/messagingaccounts.exe");
+    const QString binary("/messagingaccounts.exe");
 #else
-	const QString binary("/messagingaccounts");
+    const QString binary("/messagingaccounts");
 #endif
 
     qDebug() << "Starting messagingaccounts process...";
