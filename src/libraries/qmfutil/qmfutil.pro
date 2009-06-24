@@ -49,5 +49,7 @@ TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-zh_CN.ts \
                 libqmfutil-zh_TW.ts
 
+RESOURCES += qmfutil.qrc
+
 include(../../common.pri)
 
