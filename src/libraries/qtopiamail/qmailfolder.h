@@ -66,6 +66,13 @@ public:
     static const quint64 &SynchronizationEnabled;
     static const quint64 &Synchronized;
     static const quint64 &PartialContent;
+    static const quint64 &Removed;
+    static const quint64 &Incoming;
+    static const quint64 &Outgoing;
+    static const quint64 &Sent;
+    static const quint64 &Trash;
+    static const quint64 &Drafts;
+    static const quint64 &Junk;
 
     QMailFolder();
 
