@@ -427,6 +427,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         _unsetMask = unsetMask;
 
         if (_setMask & QMailMessage::Trash) {
+            // Move these messages to the predefined location
             QMailFolderId trashId(_service->_client.mailboxId(trashPath));
             if (!trashId.isValid()) {
                 _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Trash folder"));
@@ -437,6 +438,24 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
             return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         } else if (_unsetMask & QMailMessage::Trash) {
+            QMap<QMailFolderId, QMailMessageIdList> destinationList;
+
+            // These messages need to be restored to their previous locations
+            QMailMessageKey key(QMailMessageKey::id(messageIds));
+            QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
+
+            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+                if (metaData.previousParentFolderId().isValid()) {
+                    destinationList[metaData.previousParentFolderId()].append(metaData.id());
+                }
+            }
+
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
+            for ( ; it != end; ++it) {
+                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
+            }
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         }
     }
 
@@ -467,7 +486,7 @@ bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal
     return true;
 }
 
-void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMailMessage &)
+void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMailMessage &original)
 {
     if (_setMask || _unsetMask) {
         if (_setMask) {
@@ -477,6 +496,8 @@ void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMai
             message.setStatus(_unsetMask, false);
         }
     }
+
+    message.setPreviousParentFolderId(original.parentFolderId());
 }
 
 void ImapService::Source::messageActionCompleted(const QString &uid)

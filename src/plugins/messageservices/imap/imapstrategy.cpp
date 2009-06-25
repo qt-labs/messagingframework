@@ -2453,6 +2453,8 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
 
         _messageSets.takeFirst();
 
+        _transferState = Init;
+
         // We need to select the destination folder to reset the Recent list
         if (_destination.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
