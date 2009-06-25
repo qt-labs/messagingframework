@@ -4401,38 +4401,33 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     quint64 insertId;
 
     {
+        QMap<QString, QVariant> values;
+
+        values.insert("type", static_cast<int>(metaData->messageType()));
+        values.insert("parentfolderid", metaData->parentFolderId().toULongLong());
+        values.insert("sender", fromText);
+        values.insert("recipients", recipients.join(","));
+        values.insert("subject", metaData->subject());
+        values.insert("stamp", QMailTimeStamp(metaData->date()).toLocalTime());
+        values.insert("status", static_cast<int>(metaData->status()));
+        values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
+        values.insert("mailfile", ::contentUri(*metaData));
+        values.insert("serveruid", metaData->serverUid());
+        values.insert("size", metaData->size());
+        values.insert("contenttype", static_cast<int>(metaData->content()));
+        values.insert("responseid", metaData->inResponseTo().toULongLong());
+        values.insert("responsetype", metaData->responseType());
+        values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toLocalTime());
+        if (metaData->previousParentFolderId().isValid()) {
+            values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
+        }
+
+        const QStringList &list(values.keys());
+        QString columns = list.join(",");
+
         // Add the record to the mailmessages table
-        QSqlQuery query(simpleQuery("INSERT INTO mailmessages (type,"
-                                                              "parentfolderid,"
-                                                              "sender,"
-                                                              "recipients,"
-                                                              "subject,"
-                                                              "stamp,"
-                                                              "status,"
-                                                              "parentaccountid,"
-                                                              "mailfile,"
-                                                              "serveruid,"
-                                                              "size,"
-                                                              "contenttype,"
-                                                              "responseid,"
-                                                              "responsetype,"
-                                                              "receivedstamp"
-                                                              ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                                    QVariantList() << static_cast<int>(metaData->messageType())
-                                                   << metaData->parentFolderId().toULongLong()
-                                                   << fromText
-                                                   << recipients.join(",")
-                                                   << metaData->subject()
-                                                   << QMailTimeStamp(metaData->date()).toLocalTime()
-                                                   << static_cast<int>(metaData->status())
-                                                   << metaData->parentAccountId().toULongLong()
-                                                   << ::contentUri(*metaData)
-                                                   << metaData->serverUid()
-                                                   << metaData->size()
-                                                   << static_cast<int>(metaData->content())
-                                                   << metaData->inResponseTo().toULongLong()
-                                                   << metaData->responseType()
-                                                   << QMailTimeStamp(metaData->receivedDate()).toLocalTime(),
+        QSqlQuery query(simpleQuery(QString("INSERT INTO mailmessages (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
+                                    values.values(),
                                     "addMessage mailmessages query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
