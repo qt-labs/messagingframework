@@ -100,6 +100,8 @@ signals:
     void progressChanged(uint, uint);
     void retrievalCompleted();
 
+    void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
+
     void messageActionCompleted(const QString &uid);
 
     void allMessagesReceived();

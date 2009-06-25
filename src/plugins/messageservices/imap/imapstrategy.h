@@ -90,6 +90,7 @@ public:
     void updateStatus(const QString &);
     void progressChanged(uint, uint);
     void completedMessageAction(const QString &uid);
+    void completedMessageCopy(QMailMessage &message, const QMailMessage &original);
     void operationCompleted();
 
 private:

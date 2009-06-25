@@ -171,6 +171,11 @@ void ImapStrategyContextBase::completedMessageAction(const QString &text)
     emit _client->messageActionCompleted(text);
 }
 
+void ImapStrategyContextBase::completedMessageCopy(QMailMessage &message, const QMailMessage &original) 
+{ 
+    emit _client->messageCopyCompleted(message, original);
+}
+
 void ImapStrategyContextBase::operationCompleted()
 { 
     // Update the status on any folders we modified
@@ -2408,9 +2413,16 @@ void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
         } else {
             qWarning() << "Unable to update message from UID:" << sourceUid << "to copy:" << message.serverUid();
         }
+
+        context->completedMessageCopy(message, source);
     }
 
     ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+
+    if (!sourceUid.isEmpty()) {
+        // We're now completed with the source message also
+        context->completedMessageAction(sourceUid);
+    }
 }
 
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)

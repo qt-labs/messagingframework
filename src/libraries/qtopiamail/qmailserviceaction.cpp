@@ -1036,6 +1036,9 @@ void QMailStorageActionPrivate::moveMessages(const QMailMessageIdList &ids, cons
 
 void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
 {
+    // Ensure that nothing is both set and unset
+    setMask &= ~unsetMask;
+
     _server->flagMessages(newAction(), ids, setMask, unsetMask);
     _ids = ids;
     emitChanges();

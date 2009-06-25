@@ -63,9 +63,12 @@ public:
           _queuedMailCheckInProgress(false),
           _mailCheckPhase(RetrieveFolders),
           _unavailable(false),
-          _synchronizing(false)
+          _synchronizing(false),
+          _setMask(0),
+          _unsetMask(0)
     {
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
+        connect(&_service->_client, SIGNAL(messageCopyCompleted(QMailMessage&, QMailMessage)), this, SLOT(messageCopyCompleted(QMailMessage&, QMailMessage)));
         connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
         connect(&_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
@@ -105,15 +108,18 @@ public slots:
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
+    virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
+    void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
     void retrievalTerminated();
     void queueMailCheckAll();
     void queueMailCheck(QMailFolderId folderId);
     void queueFlagsChangedCheck();
-    
+
 private:
     virtual bool setStrategy(ImapStrategy *strategy, const char *signal = 0);
 
@@ -128,6 +134,8 @@ private:
     bool _synchronizing;
     QTimer _intervalTimer;
     QList<QMailFolderId> _queuedFolders;
+    quint64 _setMask;
+    quint64 _unsetMask;
 };
 
 bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -401,14 +409,51 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     return true;
 }
 
-bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
+bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, quint64 setMask, quint64 unsetMask)
 {
-    if (ids.isEmpty()) {
+    if (messageIds.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to copy"));
+        return false;
+    }
+    if (!setMask && !unsetMask) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No flags to be applied"));
+        return false;
+    }
+
+    QMailAccountConfiguration accountCfg(_service->accountId());
+    ImapConfiguration imapCfg(accountCfg);
+
+    QString trashPath(imapCfg.trashFolder());
+    if (!trashPath.isEmpty()) {
+        _setMask = setMask;
+        _unsetMask = unsetMask;
+
+        if (_setMask & QMailMessage::Trash) {
+            QMailFolderId trashId(_service->_client.mailboxId(trashPath));
+            if (!trashId.isValid()) {
+                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Trash folder"));
+                return false;
+            }
+
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            _service->_client.strategyContext()->moveMessagesStrategy.selectedMailsAppend(messageIds);
+            _service->_client.strategyContext()->moveMessagesStrategy.setDestination(trashId);
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+        } else if (_unsetMask & QMailMessage::Trash) {
+        }
+    }
+
+    return QMailMessageSource::flagMessages(messageIds, setMask, unsetMask);
+}
+
+bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &messageIds)
+{
+    if (messageIds.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to prepare"));
         return false;
     }
 
-    _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(ids);
+    _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(messageIds);
     return setStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
 }
 
@@ -425,6 +470,18 @@ bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal
     return true;
 }
 
+void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMailMessage &)
+{
+    if (_setMask || _unsetMask) {
+        if (_setMask) {
+            message.setStatus(_setMask, true);
+        }
+        if (_unsetMask) {
+            message.setStatus(_unsetMask, false);
+        }
+    }
+}
+
 void ImapService::Source::messageActionCompleted(const QString &uid)
 {
     QMailMessageMetaData metaData(uid, _service->accountId());
@@ -436,6 +493,8 @@ void ImapService::Source::messageActionCompleted(const QString &uid)
 void ImapService::Source::retrievalCompleted()
 {
     _unavailable = false;
+    _setMask = 0;
+    _unsetMask = 0;
 
     if (_queuedMailCheckInProgress) {
         if (_mailCheckPhase == RetrieveFolders) {
