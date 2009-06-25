@@ -2270,17 +2270,23 @@ void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContex
 /* A strategy to copy selected messages.
 */
 // Note: the copy strategy is:
-// 1. Select the destination folder, and find UIDNEXT
-// 2. Copy each specified message to the destination
+// NB: UIDNEXT doesn't work as expected with Cyrus 2.2; instead, just use the \Recent flag to identify copies...
+//
+// 1. Select the destination folder, resetting the Recent flag
+// 2. Copy each specified message from its existing folder to the destination
 // 3. Select the destination folder
-// 4. Search for messages >= previous UIDNEXT
+// 4. Search for recent messages 
 // 5. Retrieve metadata only for found messages
 
-// NB: the above doesn't work with Cyrus 2.2; instead, just use the \Recent flag to identify copies...
-
-void ImapCopyMessagesStrategy::setDestination(const QMailFolderId& id)
+void ImapCopyMessagesStrategy::appendMessageSet(const QMailMessageIdList &messageIds, const QMailFolderId& folderId)
 {
-    _destination = QMailFolder(id);
+    _messageSets.append(qMakePair(messageIds, folderId));
+}
+
+void ImapCopyMessagesStrategy::clearSelection()
+{
+    ImapFetchSelectedMessagesStrategy::clearSelection();
+    _messageSets.clear();
 }
 
 void ImapCopyMessagesStrategy::newConnection(ImapStrategyContextBase *context)
@@ -2317,25 +2323,16 @@ void ImapCopyMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
 
 void ImapCopyMessagesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    // We need to select the destination folder to discover it's UIDNEXT value
-    if (_destination.id() == context->mailbox().id) {
-        // We already have the appropriate mailbox selected
-        handleSelect(context);
-    } else {
-        context->protocol().sendSelect(_destination);
-    }
+    selectMessageSet(context);
 }
 
 void ImapCopyMessagesStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     if (_transferState == Init) {
-        //_uidNext = context->mailbox().uidNext;
-
         // Begin copying messages
         messageListMessageAction(context);
     } else if (_transferState == Search) {
         // We have selected the destination folder - find the newly added messages
-        //context->protocol().sendUidSearch(MFlag_Recent, QString("UID %1:*").arg(ImapProtocol::uid(_uidNext)));
         context->protocol().sendUidSearch(MFlag_Recent);
     } else {
         ImapFetchSelectedMessagesStrategy::handleSelect(context);
@@ -2377,7 +2374,8 @@ void ImapCopyMessagesStrategy::messageListMessageAction(ImapStrategyContextBase 
 void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     if (_transferState == Search) {
-        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+        // Move on to the next message set
+        selectMessageSet(context);
     } else {
         // We have copied all the messages - now we need to retrieve the copies
         _transferState = Search;
@@ -2445,17 +2443,40 @@ void ImapCopyMessagesStrategy::fetchNextCopy(ImapStrategyContextBase *context)
     }
 }
 
+void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context)
+{
+    if (!_messageSets.isEmpty()) {
+        const QPair<QMailMessageIdList, QMailFolderId> &set(_messageSets.first());
+
+        selectedMailsAppend(set.first);
+        _destination = QMailFolder(set.second);
+
+        _messageSets.takeFirst();
+
+        // We need to select the destination folder to reset the Recent list
+        if (_destination.id() == context->mailbox().id) {
+            // We already have the appropriate mailbox selected
+            handleSelect(context);
+        } else {
+            context->protocol().sendSelect(_destination);
+        }
+    } else {
+        // Nothing more to do
+        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+    }
+}
+
 
 /* A strategy to move selected messages.
 */
 // Note: the move strategy is:
-// 1. Select the destination folder, and find UIDNEXT
-// 2. Copy each specified message to the destination, recording the local ID
+// 1. Select the destination folder, resetting Recent
+// 2. Copy each specified message from its current folder to the destination, recording the local ID
 // 3. Mark each specified message as deleted
 // 4. Close each modified folder to expunge the marked messages
 // 5. Update the status for each modified folder
 // 6. Select the destination folder
-// 7. Search for messages >= previous UIDNEXT
+// 7. Search for recent messages
 // 8. Retrieve metadata only for found messages
 // 9. When the metadata for a copy is fetched, move the local body of the source message into the copy
 

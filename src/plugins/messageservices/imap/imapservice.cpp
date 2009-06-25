@@ -343,8 +343,7 @@ bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, con
     QMailFolder destination(destinationId);
     if (destination.parentAccountId() == _service->accountId()) {
         _service->_client.strategyContext()->copyMessagesStrategy.clearSelection();
-        _service->_client.strategyContext()->copyMessagesStrategy.selectedMailsAppend(messageIds);
-        _service->_client.strategyContext()->copyMessagesStrategy.setDestination(destinationId);
+        _service->_client.strategyContext()->copyMessagesStrategy.appendMessageSet(messageIds, destinationId);
         return setStrategy(&_service->_client.strategyContext()->copyMessagesStrategy, SIGNAL(messagesCopied(QMailMessageIdList)));
     }
 
@@ -366,8 +365,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     QMailFolder destination(destinationId);
     if (destination.parentAccountId() == _service->accountId()) {
         _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-        _service->_client.strategyContext()->moveMessagesStrategy.selectedMailsAppend(messageIds);
-        _service->_client.strategyContext()->moveMessagesStrategy.setDestination(destinationId);
+        _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, destinationId);
         return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesMoved(QMailMessageIdList)));
     }
 
@@ -436,8 +434,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             }
 
             _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-            _service->_client.strategyContext()->moveMessagesStrategy.selectedMailsAppend(messageIds);
-            _service->_client.strategyContext()->moveMessagesStrategy.setDestination(trashId);
+            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
             return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         } else if (_unsetMask & QMailMessage::Trash) {
         }

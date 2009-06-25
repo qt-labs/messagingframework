@@ -487,7 +487,8 @@ public:
     ImapCopyMessagesStrategy() {}
     virtual ~ImapCopyMessagesStrategy() {}
 
-    void setDestination(const QMailFolderId &destinationId);
+    virtual void clearSelection();
+    virtual void appendMessageSet(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -507,13 +508,14 @@ protected:
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
+    virtual void selectMessageSet(ImapStrategyContextBase *context);
     virtual void fetchNextCopy(ImapStrategyContextBase *context);
 
+    QList<QPair<QMailMessageIdList, QMailFolderId> > _messageSets;
     QMailFolder _destination;
     QMap<QString, QString> _sourceUid;
     QStringList _sourceUids;
     int _sourceIndex;
-    //QString _uidNext;
     QStringList _createdUids;
     int _messagesAdded;
 };
