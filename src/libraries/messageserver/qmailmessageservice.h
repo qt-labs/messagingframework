@@ -172,6 +172,7 @@ protected:
     QMailMessageSource(QMailMessageService *service);
 
     void notImplemented();
+    bool modifyMessageFlags(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
 private:
     QMailMessageSource();

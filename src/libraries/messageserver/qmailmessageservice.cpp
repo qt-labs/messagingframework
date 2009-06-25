@@ -883,7 +883,6 @@ void QMailMessageSource::deleteMessages()
     } else {
         emit d->_service->progressChanged(total, total);
         emit messagesDeleted(d->_ids);
-        emit d->_service->activityChanged(QMailServiceAction::Successful);
         emit d->_service->actionCompleted(true);
         return;
     }
@@ -934,7 +933,6 @@ void QMailMessageSource::copyMessages()
             emit messagesCopied(d->_ids.mid(0, progress));
     }
 
-    emit d->_service->activityChanged(successful ? QMailServiceAction::Successful : QMailServiceAction::Failed);
     emit d->_service->actionCompleted(successful);
 }
 
@@ -953,7 +951,6 @@ void QMailMessageSource::moveMessages()
     } else {
         emit d->_service->progressChanged(total, total);
         emit messagesMoved(d->_ids);
-        emit d->_service->activityChanged(QMailServiceAction::Successful);
         emit d->_service->actionCompleted(true);
         return;
     }
@@ -969,26 +966,34 @@ void QMailMessageSource::flagMessages()
     uint total = d->_ids.count();
     emit d->_service->progressChanged(0, total);
 
-    QMailMessageKey idsKey(QMailMessageKey::id(d->_ids));
-    if (d->_setMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, d->_setMask, true)) {
-        qMailLog(Messaging) << "Unable to flag messages:" << d->_destinationId;
-    } else {
-        if (d->_unsetMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, d->_unsetMask, false)) {
-            qMailLog(Messaging) << "Unable to flag messages:" << d->_destinationId;
-        } else {
-            emit d->_service->progressChanged(total, total);
-            emit messagesFlagged(d->_ids);
-            emit d->_service->activityChanged(QMailServiceAction::Successful);
-            emit d->_service->actionCompleted(true);
-            return;
-        }
-    } 
+    if (modifyMessageFlags(d->_ids, d->_setMask, d->_unsetMask)) {
+        emit d->_service->progressChanged(total, total);
+        emit d->_service->actionCompleted(true);
+        return;
+    }
 
     emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to flag messages"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
     emit d->_service->activityChanged(QMailServiceAction::Failed);
     emit d->_service->actionCompleted(false);
 }
 
+/*! \internal */
+bool QMailMessageSource::modifyMessageFlags(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    QMailMessageKey idsKey(QMailMessageKey::id(ids));
+    if (setMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true)) {
+        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+    } else {
+        if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false)) {
+            qMailLog(Messaging) << "Unable to flag messages:" << ids;
+        } else {
+            emit messagesFlagged(ids);
+            return true;
+        }
+    } 
+
+    return false;
+}
 
 class QMailMessageSinkPrivate
 {
