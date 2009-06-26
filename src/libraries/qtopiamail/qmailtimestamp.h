@@ -52,6 +52,12 @@ class QMailTimeStampPrivate;
 class QTOPIAMAIL_EXPORT QMailTimeStamp
 {
 public:
+    enum OutputFormat {
+        Rfc2822,
+        Rfc3501,
+        Rfc3339
+    };
+
     static QMailTimeStamp currentDateTime();
 
     QMailTimeStamp();
@@ -60,7 +66,7 @@ public:
     QMailTimeStamp(const QMailTimeStamp& other);
     ~QMailTimeStamp();
 
-    QString toString() const;
+    QString toString(OutputFormat format = Rfc2822) const;
 
     QDateTime toLocalTime() const;
     QDateTime toUTC() const;
