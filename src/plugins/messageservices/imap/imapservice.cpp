@@ -459,6 +459,25 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
     }
 
+    QString sentPath(imapCfg.sentFolder());
+    if (!sentPath.isEmpty()) {
+        if (setMask & QMailMessage::Sent) {
+            _setMask = setMask;
+            _unsetMask = unsetMask;
+
+            // Move these messages to the predefined location
+            QMailFolderId sentId(_service->_client.mailboxId(sentPath));
+            if (!sentId.isValid()) {
+                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Sent folder"));
+                return false;
+            }
+
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, sentId);
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+        }
+    }
+
     return QMailMessageSource::flagMessages(messageIds, setMask, unsetMask);
 }
 

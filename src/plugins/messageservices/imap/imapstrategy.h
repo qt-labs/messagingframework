@@ -67,7 +67,7 @@ struct SectionProperties {
     int _minimum;
 };
 
-typedef QMultiMap<uint, SectionProperties> FolderMap;
+typedef QMultiMap<QPair<uint, QMailMessageId>, SectionProperties> FolderMap;
 typedef QMap<QMailFolderId, FolderMap> SelectionMap;
 
 class QMailAccount;
@@ -500,6 +500,7 @@ protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidCopy(ImapStrategyContextBase *context);
+    virtual void handleAppend(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
@@ -508,8 +509,10 @@ protected:
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
-    virtual void selectMessageSet(ImapStrategyContextBase *context);
+    virtual void copyNextMessage(ImapStrategyContextBase *context);
     virtual void fetchNextCopy(ImapStrategyContextBase *context);
+
+    virtual void selectMessageSet(ImapStrategyContextBase *context);
 
     QList<QPair<QMailMessageIdList, QMailFolderId> > _messageSets;
     QMailFolder _destination;
