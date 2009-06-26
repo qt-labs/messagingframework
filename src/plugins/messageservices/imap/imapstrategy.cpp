@@ -575,12 +575,16 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
         _selectionMap[message.parentFolderId()].insert(serverUid, sectionProperties);
 
-        const QMailMessagePart &part(message.partAt(location));
-        uint size = part.indicativeSize();
-        uint bytes = part.contentDisposition().size();
+        uint size = 0;
+        uint bytes = minimum;
+
         if (minimum > 0) {
             size = 1;
-            bytes = minimum;
+        } else if (location.isValid()) {
+            // Find the size of this part
+            const QMailMessagePart &part(message.partAt(location));
+            size = part.indicativeSize();
+            bytes = part.contentDisposition().size();
         }
 
         _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
