@@ -163,6 +163,8 @@ protected:
     virtual FolderModel::StatusText itemStatusText(QMailMessageSet *item) const;
 
     virtual QIcon standardFolderIcon(EmailStandardFolderMessageSet *item) const;
+    virtual QIcon emailFolderIcon(EmailFolderMessageSet *item) const;
+
     virtual FolderModel::StatusText standardFolderStatusText(EmailStandardFolderMessageSet *item) const;
 
     virtual bool itemSynchronizationEnabled(QMailMessageSet *item) const;

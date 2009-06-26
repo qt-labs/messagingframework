@@ -335,6 +335,8 @@ QIcon EmailFolderModel::itemIcon(QMailMessageSet *item) const
 {
     if (EmailStandardFolderMessageSet *standardItem = qobject_cast<EmailStandardFolderMessageSet*>(item)) {
         return standardFolderIcon(standardItem);
+    } else if (EmailFolderMessageSet *emailItem = qobject_cast<EmailFolderMessageSet*>(item)) {
+        return emailFolderIcon(emailItem);
     }
 
     return FolderModel::itemIcon(item);
@@ -372,13 +374,34 @@ static QMap<QMailFolder::StandardFolder, QIcon> iconMapInit()
     return map;
 }
 
-QIcon EmailFolderModel::standardFolderIcon(EmailStandardFolderMessageSet *item) const
+static QIcon folderIcon(QMailFolder::StandardFolder type)
 {
     const QMap<QMailFolder::StandardFolder, QIcon> iconMap(iconMapInit());
 
-    QMap<QMailFolder::StandardFolder, QIcon>::const_iterator it = iconMap.find(item->standardFolderType());
+    QMap<QMailFolder::StandardFolder, QIcon>::const_iterator it = iconMap.find(type);
     if (it != iconMap.end())
         return it.value();
+
+    return QIcon(":icon/folder");
+}
+
+QIcon EmailFolderModel::standardFolderIcon(EmailStandardFolderMessageSet *item) const
+{
+    return folderIcon(item->standardFolderType());
+}
+
+QIcon EmailFolderModel::emailFolderIcon(EmailFolderMessageSet *item) const
+{
+    QMailFolder folder(item->folderId());
+    if (folder.status() & QMailFolder::Trash) {
+        return folderIcon(QMailFolder::TrashFolder);
+    } else if (folder.status() & QMailFolder::Sent) {
+        return folderIcon(QMailFolder::SentFolder);
+    } else if (folder.status() & QMailFolder::Drafts) {
+        return folderIcon(QMailFolder::DraftsFolder);
+    } else if (folder.status() & QMailFolder::Junk) {
+        return folderIcon(QMailFolder::JunkFolder);
+    }
 
     return QIcon(":icon/folder");
 }
