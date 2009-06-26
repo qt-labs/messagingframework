@@ -228,26 +228,64 @@ static QList<uint> sequenceUids(const QString &sequence)
 
 static QString searchFlagsToString(MessageFlags flags)
 {
-    QString result;
+    QStringList result;
 
     if (flags != 0) {
         if (flags & MFlag_Recent)
-            result += " RECENT";
+            result.append("RECENT");
         if (flags & MFlag_Deleted)
-            result += " DELETED";
+            result.append("DELETED");
         if (flags & MFlag_Answered)
-            result += " ANSWERED";
+            result.append("ANSWERED");
         if (flags & MFlag_Flagged)
-            result += " FLAGGED";
+            result.append("FLAGGED");
         if (flags & MFlag_Seen)
-            result += " SEEN";
+            result.append("SEEN");
         if (flags & MFlag_Unseen)
-            result += " UNSEEN";
+            result.append("UNSEEN");
         if (flags & MFlag_Draft)
-            result += " DRAFT";
+            result.append("DRAFT");
     }
 
-    return result.trimmed();
+    return result.join(" ");
+}
+
+static QString messageFlagsToString(MessageFlags flags)
+{
+    QStringList result;
+
+    // Note that \Recent flag is ignored as only the server is allowed to modify that flag 
+    if (flags != 0) {
+        if (flags & MFlag_Deleted)
+            result.append("\\Deleted");
+        if (flags & MFlag_Answered)
+            result.append("\\Answered");
+        if (flags & MFlag_Flagged)
+            result.append("\\Flagged");
+        if (flags & MFlag_Seen)
+            result.append("\\Seen");
+        if (flags & MFlag_Draft)
+            result.append("\\Draft");
+    }
+
+    return result.join(" ");
+}
+
+static MessageFlags flagsForMessage(const QMailMessageMetaData &metaData)
+{
+    MessageFlags result(0);
+
+    if (metaData.status() & (QMailMessage::Read | QMailMessage::ReadElsewhere | QMailMessage::Outgoing)) {
+        result |= MFlag_Seen;
+    }
+    if (metaData.status() & (QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded)) {
+        result |= MFlag_Answered;
+    }
+    if (metaData.status() & QMailMessage::Draft) {
+        result |= MFlag_Draft;
+    }
+
+    return result;
 }
 
 
@@ -726,6 +764,80 @@ void GenUrlAuthState::untaggedResponse(ImapContext *c, const QString &line)
     }
 
     emit urlAuthorized(QMail::unquoteString(line.mid(13).trimmed()));
+}
+
+
+class AppendState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    AppendState() : ImapState(IMAP_Append, "Append") {}
+
+    void setParameters(const QMailFolder &folder, const QMailMessageId &messageId);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void continuationResponse(ImapContext *c, const QString &line);
+
+signals:
+    void urlAuthorized(const QString &url);
+
+private:
+    struct AppendParameters
+    {
+        QMailFolder mDestination;
+        QMailMessageId mMessageId;
+        QByteArray mData;
+    };
+
+    QList<AppendParameters> mParameters;
+};
+
+void AppendState::setParameters(const QMailFolder &folder, const QMailMessageId &messageId)
+{
+    AppendParameters params;
+    params.mDestination = folder;
+    params.mMessageId = messageId;
+
+    mParameters.append(params);
+}
+
+void AppendState::init()
+{
+    ImapState::init();
+    mParameters.clear();
+}
+
+QString AppendState::transmit(ImapContext *c)
+{
+    AppendParameters &params(mParameters.first());
+
+    QMailMessage message(params.mMessageId);
+    params.mData = message.toRfc2822(QMailMessage::TransmissionFormat);
+
+    QString cmd("APPEND %1 (%2) \"%3\" {%4}");
+    cmd = cmd.arg(ImapProtocol::quoteString(params.mDestination.path()));
+    cmd = cmd.arg(messageFlagsToString(flagsForMessage(message)));
+    cmd = cmd.arg(message.date().toString(QMailTimeStamp::Rfc3501));
+    cmd = cmd.arg(params.mData.length());
+
+    return c->sendCommand(cmd);
+}
+
+void AppendState::leave(ImapContext *)
+{
+    ImapState::init();
+    mParameters.removeFirst();
+}
+
+void AppendState::continuationResponse(ImapContext *c, const QString &)
+{
+    const AppendParameters &params(mParameters.first());
+
+    c->sendData(params.mData);
 }
 
 
@@ -1338,20 +1450,7 @@ QString UidStoreState::transmit(ImapContext *c)
 {
     const QPair<MessageFlags, QString> &params(_parameters.last());
 
-    // Note that \Recent flag is ignored as only the server is allowed to modify that flag 
-    QString flagStr = "+FLAGS.SILENT (";
-    if (params.first & MFlag_Deleted)
-        flagStr += "\\Deleted "; // No tr
-    if (params.first & MFlag_Answered)
-        flagStr += "\\Answered "; // No tr
-    if (params.first & MFlag_Flagged)
-        flagStr += "\\Flagged "; // No tr
-    if (params.first & MFlag_Seen)
-        flagStr += "\\Seen "; // No tr
-    if (params.first & MFlag_Draft)
-        flagStr += "\\Draft "; // No tr
-    flagStr = flagStr.trimmed() + ")";
-
+    QString flagStr = QString("+FLAGS.SILENT (%1)").arg(messageFlagsToString(params.first));
     return c->sendCommand(QString("UID STORE %1 %2").arg(params.second).arg(flagStr));
 }
 
@@ -1569,6 +1668,7 @@ public:
     LogoutState logoutState;
     ListState listState;
     GenUrlAuthState genUrlAuthState;
+    AppendState appendState;
     SelectState selectState;
     ExamineState examineState;
     SearchState searchState;
@@ -1844,6 +1944,12 @@ void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, bo
 
     _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);
     _fsm->setState(&_fsm->genUrlAuthState);
+}
+
+void ImapProtocol::sendAppend(const QMailFolder &mailbox, const QMailMessageId &messageId)
+{
+    _fsm->appendState.setParameters(mailbox, messageId);
+    _fsm->setState(&_fsm->appendState);
 }
 
 void ImapProtocol::sendSelect(const QMailFolder &mailbox)

@@ -73,6 +73,7 @@ enum ImapCommand
     IMAP_Select,
     IMAP_Examine,
     IMAP_Search,
+    IMAP_Append,
     IMAP_UIDSearch,
     IMAP_UIDFetch,
     IMAP_UIDStore,
@@ -160,6 +161,7 @@ public:
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);
     void sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism = QString());
+    void sendAppend(const QMailFolder &mailbox, const QMailMessageId &message);
     void sendSelect(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
 
