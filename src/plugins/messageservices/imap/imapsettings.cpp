@@ -114,6 +114,7 @@ ImapSettings::ImapSettings()
     connect(draftsButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
     connect(sentButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
     connect(trashButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(junkButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
 }
 
 void ImapSettings::intervalCheckChanged(int enabled)
@@ -144,6 +145,8 @@ void ImapSettings::selectFolder()
             imapSentDir->setText(folder.path());
         } else if (sender() == static_cast<QObject*>(trashButton)) {
             imapTrashDir->setText(folder.path());
+        } else if (sender() == static_cast<QObject*>(junkButton)) {
+            imapJunkDir->setText(folder.path());
         }
     }
 }
@@ -175,6 +178,11 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
     trashButton->setEnabled(hasFolders);
     imapTrashDir->setEnabled(hasFolders);
     imapTrashDir->setReadOnly(true);
+
+    junkFolderLabel->setEnabled(hasFolders);
+    junkButton->setEnabled(hasFolders);
+    imapJunkDir->setEnabled(hasFolders);
+    imapJunkDir->setReadOnly(true);
 
     if (!config.services().contains(serviceKey)) {
         // New account
@@ -211,6 +219,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         imapDraftsDir->setText(imapConfig.draftsFolder());
         imapSentDir->setText(imapConfig.sentFolder());
         imapTrashDir->setText(imapConfig.trashFolder());
+        imapJunkDir->setText(imapConfig.junkFolder());
     }
 }
 
@@ -249,6 +258,7 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setDraftsFolder(imapDraftsDir->text());
     imapConfig.setSentFolder(imapSentDir->text());
     imapConfig.setTrashFolder(imapTrashDir->text());
+    imapConfig.setJunkFolder(imapJunkDir->text());
 
     // Do we have a configuration we can use?
     if (!imapConfig.mailServer().isEmpty() && !imapConfig.mailUserName().isEmpty())

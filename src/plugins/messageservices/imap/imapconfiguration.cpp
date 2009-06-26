@@ -122,6 +122,11 @@ QString ImapConfiguration::trashFolder() const
     return value("trashFolder");
 }
 
+QString ImapConfiguration::junkFolder() const
+{
+    return value("junkFolder");
+}
+
 int ImapConfiguration::checkInterval() const
 {
     return value("checkInterval", "-1").toInt();
@@ -210,6 +215,11 @@ void ImapConfigurationEditor::setSentFolder(const QString &s)
 void ImapConfigurationEditor::setTrashFolder(const QString &s)
 {
     setValue("trashFolder", s);
+}
+
+void ImapConfigurationEditor::setJunkFolder(const QString &s)
+{
+    setValue("junkFolder", s);
 }
 
 void ImapConfigurationEditor::setCheckInterval(int i)

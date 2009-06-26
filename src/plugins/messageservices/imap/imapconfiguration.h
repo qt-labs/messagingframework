@@ -79,6 +79,7 @@ public:
     QString draftsFolder() const;
     QString sentFolder() const;
     QString trashFolder() const;
+    QString junkFolder() const;
 
     int checkInterval() const;
     bool intervalCheckRoamingEnabled() const;
@@ -109,6 +110,7 @@ public:
     void setDraftsFolder(const QString &s);
     void setSentFolder(const QString &s);
     void setTrashFolder(const QString &s);
+    void setJunkFolder(const QString &s);
 
     void setCheckInterval(int i);
     void setIntervalCheckRoamingEnabled(bool enabled);
