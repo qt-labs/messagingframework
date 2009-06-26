@@ -90,9 +90,11 @@ QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardF
         break;
     }
 
-    QMailMessageKey key;
+    // Restrict standard folder listings to show only locally-stored messages
+    QMailMessageKey key(QMailMessageKey::parentFolderId(QMailFolder::LocalStorageFolderId));
+
     if (setMask) {
-        key = QMailMessageKey(QMailMessageKey::status(setMask, QMailDataComparator::Includes));
+        key &= QMailMessageKey(QMailMessageKey::status(setMask, QMailDataComparator::Includes));
     }
     if (unsetMask) {
         key &= QMailMessageKey(QMailMessageKey::status(unsetMask, QMailDataComparator::Excludes));
