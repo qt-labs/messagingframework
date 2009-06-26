@@ -121,11 +121,24 @@ QMailMessageKey EmailFolderMessageSet::descendantsMessageKey() const
 
 QMailMessageKey EmailFolderMessageSet::contentKey(const QMailFolderId &id, bool descendants)
 {
-    // Only return email messages from this folder, and not Trash messages
-    return (QMailFolderMessageSet::contentKey(id, descendants) &
-            QMailMessageKey::status(QMailMessage::Trash, QMailDataComparator::Excludes) &
-            QMailMessageKey::status(QMailMessage::Junk, QMailDataComparator::Excludes) &
-            QMailMessageKey::messageType(QMailMessage::Email));
+    // Only return email messages from this folder
+    QMailMessageKey key(QMailFolderMessageSet::contentKey(id, descendants) & QMailMessageKey::messageType(QMailMessage::Email));
+
+    quint64 exclusions = 0;
+
+    QMailFolder folder(id);
+    if ((folder.status() & QMailFolder::Trash) == 0) {
+        exclusions |= QMailMessage::Trash;
+    }
+    if ((folder.status() & QMailFolder::Junk) == 0) {
+        exclusions |= QMailMessage::Junk;
+    }
+
+    if (exclusions) {
+        key &= QMailMessageKey::status(exclusions, QMailDataComparator::Excludes);
+    }
+
+    return key;
 }
 
 void EmailFolderMessageSet::createChild(const QMailFolderId &childId)
@@ -174,7 +187,7 @@ void EmailAccountMessageSet::createChild(const QMailFolderId &childId)
 /* InboxMessageSet */
 
 InboxMessageSet::InboxMessageSet(QMailMessageSetContainer *container)
-    : EmailFolderMessageSet(container, QMailFolderId(QMailFolder::InboxFolder), false)
+    : EmailStandardFolderMessageSet(container, QMailFolder::InboxFolder, tr("Inbox"))
 {
 }
 
@@ -183,18 +196,11 @@ QMailMessageKey InboxMessageSet::messageKey() const
     return contentKey();
 }
 
-QMailMessageKey InboxMessageSet::descendantsMessageKey() const
-{
-    // No such concept for the Inbox
-    return QMailMessageKey::nonMatchingKey();
-}
-
 QMailMessageKey InboxMessageSet::contentKey()
 {
-    // Return all incoming messages for any email acount, unless in the Trash folder
+    // Return all incoming messages for any email acount, unless in the Trash/Junk folder
     return (QMailMessageKey::parentAccountId(emailAccountKey()) &
-            QMailMessageKey::status(QMailMessage::Trash, QMailDataComparator::Excludes) &
-            QMailMessageKey::status(QMailMessage::Outgoing, QMailDataComparator::Excludes));
+            QMailMessageKey::status(QMailMessage::Trash | QMailMessage::Junk | QMailMessage::Outgoing, QMailDataComparator::Excludes));
 }
 
 void InboxMessageSet::accountsAdded(const QMailAccountIdList &)
@@ -232,14 +238,14 @@ void InboxMessageSet::init()
     connect(model(), SIGNAL(accountsRemoved(QMailAccountIdList)), this, SLOT(accountsRemoved(QMailAccountIdList)));
     connect(model(), SIGNAL(accountContentsModified(QMailAccountIdList)), this, SLOT(accountContentsModified(QMailAccountIdList)));
 
-    EmailFolderMessageSet::init();
+    EmailStandardFolderMessageSet::init();
 }
 
 void InboxMessageSet::resyncState()
 {
     synchronizeAccountChildren();
 
-    EmailFolderMessageSet::resyncState();
+    EmailStandardFolderMessageSet::resyncState();
 }
 
 void InboxMessageSet::synchronizeAccountChildren()
@@ -354,7 +360,7 @@ static QMap<QMailFolder::StandardFolder, QIcon> iconMapInit()
 {
     QMap<QMailFolder::StandardFolder, QIcon> map;
 
-    //map[QMailFolder::InboxFolder] = QIcon(":icon/inbox");
+    map[QMailFolder::InboxFolder] = QIcon(":icon/inbox");
     map[QMailFolder::OutboxFolder] = QIcon(":icon/outbox");
     map[QMailFolder::DraftsFolder] = QIcon(":icon/drafts");
     map[QMailFolder::SentFolder] = QIcon(":icon/sent");

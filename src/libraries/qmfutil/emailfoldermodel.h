@@ -103,7 +103,7 @@ protected:
 
 // A folder element which includes all email accounts as sub-folders:
 
-class InboxMessageSet : public EmailFolderMessageSet
+class InboxMessageSet : public EmailStandardFolderMessageSet
 {
     Q_OBJECT
 
@@ -111,7 +111,6 @@ public:
     InboxMessageSet(QMailMessageSetContainer *container);
 
     virtual QMailMessageKey messageKey() const;
-    virtual QMailMessageKey descendantsMessageKey() const;
 
     static QMailMessageKey contentKey();
 
