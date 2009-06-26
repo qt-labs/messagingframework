@@ -2326,8 +2326,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         mail.setStatus( QMailMessage::Replied, true );
     }
 
-    mail.setStatus( QMailMessage::Incoming, true );
-
     mail.setMessageType( QMailMessage::Email );
     mail.setSize( size );
     mail.setServerUid( uid.trimmed() );

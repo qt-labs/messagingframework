@@ -702,6 +702,9 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
             folder.setDisplayName(decodeFolderName(*it));
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
 
+            // Assume this is a standard folder until informed otherwise
+            folder.setStatus(QMailFolder::Incoming, true);
+
             // The reported flags pertain to the listed folder only
             QString folderFlags;
             if (mailboxPath == path) {
@@ -720,7 +723,30 @@ void ImapClient::messageFetched(QMailMessage& mail)
 {
     if (mail.status() & QMailMessage::New) {
         mail.setParentAccountId(_config.id());
-        mail.setParentFolderId(_protocol.mailbox().id);
+
+        // Some properties are inherited from the folder
+        const ImapMailboxProperties &properties(_protocol.mailbox());
+
+        mail.setParentFolderId(properties.id);
+
+        if (properties.status & QMailFolder::Incoming) {
+            mail.setStatus(QMailMessage::Incoming, true); 
+        }
+        if (properties.status & QMailFolder::Outgoing) {
+            mail.setStatus(QMailMessage::Outgoing, true); 
+        }
+        if (properties.status & QMailFolder::Drafts) {
+            mail.setStatus(QMailMessage::Draft, true); 
+        }
+        if (properties.status & QMailFolder::Sent) {
+            mail.setStatus(QMailMessage::Sent, true); 
+        }
+        if (properties.status & QMailFolder::Trash) {
+            mail.setStatus(QMailMessage::Trash, true); 
+        }
+        if (properties.status & QMailFolder::Junk) {
+            mail.setStatus(QMailMessage::Junk, true); 
+        }
     } else {
         // We need to update the message from the existing data
         QMailMessageMetaData existing(mail.serverUid(), _config.id());
