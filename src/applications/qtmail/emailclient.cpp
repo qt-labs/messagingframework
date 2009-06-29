@@ -1973,7 +1973,7 @@ void EmailClient::retrieveVisibleMessagesFlags()
 void EmailClient::composeActivated()
 {
     delayedInit();
-    if(writeMailWidget()->prepareComposer())
+    if (writeMailWidget()->prepareComposer(QMailMessage::Email))
         viewComposer();
 }
 

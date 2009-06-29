@@ -74,7 +74,7 @@ public:
 
 public slots:
     bool saveChangesOnRequest();
-    bool prepareComposer(QMailMessage::MessageType = QMailMessage::AnyType);
+    bool prepareComposer(QMailMessage::MessageType = QMailMessage::AnyType, const QMailAccountId & = QMailAccountId());
 
 signals:
     void editAccounts();
@@ -101,7 +101,7 @@ private:
     bool changed() const;
     void setComposer( const QString &id );
     void setTitle(const QString& title);
-    void updateSendAction(QMailMessage::MessageType messageType);
+    void updateAccountSelection(QMailMessage::MessageType messageType, const QMailAccountId &accountId);
 
 private:
     QMailMessage mail;

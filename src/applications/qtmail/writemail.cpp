@@ -284,7 +284,7 @@ bool WriteMail::changed() const
 
 void WriteMail::create(const QMailMessage& initMessage)
 {
-    prepareComposer(initMessage.messageType());
+    prepareComposer(initMessage.messageType(), initMessage.parentAccountId());
     if (composer().isEmpty())
         return;
 
@@ -294,7 +294,7 @@ void WriteMail::create(const QMailMessage& initMessage)
 
 void WriteMail::respond(const QMailMessage& source, QMailMessage::ResponseType type)
 {
-    prepareComposer(source.messageType());
+    prepareComposer(source.messageType(), source.parentAccountId());
     if (composer().isEmpty())
         return;
 
@@ -308,7 +308,7 @@ void WriteMail::respond(const QMailMessagePart::Location& sourceLocation, QMailM
 {
     QMailMessage source(sourceLocation.containingMessageId());
 
-    prepareComposer(source.messageType());
+    prepareComposer(source.messageType(), source.parentAccountId());
     if (composer().isEmpty())
         return;
 
@@ -322,7 +322,7 @@ void WriteMail::modify(const QMailMessage& previousMessage)
 {
     QString recipients = "";
 
-    prepareComposer(previousMessage.messageType());
+    prepareComposer(previousMessage.messageType(), previousMessage.parentAccountId());
     if (composer().isEmpty())
         return;
 
@@ -364,7 +364,7 @@ void WriteMail::reset()
     m_replyAction = QMailMessage::NoResponse;
 }
 
-bool WriteMail::prepareComposer(QMailMessage::MessageType type)
+bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccountId &accountId)
 {
     bool success = false;
 
@@ -407,6 +407,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type)
         }
     }
 
+    updateAccountSelection(type, accountId);
     return success;
 }
 
@@ -470,7 +471,6 @@ bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType>
 
     // Can't save as draft until there has been a change
     m_draftAction->setEnabled(false);
-    updateSendAction(messageType);
     return true;
 }
 
@@ -505,24 +505,35 @@ void WriteMail::setComposer( const QString &key )
     m_composerInterface->setFocus();
 }
 
-void WriteMail::updateSendAction(QMailMessage::MessageType messageType)
+void WriteMail::updateAccountSelection(QMailMessage::MessageType messageType, const QMailAccountId &suggestedId)
 {
+    m_accountSelection->clear();
+
     QMailAccountIdList accountIds = sendingAccounts(messageType);
+    m_accountSelection->setEnabled(accountIds.count() > 1);
 
-    bool haveMultipleAccounts = accountIds.count() > 1;
-    m_accountSelection->setEnabled(haveMultipleAccounts);
-
-    if (haveMultipleAccounts) {
-        QString accountName;
-
-        foreach (QMailAccountId id, accountIds) {
-            QMailAccount a(id);
-            if (accountName.isEmpty() || (a.status() & QMailAccount::PreferredSender)) {
-                accountName = a.name();
-            }
-            m_accountSelection->addItem(a.name(), a.id());
-        }
+    if (accountIds.isEmpty()) {
+        return;
     }
+
+    int suggestedIndex = -1;
+    int preferredIndex = -1;
+
+    foreach (QMailAccountId id, accountIds) {
+        QMailAccount a(id);
+
+        if (a.id() == suggestedId) {
+            suggestedIndex = m_accountSelection->count();
+        }
+        if (a.status() & QMailAccount::PreferredSender) {
+            preferredIndex = m_accountSelection->count();
+        }
+
+        m_accountSelection->addItem(a.name(), a.id());
+    }
+
+    int index(suggestedIndex != -1 ? suggestedIndex : (preferredIndex != -1 ? preferredIndex : 0));
+    m_accountSelection->setCurrentIndex(index);
 }
 
 QString WriteMail::composer() const
