@@ -41,20 +41,20 @@
 
 #include "writemail.h"
 #include "selectcomposerwidget.h"
-#include <qmaillog.h>
-#include <QAction>
-#include <qmailaccount.h>
-#include <qmailcomposer.h>
-#include <QStackedWidget>
-#include <QMessageBox>
-#include <QApplication>
-#include <QSettings>
-#include <QMenuBar>
-#include <QToolBar>
 #include "readmail.h"
 #include <qmailaccountkey.h>
 #include <qmailstore.h>
-#include <QToolButton>
+#include <qmaillog.h>
+#include <qmailaccount.h>
+#include <qmailcomposer.h>
+#include <QAction>
+#include <QApplication>
+#include <QComboBox>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSettings>
+#include <QStackedWidget>
+#include <QToolBar>
 
 static const int defaultWidth = 500;
 static const int defaultHeight = 400;
@@ -76,12 +76,11 @@ WriteMail::WriteMail(QWidget* parent)
     m_cancelAction(0),
     m_draftAction(0),
     m_sendAction(0),
-    m_sendViaMenu(0),
-    m_sendButton(0),
     m_widgetStack(0),
     m_selectComposerWidget(0),
     m_replyAction(QMailMessage::NoResponse),
-    m_toolbar(0)
+    m_toolbar(0),
+    m_accountSelection(0)
 {
     init();
 }
@@ -92,29 +91,21 @@ void WriteMail::init()
     addToolBar(m_toolbar);
     m_widgetStack = new QStackedWidget(this);
 
+    m_cancelAction = new QAction(QIcon(":icon/cancel"),tr("Close"),this);
+    connect( m_cancelAction, SIGNAL(triggered()), this, SLOT(discard()) );
+    addAction(m_cancelAction);
+
     m_draftAction = new QAction(QIcon(":icon/draft"),tr("Save in drafts"),this);
     connect( m_draftAction, SIGNAL(triggered()), this, SLOT(draft()) );
     m_draftAction->setWhatsThis( tr("Save this message as a draft.") );
     addAction(m_draftAction);
 
-    m_cancelAction = new QAction(QIcon(":icon/cancel"),tr("Close"),this);
-    connect( m_cancelAction, SIGNAL(triggered()), this, SLOT(discard()) );
-    addAction(m_cancelAction);
-
-    QIcon sendIcon(":icon/sendmail");
-
-    m_sendAction = new QAction(sendIcon,tr("Send"),this);
+    m_sendAction = new QAction(QIcon(":icon/sendmail"),tr("Send"),this);
     connect( m_sendAction, SIGNAL(triggered()), this, SLOT(sendStage()) );
     m_sendAction->setWhatsThis( tr("Send the message.") );
     addAction(m_sendAction);
 
-    m_sendViaMenu = new QMenu("Send Via",this);
-    m_sendViaMenu->setIcon(sendIcon);
-
-    m_sendButton = new QToolButton(m_toolbar);
-    m_sendButton->setDefaultAction(m_sendAction);
-    m_sendButton->setMenu(m_sendViaMenu);
-    m_sendButton->setIcon(sendIcon);
+    m_accountSelection = new QComboBox(m_toolbar);
 
     m_selectComposerWidget = new SelectComposerWidget(this);
     m_selectComposerWidget->setObjectName("selectComposer");
@@ -127,15 +118,16 @@ void WriteMail::init()
 
     QMenuBar* mainMenuBar = new QMenuBar();
     setMenuBar(mainMenuBar);
+
     QMenu* file = mainMenuBar->addMenu("File");
     file->addAction(m_sendAction);
-    file->addMenu(m_sendViaMenu);
     file->addAction(m_draftAction);
     file->addSeparator();
     file->addAction(m_cancelAction);
 
-    m_toolbar->addWidget(m_sendButton);
+    m_toolbar->addAction(m_sendAction);
     m_toolbar->addAction(m_draftAction);
+    m_toolbar->addWidget(m_accountSelection);
     m_toolbar->addSeparator();
 
     setWindowTitle(tr("Compose"));
@@ -150,40 +142,22 @@ bool WriteMail::sendStage()
         return false;
     }
 
-    QAction* sendAction = qobject_cast<QAction*>(sender());
-    if(!sendAction)
-	return false;
-
-    QMailAccountId sendAccountId;
-
-    if(!sendAction->data().isValid())
-    {
-        qWarning() << "Cannot send message without valid account id!";
-        return false;
-    }
-
-    sendAccountId = sendAction->data().value<QMailAccountId>();
-
-    if (buildMail(sendAccountId)) {
-
+    if (buildMail(true)) {
         if (largeAttachments()) {
-            //prompt for action
-            QMessageBox::StandardButton result;
-            result = QMessageBox::question(qApp->activeWindow(),
-                    tr("Large attachments"),
-                    tr("The message has large attachments. Send now?"),
-                    QMessageBox::Yes | QMessageBox::No);
-            if(result == QMessageBox::No)
-            {
+            // Ensure this is intentional
+            if (QMessageBox::question(qApp->activeWindow(),
+                                      tr("Large attachments"),
+                                      tr("The message has large attachments. Send now?"),
+                                      QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) {
                 draft();
                 QMessageBox::warning(qApp->activeWindow(),
-                        tr("Message saved"),
-                        tr("The message has been saved in the Drafts folder"),
-                        tr("OK") );
-
+                                     tr("Message saved"),
+                                     tr("The message has been saved in the Drafts folder"),
+                                     QMessageBox::Ok);
                 return true;
             }
         }
+
         emit enqueueMail(mail);
     } else {
         qMailLog(Messaging) << "Unable to build mail for transmission!";
@@ -234,16 +208,19 @@ bool WriteMail::saveChangesOnRequest()
     return true;
 }
 
-bool WriteMail::buildMail(const QMailAccountId& accountId, bool includeSignature)
+bool WriteMail::buildMail(bool includeSignature)
 {
-    //retain the old mail id since it may have been a draft
+    // Retain the old mail id since it may have been a draft
     QMailMessageId existingId = mail.id();
     QString existingScheme = mail.contentScheme();
     QString existingIdentifier = mail.contentIdentifier();
 
+    QMailAccountId accountId(m_accountSelection->itemData(m_accountSelection->currentIndex()).value<QMailAccountId>());
+
     // Ensure the signature of the selected account is used
-    if(includeSignature)
+    if (accountId.isValid() && includeSignature) {
         m_composerInterface->setSignature(signature(accountId));
+    }
 
     // Extract the message from the composer
     mail = m_composerInterface->message();
@@ -444,9 +421,7 @@ bool WriteMail::draft()
 {
     bool result(false);
 
-    //build message using first available account id.
-    QMailAccountId accountid = m_sendAction->data().value<QMailAccountId>();
-    if (!buildMail(accountid,false)) {
+    if (!buildMail(false)) {
         qWarning() << "draft() - Unable to buildMail for saveAsDraft!";
     } else {
         result = true;
@@ -533,25 +508,21 @@ void WriteMail::setComposer( const QString &key )
 void WriteMail::updateSendAction(QMailMessage::MessageType messageType)
 {
     QMailAccountIdList accountIds = sendingAccounts(messageType);
+
     bool haveMultipleAccounts = accountIds.count() > 1;
-    m_sendViaMenu->menuAction()->setVisible(haveMultipleAccounts);
+    m_accountSelection->setEnabled(haveMultipleAccounts);
 
-    if (haveMultipleAccounts)
-    {
-        m_sendViaMenu->clear();
-        foreach(QMailAccountId id, accountIds)
-        {
+    if (haveMultipleAccounts) {
+        QString accountName;
+
+        foreach (QMailAccountId id, accountIds) {
             QMailAccount a(id);
-            QAction* accountSendAction = m_sendViaMenu->addAction(a.name());
-	    connect(accountSendAction,SIGNAL(triggered(bool)),this,SLOT(sendStage()));
-            accountSendAction->setData(id);
+            if (accountName.isEmpty() || (a.status() & QMailAccount::PreferredSender)) {
+                accountName = a.name();
+            }
+            m_accountSelection->addItem(a.name(), a.id());
         }
-        m_sendButton->setMenu(m_sendViaMenu);
     }
-    else if(!accountIds.isEmpty())
-        m_sendButton->setMenu(0);
-
-    m_sendAction->setData(accountIds.first());
 }
 
 QString WriteMail::composer() const
@@ -566,11 +537,11 @@ void WriteMail::messageModified()
 {
     m_hasMessageChanged = true;
 
-    if ( m_composerInterface )
+    if (m_composerInterface) {
         m_draftAction->setEnabled( hasContent() );
-    bool enableSend = m_composerInterface->isReadyToSend();
-    m_sendAction->setEnabled(enableSend);
-    m_sendViaMenu->setEnabled(enableSend);
+    }
+
+    m_sendAction->setEnabled(m_composerInterface->isReadyToSend());
 }
 
 bool WriteMail::forcedClosure()
@@ -639,8 +610,7 @@ bool WriteMail::largeAttachments()
 
 QString WriteMail::signature(const QMailAccountId& accountId) const
 {
-    if (accountId.isValid())
-    {
+    if (accountId.isValid()) {
         QMailAccount account(accountId);
         if (account.status() & QMailAccount::AppendSignature)
             return account.signature();

@@ -42,17 +42,17 @@
 #ifndef WRITEMAIL_H
 #define WRITEMAIL_H
 
+#include <qmailmessage.h>
 #include <QDialog>
 #include <QMainWindow>
 #include <QString>
-#include <qmailmessage.h>
 
 class QAction;
+class QComboBox;
 class QContent;
 class QMailComposerInterface;
 class QStackedWidget;
 class SelectComposerWidget;
-class QToolButton;
 
 class WriteMail : public QMainWindow
 {
@@ -94,7 +94,7 @@ protected slots:
 
 private:
     bool largeAttachments();
-    bool buildMail(const QMailAccountId& accountId, bool includeSignature = true);
+    bool buildMail(bool includeSignature);
     void init();
     QString signature(const QMailAccountId& id) const;
     bool isComplete() const;
@@ -107,14 +107,13 @@ private:
     QMailMessage mail;
     QMailComposerInterface *m_composerInterface;
     QAction *m_cancelAction, *m_draftAction, *m_sendAction;
-    QMenu* m_sendViaMenu;
-    QToolButton* m_sendButton;
     QStackedWidget* m_widgetStack;
     bool m_hasMessageChanged;
     SelectComposerWidget* m_selectComposerWidget;
     QMailMessageId m_precursorId;
     QMailMessage::ResponseType m_replyAction;
     QToolBar *m_toolbar;
+    QComboBox *m_accountSelection;
 };
 
 #endif
