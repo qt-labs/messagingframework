@@ -206,8 +206,10 @@ void ImapStrategy::newConnection(ImapStrategyContextBase *context)
 
 void ImapStrategy::initialAction(ImapStrategyContextBase *context)
 {
-    if (context->protocol().loggingOut())
+    if (context->protocol().loggingOut()) {
         context->protocol().close();
+    }
+
     if (context->protocol().inUse()) {
         // We have effectively just completed authenticating
         transition(context, IMAP_Login, OpOk);
@@ -2388,7 +2390,9 @@ void ImapCopyMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 
 void ImapCopyMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    context->updateStatus( QObject::tr("Copying %1 / %2").arg(_messageCount + 1).arg(_listSize) );
+    if (_messageCount < _listSize) {
+        context->updateStatus( QObject::tr("Copying %1 / %2").arg(_messageCount + 1).arg(_listSize) );
+    }
 
     copyNextMessage(context);
 }
@@ -2618,7 +2622,9 @@ void ImapMoveMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *
 
 void ImapMoveMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    context->updateStatus( QObject::tr("Moving %1 / %2").arg(_messageCount + 1).arg(_listSize) );
+    if (_messageCount < _listSize) {
+        context->updateStatus( QObject::tr("Moving %1 / %2").arg(_messageCount + 1).arg(_listSize) );
+    }
 
     copyNextMessage(context);
 }
