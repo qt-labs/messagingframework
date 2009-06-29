@@ -2428,7 +2428,6 @@ void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, 
         if (!QMailStore::instance()->updateMessage(&metaData)) {
             qWarning() << "Unable to update message:" << id << "to set UID:" << uid;
         }
-        else qDebug() << "updated:" << id << "uid:" << uid;
     }
 
     ImapFetchSelectedMessagesStrategy::messageCreated(context, id, uid);

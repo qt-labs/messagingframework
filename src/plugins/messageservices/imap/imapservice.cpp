@@ -418,50 +418,56 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         return false;
     }
 
+    // Update the local copy status immediately
+    QMailMessageSource::flagMessages(messageIds, setMask, unsetMask);
+
+    // See if there are any further actiosn to be taken
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
 
-    QString trashPath(imapCfg.trashFolder());
-    if (!trashPath.isEmpty()) {
-        _setMask = setMask;
-        _unsetMask = unsetMask;
+    if ((_setMask & QMailMessage::Trash) || (_unsetMask & QMailMessage::Trash)) {
+        QString trashPath(imapCfg.trashFolder());
+        if (!trashPath.isEmpty()) {
+            _setMask = setMask;
+            _unsetMask = unsetMask;
 
-        if (_setMask & QMailMessage::Trash) {
-            // Move these messages to the predefined location
-            QMailFolderId trashId(_service->_client.mailboxId(trashPath));
-            if (!trashId.isValid()) {
-                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Trash folder"));
-                return false;
-            }
-
-            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
-            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
-        } else if (_unsetMask & QMailMessage::Trash) {
-            QMap<QMailFolderId, QMailMessageIdList> destinationList;
-
-            // These messages need to be restored to their previous locations
-            QMailMessageKey key(QMailMessageKey::id(messageIds));
-            QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
-
-            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
-                if (metaData.previousParentFolderId().isValid()) {
-                    destinationList[metaData.previousParentFolderId()].append(metaData.id());
+            if (_setMask & QMailMessage::Trash) {
+                // Move these messages to the predefined location
+                QMailFolderId trashId(_service->_client.mailboxId(trashPath));
+                if (!trashId.isValid()) {
+                    _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Trash folder"));
+                    return false;
                 }
-            }
 
-            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-            QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
-            for ( ; it != end; ++it) {
-                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
+                _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
+                return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+            } else if (_unsetMask & QMailMessage::Trash) {
+                QMap<QMailFolderId, QMailMessageIdList> destinationList;
+
+                // These messages need to be restored to their previous locations
+                QMailMessageKey key(QMailMessageKey::id(messageIds));
+                QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
+
+                foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+                    if (metaData.previousParentFolderId().isValid()) {
+                        destinationList[metaData.previousParentFolderId()].append(metaData.id());
+                    }
+                }
+
+                _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+                QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
+                for ( ; it != end; ++it) {
+                    _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
+                }
+                return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
             }
-            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         }
     }
 
-    QString sentPath(imapCfg.sentFolder());
-    if (!sentPath.isEmpty()) {
-        if (setMask & QMailMessage::Sent) {
+    if (setMask & QMailMessage::Sent) {
+        QString sentPath(imapCfg.sentFolder());
+        if (!sentPath.isEmpty()) {
             _setMask = setMask;
             _unsetMask = unsetMask;
 
@@ -478,7 +484,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
     }
 
-    return QMailMessageSource::flagMessages(messageIds, setMask, unsetMask);
+    return true;
 }
 
 bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &messageIds)
