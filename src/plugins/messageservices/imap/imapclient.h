@@ -118,6 +118,7 @@ public slots:
     void nonexistentUid(const QString &uid);
     void messageStored(const QString &);
     void messageCopied(const QString &, const QString &);
+    void messageCreated(const QMailMessageId &, const QString &);
     void downloadSize(const QString &uid, int);
     void urlAuthorized(const QString &url);
 

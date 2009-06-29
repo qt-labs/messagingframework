@@ -781,9 +781,10 @@ public:
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
     virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
 
 signals:
-    void urlAuthorized(const QString &url);
+    void messageCreated(const QMailMessageId&, const QString&);
 
 private:
     struct AppendParameters
@@ -838,6 +839,20 @@ void AppendState::continuationResponse(ImapContext *c, const QString &)
     const AppendParameters &params(mParameters.first());
 
     c->sendData(params.mData);
+}
+
+void AppendState::taggedResponse(ImapContext *c, const QString &line)
+{
+    if (status() == OpOk) {
+        // See if we got an APPENDUID response
+        QRegExp appenduidResponsePattern("APPENDUID (\\S+) (\\S+)");
+        if (appenduidResponsePattern.indexIn(line) != -1) {
+            const AppendParameters &params(mParameters.first());
+            emit messageCreated(params.mMessageId, messageUid(c->mailbox().id, appenduidResponsePattern.cap(2)));
+        }
+    }
+    
+    ImapState::taggedResponse(c, line);
 }
 
 
@@ -1527,7 +1542,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
         const QPair<QString, QMailFolder> &params(_parameters.first());
 
         // See if we got a COPYUID response
-        QRegExp copyuidResponsePattern("COPYUID (\\w+) (\\w+) (\\w+)");
+        QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) (\\S+)");
         if (copyuidResponsePattern.indexIn(line) != -1) {
             QList<uint> copiedUids = sequenceUids(copyuidResponsePattern.cap(2));
             QList<uint> createdUids = sequenceUids(copyuidResponsePattern.cap(3));
@@ -1786,6 +1801,8 @@ ImapProtocol::ImapProtocol()
             this, SIGNAL(mailboxListed(QString &, QString &, QString &)));
     connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
             this, SIGNAL(urlAuthorized(QString)));
+    connect(&_fsm->appendState, SIGNAL(messageCreated(QMailMessageId, QString)),
+            this, SIGNAL(messageCreated(QMailMessageId, QString)));
     connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)), 
             this, SIGNAL(downloadSize(QString, int)));
     connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)), 

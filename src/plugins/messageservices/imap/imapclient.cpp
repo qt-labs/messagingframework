@@ -423,6 +423,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(messageStored(QString)) );
     connect(&_protocol, SIGNAL(messageCopied(QString, QString)),
             this, SLOT(messageCopied(QString, QString)) );
+    connect(&_protocol, SIGNAL(messageCreated(QMailMessageId, QString)),
+            this, SLOT(messageCreated(QMailMessageId, QString)) );
     connect(&_protocol, SIGNAL(downloadSize(QString, int)),
             this, SLOT(downloadSize(QString, int)) );
     connect(&_protocol, SIGNAL(urlAuthorized(QString)),
@@ -1123,6 +1125,11 @@ void ImapClient::messageStored(const QString &uid)
 void ImapClient::messageCopied(const QString &copiedUid, const QString &createdUid)
 {
     _strategyContext->messageCopied(copiedUid, createdUid);
+}
+
+void ImapClient::messageCreated(const QMailMessageId &id, const QString &uid)
+{
+    _strategyContext->messageCreated(id, uid);
 }
 
 void ImapClient::downloadSize(const QString &uid, int size)

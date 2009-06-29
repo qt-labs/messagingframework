@@ -113,6 +113,7 @@ public:
     virtual void nonexistentUid(ImapStrategyContextBase *context, const QString &uid);
     virtual void messageStored(ImapStrategyContextBase *context, const QString &uid);
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
+    virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void downloadSize(ImapStrategyContextBase *context, const QString &uid, int length);
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
 
@@ -494,6 +495,7 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
+    virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
@@ -597,6 +599,7 @@ public:
     void nonexistentUid(const QString &uid) { _strategy->nonexistentUid(this, uid); } 
     void messageStored(const QString &uid) { _strategy->messageStored(this, uid); }
     void messageCopied(const QString &copiedUid, const QString &createdUid) { _strategy->messageCopied(this, copiedUid, createdUid); }
+    void messageCreated(const QMailMessageId &id, const QString &uid) { _strategy->messageCreated(this, id, uid); }
     void downloadSize(const QString &uid, int length) { _strategy->downloadSize(this, uid, length); }
     void urlAuthorized(const QString &url) { _strategy->urlAuthorized(this, url); }
 

@@ -298,6 +298,13 @@ void ImapStrategy::messageCopied(ImapStrategyContextBase *context, const QString
     Q_UNUSED(createdUid)
 }
 
+void ImapStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(id)
+    Q_UNUSED(uid)
+}
+
 void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString &uid, int length)
 {
     Q_UNUSED(context)
@@ -2406,6 +2413,21 @@ void ImapCopyMessagesStrategy::messageCopied(ImapStrategyContextBase *context, c
     }
 
     ImapFetchSelectedMessagesStrategy::messageCopied(context, copiedUid, createdUid);
+}
+
+void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid)
+{
+    if (!uid.isEmpty()) {
+        // Update the original message to record the copied location
+        QMailMessageMetaData metaData(id);
+        metaData.setServerUid(uid);
+        if (!QMailStore::instance()->updateMessage(&metaData)) {
+            qWarning() << "Unable to update message:" << id << "to set UID:" << uid;
+        }
+        else qDebug() << "updated:" << id << "uid:" << uid;
+    }
+
+    ImapFetchSelectedMessagesStrategy::messageCreated(context, id, uid);
 }
 
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)

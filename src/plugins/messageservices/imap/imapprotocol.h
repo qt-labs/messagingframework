@@ -195,6 +195,7 @@ signals:
     void nonexistentUid(const QString& uid);
     void messageStored(const QString& uid);
     void messageCopied(const QString& copiedUid, const QString& createdUid);
+    void messageCreated(const QMailMessageId& id, const QString& uid);
     void urlAuthorized(const QString& url);
 
     void continuationRequired(ImapCommand, const QString &);
