@@ -521,9 +521,13 @@ void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMai
 
 void ImapService::Source::messageActionCompleted(const QString &uid)
 {
-    QMailMessageMetaData metaData(uid, _service->accountId());
-    if (metaData.id().isValid()) {
-        emit actionCompleted(QMailMessageIdList() << metaData.id());
+    if (uid.startsWith("id:")) {
+        emit actionCompleted(QMailMessageIdList() << QMailMessageId(uid.mid(3).toULongLong()));
+    } else if (!uid.isEmpty()) {
+        QMailMessageMetaData metaData(uid, _service->accountId());
+        if (metaData.id().isValid()) {
+            emit actionCompleted(QMailMessageIdList() << metaData.id());
+        }
     }
 }
 
