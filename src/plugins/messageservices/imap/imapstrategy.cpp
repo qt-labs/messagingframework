@@ -2442,7 +2442,13 @@ void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
     }
         
     if (!sourceUid.isEmpty()) {
-        const QMailMessage source(sourceUid, context->config().id());
+        QMailMessage source;
+        if (sourceUid.startsWith("id:")) {
+            source = QMailMessage(QMailMessageId(sourceUid.mid(3).toULongLong()));
+        } else {
+            source = QMailMessage(sourceUid, context->config().id());
+        }
+
         if (source.id().isValid()) {
             updateCopiedMessage(context, message, source);
         } else {
@@ -2483,6 +2489,8 @@ void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
             QString uid(ImapProtocol::uid(_retrieveUid));
             context->protocol().sendUidCopy( uid, _destination );
         }
+
+        _sourceUids.append(_retrieveUid);
     }
 }
 
@@ -2663,6 +2671,13 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
     }
     if (source.status() & QMailMessage::PartialContentAvailable) {
         message.setStatus(QMailMessage::PartialContentAvailable, true);
+    }
+
+    if (source.serverUid().isEmpty()) {
+        // This message has been moved to the external server - delete the local copy
+        if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {
+            qWarning() << "Unable to remove moved message:" << source.id();
+        }
     }
 }
 
