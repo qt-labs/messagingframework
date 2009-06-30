@@ -91,9 +91,12 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     addAccountAction = new QAction( QIcon(":icon/new"), tr("Add account..."), this );
     connect(addAccountAction, SIGNAL(triggered()), this, SLOT(addAccount()));
     context->addAction( addAccountAction );
-    removeAccountAction = new QAction( QIcon(":icon/trash"), tr("Remove account..."), this );
+    removeAccountAction = new QAction( QIcon(":icon/trash"), tr("Remove account"), this );
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
     context->addAction(removeAccountAction);
+    resetAccountAction = new QAction( tr("Reset account"), this );
+    connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
+    context->addAction( resetAccountAction );
 
     QAction* exitAction = new QAction(tr("Quit"), this );
     connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -146,7 +149,7 @@ void AccountSettings::removeAccount()
 
     QMailAccount account(accountModel->idFromIndex(index));
 
-    QString message = tr("<qt>Delete account:\n%1</qt>").arg(Qt::escape(account.name()));
+    QString message = tr("Delete account:\n%1").arg(Qt::escape(account.name()));
     if (QMessageBox::warning( this, tr("Email"), message, tr("Yes"), tr("No"), 0, 0, 1 ) == 0) {
         // We could simply delete the account since QMailStore::deleteAccount
         // will remove all folders and messages, but for now we will remove the
@@ -183,6 +186,30 @@ void AccountSettings::removeAccount()
 
         deleteAccountId = account.id();
         QTimer::singleShot(0, this, SLOT(deleteMessages()));
+    }
+}
+
+void AccountSettings::resetAccount()
+{
+    QModelIndex index = accountView->currentIndex();
+    if (!index.isValid())
+      return;
+
+    QMailAccount account(accountModel->idFromIndex(index));
+
+    QString message = tr("Reset account:\n%1").arg(Qt::escape(account.name()));
+    if (QMessageBox::warning( this, tr("Email"), message, tr("Yes"), tr("No"), 0, 0, 1 ) == 0) {
+        // Load the existing configuration
+        QMailAccountConfiguration config(account.id());
+
+        // Delete the account
+        QMailStore::instance()->removeAccount(account.id());
+
+        // Add the same account back
+        QMailStore::instance()->addAccount(&account, &config);
+        accountView->setCurrentIndex(accountModel->index(accountModel->rowCount() - 1, 0));
+
+        QTimer::singleShot(0, this, SLOT(testConfiguration()));
     }
 }
 

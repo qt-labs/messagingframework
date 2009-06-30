@@ -74,6 +74,7 @@ protected:
 
 private slots:
     void removeAccount();
+    void resetAccount();
     void accountSelected(QModelIndex index);
     void updateActions();
     void displayProgress(uint, uint);
@@ -91,6 +92,7 @@ private:
     QMenu *context;
     QAction *addAccountAction;
     QAction *removeAccountAction;
+    QAction *resetAccountAction;
     StatusDisplay *statusDisplay;
     QPoint cPos;
     bool preExisting;
