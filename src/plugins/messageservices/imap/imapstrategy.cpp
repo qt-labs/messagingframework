@@ -53,8 +53,6 @@
 #include <limits.h>
 #include <QDir>
 
-// TODO: Use pipelined commands where appropriate - where error handling remains 
-// sensible and it isn't too difficult to tell which commands have/haven't completed...
 
 static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
 static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
@@ -530,6 +528,12 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
             break;
         }
         
+        case IMAP_Close:
+        {
+            handleClose(context);
+            break;
+        }
+        
         case IMAP_Logout:
         {
             break;
@@ -551,6 +555,11 @@ void ImapMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     // We're completing a message or section
+    messageListMessageAction(context);
+}
+
+void ImapMessageListStrategy::handleClose(ImapStrategyContextBase *context)
+{
     messageListMessageAction(context);
 }
 
@@ -687,6 +696,9 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
         if (_currentMailbox.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
             handleSelect(context);
+        } else if (_currentMailbox.id() == QMailFolder::LocalStorageFolderId) {
+            // No folder should be selected
+            context->protocol().sendClose();
         } else {
             context->protocol().sendSelect(_currentMailbox);
         }
@@ -2455,20 +2467,6 @@ void ImapCopyMessagesStrategy::messageCopied(ImapStrategyContextBase *context, c
     ImapFetchSelectedMessagesStrategy::messageCopied(context, copiedUid, createdUid);
 }
 
-void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid)
-{
-    if (!uid.isEmpty()) {
-        // Update the original message to record the copied location
-        QMailMessageMetaData metaData(id);
-        metaData.setServerUid(uid);
-        if (!QMailStore::instance()->updateMessage(&metaData)) {
-            qWarning() << "Unable to update message:" << id << "to set UID:" << uid;
-        }
-    }
-
-    ImapFetchSelectedMessagesStrategy::messageCreated(context, id, uid);
-}
-
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     // See if we can update the status of the copied message from the source message
@@ -2520,6 +2518,8 @@ void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
     if (selectNextMessageSequence(context, 1)) {
         ++_messageCount;
 
+        _transferState = Copy;
+
         if (_retrieveUid.startsWith("id:")) {
             // This message does not exist on the server - append it
             QMailMessageId id(_retrieveUid.mid(3).toULongLong());
@@ -2549,6 +2549,8 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
         const QPair<QMailMessageIdList, QMailFolderId> &set(_messageSets.first());
 
         selectedMailsAppend(set.first);
+        resetMessageListTraversal();
+
         _destination = QMailFolder(set.second);
 
         _messageSets.takeFirst();
@@ -2591,12 +2593,6 @@ void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
             break;
         }
         
-        case IMAP_Close:
-        {
-            handleClose(context);
-            break;
-        }
-        
         case IMAP_Examine:
         {
             handleExamine(context);
@@ -2629,8 +2625,12 @@ void ImapMoveMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 
 void ImapMoveMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 {
-    context->protocol().sendExamine(_lastMailbox);
-    _lastMailbox = QMailFolder();
+    if (_transferState == Copy) {
+        context->protocol().sendExamine(_lastMailbox);
+        _lastMailbox = QMailFolder();
+    } else {
+        ImapCopyMessagesStrategy::handleClose(context);
+    }
 }
 
 void ImapMoveMessagesStrategy::handleExamine(ImapStrategyContextBase *context)

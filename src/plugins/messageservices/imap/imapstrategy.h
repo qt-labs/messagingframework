@@ -95,7 +95,6 @@ struct MessageSelector
     SectionProperties _properties;
 };
 
-//typedef QMultiMap<QPair<uint, QMailMessageId>, SectionProperties> FolderMap;
 typedef QList<MessageSelector> FolderSelections;
 typedef QMap<QMailFolderId, FolderSelections> SelectionMap;
 
@@ -149,7 +148,7 @@ public:
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);
 
-    enum TransferState { Init, List, Search, Preview, Complete };
+    enum TransferState { Init, List, Search, Preview, Complete, Copy };
 
     TransferState _transferState;
     QString _baseFolder;
@@ -197,6 +196,7 @@ protected:
 
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
+    virtual void handleClose(ImapStrategyContextBase *context);
 
     virtual void messageListFolderAction(ImapStrategyContextBase *context);
     virtual void messageListMessageAction(ImapStrategyContextBase *context) = 0;
@@ -528,7 +528,6 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
-    virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
