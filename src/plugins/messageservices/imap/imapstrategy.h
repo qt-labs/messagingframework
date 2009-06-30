@@ -52,6 +52,10 @@
 
 
 struct SectionProperties {
+    enum MinimumType {
+        All = -1
+    };
+
     SectionProperties(const QMailMessagePart::Location &location = QMailMessagePart::Location(),
                       int minimum = All)
         :  _location(location),
@@ -59,16 +63,41 @@ struct SectionProperties {
     {
     }
 
-    enum MinimumType {
-        All = -1
-    };
+    bool isEmpty() const
+    {
+        return (!_location.isValid() && (_minimum == All));
+    }
 
     QMailMessagePart::Location _location;
     int _minimum;
 };
 
-typedef QMultiMap<QPair<uint, QMailMessageId>, SectionProperties> FolderMap;
-typedef QMap<QMailFolderId, FolderMap> SelectionMap;
+struct MessageSelector 
+{
+    MessageSelector(uint uid, const QMailMessageId &messageId, const SectionProperties &properties)
+        : _uid(uid),
+          _messageId(messageId),
+          _properties(properties)
+    {
+    }
+
+    QString uidString(const QString &mailbox) const
+    {
+        if (_uid == 0) {
+            return ("id:" + QString::number(_messageId.toULongLong()));
+        } else {
+            return (mailbox + QString::number(_uid));
+        }
+    }
+
+    uint _uid;
+    QMailMessageId _messageId;
+    SectionProperties _properties;
+};
+
+//typedef QMultiMap<QPair<uint, QMailMessageId>, SectionProperties> FolderMap;
+typedef QList<MessageSelector> FolderSelections;
+typedef QMap<QMailFolderId, FolderSelections> SelectionMap;
 
 class QMailAccount;
 class QMailAccountConfiguration;
@@ -161,6 +190,8 @@ public:
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
+    virtual void initialAction(ImapStrategyContextBase *context);
+
 protected:
     enum { DefaultBatchSize = 50 };
 
@@ -172,6 +203,8 @@ protected:
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual bool computeStartEndPartRange(ImapStrategyContextBase *context);
+
+    virtual void resetMessageListTraversal();
     virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize, bool folderActionPermitted = true);
 
     virtual void setCurrentMailbox(const QMailFolderId &id);
@@ -179,8 +212,8 @@ protected:
     virtual bool messageListFolderActionRequired();
 
     SelectionMap _selectionMap;
-    SelectionMap::ConstIterator _folderItr;
-    FolderMap::ConstIterator _selectionItr;
+    SelectionMap::Iterator _folderItr;
+    FolderSelections::ConstIterator _selectionItr;
     QMailFolder _currentMailbox;
     QString _currentModSeq;
     QString _retrieveUid;

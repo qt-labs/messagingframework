@@ -100,6 +100,36 @@ static QStringList inFirstButNotSecond(const QStringList &first, const QStringLi
     return result;
 }
 
+static bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &rhs)
+{
+    // Any full message sorts before any message element
+    if (lhs._properties.isEmpty() && !rhs._properties.isEmpty()) {
+        return true;
+    } else if (rhs._properties.isEmpty() && !lhs._properties.isEmpty()) {
+        return false;
+    }
+
+    // Any UID value sorts before a non-UID value
+    if ((lhs._uid != 0) && (rhs._uid == 0)) {
+        return true;
+    } else if ((rhs._uid != 0) && (lhs._uid == 0)) {
+        return false;
+    } 
+
+    if (lhs._uid != 0) {
+        if (lhs._uid != rhs._uid) {
+            return (lhs._uid < rhs._uid);
+        }
+    } else {
+        if (lhs._messageId.toULongLong() != rhs._messageId.toULongLong()) {
+            return (lhs._messageId.toULongLong() < rhs._messageId.toULongLong());
+        }
+    }
+
+    // Messages are the same - fall back to lexicographic comparison of the location
+    return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
+}
+
 static void updateMessagesMetaData(ImapStrategyContextBase *context, 
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
@@ -135,6 +165,7 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 }
+
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -456,27 +487,18 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
 
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        // TODO - order messages within each folder by size ascending, or most recent first?
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[metaData.parentFolderId()].insert(qMakePair(serverUid, metaData.id()), SectionProperties());
+        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Location &location)
 {
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
-        SectionProperties sectionProperties(location);
-        bool ok;
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[metaData.parentFolderId()].insert(qMakePair(serverUid, metaData.id()), sectionProperties);
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapMessageListStrategy::newConnection(ImapStrategyContextBase *context)
@@ -484,6 +506,13 @@ void ImapMessageListStrategy::newConnection(ImapStrategyContextBase *context)
     setCurrentMailbox(QMailFolderId());
 
     ImapStrategy::newConnection(context);
+}
+
+void ImapMessageListStrategy::initialAction(ImapStrategyContextBase *context)
+{
+    resetMessageListTraversal();
+
+    ImapStrategy::initialAction(context);
 }
 
 void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
@@ -547,14 +576,19 @@ bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *
     return false;
 }
 
+void ImapMessageListStrategy::resetMessageListTraversal()
+{
+    _folderItr = _selectionMap.begin();
+    if (_folderItr != _selectionMap.end()) {
+        FolderSelections &folder(*_folderItr);
+        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+
+        _selectionItr = folder.begin();
+    }
+}
+
 bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum, bool folderActionPermitted)
 {
-    QMailFolderId mailboxId;
-    QString mailboxIdStr;
-    QStringList uidList;
-    QMailMessagePart::Location location;
-    int minimum = SectionProperties::All;
-
     if (!folderActionPermitted) {
         if (messageListFolderActionRequired()) {
             return false;
@@ -566,13 +600,17 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         return false;
     }
         
-    FolderMap::ConstIterator selectionEnd = _folderItr.value().end();
+    FolderSelections::ConstIterator selectionEnd = _folderItr.value().end();
     while (_selectionItr == selectionEnd) {
         ++_folderItr;
         if (_folderItr == _selectionMap.end())
             break;
-        _selectionItr = _folderItr.value().begin();
-        selectionEnd = _folderItr.value().end();
+
+        FolderSelections &folder(*_folderItr);
+        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+
+        _selectionItr = folder.begin();
+        selectionEnd = folder.end();
     }
 
     if ((_folderItr == _selectionMap.end()) || !_folderItr.key().isValid()) {
@@ -583,44 +621,48 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     }
 
     _transferState = Complete;
-    mailboxId = _folderItr.key();
+
+    QMailFolderId mailboxId = _folderItr.key();
     if (mailboxId != _currentMailbox.id()) {
         setCurrentMailbox(mailboxId);
         messageListFolderAction(context);
         return false;
     }
-    mailboxIdStr = QString::number(mailboxId.toULongLong()) + UID_SEPARATOR;
 
-    //TODO Leave parts to last to reduce roundtrips. Get all parts in one message in one roundtrip.
-    while ((_selectionItr != selectionEnd) 
-           && (uidList.count() < maximum)
-           && (!location.isValid())
-           && (minimum == SectionProperties::All)) {
-        QPair<uint, QMailMessageId> message(_selectionItr.key());
-        SectionProperties section(_selectionItr.value());
+    QString mailboxIdStr = QString::number(mailboxId.toULongLong()) + UID_SEPARATOR;
 
-        QString uid;
-        if (message.first == 0) {
-            uid = "id:" + QString::number(message.second.toULongLong());
-        } else {
-            uid = mailboxIdStr + QString::number(message.first);
-        }
+    QStringList uidList;
+    QMailMessagePart::Location location;
+    int minimum = SectionProperties::All;
 
-        uidList.append(uid);
-        location = section._location;
-        minimum = section._minimum;
+    // Get consecutive full messages
+    while ((uidList.count() < maximum) &&
+           (_selectionItr != selectionEnd) &&
+           (_selectionItr->_properties.isEmpty())) {
+        uidList.append((*_selectionItr).uidString(mailboxIdStr));
+        ++_selectionItr;
+    }
+
+    // TODO: Get multiple parts for a single message in one roundtrip
+    if (uidList.isEmpty() && (_selectionItr != selectionEnd)) {
+        const MessageSelector &selector(*_selectionItr);
+
+        uidList.append(selector.uidString(mailboxIdStr));
+        location = selector._properties._location;
+        minimum = selector._properties._minimum;
 
         ++_selectionItr;
-        if (_selectionItr != selectionEnd) {
-            if (section._location.isValid() || (section._minimum != SectionProperties::All))
-                break;  // _msgSection.isValid() parts still require a roundtrip
-        }
+    }
+
+    if (uidList.isEmpty()) {
+        return false;
     }
 
     _retrieveUid = uidList.join("\n");
     _msgSection = location;
     _sectionStart = 0;
     _sectionEnd = SectionProperties::All;
+
     if (minimum != SectionProperties::All) {
         _sectionEnd = minimum - 1;
         if (!minimum || !computeStartEndPartRange(context)) {
@@ -714,7 +756,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-            _selectionMap[metaData.parentFolderId()].insert(qMakePair(serverUid, metaData.id()), SectionProperties());
+            _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
@@ -723,9 +765,6 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             _totalRetrievalSize += size;
         }
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 
     // Report the total size we will retrieve
     _progressRetrievalSize = 0;
@@ -737,9 +776,8 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
 
     const QMailMessage message(location.containingMessageId());
     if (message.id().isValid()) {
-        SectionProperties sectionProperties(location, minimum);
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
-        _selectionMap[message.parentFolderId()].insert(qMakePair(serverUid, message.id()), sectionProperties);
+        _selectionMap[message.parentFolderId()].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
 
         uint size = 0;
         uint bytes = minimum;
@@ -756,9 +794,6 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
         _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
         _totalRetrievalSize += size;
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *context)
@@ -1271,6 +1306,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
                     _completionList.clear();
                     _completionSectionList.clear();
 
+                    resetMessageListTraversal();
                     messageListMessageAction(context);
                 } else {
                     // No messages to be completed
@@ -1302,7 +1338,7 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
                 const QMailMessageContentType contentType(part.contentType());
 
                 if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
-                    if (bytesLeft > disposition.size()) {
+                    if (bytesLeft >= disposition.size()) {
                         _completionSectionList.append(qMakePair(part.location(), 0u));
                         bytesLeft -= disposition.size();
                         ++partsToRetrieve;
