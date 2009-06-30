@@ -246,6 +246,7 @@ private:
     QString commandId(QString in);
     OperationStatus commandResponse(QString in);
     QString sendCommand(const QString &cmd);
+    QString sendCommandLiteral(const QString &cmd, uint length);
 
     void parseChange();
 

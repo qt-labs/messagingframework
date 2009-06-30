@@ -301,8 +301,9 @@ public:
     void continuation(ImapCommand c, const QString &s) { mProtocol->continuation(c, s); }
     void operationCompleted(ImapCommand c, OperationStatus s) { mProtocol->operationCompleted(c, s); }
 
-    QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
-    void sendData(const QString &data) { mProtocol->sendData(data); }
+    virtual QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
+    virtual QString sendCommandLiteral(const QString &cmd, uint length) { return mProtocol->sendCommandLiteral(cmd, length); }
+    virtual void sendData(const QString &data) { mProtocol->sendData(data); }
 
     ImapProtocol *protocol() { return mProtocol; }
     const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
@@ -819,13 +820,12 @@ QString AppendState::transmit(ImapContext *c)
     QMailMessage message(params.mMessageId);
     params.mData = message.toRfc2822(QMailMessage::TransmissionFormat);
 
-    QString cmd("APPEND %1 (%2) \"%3\" {%4}");
+    QString cmd("APPEND %1 (%2) \"%3\"");
     cmd = cmd.arg(ImapProtocol::quoteString(params.mDestination.path()));
     cmd = cmd.arg(messageFlagsToString(flagsForMessage(message)));
     cmd = cmd.arg(message.date().toString(QMailTimeStamp::Rfc3501));
-    cmd = cmd.arg(params.mData.length());
 
-    return c->sendCommand(cmd);
+    return c->sendCommandLiteral(cmd, params.mData.length());
 }
 
 void AppendState::leave(ImapContext *)
@@ -1696,6 +1696,8 @@ public:
     FullState fullState;
     IdleState idleState;
 
+    virtual QString sendCommandLiteral(const QString &cmd, uint length);
+
     void continuationResponse(const QString &line) { state()->continuationResponse(this, line); }
     void untaggedResponse(const QString &line) { state()->untaggedResponse(this, line); }
     void taggedResponse(const QString &line) { state()->taggedResponse(this, line); }
@@ -1716,7 +1718,7 @@ public:
     void setState(ImapState* s);
     void stateCompleted();
 
-  private:
+private:
     ImapState* mState;
     QList<QPair<ImapState*, QString> > mPendingStates;
 };
@@ -1726,6 +1728,18 @@ ImapContextFSM::ImapContextFSM(ImapProtocol *protocol)
       mState(&unconnectedState)
 { 
     reset();
+}
+
+QString ImapContextFSM::sendCommandLiteral(const QString &cmd, uint length)
+{ 
+    QString tag(ImapContext::sendCommandLiteral(cmd, length));
+
+    if (protocol()->capabilities().contains("LITERAL+")) {
+        // Send the continuation immediately
+        continuationResponse(QString());
+    }
+
+    return tag;
 }
 
 void ImapContextFSM::reset()
@@ -2075,6 +2089,15 @@ QString ImapProtocol::sendCommand(const QString &cmd)
     sendData(tag + " " + cmd);
 
     return tag;
+}
+
+QString ImapProtocol::sendCommandLiteral(const QString &cmd, uint length)
+{
+    QString trailer(" {%1%2}");
+    trailer = trailer.arg(length);
+    trailer = trailer.arg(capabilities().contains("LITERAL+") ? "+" : "");
+
+    return sendCommand(cmd + trailer);
 }
 
 void ImapProtocol::incomingData()
