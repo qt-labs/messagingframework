@@ -425,7 +425,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
 
-    if ((_setMask & QMailMessage::Trash) || (_unsetMask & QMailMessage::Trash)) {
+    if ((setMask & QMailMessage::Trash) || (unsetMask & QMailMessage::Trash)) {
         QString trashPath(imapCfg.trashFolder());
         if (!trashPath.isEmpty()) {
             _setMask = setMask;
@@ -755,7 +755,7 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
             if (folderId != trashId) {
                 // Remove trash flag from this folder
                 QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Trash, false);
+                folder.setStatus(QMailFolder::Trash | QMailFolder::Outgoing, false);
                 folder.setStatus(QMailFolder::Incoming, true);
                 if (!QMailStore::instance()->updateFolder(&folder)) {
                     qWarning() << "Unable to remove Trash flag from folder:" << folder.id();
@@ -765,8 +765,8 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
 
         if (trashId.isValid() && !trashFolderIds.contains(trashId)) {
             QMailFolder folder(trashId);
-            folder.setStatus(QMailFolder::Trash, true);
-            folder.setStatus(QMailFolder::Incoming | QMailFolder::Outgoing, false);
+            folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
+            folder.setStatus(QMailFolder::Outgoing, false);
             if (!QMailStore::instance()->updateFolder(&folder)) {
                 qWarning() << "Unable to set Trash flag on folder:" << folder.id();
             }
@@ -833,7 +833,7 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
             if (folderId != junkId) {
                 // Remove junk flag from this folder
                 QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Junk, false);
+                folder.setStatus(QMailFolder::Junk | QMailFolder::Outgoing, false);
                 folder.setStatus(QMailFolder::Incoming, true);
                 if (!QMailStore::instance()->updateFolder(&folder)) {
                     qWarning() << "Unable to remove Junk flag from folder:" << folder.id();
@@ -843,8 +843,8 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
 
         if (junkId.isValid() && !junkFolderIds.contains(junkId)) {
             QMailFolder folder(junkId);
-            folder.setStatus(QMailFolder::Junk | QMailFolder::Outgoing, true);
-            folder.setStatus(QMailFolder::Incoming, false);
+            folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
+            folder.setStatus(QMailFolder::Outgoing, false);
             if (!QMailStore::instance()->updateFolder(&folder)) {
                 qWarning() << "Unable to set Junk flag on folder:" << folder.id();
             }

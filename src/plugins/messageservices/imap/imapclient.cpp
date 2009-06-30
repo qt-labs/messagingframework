@@ -704,8 +704,19 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
             folder.setDisplayName(decodeFolderName(*it));
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
 
-            // Assume this is a standard folder until informed otherwise
-            folder.setStatus(QMailFolder::Incoming, true);
+            // Is this a special folder?
+            ImapConfiguration imapCfg(_config);
+            if (!imapCfg.trashFolder().isEmpty() && (imapCfg.trashFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
+            } else if (!imapCfg.sentFolder().isEmpty() && (imapCfg.sentFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, true);
+            } else if (!imapCfg.draftsFolder().isEmpty() && (imapCfg.draftsFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, true);
+            } else if (!imapCfg.junkFolder().isEmpty() && (imapCfg.junkFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
+            } else {
+                folder.setStatus(QMailFolder::Incoming, true);
+            }
 
             // The reported flags pertain to the listed folder only
             QString folderFlags;
