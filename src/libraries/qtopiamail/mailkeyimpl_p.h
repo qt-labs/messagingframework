@@ -181,7 +181,7 @@ Key MailKeyImpl<Key>::andCombine(const Key &self, const Key &other)
     if (self.isNonMatching()) {
         return self;
     } else if (self.isEmpty()) {
-        return (other.isNonMatching() ? other : self);
+        return other;
     } else if (other.isNonMatching()) {
         return other;
     } else if (other.isEmpty()) {
