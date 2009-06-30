@@ -210,11 +210,6 @@ bool WriteMail::saveChangesOnRequest()
 
 bool WriteMail::buildMail(bool includeSignature)
 {
-    // Retain the old mail id since it may have been a draft
-    QMailMessageId existingId = mail.id();
-    QString existingScheme = mail.contentScheme();
-    QString existingIdentifier = mail.contentIdentifier();
-
     QMailAccountId accountId(m_accountSelection->itemData(m_accountSelection->currentIndex()).value<QMailAccountId>());
 
     // Ensure the signature of the selected account is used
@@ -223,28 +218,34 @@ bool WriteMail::buildMail(bool includeSignature)
     }
 
     // Extract the message from the composer
-    mail = m_composerInterface->message();
+    QMailMessage newMail = m_composerInterface->message();
 
-    mail.setId(existingId);
-    mail.setContentScheme(existingScheme);
-    mail.setContentIdentifier(existingIdentifier);
+    // Retain the old mail properties if they're configured
+    newMail.setId(mail.id());
+    newMail.setParentFolderId(mail.parentFolderId());
+    newMail.setContentScheme(mail.contentScheme());
+    newMail.setContentIdentifier(mail.contentIdentifier());
+    newMail.setServerUid(mail.serverUid());
+    newMail.setCustomFields(mail.customFields());
 
-    mail.setDate(QMailTimeStamp::currentDateTime());
-    mail.setStatus(QMailMessage::Outgoing, true);
-    mail.setStatus(QMailMessage::ContentAvailable, true);
-    mail.setStatus(QMailMessage::PartialContentAvailable, true);
-    mail.setStatus(QMailMessage::Read, true);
-
-    mail.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    newMail.setDate(QMailTimeStamp::currentDateTime());
+    newMail.setStatus(QMailMessage::Outgoing, true);
+    newMail.setStatus(QMailMessage::ContentAvailable, true);
+    newMail.setStatus(QMailMessage::PartialContentAvailable, true);
+    newMail.setStatus(QMailMessage::Read, true);
 
     if (accountId.isValid()) {
-        mail.setParentAccountId(accountId);
-        mail.setFrom(QMailAccount(accountId).fromAddress());
+        newMail.setParentAccountId(accountId);
+        newMail.setFrom(QMailAccount(accountId).fromAddress());
+    }
+
+    if (!newMail.parentFolderId().isValid()) {
+        newMail.setParentFolderId(QMailFolder::LocalStorageFolderId);
     }
 
     if (m_precursorId.isValid()) {
-        mail.setInResponseTo(m_precursorId);
-        mail.setResponseType(m_replyAction);
+        newMail.setInResponseTo(m_precursorId);
+        newMail.setResponseType(m_replyAction);
 
         QMailMessage precursor(m_precursorId);
 
@@ -256,7 +257,7 @@ bool WriteMail::buildMail(bool includeSignature)
 
         QString precursorId(precursor.headerFieldText("Message-ID"));
         if (!precursorId.isEmpty()) {
-            mail.setHeaderField("In-Reply-To", precursorId);
+            newMail.setHeaderField("In-Reply-To", precursorId);
 
             if (!references.isEmpty()) {
                 references.append(' ');
@@ -266,9 +267,11 @@ bool WriteMail::buildMail(bool includeSignature)
 
         if (!references.isEmpty()) {
             // TODO: Truncate references if they're too long
-            mail.setHeaderField("References", references);
+            newMail.setHeaderField("References", references);
         }
     }
+
+    mail = newMail;
     return true;
 }
 
@@ -326,12 +329,16 @@ void WriteMail::modify(const QMailMessage& previousMessage)
     if (composer().isEmpty())
         return;
 
+    // Record any message properties we should retain
     mail.setId(previousMessage.id());
+    mail.setParentFolderId(previousMessage.parentFolderId());
     mail.setContentScheme(previousMessage.contentScheme());
     mail.setContentIdentifier(previousMessage.contentIdentifier());
     mail.setTo(previousMessage.to());
     mail.setFrom(previousMessage.from());
     mail.setCustomFields(previousMessage.customFields());
+    mail.setServerUid(previousMessage.serverUid());
+
     m_composerInterface->compose(QMailMessage::NoResponse, previousMessage);
 
     // ugh. we need to do this everywhere

@@ -1687,7 +1687,7 @@ void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
         if (quint64 action = sinkAction(sink)) {
             // Mark this message as Sent, via the source service
             if (QMailMessageSource *source = accountSource(sinkService[sink]->accountId())) {
-                source->flagMessages(messageIds, QMailMessage::Sent, QMailMessage::Outbox);
+                source->flagMessages(messageIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft));
             }
 
             emit messagesTransmitted(action, messageIds);

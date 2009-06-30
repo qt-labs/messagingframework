@@ -410,7 +410,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
 bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, quint64 setMask, quint64 unsetMask)
 {
     if (messageIds.isEmpty()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to copy"));
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to flag"));
         return false;
     }
     if (!setMask && !unsetMask) {
@@ -480,6 +480,25 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
 
             _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
             _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, sentId);
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+        }
+    }
+
+    if (setMask & QMailMessage::Draft) {
+        QString draftsPath(imapCfg.draftsFolder());
+        if (!draftsPath.isEmpty()) {
+            _setMask = setMask;
+            _unsetMask = unsetMask;
+
+            // Move these messages to the predefined location
+            QMailFolderId draftId(_service->_client.mailboxId(draftsPath));
+            if (!draftId.isValid()) {
+                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Drafts folder"));
+                return false;
+            }
+
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, draftId);
             return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         }
     }

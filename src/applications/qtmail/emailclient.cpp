@@ -956,9 +956,10 @@ void EmailClient::cancelOperation()
 /*  Enqueue mail must always store the mail in the outbox   */
 void EmailClient::enqueueMail(QMailMessage& mail)
 {
-    // Mark this message as ready for transmission
-    mail.setStatus(QMailMessage::Draft, false);
-    mail.setStatus(QMailMessage::Outbox, true);
+    // This message should be marked as a draft, and flagged for transmission
+    // Don't use flagMessages - we don't want this to be transmitted to a server 
+    // as a draft unless transmission fails
+    mail.setStatus((QMailMessage::Outbox | QMailMessage::Draft), true);
 
     bool inserted(false);
     bool isNew(!mail.id().isValid());
@@ -969,11 +970,11 @@ void EmailClient::enqueueMail(QMailMessage& mail)
     }
 
     if (inserted) {
+        sendAllQueuedMail(true);
+
         if (isNew) {
             mailResponded();
         }
-
-        sendAllQueuedMail(true);
 
         if (closeAfterWrite) {
             closeAfterTransmissionsFinished();
@@ -1001,6 +1002,9 @@ void EmailClient::discardMail()
 
 void EmailClient::saveAsDraft(QMailMessage& mail)
 {
+    // Mark the message as a draft so that it is presented correctly
+    mail.setStatus(QMailMessage::Draft, true);
+
     bool inserted(false);
     bool isNew(!mail.id().isValid());
     if (isNew) {
@@ -1010,6 +1014,7 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
     }
 
     if (inserted) {
+        // Inform the responsible service that it is a draft
         storageAction->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
 
         if (isNew) {
