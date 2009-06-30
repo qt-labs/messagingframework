@@ -507,6 +507,52 @@ void tst_QMailStoreKeys::simpleKeys()
     QCOMPARE(folderSet(QMailFolderKey() | QMailFolderKey::nonMatchingKey()), standardFolders + allFolders);
     QCOMPARE(messageSet(QMailMessageKey() & QMailMessageKey::nonMatchingKey()), noMessages);
     QCOMPARE(messageSet(QMailMessageKey() | QMailMessageKey::nonMatchingKey()), allMessages);
+
+    // Combinations with standard keys
+    QMailAccountKey accountKey(QMailAccountKey::id(accountId1));
+    QSet<QMailAccountId> accountResult(accountSet() << accountId1);
+
+    QMailFolderKey folderKey(QMailFolderKey::id(inboxId1));
+    QSet<QMailFolderId> folderResult(folderSet() << inboxId1);
+
+    QMailMessageKey messageKey(QMailMessageKey::id(smsMessage));
+    QSet<QMailMessageId> messageResult(messageSet() << smsMessage);
+
+    QCOMPARE(accountSet(accountKey), accountResult);
+    QCOMPARE(folderSet(folderKey), folderResult);
+    QCOMPARE(messageSet(messageKey), messageResult);
+    
+    // Empty & standard = standard
+    QCOMPARE(accountSet(QMailAccountKey() & accountKey), accountResult);
+    QCOMPARE(accountSet(accountKey & QMailAccountKey()), accountResult);
+    QCOMPARE(folderSet(QMailFolderKey() & folderKey), folderResult);
+    QCOMPARE(folderSet(folderKey & QMailFolderKey()), folderResult);
+    QCOMPARE(messageSet(QMailMessageKey() & messageKey), messageResult);
+    QCOMPARE(messageSet(messageKey & QMailMessageKey()), messageResult);
+
+    // Empty | standard = standard
+    QCOMPARE(accountSet(QMailAccountKey() | accountKey), accountResult);
+    QCOMPARE(accountSet(accountKey | QMailAccountKey()), accountResult);
+    QCOMPARE(folderSet(QMailFolderKey() | folderKey), folderResult);
+    QCOMPARE(folderSet(folderKey | QMailFolderKey()), folderResult);
+    QCOMPARE(messageSet(QMailMessageKey() | messageKey), messageResult);
+    QCOMPARE(messageSet(messageKey | QMailMessageKey()), messageResult);
+
+    // Non-matching & standard = non-matching
+    QCOMPARE(accountSet(QMailAccountKey::nonMatchingKey() & accountKey), noAccounts);
+    QCOMPARE(accountSet(accountKey & QMailAccountKey::nonMatchingKey()), noAccounts);
+    QCOMPARE(folderSet(QMailFolderKey::nonMatchingKey() & folderKey), noFolders);
+    QCOMPARE(folderSet(folderKey & QMailFolderKey::nonMatchingKey()), noFolders);
+    QCOMPARE(messageSet(QMailMessageKey::nonMatchingKey() & messageKey), noMessages);
+    QCOMPARE(messageSet(messageKey & QMailMessageKey::nonMatchingKey()), noMessages);
+
+    // Non-matching | standard = standard
+    QCOMPARE(accountSet(QMailAccountKey::nonMatchingKey() | accountKey), accountResult);
+    QCOMPARE(accountSet(accountKey |QMailAccountKey::nonMatchingKey()), accountResult);
+    QCOMPARE(folderSet(QMailFolderKey::nonMatchingKey() | folderKey), folderResult);
+    QCOMPARE(folderSet(folderKey | QMailFolderKey::nonMatchingKey()), folderResult);
+    QCOMPARE(messageSet(QMailMessageKey::nonMatchingKey() | messageKey), messageResult);
+    QCOMPARE(messageSet(messageKey | QMailMessageKey::nonMatchingKey()), messageResult);
 }
 
 void tst_QMailStoreKeys::accountId()
