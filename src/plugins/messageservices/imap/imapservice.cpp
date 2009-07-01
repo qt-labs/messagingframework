@@ -123,6 +123,9 @@ public slots:
 private:
     virtual bool setStrategy(ImapStrategy *strategy, const char *signal = 0);
 
+    virtual void appendStrategy(ImapStrategy *strategy, const char *signal = 0);
+    virtual bool initiateStrategy();
+
     enum MailCheckPhase { RetrieveFolders = 0, RetrieveMessages, CheckFlags };
 
     ImapService *_service;
@@ -136,6 +139,7 @@ private:
     QList<QMailFolderId> _queuedFolders;
     quint64 _setMask;
     quint64 _unsetMask;
+    QList<QPair<ImapStrategy*, QLatin1String> > _pendingStrategies;
 };
 
 bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -530,6 +534,21 @@ bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal
     return true;
 }
 
+void ImapService::Source::appendStrategy(ImapStrategy *strategy, const char *signal)
+{
+    _pendingStrategies.append(qMakePair(strategy, QLatin1String(signal)));
+}
+
+bool ImapService::Source::initiateStrategy()
+{
+    if (_pendingStrategies.isEmpty()) {
+        return false;
+    }
+
+    QPair<ImapStrategy*, QLatin1String> data(_pendingStrategies.takeFirst());
+    return setStrategy(data.first, data.second.latin1());
+}
+
 void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMailMessage &original)
 {
     if (_setMask || _unsetMask) {
@@ -561,6 +580,11 @@ void ImapService::Source::retrievalCompleted()
     _unavailable = false;
     _setMask = 0;
     _unsetMask = 0;
+
+    // See if there are any other actions pending
+    if (initiateStrategy()) {
+        return;
+    }
 
     if (_queuedMailCheckInProgress) {
         if (_mailCheckPhase == RetrieveFolders) {
