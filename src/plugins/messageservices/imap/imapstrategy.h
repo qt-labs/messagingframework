@@ -528,6 +528,7 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
+    virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid);
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
@@ -544,6 +545,8 @@ protected:
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
+
+    virtual void removeObsoleteUids(ImapStrategyContextBase *context);
 
     virtual void copyNextMessage(ImapStrategyContextBase *context);
     virtual void fetchNextCopy(ImapStrategyContextBase *context);

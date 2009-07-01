@@ -2345,7 +2345,7 @@ void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContex
 // 1. Select the destination folder, resetting the Recent flag
 // 2. Copy each specified message from its existing folder to the destination
 // 3. Select the destination folder
-// 4. Search for recent messages 
+// 4. Search for recent messages (unless we already have them because of UIDPLUS)
 // 5. Retrieve metadata only for found messages
 // 6. Delete any obsolete messages that were replaced by updated copies
 
@@ -2416,8 +2416,13 @@ void ImapCopyMessagesStrategy::handleSelect(ImapStrategyContextBase *context)
         // Begin copying messages
         messageListMessageAction(context);
     } else if (_transferState == Search) {
-        // We have selected the destination folder - find the newly added messages
-        context->protocol().sendUidSearch(MFlag_Recent);
+        if (_createdUids.isEmpty()) {
+            // We have selected the destination folder - find the newly added messages
+            context->protocol().sendUidSearch(MFlag_Recent);
+        } else {
+            // We already have the UIDs via UIDPLUS
+            removeObsoleteUids(context);
+        }
     } else {
         ImapFetchSelectedMessagesStrategy::handleSelect(context);
     }
@@ -2437,12 +2442,7 @@ void ImapCopyMessagesStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     _createdUids = context->mailbox().uidList;
 
-    if (_obsoleteDestinationUids.isEmpty()) {
-        fetchNextCopy(context);
-    } else {
-        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(_obsoleteDestinationUids).toString());
-        _obsoleteDestinationUids.clear();
-    }
+    removeObsoleteUids(context);
 }
 
 void ImapCopyMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
@@ -2490,11 +2490,26 @@ void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
 void ImapCopyMessagesStrategy::messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid)
 {
     if (!createdUid.isEmpty()) {
+        _createdUids.append(createdUid);
+
         _sourceUid[createdUid] = copiedUid;
         _sourceUids.removeAll(copiedUid);
     }
 
     ImapFetchSelectedMessagesStrategy::messageCopied(context, copiedUid, createdUid);
+}
+
+void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid)
+{
+    if (!createdUid.isEmpty()) {
+        _createdUids.append(createdUid);
+
+        QString pseudoUid("id:" + QString::number(id.toULongLong()));
+        _sourceUid[createdUid] = pseudoUid;
+        _sourceUids.removeAll(pseudoUid);
+    }
+
+    ImapFetchSelectedMessagesStrategy::messageCreated(context, id, createdUid);
 }
 
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
@@ -2568,6 +2583,16 @@ void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
         }
 
         _sourceUids.append(_retrieveUid);
+    }
+}
+
+void ImapCopyMessagesStrategy::removeObsoleteUids(ImapStrategyContextBase *context)
+{
+    if (!_obsoleteDestinationUids.isEmpty()) {
+        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(_obsoleteDestinationUids).toString());
+        _obsoleteDestinationUids.clear();
+    } else {
+        fetchNextCopy(context);
     }
 }
 
@@ -2705,12 +2730,22 @@ void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
 {
     if (_transferState == Search) {
         // We don't need to keep the source messages any longer
-        QStringList allSourceUids(_sourceUids + _sourceUid.values());
-        QMailMessageKey uidKey(QMailMessageKey::serverUid(allSourceUids));
-        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+        QStringList allSourceUids;
+        foreach (const QString &uid, (_sourceUids + _sourceUid.values())) {
+            if (!uid.startsWith("id:")) {
+                allSourceUids.append(uid);
+            } else {
+                // TODO: Are these messages removed?
+            }
+        }
 
-        if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
-            qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
+        if (!allSourceUids.isEmpty()) {
+            QMailMessageKey uidKey(QMailMessageKey::serverUid(allSourceUids));
+            QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+
+            if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
+                qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
+            }
         }
     }
 
