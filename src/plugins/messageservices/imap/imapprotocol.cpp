@@ -844,11 +844,13 @@ void AppendState::continuationResponse(ImapContext *c, const QString &)
 void AppendState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
+        const AppendParameters &params(mParameters.first());
+
         // See if we got an APPENDUID response
-        QRegExp appenduidResponsePattern("APPENDUID (\\S+) (\\S+)");
+        QRegExp appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)");
         if (appenduidResponsePattern.indexIn(line) != -1) {
             const AppendParameters &params(mParameters.first());
-            emit messageCreated(params.mMessageId, messageUid(c->mailbox().id, appenduidResponsePattern.cap(2)));
+            emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), appenduidResponsePattern.cap(2)));
         }
     }
     
@@ -1542,7 +1544,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
         const QPair<QString, QMailFolder> &params(_parameters.first());
 
         // See if we got a COPYUID response
-        QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) (\\S+)");
+        QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) ([^ \\t\\]]+)");
         if (copyuidResponsePattern.indexIn(line) != -1) {
             QList<uint> copiedUids = sequenceUids(copyuidResponsePattern.cap(2));
             QList<uint> createdUids = sequenceUids(copyuidResponsePattern.cap(3));
