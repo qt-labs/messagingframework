@@ -489,8 +489,12 @@ void SmtpClient::nextAction(const QString &response)
             it++;
             if ( it != mailItr->to.end() ) {
                 sendCommand("RCPT TO: <" + *it + ">");
-            } else  {
-                if (mailItr->mail.status() & QMailMessage::HasReferences) {
+            } else {
+                if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
+                    // We can replace this entire message by a reference to its external location
+                    mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toAscii()));
+                    status = Chunk;
+                } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
                     mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
                     if (mailChunks.isEmpty()) {
                         // Nothing to send?
