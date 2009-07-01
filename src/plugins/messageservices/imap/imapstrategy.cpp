@@ -2347,6 +2347,7 @@ void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContex
 // 3. Select the destination folder
 // 4. Search for recent messages 
 // 5. Retrieve metadata only for found messages
+// 6. Delete any obsolete messages that were replaced by updated copies
 
 void ImapCopyMessagesStrategy::appendMessageSet(const QMailMessageIdList &messageIds, const QMailFolderId& folderId)
 {
@@ -2364,6 +2365,7 @@ void ImapCopyMessagesStrategy::newConnection(ImapStrategyContextBase *context)
     _sourceUid.clear();
     _sourceUids.clear();
     _sourceIndex = 0;
+    _obsoleteDestinationUids.clear();
 
     ImapFetchSelectedMessagesStrategy::newConnection(context);
 }
@@ -2386,6 +2388,12 @@ void ImapCopyMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
         case IMAP_UIDSearch:
         {
             handleUidSearch(context);
+            break;
+        }
+        
+        case IMAP_UIDStore:
+        {
+            handleUidStore(context);
             break;
         }
         
@@ -2428,6 +2436,17 @@ void ImapCopyMessagesStrategy::handleAppend(ImapStrategyContextBase *context)
 void ImapCopyMessagesStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     _createdUids = context->mailbox().uidList;
+
+    if (_obsoleteDestinationUids.isEmpty()) {
+        fetchNextCopy(context);
+    } else {
+        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(_obsoleteDestinationUids).toString());
+        _obsoleteDestinationUids.clear();
+    }
+}
+
+void ImapCopyMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
     fetchNextCopy(context);
 }
 
@@ -2443,6 +2462,17 @@ void ImapCopyMessagesStrategy::messageListMessageAction(ImapStrategyContextBase 
     }
 
     copyNextMessage(context);
+}
+
+void ImapCopyMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
+{
+    if (_currentMailbox.id().isValid() && (_currentMailbox.id() == _destination.id())) {
+        // This message is already in the destination folder - we need to append a new copy
+        // after closing the destination folder
+        context->protocol().sendClose();
+    } else {
+        ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
+    }
 }
 
 void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
@@ -2524,7 +2554,15 @@ void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
             // This message does not exist on the server - append it
             QMailMessageId id(_retrieveUid.mid(3).toULongLong());
             context->protocol().sendAppend( _destination, id );
+        } else if (!context->mailbox().id.isValid()) {
+            // This message is in the destination folder, which we have closed
+            QMailMessageMetaData metaData(_retrieveUid, context->config().id());
+            context->protocol().sendAppend( _destination, metaData.id() );
+
+            // The existing message should be removed once we have appended the new message
+            _obsoleteDestinationUids.append(ImapProtocol::uid(_retrieveUid));
         } else {
+            // Copy this message from its current location to the destination
             QString uid(ImapProtocol::uid(_retrieveUid));
             context->protocol().sendUidCopy( uid, _destination );
         }
@@ -2556,6 +2594,7 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
         _messageSets.takeFirst();
 
         _transferState = Init;
+        _obsoleteDestinationUids.clear();
 
         // We need to select the destination folder to reset the Recent list
         if (_destination.id() == context->mailbox().id) {
@@ -2587,12 +2626,6 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
 void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {
-        case IMAP_UIDStore:
-        {
-            handleUidStore(context);
-            break;
-        }
-        
         case IMAP_Examine:
         {
             handleExamine(context);
@@ -2619,8 +2652,12 @@ void ImapMoveMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
 
 void ImapMoveMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
-    _lastMailbox = _currentMailbox;
-    messageListMessageAction(context);
+    if ((_transferState == Copy) || (_transferState == Complete)) {
+        _lastMailbox = _currentMailbox;
+        messageListMessageAction(context);
+    } else {
+        ImapCopyMessagesStrategy::handleUidStore(context);
+    }
 }
 
 void ImapMoveMessagesStrategy::handleClose(ImapStrategyContextBase *context)

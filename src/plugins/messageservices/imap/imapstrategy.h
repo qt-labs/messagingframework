@@ -536,8 +536,10 @@ protected:
     virtual void handleUidCopy(ImapStrategyContextBase *context);
     virtual void handleAppend(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void handleUidStore(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
+    virtual void messageListFolderAction(ImapStrategyContextBase *context);
     virtual void messageListMessageAction(ImapStrategyContextBase *context);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
@@ -555,6 +557,7 @@ protected:
     int _sourceIndex;
     QStringList _createdUids;
     int _messagesAdded;
+    QStringList _obsoleteDestinationUids;
 };
 
 class ImapMoveMessagesStrategy : public ImapCopyMessagesStrategy
