@@ -536,7 +536,7 @@ void EmailClient::resumeInterruptedComposition()
 
 bool EmailClient::startMessageServer()
 {
-    qDebug() << "Starting messageserver child process...";
+    qMailLog(Messaging) << "Starting messageserver child process...";
     if(m_messageServerProcess) delete m_messageServerProcess;
     m_messageServerProcess = new QProcess(this);
     connect(m_messageServerProcess,SIGNAL(error(QProcess::ProcessError)),
@@ -556,7 +556,7 @@ bool EmailClient::waitForMessageServer()
 {
     if(m_messageServerProcess)
     {
-        qDebug() << "Shutting down messageserver child process..";
+        qMailLog(Messaging) << "Shutting down messageserver child process..";
         bool result = m_messageServerProcess->waitForFinished();
         delete m_messageServerProcess; m_messageServerProcess = 0;
         return result;
@@ -956,6 +956,12 @@ void EmailClient::cancelOperation()
 /*  Enqueue mail must always store the mail in the outbox   */
 void EmailClient::enqueueMail(QMailMessage& mail)
 {
+    // Does this account support sending a message from an external location?
+    QMailAccount account(mail.parentAccountId());
+    if (account.status() & (QMailAccount::CanReferenceExternalData | QMailAccount::CanTransmitViaReference)) {
+        mail.setStatus(QMailMessage::TransmitFromExternal, true);
+    }
+
     // This message should be marked as a draft, and flagged for transmission
     // Don't use flagMessages - we don't want this to be transmitted to a server 
     // as a draft unless transmission fails
@@ -2230,7 +2236,7 @@ void EmailClient::settings()
     const QString binary("/messagingaccounts");
 #endif
 
-    qDebug() << "Starting messagingaccounts process...";
+    qMailLog(Messaging) << "Starting messagingaccounts process...";
     QProcess settingsAppProcess(this);
     settingsAppProcess.startDetached(QMail::messageSettingsPath() + binary);
 }
