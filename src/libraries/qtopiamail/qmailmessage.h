@@ -537,6 +537,7 @@ public:
     static const quint64 &Draft;
     static const quint64 &Outbox;
     static const quint64 &Junk;
+    static const quint64 &TransmitFromExternal;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);
@@ -706,6 +707,9 @@ public:
 
     virtual uint contentSize() const;
     virtual void setContentSize(uint size);
+
+    virtual QString externalLocationReference() const;
+    virtual void setExternalLocationReference(const QString &s);
 
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;

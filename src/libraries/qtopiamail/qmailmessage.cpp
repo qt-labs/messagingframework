@@ -4971,6 +4971,7 @@ static quint64 hasUnresolvedReferencesFlag = 0;
 static quint64 draftFlag = 0;
 static quint64 outboxFlag = 0;
 static quint64 junkFlag = 0;
+static quint64 transmitFromExternalFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5014,6 +5015,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         draftFlag = registerFlag("Draft");
         outboxFlag = registerFlag("Outbox");
         junkFlag = registerFlag("Junk");
+        transmitFromExternalFlag = registerFlag("TransmitFromExternal");
     }
 }
 
@@ -5486,6 +5488,7 @@ const quint64 &QMailMessageMetaData::HasUnresolvedReferences = hasUnresolvedRefe
 const quint64 &QMailMessageMetaData::Draft = draftFlag;
 const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
 const quint64 &QMailMessageMetaData::Junk = junkFlag;
+const quint64 &QMailMessageMetaData::TransmitFromExternal = transmitFromExternalFlag;
 
 /*!
     Constructs an empty message meta data object.
@@ -6639,6 +6642,22 @@ uint QMailMessage::contentSize() const
 void QMailMessage::setContentSize(uint size)
 {
     setCustomField("qtopiamail-content-size", QString::number(size));
+}
+
+/*!
+    Returns a value by which the external location of the message can be referenced, if available.
+*/  
+QString QMailMessage::externalLocationReference() const
+{
+    return customField("qtopiamail-external-location-reference");
+}
+
+/*!
+    Returns the value by which the external location of the message can be referenced to \a location.
+*/
+void QMailMessage::setExternalLocationReference(const QString &location)
+{
+    setCustomField("qtopiamail-external-location-reference", location);
 }
 
 /*! \reimp */
