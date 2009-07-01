@@ -182,6 +182,14 @@ struct ResolverSet
 {
     QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > map;
 
+    void append(const QMailMessageMetaData &metaData)
+    {
+        QMailMessagePart::Location location;
+        location.setContainingMessageId(metaData.id());
+
+        map[metaData.parentAccountId()].append(qMakePair(location, QMailMessagePart::Location()));
+    }
+
     bool operator()(const QMailMessagePart &part)
     {
         if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
@@ -211,7 +219,14 @@ QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::L
     ResolverSet set;
 
     foreach (const QMailMessageId id, ids) {
-        QMailMessage(id).foreachPart<ResolverSet&>(set);
+        QMailMessage outgoing(id);
+
+        if (outgoing.status() & QMailMessage::HasUnresolvedReferences) {
+            outgoing.foreachPart<ResolverSet&>(set);
+        } else {
+            // Just record this message's location
+            set.append(outgoing);
+        }
     }
 
     return set.map;
@@ -924,7 +939,12 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
         // We need to see if any sources are required to prepare these messages
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
         QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
-        QMailMessageKey unresolvedKey(QMailMessageKey::status(QMailMessage::HasUnresolvedReferences, QMailDataComparator::Includes));
+
+        // We need to prepare messages to;
+        // - resolve references
+        // - move to Sent prior to transmission
+        quint64 preparationStatus(QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal);
+        QMailMessageKey unresolvedKey(QMailMessageKey::status(preparationStatus, QMailDataComparator::Includes));
 
         QSet<QMailMessageService*> sources;
 
