@@ -164,6 +164,41 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
     }
 }
 
+static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
+{
+    Q_ASSERT(destination.partCount() == source.partCount());
+
+    if (source.hasBody()) {
+        destination.setBody(source.body());
+    } else if (source.partCount() > 0) {
+        for (uint i = 0; i < source.partCount(); ++i) {
+            const QMailMessagePart &sourcePart = source.partAt(i);
+            QMailMessagePart &destinationPart = destination.partAt(i);
+
+            transferPartBodies(destinationPart, sourcePart);
+        }
+    }
+}
+
+static void transferMessageData(QMailMessage &message, const QMailMessage &source)
+{
+    // TODO: this whole concept is wrong - we might lose data by replacing the original message...
+
+    transferPartBodies(message, source);
+
+    if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
+        // We have modified the content, so the detached file data is no longer sufficient
+        message.removeCustomField("qtopiamail-detached-filename");
+    }
+
+    if (source.status() & QMailMessage::ContentAvailable) {
+        message.setStatus(QMailMessage::ContentAvailable, true);
+    }
+    if (source.status() & QMailMessage::PartialContentAvailable) {
+        message.setStatus(QMailMessage::PartialContentAvailable, true);
+    }
+}
+
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -2514,6 +2549,18 @@ void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, 
 
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
+    QString sourceUid = copiedMessageFetched(context, message);
+
+    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+
+    if (!sourceUid.isEmpty()) {
+        // We're now completed with the source message also
+        context->completedMessageAction(sourceUid);
+    }
+}
+
+QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+{ 
     // See if we can update the status of the copied message from the source message
     QString sourceUid = _sourceUid[message.serverUid()];
     if (sourceUid.isEmpty()) {
@@ -2540,12 +2587,7 @@ void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
         context->completedMessageCopy(message, source);
     }
 
-    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
-
-    if (!sourceUid.isEmpty()) {
-        // We're now completed with the source message also
-        context->completedMessageAction(sourceUid);
-    }
+    return sourceUid;
 }
 
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)
@@ -2752,39 +2794,12 @@ void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
     ImapCopyMessagesStrategy::messageListCompleted(context);
 }
 
-static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
-{
-    Q_ASSERT(destination.partCount() == source.partCount());
-
-    if (source.hasBody()) {
-        destination.setBody(source.body());
-    } else if (source.partCount() > 0) {
-        for (uint i = 0; i < source.partCount(); ++i) {
-            const QMailMessagePart &sourcePart = source.partAt(i);
-            QMailMessagePart &destinationPart = destination.partAt(i);
-
-            transferPartBodies(destinationPart, sourcePart);
-        }
-    }
-}
-
 void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source)
 { 
     ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
 
-    transferPartBodies(message, source);
-
-    if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
-        // We have modified the content, so the detached file data is no longer sufficient
-        message.removeCustomField("qtopiamail-detached-filename");
-    }
-
-    if (source.status() & QMailMessage::ContentAvailable) {
-        message.setStatus(QMailMessage::ContentAvailable, true);
-    }
-    if (source.status() & QMailMessage::PartialContentAvailable) {
-        message.setStatus(QMailMessage::PartialContentAvailable, true);
-    }
+    // Move the content of the source message to the new message
+    transferMessageData(message, source);
 
     if (source.serverUid().isEmpty()) {
         // This message has been moved to the external server - delete the local copy
@@ -2793,6 +2808,127 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
         }
     }
 }
+
+
+/* A strategy to make selected messages available from the external server.
+*/
+// 1. Select and then close the destination folder, resetting the Recent flag
+// 2. Append each specified message to the destination folder
+// 3. Select the destination folder
+// 4. Search for recent messages 
+// 5. Replace the original local message with the remote one
+// 6. Generate authorized URLs for each message
+
+void ImapExternalizeMessagesStrategy::appendMessageSet(const QMailMessageIdList &messageIds, const QMailFolderId& folderId)
+{
+    if (folderId.isValid()) {
+        ImapCopyMessagesStrategy::appendMessageSet(messageIds, folderId);
+    } else {
+        // These messages can't be externalised - just remove the flag to proceed as normal
+        QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
+        if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::TransmitFromExternal, false)) {
+            qWarning() << "Unable to update message metadata to remove transmit from external flag";
+        }
+    }
+}
+
+void ImapExternalizeMessagesStrategy::newConnection(ImapStrategyContextBase *context)
+{
+    _urlIds.clear();
+
+    if (!_messageSets.isEmpty()) {
+        ImapCopyMessagesStrategy::newConnection(context);
+    } else {
+        // Nothing to do
+        context->operationCompleted();
+    }
+}
+
+void ImapExternalizeMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+{
+    switch( command ) {
+        case IMAP_GenUrlAuth:
+        {
+            handleGenUrlAuth(context);
+            break;
+        }
+        
+        default:
+        {
+            ImapCopyMessagesStrategy::transition(context, command, status);
+            break;
+        }
+    }
+}
+
+void ImapExternalizeMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
+{
+    // We're finished with the previous location
+    _urlIds.takeFirst();
+
+    resolveNextMessage(context);
+}
+
+void ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+{ 
+    copiedMessageFetched(context, message);
+
+    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+
+    _urlIds.append(message.id());
+}
+
+void ImapExternalizeMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const QString &url)
+{
+    const QMailMessageId &id(_urlIds.first());
+
+    // We now have an authorized URL for this message
+    QMailMessage message(id);
+    message.setExternalLocationReference(url);
+
+    if (!QMailStore::instance()->updateMessage(&message)) {
+        qWarning() << "Unable to update message for account:" << message.parentAccountId();
+    }
+}
+
+void ImapExternalizeMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source)
+{ 
+    // Update the source message with the new 
+    ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
+
+    // Move the content of the source message to the new message
+    transferMessageData(message, source);
+
+    // Replace the source message with the new message
+    message.setId(source.id());
+
+    if (source.status() & QMailMessage::Outbox) {
+        message.setStatus(QMailMessage::Outbox, true);
+    }
+    if (source.status() & QMailMessage::TransmitFromExternal) {
+        message.setStatus(QMailMessage::TransmitFromExternal, true);
+    }
+}
+
+void ImapExternalizeMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
+{
+    resolveNextMessage(context);
+}
+
+void ImapExternalizeMessagesStrategy::resolveNextMessage(ImapStrategyContextBase *context)
+{
+    if (!_urlIds.isEmpty()) {
+        const QMailMessageId &id(_urlIds.first());
+
+        // Generate an authorized URL for this message
+        QMailMessagePart::Location location;
+        location.setContainingMessageId(id);
+        context->protocol().sendGenUrlAuth(location, false);
+    } else {
+        ImapCopyMessagesStrategy::messageListCompleted(context);
+    }
+}
+
 
 /* A strategy to delete selected messages.
 */

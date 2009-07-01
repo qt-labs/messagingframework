@@ -48,8 +48,25 @@
 #include <qmaillog.h>
 #include <qmailmessage.h>
 
-namespace { const QString serviceKey("imap4"); }
+namespace { 
 
+const QString serviceKey("imap4");
+
+QMailFolderId mailboxId(const QMailAccountId &accountId, const QString &path)
+{
+    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::path(path));
+    if (folderIds.count() == 1)
+        return folderIds.first();
+
+    return QMailFolderId();
+}
+
+QMailFolderIdList statusFolders(const QMailAccountId &accountId, quint64 mask)
+{
+    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::status(mask));
+}
+ 
+}
 
 class ImapService::Source : public QMailMessageSource
 {
@@ -517,8 +534,38 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         return false;
     }
 
-    _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(messageIds);
-    return setStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
+    QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > unresolved;
+    QMailMessageIdList externaliseIds;
+
+    QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> >::const_iterator it = messageIds.begin(), end = messageIds.end();
+    for ( ; it != end; ++it) {
+        if (!(*it).second.isValid()) {
+            // This message needs to be externalised
+            externaliseIds.append((*it).first.containingMessageId());
+        } else {
+            // This message needs to be made available for another message's reference
+            unresolved.append(*it);
+        }
+    }
+
+    if (!externaliseIds.isEmpty()) {
+        QMailAccountConfiguration accountCfg(_service->accountId());
+        ImapConfiguration imapCfg(accountCfg);
+
+        QMailFolderId sentId(mailboxId(_service->accountId(), imapCfg.sentFolder()));
+
+        // Prepare these messages by copying to the sent folder
+        _service->_client.strategyContext()->externalizeMessagesStrategy.clearSelection();
+        _service->_client.strategyContext()->externalizeMessagesStrategy.appendMessageSet(externaliseIds, sentId);
+        appendStrategy(&_service->_client.strategyContext()->externalizeMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
+    }
+
+    if (!unresolved.isEmpty()) {
+        _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(unresolved);
+        appendStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
+    }
+
+    return initiateStrategy();
 }
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal)
@@ -749,20 +796,6 @@ void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, cons
 void ImapService::updateStatus(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
-}
-
-static QMailFolderId mailboxId(const QMailAccountId &accountId, const QString &path)
-{
-    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::path(path));
-    if (folderIds.count() == 1)
-        return folderIds.first();
-
-    return QMailFolderId();
-}
-
-static QMailFolderIdList statusFolders(const QMailAccountId &accountId, quint64 mask)
-{
-    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::status(mask));
 }
 
 void ImapService::checkConfiguration(const QMailAccountId &accountId)

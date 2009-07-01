@@ -544,6 +544,7 @@ protected:
     virtual void messageListMessageAction(ImapStrategyContextBase *context);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
+    virtual QString copiedMessageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
     virtual void removeObsoleteUids(ImapStrategyContextBase *context);
@@ -587,6 +588,32 @@ protected:
     QMailFolder _lastMailbox;
 };
 
+class ImapExternalizeMessagesStrategy : public ImapCopyMessagesStrategy
+{
+public:
+    ImapExternalizeMessagesStrategy() {}
+    virtual ~ImapExternalizeMessagesStrategy() {}
+
+    virtual void appendMessageSet(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+
+    virtual void newConnection(ImapStrategyContextBase *context);
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+
+    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
+
+protected:
+    virtual void handleGenUrlAuth(ImapStrategyContextBase *context);
+
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
+
+    virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
+
+    virtual void resolveNextMessage(ImapStrategyContextBase *context);
+
+    QMailMessageIdList _urlIds;
+};
+
 class ImapDeleteMessagesStrategy : public ImapFetchSelectedMessagesStrategy
 {
 public:
@@ -624,6 +651,7 @@ public:
     ImapSynchronizeAllStrategy synchronizeAccountStrategy;
     ImapCopyMessagesStrategy copyMessagesStrategy;
     ImapMoveMessagesStrategy moveMessagesStrategy;
+    ImapExternalizeMessagesStrategy externalizeMessagesStrategy;
     ImapDeleteMessagesStrategy deleteMessagesStrategy;
     ImapRetrieveMessageListStrategy retrieveMessageListStrategy;
     ImapRetrieveAllStrategy retrieveAllStrategy;
