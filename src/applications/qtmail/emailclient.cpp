@@ -956,9 +956,10 @@ void EmailClient::cancelOperation()
 /*  Enqueue mail must always store the mail in the outbox   */
 void EmailClient::enqueueMail(QMailMessage& mail)
 {
-    // Does this account support sending a message from an external location?
+    // Does this account support sending a message by reference from an external sent folder?
     QMailAccount account(mail.parentAccountId());
-    if (account.status() & (QMailAccount::CanReferenceExternalData | QMailAccount::CanTransmitViaReference)) {
+    if ((account.status() & (QMailAccount::CanReferenceExternalData | QMailAccount::CanTransmitViaReference)) &&
+        account.standardFolder(QMailFolder::SentFolder).isValid()) {
         mail.setStatus(QMailMessage::TransmitFromExternal, true);
     }
 
