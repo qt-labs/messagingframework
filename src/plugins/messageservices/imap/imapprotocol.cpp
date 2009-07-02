@@ -1972,7 +1972,7 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
 
 void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism)
 {
-    QString dataUrl(url(location, bodyOnly));
+    QString dataUrl(url(location, true, bodyOnly));
     dataUrl.append(";urlauth=anonymous");
 
     _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);
@@ -2343,24 +2343,28 @@ QString ImapProtocol::uid( const QString &identifier )
     return messageId(identifier);
 }
 
-QString ImapProtocol::url(const QMailMessagePart::Location &location, bool bodyOnly)
+QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absolute, bool bodyOnly)
 {
-    QString result("imap://");
+    QString result;
 
     QMailMessageId id(location.containingMessageId());
     QMailMessageMetaData metaData(id);
 
     if (metaData.parentAccountId().isValid()) {
-        QMailAccountConfiguration config(metaData.parentAccountId());
-        ImapConfiguration imapCfg(config);
+        if (absolute) {
+            result.append("imap://");
 
-        if (!imapCfg.mailUserName().isEmpty()) {
-            result.append(imapCfg.mailUserName()).append('@');
-        }
+            QMailAccountConfiguration config(metaData.parentAccountId());
+            ImapConfiguration imapCfg(config);
 
-        result.append(imapCfg.mailServer());
-        if (imapCfg.mailPort() != 143) {
-            result.append(':').append(QString::number(imapCfg.mailPort()));
+            if (!imapCfg.mailUserName().isEmpty()) {
+                result.append(imapCfg.mailUserName()).append('@');
+            }
+
+            result.append(imapCfg.mailServer());
+            if (imapCfg.mailPort() != 143) {
+                result.append(':').append(QString::number(imapCfg.mailPort()));
+            }
         }
         
         result.append('/');

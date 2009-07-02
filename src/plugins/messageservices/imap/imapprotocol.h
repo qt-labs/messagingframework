@@ -182,7 +182,7 @@ public:
 
     static QString uid(const QString &identifier);
 
-    static QString url(const QMailMessagePart::Location &location, bool bodyOnly);
+    static QString url(const QMailMessagePart::Location &location, bool absolute, bool bodyOnly);
 
     static QString quoteString(const QString& input);
     static QByteArray quoteString(const QByteArray& input);
