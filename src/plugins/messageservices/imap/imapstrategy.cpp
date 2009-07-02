@@ -1071,26 +1071,33 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         // We have selected this folder - find out how many undiscovered messages exist
         const ImapMailboxProperties &properties(context->mailbox());
 
-        // If CONDSTORE is available, we may know that no changes have occurred
-        if (properties.noModSeq || (properties.highestModSeq != _currentModSeq)) {
-            // We need the UID of the most recent message we have previously discovered in this folder
-            QMailFolder folder(properties.id);
+        if (properties.exists) {
+            quint32 minUid = 0;
+            bool performSearch(true);
 
-            // toUint returns 0 on error, which is an invalid IMAP uid
-            quint32 clientMax(folder.customField("qmf-max-serveruid").toUInt());
-
-            if (clientMax && properties.exists) {
-                if (properties.uidNext > (clientMax + 1)) {
-                    context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(properties.uidNext));
-                    return;
-                } else {
-                    // There's no need to search if (clientMax <= (UIDNEXT - 1))
-                }
+            // If CONDSTORE is available, we may know that no changes have occurred
+            if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
+                performSearch = false;
             } else {
-                // No messages - nothing to discover...
+                // Find the UID of the most recent message we have previously discovered in this folder
+                QMailFolder folder(properties.id);
+                quint32 clientMaxUid(folder.customField("qmf-max-serveruid").toUInt());
+
+                if (properties.uidNext <= (clientMaxUid + 1)) {
+                    // There's no need to search because we already have the highest UID
+                    performSearch = false;
+                } else {
+                    // Start our search here
+                    minUid = clientMaxUid;
+                }
+            }
+
+            if (performSearch) {
+                context->protocol().sendSearch(0, QString("UID %1:%2").arg(minUid + 1).arg(properties.uidNext));
+                return;
             }
         } else {
-            // We know that the mod sequence has not changed, so nothing else can have changed, either
+            // No messages - nothing to discover...
         }
 
         handleSearch(context);
@@ -2332,12 +2339,6 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
             // Update the cached values
             _lastUidNextMap.insert(properties.id, properties.uidNext);
             _lastExistsMap.insert(properties.id, properties.exists);
-
-            if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
-                // There have been no changes in this folder
-                processUidSearchResults(context);
-                return;
-            }
         } else {
             comparable = false;
         }
