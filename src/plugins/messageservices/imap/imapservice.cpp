@@ -830,6 +830,9 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
     QMailAccountConfiguration accountCfg(accountId);
     ImapConfiguration imapCfg(accountCfg);
 
+    QMailAccount account(accountId);
+    QMap<QMailFolder::StandardFolder, QMailFolderId> standardFolders(account.standardFolders());
+
     if (!imapCfg.trashFolder().isEmpty()) {
         QMailFolderId trashId(mailboxId(accountId, imapCfg.trashFolder()));
 
@@ -854,6 +857,12 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
                 qWarning() << "Unable to set Trash flag on folder:" << folder.id();
             }
         }
+
+        if (trashId != account.standardFolder(QMailFolder::TrashFolder)) {
+            account.setStandardFolder(QMailFolder::TrashFolder, trashId);
+        }
+    } else if (account.standardFolder(QMailFolder::TrashFolder).isValid()) {
+        account.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId());
     }
 
     if (!imapCfg.sentFolder().isEmpty()) {
@@ -880,6 +889,12 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
                 qWarning() << "Unable to set Sent flag on folder:" << folder.id();
             }
         }
+
+        if (sentId != account.standardFolder(QMailFolder::SentFolder)) {
+            account.setStandardFolder(QMailFolder::SentFolder, sentId);
+        }
+    } else if (account.standardFolder(QMailFolder::SentFolder).isValid()) {
+        account.setStandardFolder(QMailFolder::SentFolder, QMailFolderId());
     }
 
     if (!imapCfg.draftsFolder().isEmpty()) {
@@ -906,6 +921,12 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
                 qWarning() << "Unable to set Drafts flag on folder:" << folder.id();
             }
         }
+
+        if (draftsId != account.standardFolder(QMailFolder::DraftsFolder)) {
+            account.setStandardFolder(QMailFolder::DraftsFolder, draftsId);
+        }
+    } else if (account.standardFolder(QMailFolder::DraftsFolder).isValid()) {
+        account.setStandardFolder(QMailFolder::DraftsFolder, QMailFolderId());
     }
 
     if (!imapCfg.junkFolder().isEmpty()) {
@@ -931,6 +952,18 @@ void ImapService::checkConfiguration(const QMailAccountId &accountId)
             if (!QMailStore::instance()->updateFolder(&folder)) {
                 qWarning() << "Unable to set Junk flag on folder:" << folder.id();
             }
+        }
+
+        if (junkId != account.standardFolder(QMailFolder::JunkFolder)) {
+            account.setStandardFolder(QMailFolder::JunkFolder, junkId);
+        }
+    } else if (account.standardFolder(QMailFolder::JunkFolder).isValid()) {
+        account.setStandardFolder(QMailFolder::JunkFolder, QMailFolderId());
+    }
+
+    if (account.standardFolders() != standardFolders) {
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to update standard folder IDs for account:" << accountId;
         }
     }
 }
