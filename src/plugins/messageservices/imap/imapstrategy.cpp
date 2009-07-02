@@ -2930,14 +2930,15 @@ void ImapExternalizeMessagesStrategy::resolveNextMessage(ImapStrategyContextBase
 }
 
 
-/* A strategy to delete selected messages.
+/* A strategy to flag selected messages.
 */
-void ImapDeleteMessagesStrategy::setLocalMessageRemoval(bool removal)
+void ImapFlagMessagesStrategy::setMessageFlags(MessageFlags flags, bool set)
 {
-    _removal = removal;
+    _flags = flags;
+    _set = set;
 }
 
-void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+void ImapFlagMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {
         case IMAP_UIDStore:
@@ -2946,6 +2947,43 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
             break;
         }
         
+        default:
+        {
+            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+            break;
+        }
+    }
+}
+
+void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
+void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
+{
+    if (selectNextMessageSequence(context, 1000)) {
+        QStringList uids;
+        foreach (const QString &msgUid, _retrieveUid.split("\n"))
+            uids.append(ImapProtocol::uid(msgUid));
+
+        context->protocol().sendUidStore(_flags, _set, IntegerRegion(uids).toString());
+    }
+}
+
+
+/* A strategy to delete selected messages.
+*/
+void ImapDeleteMessagesStrategy::setLocalMessageRemoval(bool removal)
+{
+    _removal = removal;
+
+    setMessageFlags(MFlag_Deleted, true);
+}
+
+void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+{
+    switch( command ) {
         case IMAP_Close:
         {
             handleClose(context);
@@ -2960,7 +2998,7 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
         
         default:
         {
-            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+            ImapFlagMessagesStrategy::transition(context, command, status);
             break;
         }
     }
@@ -2972,7 +3010,7 @@ void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context
     _storedList += _retrieveUid.split("\n");
     _lastMailbox = _currentMailbox;
 
-    messageListMessageAction(context);
+    ImapFlagMessagesStrategy::handleUidStore(context);
 }
 
 void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
@@ -2995,18 +3033,7 @@ void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 void ImapDeleteMessagesStrategy::handleExamine(ImapStrategyContextBase *context)
 {
     // Select the next folder
-    ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
-}
-
-void ImapDeleteMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
-{
-    if (selectNextMessageSequence(context, 1000)) {
-        QStringList uids;
-        foreach (const QString &msgUid, _retrieveUid.split("\n"))
-            uids.append(ImapProtocol::uid(msgUid));
-
-        context->protocol().sendUidStore(MFlag_Deleted, true, IntegerRegion(uids).toString());
-    }
+    ImapFlagMessagesStrategy::messageListFolderAction(context);
 }
 
 void ImapDeleteMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
@@ -3017,7 +3044,7 @@ void ImapDeleteMessagesStrategy::messageListFolderAction(ImapStrategyContextBase
     } else {
         // Select the next folder, and clear the stored list
         _storedList.clear();
-        ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
+        ImapFlagMessagesStrategy::messageListFolderAction(context);
     }
 }
 
@@ -3027,7 +3054,7 @@ void ImapDeleteMessagesStrategy::messageListCompleted(ImapStrategyContextBase *c
     if ((context->mailbox().isSelected()) && (_lastMailbox.id().isValid())) {
         context->protocol().sendClose();
     } else {
-        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+        ImapFlagMessagesStrategy::messageListCompleted(context);
     }
 }
 
@@ -3037,3 +3064,4 @@ ImapStrategyContext::ImapStrategyContext(ImapClient *client)
     _strategy(0) 
 {
 }
+

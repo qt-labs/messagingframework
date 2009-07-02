@@ -614,7 +614,26 @@ protected:
     QMailMessageIdList _urlIds;
 };
 
-class ImapDeleteMessagesStrategy : public ImapFetchSelectedMessagesStrategy
+class ImapFlagMessagesStrategy : public ImapFetchSelectedMessagesStrategy
+{
+public:
+    ImapFlagMessagesStrategy() {}
+    virtual ~ImapFlagMessagesStrategy() {}
+
+    void setMessageFlags(MessageFlags flags, bool set);
+
+    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    
+protected:
+    virtual void handleUidStore(ImapStrategyContextBase *context);
+
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+
+    MessageFlags _flags;
+    bool _set;
+};
+
+class ImapDeleteMessagesStrategy : public ImapFlagMessagesStrategy
 {
 public:
     ImapDeleteMessagesStrategy() {}
@@ -630,11 +649,10 @@ protected:
     virtual void handleExamine(ImapStrategyContextBase *context);
 
     virtual void messageListFolderAction(ImapStrategyContextBase *context);
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
-    QStringList _storedList;
     bool _removal;
+    QStringList _storedList;
     QMailFolder _lastMailbox;
 };
 
@@ -652,6 +670,7 @@ public:
     ImapCopyMessagesStrategy copyMessagesStrategy;
     ImapMoveMessagesStrategy moveMessagesStrategy;
     ImapExternalizeMessagesStrategy externalizeMessagesStrategy;
+    ImapFlagMessagesStrategy flagMessagesStrategy;
     ImapDeleteMessagesStrategy deleteMessagesStrategy;
     ImapRetrieveMessageListStrategy retrieveMessageListStrategy;
     ImapRetrieveAllStrategy retrieveAllStrategy;
