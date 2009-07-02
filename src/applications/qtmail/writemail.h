@@ -85,6 +85,7 @@ signals:
 
 protected slots:
     bool sendStage();
+    void accountSelectionChanged(int);
     void messageModified();
     void reset();
     void discard();

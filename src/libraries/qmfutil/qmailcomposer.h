@@ -89,7 +89,8 @@ public:
 public slots:
     virtual void clear() = 0;
     //virtual void attach( const QContent &lnk, QMailMessage::AttachmentsAction action = QMailMessage::LinkToAttachments );
-    virtual void setSignature( const QString &sig );
+    virtual void setSignature(const QString &sig);
+    virtual void setSendingAccountId(const QMailAccountId &accountId);
 
 signals:
     void sendMessage();

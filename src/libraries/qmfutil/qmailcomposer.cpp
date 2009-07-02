@@ -214,10 +214,19 @@ void QMailComposerInterface::attach( const QContent& item, QMailMessage::Attachm
 /*!
     Sets the composer to append \a signature to the body of the message, when creating a message.
 */
-void QMailComposerInterface::setSignature( const QString& signature )
+void QMailComposerInterface::setSignature(const QString& signature)
 {
     // default implementation does nothing
     Q_UNUSED(signature)
+}
+
+/*!
+    Sets the composer to use the account identified by \a accountId for outgoing messages.
+*/
+void QMailComposerInterface::setSendingAccountId(const QMailAccountId &accountId)
+{
+    // default implementation does nothing
+    Q_UNUSED(accountId)
 }
 
 QList<QAction*> QMailComposerInterface::actions() const

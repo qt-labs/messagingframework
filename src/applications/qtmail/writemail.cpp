@@ -106,6 +106,7 @@ void WriteMail::init()
     addAction(m_sendAction);
 
     m_accountSelection = new QComboBox(m_toolbar);
+    connect( m_accountSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(accountSelectionChanged(int)) );
 
     m_selectComposerWidget = new SelectComposerWidget(this);
     m_selectComposerWidget->setObjectName("selectComposer");
@@ -168,6 +169,14 @@ bool WriteMail::sendStage()
     close();
 
     return true;
+}
+
+void WriteMail::accountSelectionChanged(int index)
+{
+    if (m_composerInterface) {
+        QMailAccountId accountId(m_accountSelection->itemData(index).value<QMailAccountId>());
+        m_composerInterface->setSendingAccountId(accountId);
+    }
 }
 
 bool WriteMail::isComplete() const
@@ -415,6 +424,8 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
     }
 
     updateAccountSelection(type, accountId);
+    m_composerInterface->setSendingAccountId(accountId);
+
     return success;
 }
 

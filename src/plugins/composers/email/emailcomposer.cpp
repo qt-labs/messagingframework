@@ -754,6 +754,11 @@ void EmailComposerInterface::setSignature( const QString &sig )
     setPlainText( msgText, m_signature );
 }
 
+void EmailComposerInterface::setSendingAccountId( const QMailAccountId &accountId )
+{
+    m_accountId = accountId;
+}
+
 // sharp 1839 to here
 static void checkOutlookString(QString &str)
 {
@@ -890,23 +895,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
     QString ccAddress;
     QString subjectText;
 
-    // Use the default sending account if configured, or fallback to use the same account as the incoming message
-    QMailAccountId sendingAccountId;
-    QMailAccountIdList senders = QMailStore::instance()->queryAccounts(QMailAccountKey::status(QMailAccount::PreferredSender));
-    if (!senders.isEmpty()) {
-        sendingAccountId = senders.first();
-    } else {
-        senders = QMailStore::instance()->queryAccounts(QMailAccountKey::status(QMailAccount::CanTransmit));
-        if (!senders.isEmpty()) {
-            if (senders.contains(source.parentAccountId())) {
-                sendingAccountId = source.parentAccountId();
-            } else {
-                sendingAccountId = senders.first();
-            }
-        }
-    }
-
-    QMailAccount sendingAccount(sendingAccountId);
+    QMailAccount sendingAccount(m_accountId);
     QString fromAddress(sendingAccount.fromAddress().address());
 
     QString originalText;

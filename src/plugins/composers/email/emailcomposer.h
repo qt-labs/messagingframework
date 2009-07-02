@@ -83,7 +83,8 @@ public:
 
 public slots:
     void clear();
-    void setSignature( const QString &sig );
+    void setSignature(const QString &sig);
+    void setSendingAccountId(const QMailAccountId &accountId);
 
 protected slots:
     void selectAttachment();
@@ -116,6 +117,7 @@ private:
     QLabel* m_columnLabel;
     QLabel* m_rowLabel;
     QStringList m_temporaries;
+    QMailAccountId m_accountId;
 };
 
 #endif
