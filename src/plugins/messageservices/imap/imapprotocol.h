@@ -170,7 +170,7 @@ public:
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);
     void sendUidFetchSection(const QString &uid, const QString &section, int start, int end);
-    void sendUidStore(MessageFlags flags, const QString &range);
+    void sendUidStore(MessageFlags flags, bool set, const QString &range);
     void sendUidCopy(const QString &range, const QMailFolder &destination);
     void sendExpunge();
     void sendClose();

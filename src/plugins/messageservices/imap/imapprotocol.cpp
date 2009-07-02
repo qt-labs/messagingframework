@@ -1436,7 +1436,7 @@ class UidStoreState : public SelectedState
 public:
     UidStoreState() : SelectedState(IMAP_UIDStore, "UIDStore") { UidStoreState::init(); }
 
-    void setParameters(MessageFlags flags, const QString &range);
+    void setParameters(MessageFlags flags, bool set, const QString &range);
 
     virtual bool permitsPipelining() const { return true; }
     virtual void init();
@@ -1449,12 +1449,12 @@ signals:
 
 private:
     // The list of flags/range pairs we're storing (via multiple commands), in order
-    QList<QPair<MessageFlags, QString> > _parameters;
+    QList<QPair<QPair<MessageFlags, bool>, QString> > _parameters;
 };
 
-void UidStoreState::setParameters(MessageFlags flags, const QString &range)
+void UidStoreState::setParameters(MessageFlags flags, bool set, const QString &range)
 {
-    _parameters.append(qMakePair(flags, range));
+    _parameters.append(qMakePair(qMakePair(flags, set), range));
 }
 
 void UidStoreState::init()
@@ -1465,10 +1465,10 @@ void UidStoreState::init()
 
 QString UidStoreState::transmit(ImapContext *c)
 {
-    const QPair<MessageFlags, QString> &params(_parameters.last());
+    const QPair<QPair<MessageFlags, bool>, QString> &params(_parameters.last());
 
-    QString flagStr = QString("+FLAGS.SILENT (%1)").arg(messageFlagsToString(params.first));
-    return c->sendCommand(QString("UID STORE %1 %2").arg(params.second).arg(flagStr));
+    QString flagStr = QString("FLAGS.SILENT (%1)").arg(messageFlagsToString(params.first.first));
+    return c->sendCommand(QString("UID STORE %1 %2%3").arg(params.second).arg(params.first.second ? '+' : '-').arg(flagStr));
 }
 
 void UidStoreState::leave(ImapContext *)
@@ -1480,7 +1480,7 @@ void UidStoreState::leave(ImapContext *)
 void UidStoreState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        const QPair<MessageFlags, QString> &params(_parameters.first());
+        const QPair<QPair<MessageFlags, bool>, QString> &params(_parameters.first());
 
         // Report all UIDs stored
         foreach (uint uid, sequenceUids(params.second))
@@ -2023,9 +2023,9 @@ void ImapProtocol::sendUidFetchSection(const QString &uid, const QString &sectio
     _fsm->setState(&_fsm->uidFetchState);
 }
 
-void ImapProtocol::sendUidStore(MessageFlags flags, const QString &range)
+void ImapProtocol::sendUidStore(MessageFlags flags, bool set, const QString &range)
 {
-    _fsm->uidStoreState.setParameters(flags, range);
+    _fsm->uidStoreState.setParameters(flags, set, range);
     _fsm->setState(&_fsm->uidStoreState);
 }
 

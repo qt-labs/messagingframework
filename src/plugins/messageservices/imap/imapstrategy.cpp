@@ -1825,7 +1825,7 @@ bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
         _readUids.removeAll( msgUidl );
 
         context->updateStatus( msg );
-        context->protocol().sendUidStore(MFlag_Seen, ImapProtocol::uid(msgUidl));
+        context->protocol().sendUidStore(MFlag_Seen, true, ImapProtocol::uid(msgUidl));
         return true;
     }
 
@@ -1848,7 +1848,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
                 qWarning() << "Unable to purge message record for account:" << context->config().id();
             }
 
-            context->protocol().sendUidStore(MFlag_Deleted, ImapProtocol::uid(msgUidl));
+            context->protocol().sendUidStore(MFlag_Deleted, true, ImapProtocol::uid(msgUidl));
             return true;
         } else if (_expungeRequired) {
             // All messages flagged as deleted, expunge them
@@ -2631,7 +2631,7 @@ void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
 void ImapCopyMessagesStrategy::removeObsoleteUids(ImapStrategyContextBase *context)
 {
     if (!_obsoleteDestinationUids.isEmpty()) {
-        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(_obsoleteDestinationUids).toString());
+        context->protocol().sendUidStore(MFlag_Deleted, true, IntegerRegion(_obsoleteDestinationUids).toString());
         _obsoleteDestinationUids.clear();
     } else {
         fetchNextCopy(context);
@@ -2714,7 +2714,7 @@ void ImapMoveMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
     foreach (const QString &msgUid, _retrieveUid.split("\n"))
         uids.append(ImapProtocol::uid(msgUid));
 
-    context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(uids).toString());
+    context->protocol().sendUidStore(MFlag_Deleted, true, IntegerRegion(uids).toString());
 }
 
 void ImapMoveMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
@@ -3005,7 +3005,7 @@ void ImapDeleteMessagesStrategy::messageListMessageAction(ImapStrategyContextBas
         foreach (const QString &msgUid, _retrieveUid.split("\n"))
             uids.append(ImapProtocol::uid(msgUid));
 
-        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(uids).toString());
+        context->protocol().sendUidStore(MFlag_Deleted, true, IntegerRegion(uids).toString());
     }
 }
 
