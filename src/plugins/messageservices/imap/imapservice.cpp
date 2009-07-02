@@ -499,9 +499,34 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 return false;
             }
 
-            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, sentId);
-            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+            QMailMessageIdList moveIds;
+            QMailMessageIdList flagIds;
+
+            QMailMessageKey key(QMailMessageKey::id(messageIds));
+            QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId);
+
+            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+                // If the message is already in the correct location just update the flags to remove \Draft
+                if (metaData.parentFolderId() == sentId) {
+                    flagIds.append(metaData.id());
+                } else {
+                    moveIds.append(metaData.id());
+                }
+            }
+
+            if (!flagIds.isEmpty()) {
+                _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(MFlag_Draft, false);
+                _service->_client.strategyContext()->flagMessagesStrategy.clearSelection();
+                _service->_client.strategyContext()->flagMessagesStrategy.selectedMailsAppend(flagIds);
+                appendStrategy(&_service->_client.strategyContext()->flagMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+            }
+            if (!moveIds.isEmpty()) {
+                _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(moveIds, sentId);
+                appendStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+            }
+
+            return initiateStrategy();
         }
     }
 
@@ -511,7 +536,8 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             _setMask = setMask;
             _unsetMask = unsetMask;
 
-            // Move these messages to the predefined location
+            // Move these messages to the predefined location - if they're already in the drafts
+            // folder, we still want to overwrite them with the current content in case it has been updated
             QMailFolderId draftId(_service->_client.mailboxId(draftsPath));
             if (!draftId.isValid()) {
                 _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Drafts folder"));
