@@ -202,8 +202,6 @@ protected:
     virtual void messageListMessageAction(ImapStrategyContextBase *context) = 0;
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
-    virtual bool computeStartEndPartRange(ImapStrategyContextBase *context);
-
     virtual void resetMessageListTraversal();
     virtual bool selectNextMessageSequence(ImapStrategyContextBase *context, int maximum = DefaultBatchSize, bool folderActionPermitted = true);
 
@@ -216,7 +214,7 @@ protected:
     FolderSelections::ConstIterator _selectionItr;
     QMailFolder _currentMailbox;
     QString _currentModSeq;
-    QString _retrieveUid;
+    QStringList _messageUids;
     QMailMessagePart::Location _msgSection;
     int _sectionStart;
     int _sectionEnd;
