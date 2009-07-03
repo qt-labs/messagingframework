@@ -44,9 +44,10 @@
 
 EmailFolderView::EmailFolderView(QWidget *parent)
     : FolderView(parent),
-      mModel(0)
+      mModel(0),
+      mDelegate(new EmailFolderDelegate(this))
 {
-    setItemDelegate(new EmailFolderDelegate(this));
+    setItemDelegate(mDelegate);
 }
 
 EmailFolderModel *EmailFolderView::model() const

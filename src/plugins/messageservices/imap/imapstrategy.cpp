@@ -569,19 +569,25 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
 {
     _listSize += 1;
 
-    QMailMessageMetaData metaData(location.containingMessageId());
-    if (metaData.id().isValid()) {
+    const QMailMessage message(location.containingMessageId());
+    if (message.id().isValid()) {
         SectionProperties sectionProperties(location, minimum);
-        bool ok;
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);
+        uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
+        _selectionMap[message.parentFolderId()].insert(serverUid, sectionProperties);
 
-        uint size = metaData.indicativeSize();
-        uint bytes = metaData.size();
-        if (minimum > 0)
-            size = bytes = minimum;
+        uint size = 0;
+        uint bytes = minimum;
 
-        _retrievalSize.insert(metaData.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+        if (minimum > 0) {
+            size = 1;
+        } else if (location.isValid()) {
+            // Find the size of this part
+            const QMailMessagePart &part(message.partAt(location));
+            size = part.indicativeSize();
+            bytes = part.contentDisposition().size();
+        }
+
+        _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
         _totalRetrievalSize += size;
     }
 
@@ -980,7 +986,9 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
     for ( ; it != end; ++it)
         _total += it->second.count();
 
-    context->updateStatus(QObject::tr("Previewing", "Previewing <number of messages>") + QChar(' ') + QString::number(_total));
+    if (_total) {
+        context->updateStatus(QObject::tr("Previewing", "Previewing <number of messages>") + QChar(' ') + QString::number(_total));
+    }
 
     _progress = 0;
     context->progressChanged(_progress, _total);

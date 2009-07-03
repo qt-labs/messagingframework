@@ -111,6 +111,7 @@ private:
     QString m_title;
     QLabel* m_columnLabel;
     QLabel* m_rowLabel;
+    QStringList m_temporaries;
 };
 
 #endif

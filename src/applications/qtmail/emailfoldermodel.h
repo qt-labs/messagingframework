@@ -122,24 +122,26 @@ class EmailFolderModel : public FolderModel
 public:
     using FolderModel::data;
 
-    enum Roles 
+    enum Roles
     {
         FolderIconRole = FolderModel::FolderIconRole,
         FolderStatusRole = FolderModel::FolderStatusRole,
         FolderStatusDetailRole = FolderModel::FolderStatusDetailRole,
         FolderIdRole = FolderModel::FolderIdRole,
         FolderSynchronizationEnabledRole,
-        ContextualAccountIdRole
+        ContextualAccountIdRole,
     };
 
     EmailFolderModel(QObject *parent = 0);
+    EmailFolderModel(const QMailFolderIdList& specificSet, QObject* parent = 0);
+
     ~EmailFolderModel();
 
     virtual QVariant data(QMailMessageSet *item, int role, int column) const;
     virtual QVariant headerData(int section, Qt::Orientation, int role) const;
 
 protected:
-    virtual void init();
+    virtual void init(const QMailFolderIdList& specificSet = QMailFolderIdList());
 
     virtual QString itemStatusDetail(QMailMessageSet *item) const;
 

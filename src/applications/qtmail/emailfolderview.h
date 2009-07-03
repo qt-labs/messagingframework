@@ -46,6 +46,8 @@
 #include "folderdelegate.h"
 #include "folderview.h"
 
+class EmailFolderDelegate;
+
 class EmailFolderView : public FolderView
 {
     Q_OBJECT
@@ -60,6 +62,7 @@ private:
     virtual void setModel(QAbstractItemModel *model);
 
     EmailFolderModel *mModel;
+    EmailFolderDelegate* mDelegate;
 };
 
 

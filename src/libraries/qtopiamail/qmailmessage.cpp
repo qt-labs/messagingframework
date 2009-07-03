@@ -2168,7 +2168,7 @@ public:
 
     QList<QMailMessageHeaderField> fields(const QByteArray& id, int maximum = -1) const;
 
-    void output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const;
+    void output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
@@ -2355,7 +2355,7 @@ QList<QMailMessageHeaderField> QMailMessageHeaderPrivate::fields(const QByteArra
     return result;
 }
 
-void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const
+void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const
 {
     foreach (const QByteArray& field, _headerFields) {
         QMailMessageHeaderField headerField(field, QMailMessageHeaderField::UnstructuredField);
@@ -2363,7 +2363,7 @@ void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>
         bool excluded = false;
 
         // Bypass any header field that has the internal prefix
-        if (stripInternal)
+        if (excludeInternalFields)
             excluded = matchingId(internalPrefix(), id, true);
 
         // Bypass any header in the list of exclusions
@@ -2447,9 +2447,9 @@ QList<const QByteArray*> QMailMessageHeader::fieldList() const
     return result;
 }
 
-void QMailMessageHeader::output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const
+void QMailMessageHeader::output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const
 {
-    impl(this)->output(out, exclusions, stripInternal);
+    impl(this)->output(out, exclusions, excludeInternalFields);
 }
 
 /*! 
@@ -3218,7 +3218,7 @@ protected:
 
     void defaultContentType(const QMailMessagePartContainerPrivate* parent);
 
-    void outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const;
+    void outputParts(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const;
     void outputBody(QDataStream& out, bool includeAttachments) const;
 
     QString headerFieldText( const QString &id ) const;
@@ -3391,12 +3391,9 @@ uint QMailMessagePartContainerPrivate::indicativeSize() const
 {
     uint size = 0;
 
-    if (hasBody()) 
-    {
+    if (hasBody()) {
         size = body().indicativeSize();
-    }
-    else
-    {
+    } else {
         for (int i = 0; i < _messageParts.count(); ++i)
             size += _messageParts[i].indicativeSize();
     }
@@ -3404,7 +3401,7 @@ uint QMailMessagePartContainerPrivate::indicativeSize() const
     return size;
 }
 
-void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
+void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const
 {
     static const DataString newLine('\n');
     static const DataString marker("--");
@@ -3412,7 +3409,7 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includ
     if (_multipartType == QMailMessagePartContainer::MultipartNone)
         return;
 
-    if (includePreamble) {
+    if (addMimePreamble) {
         // This is a preamble (not for conformance, to assist readibility on non-conforming renderers):
         out << DataString("This is a multipart message in Mime 1.0 format"); // No tr
         out << newLine;
@@ -3439,7 +3436,7 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream& out, bool includ
                 part.setBoundary(to7BitAscii(subBoundary));
             }
         }
-        part.output(out, includeAttachments, stripInternal);
+        part.output(out, includeAttachments, excludeInternalFields);
     }
 
     out << newLine << marker << DataString(_boundary) << marker << newLine;
@@ -3535,11 +3532,14 @@ const QMailMessageBody& QMailMessagePartContainerPrivate::body() const
 
 void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body)
 {
-    _body = body;
-    _hasBody = !_body.isEmpty();
-
     // Set the body's properties into our header
     setBodyProperties(body.contentType(), body.transferEncoding());
+
+    // Multipart messages do not have their own bodies
+    if (body.contentType().type().toLower() != "multipart") {
+        _body = body;
+        _hasBody = !_body.isEmpty();
+    }
 }
 
 void QMailMessagePartContainerPrivate::setBodyProperties(const QMailMessageContentType &type, QMailMessageBody::TransferEncoding encoding)
@@ -4225,9 +4225,9 @@ uint QMailMessagePartContainer::indicativeSize() const
 }
 
 /*! \internal */
-void QMailMessagePartContainer::outputParts(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
+void QMailMessagePartContainer::outputParts(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const
 {
-    impl(this)->outputParts(out, includePreamble, includeAttachments, stripInternal);
+    impl(this)->outputParts(out, addMimePreamble, includeAttachments, excludeInternalFields);
 }
 
 /*! \internal */
@@ -4266,7 +4266,7 @@ public:
     bool contentAvailable() const;
     bool partialContentAvailable() const;
 
-    void output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const;
+    void output(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const;
 
     bool contentModified() const;
     void setUnmodified();
@@ -4339,11 +4339,11 @@ bool QMailMessagePartPrivate::partialContentAvailable() const
     return ((_multipartType != QMailMessage::MultipartNone) || !_body.isEmpty());
 }
 
-void QMailMessagePartPrivate::output(QDataStream& out, bool includePreamble, bool includeAttachments, bool stripInternal) const
+void QMailMessagePartPrivate::output(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const
 {
     static const DataString newLine('\n');
 
-    _header.output( out, QList<QByteArray>(), stripInternal );
+    _header.output( out, QList<QByteArray>(), excludeInternalFields );
     out << DataString('\n');
 
     QMailMessagePart::ReferenceType type(referenceType());
@@ -4351,7 +4351,7 @@ void QMailMessagePartPrivate::output(QDataStream& out, bool includePreamble, boo
         if ( hasBody() ) {
             outputBody( out, includeAttachments );
         } else {
-            outputParts( out, includePreamble, includeAttachments, stripInternal );
+            outputParts( out, addMimePreamble, includeAttachments, excludeInternalFields );
         }
     } else {
         if (includeAttachments) {
@@ -5072,6 +5072,15 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
 }
 
 /*!
+    Returns an indication of the size of the part.  This measure should be used
+    only in comparing the relative size of parts with respect to transmission.
+*/  
+uint QMailMessagePart::indicativeSize() const
+{
+    return impl(this)->indicativeSize();
+}
+
+/*!
     Returns true if the entire content of this part is available; otherwise returns false.
 */
 bool QMailMessagePart::contentAvailable() const
@@ -5088,9 +5097,9 @@ bool QMailMessagePart::partialContentAvailable() const
 }
 
 /*! \internal */
-void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool stripInternal) const
+void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool excludeInternalFields) const
 {
-    return impl(this)->output(out, false, includeAttachments, stripInternal);
+    return impl(this)->output(out, false, includeAttachments, excludeInternalFields);
 }
 
 /*! 
@@ -6234,7 +6243,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 private:
-    void outputHeaders(QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool stripInternal) const;
+    void outputHeaders(QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool excludeInternalFields) const;
 
     LongString _rawMessageBody;
 };
@@ -6391,9 +6400,7 @@ void QMailMessagePrivate::toRfc2822(QDataStream& out, QMailMessage::EncodingForm
     bool addContentHeaders = ((format != QMailMessage::IdentityFormat) && 
                               ((format != QMailMessage::StorageFormat) || isOutgoing || _rawMessageBody.isEmpty()));
     bool includeBcc = (format != QMailMessage::TransmissionFormat);
-    bool includePreamble = (format == QMailMessage::TransmissionFormat);
-    bool includeAttachments = ((format != QMailMessage::HeaderOnlyFormat) && (format != QMailMessage::StorageFormat));
-    bool stripInternal = ((format == QMailMessage::TransmissionFormat) || (format == QMailMessage::IdentityFormat));
+    bool excludeInternalFields = (format == QMailMessage::TransmissionFormat);
 
     if (_messageParts.count() && boundary().isEmpty()) {
         // Include a hash of the header data in the boundary
@@ -6404,19 +6411,22 @@ void QMailMessagePrivate::toRfc2822(QDataStream& out, QMailMessage::EncodingForm
         const_cast<QMailMessagePrivate*>(this)->setBoundary(boundaryString(hash.result()));
     }
 
-    outputHeaders(out, addTimeStamp, addContentHeaders, includeBcc, stripInternal);
+    outputHeaders(out, addTimeStamp, addContentHeaders, includeBcc, excludeInternalFields);
     out << DataString('\n');
 
     if (format != QMailMessage::HeaderOnlyFormat) {
         if ( hasBody() ) {
             outputBody( out, true); //not multipart so part should not be an attachment
         } else {
-            outputParts( out, includePreamble, includeAttachments, stripInternal );
+            bool addMimePreamble = (format == QMailMessage::TransmissionFormat);
+            bool includeAttachments = (format != QMailMessage::StorageFormat);
+
+            outputParts( out, addMimePreamble, includeAttachments, excludeInternalFields );
         }
     }
 }
 
-void QMailMessagePrivate::outputHeaders( QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool stripInternal ) const
+void QMailMessagePrivate::outputHeaders( QDataStream& out, bool addTimeStamp, bool addContentHeaders, bool includeBcc, bool excludeInternalFields ) const
 {
     QList<QByteArray> exclusions;
 
@@ -6428,7 +6438,7 @@ void QMailMessagePrivate::outputHeaders( QDataStream& out, bool addTimeStamp, bo
         exclusions.append("bcc");
     }
 
-    _header.output( out, exclusions, stripInternal );
+    _header.output( out, exclusions, excludeInternalFields );
 
     if (addTimeStamp && headerField("Date").isEmpty()) {
         QString timeStamp = QMailTimeStamp( QDateTime::currentDateTime() ).toString();

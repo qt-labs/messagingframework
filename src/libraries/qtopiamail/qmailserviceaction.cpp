@@ -547,7 +547,7 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
     \fn QMailServiceAction::activityChanged(QMailServiceAction::Activity a)
 
     This signal is emitted when the activity status of the action changes,
-    with the new state sdescribed by \a a.
+    with the new state described by \a a.
 
     \sa activity()
 */

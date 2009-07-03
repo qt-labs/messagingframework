@@ -224,6 +224,12 @@ EmailFolderModel::EmailFolderModel(QObject *parent)
     init();
 }
 
+EmailFolderModel::EmailFolderModel(const QMailFolderIdList& specificSet, QObject* parent)
+    : FolderModel(parent)
+{
+    init(specificSet);
+}
+
 EmailFolderModel::~EmailFolderModel()
 {
 }
@@ -236,7 +242,6 @@ QVariant EmailFolderModel::data(QMailMessageSet *item, int role, int column) con
         } else if (role == ContextualAccountIdRole) {
             return itemContextualAccountId(item);
         }
-
         return FolderModel::data(item, role, column);
     }
 
@@ -251,18 +256,26 @@ QVariant EmailFolderModel::headerData(int section, Qt::Orientation, int role) co
     return QVariant();
 }
 
-void EmailFolderModel::init()
+void EmailFolderModel::init(const QMailFolderIdList& specificSet)
 {
-    // Add the special Inbox folder
-    append(new InboxMessageSet(this));
+    if(specificSet.isEmpty())
+    {
+        // Add the special Inbox folder
+        append(new InboxMessageSet(this));
 
-    // Add the remainder of the standard folders
-    foreach (QMailFolder::StandardFolder identifier, 
-             QList<QMailFolder::StandardFolder>() << QMailFolder::OutboxFolder
-                                                  << QMailFolder::DraftsFolder
-                                                  << QMailFolder::SentFolder
-                                                  << QMailFolder::TrashFolder) {
-        append(new EmailFolderMessageSet(this, QMailFolderId(identifier), false));
+        // Add the remainder of the standard folders
+        foreach (QMailFolder::StandardFolder identifier, 
+                QList<QMailFolder::StandardFolder>() << QMailFolder::OutboxFolder
+                << QMailFolder::DraftsFolder
+                << QMailFolder::SentFolder
+                << QMailFolder::TrashFolder) {
+            append(new EmailFolderMessageSet(this, QMailFolderId(identifier), false));
+        }
+    }
+    else
+    {
+        foreach ( const QMailFolderId& id, specificSet)
+            append(new EmailFolderMessageSet(this, QMailFolderId(id), false));
     }
 }
 

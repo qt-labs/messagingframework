@@ -336,12 +336,17 @@ RecipientWidget* RecipientListWidget::addRecipientWidget()
     connect(r,SIGNAL(removeClicked()),this,SIGNAL(changed()));
     connect(r,SIGNAL(recipientChanged()),this,SIGNAL(changed()));
 
+    setUpdatesEnabled(false);
+
     m_layout->addWidget(r);
     if(!m_widgetList.isEmpty())
         m_widgetList.last()->setTabOrder(m_widgetList.last(),r);
 
     r->setRemoveEnabled(!m_widgetList.isEmpty());
     m_widgetList.append(r);
+
+    updateGeometry();
+    setUpdatesEnabled(true);
 
     return r;
 }
@@ -352,9 +357,12 @@ void RecipientListWidget::removeRecipientWidget()
     {
         if(m_widgetList.count() <= 1)
             return;
+        setUpdatesEnabled(false);
         int index = m_widgetList.indexOf(r);
         m_widgetList.removeAll(r);
-        delete r;
+
+        m_layout->removeWidget(r);
+        r->deleteLater();
 
         if(index >= m_widgetList.count())
             index = m_widgetList.count()-1;
@@ -362,6 +370,9 @@ void RecipientListWidget::removeRecipientWidget()
         if(m_widgetList.at(index)->isEmpty() && index > 0)
             index--;
         m_widgetList.at(index)->setFocus();
+
+        updateGeometry();
+        setUpdatesEnabled(true);
 
     }
 }
@@ -512,6 +523,12 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
 
 EmailComposerInterface::~EmailComposerInterface()
 {
+    // Delete any temporary files we don't need
+    foreach (const QString file, m_temporaries) {
+        if (!QFile::remove(file)) {
+            qWarning() << "Unable to remove temporary file:" << file;
+        }
+    }
 }
 
 void EmailComposerInterface::init()
@@ -642,8 +659,12 @@ QMailMessage EmailComposerInterface::message() const
             disposition.setFilename(partName.toLatin1());
 
             QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-            part.setContentLocation(QUrl::fromLocalFile(filePath).toString());
             mail.appendPart(part);
+
+            // Store the location of this file for future reference
+            const QMailMessagePart &mailPart(mail.partAt(mail.partCount() - 1));
+            QString name("qtopiamail-file-location-" + mailPart.location().toString(false));
+            mail.setCustomField(name, filePath);
         }
     }
 
@@ -660,6 +681,13 @@ void EmailComposerInterface::clear()
 
     m_bodyEdit->clear();
     m_attachmentListWidget->clear();
+
+    // Delete any temporary files we don't need
+    foreach (const QString file, m_temporaries) {
+        if (!QFile::remove(file)) {
+            qWarning() << "Unable to remove temporary file:" << file;
+        }
+    }
 }
 
 void EmailComposerInterface::setSignature( const QString &sig )
@@ -717,17 +745,39 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
         // all but the first part as out-of-line attachments
         int textPart = -1;
         for ( uint i = 0; i < sourceMail.partCount(); ++i ) {
-            QMailMessagePart &part = const_cast<QMailMessagePart&>(sourceMail.partAt(i));
-            QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
-            bool isLocalAttachment = part.hasBody() && QFile::exists(QUrl(contentLocation).toLocalFile());
+            const QMailMessagePart &part(sourceMail.partAt(i));
 
-            if (textPart == -1 && part.hasBody() && (part.contentType().type().toLower() == "text") && !isLocalAttachment) {
-                // This is the first text part, we will use as the forwarded text body
-                textPart = i;
-            } else if(isLocalAttachment) {
-                    m_attachmentListWidget->addAttachment(QUrl(contentLocation).toLocalFile());
+            // See if we have a filename to link to
+            QString name("qtopiamail-file-location-" + part.location().toString(false));
+            QString contentLocation = sourceMail.customField(name);
+            if (contentLocation.isEmpty()) {
+                // See if we can use the value in the message (remove any folded whitespace)
+                contentLocation = QUrl(part.contentLocation().remove(QRegExp("\\s"))).toLocalFile();
+            }
+
+            if (part.hasBody() || !contentLocation.isEmpty()) {
+                bool localFile(!contentLocation.isEmpty() && QFile::exists(contentLocation));
+
+                if ((textPart == -1) && (!localFile) && (part.contentType().type().toLower() == "text")) {
+                    // This is the first text part, we will use as the forwarded text body
+                    textPart = i;
+                } else {
+                    if (!localFile) {
+                        // We need to create a temporary copy of this part's data to link to
+                        QString fileName(part.writeBodyTo(QMail::tempPath()));
+                        if (fileName.isEmpty()) {
+                            qWarning() << "Unable to save part to temporary file!";
+                            continue;
+                        } else {
+                            m_temporaries.append(fileName);
+                            contentLocation = fileName;
+                        }
+                    }
+
+                    m_attachmentListWidget->addAttachment(contentLocation);
                 }
             }
+        }
         if (textPart != -1) {
             const QMailMessagePart& part = sourceMail.partAt(textPart);
             setPlainText( part.body().data(), m_signature );
