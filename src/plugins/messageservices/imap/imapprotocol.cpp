@@ -304,6 +304,7 @@ public:
     virtual QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
     virtual QString sendCommandLiteral(const QString &cmd, uint length) { return mProtocol->sendCommandLiteral(cmd, length); }
     virtual void sendData(const QString &data) { mProtocol->sendData(data); }
+    virtual void sendDataLiteral(const QString &data, uint length) { mProtocol->sendDataLiteral(data, length); }
 
     ImapProtocol *protocol() { return mProtocol; }
     const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
@@ -353,7 +354,7 @@ public:
     
     virtual bool permitsPipelining() const { return false; }
 
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
     virtual void untaggedResponse(ImapContext *c, const QString &line);
     virtual void taggedResponse(ImapContext *c, const QString &line);
     virtual void literalResponse(ImapContext *c, const QString &line);
@@ -378,9 +379,10 @@ private:
     QString mTag;
 };
 
-void ImapState::continuationResponse(ImapContext *, const QString &line)
+bool ImapState::continuationResponse(ImapContext *, const QString &line)
 {
     qWarning() << "Unexpected continuation response!" << line;
+    return false;
 }
 
 void ImapState::untaggedResponse(ImapContext *c, const QString &line)
@@ -533,7 +535,7 @@ public:
 
     virtual void init();
     virtual QString transmit(ImapContext *c);
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
 
 private:
     QMailAccountConfiguration _config;
@@ -558,7 +560,7 @@ QString LoginState::transmit(ImapContext *c)
     return c->sendCommand(ImapAuthenticator::getAuthentication(_config.serviceConfiguration("imap4"), _capabilities));
 }
 
-void LoginState::continuationResponse(ImapContext *c, const QString &received)
+bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 {
     // The server input is Base64 encoded
     QByteArray challenge = QByteArray::fromBase64(received.toAscii());
@@ -567,6 +569,8 @@ void LoginState::continuationResponse(ImapContext *c, const QString &received)
     if (!response.isEmpty()) {
         c->sendData(response.toBase64());
     }
+
+    return false;
 }
 
 
@@ -781,7 +785,7 @@ public:
     virtual void init();
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
     virtual void taggedResponse(ImapContext *c, const QString &line);
 
 signals:
@@ -834,18 +838,17 @@ void AppendState::leave(ImapContext *)
     mParameters.removeFirst();
 }
 
-void AppendState::continuationResponse(ImapContext *c, const QString &)
+bool AppendState::continuationResponse(ImapContext *c, const QString &)
 {
     const AppendParameters &params(mParameters.first());
 
     c->sendData(params.mData);
+    return false;
 }
 
 void AppendState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        const AppendParameters &params(mParameters.first());
-
         // See if we got an APPENDUID response
         QRegExp appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)");
         if (appenduidResponsePattern.indexIn(line) != -1) {
@@ -1638,7 +1641,7 @@ public:
     void done(ImapContext *c);
 
     virtual QString transmit(ImapContext *c);
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
     virtual void untaggedResponse(ImapContext *c, const QString &line);
 };
 
@@ -1652,9 +1655,10 @@ QString IdleState::transmit(ImapContext *c)
     return c->sendCommand("IDLE");
 }
 
-void IdleState::continuationResponse(ImapContext *c, const QString &)
+bool IdleState::continuationResponse(ImapContext *c, const QString &)
 {
     c->continuation(command(), QString("idling"));
+    return false;
 }
 
 void IdleState::untaggedResponse(ImapContext *c, const QString &line)
@@ -1700,7 +1704,7 @@ public:
 
     virtual QString sendCommandLiteral(const QString &cmd, uint length);
 
-    void continuationResponse(const QString &line) { state()->continuationResponse(this, line); }
+    bool continuationResponse(const QString &line) { return state()->continuationResponse(this, line); }
     void untaggedResponse(const QString &line) { state()->untaggedResponse(this, line); }
     void taggedResponse(const QString &line) { state()->taggedResponse(this, line); }
     void literalResponse(const QString &line) { state()->literalResponse(this, line); }
@@ -1738,7 +1742,9 @@ QString ImapContextFSM::sendCommandLiteral(const QString &cmd, uint length)
 
     if (protocol()->capabilities().contains("LITERAL+")) {
         // Send the continuation immediately
-        continuationResponse(QString());
+        while (continuationResponse(QString())) {
+            // Keep sending continuations until there are no more
+        }
     }
 
     return tag;
@@ -2081,6 +2087,15 @@ void ImapProtocol::sendData(const QString &cmd)
         logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
     }
     qMailLog(IMAP) << objectName() << "SEND:" << qPrintable(logCmd);
+}
+
+void ImapProtocol::sendDataLiteral(const QString &cmd, uint length)
+{
+    QString trailer(" {%1%2}");
+    trailer = trailer.arg(length);
+    trailer = trailer.arg(capabilities().contains("LITERAL+") ? "+" : "");
+
+    sendData(cmd + trailer);
 }
 
 QString ImapProtocol::sendCommand(const QString &cmd)

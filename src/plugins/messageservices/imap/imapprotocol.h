@@ -241,6 +241,7 @@ private:
     void nextAction(const QString &line);
 
     void sendData(const QString &cmd);
+    void sendDataLiteral(const QString &cmd, uint length);
 
     QString newCommandId();
     QString commandId(QString in);
