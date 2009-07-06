@@ -1653,10 +1653,9 @@ void EmailClient::selectAll()
 
 void EmailClient::emptyTrashFolder()
 {
-    QMailMessageKey typeFilter(QMailMessageKey::messageType(QMailMessage::Email));
-    QMailMessageKey trashFilter(QMailMessageKey::status(QMailMessage::Trash));
+    QMailMessageKey trashFilter(EmailStandardFolderMessageSet::contentKey(QMailFolder::TrashFolder));
 
-    QMailMessageIdList trashIds = QMailStore::instance()->queryMessages(typeFilter & trashFilter);
+    QMailMessageIdList trashIds = QMailStore::instance()->queryMessages(trashFilter);
     if (trashIds.isEmpty())
         return;
 
