@@ -160,8 +160,9 @@ public:
     ImapPrepareMessagesStrategy() {}
     virtual ~ImapPrepareMessagesStrategy() {}
 
-    virtual void setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
+    virtual void setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, bool external);
 
+    virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
@@ -174,6 +175,7 @@ protected:
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > _locations;
+    bool _external;
 };
     
 class ImapMessageListStrategy : public ImapStrategy
@@ -378,7 +380,7 @@ private:
 class ImapRetrieveFolderListStrategy : public ImapSynchronizeBaseStrategy
 {
 public:
-    ImapRetrieveFolderListStrategy() :_descending(false) {}
+    ImapRetrieveFolderListStrategy() : _descending(false) {}
     virtual ~ImapRetrieveFolderListStrategy() {}
 
     virtual void setBase(const QMailFolderId &folderId);

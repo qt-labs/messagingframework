@@ -418,9 +418,30 @@ void ImapStrategy::urlAuthorized(ImapStrategyContextBase *context, const QString
 /* A strategy to traverse a list of messages, preparing each one for transmission
    by generating a URLAUTH token.
 */
-void ImapPrepareMessagesStrategy::setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
+void ImapPrepareMessagesStrategy::setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, bool external)
 {
     _locations = ids;
+    _external = external;
+}
+
+void ImapPrepareMessagesStrategy::newConnection(ImapStrategyContextBase *context)
+{
+    if (!_external) {
+        // We only need internal references - generate IMAP URLs for each location
+        while (!_locations.isEmpty()) {
+            const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+            QString url(ImapProtocol::url(pair.first, false, true));
+            urlAuthorized(context, url);
+
+            _locations.takeFirst();
+        }
+
+        context->operationCompleted();
+        return;
+    }
+
+    ImapStrategy::newConnection(context);
 }
 
 void ImapPrepareMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
@@ -514,18 +535,29 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
     const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
 
     // We now have an authorized URL for this location
-    QMailMessage referer(pair.second.containingMessageId());
-    QMailMessagePart &part(referer.partAt(pair.second));
+    QMailMessageId referringId(pair.second.containingMessageId());
+    if (referringId.isValid()) {
+        QMailMessage referer(referringId);
+        QMailMessagePart &part(referer.partAt(pair.second));
 
-    part.setReferenceResolution(url);
+        part.setReferenceResolution(url);
 
-    // Have we resolved all references in this message?
-    if (!hasUnresolvedReferences(referer)) {
-        referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
-    }
+        // Have we resolved all references in this message?
+        if (!hasUnresolvedReferences(referer)) {
+            referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
+        }
 
-    if (!QMailStore::instance()->updateMessage(&referer)) {
-        qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+        if (!QMailStore::instance()->updateMessage(&referer)) {
+            qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+        }
+    } else {
+        // Update this message with its own location reference
+        QMailMessage referencedMessage(pair.first.containingMessageId());
+        referencedMessage.setExternalLocationReference(url);
+
+        if (!QMailStore::instance()->updateMessage(&referencedMessage)) {
+            qWarning() << "Unable to update message for account:" << referencedMessage.parentAccountId();
+        }
     }
 }
 
