@@ -561,17 +561,39 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
     }
 
     QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > unresolved;
+    QSet<QMailMessageId> referringIds;
     QMailMessageIdList externaliseIds;
 
     QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> >::const_iterator it = messageIds.begin(), end = messageIds.end();
     for ( ; it != end; ++it) {
         if (!(*it).second.isValid()) {
-            // This message needs to be externalised
+            // This message just needs to be externalised
             externaliseIds.append((*it).first.containingMessageId());
         } else {
             // This message needs to be made available for another message's reference
             unresolved.append(*it);
+            referringIds.insert((*it).second.containingMessageId());
         }
+    }
+
+    if (!unresolved.isEmpty()) {
+        bool external(false);
+
+        // Are these messages being resolved for internal or external references?
+        QMailMessageKey key(QMailMessageKey::id(referringIds.toList()));
+        QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentAccountId | QMailMessageKey::Status);
+
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+            if ((metaData.parentAccountId() != _service->accountId()) ||
+                !(metaData.status() & QMailMessage::TransmitFromExternal)) {
+                // This message won't be transmitted by reference from the IMAP server - supply an external reference
+                external = true;
+                break;
+            }
+        }
+
+        _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(unresolved, external);
+        appendStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
     }
 
     if (!externaliseIds.isEmpty()) {
@@ -584,11 +606,6 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         _service->_client.strategyContext()->externalizeMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->externalizeMessagesStrategy.appendMessageSet(externaliseIds, sentId);
         appendStrategy(&_service->_client.strategyContext()->externalizeMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
-    }
-
-    if (!unresolved.isEmpty()) {
-        _service->_client.strategyContext()->prepareMessagesStrategy.setUnresolved(unresolved);
-        appendStrategy(&_service->_client.strategyContext()->prepareMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
     }
 
     return initiateStrategy();

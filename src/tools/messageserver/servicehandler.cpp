@@ -200,12 +200,13 @@ struct ResolverSet
 
                 QMailMessagePart::Location location;
                 location.setContainingMessageId(referencedMessage.id());
-
                 map[referencedMessage.parentAccountId()].append(qMakePair(location, part.location()));
             } else if (part.referenceType() == QMailMessagePart::PartReference) {
                 // Link this message to the referenced part's location
                 QMailMessageMetaData referencedMessage(part.partReference().containingMessageId());
-                map[referencedMessage.parentAccountId()].append(qMakePair(part.partReference(), part.location()));
+
+                QMailMessagePart::Location location(part.partReference());
+                map[referencedMessage.parentAccountId()].append(qMakePair(location, part.location()));
             }
         }
 
@@ -222,8 +223,10 @@ QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::L
         QMailMessage outgoing(id);
 
         if (outgoing.status() & QMailMessage::HasUnresolvedReferences) {
+            // Record the locations of parts needed for this message
             outgoing.foreachPart<ResolverSet&>(set);
-        } else {
+        }
+        if (outgoing.status() & QMailMessage::TransmitFromExternal) {
             // Just record this message's location
             set.append(outgoing);
         }
