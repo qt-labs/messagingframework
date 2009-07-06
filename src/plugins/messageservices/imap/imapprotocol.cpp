@@ -794,9 +794,12 @@ signals:
 private:
     struct AppendParameters
     {
+        AppendParameters() : mCatenate(false) {}
+
         QMailFolder mDestination;
         QMailMessageId mMessageId;
-        QByteArray mData;
+        QList<QPair<QByteArray, uint> > mData;
+        bool mCatenate;
     };
 
     QList<AppendParameters> mParameters;
@@ -817,19 +820,83 @@ void AppendState::init()
     mParameters.clear();
 }
 
+static QList<QPair<QByteArray, uint> > dataSequence(QList<QMailMessage::MessageChunk> &chunks)
+{
+    QList<QPair<QByteArray, uint> > result;
+    QByteArray sequence;
+
+    while (!chunks.isEmpty()) {
+        const QMailMessage::MessageChunk &chunk(chunks.first());
+
+        if (chunk.first == QMailMessage::Text) {
+            sequence.append(" TEXT");
+
+            // We can't send any more in this sequence
+            uint literalLength = chunk.second.length();
+            result.append(qMakePair(sequence, literalLength));
+
+            sequence.clear();
+            sequence.append(chunk.second);
+        } else if (chunk.first == QMailMessage::Reference) {
+            sequence.append(" URL ");
+            sequence.append(chunk.second);
+        }
+
+        // We're finished with this chunk
+        chunks.takeFirst();
+    }
+
+    if (!sequence.isEmpty()) {
+        result.append(qMakePair(sequence, 0u));
+    }
+
+    return result;
+}
+
 QString AppendState::transmit(ImapContext *c)
 {
     AppendParameters &params(mParameters.first());
 
     QMailMessage message(params.mMessageId);
-    params.mData = message.toRfc2822(QMailMessage::TransmissionFormat);
 
-    QString cmd("APPEND %1 (%2) \"%3\"");
-    cmd = cmd.arg(ImapProtocol::quoteString(params.mDestination.path()));
-    cmd = cmd.arg(messageFlagsToString(flagsForMessage(message)));
-    cmd = cmd.arg(message.date().toString(QMailTimeStamp::Rfc3501));
+    QByteArray cmd("APPEND ");
+    cmd += ImapProtocol::quoteString(params.mDestination.path());
+    cmd += " (";
+    cmd += messageFlagsToString(flagsForMessage(message));
+    cmd += ") \"";
+    cmd += message.date().toString(QMailTimeStamp::Rfc3501);
+    cmd += "\"";
 
-    return c->sendCommandLiteral(cmd, params.mData.length());
+    uint length = 0;
+
+    if (c->protocol()->capabilities().contains("CATENATE")) {
+        QList<QMailMessage::MessageChunk> chunks(message.toRfc2822Chunks(QMailMessage::TransmissionFormat));
+        if ((chunks.count() == 1) && (chunks.first().first == QMailMessage::Text)) {
+            // This is a single piece of text - no benefit to using catenate
+            params.mData.append(qMakePair(chunks.first().second, 0u));
+            length = params.mData.first().first.length();
+        } else {
+            params.mData = dataSequence(chunks);
+            params.mCatenate = true;
+
+            // Skip the leading space in the first element
+            cmd.append(" CATENATE (");
+            cmd.append(params.mData.first().first.mid(1));
+            length = params.mData.first().second;
+
+            params.mData.takeFirst();
+            if (params.mData.isEmpty()) {
+                // We have no literal data to send
+                cmd.append(")");
+                return c->sendCommand(cmd);
+            }
+        }
+    } else {
+        params.mData.append(qMakePair(message.toRfc2822(QMailMessage::TransmissionFormat), 0u));
+        length = params.mData.first().first.length();
+    }
+
+    return c->sendCommandLiteral(cmd, length);
 }
 
 void AppendState::leave(ImapContext *)
@@ -840,10 +907,22 @@ void AppendState::leave(ImapContext *)
 
 bool AppendState::continuationResponse(ImapContext *c, const QString &)
 {
-    const AppendParameters &params(mParameters.first());
+    AppendParameters &params(mParameters.first());
 
-    c->sendData(params.mData);
-    return false;
+    QPair<QByteArray, uint> data(params.mData.takeFirst());
+
+    if (params.mData.isEmpty()) {
+        // This is the last element
+        if (params.mCatenate) {
+            data.first.append(")");
+        }
+        c->sendData(data.first);
+        return false;
+    } else {
+        // There is more literal data to follow
+        c->sendDataLiteral(data.first, data.second);
+        return true;
+    }
 }
 
 void AppendState::taggedResponse(ImapContext *c, const QString &line)
