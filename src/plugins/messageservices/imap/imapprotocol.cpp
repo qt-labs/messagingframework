@@ -594,9 +594,10 @@ void LogoutState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
         c->protocol()->close();
+        c->operationCompleted(command(), OpOk);
+    } else {
+        ImapState::taggedResponse(c, line);
     }
-
-    ImapState::taggedResponse(c, line);
 }
 
 
