@@ -594,20 +594,25 @@ void SmtpClient::nextAction(const QString &response)
 
     case Chunk:
     {
-        const bool isLast(mailChunks.count() == 1);
-        QMailMessage::MessageChunk chunk(mailChunks.takeFirst());
+        const bool pipelining(capabilities.contains("PIPELINING"));
 
-        QByteArray command;
-        if (chunk.first == QMailMessage::Text) {
-            sendCommand("BDAT " + QByteArray::number(chunk.second.size()) + (isLast ? " LAST" : ""));
+        do {
+            const bool isLast(mailChunks.count() == 1);
+            QMailMessage::MessageChunk chunk(mailChunks.takeFirst());
 
-            // The data follows immediately
-            transport->stream().writeRawData(chunk.second.constData(), chunk.second.size());
-        } else if (chunk.first == QMailMessage::Reference) {
-            sendCommand("BURL " + chunk.second + (isLast ? " LAST" : ""));
-        }
+            QByteArray command;
+            if (chunk.first == QMailMessage::Text) {
+                sendCommand("BDAT " + QByteArray::number(chunk.second.size()) + (isLast ? " LAST" : ""));
 
-        status = (isLast ? Sent : ChunkSent);
+                // The data follows immediately
+                transport->stream().writeRawData(chunk.second.constData(), chunk.second.size());
+            } else if (chunk.first == QMailMessage::Reference) {
+                sendCommand("BURL " + chunk.second + (isLast ? " LAST" : ""));
+            }
+
+            status = (isLast ? Sent : ChunkSent);
+        } while (pipelining && !mailChunks.isEmpty());
+
         break;
     }
     case ChunkSent:
