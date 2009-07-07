@@ -4,4 +4,4 @@
 #
 set -e
 
-/etc/init.d/messageserver start
+#/etc/init.d/messageserver start

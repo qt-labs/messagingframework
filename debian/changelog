@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W27-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+  * Integrate automatic messageserver startup and dummy plugins.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 07 Jul 2009 14:35:23 +1000
+
 qt4-messagingframework (2009W23-0maemo1) hardy; urgency=low
 
   * Pull from upstream.

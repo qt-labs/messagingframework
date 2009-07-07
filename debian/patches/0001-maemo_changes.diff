@@ -1,3 +1,185 @@
+diff --git a/src/libraries/messageserver/messageserver.pro b/src/libraries/messageserver/messageserver.pro
+index fc7540f..38b7e4f 100644
+--- a/src/libraries/messageserver/messageserver.pro
++++ b/src/libraries/messageserver/messageserver.pro
+@@ -1,12 +1,10 @@
+ TEMPLATE = lib 
+ 
+ TARGET = messageserver
+-target.path += $$QMF_INSTALL_ROOT/lib
+-INSTALLS += target
+ 
+ QT *= network
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ DEPENDPATH += .
+ 
+@@ -28,5 +26,19 @@ SOURCES += qmailauthenticator.cpp \
+            qmailstoreaccountfilter.cpp \
+            qmailtransport.cpp
+ 
++target.path += $$QMF_INSTALL_ROOT/lib
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+ include(../../common.pri)
+ 
+diff --git a/src/libraries/qmfutil/qmfutil.pro b/src/libraries/qmfutil/qmfutil.pro
+index a4ede0a..fc0272b 100644
+--- a/src/libraries/qmfutil/qmfutil.pro
++++ b/src/libraries/qmfutil/qmfutil.pro
+@@ -1,10 +1,8 @@
+ TEMPLATE = lib 
+ 
+ TARGET = qmfutil 
+-target.path += $$QMF_INSTALL_ROOT/lib
+-INSTALLS += target
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ DEPENDPATH += .
+ 
+@@ -32,5 +30,19 @@ TRANSLATIONS += libqmfutil-ar.ts \
+                 libqmfutil-zh_CN.ts \
+                 libqmfutil-zh_TW.ts
+ 
++target.path += $$QMF_INSTALL_ROOT/lib
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+ include(../../common.pri)
+ 
+diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
+index 658dae6..d06f32a 100644
+--- a/src/libraries/qtopiamail/qtopiamail.pro
++++ b/src/libraries/qtopiamail/qtopiamail.pro
+@@ -1,17 +1,35 @@
+ TEMPLATE = lib 
+ 
+ TARGET = qtopiamail
+-target.path += $$QMF_INSTALL_ROOT/lib 
+-INSTALLS += target
+ 
+ DEFINES += QT_BUILD_QCOP_LIB
+ 
+ QT *= sql network
+ 
+-CONFIG += warn_on
++CONFIG += warn_on create_pc create_prl
+ 
+ INCLUDEPATH += support
+ 
++sparql {
++
++DEFINES += SPARQL_STORE
++
++HEADERS += qmailstore_sparql.h
++
++SOURCES += qmailstore_sparql.cpp
++
++INCLUDEPATH += ../sparql ../sparql/tracker
++
++LIBS += -L../sparql -lsparql
++
++} else {
++
++HEADERS += qmailstore_p.h
++
++SOURCES += qmailstore_p.cpp
++
++}
++
+ HEADERS += bind_p.h \
+            longstream_p.h \
+            longstring_p.h \
+@@ -121,5 +139,19 @@ TRANSLATIONS += libqtopiamail-ar.ts \
+                 libqtopiamail-zh_CN.ts \
+                 libqtopiamail-zh_TW.ts
+ 
++target.path += $$QMF_INSTALL_ROOT/lib 
++INSTALLS += target
++
++# Install headers
++headers.files = $$HEADERS include/*
++headers.path  = $$QMF_INSTALL_ROOT/include/qmf
++
++INSTALLS += headers 
++
++# Install pkgconfig file
++QMAKE_PKGCONFIG_LIBDIR  = $$target.path
++QMAKE_PKGCONFIG_INCDIR  = $$headers.path
++QMAKE_PKGCONFIG_DESTDIR = pkgconfig
++
+ include(../../common.pri)
+ 
+diff --git a/src/libraries/qtopiamail/support/qmaillog.h b/src/libraries/qtopiamail/support/qmaillog.h
+index 00bbe80..379ba8b 100644
+--- a/src/libraries/qtopiamail/support/qmaillog.h
++++ b/src/libraries/qtopiamail/support/qmaillog.h
+@@ -117,6 +117,8 @@ public:
+ 
+ #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
+ 
++#define QMF_ENABLE_LOGGING
++
+ #ifdef QMF_ENABLE_LOGGING
+ QLOG_ENABLE() //uncategorized logging
+ QLOG_ENABLE(Messaging)
+diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
+index 700ccac..288a209 100644
+--- a/src/tools/messageserver/messageserver.pro
++++ b/src/tools/messageserver/messageserver.pro
+@@ -1,8 +1,6 @@
+ TEMPLATE = app
+ 
+ TARGET = messageserver
+-target.path += $$QMF_INSTALL_ROOT/bin
+-INSTALLS += target
+ 
+ DEPENDPATH += . 
+ 
+@@ -39,5 +37,18 @@ TRANSLATIONS += messageserver-ar.ts \
+                 messageserver-zh_CN.ts \
+                 messageserver-zh_TW.ts
+ 
++target.path += $$QMF_INSTALL_ROOT/bin
++
++initstart.files = etc/messageserver
++initstart.path  = /etc/init.d
++
++xsessionpost.files = etc/Xsession/51messageserver
++xsessionpost.path  = /etc/X11/Xsession.post
++
++xsessionactdead.files = etc/Xsession/51messageserver
++xsessionactdead.path  = /etc/X11/Xsession.actdead
++
++INSTALLS += target initstart xsessionpost xsessionactdead
++
+ include(../../common.pri)
+ 
 diff --git a/qmf.pro b/qmf.pro
 index cd9a51e..f7e97ed 100644
 --- a/qmf.pro
@@ -17,6 +199,7 @@ index cd9a51e..f7e97ed 100644
            src/plugins/messageservices/qtopiamailfile \
            src/plugins/contentmanagers/qtopiamailfile \
            src/plugins/viewers/generic \
+
 diff --git a/src/applications/qtmail/qtmail.pro b/src/applications/qtmail/qtmail.pro
 index 5c83e96..0d4729d 100644
 --- a/src/applications/qtmail/qtmail.pro
