@@ -387,8 +387,15 @@ bool ImapState::continuationResponse(ImapContext *, const QString &line)
 
 void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.indexOf("[ALERT]") != -1)
+    if (line.indexOf("[ALERT]") != -1) {
         qWarning(line.mid(line.indexOf("[ALERT]")).toAscii());
+    } else if (line.indexOf("[CAPABILITY", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        c->protocol()->setCapabilities(capabilities);
+    }
+
     c->buffer().append(line);
 }
 
@@ -461,8 +468,10 @@ public:
     virtual void untaggedResponse(ImapContext *c, const QString &line);
 };
 
-void InitState::untaggedResponse(ImapContext *c, const QString &)
+void InitState::untaggedResponse(ImapContext *c, const QString &line)
 {
+    ImapState::untaggedResponse(c, line);
+
     // We're only waiting for an untagged response here
     setStatus(OpOk);
     c->operationCompleted(command(), status());
@@ -536,6 +545,7 @@ public:
     virtual void init();
     virtual QString transmit(ImapContext *c);
     virtual bool continuationResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
 
 private:
     QMailAccountConfiguration _config;
@@ -571,6 +581,18 @@ bool LoginState::continuationResponse(ImapContext *c, const QString &received)
     }
 
     return false;
+}
+
+void LoginState::taggedResponse(ImapContext *c, const QString &line)
+{
+    if (line.indexOf("[CAPABILITY") != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        c->protocol()->setCapabilities(capabilities);
+    }
+
+    ImapState::taggedResponse(c, line);
 }
 
 

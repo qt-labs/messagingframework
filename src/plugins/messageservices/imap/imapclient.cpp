@@ -288,8 +288,13 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     switch( command ) {
         case IMAP_Init:
         {
-            sendCapability();
-            return;
+            if (capabilities().isEmpty()) {
+                // We need to request the capabilities
+                sendCapability();
+                return;
+            } else {
+                // We already have the capabilities - fall through:
+            }
         }
         case IMAP_Capability:
         {
@@ -564,25 +569,18 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
     switch( command ) {
         case IMAP_Init:
         {
-            emit updateStatus( tr("Checking capabilities" ) );
-            _protocol.sendCapability();
-            break;
+            if (_protocol.capabilities().isEmpty()) {
+                // We need to request the capabilities
+                emit updateStatus( tr("Checking capabilities" ) );
+                _protocol.sendCapability();
+                break;
+            } else {
+                // We already have the capabilities - fall through:
+            }
         }
         
         case IMAP_Capability:
         {
-            // Now that we know the capabilities, check for Reference support
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
-
-            QMailAccount account(_config.id());
-            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
-                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)) {
-                account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
-                if (!QMailStore::instance()->updateAccount(&account)) {
-                    qWarning() << "Unable to update account" << account.id() << "to set CanReferenceExternalData";
-                }
-            }
-
             if (!_protocol.encrypted()) {
                 if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _protocol.capabilities())) {
                     // Switch to encrypted mode
@@ -622,6 +620,27 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         {
             // Check capabilities for encrypted mode
             _protocol.sendCapability();
+            break;
+        }
+
+        case IMAP_Login:
+        {
+            // Once we have logged in, we now have the full set of capabilities (either from 
+            // a capability command or from an untagged response)
+
+            // Now that we know the capabilities, check for Reference support
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
+
+            QMailAccount account(_config.id());
+            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
+                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)) {
+                account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
+                if (!QMailStore::instance()->updateAccount(&account)) {
+                    qWarning() << "Unable to update account" << account.id() << "to set CanReferenceExternalData";
+                }
+            }
+
+            _strategyContext->commandTransition(command, status);
             break;
         }
 
