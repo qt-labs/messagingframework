@@ -1716,8 +1716,9 @@ QString CloseState::transmit(ImapContext *c)
 void CloseState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        // After a close, we no longer have a selectd mailbox
+        // After a close, we no longer have a selected mailbox
         c->setMailbox(QMailFolder());
+        c->protocol()->setCapabilities(QStringList());
     }
 
     ImapState::taggedResponse(c, line);

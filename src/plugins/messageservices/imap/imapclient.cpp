@@ -331,6 +331,12 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
             sendIdle();
             return;
         }
+        case IMAP_Logout:
+        {
+            // Ensure connection is closed on logout
+            close();
+            return;
+        }
         default:        //default = all critical messages
         {
             qMailLog(IMAP) << "IDLE: IMAP Idle unknown command response: " << command;
@@ -642,6 +648,13 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
             _strategyContext->commandTransition(command, status);
             break;
+        }
+
+        case IMAP_Logout:
+        {
+            // Ensure connection is closed on logout
+            _protocol.close();
+            return;
         }
 
         case IMAP_Select:
