@@ -147,7 +147,7 @@ index 658dae6..d06f32a 100644
             qmailstoreimplementation_p.cpp \
             qmailtimestamp.cpp \
             qprivateimplementation.cpp \
-@@ -121,5 +138,18 @@ TRANSLATIONS += libqtopiamail-ar.ts \
+@@ -121,5 +139,19 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                  libqtopiamail-zh_CN.ts \
                  libqtopiamail-zh_TW.ts
  
