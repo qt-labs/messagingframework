@@ -138,6 +138,7 @@ void SmtpClient::newConnection()
     status = Init;
     sending = true;
     domainName = QByteArray();
+    outstandingResponses = 0;
 
     if (!transport) {
         // Set up the transport
@@ -252,6 +253,8 @@ void SmtpClient::sendCommand(const char *data, int len)
     out.writeRawData(data, len);
     out.writeRawData("\r\n", 2);
 
+    ++outstandingResponses;
+
     if (len) {
         qMailLog(SMTP) << "SEND:" << data;
     }
@@ -267,12 +270,30 @@ void SmtpClient::sendCommand(const QByteArray &cmd)
     sendCommand(cmd.data(), cmd.length());
 }
 
+void SmtpClient::sendCommands(const QStringList &cmds)
+{
+    foreach (const QString &cmd, cmds)
+        sendCommand(cmd.toAscii());
+}
+
 void SmtpClient::incomingData()
 {
     while (transport->canReadLine()) {
         QString response = transport->readLine();
         qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
-        nextAction(response);
+
+        if (outstandingResponses > 0) {
+            --outstandingResponses;
+        }
+
+        if (outstandingResponses > 0) {
+            // For pipelined commands, just ensure that they did not fail
+            if (!response.isEmpty() && (response[0] != QChar('2'))) {
+                operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
+            }
+        } else {
+            nextAction(response);
+        }
     }
 }
 
@@ -454,12 +475,33 @@ void SmtpClient::nextAction(const QString &response)
             // Nothing to send
             status = Quit;
         } else {
-            status = From;
+            status = MetaData;
         }
         nextAction(QString());
         break;
     }
 
+    case MetaData:
+    {
+        if (capabilities.contains("PIPELINING")) {
+            // We can send all our non-message commands together
+            QStringList commands;
+            commands.append("MAIL FROM: " + mailItr->from);
+            for (it = mailItr->to.begin(); it != mailItr->to.end(); ++it) {
+                commands.append("RCPT TO: <" + *it + ">");
+            }
+            sendCommands(commands);
+
+            // Continue on with the message data proper
+            status = PrepareData;
+            nextAction(QString());
+        } else {
+            // Send meta data elements individually
+            status = From;
+            nextAction(QString());
+        }
+        break;
+    }
     case From:  
     {
         sendCommand("MAIL FROM: " + mailItr->from);
@@ -490,26 +532,33 @@ void SmtpClient::nextAction(const QString &response)
             if ( it != mailItr->to.end() ) {
                 sendCommand("RCPT TO: <" + *it + ">");
             } else {
-                if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
-                    // We can replace this entire message by a reference to its external location
-                    mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toAscii()));
-                    status = Chunk;
-                } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
-                    mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
-                    if (mailChunks.isEmpty()) {
-                        // Nothing to send?
-                        status = Sent;
-                    } else {
-                        status = Chunk;
-                    }
-                } else {
-                    status = Data;
-                }
+                status = PrepareData;
                 nextAction(QString());
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
+        break;
+    }
+
+    case PrepareData:  
+    {
+        if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
+            // We can replace this entire message by a reference to its external location
+            mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toAscii()));
+            status = Chunk;
+        } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
+            mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
+            if (mailChunks.isEmpty()) {
+                // Nothing to send?
+                status = Sent;
+            } else {
+                status = Chunk;
+            }
+        } else {
+            status = Data;
+        }
+        nextAction(QString());
         break;
     }
 
@@ -599,7 +648,7 @@ void SmtpClient::nextAction(const QString &response)
                 status = Quit;
             } else {
                 // More messages to send
-                status = From;
+                status = MetaData;
             }
             nextAction(QString());
         } else {

@@ -95,6 +95,7 @@ private:
     void sendCommand(const char *data, int len = -1);
     void sendCommand(const QString &cmd);
     void sendCommand(const QByteArray &cmd);
+    void sendCommands(const QStringList &cmds);
     void incomingData();
     void nextAction(const QString &response);
     void messageProcessed(const QMailMessageId &id);
@@ -106,7 +107,7 @@ private:
     enum TransferStatus
     {
         Init, Helo, Extension, StartTLS, TLS, Connected, Authenticating, Authenticated,
-        From, Recv, MRcv, Data, Body, Chunk, ChunkSent, Sent, Quit, Done
+        MetaData, From, Recv, MRcv, PrepareData, Data, Body, Chunk, ChunkSent, Sent, Quit, Done
     };
 
     QMailAccountConfiguration config;
@@ -118,6 +119,7 @@ private:
     uint messageLength;
     uint sentLength;
     bool sending, success;
+    int outstandingResponses;
     QStringList::Iterator it;
     QMailTransport *transport;
 
