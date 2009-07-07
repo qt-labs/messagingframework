@@ -115,7 +115,39 @@ index 658dae6..d06f32a 100644
  HEADERS += bind_p.h \
             longstream_p.h \
             longstring_p.h \
-@@ -121,5 +139,19 @@ TRANSLATIONS += libqtopiamail-ar.ts \
+@@ -46,12 +64,11 @@ HEADERS += bind_p.h \
+            qmailmessagesortkey_p.h \
+            qmailserviceaction.h \
+            qmailstore.h \
+-           qmailstore_p.h \
++           semaphore_p.h \
+            qmailstoreimplementation_p.h \
+            qmailtimestamp.h \
+            qprivateimplementation.h \
+            qprivateimplementationdef.h \
+-           semaphore_p.h \
+            support/qmailglobal.h \
+            support/qmaillog.h \
+            support/qmailnamespace.h \
+@@ -62,7 +79,8 @@ HEADERS += bind_p.h \
+            support/qcopchannelmonitor.h \
+            support/qcopserver.h \
+            support/qmailpluginmanager.h \
+-           support/qringbuffer_p.h
++           support/qringbuffer_p.h \
++           support/qmailipc.h
+
+ SOURCES += longstream.cpp \
+            longstring.cpp \
+@@ -90,7 +108,6 @@ SOURCES += longstream.cpp \
+            qmailmessagesortkey.cpp \
+            qmailserviceaction.cpp \
+            qmailstore.cpp \
+-           qmailstore_p.cpp \
+            qmailstoreimplementation_p.cpp \
+            qmailtimestamp.cpp \
+            qprivateimplementation.cpp \
+@@ -121,5 +138,18 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                  libqtopiamail-zh_CN.ts \
                  libqtopiamail-zh_TW.ts
  
