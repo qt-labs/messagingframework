@@ -92,6 +92,7 @@ public:
         MessageSubjectTextRole,
         MessageFilterTextRole,
         MessageTimeStampTextRole,
+        MessageSizeTextRole,
         MessageTypeIconRole,
         MessageStatusIconRole,
         MessageDirectionIconRole,

@@ -70,6 +70,20 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
     }
 }
 
+QString messageSizeText(const QMailMessageMetaData& m)
+{
+    const uint size(m.size());
+
+    if (size < 1024)
+        return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", QCoreApplication::CodecForTr, size);
+    else if (size < (1024 * 1024))
+        return qApp->translate("QMailMessageModelBase", "%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
+    else if (size < (1024 * 1024 * 1024))
+        return qApp->translate("QMailMessageModelBase", "%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
+    else
+        return qApp->translate("QMailMessageModelBase", "%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
+}
+
 }
 
 
@@ -95,6 +109,8 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
         messages based on the text of these commonly displayed roles. 
     \value MessageTimeStampTextRole
         The timestamp of a message. "Recieved" or "Sent" is prepended to the timestamp string depending on the message direction.
+    \value MessageSizeTextRole
+        The size of a message, formatted as text.
     \value MessageTypeIconRole
         An Icon representing the type of the message.
     \value MessageStatusIconRole
@@ -208,6 +224,10 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         case Qt::DisplayRole:
         case MessageAddressTextRole:
             return messageAddressText(message,incoming);
+        break;
+
+        case MessageSizeTextRole:
+            return messageSizeText(message);
         break;
 
         case MessageTimeStampTextRole:
