@@ -209,12 +209,12 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
     static QIcon awayIcon(":icon/presence-away");
     static QIcon busyIcon(":icon/presence-busy");
     static QIcon onlineIcon(":icon/presence-online");
-    */
 
     static QIcon messageIcon(":icon/txt");
     static QIcon mmsIcon(":icon/multimedia");
     static QIcon emailIcon(":icon/email");
     static QIcon instantMessageIcon(":icon/im");
+    */
 
     bool sent(message.status() & QMailMessage::Sent);
     bool incoming(message.status() & QMailMessage::Incoming);
@@ -262,16 +262,8 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         case Qt::DecorationRole:
         case MessageTypeIconRole:
         {
-            QIcon icon = messageIcon;
-            if (message.messageType() == QMailMessage::Mms) {
-                icon = mmsIcon;
-            } else if (message.messageType() == QMailMessage::Email) {
-                icon = emailIcon;
-            } else if (message.messageType() == QMailMessage::Instant) {
-                icon = instantMessageIcon;
-            }
-            return icon;
-
+            // Not currently implemented...
+            return QIcon();
         }
         break;
 
@@ -284,7 +276,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
 
         case MessageStatusIconRole:
         {
-            if (incoming){ 
+            if (incoming) { 
                 quint64 status = message.status();
                 if ( status & QMailMessage::Removed ) {
                     return removedIcon;
@@ -312,6 +304,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
 
         case MessagePresenceIconRole:
         {
+            // Not currently implemented...
             return QIcon();
         }
         break;
