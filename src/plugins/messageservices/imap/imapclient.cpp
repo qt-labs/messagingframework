@@ -288,13 +288,9 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     switch( command ) {
         case IMAP_Init:
         {
-            if (capabilities().isEmpty()) {
-                // We need to request the capabilities
-                sendCapability();
-                return;
-            } else {
-                // We already have the capabilities - fall through:
-            }
+            // We need to request the capabilities
+            sendCapability();
+            return;
         }
         case IMAP_Capability:
         {
@@ -575,14 +571,10 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
     switch( command ) {
         case IMAP_Init:
         {
-            if (_protocol.capabilities().isEmpty()) {
-                // We need to request the capabilities
-                emit updateStatus( tr("Checking capabilities" ) );
-                _protocol.sendCapability();
-                break;
-            } else {
-                // We already have the capabilities - fall through:
-            }
+            // We need to request the capabilities
+            emit updateStatus( tr("Checking capabilities" ) );
+            _protocol.sendCapability();
+            break;
         }
         
         case IMAP_Capability:
