@@ -129,6 +129,7 @@ win32: {
 }
 
 RESOURCES += qtopiamail.qrc \
+             qtopiamail_icons.qrc \
              qtopiamail_qt.qrc
 
 TRANSLATIONS += libqtopiamail-ar.ts \
