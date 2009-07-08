@@ -43,9 +43,7 @@
 #include <qmaillog.h>
 #include <qmailfolder.h>
 #include <qmailfolderkey.h>
-#ifndef USE_NONTHREADED_MODEL
 #include <qmailmessagethreadedmodel.h>
-#endif
 #include <qmailmessagelistmodel.h>
 #include <QTreeView>
 #include <QKeyEvent>
@@ -66,34 +64,6 @@
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 static const QColor newMessageColor(Qt::blue);
-
-static QString dateString(const QDateTime& dt)
-{
-    QDateTime current = QDateTime::currentDateTime();
-    //today
-    if(dt.date() == current.date())
-        return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
-    //yesterday
-    else if(dt.daysTo(current) <= 1)
-        return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
-    //within 7 days
-    else if(dt.daysTo(current) < 7)
-        return dt.toString("dddd h:mm:ss ap");
-    else return dt.toString("dd/MM/yy h:mm:ss ap");
-}
-
-// Also in plugins/viewers/generic/attachment_options:
-static QString sizeString(uint size)
-{
-    if(size < 1024)
-        return QObject::tr("%n byte(s)", "", size);
-    else if(size < (1024 * 1024))
-        return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
-    else if(size < (1024 * 1024 * 1024))
-        return QObject::tr("%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
-    else
-        return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
-}
 
 class QuickSearchWidget : public QWidget
 {
@@ -178,167 +148,136 @@ QMailMessageKey QuickSearchWidget::buildSearchKey() const
     return subjectKey | senderKey;
 }
 
-class MessageListModel : public MessageListView::ModelType
+
+template <typename BaseModel>
+class MessageListModel : public BaseModel
 {
-    Q_OBJECT
+    // Doesn't work in template classes...
+    //Q_OBJECT
+
+    typedef BaseModel SuperType;
 
 public:
-    MessageListModel(QWidget* parent );
+    MessageListModel(MessageListView* parent);
+
     QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
+
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
-    QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
-    bool markingMode() const;
-    void setMarkingMode(bool val);
 
-    bool moreButtonVisible() const;
-    void setMoreButtonVisible(bool val);
+    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
 private:
-    bool m_markingMode;
-    bool m_moreButtonVisible;
+    MessageListView *m_parent;
 };
 
-MessageListModel::MessageListModel(QWidget* parent)
-:
-MessageListView::ModelType(parent),
-m_markingMode(false),
-m_moreButtonVisible(false)
+template <typename BaseModel>
+MessageListModel<BaseModel>::MessageListModel(MessageListView *parent)
+    : BaseModel(parent), 
+      m_parent(parent)
 {
 }
 
-QVariant MessageListModel::headerData(int section, Qt::Orientation o, int role) const
+template <typename BaseModel>
+QVariant MessageListModel<BaseModel>::headerData(int section, Qt::Orientation o, int role) const
 {
-    if (role == Qt::DisplayRole)
-    {
-        if(section < headers.count())
+    if (role == Qt::DisplayRole) {
+        if (section < headers.count())
             return headers.at(section);
     }
 
-   return MessageListView::ModelType::headerData(section,o,role);
+    return SuperType::headerData(section, o, role);
 }
 
-int MessageListModel::columnCount(const QModelIndex & parent ) const
+template <typename BaseModel>
+int MessageListModel<BaseModel>::columnCount(const QModelIndex & parent) const
 {
-    Q_UNUSED(parent);
     return headers.count();
+
+    Q_UNUSED(parent);
 }
 
-int MessageListModel::rowCount(const QModelIndex &parentIndex) const
+template <typename BaseModel>
+int MessageListModel<BaseModel>::rowCount(const QModelIndex &parentIndex) const
 {
-    int actualRows = MessageListView::ModelType::rowCount(parentIndex);
+    int actualRows = SuperType::rowCount(parentIndex);
 
-    if (!parentIndex.isValid() && (actualRows > 0) && m_moreButtonVisible)
+    if (!parentIndex.isValid() && (actualRows > 0) && m_parent->moreButtonVisible())
         actualRows++;
 
     return actualRows;
 }
 
-QVariant MessageListModel::data( const QModelIndex & index, int role) const
+static QString dateString(const QDateTime& dt)
+{
+    QDateTime current = QDateTime::currentDateTime();
+    //today
+    if(dt.date() == current.date())
+        return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
+    //yesterday
+    else if(dt.daysTo(current) <= 1)
+        return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
+    //within 7 days
+    else if(dt.daysTo(current) < 7)
+        return dt.toString("dddd h:mm:ss ap");
+    else return dt.toString("dd/MM/yy h:mm:ss ap");
+}
+
+template <typename BaseModel>
+QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) const
 {
     if (index.isValid()) {
         if (role == Qt::DisplayRole && index.isValid()) {
-            QMailMessageMetaData message(idFromIndex(index));
-            if (!message.id().isValid())
-                return QVariant();
-
             switch(index.column())
             {
             case 0:
-                return message.subject();
+                return SuperType::data(index, QMailMessageModelBase::MessageSubjectTextRole);
             case 1:
-                return message.from().name();
-            case 2:
-                return dateString(message.date().toLocalTime());
+                return SuperType::data(index, QMailMessageModelBase::MessageAddressTextRole);
+            //case 2:
+            //    return SuperType::data(index, QMailMessageModelBase::MessageTimeStampTextRole);
             case 3:
-                return sizeString(message.size());
+                return SuperType::data(index, QMailMessageModelBase::MessageSizeTextRole);
+            default:
             break;
             }
-        } else if ((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0) {
+
+            if (index.column() == 2) {
+                // Customize the date display
+                QMailMessageMetaData message(SuperType::idFromIndex(index));
+                if (message.id().isValid()) {
+                    return dateString(message.date().toLocalTime());
+                }
+            }
+        } else if ((role == Qt::DecorationRole || role == Qt::CheckStateRole) && (index.column() > 0)) {
             return QVariant();
-        } else if (role == Qt::CheckStateRole && !m_markingMode) {
-            Qt::CheckState state = static_cast<Qt::CheckState>(MessageListView::ModelType::data(index,role).toInt());
+        } else if (role == Qt::CheckStateRole && !m_parent->markingMode()) {
+            Qt::CheckState state = static_cast<Qt::CheckState>(SuperType::data(index,role).toInt());
             if (state == Qt::Unchecked)
                 return QVariant();
         } else if (role == Qt::DecorationRole) {
-            static QIcon readIcon(":icon/flag_normal");
-            static QIcon unreadIcon(":icon/flag_unread");
-            static QIcon toGetIcon(":icon/flag_toget");
-            static QIcon toSendIcon(":icon/flag_tosend");
-            static QIcon unfinishedIcon(":icon/flag_unfinished");
-            static QIcon removedIcon(":icon/flag_removed");
-
-            QMailMessageMetaData message(idFromIndex(index));
-            if(!message.id().isValid())
-                return QVariant();
-
-            bool sent(message.status() & QMailMessage::Sent);
-            bool incoming(message.status() & QMailMessage::Incoming);
-
-            if (incoming) {
+            return SuperType::data(index, QMailMessageModelBase::MessageStatusIconRole);
+        } else if (role == Qt::ForegroundRole) {
+            QMailMessageMetaData message(SuperType::idFromIndex(index));
+            if (message.id().isValid()) {
                 quint64 status = message.status();
-                if ( status & QMailMessage::Removed ) {
-                    return removedIcon;
-                } else if ( status & QMailMessage::PartialContentAvailable ) {
-                    if ( status & QMailMessage::Read || status & QMailMessage::ReadElsewhere ) {
-                        return readIcon;
-                    } else {
-                        return unreadIcon;
-                    }
-                } else {
-                    return toGetIcon;
-                }
-            } else {
-                if (sent) {
-                    return readIcon;
-                } else if ( message.to().isEmpty() ) {
-                    // Not strictly true - there could be CC or BCC addressees
-                    return unfinishedIcon;
-                } else {
-                    return toSendIcon;
-                }
+                bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
+                if (status & QMailMessage::PartialContentAvailable && unread)
+                    return newMessageColor;
             }
-        } else if(role == Qt::ForegroundRole) {
-            QMailMessageMetaData message(idFromIndex(index));
-            if (!message.id().isValid())
-                return QVariant();
-
-            quint64 status = message.status();
-            bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
-            if (status & QMailMessage::PartialContentAvailable && unread)
-                return newMessageColor;
         }
     }
-    return MessageListView::ModelType::data(index,role);
+
+    return SuperType::data(index, role);
 }
 
-void MessageListModel::setMarkingMode(bool val)
-{
-    m_markingMode = val;
-}
-
-bool MessageListModel::markingMode() const
-{
-    return m_markingMode;
-}
-
-bool MessageListModel::moreButtonVisible() const
-{
-    return m_moreButtonVisible;
-}
-
-void MessageListModel::setMoreButtonVisible(bool val)
-{
-    m_moreButtonVisible = val;
-    reset();
-}
 
 class MessageList : public QTreeView
 {
     Q_OBJECT
 
 public:
-    MessageList(QWidget* parent = 0);
+    MessageList(MessageListView *parent);
     virtual ~MessageList();
 
     QPoint clickPos() const { return pos; }
@@ -359,15 +298,13 @@ protected:
     void drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 private:
-    MessageListModel* sourceModel() const;
-
-private:
+    MessageListView *m_parent;
     QPoint pos;
 };
 
-MessageList::MessageList(QWidget* parent)
-:
-    QTreeView(parent)
+MessageList::MessageList(MessageListView *parent)
+    : QTreeView(parent),
+      m_parent(parent)
 {
     setMouseTracking(true);
 }
@@ -411,9 +348,9 @@ void MessageList::scrollContentsBy(int dx, int dy)
 
 void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    bool isMoreEntry = ((!index.parent().isValid()) && 
-                        (sourceModel()->moreButtonVisible()) &&
-                        (index.row() == (sourceModel()->rowCount(QModelIndex()) - 1)));
+    bool isMoreEntry = (!index.parent().isValid() && 
+                        m_parent->moreButtonVisible() &&
+                        (index.row() == (model()->rowCount(QModelIndex()) - 1)));
     if (isMoreEntry) {
         QLinearGradient lg(option.rect.topLeft(), option.rect.topRight());
         lg.setColorAt(0,option.palette.color(QPalette::Base));
@@ -457,11 +394,11 @@ void MessageList::mousePressEvent(QMouseEvent* e)
 
 bool MessageList::mouseOverMoreLink(QMouseEvent* e)
 {
-    if (!sourceModel()->moreButtonVisible())
+    if (!m_parent->moreButtonVisible())
         return false;
 
     QModelIndex index = indexAt(e->pos());
-    if (index.isValid() && ((!index.parent().isValid()) && (index.row() == sourceModel()->rowCount(QModelIndex()) - 1))) {
+    if (index.isValid() && ((!index.parent().isValid()) && (index.row() == model()->rowCount(QModelIndex()) - 1))) {
         QFont font;
         font.setUnderline(true);
         QFontMetrics fm(font);
@@ -475,18 +412,12 @@ bool MessageList::mouseOverMoreLink(QMouseEvent* e)
     return false;
 }
 
-MessageListModel* MessageList::sourceModel() const
-{
-    MessageListModel* sm = qobject_cast<MessageListModel*>(model());
-    Q_ASSERT(sm);
-    return sm;
-}
 
 MessageListView::MessageListView(QWidget* parent)
 :
     QWidget(parent),
     mMessageList(new MessageList(this)),
-    mModel(new MessageListModel(this)),
+    mModel(new MessageListModel<QMailMessageThreadedModel>(this)),
     mMarkingMode(false),
     mIgnoreWhenHidden(true),
     mSelectedRowsRemoved(false),
@@ -534,23 +465,13 @@ QMailFolderId MessageListView::folderId() const
 void MessageListView::setFolderId(const QMailFolderId& folderId)
 {
     mFolderId = folderId;
-    mModel->setMoreButtonVisible(mFolderId.isValid());
-    mShowMoreButton = mModel->moreButtonVisible();
-}
-
-MessageListModel* MessageListView::model() const
-{
-    return mModel;
+    setMoreButtonVisible(mFolderId.isValid());
 }
 
 void MessageListView::init()
 {
     mMessageList->setUniformRowHeights(true);
-#ifndef USE_NONTHREADED_MODEL
     mMessageList->setRootIsDecorated(true);
-#else
-    mMessageList->setRootIsDecorated(false);
-#endif
     mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);
     mMessageList->setModel(mModel);
@@ -745,8 +666,20 @@ void MessageListView::setMarkingMode(bool set)
 {
     if (mMarkingMode != set) {
         mMarkingMode = set;
-        mModel->setMarkingMode(set);
         emit selectionChanged();
+    }
+}
+
+bool MessageListView::moreButtonVisible() const
+{
+    return mShowMoreButton;
+}
+
+void MessageListView::setMoreButtonVisible(bool set)
+{
+    if (mShowMoreButton != set) {
+        mShowMoreButton = set;
+        mMessageList->reset();
     }
 }
 
@@ -877,21 +810,15 @@ void MessageListView::scrollTimeout()
 
 void MessageListView::quickSearch(const QMailMessageKey& key)
 {
-    if(key.isEmpty())
-    {
+    if (key.isEmpty()) {
         mModel->setKey(mKey);
-        mModel->setMoreButtonVisible(mShowMoreButton);
         mKey = QMailMessageKey();
-    }
-    else
-    {
-        if(mKey.isEmpty())
-        {
+    } else {
+        if (mKey.isEmpty()) {
             mKey = mModel->key();
-            mShowMoreButton = mModel->moreButtonVisible();
         }
         mModel->setKey(key & mKey);
-        mModel->setMoreButtonVisible(false);
+        setMoreButtonVisible(false);
     }
 }
 
@@ -957,10 +884,14 @@ bool MessageListView::eventFilter(QObject *, QEvent *event)
 
 void MessageListView::reset()
 {
-    if(mQuickSearchWidget->isVisible())
+    if (mQuickSearchWidget->isVisible()) {
         mQuickSearchWidget->reset();
-    delete mModel; mModel = 0;
-    mMessageList->setModel(mModel = new MessageListModel(this));
+    }
+
+    delete mModel; 
+    mModel = 0;
+    
+    mMessageList->setModel(mModel = new MessageListModel<QMailMessageThreadedModel>(this));
 }
 
 

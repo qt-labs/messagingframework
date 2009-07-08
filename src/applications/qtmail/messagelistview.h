@@ -51,8 +51,7 @@
 class MessageList;
 class QFrame;
 class QLineEdit;
-class QMailMessageListModel;
-class QMailMessageThreadedModel;
+class QMailMessageModelBase;
 class QModelIndex;
 class QPushButton;
 class QSortFilterProxyModel;
@@ -61,7 +60,6 @@ class QToolButton;
 class QItemDelegate;
 class QMailMessageDelegate;
 class QtopiaHomeMailMessageDelegate;
-class MessageListModel;
 class QuickSearchWidget;
 
 class MessageListView : public QWidget
@@ -69,12 +67,6 @@ class MessageListView : public QWidget
     Q_OBJECT
 
 public:
-#ifndef USE_NONTHREADED_MODEL
-    typedef QMailMessageThreadedModel ModelType;
-#else
-    typedef QMailMessageListModel ModelType;
-#endif
-
     MessageListView(QWidget* parent = 0);
     virtual ~MessageListView();
 
@@ -86,8 +78,6 @@ public:
 
     QMailFolderId folderId() const;
     void setFolderId(const QMailFolderId &id);
-
-    MessageListModel* model() const;
 
     QMailMessageId current() const;
     void setCurrent(const QMailMessageId& id);
@@ -109,6 +99,9 @@ public:
 
     bool markingMode() const;
     void setMarkingMode(bool set);
+
+    bool moreButtonVisible() const;
+    void setMoreButtonVisible(bool set);
 
     bool ignoreUpdatesWhenHidden() const;
     void setIgnoreUpdatesWhenHidden(bool ignore);
@@ -154,7 +147,7 @@ private:
 
 private:
     MessageList* mMessageList;
-    MessageListModel* mModel;
+    QMailMessageModelBase* mModel;
     bool mMarkingMode;
     bool mIgnoreWhenHidden;
     bool mSelectedRowsRemoved;
