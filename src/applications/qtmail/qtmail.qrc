@@ -11,16 +11,8 @@
 <file alias="edit">pics/icons/14x14/edit.png</file>
 <file alias="compose">pics/icons/14x14/compose.png</file>
 <file alias="draft">pics/icons/14x14/draft.png</file>
-<file alias="getmail">pics/icons/16x16/mail_get.png</file>
 <file alias="reply">pics/icons/14x14/reply.png</file>
 <file alias="replytoall">pics/icons/14x14/replytoall.png</file>
-<file alias="sendmail">pics/icons/14x14/sendmail.png</file>
-<file alias="flag_normal">pics/flag_normal.png</file>
-<file alias="flag_unread">pics/flag_unread.png</file>
-<file alias="flag_toget">pics/flag_toget.png</file>
-<file alias="flag_tosend">pics/flag_tosend.png</file>
-<file alias="flag_unfinished">pics/flag_unfinished.png</file>
-<file alias="flag_removed">pics/flag_removed.png</file>
 <file alias="activity_working">pics/activity_working.gif</file>
 <file alias="activity_idle">pics/activity_idle.gif</file>
 <file alias="clear_right">pics/clear_right.png</file>

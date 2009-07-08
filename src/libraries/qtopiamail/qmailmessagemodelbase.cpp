@@ -177,21 +177,23 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
 /*! \internal */
 QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int role) const
 {
-    static QIcon outgoingIcon(":icon/qtmail/sendmail");
-    static QIcon incomingIcon(":icon/qtmail/getmail");
+    static QIcon outgoingIcon(":icon/sendmail");
+    static QIcon incomingIcon(":icon/getmail");
 
-    static QIcon readIcon(":icon/qtmail/flag_normal");
-    static QIcon unreadIcon(":icon/qtmail/flag_unread");
-    static QIcon toGetIcon(":icon/qtmail/flag_toget");
-    static QIcon toSendIcon(":icon/qtmail/flag_tosend");
-    static QIcon unfinishedIcon(":icon/qtmail/flag_unfinished");
-    static QIcon removedIcon(":icon/qtmail/flag_removed");
+    static QIcon readIcon(":icon/flag_normal");
+    static QIcon unreadIcon(":icon/flag_unread");
+    static QIcon toGetIcon(":icon/flag_toget");
+    static QIcon toSendIcon(":icon/flag_tosend");
+    static QIcon unfinishedIcon(":icon/flag_unfinished");
+    static QIcon removedIcon(":icon/flag_removed");
 
+    /* No longer used...
     static QIcon noPresenceIcon(":icon/presence-none");
     static QIcon offlineIcon(":icon/presence-offline");
     static QIcon awayIcon(":icon/presence-away");
     static QIcon busyIcon(":icon/presence-busy");
     static QIcon onlineIcon(":icon/presence-online");
+    */
 
     static QIcon messageIcon(":icon/txt");
     static QIcon mmsIcon(":icon/multimedia");
@@ -290,8 +292,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
 
         case MessagePresenceIconRole:
         {
-            QIcon icon = noPresenceIcon;
-            return icon;
+            return QIcon();
         }
         break;
 
