@@ -103,6 +103,9 @@ public:
     bool moreButtonVisible() const;
     void setMoreButtonVisible(bool set);
 
+    bool threaded() const;
+    void setThreaded(bool set);
+
     bool ignoreUpdatesWhenHidden() const;
     void setIgnoreUpdatesWhenHidden(bool ignore);
 
@@ -157,6 +160,7 @@ private:
     QuickSearchWidget* mQuickSearchWidget;
     QMailMessageKey mKey;
     bool mShowMoreButton;
+    bool mThreaded;
 };
 
 #endif

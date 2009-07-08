@@ -417,11 +417,13 @@ MessageListView::MessageListView(QWidget* parent)
 :
     QWidget(parent),
     mMessageList(new MessageList(this)),
-    mModel(new MessageListModel<QMailMessageThreadedModel>(this)),
+    mModel(0),
     mMarkingMode(false),
     mIgnoreWhenHidden(true),
     mSelectedRowsRemoved(false),
-    mShowMoreButton(false)
+    mQuickSearchWidget(0),
+    mShowMoreButton(false),
+    mThreaded(true)
 {
     init();
     showQuickSearch(true);
@@ -470,11 +472,11 @@ void MessageListView::setFolderId(const QMailFolderId& folderId)
 
 void MessageListView::init()
 {
+    reset();
+
     mMessageList->setUniformRowHeights(true);
-    mMessageList->setRootIsDecorated(true);
     mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);
-    mMessageList->setModel(mModel);
     mMessageList->setAlternatingRowColors(true);
 
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
@@ -489,23 +491,11 @@ void MessageListView::init()
     connect(mMessageList, SIGNAL(moreButtonClicked()),
             this, SIGNAL(moreClicked()));
 
-    connect(mModel, SIGNAL(modelChanged()),
-            this, SLOT(modelChanged()));
-
-    connect(mModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(mModel, SIGNAL(layoutChanged()),
-            this, SLOT(layoutChanged()));
-
     mScrollTimer.setSingleShot(true);
     connect(mMessageList, SIGNAL(scrolled()),
             this, SLOT(reviewVisibleMessages()));
     connect(&mScrollTimer, SIGNAL(timeout()),
             this, SLOT(scrollTimeout()));
-    connect(mModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(reviewVisibleMessages()));
-    connect(mModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(reviewVisibleMessages()));
 
     QVBoxLayout* vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0,0,0,0);
@@ -680,6 +670,19 @@ void MessageListView::setMoreButtonVisible(bool set)
     if (mShowMoreButton != set) {
         mShowMoreButton = set;
         mMessageList->reset();
+    }
+}
+
+bool MessageListView::threaded() const
+{
+    return mThreaded;
+}
+
+void MessageListView::setThreaded(bool set)
+{
+    if (mThreaded != set) {
+        mThreaded = set;
+        reset();
     }
 }
 
@@ -884,14 +887,51 @@ bool MessageListView::eventFilter(QObject *, QEvent *event)
 
 void MessageListView::reset()
 {
-    if (mQuickSearchWidget->isVisible()) {
+    if (mQuickSearchWidget && mQuickSearchWidget->isVisible()) {
         mQuickSearchWidget->reset();
     }
 
-    delete mModel; 
-    mModel = 0;
+    QMailMessageKey key;
+    QMailMessageSortKey sortKey;
+    QMailMessageId currentId;
+
+    if (mModel) {
+        key = this->key();
+        sortKey = this->sortKey();
+        currentId = this->current();
+        delete mModel; 
+    }
     
-    mMessageList->setModel(mModel = new MessageListModel<QMailMessageThreadedModel>(this));
+    if (mThreaded) {
+        mModel = new MessageListModel<QMailMessageThreadedModel>(this);
+    } else {
+        mModel = new MessageListModel<QMailMessageListModel>(this);
+    }
+
+    connect(mModel, SIGNAL(modelChanged()),
+            this, SLOT(modelChanged()));
+
+    connect(mModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(mModel, SIGNAL(layoutChanged()),
+            this, SLOT(layoutChanged()));
+    connect(mModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
+    connect(mModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(reviewVisibleMessages()));
+
+    mMessageList->setModel(mModel);
+    mMessageList->setRootIsDecorated(mThreaded);
+
+    if (!key.isEmpty()) {
+        setKey(key);
+    }
+    if (!sortKey.isEmpty()) {
+        setSortKey(sortKey);
+    }
+    if (currentId.isValid()) {
+        setCurrent(currentId);
+    }
 }
 
 
