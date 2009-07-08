@@ -102,6 +102,7 @@ protected:
     virtual void contextStatusUpdate();
     virtual void showFolderStatus(QMailMessageSet* item);
     virtual void setMarkingMode(bool set);
+    virtual void setThreaded(bool set);
     virtual void clearStatusText();
 
     virtual WriteMail* createWriteMailWidget();
@@ -126,6 +127,7 @@ protected:
     QString appTitle;
     bool suspendMailCount;
     bool markingMode;
+    bool threaded;
     QMailMessageId selectedMessageId;
     int selectionCount;
     bool emailCountSuspended;
@@ -247,6 +249,7 @@ private slots:
     void initActions();
     void updateActions();
     void markMessages();
+    void threadMessages();
     void resumeInterruptedComposition();
     bool startMessageServer();
     bool waitForMessageServer();
@@ -298,6 +301,8 @@ private:
 
     void setMarkingMode(bool set);
 
+    void setThreaded(bool set);
+
     QMailFolderId containingFolder(const QMailMessageId& id);
 
     bool applyToSelectedFolder(void (EmailClient::*function)(const QMailFolderId&));
@@ -337,6 +342,7 @@ private:
     QAction *deleteMailAction;
     QAction *detachThreadAction;
     QAction *markAction;
+    QAction *threadAction;
     bool enableMessageActions;
 
     QAction *moveAction;

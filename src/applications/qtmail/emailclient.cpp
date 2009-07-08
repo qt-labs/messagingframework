@@ -246,6 +246,7 @@ MessageUiBase::MessageUiBase(QWidget *parent, Qt::WindowFlags f)
       appTitle(tr("Messages")),
       suspendMailCount(true),
       markingMode(false),
+      threaded(true),
       selectionCount(0),
       emailCountSuspended(false)
 {
@@ -354,6 +355,14 @@ void MessageUiBase::setMarkingMode(bool set)
         messageListView()->clearSelection();
 
     }
+    contextStatusUpdate();
+}
+
+void MessageUiBase::setThreaded(bool set)
+{
+    threaded = set;
+
+    messageListView()->setThreaded(threaded);
     contextStatusUpdate();
 }
 
@@ -787,6 +796,10 @@ void EmailClient::initActions()
         connect(markAction, SIGNAL(triggered()), this, SLOT(markMessages()));
         setActionVisible(markAction, true);
 
+        threadAction = new QAction( tr("Unthread messages"), this );
+        connect(threadAction, SIGNAL(triggered()), this, SLOT(threadMessages()));
+        setActionVisible(threadAction, true);
+
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
@@ -823,6 +836,7 @@ void EmailClient::initActions()
         messageListView()->addAction( restoreAction );
         messageListView()->addAction( selectAllAction );
         messageListView()->addAction( markAction );
+        messageListView()->addAction( threadAction );
         messageListView()->setContextMenuPolicy(Qt::ActionsContextMenu);
     }
 }
@@ -846,6 +860,7 @@ void EmailClient::updateActions()
     messageCount = QMailStore::instance()->countMessages(typeFilter & trashFilter);
 
     setActionVisible(emptyTrashAction, (messageCount > 0) && !markingMode);
+    setActionVisible(threadAction, (messageCount > 0) && !markingMode);
 
     // Set the visibility for each action to whatever was last configured
     QMap<QAction*, bool>::iterator it = actionVisibility.begin(), end = actionVisibility.end();
@@ -2371,6 +2386,22 @@ void EmailClient::setMarkingMode(bool set)
 void EmailClient::markMessages()
 {
     setMarkingMode(!markingMode);
+}
+
+void EmailClient::setThreaded(bool set)
+{
+    MessageUiBase::setThreaded(set);
+
+    if (threaded) {
+        threadAction->setText(tr("Unthread messages"));
+    } else {
+        threadAction->setText(tr("Thread messages"));
+    }
+}
+
+void EmailClient::threadMessages()
+{
+    setThreaded(!threaded);
 }
 
 void EmailClient::synchronizeFolder()
