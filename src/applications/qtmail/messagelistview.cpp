@@ -346,30 +346,6 @@ void MessageList::scrollContentsBy(int dx, int dy)
     emit scrolled();
 }
 
-void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    bool isMoreEntry = (!index.parent().isValid() && 
-                        m_parent->moreButtonVisible() &&
-                        (index.row() == (model()->rowCount(QModelIndex()) - 1)));
-    if (isMoreEntry) {
-        QLinearGradient lg(option.rect.topLeft(), option.rect.topRight());
-        lg.setColorAt(0,option.palette.color(QPalette::Base));
-        lg.setColorAt(0.5,option.palette.color(QPalette::Button));
-        lg.setColorAt(1,option.palette.color(QPalette::Base));
-
-        QFont font = painter->font();
-        font.setUnderline(true);
-
-        painter->save();
-        painter->setFont(font);
-        painter->fillRect(option.rect, QBrush(lg));
-        painter->drawText(option.rect, Qt::AlignHCenter | Qt::AlignVCenter, tr("Get more messages"));
-        painter->restore();
-    } else {
-        QTreeView::drawRow(painter, option, index);
-    }
-}
-
 void MessageList::mouseMoveEvent(QMouseEvent* e)
 {
     if (mouseOverMoreLink(e)) {
@@ -410,6 +386,30 @@ bool MessageList::mouseOverMoreLink(QMouseEvent* e)
     }
 
     return false;
+}
+
+void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    bool isMoreEntry = (!index.parent().isValid() && 
+                        m_parent->moreButtonVisible() &&
+                        (index.row() == (model()->rowCount(QModelIndex()) - 1)));
+    if (isMoreEntry) {
+        QLinearGradient lg(option.rect.topLeft(), option.rect.topRight());
+        lg.setColorAt(0,option.palette.color(QPalette::Base));
+        lg.setColorAt(0.5,option.palette.color(QPalette::Button));
+        lg.setColorAt(1,option.palette.color(QPalette::Base));
+
+        QFont font = painter->font();
+        font.setUnderline(true);
+
+        painter->save();
+        painter->setFont(font);
+        painter->fillRect(option.rect, QBrush(lg));
+        painter->drawText(option.rect, Qt::AlignHCenter | Qt::AlignVCenter, tr("Get more messages"));
+        painter->restore();
+    } else {
+        QTreeView::drawRow(painter, option, index);
+    }
 }
 
 
@@ -477,7 +477,6 @@ void MessageListView::init()
     mMessageList->setUniformRowHeights(true);
     mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);
-    mMessageList->setAlternatingRowColors(true);
 
     connect(mMessageList, SIGNAL(clicked(QModelIndex)),
             this, SLOT(indexClicked(QModelIndex)));
@@ -491,21 +490,22 @@ void MessageListView::init()
     connect(mMessageList, SIGNAL(moreButtonClicked()),
             this, SIGNAL(moreClicked()));
 
-    mScrollTimer.setSingleShot(true);
     connect(mMessageList, SIGNAL(scrolled()),
             this, SLOT(reviewVisibleMessages()));
+
+    mQuickSearchWidget = new QuickSearchWidget(this);
+    connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+
+    mScrollTimer.setSingleShot(true);
     connect(&mScrollTimer, SIGNAL(timeout()),
             this, SLOT(scrollTimeout()));
 
     QVBoxLayout* vLayout = new QVBoxLayout(this);
     vLayout->setContentsMargins(0,0,0,0);
     vLayout->setSpacing(0);
-    mQuickSearchWidget = new QuickSearchWidget(this);
-    connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
     vLayout->addWidget(mQuickSearchWidget);
     vLayout->addWidget(mMessageList);
 
-    this->setLayout(vLayout);
     setFocusProxy(mMessageList);
 }
 
