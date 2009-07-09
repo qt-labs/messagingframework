@@ -828,7 +828,7 @@ QModelIndex QMailMessageThreadedModelPrivate::parentIndex(const QMailMessageThre
 {
     if (const QMailMessageThreadedModelItem *parent = item->_parent)
         if (parent->_parent != 0)
-            return index(parent, column);
+            return index(parent, 0);
 
     return QModelIndex();
 }
