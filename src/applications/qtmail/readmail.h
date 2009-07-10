@@ -102,7 +102,6 @@ protected slots:
     void replyAll();
     void forward();
 
-    void setStatus(int);
     void getThisMail();
     void retrieveMessagePortion(uint bytes);
     void retrieveMessagePart(const QMailMessagePart &part);

@@ -550,43 +550,6 @@ void ReadMail::respondToMessagePart(const QMailMessagePart::Location &partLocati
     emit responseRequested(partLocation, type);
 }
 
-void ReadMail::setStatus(int id)
-{
-    quint64 prevStatus(mail.status());
-    quint64 newStatus(prevStatus);
-
-    switch( id ) {
-        case 1:
-            newStatus &= ~( QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded | QMailMessage::Read );
-            break;
-
-        case 2:
-            newStatus &= ~( QMailMessage::RepliedAll | QMailMessage::Forwarded );
-            newStatus |= QMailMessage::Replied;
-            break;
-
-        case 3:
-            newStatus &= ~( QMailMessage::Replied | QMailMessage::RepliedAll );
-            newStatus |= QMailMessage::Forwarded;
-            break;
-
-        case 4: 
-            newStatus |= QMailMessage::Sent;
-            break;
-
-        case 5: 
-            newStatus &= ~QMailMessage::Sent;
-            break;
-    }
-
-    if ( newStatus != prevStatus) {
-        mail.setStatus( newStatus );
-        QMailStore::instance()->updateMessage(&mail);
-    }
-
-    updateButtons();
-}
-
 void ReadMail::getThisMail()
 {
     if (getThisMailButton->isVisible())
