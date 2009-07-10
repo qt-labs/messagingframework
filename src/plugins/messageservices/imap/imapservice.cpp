@@ -103,7 +103,7 @@ public:
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
 
 signals:
-    void actionCompleted(const QMailMessageIdList &ids);
+    void messageActionCompleted(const QMailMessageIdList &ids);
 
 public slots:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
@@ -440,9 +440,9 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     }
 
     // Update the local copy status immediately
-    QMailMessageSource::flagMessages(messageIds, setMask, unsetMask);
+    QMailMessageSource::modifyMessageFlags(messageIds, setMask, unsetMask);
 
-    // See if there are any further actiosn to be taken
+    // See if there are any further actions to be taken
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
 
@@ -613,9 +613,9 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal)
 {
-    disconnect(this, SIGNAL(actionCompleted(QMailMessageIdList)));
+    disconnect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)));
     if (signal) {
-        connect(this, SIGNAL(actionCompleted(QMailMessageIdList)), this, signal);
+        connect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)), this, signal);
     }
 
     _unavailable = true;
@@ -656,11 +656,11 @@ void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMai
 void ImapService::Source::messageActionCompleted(const QString &uid)
 {
     if (uid.startsWith("id:")) {
-        emit actionCompleted(QMailMessageIdList() << QMailMessageId(uid.mid(3).toULongLong()));
+        emit messageActionCompleted(QMailMessageIdList() << QMailMessageId(uid.mid(3).toULongLong()));
     } else if (!uid.isEmpty()) {
         QMailMessageMetaData metaData(uid, _service->accountId());
         if (metaData.id().isValid()) {
-            emit actionCompleted(QMailMessageIdList() << metaData.id());
+            emit messageActionCompleted(QMailMessageIdList() << metaData.id());
         }
     }
 }
@@ -680,13 +680,14 @@ void ImapService::Source::retrievalCompleted()
         if (_mailCheckPhase == RetrieveFolders) {
             _mailCheckPhase = RetrieveMessages;
             retrieveMessageList(_service->accountId(), _mailCheckFolderId, 1, QMailMessageSortKey());
+            return;
         } else {
             _queuedMailCheckInProgress = false;
             emit _service->availabilityChanged(true);
         }
+    } else {
+        emit _service->actionCompleted(true);
     }
-
-    emit _service->actionCompleted(true);
 
     if (_synchronizing) {
         _synchronizing = false;
