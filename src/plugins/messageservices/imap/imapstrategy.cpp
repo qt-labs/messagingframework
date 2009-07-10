@@ -2968,10 +2968,22 @@ void ImapExternalizeMessagesStrategy::resolveNextMessage(ImapStrategyContextBase
 
 /* A strategy to flag selected messages.
 */
+void ImapFlagMessagesStrategy::clearSelection()
+{
+    _setMask = 0;
+    _unsetMask = 0;
+    _outstandingStores = 0;
+
+    ImapFetchSelectedMessagesStrategy::clearSelection();
+}
+
 void ImapFlagMessagesStrategy::setMessageFlags(MessageFlags flags, bool set)
 {
-    _flags = flags;
-    _set = set;
+    if (set) {
+        _setMask |= flags;
+    } else {
+        _unsetMask |= flags;
+    }
 }
 
 void ImapFlagMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
@@ -2993,13 +3005,24 @@ void ImapFlagMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
 
 void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
-    messageListMessageAction(context);
+    --_outstandingStores;
+    if (_outstandingStores == 0) {
+        messageListMessageAction(context);
+    }
 }
 
 void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
     if (selectNextMessageSequence(context, 1000)) {
-        context->protocol().sendUidStore(_flags, _set, numericUidSequence(_messageUids));
+        QString uidSequence(numericUidSequence(_messageUids));
+        if (_setMask) {
+            context->protocol().sendUidStore(_setMask, true, uidSequence);
+            ++_outstandingStores;
+        }
+        if (_unsetMask) {
+            context->protocol().sendUidStore(_unsetMask, false, uidSequence);
+            ++_outstandingStores;
+        }
     }
 }
 
@@ -3038,9 +3061,11 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
 
 void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
-    // Add the stored UIDs to our list
-    _storedList.append(_messageUids);
-    _lastMailbox = _currentMailbox;
+    if (_outstandingStores == 1) {
+        // Add the stored UIDs to our list
+        _storedList.append(_messageUids);
+        _lastMailbox = _currentMailbox;
+    }
 
     ImapFlagMessagesStrategy::handleUidStore(context);
 }

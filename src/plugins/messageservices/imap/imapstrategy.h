@@ -620,7 +620,8 @@ public:
     ImapFlagMessagesStrategy() {}
     virtual ~ImapFlagMessagesStrategy() {}
 
-    void setMessageFlags(MessageFlags flags, bool set);
+    virtual void clearSelection();
+    virtual void setMessageFlags(MessageFlags flags, bool set);
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     
@@ -629,8 +630,9 @@ protected:
 
     virtual void messageListMessageAction(ImapStrategyContextBase *context);
 
-    MessageFlags _flags;
-    bool _set;
+    MessageFlags _setMask;
+    MessageFlags _unsetMask;
+    int _outstandingStores;
 };
 
 class ImapDeleteMessagesStrategy : public ImapFlagMessagesStrategy
