@@ -160,7 +160,7 @@ class MessageListModel : public BaseModel
 public:
     MessageListModel(MessageListView* parent);
 
-    QVariant headerData(int section,Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
@@ -493,6 +493,11 @@ void MessageListView::init()
     connect(mMessageList, SIGNAL(scrolled()),
             this, SLOT(reviewVisibleMessages()));
 
+    connect(mMessageList, SIGNAL(collapsed(QModelIndex)),
+            this, SIGNAL(rowCountChanged()));
+    connect(mMessageList, SIGNAL(expanded(QModelIndex)),
+            this, SIGNAL(rowCountChanged()));
+
     mQuickSearchWidget = new QuickSearchWidget(this);
     connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
 
@@ -558,9 +563,22 @@ bool MessageListView::hasChildren() const
     return (mModel->rowCount(mMessageList->currentIndex()) > 0);
 }
 
-int MessageListView::rowCount() const
+int MessageListView::rowCount(const QModelIndex &parentIndex) const
 {
-    return mModel->rowCount();
+    int total = 0;
+
+    int count = mModel->rowCount(parentIndex);
+    total += count;
+
+    for (int i = 0; i < count; ++i) {
+        // Count the children of any expanded node
+        QModelIndex idx(mModel->index(i, 0, parentIndex));
+        if (mMessageList->isExpanded(idx)) {
+            total += rowCount(idx);
+        }
+    }
+
+    return total;
 }
 
 void MessageListView::selectedChildren(const QModelIndex &parentIndex, QMailMessageIdList *selectedIds) const

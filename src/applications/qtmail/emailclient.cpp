@@ -433,7 +433,8 @@ MessageListView* MessageUiBase::createMessageListView()
     view->setSortKey(QMailMessageSortKey::timeStamp(Qt::DescendingOrder));
 
     connect(view, SIGNAL(clicked(QMailMessageId)), this, SLOT(messageActivated()));
-    connect(view, SIGNAL(selectionChanged()), this, SLOT(messageSelectionChanged()) );
+    connect(view, SIGNAL(selectionChanged()), this, SLOT(messageSelectionChanged()));
+    connect(view, SIGNAL(rowCountChanged()), this, SLOT(messageSelectionChanged()));
     connect(view, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
     connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );

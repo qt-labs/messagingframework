@@ -42,8 +42,9 @@
 #ifndef MESSAGELISTVIEW_H
 #define MESSAGELISTVIEW_H
 
-#include <QWidget>
+#include <QModelIndex>
 #include <QTimer>
+#include <QWidget>
 #include <qmailmessage.h>
 #include <qmailmessagekey.h>
 #include <qmailmessagesortkey.h>
@@ -52,7 +53,6 @@ class MessageList;
 class QFrame;
 class QLineEdit;
 class QMailMessageModelBase;
-class QModelIndex;
 class QPushButton;
 class QSortFilterProxyModel;
 class QTabBar;
@@ -89,7 +89,7 @@ public:
     bool hasParent() const;
     bool hasChildren() const;
 
-    int rowCount() const;
+    int rowCount(const QModelIndex &parentIndex = QModelIndex()) const;
 
     QMailMessageIdList selected() const;
     void setSelected(const QMailMessageIdList& idList);
@@ -119,6 +119,7 @@ signals:
     void activated(const QMailMessageId& id);
     void currentChanged(const QMailMessageId& oldId, const QMailMessageId& newId);
     void selectionChanged();
+    void rowCountChanged();
     void backPressed();
     void responseRequested(const QMailMessage&, QMailMessage::ResponseType);
     void moreClicked();
