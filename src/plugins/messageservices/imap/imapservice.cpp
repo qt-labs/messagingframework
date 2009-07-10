@@ -446,6 +446,9 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
 
+    // Note: we can't do everything all at once - just perform the first change that we
+    // identify, as a client can always perform the changes incrementally.
+
     if ((setMask & QMailMessage::Trash) || (unsetMask & QMailMessage::Trash)) {
         QString trashPath(imapCfg.trashFolder());
         if (!trashPath.isEmpty()) {
@@ -547,6 +550,57 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
             _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, draftId);
             return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+        }
+    }
+
+    quint64 updatableFlags(QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded);
+    if ((setMask & updatableFlags) || (unsetMask & updatableFlags)) {
+        // We could hold on to these changes until exportUpdates instead...
+        MessageFlags setFlags(0);
+        MessageFlags unsetFlags(0);
+
+        if (setMask & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
+            setFlags |= MFlag_Answered;
+        }
+        if (unsetMask & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
+            unsetFlags |= MFlag_Answered;
+        }
+
+        if ((setMask | unsetMask) & QMailMessage::Forwarded) {
+            // We can only modify this flag if the folders support $Forwarded
+            bool supportsForwarded(true);
+
+            QMailMessageKey key(QMailMessageKey::id(messageIds));
+            QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId);
+
+            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct)) {
+                QMailFolder folder(metaData.parentFolderId());
+                if (folder.customField("qmf-supports-forwarded").isEmpty()) {
+                    supportsForwarded = false;
+                    break;
+                }
+            }
+
+            if (supportsForwarded) {
+                if (setMask & QMailMessage::Forwarded) {
+                    setFlags |= MFlag_Forwarded;
+                }
+                if (unsetMask & QMailMessage::Forwarded) {
+                    unsetFlags |= MFlag_Forwarded;
+                }
+            }
+        }
+
+        if (setFlags || unsetFlags) {
+            _service->_client.strategyContext()->flagMessagesStrategy.clearSelection();
+            if (setFlags) {
+                _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(setFlags, true);
+            }
+            if (unsetFlags) {
+                _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(unsetFlags, true);
+            }
+            _service->_client.strategyContext()->flagMessagesStrategy.selectedMailsAppend(messageIds);
+            return setStrategy(&_service->_client.strategyContext()->flagMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         }
     }
 
