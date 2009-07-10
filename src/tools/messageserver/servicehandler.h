@@ -275,6 +275,7 @@ private:
 
     QList<MessageSearch> mSearches;
     QMailMessageIdList mMatchingIds;
+    QMailMessageIdList mSentIds;
 
     QFile _requestsFile;
     QSet<quint64> _outstandingRequests;

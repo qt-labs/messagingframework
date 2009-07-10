@@ -1708,10 +1708,7 @@ void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
 {
     if (QMailMessageSink *sink = qobject_cast<QMailMessageSink*>(sender())) {
         if (quint64 action = sinkAction(sink)) {
-            // Mark this message as Sent, via the source service
-            if (QMailMessageSource *source = accountSource(sinkService[sink]->accountId())) {
-                source->flagMessages(messageIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft));
-            }
+            mSentIds.append(messageIds);
 
             emit messagesTransmitted(action, messageIds);
         }
@@ -1775,6 +1772,23 @@ void ServiceHandler::actionCompleted(bool success)
             QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
             if (it != mActiveActions.end()) {
                 ActionData &data(it.value());
+
+                if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
+                    // Mark these message as Sent, via the source service
+                    if (QMailMessageSource *source = accountSource(service->accountId())) {
+                        source->flagMessages(mSentIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft));
+
+                        // The source is now the service responsible for this action
+                        mServiceAction.remove(service);
+                        data.services.remove(service);
+
+                        mServiceAction.insert(sourceService[source], action);
+                        data.services.insert(sourceService[source]);
+                    }
+
+                    mSentIds.clear();
+                    return;
+                }
 
                 QSet<QMailMessageService*>::iterator sit = data.services.find(service);
                 if (sit != data.services.end()) {
