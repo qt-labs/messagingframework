@@ -100,7 +100,6 @@ void SmtpService::Sink::messageTransmitted(const QMailMessageId &id)
 void SmtpService::Sink::sendCompleted()
 {
     emit _service->actionCompleted(true);
-    emit _service->activityChanged(QMailServiceAction::Successful);
 }
 
 
