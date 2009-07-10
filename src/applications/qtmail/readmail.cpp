@@ -696,21 +696,23 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
 void ReadMail::updateReadStatus()
 {
     if (mail.id().isValid()) {
-        bool newMessage(mail.status() & QMailMessage::New);
+        quint64 setMask(0);
+        quint64 unsetMask(0);
 
-        // This message is no longer new
-        if (newMessage)
-            mail.setStatus(QMailMessage::New, false);
-
-        // Do not mark as read unless it has been at least partially downloaded
-        if (mail.status() & QMailMessage::PartialContentAvailable) {
-            firstRead = !(mail.status() & QMailMessage::Read);
-            if (firstRead)
-                mail.setStatus(QMailMessage::Read, true);
+        if (mail.status() & QMailMessage::New) {
+            // This message is no longer new
+            unsetMask |= QMailMessage::New;
         }
 
-        if (newMessage || firstRead) {
-            QMailStore::instance()->updateMessage(&mail);
+        if (mail.status() & QMailMessage::PartialContentAvailable) {
+            if (!(mail.status() & QMailMessage::Read)) {
+                // Do not mark as read unless it has been at least partially downloaded
+                setMask |= QMailMessage::Read;
+            }
+        }
+
+        if (setMask || unsetMask) {
+            emit flagMessage(mail.id(), setMask, unsetMask);
         }
     }
 }

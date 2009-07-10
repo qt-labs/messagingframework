@@ -398,17 +398,18 @@ ReadMail* MessageUiBase::createReadMailWidget()
 
     readMail->setGeometry(geometry());
 
-    connect(readMail, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
-    connect(readMail, SIGNAL(responseRequested(QMailMessagePart::Location,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessagePart::Location,QMailMessage::ResponseType)) );
-    connect(readMail, SIGNAL(removeMessage(QMailMessageId, bool)), this, SLOT(removeMessage(QMailMessageId, bool)) );
-    connect(readMail, SIGNAL(getMailRequested(QMailMessageMetaData)),this, SLOT(getSingleMail(QMailMessageMetaData)) );
-    connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)),this, SLOT(readReplyRequested(QMailMessageMetaData)));
-    connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)) );
-    connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)) );
-    connect(readMail, SIGNAL(sendMessage(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)) );
-    connect(readMail, SIGNAL(retrieveMessagePortion(QMailMessageMetaData, uint)),this, SLOT(retrieveMessagePortion(QMailMessageMetaData, uint)) );
-    connect(readMail, SIGNAL(retrieveMessagePart(QMailMessagePart::Location)),this, SLOT(retrieveMessagePart(QMailMessagePart::Location)) );
-    connect(readMail, SIGNAL(retrieveMessagePartPortion(QMailMessagePart::Location, uint)),this, SLOT(retrieveMessagePartPortion(QMailMessagePart::Location, uint)) );
+    connect(readMail, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)));
+    connect(readMail, SIGNAL(responseRequested(QMailMessagePart::Location,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessagePart::Location,QMailMessage::ResponseType)));
+    connect(readMail, SIGNAL(removeMessage(QMailMessageId, bool)), this, SLOT(removeMessage(QMailMessageId, bool)));
+    connect(readMail, SIGNAL(getMailRequested(QMailMessageMetaData)), this, SLOT(getSingleMail(QMailMessageMetaData)));
+    connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)), this, SLOT(readReplyRequested(QMailMessageMetaData)));
+    connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)));
+    connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
+    connect(readMail, SIGNAL(sendMessage(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)));
+    connect(readMail, SIGNAL(retrieveMessagePortion(QMailMessageMetaData, uint)), this, SLOT(retrieveMessagePortion(QMailMessageMetaData, uint)));
+    connect(readMail, SIGNAL(retrieveMessagePart(QMailMessagePart::Location)), this, SLOT(retrieveMessagePart(QMailMessagePart::Location)));
+    connect(readMail, SIGNAL(retrieveMessagePartPortion(QMailMessagePart::Location, uint)), this, SLOT(retrieveMessagePartPortion(QMailMessagePart::Location, uint)));
+    connect(readMail, SIGNAL(flagMessage(QMailMessageId, quint64, quint64)), this, SLOT(flagMessage(QMailMessageId, quint64, quint64)));
 
     return readMail;
 }
@@ -985,8 +986,7 @@ void EmailClient::enqueueMail(QMailMessage& mail)
     mail.setStatus((QMailMessage::Outbox | QMailMessage::Draft), true);
 
     bool inserted(false);
-    bool isNew(!mail.id().isValid());
-    if (isNew) {
+    if (!mail.id().isValid()) {
         inserted = QMailStore::instance()->addMessage(&mail);
     } else {
         inserted = QMailStore::instance()->updateMessage(&mail);
@@ -994,10 +994,6 @@ void EmailClient::enqueueMail(QMailMessage& mail)
 
     if (inserted) {
         sendAllQueuedMail(true);
-
-        if (isNew) {
-            mailResponded();
-        }
 
         if (closeAfterWrite) {
             closeAfterTransmissionsFinished();
@@ -1029,8 +1025,7 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
     mail.setStatus(QMailMessage::Draft, true);
 
     bool inserted(false);
-    bool isNew(!mail.id().isValid());
-    if (isNew) {
+    if (!mail.id().isValid()) {
         inserted = QMailStore::instance()->addMessage(&mail);
     } else {
         inserted = QMailStore::instance()->updateMessage(&mail);
@@ -1039,10 +1034,6 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
     if (inserted) {
         // Inform the responsible service that it is a draft
         storageAction->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
-
-        if (isNew) {
-            mailResponded();
-        }
 
         lastDraftId = mail.id();
     } else {
@@ -1110,6 +1101,11 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
     }
 }
 
+void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask)
+{
+    storageAction->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+}
+
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
 {
     QMailAccount account(accountId);
@@ -1136,6 +1132,9 @@ void EmailClient::transmitCompleted()
             clearStatusText();
 
         setSendingInProgress(false);
+
+        // If the sent message was a response, we have modified the original message's status
+        mailResponded();
     }
 }
 
