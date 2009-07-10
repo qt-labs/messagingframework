@@ -160,21 +160,23 @@ static bool parseFlags(const QString& field, MessageFlags& flags)
     if (pattern.indexIn(field) == -1)
         return false;
 
-    QString messageFlags = pattern.cap(1);
+    QString messageFlags = pattern.cap(1).toLower();
 
     flags = 0;
-    if (messageFlags.indexOf("\\Seen") != -1)
+    if (messageFlags.indexOf("\\seen") != -1)
         flags |= MFlag_Seen;
-    if (messageFlags.indexOf("\\Answered") != -1)
+    if (messageFlags.indexOf("\\answered") != -1)
         flags |= MFlag_Answered;
-    if (messageFlags.indexOf("\\Flagged") != -1)
+    if (messageFlags.indexOf("\\flagged") != -1)
         flags |= MFlag_Flagged;
-    if (messageFlags.indexOf("\\Deleted") != -1)
+    if (messageFlags.indexOf("\\deleted") != -1)
         flags |= MFlag_Deleted;
-    if (messageFlags.indexOf("\\Draft") != -1)
+    if (messageFlags.indexOf("\\draft") != -1)
         flags |= MFlag_Draft;
-    if (messageFlags.indexOf("\\Recent") != -1)
+    if (messageFlags.indexOf("\\recent") != -1)
         flags |= MFlag_Recent;
+    if (messageFlags.indexOf("$forwarded") != -1)
+        flags |= MFlag_Forwarded;
 
     return true;
 }
@@ -245,6 +247,8 @@ static QString searchFlagsToString(MessageFlags flags)
             result.append("UNSEEN");
         if (flags & MFlag_Draft)
             result.append("DRAFT");
+        if (flags & MFlag_Forwarded)
+            result.append("$FORWARDED");
     }
 
     return result.join(" ");
@@ -266,6 +270,8 @@ static QString messageFlagsToString(MessageFlags flags)
             result.append("\\Seen");
         if (flags & MFlag_Draft)
             result.append("\\Draft");
+        if (flags & MFlag_Forwarded)
+            result.append("$Forwarded");
     }
 
     return result.join(" ");
@@ -278,8 +284,11 @@ static MessageFlags flagsForMessage(const QMailMessageMetaData &metaData)
     if (metaData.status() & (QMailMessage::Read | QMailMessage::ReadElsewhere | QMailMessage::Outgoing)) {
         result |= MFlag_Seen;
     }
-    if (metaData.status() & (QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded)) {
+    if (metaData.status() & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
         result |= MFlag_Answered;
+    }
+    if (metaData.status() & QMailMessage::Forwarded) {
+        result |= MFlag_Forwarded;
     }
     if (metaData.status() & QMailMessage::Draft) {
         result |= MFlag_Draft;

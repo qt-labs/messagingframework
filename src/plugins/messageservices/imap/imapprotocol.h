@@ -94,7 +94,8 @@ enum MessageFlag
     MFlag_Deleted   = (1 << 3),
     MFlag_Draft     = (1 << 4),
     MFlag_Recent    = (1 << 5),
-    MFlag_Unseen    = (1 << 6)
+    MFlag_Unseen    = (1 << 6),
+    MFlag_Forwarded = (1 << 7)
 };
 
 typedef uint MessageFlags;
