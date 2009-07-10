@@ -3063,7 +3063,7 @@ void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context
 {
     if (_outstandingStores == 1) {
         // Add the stored UIDs to our list
-        _storedList.append(_messageUids);
+        _storedList += _messageUids;
         _lastMailbox = _currentMailbox;
     }
 
