@@ -655,6 +655,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             if (_protocol.mailbox().isSelected()) {
                 const ImapMailboxProperties &properties(_protocol.mailbox());
 
+                // See if we have anything to record about this mailbox
                 QMailFolder folder(properties.id);
 
                 bool modified(false);
@@ -677,6 +678,16 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                         folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
                         modified = true;
                     }
+                }
+
+                QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
+                if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
+                    if (supportsForwarded.isEmpty()) {
+                        folder.removeCustomField("qmf-supports-forwarded");
+                    } else {
+                        folder.setCustomField("qmf-supports-forwarded", supportsForwarded);
+                    }
+                    modified = true;
                 }
 
                 if (modified) {

@@ -327,6 +327,7 @@ public:
     void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
     void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
     void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
+    void setPermanentFlags(const QStringList &flags) { mProtocol->_mailbox.permanentFlags = flags; }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -1022,6 +1023,10 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         c->setHighestModSeq(temp.mid(14).trimmed());
     } else if (line.indexOf("NOMODSEQ", 0) != -1) {
         c->setNoModSeq();
+    } else if (line.indexOf("PERMANENTFLAGS", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '(', ')', &start);
+        c->setPermanentFlags(temp.split(" ", QString::SkipEmptyParts));
     } else {
         ImapState::untaggedResponse(c, line);
     }

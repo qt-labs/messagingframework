@@ -75,6 +75,7 @@ struct ImapMailboxProperties
     QList<uint> msnList;
     QString highestModSeq;
     bool noModSeq;
+    QStringList permanentFlags;
 };
 
 #endif
