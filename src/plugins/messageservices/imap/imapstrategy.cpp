@@ -3039,7 +3039,8 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
 void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
     // Add the stored UIDs to our list
-    _storedList.append(_messageUids);
+    foreach(QString uid, _messageUids)
+        _storedList.append(uid);
     _lastMailbox = _currentMailbox;
 
     ImapFlagMessagesStrategy::handleUidStore(context);
