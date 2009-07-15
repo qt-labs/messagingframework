@@ -54,7 +54,7 @@
 class QMailMessage;
 class QMailMessagePart;
 class QMailMessagePartContainer;
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
 class QWebView;
 #else
 class QTextBrowser;
@@ -116,7 +116,7 @@ private:
     QMap<QUrl, QVariant> resourceMap;
     QString (BrowserWidget::*replySplitter)(const QString&) const;
     mutable QList<QString> numbers;
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
     QWebView* m_webView;
 #else
     QTextBrowser* m_textBrowser;

@@ -51,7 +51,7 @@
 #include <limits.h>
 #include <QVBoxLayout>
 #include <QTextBrowser>
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
 #include <QWebView>
 #endif
 
@@ -86,9 +86,10 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
     QLayout* l = new QVBoxLayout(this);
     l->setSpacing(0);
     l->setContentsMargins(0,0,0,0);
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
     m_webView = new QWebView(this);
     l->addWidget(m_webView);
+    connect(m_webView,SIGNAL(linkClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
 #else
     m_textBrowser = new QTextBrowser(this);
     m_textBrowser->setFrameStyle(QFrame::NoFrame);
@@ -117,7 +118,7 @@ QVariant BrowserWidget::loadResource(int type, const QUrl& name)
 {
     if (resourceMap.contains(name))
         return resourceMap[name];
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
     return QVariant();
 #else
     return m_textBrowser->loadResource(type, name);
@@ -376,7 +377,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
         text += "\n";
         text += bodyText;
     }
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
 #else
     m_textBrowser->setPlainText(text);
 #endif
@@ -687,8 +688,9 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 "</table>";
 
     QString html = replaceLast(pageTemplate,"PAGE_DATA",pageData);
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
     m_webView->setHtml(html);
+    m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 #else
     m_textBrowser->setHtml(html);
 #endif
@@ -1121,7 +1123,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 
 void BrowserWidget::scrollToAnchor(const QString& anchor)
 {
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
 #else
     m_textBrowser->scrollToAnchor(anchor);
 #endif
@@ -1129,7 +1131,7 @@ void BrowserWidget::scrollToAnchor(const QString& anchor)
 
 void BrowserWidget::setPlainText(const QString& text)
 {
-#ifdef USING_WEBKIT
+#ifdef USE_WEBKIT
 #else
     m_textBrowser->setPlainText(text);
 #endif
