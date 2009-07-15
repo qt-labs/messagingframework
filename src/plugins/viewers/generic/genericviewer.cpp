@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "genericviewer.h"
-#include "browser.h"
+#include "browserwidget.h"
 #include "attachmentoptions.h"
 #include <QAction>
 #include <QGridLayout>

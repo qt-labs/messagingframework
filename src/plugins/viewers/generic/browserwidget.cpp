@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "browser.h"
+#include "browserwidget.h"
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QStyle>
