@@ -53,7 +53,7 @@
 
 GenericViewer::GenericViewer(QWidget* parent)
     : QMailViewerInterface(parent),
-      browser(new Browser(parent)),
+      browser(new BrowserWidget(parent)),
       attachmentDialog(0),
       message(0),
       plainTextMode(false)

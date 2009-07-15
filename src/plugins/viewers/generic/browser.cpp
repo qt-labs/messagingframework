@@ -49,6 +49,11 @@
 #include <qmailmessage.h>
 #include <qmailtimestamp.h>
 #include <limits.h>
+#include <QVBoxLayout>
+#include <QTextBrowser>
+#ifdef USING_WEBKIT
+#include <QWebView>
+#endif
 
 static QColor replyColor(Qt::darkGreen);
 
@@ -74,51 +79,58 @@ static uint qHash(const QUrl &url)
     return qHash(url.toString());
 }
 
-Browser::Browser( QWidget *parent  )
-    : QTextBrowser( parent ),
-      replySplitter( &Browser::handleReplies )
+BrowserWidget::BrowserWidget( QWidget *parent  )
+    : QWidget( parent ),
+      replySplitter( &BrowserWidget::handleReplies )
 {
-    setFrameStyle( NoFrame );
+    QLayout* l = new QVBoxLayout(this);
+    l->setSpacing(0);
+    l->setContentsMargins(0,0,0,0);
+#ifdef USING_WEBKIT
+    m_webView = new QWebView(this);
+    l->addWidget(m_webView);
+#else
+    m_textBrowser = new QTextBrowser(this);
+    m_textBrowser->setFrameStyle(QFrame::NoFrame);
+    l->addWidget(m_textBrowser);
+    connect(m_textBrowser,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
+    connect(m_textBrowser,SIGNAL(highlighted(QUrl)),this,SIGNAL(highlighted(QUrl)));
+#endif
+
     setFocusPolicy( Qt::StrongFocus );
 }
 
-Browser::~Browser()
-{
-}
-
-void Browser::scrollBy(int dx, int dy)
-{
-    scrollContentsBy( dx, dy );
-}
-
-void Browser::setResource( const QUrl& name, QVariant var )
+void BrowserWidget::setResource( const QUrl& name, QVariant var )
 {
     if (!resourceMap.contains(name)) {
         resourceMap.insert(name, var);
     }
 }
 
-void Browser::clearResources()
+void BrowserWidget::clearResources()
 {
     resourceMap.clear();
     numbers.clear();
 }
 
-QVariant Browser::loadResource(int type, const QUrl& name)
+QVariant BrowserWidget::loadResource(int type, const QUrl& name)
 {
     if (resourceMap.contains(name))
         return resourceMap[name];
-
-    return QTextBrowser::loadResource(type, name);
+#ifdef USING_WEBKIT
+    return QVariant();
+#else
+    return m_textBrowser->loadResource(type, name);
+#endif
 }
 
-QList<QString> Browser::embeddedNumbers() const
+QList<QString> BrowserWidget::embeddedNumbers() const
 {
     QList<QString> result;
     return result;
 }
 
-void Browser::setTextResource(const QSet<QUrl>& names, const QString& textData)
+void BrowserWidget::setTextResource(const QSet<QUrl>& names, const QString& textData)
 {
     QVariant data(textData);
     foreach (const QUrl &url, names) {
@@ -126,7 +138,7 @@ void Browser::setTextResource(const QSet<QUrl>& names, const QString& textData)
     }
 }
 
-void Browser::setImageResource(const QSet<QUrl>& names, const QByteArray& imageData)
+void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& imageData)
 {
     // Create a image from the data
     QDataStream imageStream(&const_cast<QByteArray&>(imageData), QIODevice::ReadOnly);
@@ -164,7 +176,7 @@ void Browser::setImageResource(const QSet<QUrl>& names, const QByteArray& imageD
     }
 }
 
-void Browser::setPartResource(const QMailMessagePart& part)
+void BrowserWidget::setPartResource(const QMailMessagePart& part)
 {
     QSet<QUrl> names;
 
@@ -191,14 +203,14 @@ void Browser::setPartResource(const QMailMessagePart& part)
     }
 }
 
-void Browser::setSource(const QUrl &name)
+void BrowserWidget::setSource(const QUrl &name)
 {
     Q_UNUSED(name)
 // We deal with this ourselves.
 //    QTextBrowser::setSource( name );
 }
 
-void Browser::setMessage(const QMailMessage& email, bool plainTextMode)
+void BrowserWidget::setMessage(const QMailMessage& email, bool plainTextMode)
 {
     if (plainTextMode) {
         // Complete MMS messages must be displayed in HTML
@@ -211,7 +223,7 @@ void Browser::setMessage(const QMailMessage& email, bool plainTextMode)
 
     // Maintain original linelengths if display width allows it
     if (email.messageType() == QMailMessage::Sms) {
-        replySplitter = &Browser::smsBreakReplies;
+        replySplitter = &BrowserWidget::smsBreakReplies;
     } else {
         uint lineCharLength;
         if ( fontInfo().pointSize() >= 10 ) {
@@ -222,9 +234,9 @@ void Browser::setMessage(const QMailMessage& email, bool plainTextMode)
 
         // Determine how to split lines in text
         if ( lineCharLength >= 78 )
-            replySplitter = &Browser::noBreakReplies;
+            replySplitter = &BrowserWidget::noBreakReplies;
         else
-            replySplitter = &Browser::handleReplies;
+            replySplitter = &BrowserWidget::handleReplies;
     }
 
     if (plainTextMode)
@@ -233,7 +245,7 @@ void Browser::setMessage(const QMailMessage& email, bool plainTextMode)
         displayHtml(&email);
 }
 
-void Browser::displayPlainText(const QMailMessage* mail)
+void BrowserWidget::displayPlainText(const QMailMessage* mail)
 {
     QString bodyText;
 
@@ -364,8 +376,10 @@ void Browser::displayPlainText(const QMailMessage* mail)
         text += "\n";
         text += bodyText;
     }
-
-    setPlainText(text);
+#ifdef USING_WEBKIT
+#else
+    m_textBrowser->setPlainText(text);
+#endif
 }
 
 static QString replaceLast(const QString container, const QString& before, const QString& after)
@@ -379,7 +393,7 @@ static QString replaceLast(const QString container, const QString& before, const
     return result;
 }
 
-QString Browser::renderSimplePart(const QMailMessagePart& part)
+QString BrowserWidget::renderSimplePart(const QMailMessagePart& part)
 {
     QString result;
 
@@ -409,7 +423,7 @@ QString Browser::renderSimplePart(const QMailMessagePart& part)
     return result;
 }
 
-QString Browser::renderAttachment(const QMailMessagePart& part)
+QString BrowserWidget::renderAttachment(const QMailMessagePart& part)
 {
     QString partId = Qt::escape(part.displayName());
 
@@ -423,7 +437,7 @@ QString Browser::renderAttachment(const QMailMessagePart& part)
     return replaceLast(attachmentTemplate, "DISPOSITION", part.partialContentAvailable() ? "" : tr(" (on server)"));
 }
 
-QString Browser::renderPart(const QMailMessagePart& part)
+QString BrowserWidget::renderPart(const QMailMessagePart& part)
 {
     QString result;
 
@@ -444,7 +458,7 @@ QString Browser::renderPart(const QMailMessagePart& part)
     return result;
 }
 
-QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
+QString BrowserWidget::renderMultipart(const QMailMessagePartContainer& partContainer)
 {
     QString result;
 
@@ -518,7 +532,7 @@ QString Browser::renderMultipart(const QMailMessagePartContainer& partContainer)
 
 typedef QPair<QString, QString> TextPair;
 
-void Browser::displayHtml(const QMailMessage* mail)
+void BrowserWidget::displayHtml(const QMailMessage* mail)
 {
     QString subjectText, bodyText;
     QList<TextPair> metadata;
@@ -630,7 +644,8 @@ void Browser::displayHtml(const QMailMessage* mail)
                 "</table>"
             "</td>"
         "</tr>"
-    "</div>"
+    "</table>"
+"</div>"
 "<br>";
 
     headerTemplate = replaceLast(headerTemplate, "HIGHLIGHT_COLOR", palette().color(QPalette::Highlight).name());
@@ -665,16 +680,21 @@ void Browser::displayHtml(const QMailMessage* mail)
     QString pageTemplate =
 "<table width=100% height=100% border=0 cellspacing=8 cellpadding=0>"
     "<tr>"
-        "<td>"
+        "<td valign=\"top\">"
             "PAGE_DATA"
         "</td>"
     "</tr>"
 "</table>";
 
-    setHtml(replaceLast(pageTemplate, "PAGE_DATA", pageData));
+    QString html = replaceLast(pageTemplate,"PAGE_DATA",pageData);
+#ifdef USING_WEBKIT
+    m_webView->setHtml(html);
+#else
+    m_textBrowser->setHtml(html);
+#endif
 }
 
-QString Browser::describeMailSize(uint bytes) const
+QString BrowserWidget::describeMailSize(uint bytes) const
 {
     QString size;
 
@@ -694,12 +714,12 @@ QString Browser::describeMailSize(uint bytes) const
     return size;
 }
 
-QString Browser::formatText(const QString& txt) const
+QString BrowserWidget::formatText(const QString& txt) const
 {
     return (*this.*replySplitter)(txt);
 }
 
-QString Browser::smsBreakReplies(const QString& txt) const
+QString BrowserWidget::smsBreakReplies(const QString& txt) const
 {
     /*  Preserve white space, add linebreaks so text is wrapped to
         fit the display width */
@@ -715,7 +735,7 @@ QString Browser::smsBreakReplies(const QString& txt) const
     return str;
 }
 
-QString Browser::noBreakReplies(const QString& txt) const
+QString BrowserWidget::noBreakReplies(const QString& txt) const
 {
     /*  Maintains the original linebreaks, but colours the lines
         according to reply level    */
@@ -818,10 +838,10 @@ QString unwrap(const QString& txt, const QString& prepend)
                 }
             }
 
-            result = appendLine(result, Browser::encodeUrlAndMail(*prev) + terminator);
+            result = appendLine(result, BrowserWidget::encodeUrlAndMail(*prev) + terminator);
         }
         if (!(*prev).isEmpty())
-            result = appendLine(result, Browser::encodeUrlAndMail(*prev));
+            result = appendLine(result, BrowserWidget::encodeUrlAndMail(*prev));
     }
 
     return result;
@@ -834,7 +854,7 @@ QString unwrap(const QString& txt, const QString& prepend)
     too speed efficient on large texts, but this manipulation greatly increases
     the readability (trust me, I'm using this program for my daily email reading..)
 */
-QString Browser::handleReplies(const QString& txt) const
+QString BrowserWidget::handleReplies(const QString& txt) const
 {
     QStringList out;
     QStringList p = txt.split("\n");
@@ -922,7 +942,7 @@ QString Browser::handleReplies(const QString& txt) const
     return str;
 }
 
-QString Browser::buildParagraph(const QString& txt, const QString& prepend, bool preserveWs) const
+QString BrowserWidget::buildParagraph(const QString& txt, const QString& prepend, bool preserveWs) const
 {
     Q_UNUSED(prepend);
     QStringList out;
@@ -935,7 +955,7 @@ QString Browser::buildParagraph(const QString& txt, const QString& prepend, bool
     return p.join(" ");
 }
 
-QString Browser::encodeUrlAndMail(const QString& txt)
+QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 {
     QStringList result;
 
@@ -1099,7 +1119,23 @@ QString Browser::encodeUrlAndMail(const QString& txt)
     return result.join("");
 }
 
-QString Browser::listRefMailTo(const QList<QMailAddress>& list)
+void BrowserWidget::scrollToAnchor(const QString& anchor)
+{
+#ifdef USING_WEBKIT
+#else
+    m_textBrowser->scrollToAnchor(anchor);
+#endif
+}
+
+void BrowserWidget::setPlainText(const QString& text)
+{
+#ifdef USING_WEBKIT
+#else
+    m_textBrowser->setPlainText(text);
+#endif
+}
+
+QString BrowserWidget::listRefMailTo(const QList<QMailAddress>& list)
 {
     QStringList result;
     foreach ( const QMailAddress& address, list )
@@ -1108,7 +1144,7 @@ QString Browser::listRefMailTo(const QList<QMailAddress>& list)
     return result.join( ", " );
 }
 
-QString Browser::refMailTo(const QMailAddress& address)
+QString BrowserWidget::refMailTo(const QMailAddress& address)
 {
     QString name = Qt::escape(address.toString());
     if (name == "System")
@@ -1120,38 +1156,17 @@ QString Browser::refMailTo(const QMailAddress& address)
     return name;
 }
 
-QString Browser::refNumber(const QString& number)
+QString BrowserWidget::refNumber(const QString& number)
 {
     return "<a href=\"dial;" + Qt::escape(number) + "\">" + number + "</a>";
 }
 
-QString Browser::refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing)
+QString BrowserWidget::refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing)
 {
     // Assume HTTP if there is no scheme
     QString escaped(Qt::escape(url));
     QString target(scheme.isEmpty() ? "http://" + escaped : escaped);
 
     return Qt::escape(leading) + "<a href=\"" + target + "\">" + escaped + "</a>" + Qt::escape(trailing);
-}
-
-void Browser::keyPressEvent(QKeyEvent* event)
-{
-    const int factor = width() * 2 / 3;
-
-    switch (event->key()) {
-        case Qt::Key_Left:
-            scrollBy(-factor, 0);
-            event->accept();
-            break;
-
-        case Qt::Key_Right:
-            scrollBy(factor, 0);
-            event->accept();
-            break;
-
-        default:
-            QTextBrowser::keyPressEvent(event);
-            break;
-    }
 }
 

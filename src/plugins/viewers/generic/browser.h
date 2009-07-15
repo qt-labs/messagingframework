@@ -39,37 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_H
-#define BROWSER_H
+#ifndef BROWSERWIDGET_H
+#define BROWSERWIDGET_H
 
 #include <QList>
 #include <qmailaddress.h>
 #include <QMap>
 #include <QSet>
 #include <QString>
-#include <QTextBrowser>
 #include <QUrl>
 #include <QVariant>
+#include <QWidget>
 
-class QWidget;
 class QMailMessage;
 class QMailMessagePart;
 class QMailMessagePartContainer;
+#ifdef USING_WEBKIT
+class QWebView;
+#else
+class QTextBrowser;
+#endif
 
-class Browser: public QTextBrowser
+class BrowserWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    Browser(QWidget *parent = 0);
-    virtual ~Browser();
+    BrowserWidget(QWidget *parent = 0);
 
     void setResource( const QUrl& name, QVariant var );
     void clearResources();
 
     void setMessage( const QMailMessage& mail, bool plainTextMode );
-
-    void scrollBy(int dx, int dy);
 
     virtual QVariant loadResource(int type, const QUrl& name);
 
@@ -77,11 +78,15 @@ public:
 
     static QString encodeUrlAndMail(const QString& txt);
 
+    void scrollToAnchor(const QString& anchor);
+    void setPlainText(const QString& text);
+
+signals:
+    void anchorClicked(const QUrl&);
+    void highlighted(const QUrl&);
+
 public slots:
     virtual void setSource(const QUrl &name);
-
-protected:
-    void keyPressEvent(QKeyEvent* event);
 
 private:
     void displayPlainText(const QMailMessage* mail);
@@ -94,7 +99,6 @@ private:
     QString renderSimplePart(const QMailMessagePart& part);
     QString renderAttachment(const QMailMessagePart& part);
     QString renderPart(const QMailMessagePart& part);
-
     QString renderMultipart(const QMailMessagePartContainer& partContainer);
 
     QString describeMailSize(uint bytes) const;
@@ -103,16 +107,20 @@ private:
     QString noBreakReplies(const QString& txt) const;
     QString handleReplies(const QString& txt) const;
     QString buildParagraph(const QString& txt, const QString& prepend, bool preserveWs = false) const;
-
     static QString listRefMailTo(const QList<QMailAddress>& list);
     static QString refMailTo(const QMailAddress& address);
     static QString refNumber(const QString& number);
     static QString refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing);
 
+private:
     QMap<QUrl, QVariant> resourceMap;
-    QString (Browser::*replySplitter)(const QString&) const;
-
+    QString (BrowserWidget::*replySplitter)(const QString&) const;
     mutable QList<QString> numbers;
+#ifdef USING_WEBKIT
+    QWebView* m_webView;
+#else
+    QTextBrowser* m_textBrowser;
+#endif
 };
 
 #endif

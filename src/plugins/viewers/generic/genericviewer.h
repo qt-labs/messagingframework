@@ -51,7 +51,7 @@ class QMailMessage;
 class QPushButton;
 class QToolButton;
 class AttachmentOptions;
-class Browser;
+class BrowserWidget;
 
 // A generic viewer able to show email, SMS or basic MMS
 class GenericViewer : public QMailViewerInterface
@@ -90,7 +90,7 @@ private:
 
     bool eventFilter(QObject* watched, QEvent* event);
 
-    Browser* browser;
+    BrowserWidget* browser;
     QAction* plainTextModeAction;
     QAction* richTextModeAction;
     AttachmentOptions* attachmentDialog;
