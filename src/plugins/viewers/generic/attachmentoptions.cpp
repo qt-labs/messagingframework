@@ -41,7 +41,7 @@
 
 
 #include "attachmentoptions.h"
-#include "browser.h"
+#include "browserwidget.h"
 #include "qmailaccount.h"
 #include "qmailmessage.h"
 
