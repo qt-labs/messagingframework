@@ -200,6 +200,7 @@ public:
     void setMultipartType(QMailMessagePartContainer::MultipartType type);
     void appendPart(const QMailMessagePart &part);
     void prependPart(const QMailMessagePart &part);
+    void removePartAt(uint pos);
     void clear();
 
     QMailMessageContentType contentType() const;

@@ -288,8 +288,11 @@ public:
     void setMultipartType(MultipartType type);
 
     uint partCount() const;
+
     void appendPart(const QMailMessagePart &part);
     void prependPart(const QMailMessagePart &part);
+
+    void removePartAt(uint pos);
 
     const QMailMessagePart& partAt(uint pos) const;
     QMailMessagePart& partAt(uint pos);

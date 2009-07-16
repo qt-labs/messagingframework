@@ -3495,10 +3495,15 @@ void QMailMessagePartContainerPrivate::prependPart(const QMailMessagePart &part)
     setDirty();
 }
 
+void QMailMessagePartContainerPrivate::removePartAt(uint pos)
+{
+    _messageParts.removeAt(pos);
+    setDirty();
+}
+
 void QMailMessagePartContainerPrivate::clear()
 {
-    if (_messageParts.count())
-    {
+    if (!_messageParts.isEmpty()) {
         _messageParts.clear();
         setDirty();
     }
@@ -3754,10 +3759,20 @@ void QMailMessagePartContainer::prependPart(const QMailMessagePart &part)
 }
 
 /*!
+    Removes the part at the index \a pos.
+
+    \a pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
+*/
+void QMailMessagePartContainer::removePartAt(uint pos)
+{
+    impl(this)->removePartAt(pos);
+}
+
+/*!
     Returns a const reference to the item at position \a pos in the list of 
     attachments for the message.
 
-    pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
+    \a pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
 */
 const QMailMessagePart& QMailMessagePartContainer::partAt(uint pos) const
 {
@@ -3768,7 +3783,7 @@ const QMailMessagePart& QMailMessagePartContainer::partAt(uint pos) const
     Returns a non-const reference to the item at position \a pos in the list of 
     attachments for the message.
 
-    pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
+    \a pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
 */
 QMailMessagePart& QMailMessagePartContainer::partAt(uint pos)
 {
