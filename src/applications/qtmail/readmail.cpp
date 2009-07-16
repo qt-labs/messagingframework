@@ -234,10 +234,7 @@ void ReadMail::linkClicked(const QUrl &lnk)
         QString param = commandPattern.cap(2);
 
         if (command == "attachment") {
-            if (param == "play") {
-                if (isMms)
-                    viewMms();
-            } else if (param.startsWith("scrollto;")) {
+            if (param.startsWith("scrollto;")) {
                 if (QMailViewerInterface* viewer = currentViewer())
                     viewer->scrollToAnchor(param.mid(9));
             }
@@ -345,12 +342,11 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
 
     view->clear();
 
-    if (!isSmil && (mail.messageType() != QMailMessage::System)) {
+    if (mail.messageType() != QMailMessage::System) {
         initImages(view);
     }
 
     view->setMessage(mail);
-
     view->widget()->addAction(getThisMailButton);
     view->widget()->addAction(replyButton);
     view->widget()->addAction(replyAllAction);
@@ -449,10 +445,6 @@ void ReadMail::messageChanged(const QMailMessageId &id)
 void ReadMail::loadMessage(const QMailMessageId &id)
 {
     mail = QMailMessage(id);
-
-    isMms = (mail.messageType() == QMailMessage::Mms);
-    isSmil = false;
-
     updateButtons();
 }
 
@@ -513,10 +505,6 @@ void ReadMail::updateButtons()
     //bool unknownContact = !fromAddress.matchesExistingContact();
     bool unknownContact = true;
     storeButton->setVisible(!fromAddress.isNull() && unknownContact);
-}
-
-void ReadMail::viewMms()
-{
 }
 
 void ReadMail::reply()
