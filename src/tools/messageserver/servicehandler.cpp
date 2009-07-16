@@ -1708,7 +1708,7 @@ void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
 {
     if (QMailMessageSink *sink = qobject_cast<QMailMessageSink*>(sender())) {
         if (quint64 action = sinkAction(sink)) {
-            mSentIds.append(messageIds);
+            mSentIds << messageIds;
 
             emit messagesTransmitted(action, messageIds);
         }

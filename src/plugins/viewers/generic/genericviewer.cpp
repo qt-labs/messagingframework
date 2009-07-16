@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "genericviewer.h"
-#include "browser.h"
+#include "browserwidget.h"
 #include "attachmentoptions.h"
 #include <QAction>
 #include <QGridLayout>
@@ -53,7 +53,7 @@
 
 GenericViewer::GenericViewer(QWidget* parent)
     : QMailViewerInterface(parent),
-      browser(new Browser(parent)),
+      browser(new BrowserWidget(parent)),
       attachmentDialog(0),
       message(0),
       plainTextMode(false)

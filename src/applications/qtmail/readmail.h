@@ -114,8 +114,6 @@ protected:
     void keyPressEvent(QKeyEvent *);
 
 private:
-    void viewMms();
-
     void init();
     void showMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType);
     void loadMessage(const QMailMessageId &id);
@@ -137,8 +135,6 @@ private:
     QStackedWidget *views;
     bool sending, receiving;
     QMailMessage mail;
-    bool isMms;
-    bool isSmil;
     bool firstRead;
     bool hasNext, hasPrevious;
     QMenu *context;

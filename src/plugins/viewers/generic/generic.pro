@@ -16,9 +16,9 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
 LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
         -L../../../libraries/qmfutil -lqmfutil
 
-HEADERS += attachmentoptions.h browser.h genericviewer.h
+HEADERS += attachmentoptions.h browserwidget.h genericviewer.h
 
-SOURCES += attachmentoptions.cpp browser.cpp genericviewer.cpp
+SOURCES += attachmentoptions.cpp browserwidget.cpp genericviewer.cpp
 
 TRANSLATIONS += libgenericviewer-ar.ts \
                 libgenericviewer-de.ts \
