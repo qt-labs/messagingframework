@@ -420,35 +420,38 @@ QString QMail::mimeTypeFromFileName(const QString& filename)
 
     loadExtensions();
 
-    QString mime_sep = QLatin1String("/");
-
-    // either it doesnt have exactly one mime-separator, or it has
-    // a path separator at the beginning
-    //
-    bool doesntLookLikeMimeString =
-        filename.count( mime_sep ) != 1 ||
-        filename[0] == QDir::separator();
-
     // do a case insensitive search for a known mime type.
     QString lwrExtOrId = filename.toLower();
     QHash<QString,QStringList>::const_iterator it = extFor()->find(lwrExtOrId);
-    if ( it != extFor()->end() ) {
+    if (it != extFor()->end()) {
         return lwrExtOrId;
-    } else if ( doesntLookLikeMimeString || QFile(filename).exists() ) {
-        QFile ef(filename);
+    }
+
+    // either it doesnt have exactly one mime-separator, or it has
+    // a path separator at the beginning
+    QString mime_sep = QLatin1String("/");
+    bool doesntLookLikeMimeString = (filename.count(mime_sep) != 1) || (filename[0] == QDir::separator());
+
+    if (doesntLookLikeMimeString || QFile::exists(filename)) {
         int dot = filename.lastIndexOf('.');
         QString ext = dot >= 0 ? filename.mid(dot+1) : filename;
-        return typeFor()->value(ext.toLower());
+
+        QHash<QString,QString>::const_iterator it = typeFor()->find(ext.toLower());
+        if (it != typeFor()->end()) {
+            return *it;
+        }
+
         const char elfMagic[] = { '\177', 'E', 'L', 'F', '\0' };
-        if ( ef.exists() && ef.size() > 5 && ef.open(QIODevice::ReadOnly) && ef.peek(5) == elfMagic)  // try to find from magic
+        QFile ef(filename);
+        if (ef.exists() && (ef.size() > 5) && ef.open(QIODevice::ReadOnly) && (ef.peek(5) == elfMagic)) { // try to find from magic
             return QLatin1String("application/x-executable");  // could be a shared library or an exe
-        else
+        } else {
             return QLatin1String("application/octet-stream");
+        }
     }
-    else  // could be something like application/vnd.oma.rights+object
-    {
-        return lwrExtOrId;
-    }
+
+    // could be something like application/vnd.oma.rights+object
+    return lwrExtOrId;
 }
 
 QStringList QMail::extensionsForMimeType(const QString& mimeType)
