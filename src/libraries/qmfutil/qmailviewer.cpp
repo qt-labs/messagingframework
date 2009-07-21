@@ -126,12 +126,6 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QWidget* QMailViewerInterface::widget() const
-
-    Returns the widget implementing the display interface.
-*/
-
-/*!
     \fn QMailViewerInterface::respondToMessage(QMailMessage::ResponseType type)
 
     This signal is emitted by the viewer to initiate a response action, of type \a type.
@@ -230,7 +224,7 @@ static QMailViewerInterface* mapping(const QString& key)
     Constructs the QMailViewerInterface object with the parent widget \a parent.
 */
 QMailViewerInterface::QMailViewerInterface( QWidget *parent )
-    : QObject( parent )
+    : QWidget( parent )
 {
 }
 

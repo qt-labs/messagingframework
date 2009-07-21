@@ -347,13 +347,13 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
     }
 
     view->setMessage(mail);
-    view->widget()->addAction(getThisMailButton);
-    view->widget()->addAction(replyButton);
-    view->widget()->addAction(replyAllAction);
-    view->widget()->addAction(forwardAction);
-    view->widget()->addAction(deleteButton);
-    view->widget()->addAction(storeButton);
-    view->widget()->setContextMenuPolicy(Qt::ActionsContextMenu);
+    view->addAction(getThisMailButton);
+    view->addAction(replyButton);
+    view->addAction(replyAllAction);
+    view->addAction(forwardAction);
+    view->addAction(deleteButton);
+    view->addAction(storeButton);
+    view->setContextMenuPolicy(Qt::ActionsContextMenu);
     //view->addActions(context);
 
     switchView(view, displayName(mail));
@@ -628,7 +628,7 @@ void ReadMail::switchView(QMailViewerInterface* viewer, const QString& title)
 
     lastTitle = title;
 
-    views->setCurrentWidget(viewer->widget());
+    views->setCurrentWidget(viewer);
 
     currentView.push(qMakePair(viewer, title));
 }
@@ -655,7 +655,7 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             // We already have this view created
         } else {
             view->setObjectName("read-message");
-            view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
+            view->setWhatsThis(tr("This view displays the contents of the message."));
 
             connect(view, SIGNAL(respondToMessage(QMailMessage::ResponseType)), this, SLOT(respondToMessage(QMailMessage::ResponseType)));
             connect(view, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SLOT(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
@@ -670,9 +670,8 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));
             connect(view, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)), this, SLOT(retrieveMessagePartPortion(QMailMessagePart, uint)));
 
-            QWidget* viewWidget = view->widget();
-            viewWidget->setGeometry(geometry());
-            views->addWidget(viewWidget);
+            view->setGeometry(geometry());
+            views->addWidget(view);
         }
 
         it = contentViews.insert(qMakePair(content, type), view);

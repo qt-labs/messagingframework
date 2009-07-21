@@ -424,7 +424,8 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
     }
 
     updateAccountSelection(type, accountId);
-    m_composerInterface->setSendingAccountId(accountId);
+    if(m_composerInterface)
+        m_composerInterface->setSendingAccountId(accountId);
 
     return success;
 }

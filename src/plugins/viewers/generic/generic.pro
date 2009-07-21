@@ -7,6 +7,10 @@ INSTALLS += target
 
 DEFINES += PLUGIN_INTERNAL
 
+contains(QT,webkit){
+    DEFINES += USE_WEBKIT
+}
+
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qmfutil \

@@ -47,11 +47,11 @@
 #include <QString>
 #include <QVariant>
 #include <qmailglobal.h>
+#include <QWidget>
 
 class QContact;
 class QMenu;
 class QUrl;
-class QWidget;
 
 class QMailViewerInterface;
 
@@ -78,15 +78,13 @@ public:
 };
 
 // The interface for objects able to view mail messages
-class QMFUTIL_EXPORT QMailViewerInterface : public QObject
+class QMFUTIL_EXPORT QMailViewerInterface : public QWidget
 {
     Q_OBJECT
 
 public:
     QMailViewerInterface( QWidget* parent = 0 );
     virtual ~QMailViewerInterface();
-
-    virtual QWidget *widget() const = 0;
 
     virtual void scrollToAnchor(const QString& link);
 

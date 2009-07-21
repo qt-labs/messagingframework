@@ -121,6 +121,9 @@ private:
 #else
     QTextBrowser* m_textBrowser;
 #endif
+
+private:
+    friend class GenericComposer;
 };
 
 #endif
