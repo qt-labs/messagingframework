@@ -3623,29 +3623,29 @@ int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
     return result;
 }
 
-QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey) const
+QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const
 {
     QMailAccountIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryAccounts, const_cast<QMailStorePrivate*>(this), 
-                                cref(key), cref(sortKey), &ids), 
+                                cref(key), cref(sortKey), limit, offset, &ids), 
                            "queryAccounts");
     return ids;
 }
 
-QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey) const
+QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const
 {
     QMailFolderIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryFolders, const_cast<QMailStorePrivate*>(this), 
-                                cref(key), cref(sortKey), &ids), 
+                                cref(key), cref(sortKey), limit, offset, &ids), 
                            "queryFolders");
     return ids;
 }
 
-QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey) const
+QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const
 {
     QMailMessageIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryMessages, const_cast<QMailStorePrivate*>(this), 
-                                cref(key), cref(sortKey), &ids), 
+                                cref(key), cref(sortKey), limit, offset, &ids), 
                            "queryMessages");
     return ids;
 }
@@ -5346,7 +5346,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
     QVariantList extractedValues;
 
     //get the valid ids
-    *updatedMessageIds = queryMessages(key, QMailMessageSortKey());
+    *updatedMessageIds = queryMessages(key, QMailMessageSortKey(), 0, 0);
     if (!updatedMessageIds->isEmpty()) {
         // Find the set of folders and accounts whose contents are modified by this update
         QMailMessageKey modifiedMessageKey(QMailMessageKey::id(*updatedMessageIds));
@@ -5443,7 +5443,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
                                                                                 Transaction &t, bool commitOnSuccess)
 {
     //get the valid ids
-    *updatedMessageIds = queryMessages(key, QMailMessageSortKey());
+    *updatedMessageIds = queryMessages(key, QMailMessageSortKey(), 0, 0);
     if (!updatedMessageIds->isEmpty()) {
         // Find the set of folders and accounts whose contents are modified by this update
         AttemptResult result = affectedByMessageIds(*updatedMessageIds, modifiedFolderIds, modifiedAccountIds);
@@ -5650,10 +5650,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const 
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset,
                                                                          QMailAccountIdList *ids, 
                                                                          ReadLock &)
 {
+    if ((limit > 0) || (offset > 0)) {
+        setLastError(QMailStore::NotYetImplemented);
+        return Failure;
+    }
+
     QSqlQuery query(simpleQuery("SELECT id FROM mailaccounts",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
@@ -5667,10 +5672,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const Q
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset,
                                                                         QMailFolderIdList *ids, 
                                                                         ReadLock &)
 {
+    if ((limit > 0) || (offset > 0)) {
+        setLastError(QMailStore::NotYetImplemented);
+        return Failure;
+    }
+
     QSqlQuery query(simpleQuery("SELECT id FROM mailfolders",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
@@ -5684,10 +5694,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QM
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey,
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset,
                                                                          QMailMessageIdList *ids, 
                                                                          ReadLock &)
 {
+    if ((limit > 0) || (offset > 0)) {
+        setLastError(QMailStore::NotYetImplemented);
+        return Failure;
+    }
+
     QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),

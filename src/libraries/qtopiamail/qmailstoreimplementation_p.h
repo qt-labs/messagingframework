@@ -236,9 +236,9 @@ public:
 
     virtual int sizeOfMessages(const QMailMessageKey &key) const = 0;
 
-    virtual QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey) const = 0;
-    virtual QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey) const = 0;
-    virtual QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey) const = 0;
+    virtual QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const = 0;
+    virtual QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const = 0;
+    virtual QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const = 0;
 
     virtual QMailAccount account(const QMailAccountId &id) const = 0;
     virtual QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const = 0;
