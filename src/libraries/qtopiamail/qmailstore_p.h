@@ -239,7 +239,7 @@ private:
     bool execute(QSqlQuery& q, bool batch = false);
     int queryError(void) const;
 
-    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
+    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 
     bool executeFile(QFile &file);
 
@@ -249,6 +249,7 @@ private:
     QSqlQuery simpleQuery(const QString& statement, const Key& key, const QString& descriptor);
     QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);
     QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
+    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor);
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);

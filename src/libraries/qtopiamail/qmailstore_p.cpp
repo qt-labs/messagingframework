@@ -5654,14 +5654,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const Q
                                                                          QMailAccountIdList *ids, 
                                                                          ReadLock &)
 {
-    if ((limit > 0) || (offset > 0)) {
-        setLastError(QMailStore::NotYetImplemented);
-        return Failure;
-    }
-
     QSqlQuery query(simpleQuery("SELECT id FROM mailaccounts",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
+                                qMakePair(limit, offset),
                                 "queryAccounts mailaccounts query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -5676,14 +5672,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QM
                                                                         QMailFolderIdList *ids, 
                                                                         ReadLock &)
 {
-    if ((limit > 0) || (offset > 0)) {
-        setLastError(QMailStore::NotYetImplemented);
-        return Failure;
-    }
-
     QSqlQuery query(simpleQuery("SELECT id FROM mailfolders",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
+                                qMakePair(limit, offset),
                                 "queryFolders mailfolders query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -5698,14 +5690,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const Q
                                                                          QMailMessageIdList *ids, 
                                                                          ReadLock &)
 {
-    if ((limit > 0) || (offset > 0)) {
-        setLastError(QMailStore::NotYetImplemented);
-        return Failure;
-    }
-
     QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
+                                qMakePair(limit, offset),
                                 "queryMessages mailmessages query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -7215,45 +7203,50 @@ bool QMailStorePrivate::obsoleteContent(const QString& identifier)
 
 QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const QString& descriptor)
 {
-    return performQuery(statement, false, QVariantList(), QList<Key>(), descriptor);
+    return performQuery(statement, false, QVariantList(), QList<Key>(), qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor)
 {
-    return performQuery(statement, false, bindValues, QList<Key>(), descriptor);
+    return performQuery(statement, false, bindValues, QList<Key>(), qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const Key& key, const QString& descriptor)
 {
-    return performQuery(statement, false, QVariantList(), QList<Key>() << key, descriptor);
+    return performQuery(statement, false, QVariantList(), QList<Key>() << key, qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor)
 {
-    return performQuery(statement, false, bindValues, QList<Key>() << key, descriptor);
+    return performQuery(statement, false, bindValues, QList<Key>() << key, qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor)
 {
-    return performQuery(statement, false, bindValues, keys, descriptor);
+    return performQuery(statement, false, bindValues, keys, qMakePair(0u, 0u), descriptor);
+}
+
+QSqlQuery QMailStorePrivate::simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor)
+{
+    return performQuery(statement, false, bindValues, keys, constraint, descriptor);
 }
 
 QSqlQuery QMailStorePrivate::batchQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor)
 {
-    return performQuery(statement, true, bindValues, QList<Key>(), descriptor);
+    return performQuery(statement, true, bindValues, QList<Key>(), qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::batchQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor)
 {
-    return performQuery(statement, true, bindValues, QList<Key>() << key, descriptor);
+    return performQuery(statement, true, bindValues, QList<Key>() << key, qMakePair(0u, 0u), descriptor);
 }
 
 QSqlQuery QMailStorePrivate::batchQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor)
 {
-    return performQuery(statement, true, bindValues, keys, descriptor);
+    return performQuery(statement, true, bindValues, keys, qMakePair(0u, 0u), descriptor);
 }
 
-QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor)
+QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor)
 {
     QString keyStatements;
     QVariantList keyValues;
@@ -7272,7 +7265,17 @@ QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, 
         firstClause = false;
     }
 
-    QSqlQuery query(prepare(statement + keyStatements));
+    QString constraintStatements;
+    if ((constraint.first > 0) || (constraint.second > 0)) {
+        if (constraint.first > 0) {
+            constraintStatements.append(QString(" LIMIT %1").arg(constraint.first));
+        }
+        if (constraint.second > 0) {
+            constraintStatements.append(QString(" OFFSET %1").arg(constraint.second));
+        }
+    }
+
+    QSqlQuery query(prepare(statement + keyStatements + constraintStatements));
     if (queryError() != QSqlError::NoError) {
         qMailLog(Messaging) << "Could not prepare query" << descriptor;
     } else {

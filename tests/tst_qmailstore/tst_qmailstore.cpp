@@ -199,6 +199,12 @@ void tst_QMailStore::addAccount()
     QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Includes)), 0);
     QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 0);
     QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 1);
+
+    // Test basic limit/offset
+    QMailAccountKey key;
+    QMailAccountSortKey sort;
+    QMailAccountIdList accountIds(QMailStore::instance()->queryAccounts(key, sort));
+    QCOMPARE(QMailStore::instance()->queryAccounts(key, sort, 1, 0), accountIds);
 }
 
 void tst_QMailStore::addFolder()
@@ -307,6 +313,17 @@ void tst_QMailStore::addFolder()
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId())), 2);
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId(), QMailDataComparator::NotEqual)), 1);
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId(), QMailDataComparator::NotEqual) & QMailFolderKey::path(folder6.path())), 1);
+
+    // Test basic limit/offset
+    QMailFolderKey key;
+    QMailFolderSortKey sort;
+    QMailFolderIdList folderIds(QMailStore::instance()->queryFolders(key, sort));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 0), folderIds.mid(0, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 1), folderIds.mid(1, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 2), folderIds.mid(2, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 2, 0), folderIds.mid(0, 2));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 2, 1), folderIds.mid(1, 2));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 3, 0), folderIds);
 }
 
 void tst_QMailStore::addMessage()
@@ -453,6 +470,17 @@ void tst_QMailStore::addMessages()
         QCOMPARE(message.subject(), QString("Message %1").arg(i));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i));
     }
+
+    // Test basic limit/offset
+    QMailMessageKey key;
+    QMailMessageSortKey sort;
+    QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sort));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 0), messageIds.mid(0, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 3), messageIds.mid(3, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 6), messageIds.mid(6, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 0), messageIds.mid(0, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 1), messageIds.mid(1, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 10, 0), messageIds);
 }
 
 void tst_QMailStore::updateAccount()
