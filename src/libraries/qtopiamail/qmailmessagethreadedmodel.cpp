@@ -121,7 +121,7 @@ private:
     void init() const;
 
     QModelIndex index(const QMailMessageThreadedModelItem *item, int column) const;
-    QModelIndex parentIndex(const QMailMessageThreadedModelItem *item, int column) const;
+    QModelIndex parentIndex(const QMailMessageThreadedModelItem *item) const;
 
     QMailMessageThreadedModelItem *itemFromIndex(const QModelIndex &index) const;
     QModelIndex indexFromItem(const QMailMessageThreadedModelItem *item) const;
@@ -727,7 +727,7 @@ QModelIndex QMailMessageThreadedModelPrivate::parent(const QModelIndex &idx) con
     init();
 
     if (QMailMessageThreadedModelItem *item = itemFromIndex(idx))
-        return parentIndex(item, idx.column());
+        return parentIndex(item);
 
     return QModelIndex();
 }
@@ -824,7 +824,7 @@ void QMailMessageThreadedModelPrivate::init() const
     }
 }
 
-QModelIndex QMailMessageThreadedModelPrivate::parentIndex(const QMailMessageThreadedModelItem *item, int column) const
+QModelIndex QMailMessageThreadedModelPrivate::parentIndex(const QMailMessageThreadedModelItem *item) const
 {
     if (const QMailMessageThreadedModelItem *parent = item->_parent)
         if (parent->_parent != 0)
