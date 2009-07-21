@@ -54,6 +54,7 @@
 #ifdef USE_WEBKIT
 #include <QWebView>
 #endif
+#include <QMenu>
 
 static QColor replyColor(Qt::darkGreen);
 
@@ -90,12 +91,16 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
     m_webView = new QWebView(this);
     l->addWidget(m_webView);
     connect(m_webView,SIGNAL(linkClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
+    m_webView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_webView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
 #else
     m_textBrowser = new QTextBrowser(this);
     m_textBrowser->setFrameStyle(QFrame::NoFrame);
     l->addWidget(m_textBrowser);
     connect(m_textBrowser,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
-    connect(m_textBrowser,SIGNAL(highlighted(QUrl)),this,SIGNAL(highlighted(QUrl)));
+    m_textBrowser->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_textBrowser,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
+    m_textBrowser->setOpenLinks(false);
 #endif
 
     setFocusPolicy( Qt::StrongFocus );
@@ -209,6 +214,24 @@ void BrowserWidget::setSource(const QUrl &name)
     Q_UNUSED(name)
 // We deal with this ourselves.
 //    QTextBrowser::setSource( name );
+}
+
+void BrowserWidget::contextMenuRequested(const QPoint& pos)
+{
+#ifdef USE_WEBKIT
+    QMenu menu(this);
+    menu.addAction(m_webView->pageAction(QWebPage::Copy));
+    menu.addAction(m_webView->pageAction(QWebPage::CopyLinkToClipboard));
+    menu.addSeparator();
+    menu.addActions(m_webView->actions());
+    menu.exec(mapToGlobal(pos));
+#else
+    QMenu* menu = m_textBrowser->createStandardContextMenu();
+    menu->addSeparator();
+    menu->addActions(m_textBrowser->actions());
+    menu->exec(mapToGlobal(pos));
+    delete menu;
+#endif
 }
 
 void BrowserWidget::setMessage(const QMailMessage& email, bool plainTextMode)
@@ -1134,6 +1157,33 @@ void BrowserWidget::setPlainText(const QString& text)
 #ifdef USE_WEBKIT
 #else
     m_textBrowser->setPlainText(text);
+#endif
+}
+
+void BrowserWidget::addAction(QAction* action)
+{
+#ifdef USE_WEBKIT
+    m_webView->addAction(action);
+#else
+    m_textBrowser->addAction(action);
+#endif
+}
+
+void BrowserWidget::addActions(const QList<QAction*>& actions)
+{
+#ifdef USE_WEBKIT
+    m_webView->addActions(actions);
+#else
+    m_textBrowser->addActions(actions);
+#endif
+}
+
+void BrowserWidget::removeAction(QAction* action)
+{
+#ifdef USE_WEBKIT
+    m_webView->removeAction(action);
+#else
+    m_textBrowser->removeAction(action);
 #endif
 }
 

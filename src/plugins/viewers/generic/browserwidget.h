@@ -81,12 +81,18 @@ public:
     void scrollToAnchor(const QString& anchor);
     void setPlainText(const QString& text);
 
+    void addAction(QAction* action);
+    void addActions(const QList<QAction*>& actions);
+    void removeAction(QAction* action);
+
 signals:
     void anchorClicked(const QUrl&);
-    void highlighted(const QUrl&);
 
 public slots:
     virtual void setSource(const QUrl &name);
+
+private slots:
+    void contextMenuRequested(const QPoint& pos);
 
 private:
     void displayPlainText(const QMailMessage* mail);

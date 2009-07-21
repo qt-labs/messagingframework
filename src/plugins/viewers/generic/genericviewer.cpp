@@ -53,15 +53,11 @@
 
 GenericViewer::GenericViewer(QWidget* parent)
     : QMailViewerInterface(parent),
-      browser(new BrowserWidget(this)),
+      browser(new BrowserWidget(parent)),
       attachmentDialog(0),
       message(0),
       plainTextMode(false)
 {
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0,0,0,0);
-    layout->addWidget(browser);
 
     connect(browser, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
 
@@ -82,16 +78,27 @@ GenericViewer::GenericViewer(QWidget* parent)
     browser->addAction(richTextModeAction);
     connect(richTextModeAction, SIGNAL(triggered(bool)),
             this, SLOT(triggered(bool)));
+ 
+}
+
+QWidget* GenericViewer::widget() const
+{
+    return browser;
+}
+
+void GenericViewer::addActions(const QList<QAction*>& actions)
+{
+    browser->addActions(actions);
+}
+
+void GenericViewer::removeAction(QAction* action)
+{
+    browser->removeAction(action);
 }
 
 void GenericViewer::scrollToAnchor(const QString& a)
 {
     browser->scrollToAnchor(a);
-}
-
-void GenericViewer::addActions(QMenu* menu) const
-{
-    Q_UNUSED(menu);
 }
 
 QString GenericViewer::key() const { return "GenericViewer"; }
@@ -171,7 +178,7 @@ void GenericViewer::linkClicked(const QUrl& link)
                 QMailMessagePart::Location partLocation(location);
 
                 // Show the attachment dialog
-                attachmentDialog = new AttachmentOptions(this);
+                attachmentDialog = new AttachmentOptions(browser);
                 attachmentDialog->setAttribute(Qt::WA_DeleteOnClose);
 
                 attachmentDialog->setAttachment(message->partAt(partLocation));

@@ -220,6 +220,22 @@ bool ReadMail::handleOutgoingMessages(const QMailMessageIdList &list) const
     return false;
 }
 
+void ReadMail::addActions(const QList<QAction*>& actions)
+{
+    if (QMailViewerInterface* viewer = currentViewer())
+        viewer->addActions(actions);
+    else
+        qWarning() << "Cannot add actions. No viewer interface loaded.";
+}
+
+void ReadMail::removeAction(QAction* action)
+{
+    if (QMailViewerInterface* viewer = currentViewer())
+        viewer->removeAction(action);
+    else
+        qWarning() << "Cannot remove action. No viewer interface loaded.";
+}
+
 /*  We need to be careful here. Don't allow clicking on any links
     to automatically install anything.  If we want that, we need to
     make sure that the mail doesn't contain mailicious link encoding
@@ -263,16 +279,8 @@ void ReadMail::linkClicked(const QUrl &lnk)
         } else {
             command = str.mid( commandPos );
         }
-
-        //QtopiaServiceRequest e( service, command );
-        //foreach( const QString &arg, args )
-        //    e << arg;
-        //e.send();
-    } else { 
+    } else {
         // Try opening this link via a service
-        //QtopiaServiceRequest e( "WebAccess", "openURL(QString)" );
-        //e << str;
-        //e.send();
         QProcess launcher;
         launcher.start("xdg-open", QStringList() << str);
         if (!launcher.waitForStarted()) {
@@ -347,15 +355,12 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
     }
 
     view->setMessage(mail);
-    view->addAction(getThisMailButton);
-    view->addAction(replyButton);
-    view->addAction(replyAllAction);
-    view->addAction(forwardAction);
-    view->addAction(deleteButton);
-    view->addAction(storeButton);
-    view->setContextMenuPolicy(Qt::ActionsContextMenu);
-    //view->addActions(context);
-
+    view->addActions(QList<QAction*>() << getThisMailButton
+                                       << replyButton
+                                       << replyAllAction
+                                       << forwardAction
+                                       << deleteButton
+                                       << storeButton);
     switchView(view, displayName(mail));
 }
 
@@ -628,7 +633,7 @@ void ReadMail::switchView(QMailViewerInterface* viewer, const QString& title)
 
     lastTitle = title;
 
-    views->setCurrentWidget(viewer);
+    views->setCurrentWidget(viewer->widget());
 
     currentView.push(qMakePair(viewer, title));
 }
@@ -655,7 +660,7 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             // We already have this view created
         } else {
             view->setObjectName("read-message");
-            view->setWhatsThis(tr("This view displays the contents of the message."));
+            view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
 
             connect(view, SIGNAL(respondToMessage(QMailMessage::ResponseType)), this, SLOT(respondToMessage(QMailMessage::ResponseType)));
             connect(view, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SLOT(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
@@ -670,8 +675,8 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
             connect(view, SIGNAL(retrieveMessagePart(QMailMessagePart)), this, SLOT(retrieveMessagePart(QMailMessagePart)));
             connect(view, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)), this, SLOT(retrieveMessagePartPortion(QMailMessagePart, uint)));
 
-            view->setGeometry(geometry());
-            views->addWidget(view);
+            view->widget()->setGeometry(geometry());
+            views->addWidget(view->widget());
         }
 
         it = contentViews.insert(qMakePair(content, type), view);

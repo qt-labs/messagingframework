@@ -78,7 +78,7 @@ public:
 };
 
 // The interface for objects able to view mail messages
-class QMFUTIL_EXPORT QMailViewerInterface : public QWidget
+class QMFUTIL_EXPORT QMailViewerInterface : public QObject
 {
     Q_OBJECT
 
@@ -86,9 +86,12 @@ public:
     QMailViewerInterface( QWidget* parent = 0 );
     virtual ~QMailViewerInterface();
 
+    virtual QWidget* widget() const = 0;
+
     virtual void scrollToAnchor(const QString& link);
 
-    virtual void addActions(QMenu* menu) const;
+    virtual void addActions(const QList<QAction*>& actions) = 0;
+    virtual void removeAction(QAction* action) = 0;
 
     virtual bool handleIncomingMessages(const QMailMessageIdList &list) const;
     virtual bool handleOutgoingMessages(const QMailMessageIdList &list) const;

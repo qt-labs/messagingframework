@@ -69,6 +69,9 @@ public:
     bool handleIncomingMessages(const QMailMessageIdList &list) const;
     bool handleOutgoingMessages(const QMailMessageIdList &list) const;
 
+    void addActions(const QList<QAction*>& actions);
+    void removeAction(QAction* action);
+
 private slots:
     void updateView(QMailViewerFactory::PresentationType);
     void messageContentsModified(const QMailMessageIdList& list);

@@ -61,8 +61,12 @@ class GenericViewer : public QMailViewerInterface
 public:
     GenericViewer(QWidget* parent = 0);
 
+    QWidget* widget() const;
+
+    void addActions(const QList<QAction*>& actions);
+    void removeAction(QAction* action);
+
     virtual void scrollToAnchor(const QString& a);
-    virtual void addActions(QMenu* menu) const;
     virtual QString key() const;
     virtual QMailViewerFactory::PresentationType presentation() const;
     virtual QList<int> types() const;

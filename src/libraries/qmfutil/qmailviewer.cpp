@@ -224,7 +224,7 @@ static QMailViewerInterface* mapping(const QString& key)
     Constructs the QMailViewerInterface object with the parent widget \a parent.
 */
 QMailViewerInterface::QMailViewerInterface( QWidget *parent )
-    : QWidget( parent )
+    : QObject( parent )
 {
 }
 
@@ -242,15 +242,6 @@ void QMailViewerInterface::scrollToAnchor(const QString& link)
 {
     // default implementation does nothing
     Q_UNUSED(link)
-}
-
-/*!
-    Allows the viewer object to add any relevant actions to the application \a menu supplied.
-*/
-void QMailViewerInterface::addActions( QMenu* menu ) const
-{
-    // default implementation does nothing
-    Q_UNUSED(menu)
 }
 
 /*!
