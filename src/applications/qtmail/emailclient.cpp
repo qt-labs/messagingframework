@@ -439,6 +439,7 @@ MessageListView* MessageUiBase::createMessageListView()
     connect(view, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)) );
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
     connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );
+    connect(view, SIGNAL(fullSearchRequested()),this,SLOT(search()));
 
     return view;
 }

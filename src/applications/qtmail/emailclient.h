@@ -122,6 +122,7 @@ protected slots:
     virtual void emptyTrashFolder() = 0;
     virtual void messageActivated() = 0;
     virtual void allWindowsClosed() = 0;
+    virtual void search() = 0;
 
 protected:
     QString appTitle;

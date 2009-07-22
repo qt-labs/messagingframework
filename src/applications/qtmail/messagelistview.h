@@ -124,6 +124,7 @@ signals:
     void responseRequested(const QMailMessage&, QMailMessage::ResponseType);
     void moreClicked();
     void visibleMessagesChanged();
+    void fullSearchRequested();
 
 public slots:
     void reset();

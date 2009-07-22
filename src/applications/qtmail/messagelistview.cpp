@@ -76,6 +76,7 @@ public slots:
 
 signals:
     void quickSearch(const QMailMessageKey& key);
+    void fullSearchRequested();
 
 private slots:
     void searchTermsChanged();
@@ -120,6 +121,7 @@ QWidget(parent)
 
     m_fullSearchButton = new QToolButton(this);
     m_fullSearchButton->setIcon(QIcon(":icon/find"));
+    connect(m_fullSearchButton,SIGNAL(clicked(bool)),this,SIGNAL(fullSearchRequested()));
     layout->addWidget(m_fullSearchButton);
 }
 
@@ -500,6 +502,7 @@ void MessageListView::init()
 
     mQuickSearchWidget = new QuickSearchWidget(this);
     connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+    connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
 
     mScrollTimer.setSingleShot(true);
     connect(&mScrollTimer, SIGNAL(timeout()),
