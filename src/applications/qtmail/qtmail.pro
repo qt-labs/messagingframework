@@ -20,7 +20,8 @@ HEADERS += emailclient.h \
            selectcomposerwidget.h \
            statusdisplay_p.h \
            readmail.h \
-           writemail.h
+           writemail.h \
+           quicksearchwidget.h
 
 SOURCES += emailclient.cpp \
            main.cpp \
@@ -29,7 +30,8 @@ SOURCES += emailclient.cpp \
            selectcomposerwidget.cpp \
            statusdisplay.cpp \
            readmail.cpp \
-           writemail.cpp
+           writemail.cpp \
+           quicksearchwidget.cpp
 
 FORMS += searchviewbasephone.ui
 

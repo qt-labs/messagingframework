@@ -139,18 +139,6 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QMailViewerInterface::deleteMessage()
-
-    This signal is emitted by the viewer to initiate a message deletion action.
-*/
-
-/*!
-    \fn QMailViewerInterface::saveSender()
-
-    This signal is emitted by the viewer to request that the sender's address should be saved as a Contact.
-*/
-
-/*!
     \fn QMailViewerInterface::contactDetails(const QContact &contact)
 
     This signal is emitted by the viewer to request a display of \a{contact}'s details.

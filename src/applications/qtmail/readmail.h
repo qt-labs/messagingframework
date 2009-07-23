@@ -61,7 +61,6 @@ class ReadMail : public QFrame
 
 public:
     ReadMail( QWidget* parent = 0, Qt::WFlags fl = 0 );
-    ~ReadMail();
 
     void displayMessage(const QMailMessageId& message, QMailViewerFactory::PresentationType, bool nextAvailable, bool previousAvailable);
     QMailMessageId displayedMessage() const;
@@ -69,19 +68,15 @@ public:
     bool handleIncomingMessages(const QMailMessageIdList &list) const;
     bool handleOutgoingMessages(const QMailMessageIdList &list) const;
 
-    void addActions(const QList<QAction*>& actions);
-    void removeAction(QAction* action);
-
 private slots:
     void updateView(QMailViewerFactory::PresentationType);
     void messageContentsModified(const QMailMessageIdList& list);
     void messagesRemoved(const QMailMessageIdList& list);
 
 signals:
-    void responseRequested(const QMailMessage&, QMailMessage::ResponseType type);
+    void responseRequested(const QMailMessage& message,QMailMessage::ResponseType type);
     void responseRequested(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
     void sendMessageTo(const QMailAddress&, QMailMessage::MessageType);
-    void removeMessage(const QMailMessageId& id, bool userRequest);
     void viewingMail(const QMailMessageMetaData&);
     void getMailRequested(const QMailMessageMetaData&);
     void readReplyRequested(const QMailMessageMetaData&);
@@ -99,12 +94,6 @@ public slots:
 protected slots:
     void linkClicked(const QUrl &lnk);
     void messageChanged(const QMailMessageId &id);
-
-    void deleteItem();
-
-    void reply();
-    void replyAll();
-    void forward();
 
     void getThisMail();
     void retrieveMessagePortion(uint bytes);
@@ -141,12 +130,8 @@ private:
     bool firstRead;
     bool hasNext, hasPrevious;
     QMenu *context;
-    QAction *deleteButton;
     bool initialized;
     QAction *attachmentsButton;
-    QAction *replyButton;
-    QAction *replyAllAction;
-    QAction *forwardAction;
     QAction *getThisMailButton;
     QAction *storeButton;
     bool modelUpdatePending;

@@ -70,6 +70,7 @@ class QMailStorageAction;
 class QStackedWidget;
 class QStringList;
 class QToolBar;
+class QuickSearchWidget;
 
 class MessageUiBase : public QMainWindow
 {
@@ -223,14 +224,16 @@ protected slots:
 
     void externalEdit(const QString &);
 
+    void replyClicked();
+    void replyAllClicked();
+    void forwardClicked();
+
     void respond(const QMailMessage& message, QMailMessage::ResponseType type);
     void respond(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType type);
     void modify(const QMailMessage& message);
 
     void retrieveMoreMessages();
     void retrieveVisibleMessagesFlags();
-
-    bool removeMessage(const QMailMessageId& id, bool userRequest);
 
     void readReplyRequested(const QMailMessageMetaData&);
 
@@ -352,6 +355,10 @@ private:
     QAction *copyAction;
     QAction *restoreAction;
     QAction *selectAllAction;
+    QAction *replyAction;
+    QAction *replyAllAction;
+    QAction *forwardAction;
+
     bool closeAfterTransmissions;
     bool closeAfterWrite;
 

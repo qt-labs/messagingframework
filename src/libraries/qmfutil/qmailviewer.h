@@ -116,27 +116,16 @@ public slots:
 
 signals:
     void anchorClicked(const QUrl &link);
-
-    void deleteMessage();
-
-    void saveSender();
     void contactDetails(const QContact &contact);
-
     void messageChanged(const QMailMessageId &id);
-
     void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType type);
-
     void sendMessage(QMailMessage &message);
-
     void retrieveMessage();
     void retrieveMessagePortion(uint bytes);
-
     void retrieveMessagePart(const QMailMessagePart &part);
     void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
-
     void respondToMessage(QMailMessage::ResponseType type);
     void respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
-
     void finished();
 };
 
