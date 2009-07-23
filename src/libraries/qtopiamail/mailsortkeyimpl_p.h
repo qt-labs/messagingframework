@@ -39,63 +39,109 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILACCOUNTSORTKEY_H
-#define QMAILACCOUNTSORTKEY_H
+#ifndef MAILSORTKEYIMPL_H
+#define MAILSORTKEYIMPL_H
 
 #include "qmailglobal.h"
-#include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
+#include <QPair>
 
-class QMailAccountSortKeyPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAccountSortKey
+template<typename Key>
+class MailSortKeyImpl : public QSharedData
 {
 public:
-    enum Property
-    {
-        Id,
-        Name,
-        MessageType,
-        Status
-    };
+    typedef Key KeyType;
+    typedef typename Key::Property Property;
+    typedef typename Key::ArgumentType Argument;
 
-    typedef QMailSortKeyArgument<Property> ArgumentType;
+    MailSortKeyImpl();
+    MailSortKeyImpl(Property p, Qt::SortOrder order);
+    MailSortKeyImpl(const QList<Argument> &args);
 
-public:
-    QMailAccountSortKey();
-    QMailAccountSortKey(const QMailAccountSortKey& other);
-    virtual ~QMailAccountSortKey();
+    bool operator==(const MailSortKeyImpl& other) const;
+    bool operator!=(const MailSortKeyImpl& other) const;
 
-    QMailAccountSortKey operator&(const QMailAccountSortKey& other) const;
-    QMailAccountSortKey& operator&=(const QMailAccountSortKey& other);
-
-    bool operator==(const QMailAccountSortKey& other) const;
-    bool operator!=(const QMailAccountSortKey& other) const;
-
-    QMailAccountSortKey& operator=(const QMailAccountSortKey& other);
+    MailSortKeyImpl& operator=(const MailSortKeyImpl& other);
 
     bool isEmpty() const;
 
-    const QList<ArgumentType> &arguments() const;
+    const QList<Argument> &arguments() const;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    static QMailAccountSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey name(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey messageType(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
-
-private:
-    QMailAccountSortKey(Property p, Qt::SortOrder order);
-    QMailAccountSortKey(const QList<ArgumentType> &args);
-
-    friend class QMailStore;
-    friend class QMailStorePrivate;
-
-    QSharedDataPointer<QMailAccountSortKeyPrivate> d;
+    QList<Argument> _arguments;
 };
+
+
+template<typename Key>
+MailSortKeyImpl<Key>::MailSortKeyImpl()
+    : QSharedData()
+{
+}
+
+template<typename Key>
+MailSortKeyImpl<Key>::MailSortKeyImpl(Property p, Qt::SortOrder order)
+    : QSharedData()
+{
+    _arguments.append(Argument(p, order));
+}
+
+template<typename Key>
+MailSortKeyImpl<Key>::MailSortKeyImpl(const QList<Argument> &args)
+    : QSharedData()
+{
+    _arguments = args;
+}
+
+template<typename Key>
+bool MailSortKeyImpl<Key>::operator==(const MailSortKeyImpl& other) const
+{
+    return _arguments == other._arguments;
+}
+
+template<typename Key>
+bool MailSortKeyImpl<Key>::operator!=(const MailSortKeyImpl& other) const
+{
+   return !(*this == other); 
+}
+
+template<typename Key>
+bool MailSortKeyImpl<Key>::isEmpty() const
+{
+    return _arguments.isEmpty();
+}
+
+template<typename Key>
+const QList<typename MailSortKeyImpl<Key>::Argument> &MailSortKeyImpl<Key>::arguments() const
+{
+    return _arguments;
+}
+
+template<typename Key>
+template <typename Stream> 
+void MailSortKeyImpl<Key>::serialize(Stream &stream) const
+{
+    stream << _arguments.count();
+    foreach (const Argument& a, _arguments) {
+        a.serialize(stream);
+    }
+}
+
+template<typename Key>
+template <typename Stream> 
+void MailSortKeyImpl<Key>::deserialize(Stream &stream)
+{
+    int i = 0;
+    stream >> i;
+    for (int j = 0; j < i; ++j) {
+        Argument a;
+        a.deserialize(stream);
+        _arguments.append(a);
+    }
+}
 
 #endif
 

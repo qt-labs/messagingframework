@@ -27,6 +27,7 @@ HEADERS += bind_p.h \
            longstream_p.h \
            longstring_p.h \
            mailkeyimpl_p.h \
+           mailsortkeyimpl_p.h \
            qmailaccount.h \
            qmailaccountconfiguration.h \
            qmailaccountkey.h \
@@ -62,6 +63,7 @@ HEADERS += bind_p.h \
            qmailmessagethreadedmodel.h \
            qmailserviceaction_p.h \
            qmailserviceaction.h \
+           qmailsortkeyargument.h \
            qmailstore.h \
            qmailstore_p.h \
            qmailstoreimplementation_p.h \

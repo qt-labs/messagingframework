@@ -54,15 +54,14 @@
 //
 
 #include "qmailfoldersortkey.h"
-#include <QSharedData>
-#include <QList>
+#include "mailsortkeyimpl_p.h"
 
-class QMailFolderSortKeyPrivate : public QSharedData
+class QMailFolderSortKeyPrivate : public MailSortKeyImpl<QMailFolderSortKey>
 {
 public:
-    QMailFolderSortKeyPrivate() : QSharedData() {};
-
-    QList<QMailFolderSortKey::ArgumentType> arguments;
+    QMailFolderSortKeyPrivate() : MailSortKeyImpl<QMailFolderSortKey>() {};
+    QMailFolderSortKeyPrivate(QMailFolderSortKey::Property p, Qt::SortOrder o) : MailSortKeyImpl<QMailFolderSortKey>(p, o) {};
+    QMailFolderSortKeyPrivate(const QList<QMailFolderSortKey::ArgumentType> args) : MailSortKeyImpl<QMailFolderSortKey>(args) {};
 };
 
 #endif

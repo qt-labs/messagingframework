@@ -43,9 +43,9 @@
 #define QMAILFOLDERSORTKEY_H
 
 #include "qmailglobal.h"
+#include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
-#include <QPair>
 
 class QMailFolderSortKeyPrivate;
 
@@ -65,7 +65,7 @@ public:
         ServerUndiscoveredCount,
     };
 
-    typedef QPair<Property, Qt::SortOrder> ArgumentType;
+    typedef QMailSortKeyArgument<Property> ArgumentType;
 
 public:
     QMailFolderSortKey();
@@ -76,13 +76,16 @@ public:
     QMailFolderSortKey& operator&=(const QMailFolderSortKey& other);
 
     bool operator==(const QMailFolderSortKey& other) const;
-    bool operator !=(const QMailFolderSortKey& other) const;
+    bool operator!=(const QMailFolderSortKey& other) const;
 
     QMailFolderSortKey& operator=(const QMailFolderSortKey& other);
 
     bool isEmpty() const;
 
     const QList<ArgumentType> &arguments() const;
+
+    template <typename Stream> void serialize(Stream &stream) const;
+    template <typename Stream> void deserialize(Stream &stream);
 
     static QMailFolderSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey path(Qt::SortOrder order = Qt::AscendingOrder);
@@ -96,6 +99,7 @@ public:
 
 private:
     QMailFolderSortKey(Property p, Qt::SortOrder order);
+    QMailFolderSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
     friend class QMailStorePrivate;

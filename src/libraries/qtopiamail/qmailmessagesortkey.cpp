@@ -89,8 +89,6 @@
     \typedef QMailMessageSortKey::ArgumentType
     
     Defines the type used to represent a single sort criterion of a message sort key.
-
-    Synonym for QPair<QMailMessageKey::Property, Qt::SortOrder>.
 */
 
 /*!
@@ -103,27 +101,26 @@
 
     The result of combining two empty keys is an empty key.
 */
-
 QMailMessageSortKey::QMailMessageSortKey()
     : d(new QMailMessageSortKeyPrivate())
 {
 }
 
-/*!
-    Construct a QMailMessageSortKey which sorts a set of results based on the  
-    QMailMessageSortKey::Property \a p and the Qt::SortOrder \a order 
-*/
-
-QMailMessageSortKey::QMailMessageSortKey(Property p, Qt::SortOrder order)
-    : d(new QMailMessageSortKeyPrivate())
+/*! \internal */
+QMailMessageSortKey::QMailMessageSortKey(Property p, Qt::SortOrder o)
+    : d(new QMailMessageSortKeyPrivate(p, o))
 {
-    d->arguments.append(ArgumentType(p, order));
+}
+
+/*! \internal */
+QMailMessageSortKey::QMailMessageSortKey(const QList<QMailMessageSortKey::ArgumentType> &args)
+    : d(new QMailMessageSortKeyPrivate(args))
+{
 }
 
 /*!
     Create a copy of the QMailMessageSortKey \a other.
 */
-
 QMailMessageSortKey::QMailMessageSortKey(const QMailMessageSortKey& other)
     : d(new QMailMessageSortKeyPrivate())
 {
@@ -133,7 +130,6 @@ QMailMessageSortKey::QMailMessageSortKey(const QMailMessageSortKey& other)
 /*!
     Destroys this QMailMessageSortKey.
 */
-
 QMailMessageSortKey::~QMailMessageSortKey()
 {
 }
@@ -141,19 +137,15 @@ QMailMessageSortKey::~QMailMessageSortKey()
 /*!
     Returns a key that is the logical AND of this key and the value of key \a other.
 */
-
 QMailMessageSortKey QMailMessageSortKey::operator&(const QMailMessageSortKey& other) const
 {
-    QMailMessageSortKey k;
-    k.d->arguments = d->arguments + other.d->arguments;
-    return k;
+    return QMailMessageSortKey(d->arguments() + other.d->arguments());
 }
 
 /*!
     Performs a logical AND with this key and the key \a other and assigns the result
     to this key.
 */
-
 QMailMessageSortKey& QMailMessageSortKey::operator&=(const QMailMessageSortKey& other)
 {
     *this = *this & other;
@@ -164,16 +156,15 @@ QMailMessageSortKey& QMailMessageSortKey::operator&=(const QMailMessageSortKey& 
     Returns \c true if the value of this key is the same as the key \a other. Returns 
     \c false otherwise.
 */
-
 bool QMailMessageSortKey::operator==(const QMailMessageSortKey& other) const
 {
-    return d->arguments == other.d->arguments;
+    return (*d == *other.d);
 }
+
 /*!
     Returns \c true if the value of this key is not the same as the key \a other. Returns
     \c false otherwise.
 */
-
 bool QMailMessageSortKey::operator!=(const QMailMessageSortKey& other) const
 {
    return !(*this == other); 
@@ -182,7 +173,6 @@ bool QMailMessageSortKey::operator!=(const QMailMessageSortKey& other) const
 /*!
     Assign the value of the QMailMessageSortKey \a other to this.
 */
-
 QMailMessageSortKey& QMailMessageSortKey::operator=(const QMailMessageSortKey& other)
 {
     d = other.d;
@@ -192,19 +182,17 @@ QMailMessageSortKey& QMailMessageSortKey::operator=(const QMailMessageSortKey& o
 /*!
     Returns true if the key remains empty after default construction; otherwise returns false.
 */
-
 bool QMailMessageSortKey::isEmpty() const
 {
-    return d->arguments.isEmpty();
+    return d->isEmpty();
 }
 
 /*!
-  Returns the list of arguments to this QMailMessageSortKey.
+    Returns the list of arguments to this QMailMessageSortKey.
 */
-
 const QList<QMailMessageSortKey::ArgumentType> &QMailMessageSortKey::arguments() const
 {
-    return d->arguments;
+    return d->arguments();
 }
 
 /*!
@@ -212,14 +200,9 @@ const QList<QMailMessageSortKey::ArgumentType> &QMailMessageSortKey::arguments()
 
     Writes the contents of a QMailMessageSortKey to a \a stream.
 */
-
 template <typename Stream> void QMailMessageSortKey::serialize(Stream &stream) const
 {
-    stream << d->arguments.count();
-    foreach (const ArgumentType& a, d->arguments) {
-        stream << static_cast<int>(a.first);
-        stream << static_cast<int>(a.second);
-    }
+    d->serialize(stream);
 }
 
 /*!
@@ -227,22 +210,9 @@ template <typename Stream> void QMailMessageSortKey::serialize(Stream &stream) c
 
     Reads the contents of a QMailMessageSortKey from \a stream.
 */
-
 template <typename Stream> void QMailMessageSortKey::deserialize(Stream &stream)
 {
-    int i = 0;
-    stream >> i;
-    for (int j = 0; j < i; ++j) {
-        ArgumentType a;
-        int v;
-
-        stream >> v;
-        a.first = Property(v);
-        stream >> v;
-        a.second = Qt::SortOrder(v);
-
-        d->arguments.append(a);
-    }
+    d->deserialize(stream);
 }
 
 /*!

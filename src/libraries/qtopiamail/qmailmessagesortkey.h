@@ -44,9 +44,9 @@
 
 #include "qmailglobal.h"
 #include "qmailipc.h"
+#include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
-#include <QPair>
 
 class QMailMessageSortKeyPrivate;
 
@@ -71,7 +71,7 @@ public:
         PreviousParentFolderId
     };
 
-    typedef QPair<Property, Qt::SortOrder> ArgumentType;
+    typedef QMailSortKeyArgument<Property> ArgumentType;
 
 public:
     QMailMessageSortKey();
@@ -82,7 +82,7 @@ public:
     QMailMessageSortKey& operator&=(const QMailMessageSortKey& other);
 
     bool operator==(const QMailMessageSortKey& other) const;
-    bool operator !=(const QMailMessageSortKey& other) const;
+    bool operator!=(const QMailMessageSortKey& other) const;
 
     QMailMessageSortKey& operator=(const QMailMessageSortKey& other);
 
@@ -110,6 +110,7 @@ public:
         
 private:
     QMailMessageSortKey(Property p, Qt::SortOrder order);
+    QMailMessageSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
     friend class QMailStorePrivate;

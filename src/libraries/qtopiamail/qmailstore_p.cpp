@@ -1294,7 +1294,7 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
 
     QStringList sortColumns;
     foreach (typename ArgumentListType::const_reference arg, list)
-        sortColumns.append(fieldName(arg.first, alias) + ' ' + (arg.second == Qt::AscendingOrder ? "ASC" : "DESC"));
+        sortColumns.append(fieldName(arg.property, alias) + ' ' + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
 
     return QString(" ORDER BY ") + sortColumns.join(",");
 }
@@ -2730,6 +2730,7 @@ QVariantList QMailStorePrivate::whereClauseValues(const Key& key) const
     return QVariantList();
 }
 
+/*
 bool QMailStorePrivate::containsProperty(const QMailMessageKey::Property& p,
                                          const QMailMessageKey& key) const
 {
@@ -2753,6 +2754,7 @@ bool QMailStorePrivate::containsProperty(const QMailMessageSortKey::Property& p,
 
     return false;
 }
+*/
 
 QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties& prop, const QMailMessageMetaData& data)
 {

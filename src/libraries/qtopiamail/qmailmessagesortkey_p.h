@@ -53,16 +53,15 @@
 // We mean it.
 //
 
-#include <QSharedData>
-#include <QList>
+#include "qmailmessagesortkey.h"
+#include "mailsortkeyimpl_p.h"
 
-class QMailMessageSortKeyPrivate : public QSharedData
+class QMailMessageSortKeyPrivate : public MailSortKeyImpl<QMailMessageSortKey>
 {
 public:
-    QMailMessageSortKeyPrivate() : QSharedData() {};
-
-    QList<QMailMessageSortKey::ArgumentType> arguments;
+    QMailMessageSortKeyPrivate() : MailSortKeyImpl<QMailMessageSortKey>() {};
+    QMailMessageSortKeyPrivate(QMailMessageSortKey::Property p, Qt::SortOrder o) : MailSortKeyImpl<QMailMessageSortKey>(p, o) {};
+    QMailMessageSortKeyPrivate(const QList<QMailMessageSortKey::ArgumentType> args) : MailSortKeyImpl<QMailMessageSortKey>(args) {};
 };
 
 #endif
-

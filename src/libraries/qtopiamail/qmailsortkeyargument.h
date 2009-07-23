@@ -39,62 +39,62 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILACCOUNTSORTKEY_H
-#define QMAILACCOUNTSORTKEY_H
+#ifndef QMAILSORTKEYARGUMENT_P_H
+#define QMAILSORTKEYARGUMENT_P_H
 
-#include "qmailglobal.h"
-#include "qmailsortkeyargument.h"
-#include <QSharedData>
-#include <QtGlobal>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt Extended API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class QMailAccountSortKeyPrivate;
+#include <QDataStream>
 
-class QTOPIAMAIL_EXPORT QMailAccountSortKey
+
+template<typename PropertyType>
+class QMailSortKeyArgument
 {
 public:
-    enum Property
+    typedef PropertyType Property;
+
+    Property property;
+    Qt::SortOrder order;
+
+    QMailSortKeyArgument()
     {
-        Id,
-        Name,
-        MessageType,
-        Status
-    };
+    }
 
-    typedef QMailSortKeyArgument<Property> ArgumentType;
+    QMailSortKeyArgument(Property p, Qt::SortOrder o)
+        : property(p),
+          order(o)
+    {
+    }
+    
+    bool operator==(const QMailSortKeyArgument<PropertyType>& other) const
+    {
+        return (property == other.property) && (order == other.order);
+    }
 
-public:
-    QMailAccountSortKey();
-    QMailAccountSortKey(const QMailAccountSortKey& other);
-    virtual ~QMailAccountSortKey();
+    template <typename Stream> void serialize(Stream &stream) const
+    {
+        stream << static_cast<int>(property);
+        stream << static_cast<int>(order);
+    }
 
-    QMailAccountSortKey operator&(const QMailAccountSortKey& other) const;
-    QMailAccountSortKey& operator&=(const QMailAccountSortKey& other);
+    template <typename Stream> void deserialize(Stream &stream)
+    {
+        int v = 0;
 
-    bool operator==(const QMailAccountSortKey& other) const;
-    bool operator!=(const QMailAccountSortKey& other) const;
-
-    QMailAccountSortKey& operator=(const QMailAccountSortKey& other);
-
-    bool isEmpty() const;
-
-    const QList<ArgumentType> &arguments() const;
-
-    template <typename Stream> void serialize(Stream &stream) const;
-    template <typename Stream> void deserialize(Stream &stream);
-
-    static QMailAccountSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey name(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey messageType(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
-
-private:
-    QMailAccountSortKey(Property p, Qt::SortOrder order);
-    QMailAccountSortKey(const QList<ArgumentType> &args);
-
-    friend class QMailStore;
-    friend class QMailStorePrivate;
-
-    QSharedDataPointer<QMailAccountSortKeyPrivate> d;
+        stream >> v;
+        property = static_cast<Property>(v);
+        stream >> v;
+        order = static_cast<Qt::SortOrder>(v);
+    }
 };
 
 #endif

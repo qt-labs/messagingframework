@@ -85,8 +85,6 @@
     \typedef QMailFolderSortKey::ArgumentType
     
     Defines the type used to represent a single sort criterion of a folder sort key.
-
-    Synonym for QPair<QMailFolderKey::Property, Qt::SortOrder>.
 */
 
 /*!
@@ -99,27 +97,26 @@
 
     The result of combining two empty keys is an empty key.
 */
-
 QMailFolderSortKey::QMailFolderSortKey()
     : d(new QMailFolderSortKeyPrivate())
 {
 }
 
-/*!
-    Construct a QMailFolderSortKey which sorts a set of results based on the  
-    QMailFolderSortKey::Property \a p and the Qt::SortOrder \a order 
-*/
-
-QMailFolderSortKey::QMailFolderSortKey(Property p, Qt::SortOrder order)
-    : d(new QMailFolderSortKeyPrivate())
+/*! \internal */
+QMailFolderSortKey::QMailFolderSortKey(Property p, Qt::SortOrder o)
+    : d(new QMailFolderSortKeyPrivate(p, o))
 {
-    d->arguments.append(ArgumentType(p, order));
+}
+
+/*! \internal */
+QMailFolderSortKey::QMailFolderSortKey(const QList<QMailFolderSortKey::ArgumentType> &args)
+    : d(new QMailFolderSortKeyPrivate(args))
+{
 }
 
 /*!
     Create a copy of the QMailFolderSortKey \a other.
 */
-
 QMailFolderSortKey::QMailFolderSortKey(const QMailFolderSortKey& other)
     : d(new QMailFolderSortKeyPrivate())
 {
@@ -129,7 +126,6 @@ QMailFolderSortKey::QMailFolderSortKey(const QMailFolderSortKey& other)
 /*!
     Destroys this QMailFolderSortKey.
 */
-
 QMailFolderSortKey::~QMailFolderSortKey()
 {
 }
@@ -137,19 +133,15 @@ QMailFolderSortKey::~QMailFolderSortKey()
 /*!
     Returns a key that is the logical AND of this key and the value of key \a other.
 */
-
 QMailFolderSortKey QMailFolderSortKey::operator&(const QMailFolderSortKey& other) const
 {
-    QMailFolderSortKey k;
-    k.d->arguments = d->arguments + other.d->arguments;
-    return k;
+    return QMailFolderSortKey(d->arguments() + other.d->arguments());
 }
 
 /*!
     Performs a logical AND with this key and the key \a other and assigns the result
     to this key.
 */
-
 QMailFolderSortKey& QMailFolderSortKey::operator&=(const QMailFolderSortKey& other)
 {
     *this = *this & other;
@@ -160,16 +152,15 @@ QMailFolderSortKey& QMailFolderSortKey::operator&=(const QMailFolderSortKey& oth
     Returns \c true if the value of this key is the same as the key \a other. Returns 
     \c false otherwise.
 */
-
 bool QMailFolderSortKey::operator==(const QMailFolderSortKey& other) const
 {
-    return d->arguments == other.d->arguments;
+    return (*d == *other.d);
 }
+
 /*!
     Returns \c true if the value of this key is not the same as the key \a other. Returns
     \c false otherwise.
 */
-
 bool QMailFolderSortKey::operator!=(const QMailFolderSortKey& other) const
 {
    return !(*this == other); 
@@ -178,7 +169,6 @@ bool QMailFolderSortKey::operator!=(const QMailFolderSortKey& other) const
 /*!
     Assign the value of the QMailFolderSortKey \a other to this.
 */
-
 QMailFolderSortKey& QMailFolderSortKey::operator=(const QMailFolderSortKey& other)
 {
     d = other.d;
@@ -188,19 +178,17 @@ QMailFolderSortKey& QMailFolderSortKey::operator=(const QMailFolderSortKey& othe
 /*!
     Returns true if the key remains empty after default construction; otherwise returns false.
 */
-
 bool QMailFolderSortKey::isEmpty() const
 {
-    return d->arguments.isEmpty();
+    return d->isEmpty();
 }
 
 /*!
   Returns the list of arguments to this QMailFolderSortKey.
 */
-
 const QList<QMailFolderSortKey::ArgumentType> &QMailFolderSortKey::arguments() const
 {
-    return d->arguments;
+    return d->arguments();
 }
 
 /*!
