@@ -103,8 +103,8 @@ QMailFolderSortKey::QMailFolderSortKey()
 }
 
 /*! \internal */
-QMailFolderSortKey::QMailFolderSortKey(Property p, Qt::SortOrder o)
-    : d(new QMailFolderSortKeyPrivate(p, o))
+QMailFolderSortKey::QMailFolderSortKey(Property p, Qt::SortOrder order, quint64 mask)
+    : d(new QMailFolderSortKeyPrivate(p, order, mask))
 {
 }
 
@@ -184,11 +184,31 @@ bool QMailFolderSortKey::isEmpty() const
 }
 
 /*!
-  Returns the list of arguments to this QMailFolderSortKey.
+    Returns the list of arguments to this QMailFolderSortKey.
 */
 const QList<QMailFolderSortKey::ArgumentType> &QMailFolderSortKey::arguments() const
 {
     return d->arguments();
+}
+
+/*!
+    \fn QMailFolderSortKey::serialize(Stream &stream) const
+
+    Writes the contents of a QMailFolderSortKey to a \a stream.
+*/
+template <typename Stream> void QMailFolderSortKey::serialize(Stream &stream) const
+{
+    d->serialize(stream);
+}
+
+/*!
+    \fn QMailFolderSortKey::deserialize(Stream &stream)
+
+    Reads the contents of a QMailFolderSortKey from \a stream.
+*/
+template <typename Stream> void QMailFolderSortKey::deserialize(Stream &stream)
+{
+    d->deserialize(stream);
 }
 
 /*!
@@ -242,16 +262,6 @@ QMailFolderSortKey QMailFolderSortKey::displayName(Qt::SortOrder order)
 }
 
 /*!
-    Returns a key that sorts folders by their status values, according to \a order.
-
-    \sa QMailFolder::status()
-*/
-QMailFolderSortKey QMailFolderSortKey::status(Qt::SortOrder order)
-{
-    return QMailFolderSortKey(Status, order);
-}
-
-/*!
     Returns a key that sorts folders by their message count on server, according to \a order.
 
     \sa QMailFolder::status()
@@ -280,4 +290,17 @@ QMailFolderSortKey QMailFolderSortKey::serverUndiscoveredCount(Qt::SortOrder ord
 {
     return QMailFolderSortKey(ServerUndiscoveredCount, order);
 }
+
+/*!
+    Returns a key that sorts folders by comparing their status value bitwise ANDed with \a mask, according to \a order.
+
+    \sa QMailFolder::status()
+*/
+QMailFolderSortKey QMailFolderSortKey::status(quint64 mask, Qt::SortOrder order)
+{
+    return QMailFolderSortKey(Status, order, mask);
+}
+
+
+Q_IMPLEMENT_USER_METATYPE(QMailFolderSortKey);
 

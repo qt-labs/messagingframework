@@ -1874,6 +1874,27 @@ void tst_QMailStoreKeys::messageStatus()
     QCOMPARE(messageSet(~QMailMessageKey::status(sinkSet, Excludes)), messageSet() << archivedMessage1);
     QCOMPARE(messageSet(QMailMessageKey::status(0, Excludes)), allMessages);
     QCOMPARE(messageSet(~QMailMessageKey::status(0, Excludes)), noMessages);
+
+    // Test sorting by status
+    QMailMessageSortKey sort;
+    sort = QMailMessageSortKey::status(QMailMessage::Incoming);                  // All incoming before outgoing
+    sort &= QMailMessageSortKey::status(QMailMessage::New);                      // New before non-new
+    sort &= QMailMessageSortKey::status(QMailMessage::Read, Qt::AscendingOrder); // Read after non-read
+
+    QMailMessageIdList sortedIds;
+    sortedIds << inboxMessage1 << inboxMessage2 << savedMessage2 << smsMessage << archivedMessage1;
+    
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
+
+    // Invert the sort
+    sort = QMailMessageSortKey::status(QMailMessage::Incoming, Qt::AscendingOrder); // All incoming after outgoing
+    sort &= QMailMessageSortKey::status(QMailMessage::New, Qt::AscendingOrder);     // New after non-new
+    sort &= QMailMessageSortKey::status(QMailMessage::Read);                        // Read before non-read
+
+    sortedIds.clear();
+    sortedIds << archivedMessage1 << smsMessage << savedMessage2 << inboxMessage2 << inboxMessage1;
+    
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
 }
 
 void tst_QMailStoreKeys::messageConversation()

@@ -40,6 +40,13 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 11. Added 'QMailMessage::toRfc2822Chunks(QMailMessage::EncodingFormat)'.
 
+12. Changed 'QMailAccountSortKey::status(Qt::SortOrder)' to
+            'QMailAccountSortKey::status(quint64, Qt::SortOrder)',
+            'QMailFolderSortKey::status(Qt::SortOrder)' to
+            'QMailFolderSortKey::status(quint64, Qt::SortOrder)', and
+            'QMailMessageSortKey::status(Qt::SortOrder)' to
+            'QMailMessageSortKey::status(quint64, Qt::SortOrder)'.
+
 
 *****************************************************************************
 

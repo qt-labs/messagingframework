@@ -43,6 +43,7 @@
 #define QMAILACCOUNTSORTKEY_H
 
 #include "qmailglobal.h"
+#include "qmailipc.h"
 #include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
@@ -85,10 +86,11 @@ public:
     static QMailAccountSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailAccountSortKey name(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailAccountSortKey messageType(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailAccountSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
+
+    static QMailAccountSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
 
 private:
-    QMailAccountSortKey(Property p, Qt::SortOrder order);
+    QMailAccountSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
     QMailAccountSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
@@ -96,6 +98,8 @@ private:
 
     QSharedDataPointer<QMailAccountSortKeyPrivate> d;
 };
+
+Q_DECLARE_USER_METATYPE(QMailAccountSortKey);
 
 #endif
 

@@ -1293,8 +1293,13 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
         return QString();
 
     QStringList sortColumns;
-    foreach (typename ArgumentListType::const_reference arg, list)
-        sortColumns.append(fieldName(arg.property, alias) + ' ' + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+    foreach (typename ArgumentListType::const_reference arg, list) {
+        QString field(fieldName(arg.property, alias));
+        if (arg.mask) {
+            field = QString("(%1 & %2)").arg(field).arg(QString::number(arg.mask));
+        }
+        sortColumns.append(field + ' ' + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+    }
 
     return QString(" ORDER BY ") + sortColumns.join(",");
 }
@@ -2729,32 +2734,6 @@ QVariantList QMailStorePrivate::whereClauseValues(const Key& key) const
 
     return QVariantList();
 }
-
-/*
-bool QMailStorePrivate::containsProperty(const QMailMessageKey::Property& p,
-                                         const QMailMessageKey& key) const
-{
-    foreach(const QMailMessageKey::ArgumentType &a, key.arguments())
-        if(a.property == p)  
-            return true;
-       
-    foreach(const QMailMessageKey &k, key.subKeys())
-        if(containsProperty(p,k))
-            return true;
-
-    return false;
-}
-
-bool QMailStorePrivate::containsProperty(const QMailMessageSortKey::Property& p,
-                                         const QMailMessageSortKey& key) const
-{
-    foreach(const QMailMessageSortKey::ArgumentType &a, key.arguments())
-        if(a.first == p)  
-            return true;
-
-    return false;
-}
-*/
 
 QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties& prop, const QMailMessageMetaData& data)
 {

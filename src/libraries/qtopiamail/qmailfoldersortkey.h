@@ -43,6 +43,7 @@
 #define QMAILFOLDERSORTKEY_H
 
 #include "qmailglobal.h"
+#include "qmailipc.h"
 #include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
@@ -92,13 +93,14 @@ public:
     static QMailFolderSortKey parentFolderId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey displayName(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailFolderSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverCount(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverUnreadCount(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverUndiscoveredCount(Qt::SortOrder order = Qt::AscendingOrder);
 
+    static QMailFolderSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
+
 private:
-    QMailFolderSortKey(Property p, Qt::SortOrder order);
+    QMailFolderSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
     QMailFolderSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
@@ -106,5 +108,7 @@ private:
 
     QSharedDataPointer<QMailFolderSortKeyPrivate> d;
 };
+
+Q_DECLARE_USER_METATYPE(QMailFolderSortKey);
 
 #endif

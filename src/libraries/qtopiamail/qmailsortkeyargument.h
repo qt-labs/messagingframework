@@ -64,26 +64,29 @@ public:
 
     Property property;
     Qt::SortOrder order;
+    quint64 mask;
 
     QMailSortKeyArgument()
     {
     }
 
-    QMailSortKeyArgument(Property p, Qt::SortOrder o)
+    QMailSortKeyArgument(Property p, Qt::SortOrder o, quint64 m)
         : property(p),
-          order(o)
+          order(o),
+          mask(m)
     {
     }
     
     bool operator==(const QMailSortKeyArgument<PropertyType>& other) const
     {
-        return (property == other.property) && (order == other.order);
+        return (property == other.property) && (order == other.order) && (mask == other.mask);
     }
 
     template <typename Stream> void serialize(Stream &stream) const
     {
         stream << static_cast<int>(property);
         stream << static_cast<int>(order);
+        stream << mask;
     }
 
     template <typename Stream> void deserialize(Stream &stream)
@@ -94,6 +97,7 @@ public:
         property = static_cast<Property>(v);
         stream >> v;
         order = static_cast<Qt::SortOrder>(v);
+        stream >> mask;
     }
 };
 

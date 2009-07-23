@@ -98,8 +98,8 @@ QMailAccountSortKey::QMailAccountSortKey()
 }
 
 /*! \internal */
-QMailAccountSortKey::QMailAccountSortKey(Property p, Qt::SortOrder order)
-    : d(new QMailAccountSortKeyPrivate(p, order))
+QMailAccountSortKey::QMailAccountSortKey(Property p, Qt::SortOrder order, quint64 mask)
+    : d(new QMailAccountSortKeyPrivate(p, order, mask))
 {
 }
 
@@ -237,12 +237,15 @@ QMailAccountSortKey QMailAccountSortKey::messageType(Qt::SortOrder order)
 }
 
 /*!
-    Returns a key that sorts accounts by their status values, according to \a order.
+    Returns a key that sorts accounts by comparing their status value bitwise ANDed with \a mask, according to \a order.
 
     \sa QMailAccount::status()
 */
-QMailAccountSortKey QMailAccountSortKey::status(Qt::SortOrder order)
+QMailAccountSortKey QMailAccountSortKey::status(quint64 mask, Qt::SortOrder order)
 {
-    return QMailAccountSortKey(Status, order);
+    return QMailAccountSortKey(Status, order, mask);
 }
+
+
+Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey);
 

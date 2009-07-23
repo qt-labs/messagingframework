@@ -107,8 +107,8 @@ QMailMessageSortKey::QMailMessageSortKey()
 }
 
 /*! \internal */
-QMailMessageSortKey::QMailMessageSortKey(Property p, Qt::SortOrder o)
-    : d(new QMailMessageSortKeyPrivate(p, o))
+QMailMessageSortKey::QMailMessageSortKey(Property p, Qt::SortOrder o, quint64 mask)
+    : d(new QMailMessageSortKeyPrivate(p, o, mask))
 {
 }
 
@@ -296,16 +296,6 @@ QMailMessageSortKey QMailMessageSortKey::receptionTimeStamp(Qt::SortOrder order)
 }
 
 /*!
-    Returns a key that sorts messages by their status values, according to \a order.
-
-    \sa QMailMessage::status()
-*/
-QMailMessageSortKey QMailMessageSortKey::status(Qt::SortOrder order)
-{
-    return QMailMessageSortKey(Status, order);
-}
-
-/*!
     Returns a key that sorts messages by their server identifiers, according to \a order.
 
     \sa QMailMessage::serverUid()
@@ -353,6 +343,16 @@ QMailMessageSortKey QMailMessageSortKey::contentType(Qt::SortOrder order)
 QMailMessageSortKey QMailMessageSortKey::previousParentFolderId(Qt::SortOrder order)
 {
     return QMailMessageSortKey(PreviousParentFolderId, order);
+}
+
+/*!
+    Returns a key that sorts messages by comparing their status value bitwise ANDed with \a mask, according to \a order.
+
+    \sa QMailMessage::status()
+*/
+QMailMessageSortKey QMailMessageSortKey::status(quint64 mask, Qt::SortOrder order)
+{
+    return QMailMessageSortKey(Status, order, mask);
 }
 
         

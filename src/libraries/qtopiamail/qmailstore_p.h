@@ -196,9 +196,6 @@ private:
     static const QMailMessageKey::Properties &updatableMessageProperties();
     static const QMailMessageKey::Properties &allMessageProperties();
 
-    bool containsProperty(const QMailMessageKey::Property& p, const QMailMessageKey& key) const;
-    bool containsProperty(const QMailMessageSortKey::Property& p, const QMailMessageSortKey& sortkey) const;
-
     QString expandProperties(const QMailMessageKey::Properties& p, bool update = false) const;
 
     QString databaseIdentifier() const;

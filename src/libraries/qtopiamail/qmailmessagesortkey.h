@@ -101,15 +101,16 @@ public:
     static QMailMessageSortKey subject(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey timeStamp(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey receptionTimeStamp(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailMessageSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey serverUid(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey size(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey contentType(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey previousParentFolderId(Qt::SortOrder order = Qt::AscendingOrder);
         
+    static QMailMessageSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
+
 private:
-    QMailMessageSortKey(Property p, Qt::SortOrder order);
+    QMailMessageSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
     QMailMessageSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
