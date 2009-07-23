@@ -400,7 +400,6 @@ ReadMail* MessageUiBase::createReadMailWidget()
 
     connect(readMail, SIGNAL(responseRequested(QMailMessage,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessage,QMailMessage::ResponseType)));
     connect(readMail, SIGNAL(responseRequested(QMailMessagePart::Location,QMailMessage::ResponseType)), this, SLOT(respond(QMailMessagePart::Location,QMailMessage::ResponseType)));
-    connect(readMail, SIGNAL(removeMessage(QMailMessageId, bool)), this, SLOT(removeMessage(QMailMessageId, bool)));
     connect(readMail, SIGNAL(getMailRequested(QMailMessageMetaData)), this, SLOT(getSingleMail(QMailMessageMetaData)));
     connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)), this, SLOT(readReplyRequested(QMailMessageMetaData)));
     connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)));
@@ -803,6 +802,16 @@ void EmailClient::initActions()
         connect(threadAction, SIGNAL(triggered()), this, SLOT(threadMessages()));
         setActionVisible(threadAction, true);
 
+        replyAction= new QAction( QIcon(":icon/reply"), tr("Reply"), this );
+        connect(replyAction, SIGNAL(triggered()), this, SLOT(replyClicked()));
+        replyAction->setWhatsThis( tr("Reply to sender only.  Select Reply all from the menu if you want to reply to all recipients.") );
+
+        replyAllAction = new QAction( QIcon(":icon/replytoall"), tr("Reply all"), this );
+        connect(replyAllAction, SIGNAL(triggered()), this, SLOT(replyAllClicked()));
+
+        forwardAction = new QAction(tr("Forward"), this );
+        connect(forwardAction, SIGNAL(triggered()), this, SLOT(forwardClicked()));
+
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
@@ -832,15 +841,24 @@ void EmailClient::initActions()
         folderView()->addAction( emptyTrashAction);
         folderView()->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-        messageListView()->addAction( deleteMailAction );
-        messageListView()->addAction( detachThreadAction );
-        messageListView()->addAction( moveAction );
+        messageListView()->addAction(replyAction);
+        messageListView()->addAction(replyAllAction);
+        messageListView()->addAction(forwardAction);
         messageListView()->addAction( copyAction );
+        messageListView()->addAction( moveAction );
+        messageListView()->addAction( deleteMailAction );
         messageListView()->addAction( restoreAction );
         messageListView()->addAction( selectAllAction );
         messageListView()->addAction( markAction );
         messageListView()->addAction( threadAction );
+        messageListView()->addAction( detachThreadAction );
         messageListView()->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+        readMailWidget()->addAction(replyAction);
+        readMailWidget()->addAction(replyAllAction);
+        readMailWidget()->addAction(forwardAction);
+        readMailWidget()->addAction(deleteMailAction);
+
     }
 }
 
@@ -1884,9 +1902,30 @@ bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
     return false;
 }
 
+void EmailClient::replyClicked()
+{
+    QMailMessageId currentId = messageListView()->current();
+    if(currentId.isValid())
+        respond(QMailMessage(currentId),QMailMessage::Reply);
+}
+
+void EmailClient::replyAllClicked()
+{
+    QMailMessageId currentId = messageListView()->current();
+    if(currentId.isValid())
+        respond(QMailMessage(currentId),QMailMessage::ReplyToAll);
+}
+
+void EmailClient::forwardClicked()
+{
+    QMailMessageId currentId = messageListView()->current();
+    if(currentId.isValid())
+        respond(QMailMessage(currentId),QMailMessage::Forward);
+}
+
 void EmailClient::respond(const QMailMessage& message, QMailMessage::ResponseType type)
 {
-    if ((type == QMailMessage::NoResponse) || 
+    if ((type == QMailMessage::NoResponse) ||
         (type == QMailMessage::ForwardPart)) {
         qWarning() << "Invalid responseType:" << type;
         return;
@@ -2043,41 +2082,6 @@ void EmailClient::closeEvent(QCloseEvent *e)
     e->ignore();
 }
 
-bool EmailClient::removeMessage(const QMailMessageId& id, bool userRequest)
-{
-    Q_UNUSED(userRequest);
-
-    QMailMessageMetaData message(id);
-
-    if (isSending()) {
-        // Do not delete messages from the outbox while we're sending
-        if (message.status() & QMailMessage::Outbox) {
-            AcknowledgmentBox::show(tr("Cannot delete"), tr("Message transmission is in progress"));
-            return false;
-        }
-    }
-
-    QString type(mailType(message.messageType()));
-
-    bool deleting(false);
-    if (message.status() & QMailMessage::Trash) {
-        if (!confirmDelete(this, "Delete", type))
-            return false;
-
-        deleting = true;
-    }
-
-    if ( deleting ) {
-        AcknowledgmentBox::show(tr("Deleting"), tr("Deleting: %1","%1=Email/Message/MMS").arg(type));
-        storageAction->deleteMessages(QMailMessageIdList() << id);
-    } else {
-        AcknowledgmentBox::show(tr("Moving"), tr("Moving to Trash: %1", "%1=Email/Message/MMS").arg(type));
-        storageAction->flagMessages(QMailMessageIdList() << id, QMailMessage::Trash, 0);
-    }
-
-    return true;
-}
-
 void EmailClient::setupUi()
 {
     QWidget* f = new QWidget(this);
@@ -2088,6 +2092,12 @@ void EmailClient::setupUi()
 
     QSplitter* horizontalSplitter = new QSplitter(this);
     horizontalSplitter->setOrientation(Qt::Vertical);
+
+    QWidget* messageList = new QWidget(this);
+    QVBoxLayout* messageListLayout = new QVBoxLayout(messageList);
+    messageListLayout->setSpacing(0);
+    messageListLayout->setContentsMargins(0,0,0,0);
+
     horizontalSplitter->addWidget(messageListView());
     horizontalSplitter->addWidget(readMailWidget());
 
@@ -2326,6 +2336,26 @@ void EmailClient::messageSelectionChanged()
     setActionVisible(moveAction, (messagesSelected && !(trashCount > 0)));
     setActionVisible(copyAction, (messagesSelected && !(trashCount > 0)));
     setActionVisible(restoreAction, (messagesSelected && (trashCount > 0)));
+
+    if(messageListView()->current().isValid())
+    {
+        QMailMessage mail(messageListView()->current());
+        bool incoming(mail.status() & QMailMessage::Incoming);
+        bool downloaded(mail.status() & QMailMessage::ContentAvailable);
+        bool system(mail.messageType() == QMailMessage::System);
+
+        if (!downloaded || system) {
+            // We can't really forward/reply/reply-to-all without the message content
+            setActionVisible(replyAction,false);
+            setActionVisible(replyAllAction,false);
+            setActionVisible(forwardAction,false);
+        } else {
+            bool otherReplyTarget(!mail.cc().isEmpty() || mail.to().count() > 1);
+            setActionVisible(replyAction,incoming);
+            setActionVisible(replyAllAction,incoming & otherReplyTarget);
+            setActionVisible(forwardAction,true);
+        }
+    }
 
     // We can detach only if a single non-root message is selected
     setActionVisible(detachThreadAction, ((selectionCount == 1) && messageListView()->hasParent()));

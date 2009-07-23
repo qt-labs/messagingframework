@@ -146,33 +146,11 @@ ReadMail::ReadMail( QWidget* parent, Qt::WFlags fl )
     init();
 }
 
-ReadMail::~ReadMail()
-{
-}
-
 void ReadMail::init()
 {
     getThisMailButton = new QAction( QIcon(":icon/getmail"), tr("Get message"), this );
     connect(getThisMailButton, SIGNAL(triggered()), this, SLOT(getThisMail()) );
     getThisMailButton->setWhatsThis( tr("Retrieve this message from the server.  You can use this option to retrieve individual messages that would normally not be automatically downloaded.") );
-
-    replyButton = new QAction( QIcon(":icon/reply"), tr("Reply"), this );
-    connect(replyButton, SIGNAL(triggered()), this, SLOT(reply()));
-    replyButton->setWhatsThis( tr("Reply to sender only.  Select Reply all from the menu if you want to reply to all recipients.") );
-
-    replyAllAction = new QAction( QIcon(":icon/replytoall"), tr("Reply all"), this );
-    connect(replyAllAction, SIGNAL(triggered()), this, SLOT(replyAll()));
-
-    forwardAction = new QAction(tr("Forward"), this );
-    connect(forwardAction, SIGNAL(triggered()), this, SLOT(forward()));
-
-    deleteButton = new QAction( QIcon( ":icon/trash" ), tr( "Delete" ), this );
-    connect( deleteButton, SIGNAL(triggered()), this, SLOT(deleteItem()) );
-    deleteButton->setWhatsThis( tr("Move this message to the trash folder.  If the message is already in the trash folder it will be deleted. ") );
-
-    storeButton = new QAction( QIcon( ":icon/save" ), tr( "Save Sender" ), this );
-    storeButton->setEnabled(false);
-    //connect( storeButton, SIGNAL(triggered()), this, SLOT(storeContact()) );
 
     views = new QStackedWidget(this);
 
@@ -220,6 +198,7 @@ bool ReadMail::handleOutgoingMessages(const QMailMessageIdList &list) const
     return false;
 }
 
+/*
 void ReadMail::addActions(const QList<QAction*>& actions)
 {
     if (QMailViewerInterface* viewer = currentViewer())
@@ -235,7 +214,7 @@ void ReadMail::removeAction(QAction* action)
     else
         qWarning() << "Cannot remove action. No viewer interface loaded.";
 }
-
+*/
 /*  We need to be careful here. Don't allow clicking on any links
     to automatically install anything.  If we want that, we need to
     make sure that the mail doesn't contain mailicious link encoding
@@ -355,27 +334,14 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
     }
 
     view->setMessage(mail);
-    view->addActions(QList<QAction*>() << getThisMailButton
-                                       << replyButton
-                                       << replyAllAction
-                                       << forwardAction
-                                       << deleteButton
-                                       << storeButton);
+    view->addActions(QList<QAction*>() << getThisMailButton);
+    view->addActions(this->actions());
     switchView(view, displayName(mail));
 }
 
 void ReadMail::keyPressEvent(QKeyEvent *e)
 {
     switch( e->key() ) {
-        case Qt::Key_Delete:
-            deleteItem();
-            break;
-        case Qt::Key_R:
-            reply();
-            break;
-        case Qt::Key_F:
-            forward();
-            break;
         default:
             QWidget::keyPressEvent( e );
     }
@@ -386,7 +352,7 @@ void ReadMail::displayMessage(const QMailMessageId& id, QMailViewerFactory::Pres
 {
     if (!id.isValid())
         return;
-       
+
     hasNext = nextAvailable;
     hasPrevious = previousAvailable;
 
@@ -415,7 +381,7 @@ void ReadMail::messageContentsModified(const QMailMessageIdList& list)
             viewer->setMessage(mail);
         return;
     }
-    
+
     updateButtons();
 }
 
@@ -453,23 +419,6 @@ void ReadMail::loadMessage(const QMailMessageId &id)
     updateButtons();
 }
 
-//deletes item, tries bringing up next or previous, exits if unsucessful
-void ReadMail::deleteItem()
-{
-    if (deleteButton->isVisible()) {
-        QMailMessageId deleteId(mail.id());
-
-        if (deleteId.isValid()) {
-            // After deletion, we're finished viewing
-
-            // Clear the current message, otherwise we will think it is updated by the deletion event
-            mail = QMailMessage();
-
-            emit removeMessage(deleteId, true);
-        }
-    }
-}
-
 void ReadMail::updateButtons()
 {
     if (!mail.id().isValid())
@@ -477,60 +426,10 @@ void ReadMail::updateButtons()
 
     bool incoming(mail.status() & QMailMessage::Incoming);
     bool downloaded(mail.status() & QMailMessage::ContentAvailable);
-
-    bool trash(mail.status() & QMailMessage::Trash);
     bool removed(mail.status() & QMailMessage::Removed);
-    bool system(mail.messageType() == QMailMessage::System);
-
     bool messageReceived(downloaded || receiving);
 
     getThisMailButton->setVisible( !messageReceived && !removed && incoming );
-
-    if (!downloaded || system) {
-        // We can't really forward/reply/reply-to-all without the message content
-        replyButton->setVisible(false);
-        replyAllAction->setVisible(false);
-        forwardAction->setVisible(false);
-    } else {
-        bool otherReplyTarget(!mail.cc().isEmpty() || mail.to().count() > 1);
-
-        // TODO: handle cases where: a) a Mail-Followup-To is specified, and 
-        // b) a singular To address is not our own address, and is probably a mailing list...
-
-        replyButton->setVisible(incoming);
-        replyAllAction->setVisible(incoming && otherReplyTarget);
-
-        forwardAction->setVisible(true);
-    }
-
-    deleteButton->setText(trash ? tr("Delete") : tr("Move to Trash"));
-
-    // Show the 'Save Sender' action if we don't have a matching contact
-    QMailAddress fromAddress(mail.from());
-    //bool unknownContact = !fromAddress.matchesExistingContact();
-    bool unknownContact = true;
-    storeButton->setVisible(!fromAddress.isNull() && unknownContact);
-}
-
-void ReadMail::reply()
-{
-    if (replyButton->isVisible()) {
-        emit responseRequested(mail, QMailMessage::Reply);
-    }
-}
-
-void ReadMail::replyAll()
-{
-    if (replyAllAction->isVisible()) {
-        emit responseRequested(mail, QMailMessage::ReplyToAll);
-    }
-}
-
-void ReadMail::forward()
-{
-    if (forwardAction->isVisible()) {
-        emit responseRequested(mail, QMailMessage::Forward);
-    }
 }
 
 void ReadMail::respondToMessage(QMailMessage::ResponseType type)
@@ -661,11 +560,8 @@ QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailV
         } else {
             view->setObjectName("read-message");
             view->widget()->setWhatsThis(tr("This view displays the contents of the message."));
-
             connect(view, SIGNAL(respondToMessage(QMailMessage::ResponseType)), this, SLOT(respondToMessage(QMailMessage::ResponseType)));
             connect(view, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SLOT(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
-            connect(view, SIGNAL(deleteMessage()), deleteButton, SLOT(trigger()));
-            connect(view, SIGNAL(saveSender()), storeButton, SLOT(trigger()));
             connect(view, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
             connect(view, SIGNAL(messageChanged(QMailMessageId)), this, SLOT(messageChanged(QMailMessageId)));
             connect(view, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)));

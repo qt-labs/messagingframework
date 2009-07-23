@@ -921,7 +921,6 @@ void SearchView::setupUi()
     searchSettingsLayout->addWidget(m_bodySearchWidget = new BodySearchWidget(this));
 
     m_searchResults = new MessageListView(this);
-    m_searchResults->showQuickSearch(false);
     connect(m_searchResults,SIGNAL(activated(const QMailMessageId&)),this,SIGNAL(searchResultSelected(const QMailMessageId&)));
     searchSettingsLayout->addWidget(m_searchResults);
 

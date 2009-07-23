@@ -61,95 +61,10 @@
 #include <QComboBox>
 #include <QLineEdit>
 #include <qmaildatacomparator.h>
+#include "quicksearchwidget.h"
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 static const QColor newMessageColor(Qt::blue);
-
-class QuickSearchWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    QuickSearchWidget(QWidget* parent = 0);
-
-public slots:
-    void reset();
-
-signals:
-    void quickSearch(const QMailMessageKey& key);
-    void fullSearchRequested();
-
-private slots:
-    void searchTermsChanged();
-
-private:
-    QMailMessageKey buildSearchKey() const;
-
-private:
-    QLineEdit* m_searchTerms;
-    QComboBox* m_statusCombo;
-    QToolButton* m_fullSearchButton;
-    QToolButton* m_clearButton;
-};
-
-QuickSearchWidget::QuickSearchWidget(QWidget* parent)
-:
-QWidget(parent)
-{
-    QHBoxLayout* layout = new QHBoxLayout(this);
-
-    m_clearButton = new QToolButton(this);
-    m_clearButton->setIcon(QIcon(":icon/clear_right"));
-    connect(m_clearButton,SIGNAL(clicked()),this,SLOT(reset()));
-    layout->addWidget(m_clearButton);
-
-    layout->addWidget(new QLabel("Search:"));
-    m_searchTerms = new QLineEdit(this);
-    connect(m_searchTerms,SIGNAL(textChanged(QString)),this,SLOT(searchTermsChanged()));
-    layout->addWidget(m_searchTerms);
-
-    layout->addWidget(new QLabel("Status:"));
-
-    m_statusCombo = new QComboBox(this);
-    m_statusCombo->addItem(QIcon(":icon/exec"),"Any Status",QMailMessageKey());
-    m_statusCombo->addItem(QIcon(":icon/mail_generic"),"Unread",QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes));
-    m_statusCombo->addItem(QIcon(":icon/new"),"New",QMailMessageKey::status(QMailMessage::New));
-    m_statusCombo->addItem(QIcon(":icon/mail_reply"),"Replied",QMailMessageKey::status(QMailMessage::Replied));
-    m_statusCombo->addItem(QIcon(":icon/mail_forward"),"Forwarded",QMailMessageKey::status(QMailMessage::Forwarded));
-    m_statusCombo->addItem(QIcon(":/icon/attach"),"Has Attachment",QMailMessageKey::status(QMailMessage::HasAttachments));
-    connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
-    layout->addWidget(m_statusCombo);
-
-    m_fullSearchButton = new QToolButton(this);
-    m_fullSearchButton->setIcon(QIcon(":icon/find"));
-    connect(m_fullSearchButton,SIGNAL(clicked(bool)),this,SIGNAL(fullSearchRequested()));
-    layout->addWidget(m_fullSearchButton);
-}
-
-void QuickSearchWidget::reset()
-{
-    m_statusCombo->setCurrentIndex(0);
-    m_searchTerms->clear();
-}
-
-void QuickSearchWidget::searchTermsChanged()
-{
-    QMailMessageKey key = buildSearchKey();
-    emit quickSearch(key);
-}
-
-QMailMessageKey QuickSearchWidget::buildSearchKey() const
-{
-    if(m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
-        return QMailMessageKey();
-    QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
-    QMailMessageKey senderKey = QMailMessageKey::sender(m_searchTerms->text(),QMailDataComparator::Includes);
-
-    QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
-    if(!statusKey.isEmpty())
-        return ((subjectKey | senderKey) & statusKey);
-    return subjectKey | senderKey;
-}
-
 
 template <typename BaseModel>
 class MessageListModel : public BaseModel
@@ -272,7 +187,6 @@ QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) 
 
     return SuperType::data(index, role);
 }
-
 
 class MessageList : public QTreeView
 {
@@ -501,7 +415,7 @@ void MessageListView::init()
             this, SIGNAL(rowCountChanged()));
 
     mQuickSearchWidget = new QuickSearchWidget(this);
-    connect(mQuickSearchWidget,SIGNAL(quickSearch(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+    connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
     connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
 
     mScrollTimer.setSingleShot(true);
