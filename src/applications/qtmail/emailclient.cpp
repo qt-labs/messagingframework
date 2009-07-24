@@ -474,8 +474,14 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
 {
     setObjectName( "EmailClient" );
 
+    //start messageserver if it's not running
     if (!isMessageServerRunning() && !startMessageServer())
         qFatal("Unable to start messageserver!");
+
+    //run account setup if we don't have any defined yet
+    bool haveAccounts = QMailStore::instance()->countAccounts() > 0;
+    if(!haveAccounts)
+        settings();
 
     init();
 
@@ -734,7 +740,7 @@ bool EmailClient::isRetrieving()
 void EmailClient::initActions()
 {
     if (!getMailButton) {
-        getMailButton = new QAction( QIcon(":icon/getmail"), tr("Get all mail"), this );
+        getMailButton = new QAction( QIcon(":icon/sync"), tr("Get all mail"), this );
         connect(getMailButton, SIGNAL(triggered()), this, SLOT(getAllNewMail()) );
         getMailButton->setWhatsThis( tr("Get new mail from all your accounts.") );
         setActionVisible(getMailButton, false);
@@ -867,7 +873,6 @@ void EmailClient::initActions()
         readMailWidget()->addAction(forwardAction);
         readMailWidget()->addAction(createSeparator());
         readMailWidget()->addAction(deleteMailAction);
-
     }
 }
 

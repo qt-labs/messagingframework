@@ -23,5 +23,6 @@
 <file alias="cross">pics/button_cancel.png</file>
 <file alias="close">pics/fileclose.png</file>
 <file alias="stop">pics/stop.png</file>
+<file alias="sync">pics/reload.png</file>
 </qresource>
 </RCC>
