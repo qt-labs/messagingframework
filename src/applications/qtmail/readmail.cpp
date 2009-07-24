@@ -198,23 +198,6 @@ bool ReadMail::handleOutgoingMessages(const QMailMessageIdList &list) const
     return false;
 }
 
-/*
-void ReadMail::addActions(const QList<QAction*>& actions)
-{
-    if (QMailViewerInterface* viewer = currentViewer())
-        viewer->addActions(actions);
-    else
-        qWarning() << "Cannot add actions. No viewer interface loaded.";
-}
-
-void ReadMail::removeAction(QAction* action)
-{
-    if (QMailViewerInterface* viewer = currentViewer())
-        viewer->removeAction(action);
-    else
-        qWarning() << "Cannot remove action. No viewer interface loaded.";
-}
-*/
 /*  We need to be careful here. Don't allow clicking on any links
     to automatically install anything.  If we want that, we need to
     make sure that the mail doesn't contain mailicious link encoding
@@ -334,8 +317,9 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
     }
 
     view->setMessage(mail);
-    view->addActions(QList<QAction*>() << getThisMailButton);
-    view->addActions(this->actions());
+
+    QAction* separator = new QAction(this); separator->setSeparator(true);
+    view->addActions(QList<QAction*>() << getThisMailButton << separator << this->actions());
     switchView(view, displayName(mail));
 }
 

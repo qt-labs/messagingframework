@@ -322,6 +322,8 @@ private:
 
     void clearNewMessageStatus(const QMailMessageKey& key);
 
+    QAction* createSeparator();
+
 private:
     // Whether the initial action for the app was to view incoming messages 
     enum InitialAction { None = 0, IncomingMessages, NewMessages, View, Compose, Cleanup };

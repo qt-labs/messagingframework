@@ -731,6 +731,7 @@ bool EmailClient::isRetrieving()
     return (transferStatus & Retrieving);
 }
 
+
 void EmailClient::initActions()
 {
     if (!getMailButton) {
@@ -844,11 +845,14 @@ void EmailClient::initActions()
         messageListView()->addAction(replyAction);
         messageListView()->addAction(replyAllAction);
         messageListView()->addAction(forwardAction);
+        messageListView()->addAction(createSeparator());
         messageListView()->addAction( copyAction );
         messageListView()->addAction( moveAction );
         messageListView()->addAction( deleteMailAction );
         messageListView()->addAction( restoreAction );
+        messageListView()->addAction(createSeparator());
         messageListView()->addAction( selectAllAction );
+        messageListView()->addAction(createSeparator());
         messageListView()->addAction( markAction );
         messageListView()->addAction( threadAction );
         messageListView()->addAction( detachThreadAction );
@@ -857,6 +861,7 @@ void EmailClient::initActions()
         readMailWidget()->addAction(replyAction);
         readMailWidget()->addAction(replyAllAction);
         readMailWidget()->addAction(forwardAction);
+        readMailWidget()->addAction(createSeparator());
         readMailWidget()->addAction(deleteMailAction);
 
     }
@@ -2401,6 +2406,13 @@ void EmailClient::clearNewMessageStatus(const QMailMessageKey& key)
     if (count) {
         QMailStore::instance()->updateMessagesMetaData(clearNewKey, QMailMessage::New, false);
     }
+}
+
+QAction* EmailClient::createSeparator()
+{
+    QAction* sep = new QAction(this);
+    sep->setSeparator(true);
+    return sep;
 }
 
 void EmailClient::setMarkingMode(bool set)
