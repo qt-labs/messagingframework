@@ -222,7 +222,6 @@ AcknowledgmentBox::AcknowledgmentBox(const QString& title, const QString& text)
     setAttribute(Qt::WA_DeleteOnClose);
 
     QDialog::show();
-
     QTimer::singleShot(_timeout, this, SLOT(accept()));
 }
 
@@ -807,10 +806,10 @@ void EmailClient::initActions()
         connect(replyAction, SIGNAL(triggered()), this, SLOT(replyClicked()));
         replyAction->setWhatsThis( tr("Reply to sender only.  Select Reply all from the menu if you want to reply to all recipients.") );
 
-        replyAllAction = new QAction( QIcon(":icon/replytoall"), tr("Reply all"), this );
+        replyAllAction = new QAction( QIcon(":icon/replyall"), tr("Reply all"), this );
         connect(replyAllAction, SIGNAL(triggered()), this, SLOT(replyAllClicked()));
 
-        forwardAction = new QAction(tr("Forward"), this );
+        forwardAction = new QAction(QIcon(":icon/forward"),tr("Forward"), this );
         connect(forwardAction, SIGNAL(triggered()), this, SLOT(forwardClicked()));
 
         QMenu* fileMenu = m_contextMenu;
@@ -835,6 +834,11 @@ void EmailClient::initActions()
         toolBar->addAction( searchButton );
         toolBar->addSeparator();
         toolBar->addAction( settingsAction );
+        toolBar->addSeparator();
+        toolBar->addAction(replyAction);
+        toolBar->addAction(forwardAction);
+        toolBar->addSeparator();
+        toolBar->addAction(deleteMailAction);
 
         updateGetMailButton();
 

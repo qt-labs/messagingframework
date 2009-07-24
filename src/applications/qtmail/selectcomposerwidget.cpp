@@ -55,7 +55,6 @@ class SelectListWidget : public QListWidget
 
 public:
     SelectListWidget(QWidget* parent = 0);
-    virtual ~SelectListWidget();
 
 signals:
     void cancel();
@@ -70,8 +69,6 @@ SelectListWidget::SelectListWidget(QWidget* parent)
 QListWidget(parent)
 {
 }
-
-SelectListWidget::~SelectListWidget(){}
 
 void SelectListWidget::keyPressEvent(QKeyEvent* e)
 {
