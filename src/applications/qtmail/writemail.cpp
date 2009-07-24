@@ -477,6 +477,7 @@ bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType>
                                   QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
             emit editAccounts();
         }
+        return false;
     }
     if (!m_selectComposerWidget->availableTypes().contains(messageType)) {
         // If still not possible, then just fail
