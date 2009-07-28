@@ -4308,8 +4308,10 @@ QMailMessagePart::Location::Location(const QString& description)
         indices = description;
     }
 
-    foreach (const QString &index, indices.split(".")) {
-        d->_indices.append(index.toUInt());
+    if (!indices.isEmpty()) {
+        foreach (const QString &index, indices.split(".")) {
+            d->_indices.append(index.toUInt());
+        }
     }
 
     Q_ASSERT(description == toString(separator == -1 ? false : true));
