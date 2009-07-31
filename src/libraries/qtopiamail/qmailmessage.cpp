@@ -776,87 +776,6 @@ static QByteArray removeComments(const QByteArray& input, int (*classifier)(int)
     return result;
 }
 
-static QMailMessagePartContainer::MultipartType multipartTypeForName(const QByteArray& name)
-{
-    QByteArray ciName = name.toLower();
-
-    if (ciName == "multipart/signed")
-        return QMailMessagePartContainer::MultipartSigned;
-
-    if (ciName == "multipart/encrypted")
-        return QMailMessagePartContainer::MultipartEncrypted;
-
-    if (ciName == "multipart/mixed")
-        return QMailMessagePartContainer::MultipartMixed;
-
-    if (ciName == "multipart/alternative")
-        return QMailMessagePartContainer::MultipartAlternative;
-
-    if (ciName == "multipart/digest")
-        return QMailMessagePartContainer::MultipartDigest;
-
-    if (ciName == "multipart/parallel")
-        return QMailMessagePartContainer::MultipartParallel;
-
-    if (ciName == "multipart/related")
-        return QMailMessagePartContainer::MultipartRelated;
-
-    if (ciName == "multipart/form")
-        return QMailMessagePartContainer::MultipartFormData;
-
-    if (ciName == "multipart/report")
-        return QMailMessagePartContainer::MultipartReport;
-
-    return QMailMessagePartContainer::MultipartNone;
-}
-
-static const char* nameForMultipartType(QMailMessagePartContainer::MultipartType type)
-{
-    switch( type ) 
-    {
-        case QMailMessagePartContainer::MultipartSigned:
-        {
-            return "multipart/signed";
-        }
-        case QMailMessagePartContainer::MultipartEncrypted:
-        {
-            return "multipart/encrypted";
-        }
-        case QMailMessagePartContainer::MultipartMixed:
-        {
-            return "multipart/mixed";
-        }
-        case QMailMessagePartContainer::MultipartAlternative:
-        {
-            return "multipart/alternative";
-        }
-        case QMailMessagePartContainer::MultipartDigest:
-        {
-            return "multipart/digest";
-        }
-        case QMailMessagePartContainer::MultipartParallel:
-        {
-            return "multipart/parallel";
-        }
-        case QMailMessagePartContainer::MultipartRelated:
-        {
-            return "multipart/related";
-        }
-        case QMailMessagePartContainer::MultipartFormData:
-        {
-            return "multipart/form-data";
-        }
-        case QMailMessagePartContainer::MultipartReport:
-        {
-            return "multipart/report";
-        }
-        case QMailMessagePartContainer::MultipartNone:
-            break;
-    }
-
-    return 0;
-}
-
 
 // Necessary when writing to QDataStream, because the string/char literal is encoded
 // in various pre-processed ways...
@@ -3123,7 +3042,7 @@ void QMailMessagePartContainerPrivate::setHeader(const QMailMessageHeader& partH
     {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(contentType);
-        _multipartType = multipartTypeForName(type.content());
+        _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
         _boundary = type.boundary();
     }
 }
@@ -3272,7 +3191,7 @@ static QMailMessageContentType updateContentType(const QByteArray& existing, QMa
     QMailMessageContentType existingType(existing);
     QList<QMailMessageHeaderField::ParameterType> parameters = existingType.parameters();
 
-    QMailMessageContentType type(nameForMultipartType(multipartType));
+    QMailMessageContentType type(QMailMessagePartContainer::nameForMultipartType(multipartType));
     foreach (const QMailMessageHeaderField::ParameterType& param, parameters)
         type.setParameter(param.first, param.second);
 
@@ -3413,7 +3332,7 @@ void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, c
     {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(content);
-        _multipartType = multipartTypeForName(type.content());
+        _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
         _boundary = type.boundary();
     }
 }
@@ -3442,7 +3361,7 @@ void QMailMessagePartContainerPrivate::appendHeaderField(const QByteArray &id, c
     {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(content);
-        _multipartType = multipartTypeForName(type.content());
+        _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
         _boundary = type.boundary();
     }
 }
@@ -4033,6 +3952,93 @@ void QMailMessagePartContainer::appendHeaderField( const QMailMessageHeaderField
 void QMailMessagePartContainer::removeHeaderField( const QString& id )
 {
     impl(this)->removeHeaderField( to7BitAscii(id) );
+}
+
+/*!
+    Returns the multipart type that corresponds to the type name \a name.
+*/
+QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartTypeForName(const QByteArray &name)
+{
+    QByteArray ciName = name.toLower();
+
+    if ((ciName == "multipart/signed") || (ciName == "signed"))
+        return QMailMessagePartContainer::MultipartSigned;
+
+    if ((ciName == "multipart/encrypted") || (ciName == "encrypted"))
+        return QMailMessagePartContainer::MultipartEncrypted;
+
+    if ((ciName == "multipart/mixed") || (ciName == "mixed"))
+        return QMailMessagePartContainer::MultipartMixed;
+
+    if ((ciName == "multipart/alternative") || (ciName == "alternative"))
+        return QMailMessagePartContainer::MultipartAlternative;
+
+    if ((ciName == "multipart/digest") || (ciName == "digest"))
+        return QMailMessagePartContainer::MultipartDigest;
+
+    if ((ciName == "multipart/parallel") || (ciName == "parallel"))
+        return QMailMessagePartContainer::MultipartParallel;
+
+    if ((ciName == "multipart/related") || (ciName == "related"))
+        return QMailMessagePartContainer::MultipartRelated;
+
+    if ((ciName == "multipart/form") || (ciName == "form"))
+        return QMailMessagePartContainer::MultipartFormData;
+
+    if ((ciName == "multipart/report") || (ciName == "report"))
+        return QMailMessagePartContainer::MultipartReport;
+
+    return QMailMessagePartContainer::MultipartNone;
+}
+
+/*!
+    Returns the standard textual representation for the multipart type \a type.
+*/
+QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartContainer::MultipartType type)
+{
+    switch (type) 
+    {
+        case QMailMessagePartContainer::MultipartSigned:
+        {
+            return "multipart/signed";
+        }
+        case QMailMessagePartContainer::MultipartEncrypted:
+        {
+            return "multipart/encrypted";
+        }
+        case QMailMessagePartContainer::MultipartMixed:
+        {
+            return "multipart/mixed";
+        }
+        case QMailMessagePartContainer::MultipartAlternative:
+        {
+            return "multipart/alternative";
+        }
+        case QMailMessagePartContainer::MultipartDigest:
+        {
+            return "multipart/digest";
+        }
+        case QMailMessagePartContainer::MultipartParallel:
+        {
+            return "multipart/parallel";
+        }
+        case QMailMessagePartContainer::MultipartRelated:
+        {
+            return "multipart/related";
+        }
+        case QMailMessagePartContainer::MultipartFormData:
+        {
+            return "multipart/form-data";
+        }
+        case QMailMessagePartContainer::MultipartReport:
+        {
+            return "multipart/report";
+        }
+        case QMailMessagePartContainer::MultipartNone:
+            break;
+    }
+
+    return QByteArray();
 }
 
 /*! \internal */

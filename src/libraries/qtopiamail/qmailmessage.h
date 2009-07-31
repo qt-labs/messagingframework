@@ -338,6 +338,9 @@ public:
     template <typename F>
     bool foreachPart(F func) const;
 
+    static MultipartType multipartTypeForName(const QByteArray &name);
+    static QByteArray nameForMultipartType(MultipartType type);
+
 protected:
     template<typename Subclass>
     QMailMessagePartContainer(Subclass* p);

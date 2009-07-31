@@ -47,6 +47,9 @@ Changes since the QMF-1.0 release on 15/05/09:
             'QMailMessageSortKey::status(Qt::SortOrder)' to
             'QMailMessageSortKey::status(quint64, Qt::SortOrder)'.
 
+13. Added 'QMailMessagePartContainer::multipartTypeForName(const QByteArray&)' and
+          'QMailMessagePartContainer::nameForMultipartType(QMailMessagePartContainer::MultipartType)'.
+
 
 *****************************************************************************
 
