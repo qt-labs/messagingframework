@@ -442,6 +442,9 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     // Update the local copy status immediately
     QMailMessageSource::modifyMessageFlags(messageIds, setMask, unsetMask);
 
+    //ensure actionCompleted gets called
+    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+
     // See if there are any further actions to be taken
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
@@ -528,7 +531,6 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(moveIds, sentId);
                 appendStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
             }
-
             return initiateStrategy();
         }
     }

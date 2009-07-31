@@ -153,7 +153,7 @@ quint64 QMailServiceActionPrivate::newAction()
 {
     if (_action != 0) {
         qWarning() << "Unable to allocate new action - oustanding:" << messageActionParts(_action).second;
-        return 0;
+        return _action;
     }
 
     init();
@@ -1038,8 +1038,8 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
 {
     // Ensure that nothing is both set and unset
     setMask &= ~unsetMask;
-
     _server->flagMessages(newAction(), ids, setMask, unsetMask);
+
     _ids = ids;
     emitChanges();
 }
