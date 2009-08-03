@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "statusdisplay_p.h"
+#include "statusdisplay.h"
 #include <QApplication>
 #include <QProgressBar>
 

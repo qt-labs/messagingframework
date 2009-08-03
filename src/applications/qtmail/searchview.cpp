@@ -872,6 +872,7 @@ void SearchView::reset()
 {
     m_folderSelectorWidget->reset();
     m_searchTermsComposer->reset();
+    m_searchResults->setKey(QMailMessageKey());
     m_searchResults->reset();
     m_bodySearchWidget->reset();
 }

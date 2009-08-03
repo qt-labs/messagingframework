@@ -928,9 +928,9 @@ void MessageListView::reset()
         key = this->key();
         sortKey = this->sortKey();
         currentId = this->current();
-        delete mModel; 
+        delete mModel;
     }
-    
+
     if (mThreaded) {
         mModel = new MessageListModel<QMailMessageThreadedModel>(this);
     } else {
@@ -939,7 +939,6 @@ void MessageListView::reset()
 
     connect(mModel, SIGNAL(modelChanged()),
             this, SLOT(modelChanged()));
-
     connect(mModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
             this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
     connect(mModel, SIGNAL(layoutChanged()),
