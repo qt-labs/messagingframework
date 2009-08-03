@@ -6481,6 +6481,7 @@ struct ChunkStore
 /*!
     Returns the message in RFC 2822 format, separated into chunks that can
     be individually transferred by a mechanism such as that defined by RFC 3030.
+    The encoded content will vary depending on the value of \a format.
 */
 QList<QMailMessage::MessageChunk> QMailMessage::toRfc2822Chunks(EncodingFormat format) const
 {
@@ -6734,7 +6735,7 @@ void QMailMessage::setUnmodified()
     partContainerImpl()->setUnmodified();
 }
 
-/*! \reimp */
+/*! \internal */
 void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMessagePartContainerPrivate* parent)
 {
     QMailMessagePartContainer::setHeader(partHeader, parent);

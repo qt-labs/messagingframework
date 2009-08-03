@@ -101,18 +101,29 @@ void GenericViewer::scrollToAnchor(const QString& a)
     browser->scrollToAnchor(a);
 }
 
-QString GenericViewer::key() const { return "GenericViewer"; }
-QMailViewerFactory::PresentationType GenericViewer::presentation() const { return QMailViewerFactory::StandardPresentation; }
-QList<int> GenericViewer::types() const { return QList<int>() << QMailMessage::PlainTextContent
-                                                           << QMailMessage::RichTextContent
-                                                           << QMailMessage::ImageContent
-                                                           << QMailMessage::AudioContent
-                                                           << QMailMessage::VideoContent
-                                                           << QMailMessage::MultipartContent
-                                                           << QMailMessage::HtmlContent         // temporary...
-                                                           << QMailMessage::VCardContent        // temporary...
-                                                           << QMailMessage::VCalendarContent    // temporary...
-                                                           << QMailMessage::ICalendarContent; } // temporary...
+QString GenericViewer::key() const
+{
+    return "GenericViewer";
+}
+
+QMailViewerFactory::PresentationType GenericViewer::presentation() const
+{
+    return QMailViewerFactory::StandardPresentation;
+}
+
+QList<QMailMessage::ContentType> GenericViewer::types() const 
+{ 
+    return QList<QMailMessage::ContentType>() << QMailMessage::PlainTextContent
+                                              << QMailMessage::RichTextContent
+                                              << QMailMessage::ImageContent
+                                              << QMailMessage::AudioContent
+                                              << QMailMessage::VideoContent
+                                              << QMailMessage::MultipartContent
+                                              << QMailMessage::HtmlContent         // temporary...
+                                              << QMailMessage::VCardContent        // temporary...
+                                              << QMailMessage::VCalendarContent    // temporary...
+                                              << QMailMessage::ICalendarContent;   // temporary...
+}
 
 bool GenericViewer::setMessage(const QMailMessage& mail)
 {

@@ -8,7 +8,7 @@
 
 The Messaging Framework Client library provides a set of APIs for accessing messaging data.  
 Interfaces are provided to create, modify, store, and retrieve messages.  
-The library does not directly support sending or retrieving messages; these actions are currently supported via the \l{Services}{QtopiaServiceRequest} mechanism.
+The library does not directly support sending or retrieving messages; these actions are currently supported via a service request mechanism.
 
 The Client library provides unified access to the messaging data on a device including concurrent access to messaging data by multiple applications, and independence from the mechanism used to store the messaging data on the device.  
 

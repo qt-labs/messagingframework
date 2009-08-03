@@ -563,6 +563,7 @@ void QMailMessageServer::moveMessages(quint64 action, const QMailMessageIdList& 
 /*!
     Requests that the MessageServer flag each message listed in \a mailList by setting
     the status flags set in \a setMask, and unsetting the status flags set in \a unsetMask.
+    The request has the identifier \a action.
 
     The protocol must ensure that the local message records are appropriately modified, 
     although the external changes may be buffered and effected at the next invocation 

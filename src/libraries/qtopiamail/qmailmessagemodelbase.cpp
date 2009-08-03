@@ -94,6 +94,33 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
 
 
 /*!
+    \class QMailMessageModelBase
+
+    \preliminary
+    \ingroup messaginglibrary 
+    \brief The QMailMessageModelBase class provides an interface to a model containing messages.
+
+    The QMailMessageModelBase presents a model of all the messages currently stored in
+    the message store. By using the setKey() and sortKey() functions it is possible to have the model
+    represent specific user-filtered subsets of messages, sorted in a particular order.
+
+    The QMailMessageModelBase is a descendant of QAbstractListModel, so it is suitable for use with
+    the Qt View classes such as QListView and QTreeView to visually present groups of messages. 
+
+    The model listens for changes reported by the QMailStore, and automatically synchronizes
+    its content with that of the store.  This behaviour can be optionally or temporarily disabled 
+    by calling the setIgnoreMailStoreUpdates() function.
+
+    Messages can be extracted from the view with the idFromIndex() function and the resultant id can be 
+    used to load a message from the store. 
+
+    For filters or sorting not provided by the QMailMessageModelBase it is recommended that
+    QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering. 
+
+    \sa QMailMessage, QSortFilterProxyModel
+*/
+
+/*!
     \enum QMailMessageModelBase::Roles
 
     Represents common display roles of a message. These roles are used to display common message elements 
@@ -357,6 +384,8 @@ QMailMessageKey QMailMessageModelBase::key() const
     Sets the QMailMessageKey used to populate the contents of the model to \a key.
     If the key is empty, the model is populated with all the messages from the 
     database.
+    
+    \sa modelChanged()
 */
 void QMailMessageModelBase::setKey(const QMailMessageKey& key) 
 {
@@ -376,6 +405,8 @@ QMailMessageSortKey QMailMessageModelBase::sortKey() const
     Sets the QMailMessageSortKey used to sort the contents of the model to \a sortKey.
     If the sort key is invalid, no sorting is applied to the model contents and messages
     are displayed in the order in which they were added into the database.
+    
+    \sa modelChanged()
 */
 void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey) 
 {
@@ -383,6 +414,11 @@ void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey)
     impl()->setSortKey(sortKey.isEmpty() ? QMailMessageSortKey::id() : sortKey);
     fullRefresh(true);
 }
+
+/*! 
+    \fn QModelIndex QMailMessageModelBase::generateIndex(int row, int column, void *ptr)
+    \internal 
+*/
 
 /*! \internal */
 void QMailMessageModelBase::emitDataChanged(const QModelIndex& idx)
@@ -493,3 +529,18 @@ void QMailMessageModelBase::fullRefresh(bool changed)
         emit modelChanged();
 }
 
+/*!
+    \fn void QMailMessageModelBase::modelChanged()
+
+    Signal that is emitted when the content or ordering of the model is reset.
+*/
+
+/*!
+    \fn QMailMessageModelImplementation *QMailMessageModelBase::impl()
+    \internal
+*/
+
+/*!
+    \fn const QMailMessageModelImplementation *QMailMessageModelBase::impl() const
+    \internal
+*/

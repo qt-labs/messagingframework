@@ -67,73 +67,9 @@ static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
 /*!
-  \namespace QMail
+    \namespace QMail
 
-  \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
-*/
-
-/*!
-  \fn QString QMail::lastSystemErrorMessage()
-
-  Returns the text describing the last error reported by the underlying platform.
-*/
-
-/*!
-  \fn void QMail::usleep(unsigned long usecs)
-
-  Suspends the current process for \a usecs microseconds.
-*/
-
-/*!
-  \fn QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
-
-  Returns the 'base' form of \a subject, using the transformation defined by RFC5256.
-  If the original subject contains any variant of the tokens "Re" or "Fwd" recognized by
-  RFC5256, then \a replyOrForward will be set to true.
-*/
-
-/*!
-  \fn QSqlDatabase QMail::createDatabase()
-
-  Returns the database where the Messaging framework will store its message meta-data. If the database
-  does not exist, it is created.
-*/
-
-/*!
-  \fn QString QMail::dataPath()
-
-  Returns the path to where the Messaging framework will store its data files.
-*/
-
-/*!
-  \fn QString QMail::tempPath()
-
-  Returns the path to where the Messaging framework will store its temporary files.
-*/
-
-/*!
-  \fn QString QMail::pluginsPath()
-
-  Returns the path to where the Messaging framework will look for its plugin directories
-*/
-
-/*!
-  \fn QString QMail::sslCertsPath()
-
-  Returns the path to where the Messaging framework will search for SSL certificates.
-*/
-
-/*!
-  \fn QString QMail::mimeTypeFromFileName(const QString& filename)
-
-  Returns the string mime type based on the filename \a filename.
-*/
-
-/*!
-  \fn QStringList QMail::extensionsForMimeType(const QString& mimeType)
-
-  Returns a list of valid file extensions for the mime type string \a mimeType
-  or an empty list if the mime type is unrecognized.
+    \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
 */
 
 /*!
@@ -149,9 +85,11 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
     Returns \a src surrounded by double-quotes, which are added if not already present.
 */
 
-/*!
-    \fn int QMail::fileLock(const QString& lockFile)
+#ifdef Q_OS_WIN
+static QMap<int, HANDLE> lockedFiles;
+#endif
 
+/*!
     Convenience function that attempts to obtain a lock on a file with name \a lockFile.
     It is not necessary to create \a lockFile as this file is created temporarily.
 
@@ -159,21 +97,6 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
     \sa QMail::fileUnlock()
 */
-
-/*!
-    \fn bool QMail::fileUnlock(int id)
-
-    Convenience function that attempts to unlock the file with identifier \a id that was locked by \c QMail::fileLock.
-
-    Returns \c true for success or \c false otherwise.
-
-    \sa QMail::fileLock()
-*/
-
-#ifdef Q_OS_WIN
-static QMap<int, HANDLE> lockedFiles;
-#endif
-
 int QMail::fileLock(const QString& lockFile)
 {
     QString path = QDir::tempPath() + "/" + lockFile;
@@ -226,6 +149,13 @@ int QMail::fileLock(const QString& lockFile)
 #endif
 }
 
+/*!
+    Convenience function that attempts to unlock the file with identifier \a id that was locked by \c QMail::fileLock.
+
+    Returns \c true for success or \c false otherwise.
+
+    \sa QMail::fileLock()
+*/
 bool QMail::fileUnlock(int id)
 {
 #ifdef Q_OS_WIN
@@ -264,7 +194,9 @@ bool QMail::fileUnlock(int id)
 #endif
 }
 
-
+/*!
+    Returns the path to where the Messaging framework will store its data files.
+*/
 QString QMail::dataPath()
 {
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
@@ -274,11 +206,17 @@ QString QMail::dataPath()
     return QDir::homePath() + "/.qmf/";
 }
 
+/*!
+    Returns the path to where the Messaging framework will store its temporary files.
+*/
 QString QMail::tempPath()
 {
     return QDir::tempPath();
 }
 
+/*!
+    Returns the path to where the Messaging framework will look for its plugin directories
+*/
 QString QMail::pluginsPath()
 {
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
@@ -288,27 +226,40 @@ QString QMail::pluginsPath()
     return pluginsEnv;
 }
 
+/*!
+    Returns the path to where the Messaging framework will search for SSL certificates.
+*/
 QString QMail::sslCertsPath()
 {
     return "/etc/ssl/certs/";
 }
 
+/*!
+    Returns the path to where the Messaging framework will invoke the messageserver process.
+*/
 QString QMail::messageServerPath()
 {
-	static QString serverEnv(qgetenv(QMF_SERVER_ENV));
-	if(!serverEnv.isEmpty())
-		return serverEnv + "/";
-	return QApplication::applicationDirPath() + "/";
+    static QString serverEnv(qgetenv(QMF_SERVER_ENV));
+    if(!serverEnv.isEmpty())
+        return serverEnv + "/";
+    return QApplication::applicationDirPath() + "/";
 }
 
+/*!
+    Returns the path to where the Messaging framework will search for settings information.
+*/
 QString QMail::messageSettingsPath()
 {
-	static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
-	if(!settingsEnv.isEmpty())
-		return settingsEnv + "/";
-	return QApplication::applicationDirPath() + "/";
+    static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
+    if(!settingsEnv.isEmpty())
+        return settingsEnv + "/";
+    return QApplication::applicationDirPath() + "/";
 }
 
+/*!
+    Returns the database where the Messaging framework will store its message meta-data. 
+    If the database does not exist, it is created.
+*/
 QSqlDatabase QMail::createDatabase()
 {
     static bool init = false;
@@ -413,6 +364,9 @@ static void loadExtensions()
     mutex.unlock();
 }
 
+/*!
+    Returns the string mime type based on the filename \a filename.
+*/
 QString QMail::mimeTypeFromFileName(const QString& filename)
 {
     if (filename.isEmpty())
@@ -454,12 +408,19 @@ QString QMail::mimeTypeFromFileName(const QString& filename)
     return lwrExtOrId;
 }
 
+/*!
+    Returns a list of valid file extensions for the mime type string \a mimeType
+    or an empty list if the mime type is unrecognized.
+*/
 QStringList QMail::extensionsForMimeType(const QString& mimeType)
 {
     loadExtensions();
     return extFor()->value(mimeType);
 }
 
+/*!
+    Suspends the current process for \a usecs microseconds.
+*/
 void QMail::usleep(unsigned long usecs)
 {
 #ifdef Q_OS_WIN
@@ -479,6 +440,11 @@ void QMail::usleep(unsigned long usecs)
 #endif
 }
 
+/*!
+    Returns the 'base' form of \a subject, using the transformation defined by RFC5256.
+    If the original subject contains any variant of the tokens "Re" or "Fwd" recognized by
+    RFC5256, then \a replyOrForward will be set to true.
+*/
 QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
 {
     // Implements the conversion from subject to 'base subject' defined by RFC 5256
@@ -563,6 +529,10 @@ static QString normaliseIdentifier(const QString& str)
     return result;
 }
 
+/*!
+    Returns the sequence of message identifiers that can be extracted from \a str.
+    Message identifiers must conform to the definition given by RFC 5256.
+*/
 QStringList QMail::messageIdentifiers(const QString& str)
 {
     QStringList result;
@@ -601,6 +571,9 @@ QStringList QMail::messageIdentifiers(const QString& str)
     return result;
 }
 
+/*!
+    Returns the text describing the last error reported by the underlying platform.
+*/
 QString QMail::lastSystemErrorMessage()
 {
 #ifdef Q_OS_WIN

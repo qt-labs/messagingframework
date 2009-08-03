@@ -98,7 +98,7 @@ public:
 
     virtual QString key() const = 0;
     virtual QMailViewerFactory::PresentationType presentation() const = 0;
-    virtual QList<int> types() const = 0;
+    virtual QList<QMailMessage::ContentType> types() const = 0;
 
     bool isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
     {

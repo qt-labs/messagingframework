@@ -25,7 +25,7 @@ display lists of messages and accounts with minimal effort, and with minimal res
 \section1 Message Composer and Viewer Plugins
 
 The Messaging Client Utility library uses a plugin system to register components that can compose and view messages.
-Although this mechanism can be accessed by applications, it is currently recommended that \l{Services}{Services} should be used to support message composing and viewing requirements.
+Although this mechanism can be accessed by applications, it is currently recommended that service requests should be used to support message composing and viewing requirements.
 
 \table
 \header \o Class \o Description

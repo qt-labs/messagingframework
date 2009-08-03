@@ -96,21 +96,19 @@ static QMailComposerInterface* mapping(const QString& key)
     QMailComposerInterface interface to compose a mail message format.
 
     The composer class may start composing with no associated message, or it may be provided with an existing
-    message to edit, via the \l {QMailComposerInterface::setMessage()}{setMessage()} function.
+    message to edit, via the \l {QMailComposerInterface::compose()}{compose()} function.
     A client can query whether the composer object is empty with the
     \l {QMailComposerInterface::isEmpty()}{isEmpty()} function, and extract the
-    composed message with the \l {QMailComposerInterface::message()}{message()} function.  If the
-    message type supports attachments, these can be attached with the
-    \l {QMailComposerInterface::attach()}{attach()} function.  The current state of composition can be cleared
-    with the \l {QMailComposerInterface::clear()}{clear()} function.
+    composed message with the \l {QMailComposerInterface::message()}{message()} function.  The current 
+    state of composition can be cleared with the \l {QMailComposerInterface::clear()}{clear()} function.
 
     The composer object should emit the \l {QMailComposerInterface::changed()}{changed()} signal
     whenever the composed message changes. If composition is cancelled, the composer should emit the
     \l {QMailComposerInterface::cancel()}{cancel()} signal. When the message is ready to send, the composer should
     emit the \l {QMailComposerInterface::sendMessage()}{sendMessage()} signal. For composers which need to inform
     of state changes during composition, such as multi-page composers,
-    the \l {QMailComposerInterface::contextChanged()}{contextChanged()} signal should be emitted to allow container
-    objects to update their view of the \l {QMailComposerInterface::contextTitle()}{contextTitle()} string.
+    the \l {QMailComposerInterface::statusChanged()}{statusChanged()} signal should be emitted to allow container
+    objects to update their view of the \l {QMailComposerInterface::status()}{status()} string.
 
     Each composer class must export metadata describing itself and the messages it is able to compose.  To do
     this, the composer must implement the
@@ -127,18 +125,6 @@ static QMailComposerInterface* mapping(const QString& key)
 
     \sa QMailComposerFactory
 */
-
-/*!
-    \enum QMailComposerInterface::ComposeContext
-
-    Identifies the desired context for message composition.
-
-    \value Create Create a new message
-    \value Reply Create a reply message to a previously received message
-    \value ReplyToAll Create a reply message addressed to all recipients of a previously received message
-    \value Forward Create a message that forwards an existing message
-*/
-
 
 /*!
     Constructs the QMailComposerInterface object with the parent widget \a parent.
@@ -229,11 +215,13 @@ void QMailComposerInterface::setSendingAccountId(const QMailAccountId &accountId
     Q_UNUSED(accountId)
 }
 
+/*!
+    Returns a list of actions that are exported by the composer.
+*/
 QList<QAction*> QMailComposerInterface::actions() const
 {
     return QList<QAction*>();
 }
-
 
 /*!
     \fn bool QMailComposerInterface::isEmpty() const
@@ -248,9 +236,16 @@ QList<QAction*> QMailComposerInterface::actions() const
 */
 
 /*!
-    \fn void QMailComposerInterface::setMessage(const QMailMessage& mail)
+    \fn void QMailComposerInterface::compose(QMailMessage::ResponseType type, 
+                                             const QMailMessage& source = QMailMessage(),
+                                             const QMailMessagePart::Location& sourceLocation = QMailMessagePart::Location(), 
+                                             QMailMessage::MessageType messageType = QMailMessage::AnyType)
 
-    Presets the content of the composer to \a mail.
+    Directs the composer to compose a message, of the form required for the response type \a type.
+    If \a source is non-empty, then it should be interpreted as preset content to be composed.
+    If \a sourceLocation is non-empty, then it should be interpreted as indicating a message part
+    that forms preset content for the composition.  \a messageType indicates the type of
+    message that the composer should produce.
 */
 
 /*!
@@ -260,27 +255,29 @@ QList<QAction*> QMailComposerInterface::actions() const
 */
 
 /*!
-    \fn QString QMailComposerInterface::contextTitle() const
+    \fn QString QMailComposerInterface::title() const
 
-    Returns a string description of the current composition context.
+    Returns a string that may be used as the title for the composer presentation.
 */
 
 /*!
-    \fn bool QMailComposerInterface::isReadyToSend() const
-
-    Returns \c true if the composed message is ready to send or \c false otherwise.
+    Returns a string description of the current composition state.
 */
-
 QString QMailComposerInterface::status() const
 {
     return QString();
 }
 
 /*!
-    \fn void QMailComposerInterface::reply(const QMailMessage& source, int type)
+    \fn bool QMailComposerInterface::isReadyToSend() const
 
-    Presets the content of the composer from the message \a source. The message
-    may be presented differently based on the type of composition specified by \a type.
+    Returns true if the composed message is ready to send or \c false otherwise.
+*/
+
+/*!
+    \fn bool QMailComposerInterface::isSupported(QMailMessage::MessageType t, QMailMessage::ContentType c) const
+
+    Returns true if the composer can produce a message of type \a t, containing data of content type \a c.
 */
 
 /*!
@@ -300,13 +297,13 @@ QString QMailComposerInterface::status() const
 */
 
 /*!
-    \fn void QMailComposerInterface::contextChanged()
+    \fn void QMailComposerInterface::statusChanged(const QString &status)
 
-    Signal that is emitted when the message composition context has changed. For example
-    when transitioning from message body composition to message details composition in a multi page
-    composer.
+    Signal that is emitted when the message composition state has changed, to a new
+    state described by \a status. For example, when transitioning from message body 
+    composition to message details composition in a multi-page composer.
 
-    \sa cancel(), changed()
+    \sa status(), cancel(), changed()
 */
 
 /*!

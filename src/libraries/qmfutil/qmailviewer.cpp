@@ -114,6 +114,12 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
+    \fn QWidget* QMailViewerInterface::widget() const
+
+    Returns the top-level widget that implements the viewer functionality.
+*/
+
+/*!
     \fn bool QMailViewerInterface::setMessage(const QMailMessage& mail)
 
     Displays the contents of \a mail.  Returns whether the message could be successfully displayed.
@@ -233,6 +239,18 @@ void QMailViewerInterface::scrollToAnchor(const QString& link)
 }
 
 /*!
+    \fn void QMailViewerInterface::addActions(const QList<QAction*>& actions)
+
+    Requests that the viewer add the content of \a actions to the set of available user actions.
+*/
+
+/*!
+    \fn void QMailViewerInterface::removeAction(QAction* action)
+
+    Requests that the viewer remove \a action from the set of available user actions.
+*/
+
+/*!
     Allows the viewer object to handle the notification of the arrival of new messages, 
     identified by \a list.
 
@@ -259,6 +277,31 @@ bool QMailViewerInterface::handleOutgoingMessages( const QMailMessageIdList &lis
     Q_UNUSED(list)
     return false;
 }
+
+/*!
+    \fn QString QMailViewerInterface::key() const
+
+    Returns a value that uniquely identifies the viewer component.
+*/
+
+/*!
+    \fn QMailViewerFactory::PresentationType QMailViewerInterface::presentation() const
+
+    Returns the type of message presentation that this viewer implements.
+*/
+
+/*!
+    \fn bool QMailViewerInterface::isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
+
+    Returns true if the viewer can present a message containing data of content type \a t, using the 
+    presentation type \a pres.
+*/
+
+/*!
+    \fn QList<QMailMessage::ContentType> QMailViewerInterface::types() const
+
+    Returns a list of the content types that can be presented by this viewer component.
+*/
 
 /*! 
     Supplies the viewer object with a resource that may be referenced by a mail message.  The resource 

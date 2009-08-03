@@ -533,30 +533,19 @@ int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 
 
 /*!
-  \class QMailMessageListModel 
+    \class QMailMessageListModel 
 
-  \preliminary
-  \ingroup messaginglibrary 
-  \brief The QMailMessageListModel class provides access to a list of stored messages. 
+    \preliminary
+    \ingroup messaginglibrary 
+    \brief The QMailMessageListModel class provides access to a list of stored messages. 
 
-  The QMailMessageListModel presents a list of all the messages currently stored in
-  the message store. By using the setKey() and sortKey() functions it is possible to have the model
-  represent specific user filtered subsets of messages sorted in a particular order.
+    The QMailMessageListModel presents a list of all the messages currently stored in
+    the message store. By using the setKey() and sortKey() functions it is possible to 
+    have the model represent specific user filtered subsets of messages sorted in a particular order.
 
-  The QMailMessageListModel is a descendant of QAbstractListModel, so it is suitable for use with
-  the Qt View classes such as QListView to visually represent lists of messages. 
- 
-  The model listens for changes reported by the QMailStore, and automatically synchronizes
-  its content with that of the store.  This behaviour can be optionally or temporarily disabled 
-  by calling the setIgnoreMailStoreUpdates() function.
-
-  Messages can be extracted from the view with the idFromIndex() function and the resultant id can be 
-  used to load a message from the store. 
-
-  For filters or sorting not provided by the QMailMessageListModel it is recommended that
-  QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering. 
-
-  \sa QMailMessage, QSortFilterProxyModel
+    The QMailMessageListModel does not represent the hierarchical links between messages 
+    implied by conversation threads.  The model flattens the structure of messages such
+    that they can be presented as a one-dimensional list.
 */
 
 /*!

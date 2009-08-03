@@ -69,7 +69,7 @@ public:
     virtual void scrollToAnchor(const QString& a);
     virtual QString key() const;
     virtual QMailViewerFactory::PresentationType presentation() const;
-    virtual QList<int> types() const;
+    virtual QList<QMailMessage::ContentType> types() const;
 
 public slots:
     virtual bool setMessage(const QMailMessage& mail);

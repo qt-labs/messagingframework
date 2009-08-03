@@ -856,6 +856,23 @@ QModelIndex QMailMessageThreadedModelPrivate::indexFromItem(const QMailMessageTh
 
 
 /*!
+    \class QMailMessageThreadedModel 
+
+    \preliminary
+    \ingroup messaginglibrary 
+    \brief The QMailMessageThreadedModel class provides access to a tree of stored messages. 
+
+    The QMailMessageThreadedModel presents a tree of all the messages currently stored in
+    the message store. By using the setKey() and sortKey() functions it is possible to 
+    have the model represent specific user filtered subsets of messages sorted in a particular order.
+
+    The QMailMessageThreadedModel represents the hierarchical links between messages 
+    implied by conversation threads.  The model presents messages as children of predecessor
+    messages, where the parent is the nearest ancestor of the message that is present in
+    the filtered set of messages.
+*/
+
+/*!
     Constructs a QMailMessageThreadedModel with a parent \a parent.
 
     By default, the model will match all messages in the database, and display them in
@@ -878,6 +895,7 @@ QMailMessageThreadedModel::~QMailMessageThreadedModel()
 }
 
 // TODO - is this useful?  Maybe "QMailMessageId rootAncestor()" instead?
+/*! \internal */
 int QMailMessageThreadedModel::rootRow(const QModelIndex& idx) const
 {
     return d->rootRow(idx);
