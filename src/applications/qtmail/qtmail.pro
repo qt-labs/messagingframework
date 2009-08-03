@@ -18,7 +18,7 @@ HEADERS += emailclient.h \
            messagelistview.h \
            searchview.h \
            selectcomposerwidget.h \
-           statusdisplay_p.h \
+           statusdisplay.h \
            readmail.h \
            writemail.h
 

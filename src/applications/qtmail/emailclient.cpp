@@ -75,7 +75,7 @@
 #include <QToolBar>
 #include <QMovie>
 #include <QStatusBar>
-#include <statusdisplay_p.h>
+#include <statusdisplay.h>
 
 class ActivityIcon : public QLabel
 {
