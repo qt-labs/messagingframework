@@ -178,6 +178,8 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     return map;
 }
 
+namespace {
+
 struct ResolverSet
 {
     QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > map;
@@ -213,6 +215,8 @@ struct ResolverSet
         return true;
     }
 };
+
+}
 
 QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > messageResolvers(const QMailMessageIdList &ids)
 {
@@ -288,6 +292,29 @@ QSet<QMailAccountId> keyAccounts(const QMailMessageKey &key, const QSet<QMailAcc
     return include;
 }
 
+namespace {
+
+struct TextPartSearcher
+{
+    QString text;
+
+    TextPartSearcher(const QString &text) : text(text) {}
+
+    bool operator()(const QMailMessagePart &part)
+    {
+        if (part.contentType().type().toLower() == "text") {
+            if (part.body().data().contains(text, Qt::CaseInsensitive)) {
+                return false;
+            }
+        }
+
+        // Keep searching
+        return true;
+    }
+};
+
+}
+
 bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 {
     // Search only messages or message parts that are of type 'text/*'
@@ -297,15 +324,9 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
                 return true;
         }
     } else if (message.multipartType() != QMailMessage::MultipartNone) {
-        // We could do a recursive search for text elements, but since we can't currently
-        // display generic multipart messages anyway, let's just search the top level
-        for (uint i = 0; i < message.partCount(); ++i) {
-            const QMailMessagePart &part = message.partAt(i);
-
-            if (part.contentType().type().toLower() == "text") {
-                if (part.body().data().contains(text, Qt::CaseInsensitive))
-                    return true;
-            }
+        TextPartSearcher searcher(text);
+        if (message.foreachPart<TextPartSearcher&>(searcher) == false) {
+            return true;
         }
     }
 
