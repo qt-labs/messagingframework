@@ -319,6 +319,16 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="clearBaseButton">
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
          <item>
@@ -437,6 +447,19 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="clearDraftsButton">
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
          <item>
@@ -491,6 +514,19 @@
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="clearSentButton">
+           <property name="text">
+            <string/>
            </property>
           </widget>
          </item>
@@ -547,6 +583,19 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="clearTrashButton">
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
          <item>
@@ -602,6 +651,19 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="clearJunkButton">
+           <property name="text">
+            <string/>
+           </property>
           </widget>
          </item>
          <item>
@@ -652,7 +714,16 @@
   <tabstop>intervalPeriod</tabstop>
   <tabstop>roamingCheckBox</tabstop>
   <tabstop>imapBaseDir</tabstop>
+  <tabstop>clearBaseButton</tabstop>
   <tabstop>mailboxButton</tabstop>
+  <tabstop>clearDraftsButton</tabstop>
+  <tabstop>draftsButton</tabstop>
+  <tabstop>clearSentButton</tabstop>
+  <tabstop>sentButton</tabstop>
+  <tabstop>clearTrashButton</tabstop>
+  <tabstop>trashButton</tabstop>
+  <tabstop>clearJunkButton</tabstop>
+  <tabstop>junkButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

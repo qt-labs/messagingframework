@@ -115,6 +115,23 @@ ImapSettings::ImapSettings()
     connect(sentButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
     connect(trashButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
     connect(junkButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+
+    QIcon clearIcon(":icon/clear_left");
+
+    clearBaseButton->setIcon(clearIcon);
+    connect(clearBaseButton, SIGNAL(clicked()), imapBaseDir, SLOT(clear()));
+
+    clearDraftsButton->setIcon(clearIcon);
+    connect(clearDraftsButton, SIGNAL(clicked()), imapDraftsDir, SLOT(clear()));
+
+    clearSentButton->setIcon(clearIcon);
+    connect(clearSentButton, SIGNAL(clicked()), imapSentDir, SLOT(clear()));
+
+    clearTrashButton->setIcon(clearIcon);
+    connect(clearTrashButton, SIGNAL(clicked()), imapTrashDir, SLOT(clear()));
+
+    clearJunkButton->setIcon(clearIcon);
+    connect(clearJunkButton, SIGNAL(clicked()), imapJunkDir, SLOT(clear()));
 }
 
 void ImapSettings::intervalCheckChanged(int enabled)
@@ -141,12 +158,16 @@ void ImapSettings::selectFolder()
 
         if (sender() == static_cast<QObject*>(draftsButton)) {
             imapDraftsDir->setText(folder.path());
+            clearDraftsButton->setEnabled(true);
         } else if (sender() == static_cast<QObject*>(sentButton)) {
             imapSentDir->setText(folder.path());
+            clearSentButton->setEnabled(true);
         } else if (sender() == static_cast<QObject*>(trashButton)) {
             imapTrashDir->setText(folder.path());
+            clearTrashButton->setEnabled(true);
         } else if (sender() == static_cast<QObject*>(junkButton)) {
             imapJunkDir->setText(folder.path());
+            clearJunkButton->setEnabled(true);
         }
     }
 }
@@ -167,22 +188,18 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
     draftsFolderLabel->setEnabled(hasFolders);
     draftsButton->setEnabled(hasFolders);
     imapDraftsDir->setEnabled(hasFolders);
-    imapDraftsDir->setReadOnly(true);
 
     sentFolderLabel->setEnabled(hasFolders);
     sentButton->setEnabled(hasFolders);
     imapSentDir->setEnabled(hasFolders);
-    imapSentDir->setReadOnly(true);
 
     trashFolderLabel->setEnabled(hasFolders);
     trashButton->setEnabled(hasFolders);
     imapTrashDir->setEnabled(hasFolders);
-    imapTrashDir->setReadOnly(true);
 
     junkFolderLabel->setEnabled(hasFolders);
     junkButton->setEnabled(hasFolders);
     imapJunkDir->setEnabled(hasFolders);
-    imapJunkDir->setReadOnly(true);
 
     if (!config.services().contains(serviceKey)) {
         // New account
@@ -216,10 +233,15 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         intervalPeriod->setValue(qAbs(imapConfig.checkInterval()));
         roamingCheckBox->setChecked(!imapConfig.intervalCheckRoamingEnabled());
         imapBaseDir->setText(imapConfig.baseFolder());
+        clearBaseButton->setEnabled(!imapBaseDir->text().isEmpty());
         imapDraftsDir->setText(imapConfig.draftsFolder());
+        clearDraftsButton->setEnabled(!imapDraftsDir->text().isEmpty());
         imapSentDir->setText(imapConfig.sentFolder());
+        clearSentButton->setEnabled(!imapSentDir->text().isEmpty());
         imapTrashDir->setText(imapConfig.trashFolder());
+        clearTrashButton->setEnabled(!imapTrashDir->text().isEmpty());
         imapJunkDir->setText(imapConfig.junkFolder());
+        clearJunkButton->setEnabled(!imapJunkDir->text().isEmpty());
     }
 }
 

@@ -42,5 +42,7 @@ SOURCES += imapclient.cpp \
            imapstrategy.cpp \
            integerregion.cpp
 
+RESOURCES += imap.qrc                
+
 include(../../../common.pri)
 
