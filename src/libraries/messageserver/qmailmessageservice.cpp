@@ -309,7 +309,7 @@ static ErrorMap mailErrorInit()
         { QMailServiceAction::Status::ErrConnectionInUse, QT_TRANSLATE_NOOP( "QMailServiceAction", "Outgoing connection already in use by another operation.") },
         { QMailServiceAction::Status::ErrConnectionNotReady, QT_TRANSLATE_NOOP( "QMailServiceAction", "Outgoing connection is not ready to transmit message.") },
         { QMailServiceAction::Status::ErrConfiguration, QT_TRANSLATE_NOOP( "QMailServiceAction", "Unable to use account due to invalid configuration.") },
-        { QMailServiceAction::Status::ErrInvalidAddress, QT_TRANSLATE_NOOP( "QMailServiceAction", "Message recipient addresses are not correctly formatted.") },
+        { QMailServiceAction::Status::ErrInvalidAddress, QT_TRANSLATE_NOOP( "QMailServiceAction", "Message origin or recipient addresses are not correctly formatted.") },
         { QMailServiceAction::Status::ErrInvalidData, QT_TRANSLATE_NOOP( "QMailServiceAction", "Configured service unable to handle supplied data.") },
         { QMailServiceAction::Status::ErrTimeout, QT_TRANSLATE_NOOP( "QMailServiceAction", "Configured service failed to perform action within a reasonable period of time.") },
     };
