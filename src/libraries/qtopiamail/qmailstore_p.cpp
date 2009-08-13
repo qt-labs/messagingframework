@@ -2032,7 +2032,8 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       accountCache(accountCacheSize),
       inTransaction(false),
       lastQueryError(0),
-      mutex(0)
+      mutex(0),
+      readLock(0)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
@@ -2076,7 +2077,7 @@ bool QMailStorePrivate::initStore()
         return false;
     }
 
-    if (database.isOpenError()) {
+    if (!database.isOpen()) {
         qMailLog(Messaging) << "Unable to open database in initStore!";
         return false;
     }
