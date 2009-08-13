@@ -67,6 +67,7 @@ class QMailStoreImplementationBase : public QObject
 
 public:
     QMailStoreImplementationBase(QMailStore* parent);
+    virtual ~QMailStoreImplementationBase();
 
     void initialize();
     static QMailStore::InitializationState initializationState();
@@ -199,10 +200,10 @@ public:
                              QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeAccounts(const QMailAccountKey &key,
-                                QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modeifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
+                                QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                               QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modeifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
+                               QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
                                 QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
@@ -262,6 +263,94 @@ public:
 
     virtual bool registerMessageStatusFlag(const QString &name) = 0;
     virtual quint64 messageStatusMask(const QString &name) const = 0;
+};
+
+class QMailStoreNullImplementation : public QMailStoreImplementation
+{
+public:
+    QMailStoreNullImplementation(QMailStore* parent);
+
+    virtual void clearContent();
+
+    virtual bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
+                            QMailAccountIdList *addedAccountIds);
+
+    virtual bool addFolder(QMailFolder *f,
+                           QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool addMessages(const QList<QMailMessage *> &m,
+                             QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
+                             QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool removeAccounts(const QMailAccountKey &key,
+                                QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
+                               QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
+                                QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
+                               QMailAccountIdList *updatedAccountIds);
+
+    virtual bool updateAccountConfiguration(QMailAccountConfiguration* config,
+                                            QMailAccountIdList *updatedAccountIds);
+
+    virtual bool updateFolder(QMailFolder* f,
+                              QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
+                                QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
+                                        QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
+                                        QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
+                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);
+
+    virtual int countAccounts(const QMailAccountKey &key) const;
+    virtual int countFolders(const QMailFolderKey &key) const;
+    virtual int countMessages(const QMailMessageKey &key) const;
+
+    virtual int sizeOfMessages(const QMailMessageKey &key) const;
+
+    virtual QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey) const;
+    virtual QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey) const;
+    virtual QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey) const;
+
+    virtual QMailAccount account(const QMailAccountId &id) const;
+    virtual QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const;
+
+    virtual QMailFolder folder(const QMailFolderId &id) const;
+
+    virtual QMailMessage message(const QMailMessageId &id) const;
+    virtual QMailMessage message(const QString &uid, const QMailAccountId &accountId) const;
+
+    virtual QMailMessageMetaData messageMetaData(const QMailMessageId &id) const;
+    virtual QMailMessageMetaData messageMetaData(const QString &uid, const QMailAccountId &accountId) const;
+    virtual QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const;
+
+    virtual QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId, const QMailFolderId &parentFolderId) const;
+
+    virtual bool registerAccountStatusFlag(const QString &name);
+    virtual quint64 accountStatusMask(const QString &name) const;
+
+    virtual bool registerFolderStatusFlag(const QString &name);
+    virtual quint64 folderStatusMask(const QString &name) const;
+
+    virtual bool registerMessageStatusFlag(const QString &name);
+    virtual quint64 messageStatusMask(const QString &name) const;
+
+private:
+    virtual bool initStore();
 };
 
 #endif

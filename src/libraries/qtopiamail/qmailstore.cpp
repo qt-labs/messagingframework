@@ -152,6 +152,7 @@
     \value ContentInaccessible  The operation failed because the content data cannot be accessed by the mail store.
     \value NotYetImplemented    The operation failed because the mail store does not yet implement the operation.
     \value FrameworkFault       The operation failed because the mail store encountered an error in performing the operation.
+    \value StorageInaccessible  The operation failed because the mail storage mechanism cannot be accessed by the mail store.
 */
 
 /*!
@@ -1078,7 +1079,12 @@ QMailStore* QMailStore::instance()
     static bool init = false;
     if (!init) {
         init = true;
-        QMailStoreInstance()->d->initialize();
+        QMailStore *store(QMailStoreInstance());
+        store->d->initialize();
+        if (initializationState() == QMailStore::InitializationFailed) {
+            delete store->d;
+            store->d = new QMailStoreNullImplementation(store);
+        }
     }
     return QMailStoreInstance();
 }

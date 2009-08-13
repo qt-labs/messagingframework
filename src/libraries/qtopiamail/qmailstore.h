@@ -56,7 +56,7 @@
 #include "qmailglobal.h"
 
 class QMailStore;
-class QMailStorePrivate;
+class QMailStoreImplementation;
 
 #ifdef QMAILSTOREINSTANCE_DEFINED_HERE
 static QMailStore* QMailStoreInstance();
@@ -101,7 +101,8 @@ public:
         ConstraintFailure,
         ContentInaccessible,
         NotYetImplemented,
-        FrameworkFault
+        FrameworkFault,
+        StorageInaccessible
     };
 
 public:
@@ -231,7 +232,7 @@ private:
     void emitRetrievalInProgress(const QMailAccountIdList &ids);
     void emitTransmissionInProgress(const QMailAccountIdList &ids);
 
-    QMailStorePrivate* d;
+    QMailStoreImplementation* d;
 };
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

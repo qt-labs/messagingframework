@@ -1992,8 +1992,6 @@ int QMailStorePrivate::pathIdentifier(const QString &filePath)
 int QMailStorePrivate::databaseIdentifier(int n) const
 {
     int result = static_cast<int>(::ftok(database.databaseName().toAscii(), n));
-    if (result == -1)
-        qFatal("Could not create database semaphore. Database could not be found.");
     return result;
 }
 
@@ -2008,7 +2006,8 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       accountCache(accountCacheSize),
       inTransaction(false),
       lastQueryError(0),
-      mutex(0)
+      mutex(0),
+      readLock(0)
 {
     ProcessMutex creationMutex(pathIdentifier(QDir::rootPath()));
     MutexGuard guard(creationMutex);
@@ -2052,7 +2051,7 @@ bool QMailStorePrivate::initStore()
         return false;
     }
 
-    if (database.isOpenError()) {
+    if (!database.isOpen()) {
         qMailLog(Messaging) << "Unable to open database in initStore!";
         return false;
     }
