@@ -327,14 +327,16 @@ bool QMailMessageThreadedModelPrivate::addMessages(const QMailMessageIdList &ids
     // when this event was recorded and when we're processing the signal.
     
     QMailMessageKey idKey(QMailMessageKey::id(_currentIds + ids));
-    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
+    const QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
 
     // Find which of the messages we must add (in ascending insertion order)
     QList<int> validIndices;
+    QHash<QMailMessageId, int> idIndexMap;
     foreach (const QMailMessageId &id, ids) {
         int index = newIds.indexOf(id);
         if (index != -1) {
             validIndices.append(index);
+            idIndexMap[id] = index;
         }
     }
 
@@ -395,7 +397,13 @@ bool QMailMessageThreadedModelPrivate::addMessages(const QMailMessageIdList &ids
 
                 // Find the insert location within the parent
                 foreach (const QMailMessageId &id, insertParent->childrenIds()) {
-                    int childPos = newIds.indexOf(id);
+                    int childPos = -1;
+                    if (idIndexMap.contains(id)) {
+                        childPos = idIndexMap[id];
+                    } else {
+                        childPos = newIds.indexOf(id);
+                        idIndexMap[id] = childPos;
+                    }
                     if ((childPos != -1) && (childPos < messagePos)) {
                         // Ths child precedes us in the sort order
                         ++insertIndex;
@@ -749,17 +757,19 @@ void QMailMessageThreadedModelPrivate::init() const
         }
 
         // Now find all the messages we're going to show, in order
-        QMailMessageIdList ids = QMailStore::instance()->queryMessages(_key, _sortKey);
-
+        const QMailMessageIdList ids = QMailStore::instance()->queryMessages(_key, _sortKey);
+        QHash<QMailMessageId, int> idIndexMap;
+    
         // Process the messages to build a tree
-        QMailMessageIdList::const_iterator iit = ids.begin(), iend = ids.end();
-        for ( ; iit != iend; ++iit) {
+        for (int i = 0; i < ids.count(); ++i) {
             // See if we have already added this message
-            QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(*iit);
+            QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(ids[i]);
             if (it != _messageItem.end())
                 continue;
 
-            QMailMessageId messageId(*iit);
+            QMailMessageId messageId(ids[i]);
+            idIndexMap[messageId] = i;
+            
             QList<QMailMessageId> descendants;
 
             // Find the first message ancestor that is in our display set
@@ -790,7 +800,10 @@ void QMailMessageThreadedModelPrivate::init() const
                     // Determine where this message should sort amongst its siblings
                     int index = 0;
                     for ( ; index < container.count(); ++index) {
-                        if (ids.indexOf(container.at(index)._id) > ids.indexOf(messageId)) {
+                        if (!idIndexMap.contains(container.at(index)._id)) {
+                            idIndexMap[container.at(index)._id] = ids.indexOf(container.at(index)._id);
+                        }
+                        if (idIndexMap[container.at(index)._id] > i) {
                             break;
                         }
                     }
