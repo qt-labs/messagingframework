@@ -801,13 +801,13 @@ void QMailMessageThreadedModelPrivate::init() const
                     QList<QMailMessageThreadedModelItem> &container(insertParent->_children);
 
                     // Determine where this message should sort amongst its siblings
-                    int index = 0;
-                    for ( ; index < container.count(); ++index) {
-                        if (!idIndexMap.contains(container.at(index)._id)) {
+                    int index = container.count();
+                    for ( ; index > 0; --index) {
+                        if (!idIndexMap.contains(container.at(index - 1)._id)) {
                             qWarning() << "Warning: Threading hash failure" << __FUNCTION__;
-                            idIndexMap[container.at(index)._id] = ids.indexOf(container.at(index)._id);
+                            idIndexMap[container.at(index - 1)._id] = ids.indexOf(container.at(index - 1)._id);
                         }
-                        if (idIndexMap[container.at(index)._id] > i) {
+                        if (idIndexMap[container.at(index - 1)._id] < i) {
                             break;
                         }
                     }
