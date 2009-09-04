@@ -759,16 +759,19 @@ void QMailMessageThreadedModelPrivate::init() const
         // Now find all the messages we're going to show, in order
         const QMailMessageIdList ids = QMailStore::instance()->queryMessages(_key, _sortKey);
         QHash<QMailMessageId, int> idIndexMap;
-    
+        idIndexMap.reserve(ids.count());
+        int i;
+        for (i = 0; i < ids.count(); ++i)
+            idIndexMap[ids[i]] = i;
+
         // Process the messages to build a tree
-        for (int i = 0; i < ids.count(); ++i) {
+        for (i = 0; i < ids.count(); ++i) {
             // See if we have already added this message
             QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(ids[i]);
             if (it != _messageItem.end())
                 continue;
 
             QMailMessageId messageId(ids[i]);
-            idIndexMap[messageId] = i;
             
             QList<QMailMessageId> descendants;
 
@@ -801,6 +804,7 @@ void QMailMessageThreadedModelPrivate::init() const
                     int index = 0;
                     for ( ; index < container.count(); ++index) {
                         if (!idIndexMap.contains(container.at(index)._id)) {
+                            qWarning() << "Warning: Threading hash failure" << __FUNCTION__;
                             idIndexMap[container.at(index)._id] = ids.indexOf(container.at(index)._id);
                         }
                         if (idIndexMap[container.at(index)._id] > i) {
