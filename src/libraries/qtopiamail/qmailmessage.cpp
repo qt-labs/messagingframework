@@ -3206,8 +3206,7 @@ void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContaine
     // TODO: Is there any value in keeping _multipartType and _boundary externally from
     // Content-type header field?
 
-    if (_multipartType != type)
-    {
+    if (_multipartType != type) {
         _multipartType = type;
         setDirty();
 
@@ -3216,6 +3215,11 @@ void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContaine
         } else  {
             QMailMessageContentType contentType = updateContentType(headerField("Content-Type"), _multipartType, _boundary);
             updateHeaderField("Content-Type", contentType.toString(false, false));
+
+            if (_hasBody) {
+                _body = QMailMessageBody();
+                _hasBody = false;
+            }
         }
     }
 }
