@@ -17,7 +17,7 @@ The \l{Messaging Framework Client Library}{Client library} provides classes givi
 It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
 New types of messages can be supported by the library without modification to existing client applications.
 
-The \l{MessageServer Daemon}{MessageServer} application is a daemon managed by the QPE server. 
+The \l{MessageServer Daemon}{MessageServer} application is a daemon, designed to run continuously while providing services to client applications.
 It provides messaging transport functionality, communicating with external servers on behalf of Messaging Framework client applications.
 New types of messaging (such as Instant Messages or video messages) can be handled by the server application without modification to existing client applications.
 
