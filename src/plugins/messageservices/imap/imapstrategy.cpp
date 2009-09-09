@@ -1104,8 +1104,9 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         const ImapMailboxProperties &properties(context->mailbox());
 
         if (properties.exists) {
-            quint32 minUid = 0;
+            quint32 minUid(0);
             bool performSearch(true);
+            quint32 clientMaxUid(0);
 
             // If CONDSTORE is available, we may know that no changes have occurred
             if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
@@ -1113,7 +1114,7 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
             } else {
                 // Find the UID of the most recent message we have previously discovered in this folder
                 QMailFolder folder(properties.id);
-                quint32 clientMaxUid(folder.customField("qmf-max-serveruid").toUInt());
+                clientMaxUid = folder.customField("qmf-max-serveruid").toUInt();
 
                 if (properties.uidNext <= (clientMaxUid + 1)) {
                     // There's no need to search because we already have the highest UID
@@ -1125,7 +1126,14 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
             }
 
             if (performSearch) {
-                context->protocol().sendSearch(0, QString("UID %1:%2").arg(minUid + 1).arg(properties.uidNext));
+                if (!clientMaxUid) {
+                    quint32 minSequence(properties.exists);
+                    if (minSequence < 1)
+                        minSequence = 1;
+                    context->protocol().sendSearch(0, QString("%1:*").arg(minSequence));
+                } else {
+                    context->protocol().sendSearch(0, QString("UID %1:%2").arg(minUid + 1).arg(properties.uidNext));
+                }
                 return;
             }
         } else {
