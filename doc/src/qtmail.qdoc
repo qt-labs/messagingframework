@@ -7,7 +7,8 @@
 
 \section1 Introduction
 
-The \i Messages client application enables the user to receive emails from multiple mail servers as well as SMS and MMS messages from other mobile phone devices. It also provides the ability to send emails, MMS or SMS messages to multiple people with or without attachments.
+The \i Messages example client application enables the user to receive emails from multiple mail servers, using any of the protocols supported by the \l{MessageServer Daemon}{MessageServer}.
+It also provides the ability to send messages to multiple recipients, with or without attachments.
  
 \section1 Features 
 
@@ -18,9 +19,6 @@ Messages provides the following features:
 \row
 \o Send email 
 \o Compose and send an email. 
-\row
-\o  Send SMS / MMS 
-\o Send an SMS / MMS to another mobile phone. 
 \row
 \o  Receive email 
 \o Connect to a mail server and download emails to the device. 
@@ -55,18 +53,11 @@ The following account features are available:
 \o Accounts \o Allows creation of  an arbitrary number of mail accounts. 
 \row
 \o Email Protocols 
-\o The following email protocols are available:
+\o The following email protocols are provided (other protocols can be added to the MessageServer via pluins):
 \list
 \o POP
 \o IMAP
 \o SMTP
-\endlist
-\row
-\o Message Protocols 
-\o The following email protocols are available:
-\list
-\o SMS
-\o MMS
 \endlist
 \row
 \o Delete \o  Allows a delay of server deletion of email until removed locally from trash. 
@@ -154,21 +145,6 @@ The following features are available:
 \o Delete \o it is possible to delete the currently viewed message 
 \endtable
 
-\section1  Viewing MMS Messages 
- 
-The following features are available: 
-\table
-\header \o Feature \o Description
-\row
-\o Media \o display of images and text and playing sounds. 
-\row
-\o SMIL \o display messages containing SMIL slide-show presentations. 
-\row
-\o Responding \o it is possible to reply to or forward the currently viewed message. 
-\row
-\o Delete \o it is possible to delete the currently viewed message 
-\endtable
- 
 \section1 Writing Messages 
  
 The following features are available: 
@@ -182,23 +158,6 @@ The following features are available:
 \o Auto save \o modified drafts are automatically saved unless they are explicitly discarded 
 \row
 \o Store \o draft mails are stored in the Drafts folder and mails ready to send are stored in the \c Outbox folder 
-\endtable
- 
-\section1  Writing MMS Messages 
- 
-The following MMS-related features are available: 
-\table
-\header \o Feature \o Description
-\row
-\o Fields \o it is possible to specify \c{To/Cc/Bcc/subject}. It is possible to request delivery report and read reply. 
-\row
-\o Composing \o a standard slide show with SMIL presentation is supported by the MMS composer. One image, text field and audio file are allowed per page of the slide show. 
-\row
-\o Modify \o it is possible to make changes as necessary to mails in the drafts and \c Outbox folder 
-\row
-\o Auto save \o modified drafts are automatically saved unless they are explicitly discarded. 
-\row
-\o Store \o draft mails are stored in the \c Drafts folder and mails ready to send are stored in the \c Outbox folder. 
 \endtable
  
 \section1  Retrieving messages 
@@ -245,18 +204,11 @@ The following message sending- related features are available:
 \o Diverse \o it is possible to send a single message with both SMS and email addresses. 
 \endtable
 
-\section1 Requirements 
-Messages has the following requirements:
-\list
-\o Storage space : approximately 1.5 times the server mailbox size is required on a device 
-\endlist
-
 \section1 Dependencies 
 Messages has the following dependencies:
 \list
 \o the \l{Messaging Framework Client Library}
 \o the \l{Messaging Client Utility Library}
-\o optionally, a SMIL Library
 \endlist
 
 */

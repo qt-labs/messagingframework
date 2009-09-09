@@ -7,12 +7,12 @@ INSTALLS += target
 
 DEPENDPATH += . 
 
-INCLUDEPATH += . ../../libraries/qtopiamail \
-                 ../../libraries/qtopiamail/support \
-                 ../../libraries/qmfutil
+INCLUDEPATH += . ../../../src/libraries/qtopiamail \
+                 ../../../src/libraries/qtopiamail/support \
+                 ../../../src/libraries/qmfutil
 
-LIBS += -L../../libraries/qtopiamail -lqtopiamail \
-        -L../../libraries/qmfutil -lqmfutil
+LIBS += -L../../../src/libraries/qtopiamail -lqtopiamail \
+        -L../../../src/libraries/qmfutil -lqmfutil
 
 HEADERS += emailclient.h \
            messagelistview.h \
@@ -35,5 +35,5 @@ FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
 
-include(../../common.pri)
+include(../../../src/common.pri)
 

@@ -8,20 +8,20 @@
  
 The Messaging Framework provides the following messaging features:
 \list 1
-\o a client application supporting common messaging functionality
+\o a library for developing applications that work with messages
 \o a server application supporting multiple messaging transport mechanisms
-\o a library for developing other applications that work with messages
+\o an example client application supporting common messaging functionality
 \endlist
 
-The \l{Messages Client}{Messages} client application provides standard functionality for creating and viewing SMS, MMS and email messages.
+The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface. 
+It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
+New types of messages can be supported by the library without modification to existing client applications.
 
 The \l{MessageServer Daemon}{MessageServer} application is a daemon managed by the QPE server. 
 It provides messaging transport functionality, communicating with external servers on behalf of Messaging Framework client applications.
 New types of messaging (such as Instant Messages or video messages) can be handled by the server application without modification to existing client applications.
 
-The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface. 
-It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
-New types of messages can be supported by the library without modification to existing client applications.
+The \l{Messages Client}{Messages} example client application provides an implementation of standard functionality for creating and viewing messages.
 
 \section1 Architecture
 
@@ -43,9 +43,9 @@ Messaging clients do not need to communicate with the server directly.
 For detailed information refer to:
 
 \list
-\o \l{Messages Client}{Messages client application}
-\o \l{MessageServer Daemon}{MessageServer server daemon}
 \o \l{Messaging Framework Client Library}{Client library}
+\o \l{MessageServer Daemon}{MessageServer server daemon}
+\o \l{Messages Client}{Messages client application}
 \endlist
 
 \section1 Building and Compiling 
@@ -53,7 +53,7 @@ For detailed information refer to:
 To build the Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
 
 \code 
-qmake "QMF_INSTALL_ROOT=<image directory path>" "CONFIG+=debug" qmf.pro 
+qmake "QMF_INSTALL_ROOT=<image directory path>" qmf.pro 
 \endcode
 
 Where \c <image \c directory \c path> is the location that \c make \c install will put the resultant binary files. It is optional but 
@@ -96,7 +96,7 @@ QMF_PLUGINS=<imagedir/plugins>
 Optionally set \c QMF_DATA to the location where you want the framework data files stored. If this is not set, the
 default of \c $HOME/.qmf will be used.
 
-\bold Note: When running the test application \c qtmail, if the \c messageserver is not already running it will be started as
+\bold Note: When running the example client application \c qtmail, if the \c messageserver is not already running it will be started as
 a child process of the application, whose output is not visible.  If you prefer to see the output of the \c messageserver
 daemon, ensure it is running separately before running \c qtmail. 
 

@@ -9,9 +9,9 @@ SUBDIRS = src/libraries/qtopiamail \
           src/plugins/contentmanagers/qtopiamailfile \
           src/plugins/viewers/generic \
           src/plugins/composers/email \
-          src/settings/messagingaccounts \
           src/tools/messageserver \
-          src/applications/qtmail \
+          examples/applications/qtmail \
+          examples/settings/messagingaccounts \
           tests \
           benchmarks \
 

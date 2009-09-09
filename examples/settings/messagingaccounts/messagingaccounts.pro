@@ -7,12 +7,12 @@ INSTALLS += target
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../libraries/qtopiamail \
-../../libraries/qtopiamail/support \
-../../libraries/messageserver
+INCLUDEPATH += . ../../../src/libraries/qtopiamail \
+                 ../../../src/libraries/qtopiamail/support \
+                 ../../../src/libraries/messageserver
 
-LIBS += -L../../libraries/qtopiamail -lqtopiamail \
--L../../libraries/messageserver -lmessageserver
+LIBS += -L../../../src/libraries/qtopiamail -lqtopiamail \
+        -L../../../src/libraries/messageserver -lmessageserver
 
 HEADERS += accountsettings.h \
            editaccount.h \
@@ -28,5 +28,5 @@ SOURCES += accountsettings.cpp \
 
 RESOURCES += messagingaccounts.qrc
 
-include(../../common.pri)
+include(../../../src/common.pri)
 
