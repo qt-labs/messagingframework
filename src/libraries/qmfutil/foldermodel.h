@@ -47,7 +47,7 @@
 #include <QPair>
 #include <QString>
 
-class FolderModel : public QMailMessageSetModel
+class QMFUTIL_EXPORT FolderModel : public QMailMessageSetModel
 {
     Q_OBJECT
 

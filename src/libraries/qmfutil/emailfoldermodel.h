@@ -47,7 +47,7 @@
 
 // A message set that returns only the messages matching a specific status field
 
-class EmailStandardFolderMessageSet : public QMailFilterMessageSet
+class QMFUTIL_EXPORT EmailStandardFolderMessageSet : public QMailFilterMessageSet
 {
     Q_OBJECT
 
@@ -65,7 +65,7 @@ protected:
 
 // A message set that returns only the email messages within a folder:
 
-class EmailFolderMessageSet : public QMailFolderMessageSet
+class QMFUTIL_EXPORT EmailFolderMessageSet : public QMailFolderMessageSet
 {
     Q_OBJECT
 
@@ -84,7 +84,7 @@ protected:
 
 // An account folder element which returns only email messages
 
-class EmailAccountMessageSet : public QMailAccountMessageSet
+class QMFUTIL_EXPORT EmailAccountMessageSet : public QMailAccountMessageSet
 {
     Q_OBJECT
 
@@ -103,7 +103,7 @@ protected:
 
 // A folder element which includes all email accounts as sub-folders:
 
-class InboxMessageSet : public EmailStandardFolderMessageSet
+class QMFUTIL_EXPORT InboxMessageSet : public EmailStandardFolderMessageSet
 {
     Q_OBJECT
 
@@ -132,7 +132,7 @@ protected:
 };
 
 
-class EmailFolderModel : public FolderModel
+class QMFUTIL_EXPORT EmailFolderModel : public FolderModel
 {
     Q_OBJECT
 
@@ -171,7 +171,7 @@ protected:
     virtual QMailAccountId itemContextualAccountId(QMailMessageSet *item) const;
 };
 
-class AccountFolderModel : public EmailFolderModel
+class QMFUTIL_EXPORT AccountFolderModel : public EmailFolderModel
 {
     Q_OBJECT
 
