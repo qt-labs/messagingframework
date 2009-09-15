@@ -1,5 +1,7 @@
 CONFIG += qtestlib unittest
-CONFIG -= debug_and_release
+
+include(../../common.pri)
+
 QT += sql
 TEMPLATE = app
 TARGET = tst_qmailstore

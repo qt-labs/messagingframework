@@ -1,7 +1,8 @@
 CONFIG += qtestlib unittest
-CONFIG -= debug_and_release
-TEMPLATE = app
 
+include(../../common.pri)
+
+TEMPLATE = app
 TARGET = tst_python_email
 target.path += $$QMF_INSTALL_ROOT/tests
 

@@ -1,6 +1,7 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG -= debug_and_release
+
+include(../../../common.pri)
 
 TARGET = qmfutil 
 target.path += $$QMF_INSTALL_ROOT/lib

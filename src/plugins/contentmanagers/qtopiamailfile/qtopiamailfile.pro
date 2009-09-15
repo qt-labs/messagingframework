@@ -1,5 +1,6 @@
 TEMPLATE = lib 
-CONFIG -= debug_and_release
+
+include(../../../../common.pri)
 
 TARGET = qtopiamailfilemanager 
 target.path += $$QMF_INSTALL_ROOT/plugins/contentmanagers
@@ -19,6 +20,4 @@ LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
 HEADERS += qtopiamailfilemanager.h
 
 SOURCES += qtopiamailfilemanager.cpp
-
-include(../../../common.pri)
 

@@ -1,5 +1,6 @@
 TEMPLATE = lib 
-CONFIG -= debug_and_release
+
+include(../../../../common.pri)
 
 TARGET = pop 
 target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
@@ -30,6 +31,4 @@ SOURCES += popclient.cpp \
            popauthenticator.cpp
 
 FORMS += popsettings.ui
-
-include(../../../common.pri)
 

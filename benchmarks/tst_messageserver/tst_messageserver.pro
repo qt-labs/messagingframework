@@ -1,5 +1,8 @@
 CONFIG += qtestlib unittest
-CONFIG -= debug_and_release
+
+BASE=../../
+include($$BASE/common.pri)
+
 TEMPLATE = app
 TARGET = tst_messageserver 
 target.path += $$QMF_INSTALL_ROOT/tests
@@ -11,8 +14,6 @@ DEFINES += PLUGIN_STATIC_LINK
 !symbian:!win32 {
 	DEFINES += HAVE_VALGRIND
 }
-
-BASE=../../
 
 IMAP_PLUGIN=$$BASE/src/plugins/messageservices/imap/
 MESSAGE_SERVER=$$BASE/src/tools/messageserver

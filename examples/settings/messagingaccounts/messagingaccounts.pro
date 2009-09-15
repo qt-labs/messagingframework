@@ -1,5 +1,6 @@
 TEMPLATE = app
-CONFIG -= debug_and_release
+
+include(../../../common.pri)
 
 TARGET = messagingaccounts
 target.path += $$QMF_INSTALL_ROOT/bin
@@ -27,6 +28,4 @@ SOURCES += accountsettings.cpp \
            statusdisplay.cpp
 
 RESOURCES += messagingaccounts.qrc
-
-include(../../../src/common.pri)
 

@@ -1,5 +1,6 @@
 TEMPLATE = lib 
-CONFIG -= debug_and_release
+
+include(../../../../common.pri)
 
 TARGET = smtp 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
@@ -30,6 +31,4 @@ SOURCES += smtpauthenticator.cpp \
            smtpconfiguration.cpp \
            smtpservice.cpp \
            smtpsettings.cpp
-
-include(../../../common.pri)
 

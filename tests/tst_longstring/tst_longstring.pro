@@ -1,5 +1,7 @@
 CONFIG += qtestlib unittest
-CONFIG -= debug_and_release
+
+include(../../common.pri)
+
 TEMPLATE = app
 TARGET = tst_longstring
 target.path += $$QMF_INSTALL_ROOT/tests

@@ -1,6 +1,5 @@
 TEMPLATE = subdirs
 CONFIG += ordered
-CONFIG -= debug_and_release
 SUBDIRS = \
       tst_python_email \
       tst_qmailaddress \

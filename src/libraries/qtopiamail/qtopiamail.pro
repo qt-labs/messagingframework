@@ -1,6 +1,7 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG -= debug_and_release
+
+include(../../../common.pri)
 
 TARGET = qtopiamail
 target.path += $$QMF_INSTALL_ROOT/lib 

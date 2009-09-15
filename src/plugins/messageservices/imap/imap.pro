@@ -1,5 +1,6 @@
 TEMPLATE = lib 
-CONFIG -= debug_and_release
+
+include(../../../../common.pri)
 
 TARGET = imap 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
@@ -43,6 +44,4 @@ SOURCES += imapclient.cpp \
            integerregion.cpp
 
 RESOURCES += imap.qrc                
-
-include(../../../common.pri)
 

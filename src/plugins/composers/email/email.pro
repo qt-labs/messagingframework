@@ -1,5 +1,6 @@
 TEMPLATE = lib 
-CONFIG -= debug_and_release
+
+include(../../../../common.pri)
 
 TARGET = emailcomposer 
 target.path += $$QMF_INSTALL_ROOT/plugins/composers
@@ -37,6 +38,4 @@ TRANSLATIONS += libemailcomposer-ar.ts \
                 libemailcomposer-zh_TW.ts
 
 RESOURCES += email.qrc                
-
-include(../../../common.pri)
 

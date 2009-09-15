@@ -1,5 +1,6 @@
 TEMPLATE = app
-CONFIG -= debug_and_release
+
+include(../../../common.pri)
 
 TARGET = qtmail 
 target.path += $$QMF_INSTALL_ROOT/bin
@@ -34,6 +35,4 @@ SOURCES += emailclient.cpp \
 FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
-
-include(../../../src/common.pri)
 
