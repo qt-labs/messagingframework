@@ -52,7 +52,7 @@ class QPushButton;
 class FolderModel;
 class FolderView;
 
-class SelectFolderDialog : public QDialog
+class QMFUTIL_EXPORT SelectFolderDialog : public QDialog
 {
     Q_OBJECT
 

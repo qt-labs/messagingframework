@@ -48,7 +48,7 @@
 
 class EmailFolderDelegate;
 
-class EmailFolderView : public FolderView
+class QMFUTIL_EXPORT EmailFolderView : public FolderView
 {
     Q_OBJECT
 

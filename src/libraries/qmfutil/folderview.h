@@ -47,7 +47,7 @@
 #include <QSet>
 #include <QTreeView>
 
-class FolderView : public QTreeView
+class QMFUTIL_EXPORT FolderView : public QTreeView
 {
     Q_OBJECT
 
