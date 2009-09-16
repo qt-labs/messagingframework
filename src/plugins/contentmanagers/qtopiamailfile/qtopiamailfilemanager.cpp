@@ -542,6 +542,13 @@ void QtopiamailfileManager::clearContent()
 {
     // Delete all content files
     recursivelyRemovePath(messagesBodyPath(QMailAccountId()));
+
+    // Recreate the default storage directory
+    QString path(messagesBodyPath(QMailAccountId()));
+    QDir dir(path);
+    if (!dir.exists() && !dir.mkpath(path)) {
+        qMailLog(Messaging) << "Unable to recreate messages storage directory " << path;
+    }
 }
 
 const QString &QtopiamailfileManager::messagesBodyPath(const QMailAccountId &accountId)
