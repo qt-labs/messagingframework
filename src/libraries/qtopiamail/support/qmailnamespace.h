@@ -42,26 +42,32 @@
 #ifndef QMAILNAMESPACE_H
 #define QMAILNAMESPACE_H
 
-#include <QString>
 #include "qmailglobal.h"
 #include <QDate>
-#include <QTime>
 #include <QPair>
+#include <QString>
+#include <QTime>
 
 class QSqlDatabase;
 
 namespace QMail
 {
+    QTOPIAMAIL_EXPORT QString lastSystemErrorMessage();
     QTOPIAMAIL_EXPORT void usleep(unsigned long usecs);
     QTOPIAMAIL_EXPORT QSqlDatabase createDatabase();
     QTOPIAMAIL_EXPORT QString dataPath();
     QTOPIAMAIL_EXPORT QString tempPath();
     QTOPIAMAIL_EXPORT QString pluginsPath();
     QTOPIAMAIL_EXPORT QString sslCertsPath();
+    QTOPIAMAIL_EXPORT QString messageServerPath();
+    QTOPIAMAIL_EXPORT QString messageSettingsPath();
     QTOPIAMAIL_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QTOPIAMAIL_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
     QTOPIAMAIL_EXPORT int fileLock(const QString& filePath);
     QTOPIAMAIL_EXPORT bool fileUnlock(int id);
+
+    QTOPIAMAIL_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
+    QTOPIAMAIL_EXPORT QStringList messageIdentifiers(const QString& str);
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)

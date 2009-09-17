@@ -86,6 +86,7 @@ signals:
 
     void copyMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
     void moveMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
+    void flagMessages(quint64, const QMailMessageIdList&, quint64 setMask, quint64 unsetMask);
 
     void cancelTransfer(quint64);
 
@@ -110,6 +111,7 @@ signals:
     void messagesDeleted(quint64, const QMailMessageIdList&);
     void messagesCopied(quint64, const QMailMessageIdList&);
     void messagesMoved(quint64, const QMailMessageIdList&);
+    void messagesFlagged(quint64, const QMailMessageIdList&);
     void storageActionCompleted(quint64);
 
     void matchingMessageIds(quint64, const QMailMessageIdList&);

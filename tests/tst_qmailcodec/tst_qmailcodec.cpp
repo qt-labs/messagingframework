@@ -303,8 +303,8 @@ void tst_QMailCodec::decode()
     */
 }
 
-extern int Base64MaxLineLength;
-extern int QuotedPrintableMaxLineLength;
+extern int QTOPIAMAIL_EXPORT Base64MaxLineLength;
+extern int QTOPIAMAIL_EXPORT QuotedPrintableMaxLineLength;
 
 void tst_QMailCodec::line_lengths_data()
 {
@@ -468,7 +468,7 @@ void tst_QMailCodec::line_lengths()
     }
 }
 
-extern int MaxCharacters;
+extern int QTOPIAMAIL_EXPORT MaxCharacters;
 
 void tst_QMailCodec::buffer_sizes_data()
 {

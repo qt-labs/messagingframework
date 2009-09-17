@@ -1,10 +1,13 @@
 TEMPLATE = lib 
 
+include(../../../../common.pri)
+
 TARGET = smtp 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 INSTALLS += target
 
 QT += network
+DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
@@ -28,6 +31,4 @@ SOURCES += smtpauthenticator.cpp \
            smtpconfiguration.cpp \
            smtpservice.cpp \
            smtpsettings.cpp
-
-include(../../../common.pri)
 

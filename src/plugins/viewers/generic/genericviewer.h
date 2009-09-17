@@ -51,7 +51,7 @@ class QMailMessage;
 class QPushButton;
 class QToolButton;
 class AttachmentOptions;
-class Browser;
+class BrowserWidget;
 
 // A generic viewer able to show email, SMS or basic MMS
 class GenericViewer : public QMailViewerInterface
@@ -60,37 +60,33 @@ class GenericViewer : public QMailViewerInterface
 
 public:
     GenericViewer(QWidget* parent = 0);
-    virtual ~GenericViewer();
+
+    QWidget* widget() const;
+
+    void addActions(const QList<QAction*>& actions);
+    void removeAction(QAction* action);
 
     virtual void scrollToAnchor(const QString& a);
-
-    virtual QWidget *widget() const;
-
-    virtual void addActions(QMenu* menu) const;
-
     virtual QString key() const;
     virtual QMailViewerFactory::PresentationType presentation() const;
-    virtual QList<int> types() const;
+    virtual QList<QMailMessage::ContentType> types() const;
 
 public slots:
     virtual bool setMessage(const QMailMessage& mail);
     virtual void setResource(const QUrl& name, QVariant var);
     virtual void clear();
-
     virtual void triggered(bool);
-
     virtual void linkClicked(const QUrl& link);
 
 protected slots:
-    virtual void linkHighlighted(const QUrl& link);
     virtual void dialogFinished(int);
 
 private:
     virtual void setPlainTextMode(bool plainTextMode);
-
     bool eventFilter(QObject* watched, QEvent* event);
 
-    Browser* browser;
+private:
+    BrowserWidget* browser;
     QAction* plainTextModeAction;
     QAction* richTextModeAction;
     AttachmentOptions* attachmentDialog;

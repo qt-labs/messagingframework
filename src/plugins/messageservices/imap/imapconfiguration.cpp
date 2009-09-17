@@ -107,6 +107,26 @@ QString ImapConfiguration::baseFolder() const
     return value("baseFolder");
 }
 
+QString ImapConfiguration::draftsFolder() const
+{
+    return value("draftsFolder");
+}
+
+QString ImapConfiguration::sentFolder() const
+{
+    return value("sentFolder");
+}
+
+QString ImapConfiguration::trashFolder() const
+{
+    return value("trashFolder");
+}
+
+QString ImapConfiguration::junkFolder() const
+{
+    return value("junkFolder");
+}
+
 int ImapConfiguration::checkInterval() const
 {
     return value("checkInterval", "-1").toInt();
@@ -180,6 +200,26 @@ void ImapConfigurationEditor::setPushEnabled(bool b)
 void ImapConfigurationEditor::setBaseFolder(const QString &s)
 {
     setValue("baseFolder", s);
+}
+
+void ImapConfigurationEditor::setDraftsFolder(const QString &s)
+{
+    setValue("draftsFolder", s);
+}
+
+void ImapConfigurationEditor::setSentFolder(const QString &s)
+{
+    setValue("sentFolder", s);
+}
+
+void ImapConfigurationEditor::setTrashFolder(const QString &s)
+{
+    setValue("trashFolder", s);
+}
+
+void ImapConfigurationEditor::setJunkFolder(const QString &s)
+{
+    setValue("junkFolder", s);
 }
 
 void ImapConfigurationEditor::setCheckInterval(int i)

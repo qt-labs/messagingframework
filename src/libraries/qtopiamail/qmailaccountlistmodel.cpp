@@ -110,6 +110,7 @@ public:
     QMailAccountSortKey sortKey;
     bool synchronizeEnabled;
     mutable QMailAccountIdList idList;
+    mutable QMailAccountId deletionId;
     mutable bool init;
     mutable bool needSynchronize;
 };
@@ -246,6 +247,9 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 
     int offset = index.row();
     QMailAccountId id = d->ids().at(offset);
+    if (id == d->deletionId)
+        return QVariant();
+
     QMailAccount account(id);
 
     switch(role)
@@ -405,9 +409,11 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
             if (index == -1) 
                 continue;
 
+            d->deletionId = id;
             beginRemoveRows(QModelIndex(),index,index);
             d->idList.removeAt(index);
             endRemoveRows();
+            d->deletionId = QMailAccountId();
         }
     }
 
@@ -447,9 +453,11 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
                 }
                 else
                 {
+                    d->deletionId = id;
                     beginRemoveRows(QModelIndex(),index,index);
                     d->idList.removeAt(index);
                     endRemoveRows();
+                    d->deletionId = QMailAccountId();
 
                     if (newIndex > index)
                         --newIndex;
@@ -481,9 +489,11 @@ void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
         if(index == -1)
             continue;
 
+        d->deletionId = id;
         beginRemoveRows(QModelIndex(),index,index);
         d->idList.removeAt(index);
         endRemoveRows();
+        d->deletionId = QMailAccountId();
     }
     d->needSynchronize = false;
 }

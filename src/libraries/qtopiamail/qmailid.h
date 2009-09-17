@@ -42,12 +42,13 @@
 #ifndef QMAILID_H
 #define QMAILID_H
 
+#include "qmailglobal.h"
+#include "qmailipc.h"
+#include "qmailfolderfwd.h"
 #include <QDebug>
 #include <QString>
 #include <QVariant>
-#include "qmailglobal.h"
 #include <QSharedData>
-#include "qmailipc.h"
 
 class MailIdPrivate;
 
@@ -102,8 +103,9 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-    friend QDebug& operator<<(QDebug&, const QMailAccountId&);
-    friend QTextStream& operator <<(QTextStream&, const QMailAccountId&);
+
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailAccountId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailAccountId&);
 };
 
 
@@ -111,6 +113,7 @@ class QTOPIAMAIL_EXPORT QMailFolderId : private MailId
 {
 public:
     QMailFolderId();
+    QMailFolderId(QMailFolderFwd::PredefinedFolderId id);
     explicit QMailFolderId(quint64 value);
     QMailFolderId(const QMailFolderId& other);
     virtual ~QMailFolderId();
@@ -128,8 +131,9 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-    friend QDebug& operator<<(QDebug&, const QMailFolderId&);
-    friend QTextStream& operator<<(QTextStream&, const QMailFolderId&);
+
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailFolderId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator<<(QTextStream&, const QMailFolderId&);
 };
 
 
@@ -155,8 +159,8 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    friend QDebug& operator<<(QDebug&, const QMailMessageId&);
-    friend QTextStream& operator <<(QTextStream&, const QMailMessageId&);
+    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailMessageId&);
+    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailMessageId&);
 };
 
 

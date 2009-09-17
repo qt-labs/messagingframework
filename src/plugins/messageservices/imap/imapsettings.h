@@ -57,8 +57,10 @@ public:
 
 private slots:
     void intervalCheckChanged(int enabled);
+    void selectFolder();
 
 private:
+    QMailAccountId accountId;
     bool warningEmitted;
 };
 

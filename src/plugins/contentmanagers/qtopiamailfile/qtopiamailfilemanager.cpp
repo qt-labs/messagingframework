@@ -42,16 +42,20 @@
 #include "qtopiamailfilemanager.h"
 #include "qmailmessage.h"
 #include "qmailstore.h"
-#include <qmailnamespace.h>
-#include <qmaillog.h>
-#include <QFile>
+#include "qmailnamespace.h"
+#include "qmaillog.h"
+#include <QCoreApplication>
+#include <QDateTime>
 #include <QDir>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <unistd.h>
-#include <time.h>
+#include <QFile>
 #include <QtPlugin>
 #include <QUrl>
+#if defined(Q_OS_WIN)
+#include <windows.h>
+#include <io.h>
+#elif defined(Q_OS_UNIX)
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -91,24 +95,25 @@ QString randomString(int length)
 
 QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString())
 {
-    // Format: seconds_epoch.pid.randomchars
-    bool exists = true;
-    const qint64 pid = ::getpid();
+    static const quint64 pid = QCoreApplication::applicationPid();
 
     QString filename;
-    QString path;
 
-    while (exists) {
-        filename = name;
-        filename.sprintf("%ld.%ld.",(unsigned long)time(0), (long)pid);
-        filename.prepend(name);
-        filename.append(randomString(5));
-        path = QtopiamailfileManager::messageFilePath(filename, accountId);
+    // Format: [name]seconds_epoch.pid.randomchars
+    filename = name;
+    filename.append(QString::number(QDateTime::currentDateTime().toTime_t()));
+    filename.append('.');
+    filename.append(QString::number(pid));
+    filename.append('.');
 
-        exists = QFile::exists(path);
+    while (true) {
+        QString path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
+        if (!QFile::exists(path)) {
+            return path;
+        }
     }
 
-    return path;
+    return QString();
 }
 
 void recursivelyRemovePath(const QString &path, bool preserveTopDirectory = true)
@@ -186,10 +191,14 @@ void sync(QFile *file)
     // Ensure data is flushed to OS before attempting sync
     file->flush();
 
+#if defined(Q_OS_WIN)
+    ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file->handle())));
+#elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     ::fdatasync(file->handle());
 #else
     ::fsync(file->handle());
+#endif
 #endif
 }
 
@@ -263,7 +272,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
-         !addOrRenameParts(message, *message, message->contentIdentifier(), existingIdentifier, durable))) {
+         !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durable))) {
         // Remove the file
         file->close();
         qMailLog(Messaging) << "Unable to save message content, removing temporary file:" << filePath;
@@ -300,10 +309,13 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMail
         return code;
     } 
 
-    // Try to remove the existing data
-    code = remove(existingIdentifier);
-    if (code != QMailStore::NoError) {
-        qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+    if (!existingIdentifier.isEmpty()) {
+        // Try to remove the existing data
+        code = remove(existingIdentifier);
+        if (code != QMailStore::NoError) {
+            qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+            return code;
+        }
     }
 
     return QMailStore::NoError;
@@ -325,19 +337,96 @@ QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
     QMailStore::ErrorCode result(QMailStore::NoError);
 
     QFileInfo fi(identifier);
-    QDir path(fi.dir());
-    if (!path.remove(fi.fileName())) {
+    QString path(fi.absoluteFilePath());
+    if (QFile::exists(path) && !QFile::remove(path)) {
         qMailLog(Messaging) << "Unable to remove content file:" << identifier;
-        result = QMailStore::FrameworkFault;
+        result = QMailStore::ContentNotRemoved;
     }
 
     if (!removeParts(identifier)) {
         qMailLog(Messaging) << "Unable to remove part content files for:" << identifier;
-        result = QMailStore::FrameworkFault;
+        result = QMailStore::ContentNotRemoved;
     }
 
     return result;
 }
+
+struct ReferenceLoader
+{
+    const QMailMessage *message;
+
+    ReferenceLoader(const QMailMessage *m) : message(m) {}
+
+    bool operator()(QMailMessagePart &part)
+    {
+        QString loc = part.location().toString(false);
+
+        // See if this part is a reference
+        QString name("qtopiamail-reference-location-" + loc);
+        QString value(message->customField(name));
+        if (!value.isEmpty()) {
+            // This part is a reference
+            QString reference;
+            int index = value.indexOf(':');
+            if (index != -1) {
+                reference = value.mid(index + 1);
+                QString referenceType = value.left(index);
+
+                if (referenceType == "part") {
+                    part.setReference(QMailMessagePart::Location(reference), part.contentType(), part.transferEncoding());
+                } else if (referenceType == "message") {
+                    part.setReference(QMailMessageId(reference.toULongLong()), part.contentType(), part.transferEncoding());
+                }
+            }
+
+            if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
+                qMailLog(Messaging) << "Unable to resolve reference from:" << value;
+                return false;
+            }
+
+            // Is this reference resolved?
+            name = QString("qtopiamail-reference-resolution-" + loc);
+            value = message->customField(name);
+            if (!value.isEmpty()) {
+                part.setReferenceResolution(value);
+            }
+        }
+
+        return true;
+    }
+};
+
+struct PartLoader
+{
+    QString fileName;
+
+    PartLoader(const QString &path) : fileName(path) {}
+
+    bool operator()(QMailMessagePart &part)
+    {
+        if ((part.referenceType() == QMailMessagePart::None) &&
+            (part.multipartType() == QMailMessagePartContainer::MultipartNone)) {
+            QString partFilePath;
+
+            bool localAttachment = QFile::exists(QUrl(part.contentLocation()).toLocalFile()) && !part.hasBody();
+            if (localAttachment)
+                partFilePath = QUrl(part.contentLocation()).toLocalFile();
+            else
+                partFilePath = QtopiamailfileManager::messagePartFilePath(part, fileName);
+
+            if (QFile::exists(partFilePath)) {
+                // Is the file content in encoded or decoded form?  Since we're delivering
+                // server-side data, the parameter seems reversed...
+                QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
+                part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
+                if (!part.hasBody())
+                    return false;
+            }
+        }
+
+        return true;
+    }
+};
 
 QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMailMessage *message)
 {
@@ -357,8 +446,20 @@ QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMa
     }
 
     QMailMessage result(QMailMessage::fromRfc2822File(path));
-    if (!loadParts(message, &result, path))
+
+    // Load the reference information from the meta data into our content object
+    ReferenceLoader refLoader(message);
+    if (!result.foreachPart<ReferenceLoader&>(refLoader)) {
+        qMailLog(Messaging) << "Unable to resolve references for:" << identifier;
         return QMailStore::FrameworkFault;
+    }
+
+    // Load the content of each part
+    PartLoader partLoader(path);
+    if (!result.foreachPart<PartLoader&>(partLoader)) {
+        qMailLog(Messaging) << "Unable to load parts for:" << identifier;
+        return QMailStore::FrameworkFault;
+    }
 
     *message = result;
     return QMailStore::NoError;
@@ -441,6 +542,13 @@ void QtopiamailfileManager::clearContent()
 {
     // Delete all content files
     recursivelyRemovePath(messagesBodyPath(QMailAccountId()));
+
+    // Recreate the default storage directory
+    QString path(messagesBodyPath(QMailAccountId()));
+    QDir dir(path);
+    if (!dir.exists() && !dir.mkpath(path)) {
+        qMailLog(Messaging) << "Unable to recreate messages storage directory " << path;
+    }
 }
 
 const QString &QtopiamailfileManager::messagesBodyPath(const QMailAccountId &accountId)
@@ -485,13 +593,80 @@ QString QtopiamailfileManager::messagePartDirectory(const QString &fileName)
     return fileName + "-parts";
 }
 
-static bool isLocalAttachment(const QMailMessagePart& part)
+struct PartStorer
 {
-    QString contentLocation = part.contentLocation().remove(QRegExp("\\s"));
-    return QFile::exists(QUrl(contentLocation).toLocalFile()) && !part.hasBody();
-}
+    QMailMessage *message;
+    QString fileName;
+    QString existing;
+    QList<QFile*> *openFiles;
 
-bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailMessagePartContainer &container, const QString &fileName, const QString &existing, bool durable)
+    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList<QFile*> *o) : message(m), fileName(f), existing(e), openFiles(o) {}
+
+    bool operator()(const QMailMessagePart &part)
+    {
+        if ((part.referenceType() == QMailMessagePart::None) &&
+            (part.multipartType() == QMailMessagePartContainer::MultipartNone) &&
+            part.hasBody()) {
+            // We need to store this part
+            QString partFilePath(QtopiamailfileManager::messagePartFilePath(part, fileName));
+
+            if (!part.contentModified() && !existing.isEmpty()) {
+                // This part is not modified; see if we can simply move the existing file to the new identifier
+                QString existingPath(QtopiamailfileManager::messagePartFilePath(part, existing));
+                if (QFile::rename(existingPath, partFilePath)) {
+                    return true;
+                }
+            }
+
+            // We can only write the content in decoded form if it is complete
+            QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
+
+            QString detachedFile = message->customField("qtopiamail-detached-filename");
+            if (!detachedFile.isEmpty()) {
+                // We can take ownership of the file if that helps
+                if ((outputFormat == QMailMessageBody::Encoded) ||
+                    // If the output should be decoded, then only unchanged 'encodings 'can be used directly
+                    ((part.transferEncoding() != QMailMessageBody::Base64) &&
+                     (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
+                    // Try to take ownership of the file
+                    if (QFile::rename(detachedFile, partFilePath)) {
+                        message->removeCustomField("qtopiamail-detached-filename");
+                        return true;
+                    }
+                }
+            }
+
+            // We need to write the content to a new file
+            QFile *file = new QFile(partFilePath);
+            if (!file->open(QIODevice::WriteOnly)) {
+                qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
+                return false;
+            }
+
+            // Write the part content to file
+            QDataStream out(file);
+            if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
+                qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+                file->close();
+                if (!QFile::remove(partFilePath)){
+                    qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
+                }
+                return false;
+            }
+
+            if (openFiles) {
+                openFiles->append(file);
+            } else {
+                sync(file);
+                delete file;
+            }
+        }
+
+        return true;
+    }
+};
+
+bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable)
 {
     // Ensure that the part directory exists
     QString partDirectory(messagePartDirectory(fileName));
@@ -502,141 +677,10 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QMailM
         }
     }
 
-    for (uint i = 0; i < container.partCount(); ++i) {
-        const QMailMessagePart &part(container.partAt(i));
-        QString loc = part.location().toString(false);
-
-        if (part.referenceType() == QMailMessagePart::None) {
-            if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-                if (part.hasBody()) {
-                    QString partFilePath(messagePartFilePath(part, fileName));
-
-                    bool additionRequired(part.contentModified() || existing.isEmpty());
-                    if (!additionRequired) {
-                        QString existingPath(messagePartFilePath(part, existing));
-
-                        // This part is not modified; see if we can simply move the existing file to the new identifier
-                        if (!QFile::rename(existingPath, partFilePath))
-                            additionRequired = true;
-                    }
-
-                    if (additionRequired && !isLocalAttachment(part)) {
-                        // We can only write the content in decoded form if it is complete
-                        QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
-
-                        QString detachedFile = message->customField("qtopiamail-detached-filename");
-                        if (!detachedFile.isEmpty()) {
-                            // We can take ownership of the file if that helps
-                            if ((outputFormat == QMailMessageBody::Encoded) ||
-                                // If the output should be decoded, then only unchanged 'encodings 'can be used directly
-                                ((part.transferEncoding() != QMailMessageBody::Base64) &&
-                                 (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
-                                // Try to take ownership of the file
-                                if (QFile::rename(detachedFile, partFilePath)) {
-                                    message->removeCustomField("qtopiamail-detached-filename");
-                                    continue;
-                                }
-                            }
-                        }
-
-                        QFile *file = new QFile(partFilePath);
-                        if (!file->open(QIODevice::WriteOnly)) {
-                            qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
-                            return false;
-                        }
-
-                        // Write the part content to file
-                        QDataStream out(file);
-                        if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
-                            qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
-                            file->close();
-                            if (!QFile::remove(partFilePath)){
-                                qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
-                            }
-
-                            return false;
-                        }
-
-                        if (durable) {
-                            sync(file);
-                            delete file;
-                        } else {
-                            _openFiles.append(file);
-                        }
-                    }
-                }
-            } else {
-                // Write any sub-parts of this part out
-                if (!addOrRenameParts(message, part, fileName, existing, durable))
-                    return false;
-            }
-        } else {
-            // Mark this as a reference in the container message
-            QString value;
-            if (part.referenceType() == QMailMessagePart::PartReference) {
-                value = "part:" + part.partReference().toString(true);
-            } else if (part.referenceType() == QMailMessagePart::MessageReference) {
-                value = "message:" + QString::number(part.messageReference().toULongLong());
-            }
-
-            QString name(gKey + "-reference-location-" + loc);
-            message->setCustomField(name, value);
-        }
-    }
-
-    return true;
-}
-
-bool QtopiamailfileManager::loadParts(QMailMessage *message, QMailMessagePartContainer *container, const QString &fileName)
-{
-    for (uint i = 0; i < container->partCount(); ++i) {
-        QMailMessagePart &part(container->partAt(i));
-        QString loc = part.location().toString(false);
-
-        // See if this part is a reference
-        QString name(gKey + "-reference-location-" + loc);
-        QString value(message->customField(name));
-        if (!value.isEmpty()) {
-            // This part is just a reference
-            QString reference;
-            int index = value.indexOf(':');
-            if (index != -1) {
-                reference = value.mid(index + 1);
-                QString referenceType = value.left(index);
-
-                if (referenceType == "part") {
-                    part.setReference(QMailMessagePart::Location(reference), part.contentType(), part.transferEncoding());
-                } else if (referenceType == "message") {
-                    part.setReference(QMailMessageId(reference.toULongLong()), part.contentType(), part.transferEncoding());
-                }
-            }
-
-            if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
-                qMailLog(Messaging) << "Unable to resolve reference from:" << value;
-            }
-        } else {
-            if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
-                QString partFilePath;
-                bool localAttachment = QFile::exists(QUrl(part.contentLocation()).toLocalFile()) && !part.hasBody();
-                if(localAttachment)
-                    partFilePath = QUrl(part.contentLocation()).toLocalFile();
-                else
-                    partFilePath = (messagePartFilePath(part, fileName));
-
-                if (QFile::exists(partFilePath)) {
-                    // Is the file content in encoded or decoded form?  Since we're delivering
-                    // server-side data, the parameter seems reversed...
-                    QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
-                    part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
-                    if (!part.hasBody())
-                        return false;
-                }
-            } else {
-                // Write any sub-parts of this part out
-                if (!loadParts(message, &part, fileName))
-                    return false;
-            }
-        }
+    PartStorer partStorer(message, fileName, existing, (durable ? 0 : &_openFiles));
+    if (!const_cast<const QMailMessage*>(message)->foreachPart(partStorer)) {
+        qMailLog(Messaging) << "Unable to store parts for message:" << fileName;
+        return false;
     }
 
     return true;

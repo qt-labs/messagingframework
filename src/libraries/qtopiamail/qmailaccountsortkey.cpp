@@ -79,8 +79,6 @@
     \typedef QMailAccountSortKey::ArgumentType
     
     Defines the type used to represent a single sort criterion of an account sort key.
-
-    Synonym for QPair<QMailAccountKey::Property, Qt::SortOrder>.
 */
 
 /*!
@@ -99,21 +97,21 @@ QMailAccountSortKey::QMailAccountSortKey()
 {
 }
 
-/*!
-    Construct a QMailAccountSortKey which sorts a set of results based on the  
-    QMailAccountSortKey::Property \a p and the Qt::SortOrder \a order 
-*/
-
-QMailAccountSortKey::QMailAccountSortKey(Property p, Qt::SortOrder order)
-    : d(new QMailAccountSortKeyPrivate())
+/*! \internal */
+QMailAccountSortKey::QMailAccountSortKey(Property p, Qt::SortOrder order, quint64 mask)
+    : d(new QMailAccountSortKeyPrivate(p, order, mask))
 {
-    d->arguments.append(ArgumentType(p, order));
+}
+
+/*! \internal */
+QMailAccountSortKey::QMailAccountSortKey(const QList<QMailAccountSortKey::ArgumentType> &args)
+    : d(new QMailAccountSortKeyPrivate(args))
+{
 }
 
 /*!
     Create a copy of the QMailAccountSortKey \a other.
 */
-
 QMailAccountSortKey::QMailAccountSortKey(const QMailAccountSortKey& other)
     : d(new QMailAccountSortKeyPrivate())
 {
@@ -123,7 +121,6 @@ QMailAccountSortKey::QMailAccountSortKey(const QMailAccountSortKey& other)
 /*!
     Destroys this QMailAccountSortKey.
 */
-
 QMailAccountSortKey::~QMailAccountSortKey()
 {
 }
@@ -131,19 +128,15 @@ QMailAccountSortKey::~QMailAccountSortKey()
 /*!
     Returns a key that is the logical AND of this key and the value of key \a other.
 */
-
 QMailAccountSortKey QMailAccountSortKey::operator&(const QMailAccountSortKey& other) const
 {
-    QMailAccountSortKey k;
-    k.d->arguments = d->arguments + other.d->arguments;
-    return k;
+    return QMailAccountSortKey(d->arguments() + other.d->arguments());
 }
 
 /*!
     Performs a logical AND with this key and the key \a other and assigns the result
     to this key.
 */
-
 QMailAccountSortKey& QMailAccountSortKey::operator&=(const QMailAccountSortKey& other)
 {
     *this = *this & other;
@@ -154,16 +147,15 @@ QMailAccountSortKey& QMailAccountSortKey::operator&=(const QMailAccountSortKey& 
     Returns \c true if the value of this key is the same as the key \a other. Returns 
     \c false otherwise.
 */
-
 bool QMailAccountSortKey::operator==(const QMailAccountSortKey& other) const
 {
-    return d->arguments == other.d->arguments;
+    return (*d == *other.d);
 }
+
 /*!
     Returns \c true if the value of this key is not the same as the key \a other. Returns
     \c false otherwise.
 */
-
 bool QMailAccountSortKey::operator!=(const QMailAccountSortKey& other) const
 {
    return !(*this == other); 
@@ -172,7 +164,6 @@ bool QMailAccountSortKey::operator!=(const QMailAccountSortKey& other) const
 /*!
     Assign the value of the QMailAccountSortKey \a other to this.
 */
-
 QMailAccountSortKey& QMailAccountSortKey::operator=(const QMailAccountSortKey& other)
 {
     d = other.d;
@@ -182,19 +173,37 @@ QMailAccountSortKey& QMailAccountSortKey::operator=(const QMailAccountSortKey& o
 /*!
     Returns true if the key remains empty after default construction; otherwise returns false.
 */
-
 bool QMailAccountSortKey::isEmpty() const
 {
-    return d->arguments.isEmpty();
+    return d->isEmpty();
 }
 
 /*!
-  Returns the list of arguments to this QMailAccountSortKey.
+    Returns the list of arguments to this QMailAccountSortKey.
 */
-
 const QList<QMailAccountSortKey::ArgumentType> &QMailAccountSortKey::arguments() const
 {
-    return d->arguments;
+    return d->arguments();
+}
+
+/*!
+    \fn QMailAccountSortKey::serialize(Stream &stream) const
+
+    Writes the contents of a QMailAccountSortKey to a \a stream.
+*/
+template <typename Stream> void QMailAccountSortKey::serialize(Stream &stream) const
+{
+    d->serialize(stream);
+}
+
+/*!
+    \fn QMailAccountSortKey::deserialize(Stream &stream)
+
+    Reads the contents of a QMailAccountSortKey from \a stream.
+*/
+template <typename Stream> void QMailAccountSortKey::deserialize(Stream &stream)
+{
+    d->deserialize(stream);
 }
 
 /*!
@@ -228,12 +237,15 @@ QMailAccountSortKey QMailAccountSortKey::messageType(Qt::SortOrder order)
 }
 
 /*!
-    Returns a key that sorts accounts by their status values, according to \a order.
+    Returns a key that sorts accounts by comparing their status value bitwise ANDed with \a mask, according to \a order.
 
     \sa QMailAccount::status()
 */
-QMailAccountSortKey QMailAccountSortKey::status(Qt::SortOrder order)
+QMailAccountSortKey QMailAccountSortKey::status(quint64 mask, Qt::SortOrder order)
 {
-    return QMailAccountSortKey(Status, order);
+    return QMailAccountSortKey(Status, order, mask);
 }
+
+
+Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey);
 

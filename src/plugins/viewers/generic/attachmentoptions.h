@@ -42,6 +42,7 @@
 #ifndef ATTACHMENTOPTIONS_H
 #define ATTACHMENTOPTIONS_H
 
+#include <qmailmessage.h>
 #include <QByteArray>
 #include <QDialog>
 #include <QList>
@@ -50,7 +51,6 @@
 
 class QByteArray;
 class QLabel;
-class QMailMessagePart;
 class QPushButton;
 class QString;
 
@@ -76,6 +76,7 @@ public:
 signals:
     void retrieve(const QMailMessagePart& part);
     void retrievePortion(const QMailMessagePart& part, uint bytes);
+    void respondToPart(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType);
 
 public slots:
     void setAttachment(const QMailMessagePart& part);
@@ -83,6 +84,7 @@ public slots:
     void viewAttachment();
     void saveAttachment();
     void retrieveAttachment();
+    void forwardAttachment();
 
 private:
     QSize _parentSize;
@@ -96,6 +98,7 @@ private:
     QPushButton* _save;
     QLabel* _document;
     QPushButton* _retrieve;
+    QPushButton* _forward;
     const QMailMessagePart* _part;
     ContentClass _class;
     QString _decodedText;

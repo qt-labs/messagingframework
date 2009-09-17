@@ -43,6 +43,7 @@
 #include <QApplication>
 #include <QIcon>
 #include <QMap>
+#include <QUrl>
 #include <QWidget>
 #include <qmaillog.h>
 #include <qmailpluginmanager.h>
@@ -113,6 +114,12 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
+    \fn QWidget* QMailViewerInterface::widget() const
+
+    Returns the top-level widget that implements the viewer functionality.
+*/
+
+/*!
     \fn bool QMailViewerInterface::setMessage(const QMailMessage& mail)
 
     Displays the contents of \a mail.  Returns whether the message could be successfully displayed.
@@ -125,39 +132,16 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QWidget* QMailViewerInterface::widget() const
+    \fn QMailViewerInterface::respondToMessage(QMailMessage::ResponseType type)
 
-    Returns the widget implementing the display interface.
+    This signal is emitted by the viewer to initiate a response action, of type \a type.
 */
 
 /*!
-    \fn QMailViewerInterface::replyToSender()
+    \fn QMailViewerInterface::respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type)
 
-    This signal is emitted by the viewer to initiate a reply action.
-*/
-
-/*!
-    \fn QMailViewerInterface::replyToAll()
-
-    This signal is emitted by the viewer to initiate a reply-to-all action.
-*/
-
-/*!
-    \fn QMailViewerInterface::forwardMessage()
-
-    This signal is emitted by the viewer to initiate a message forwarding action.
-*/
-
-/*!
-    \fn QMailViewerInterface::deleteMessage()
-
-    This signal is emitted by the viewer to initiate a message deletion action.
-*/
-
-/*!
-    \fn QMailViewerInterface::saveSender()
-
-    This signal is emitted by the viewer to request that the sender's address should be saved as a Contact.
+    This signal is emitted by the viewer to initiate a response to the message
+    part indicated by \a partLocation, of type \a type.
 */
 
 /*!
@@ -188,7 +172,7 @@ static QMailViewerInterface* mapping(const QString& key)
 */
 
 /*!
-    \fn QMailViewerInterface::sendMessage(const QMailMessage &message)
+    \fn QMailViewerInterface::sendMessage(QMailMessage &message)
 
     This signal is emitted by the viewer to send a new message, whose contents are held by \a message.
 */
@@ -255,13 +239,16 @@ void QMailViewerInterface::scrollToAnchor(const QString& link)
 }
 
 /*!
-    Allows the viewer object to add any relevant actions to the application \a menu supplied.
+    \fn void QMailViewerInterface::addActions(const QList<QAction*>& actions)
+
+    Requests that the viewer add the content of \a actions to the set of available user actions.
 */
-void QMailViewerInterface::addActions( QMenu* menu ) const
-{
-    // default implementation does nothing
-    Q_UNUSED(menu)
-}
+
+/*!
+    \fn void QMailViewerInterface::removeAction(QAction* action)
+
+    Requests that the viewer remove \a action from the set of available user actions.
+*/
 
 /*!
     Allows the viewer object to handle the notification of the arrival of new messages, 
@@ -290,6 +277,31 @@ bool QMailViewerInterface::handleOutgoingMessages( const QMailMessageIdList &lis
     Q_UNUSED(list)
     return false;
 }
+
+/*!
+    \fn QString QMailViewerInterface::key() const
+
+    Returns a value that uniquely identifies the viewer component.
+*/
+
+/*!
+    \fn QMailViewerFactory::PresentationType QMailViewerInterface::presentation() const
+
+    Returns the type of message presentation that this viewer implements.
+*/
+
+/*!
+    \fn bool QMailViewerInterface::isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
+
+    Returns true if the viewer can present a message containing data of content type \a t, using the 
+    presentation type \a pres.
+*/
+
+/*!
+    \fn QList<QMailMessage::ContentType> QMailViewerInterface::types() const
+
+    Returns a list of the content types that can be presented by this viewer component.
+*/
 
 /*! 
     Supplies the viewer object with a resource that may be referenced by a mail message.  The resource 

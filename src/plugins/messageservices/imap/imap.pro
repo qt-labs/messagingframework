@@ -1,19 +1,24 @@
 TEMPLATE = lib 
 
+include(../../../../common.pri)
+
 TARGET = imap 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 INSTALLS += target
 
 QT += network
+DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qtopiamail \
                ../../../libraries/messageserver \
-               ../../../libraries/qtopiamail/support
+               ../../../libraries/qtopiamail/support \
+               ../../../libraries/qmfutil
 
 LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/messageserver -lmessageserver
+        -L../../../libraries/messageserver -lmessageserver \
+        -L../../../libraries/qmfutil -lqmfutil
 
 HEADERS += imapclient.h \
            imapconfiguration.h \
@@ -38,5 +43,5 @@ SOURCES += imapclient.cpp \
            imapstrategy.cpp \
            integerregion.cpp
 
-include(../../../common.pri)
+RESOURCES += imap.qrc                
 

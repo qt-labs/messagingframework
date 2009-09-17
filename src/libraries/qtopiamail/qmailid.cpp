@@ -295,6 +295,14 @@ QMailFolderId::QMailFolderId()
 }
 
 /*! 
+    Construct a QMailFolderId corresponding to the predefined folder identifier \a id.
+*/
+QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
+    : MailId(static_cast<quint64>(id))
+{
+}
+
+/*! 
     Construct a QMailFolderId with the supplied numeric identifier \a value.
 */
 QMailFolderId::QMailFolderId(quint64 value)

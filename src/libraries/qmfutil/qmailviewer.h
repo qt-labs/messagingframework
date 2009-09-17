@@ -47,15 +47,15 @@
 #include <QString>
 #include <QVariant>
 #include <qmailglobal.h>
+#include <QWidget>
 
 class QContact;
 class QMenu;
 class QUrl;
-class QWidget;
 
 class QMailViewerInterface;
 
-class QTOPIAMAIL_EXPORT QMailViewerFactory
+class QMFUTIL_EXPORT QMailViewerFactory
 {
 public:
     enum PresentationType
@@ -78,7 +78,7 @@ public:
 };
 
 // The interface for objects able to view mail messages
-class QTOPIAMAIL_EXPORT QMailViewerInterface : public QObject
+class QMFUTIL_EXPORT QMailViewerInterface : public QObject
 {
     Q_OBJECT
 
@@ -86,18 +86,19 @@ public:
     QMailViewerInterface( QWidget* parent = 0 );
     virtual ~QMailViewerInterface();
 
-    virtual QWidget *widget() const = 0;
+    virtual QWidget* widget() const = 0;
 
     virtual void scrollToAnchor(const QString& link);
 
-    virtual void addActions(QMenu* menu) const;
+    virtual void addActions(const QList<QAction*>& actions) = 0;
+    virtual void removeAction(QAction* action) = 0;
 
     virtual bool handleIncomingMessages(const QMailMessageIdList &list) const;
     virtual bool handleOutgoingMessages(const QMailMessageIdList &list) const;
 
     virtual QString key() const = 0;
     virtual QMailViewerFactory::PresentationType presentation() const = 0;
-    virtual QList<int> types() const = 0;
+    virtual QList<QMailMessage::ContentType> types() const = 0;
 
     bool isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
     {
@@ -114,23 +115,18 @@ public slots:
     virtual void clear() = 0;
 
 signals:
-    void replyToSender();
-    void replyToAll();
-    void forwardMessage();
-    void deleteMessage();
-    void saveSender();
-    void contactDetails(const QContact &contact);
     void anchorClicked(const QUrl &link);
+    void contactDetails(const QContact &contact);
     void messageChanged(const QMailMessageId &id);
-    void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType);
-    void sendMessage(const QMailMessage &message);
-    void finished();
-
+    void viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType type);
+    void sendMessage(QMailMessage &message);
     void retrieveMessage();
     void retrieveMessagePortion(uint bytes);
-
     void retrieveMessagePart(const QMailMessagePart &part);
     void retrieveMessagePartPortion(const QMailMessagePart &part, uint bytes);
+    void respondToMessage(QMailMessage::ResponseType type);
+    void respondToMessagePart(const QMailMessagePart::Location &partLocation, QMailMessage::ResponseType type);
+    void finished();
 };
 
 #endif

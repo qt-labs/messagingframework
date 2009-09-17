@@ -1,4 +1,7 @@
 TEMPLATE = lib 
+CONFIG += warn_on
+
+include(../../../common.pri)
 
 TARGET = messageserver
 target.path += $$QMF_INSTALL_ROOT/lib
@@ -6,7 +9,11 @@ INSTALLS += target
 
 QT *= network
 
-CONFIG += warn_on
+symbian: {
+    MMP_RULES += EXPORTUNFROZEN
+}
+
+DEFINES += MESSAGESERVER_INTERNAL
 
 DEPENDPATH += .
 

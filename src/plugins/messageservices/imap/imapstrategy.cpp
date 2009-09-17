@@ -53,8 +53,6 @@
 #include <limits.h>
 #include <QDir>
 
-// TODO: Use pipelined commands where appropriate - where error handling remains 
-// sensible and it isn't too difficult to tell which commands have/haven't completed...
 
 static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
 static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
@@ -63,7 +61,7 @@ static QString stripFolderPrefix(const QString &str)
 {
     QString result;
     int index;
-    if ((index = str.lastIndexOf('|')) != -1)
+    if ((index = str.lastIndexOf(UID_SEPARATOR)) != -1)
         return str.mid(index + 1);
     return str;
 }
@@ -100,11 +98,42 @@ static QStringList inFirstButNotSecond(const QStringList &first, const QStringLi
     return result;
 }
 
+static bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &rhs)
+{
+    // Any full message sorts before any message element
+    if (lhs._properties.isEmpty() && !rhs._properties.isEmpty()) {
+        return true;
+    } else if (rhs._properties.isEmpty() && !lhs._properties.isEmpty()) {
+        return false;
+    }
+
+    // Any UID value sorts before a non-UID value
+    if ((lhs._uid != 0) && (rhs._uid == 0)) {
+        return true;
+    } else if ((rhs._uid != 0) && (lhs._uid == 0)) {
+        return false;
+    } 
+
+    if (lhs._uid != 0) {
+        if (lhs._uid != rhs._uid) {
+            return (lhs._uid < rhs._uid);
+        }
+    } else {
+        if (lhs._messageId.toULongLong() != rhs._messageId.toULongLong()) {
+            return (lhs._messageId.toULongLong() < rhs._messageId.toULongLong());
+        }
+    }
+
+    // Messages are the same - fall back to lexicographic comparison of the location
+    return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
+}
+
 static void updateMessagesMetaData(ImapStrategyContextBase *context, 
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
                                    const QMailMessageKey &seenKey,
-                                   const QMailMessageKey &unreadElsewhereKey)
+                                   const QMailMessageKey &unreadElsewhereKey,
+                                   const QMailMessageKey &unavailableKey)
 {
     QMailMessageKey reportedKey(seenKey | unseenKey);
 
@@ -114,6 +143,12 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
     }
     
+    // Restore any messages thought to be unavailable that the server now reports
+    QMailMessageKey reexistentKey(unavailableKey & reportedKey);
+    if (!QMailStore::instance()->updateMessagesMetaData(reexistentKey, QMailMessage::Removed, false)) {
+        qWarning() << "Unable to update un-removed message metadata for account:" << context->config().id();
+    }
+
     foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
         const QString &uid(r.serverUid()); 
         // We might have a deletion record for this UID
@@ -128,6 +163,72 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 }
+
+static bool findFetchContinuationStart(const QMailMessage &message, const QMailMessagePart::Location &location, int *start)
+{
+    if (message.id().isValid()) {
+        *start = 0;
+        if (location.isValid()) {
+            const QMailMessagePart &part(message.partAt(location));
+            if (part.hasBody()) {
+                *start = part.body().length();
+            }
+        } else {
+            if (message.hasBody()) {
+                *start = message.body().length();
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+static QString numericUidSequence(const QStringList &uids)
+{
+    QStringList numericUids;
+    foreach (const QString &uid, uids) {
+        numericUids.append(ImapProtocol::uid(uid));
+    }
+
+    return IntegerRegion(numericUids).toString();
+}
+
+static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
+{
+    Q_ASSERT(destination.partCount() == source.partCount());
+
+    if (source.hasBody()) {
+        destination.setBody(source.body());
+    } else if (source.partCount() > 0) {
+        for (uint i = 0; i < source.partCount(); ++i) {
+            const QMailMessagePart &sourcePart = source.partAt(i);
+            QMailMessagePart &destinationPart = destination.partAt(i);
+
+            transferPartBodies(destinationPart, sourcePart);
+        }
+    }
+}
+
+static void transferMessageData(QMailMessage &message, const QMailMessage &source)
+{
+    // TODO: this whole concept is wrong - we might lose data by replacing the original message...
+
+    transferPartBodies(message, source);
+
+    if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
+        // We have modified the content, so the detached file data is no longer sufficient
+        message.removeCustomField("qtopiamail-detached-filename");
+    }
+
+    if (source.status() & QMailMessage::ContentAvailable) {
+        message.setStatus(QMailMessage::ContentAvailable, true);
+    }
+    if (source.status() & QMailMessage::PartialContentAvailable) {
+        message.setStatus(QMailMessage::PartialContentAvailable, true);
+    }
+}
+
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -164,6 +265,11 @@ void ImapStrategyContextBase::completedMessageAction(const QString &text)
     emit _client->messageActionCompleted(text);
 }
 
+void ImapStrategyContextBase::completedMessageCopy(QMailMessage &message, const QMailMessage &original) 
+{ 
+    emit _client->messageCopyCompleted(message, original);
+}
+
 void ImapStrategyContextBase::operationCompleted()
 { 
     // Update the status on any folders we modified
@@ -194,8 +300,10 @@ void ImapStrategy::newConnection(ImapStrategyContextBase *context)
 
 void ImapStrategy::initialAction(ImapStrategyContextBase *context)
 {
-    if (context->protocol().loggingOut())
+    if (context->protocol().loggingOut()) {
         context->protocol().close();
+    }
+
     if (context->protocol().inUse()) {
         // We have effectively just completed authenticating
         transition(context, IMAP_Login, OpOk);
@@ -286,11 +394,171 @@ void ImapStrategy::messageCopied(ImapStrategyContextBase *context, const QString
     Q_UNUSED(createdUid)
 }
 
+void ImapStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(id)
+    Q_UNUSED(uid)
+}
+
 void ImapStrategy::downloadSize(ImapStrategyContextBase *context, const QString &uid, int length)
 {
     Q_UNUSED(context)
     Q_UNUSED(uid)
     Q_UNUSED(length)
+}
+
+void ImapStrategy::urlAuthorized(ImapStrategyContextBase *context, const QString &url)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(url)
+}
+
+
+/* A strategy to traverse a list of messages, preparing each one for transmission
+   by generating a URLAUTH token.
+*/
+void ImapPrepareMessagesStrategy::setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, bool external)
+{
+    _locations = ids;
+    _external = external;
+}
+
+void ImapPrepareMessagesStrategy::newConnection(ImapStrategyContextBase *context)
+{
+    if (!_external) {
+        // We only need internal references - generate IMAP URLs for each location
+        while (!_locations.isEmpty()) {
+            const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+            QString url(ImapProtocol::url(pair.first, false, true));
+            urlAuthorized(context, url);
+
+            _locations.takeFirst();
+        }
+
+        context->operationCompleted();
+        return;
+    }
+
+    ImapStrategy::newConnection(context);
+}
+
+void ImapPrepareMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
+{
+    switch( command ) {
+        case IMAP_Login:
+        {
+            handleLogin(context);
+            break;
+        }
+        
+        case IMAP_GenUrlAuth:
+        {
+            handleGenUrlAuth(context);
+            break;
+        }
+        
+        case IMAP_Logout:
+        {
+            break;
+        }
+        
+        default:
+        {
+            qWarning() << "Unhandled IMAP response:" << command;
+            break;
+        }
+    }
+}
+
+void ImapPrepareMessagesStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    nextMessageAction(context);
+}
+
+void ImapPrepareMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
+{
+    // We're finished with the previous location
+    _locations.takeFirst();
+
+    nextMessageAction(context);
+}
+
+void ImapPrepareMessagesStrategy::nextMessageAction(ImapStrategyContextBase *context)
+{
+    if (!_locations.isEmpty()) {
+        const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+        // Generate an authorized URL for this message content
+        bool bodyOnly(false);
+        if (!pair.first.isValid(false)) {
+            // This is a full-message reference - for a single-part message, we should forward
+            // only the body text; for multi-part we want the whole message
+            QMailMessage message(pair.first.containingMessageId());
+            if (message.multipartType() == QMailMessage::MultipartNone) {
+                bodyOnly = true;
+            }
+        }
+        context->protocol().sendGenUrlAuth(pair.first, bodyOnly);
+    } else {
+        messageListCompleted(context);
+    }
+}
+
+void ImapPrepareMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
+{
+    context->operationCompleted();
+}
+
+namespace {
+
+struct ReferenceDetector
+{
+    bool operator()(const QMailMessagePart &part)
+    {
+        // Return false if there is an unresolved reference to stop traversal
+        return ((part.referenceType() == QMailMessagePart::None) || !part.referenceResolution().isEmpty());
+    }
+};
+
+bool hasUnresolvedReferences(const QMailMessage &message)
+{
+    // If foreachPart yields false there is at least one unresolved reference
+    return (message.foreachPart(ReferenceDetector()) == false);
+}
+
+}
+
+void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const QString &url)
+{
+    const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
+
+    // We now have an authorized URL for this location
+    QMailMessageId referringId(pair.second.containingMessageId());
+    if (referringId.isValid()) {
+        QMailMessage referer(referringId);
+        QMailMessagePart &part(referer.partAt(pair.second));
+
+        part.setReferenceResolution(url);
+
+        // Have we resolved all references in this message?
+        if (!hasUnresolvedReferences(referer)) {
+            referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
+        }
+
+        if (!QMailStore::instance()->updateMessage(&referer)) {
+            qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+        }
+    } else {
+        // Update this message with its own location reference
+        QMailMessage referencedMessage(pair.first.containingMessageId());
+        referencedMessage.setExternalLocationReference(url);
+
+        if (!QMailStore::instance()->updateMessage(&referencedMessage)) {
+            qWarning() << "Unable to update message for account:" << referencedMessage.parentAccountId();
+        }
+    }
 }
 
 
@@ -312,40 +580,34 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     if (ids.count() == 0)
         return;
 
-    const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
-
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        // TODO - order messages within each folder by size ascending, or most recent first?
-        QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-        bool ok;
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Location &location)
 {
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
-        SectionProperties sectionProperties(location);
-        bool ok;
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-        _selectionMap[metaData.parentFolderId()].insert(serverUid, sectionProperties);
+        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapMessageListStrategy::newConnection(ImapStrategyContextBase *context)
 {
-    _currentMailbox = QMailFolder();
+    setCurrentMailbox(QMailFolderId());
 
     ImapStrategy::newConnection(context);
+}
+
+void ImapMessageListStrategy::initialAction(ImapStrategyContextBase *context)
+{
+    resetMessageListTraversal();
+
+    ImapStrategy::initialAction(context);
 }
 
 void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
@@ -360,6 +622,12 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
         case IMAP_Select:
         {
             handleSelect(context);
+            break;
+        }
+        
+        case IMAP_Close:
+        {
+            handleClose(context);
             break;
         }
         
@@ -387,98 +655,120 @@ void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
     messageListMessageAction(context);
 }
 
-bool ImapMessageListStrategy::computeStartEndPartRange(ImapStrategyContextBase *context)
+void ImapMessageListStrategy::handleClose(ImapStrategyContextBase *context)
 {
-    if (!_retrieveUid.isEmpty()) {
-        QMailMessage mail(_retrieveUid, context->config().id());
-        if (mail.id().isValid()) {
-            _sectionStart = 0;
-            if (_msgSection.isValid()) {
-                const QMailMessagePart &part(mail.partAt(_msgSection));
-                if (part.hasBody()) {
-                    _sectionStart = part.body().length();
-                }
-            } else {
-                if (mail.hasBody()) {
-                    _sectionStart = mail.body().length();
-                }
-            }
-            return true;
-        }
-    }
-    return false;
+    messageListMessageAction(context);
 }
 
-bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum)
+void ImapMessageListStrategy::resetMessageListTraversal()
 {
-    QMailFolderId mailboxId;
-    QString mailboxIdStr;
-    QStringList uidList;
-    QMailMessagePart::Location location;
-    int minimum = SectionProperties::All;
+    _folderItr = _selectionMap.begin();
+    if (_folderItr != _selectionMap.end()) {
+        FolderSelections &folder(*_folderItr);
+        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+
+        _selectionItr = folder.begin();
+    }
+}
+
+bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase *context, int maximum, bool folderActionPermitted)
+{
+    _messageUids.clear();
+    _msgSection = QMailMessagePart::Location();
+    _sectionStart = 0;
+    _sectionEnd = SectionProperties::All;
+
+    if (!folderActionPermitted) {
+        if (messageListFolderActionRequired()) {
+            return false;
+        }
+    }
 
     if (_folderItr == _selectionMap.end()) {
         messageListCompleted(context);
         return false;
     }
         
-    FolderMap::ConstIterator selectionEnd = _folderItr.value().end();
+    FolderSelections::ConstIterator selectionEnd = _folderItr.value().end();
     while (_selectionItr == selectionEnd) {
         ++_folderItr;
         if (_folderItr == _selectionMap.end())
             break;
-        _selectionItr = _folderItr.value().begin();
-        selectionEnd = _folderItr.value().end();
+
+        FolderSelections &folder(*_folderItr);
+        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+
+        _selectionItr = folder.begin();
+        selectionEnd = folder.end();
     }
 
     if ((_folderItr == _selectionMap.end()) || !_folderItr.key().isValid()) {
-        _currentMailbox = QMailFolder();
+        setCurrentMailbox(QMailFolderId());
         _selectionMap.clear();
         messageListFolderAction(context);
         return false;
     }
 
     _transferState = Complete;
-    mailboxId = _folderItr.key();
+
+    QMailFolderId mailboxId = _folderItr.key();
     if (mailboxId != _currentMailbox.id()) {
-        _currentMailbox = QMailFolder(mailboxId);
+        setCurrentMailbox(mailboxId);
         messageListFolderAction(context);
         return false;
     }
-    mailboxIdStr = QString::number(mailboxId.toULongLong()) + '|';
 
-    //TODO Leave parts to last to reduce roundtrips. Get all parts in one message in one roundtrip.
-    while ((_selectionItr != selectionEnd) 
-           && (uidList.count() < maximum)
-           && (!location.isValid())
-           && (minimum == SectionProperties::All)) {
-        uidList.append(mailboxIdStr + QString::number(_selectionItr.key()));
-        location = _selectionItr.value()._location;
-        minimum = _selectionItr.value()._minimum;
+    QString mailboxIdStr = QString::number(mailboxId.toULongLong()) + UID_SEPARATOR;
 
+    // Get consecutive full messages
+    while ((_messageUids.count() < maximum) &&
+           (_selectionItr != selectionEnd) &&
+           (_selectionItr->_properties.isEmpty())) {
+        _messageUids.append((*_selectionItr).uidString(mailboxIdStr));
         ++_selectionItr;
-        if (_selectionItr != selectionEnd) {
-            if (_selectionItr.value()._location.isValid()
-                || (_selectionItr.value()._minimum != SectionProperties::All))
-                break;  // _msgSection.isValid() parts still require a roundtrip
+    }
+
+    if (!_messageUids.isEmpty()) {
+        return true;
+    }
+
+    // TODO: Get multiple parts for a single message in one roundtrip?
+    if (_messageUids.isEmpty() && (_selectionItr != selectionEnd)) {
+        const MessageSelector &selector(*_selectionItr);
+        ++_selectionItr;
+
+        _messageUids.append(selector.uidString(mailboxIdStr));
+        _msgSection = selector._properties._location;
+        
+        if (selector._properties._minimum != SectionProperties::All) {
+            _sectionEnd = (selector._properties._minimum - 1);
+
+            bool valid(_sectionEnd != SectionProperties::All);
+            if (valid) {
+                // Find where we should continue fetching from
+                QMailMessage message(_messageUids.first(), context->config().id());
+                valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
+            }
+
+            if (!valid) {
+                if (_sectionStart <= _sectionEnd) {
+                    qMailLog(Messaging) << "Could not complete part: invalid location or invalid uid";
+                } else {
+                    // already have retrieved minimum bytes, so nothing to do
+                }
+
+                // Try the next list element
+                return selectNextMessageSequence(context, maximum, folderActionPermitted);
+            }
         }
     }
 
-    _retrieveUid = uidList.join("\n");
-    _msgSection = location;
-    _sectionStart = 0;
-    _sectionEnd = SectionProperties::All;
-    if (minimum != SectionProperties::All) {
-        _sectionEnd = minimum - 1;
-        if (!minimum || !computeStartEndPartRange(context)) {
-            if (_sectionStart <= _sectionEnd) {
-                qMailLog(Messaging) << "Could not complete part: invalid location or invalid uid";
-            } // else already have retrieved minimum bytes, so nothing todo
-            return selectNextMessageSequence(context, maximum);
-        }
-    }
+    return !_messageUids.isEmpty();
+}
 
-    return true;
+bool ImapMessageListStrategy::messageListFolderActionRequired()
+{
+    return ((_folderItr == _selectionMap.end()) || (_selectionItr == _folderItr.value().end()));
 }
 
 void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *context)
@@ -487,6 +777,9 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
         if (_currentMailbox.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
             handleSelect(context);
+        } else if (_currentMailbox.id() == QMailFolder::LocalStorageFolderId) {
+            // No folder should be selected
+            context->protocol().sendClose();
         } else {
             context->protocol().sendSelect(_currentMailbox);
         }
@@ -498,6 +791,19 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
 void ImapMessageListStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     context->operationCompleted();
+}
+
+void ImapMessageListStrategy::setCurrentMailbox(const QMailFolderId &id)
+{
+    if (id.isValid()) { 
+        _currentMailbox = QMailFolder(id);
+
+        // Store the current modification sequence value for this folder, if we have one
+        _currentModSeq = _currentMailbox.customField("qmf-highestmodseq");
+    } else {
+        _currentMailbox = QMailFolder();
+        _currentModSeq = QString();
+    }
 }
 
 
@@ -528,9 +834,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     if (_listSize == 0)
         return;
 
-    const QMailFolderId trashFolderId(QMailFolder::TrashFolder);
-
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
 
     // Break retrieval of message meta data into chunks to reduce peak memory use
     QMailMessageIdList idsBatch;
@@ -544,11 +848,8 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
         }
     
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
-            // TODO - order messages within each folder by size ascending, or most recent first?
-            QMailFolderId parentFolderId(metaData.parentFolderId() == trashFolderId ? metaData.previousParentFolderId() : metaData.parentFolderId());
-            bool ok;
-            uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt(&ok));
-            _selectionMap[parentFolderId].insert(serverUid, SectionProperties());
+            uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
+            _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
@@ -557,9 +858,6 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             _totalRetrievalSize += size;
         }
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 
     // Report the total size we will retrieve
     _progressRetrievalSize = 0;
@@ -571,9 +869,8 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
 
     const QMailMessage message(location.containingMessageId());
     if (message.id().isValid()) {
-        SectionProperties sectionProperties(location, minimum);
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
-        _selectionMap[message.parentFolderId()].insert(serverUid, sectionProperties);
+        _selectionMap[message.parentFolderId()].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
 
         uint size = 0;
         uint bytes = minimum;
@@ -590,15 +887,13 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
         _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
         _totalRetrievalSize += size;
     }
-
-    _folderItr = _selectionMap.begin();
-    _selectionItr = _folderItr.value().begin();
 }
 
 void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *context)
 {
     _progressRetrievalSize = 0;
     _messageCount = 0;
+    _outstandingFetches = 0;
 
     ImapConfiguration imapCfg(context->config());
     if (!imapCfg.isAutoDownload()) {
@@ -635,31 +930,37 @@ void ImapFetchSelectedMessagesStrategy::handleLogin(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
-    messageListMessageAction(context);
+    --_outstandingFetches;
+    if (_outstandingFetches == 0) {
+        messageListMessageAction(context);
+    }
 }
 
 void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (selectNextMessageSequence(context)) {
-        QStringList uids;
-        foreach (const QString &msgUid, _retrieveUid.split("\n"))
-            uids.append(ImapProtocol::uid(msgUid));
+    if (messageListFolderActionRequired()) {
+        // We need to change folders
+        selectNextMessageSequence(context, 1, true);
+        return;
+    }
 
-        _messageCountIncremental = _messageCount;
-        context->updateStatus(QObject::tr("Completing %1 / %2").arg(_messageCount + 1).arg(_listSize));
-        _messageCount += uids.count();
+    _messageCountIncremental = _messageCount;
+
+    while (selectNextMessageSequence(context, DefaultBatchSize, false)) {
+        _messageCount += _messageUids.count();
 
         QString msgSectionStr;
-        if (_msgSection.isValid())
+        if (_msgSection.isValid()) {
             msgSectionStr = _msgSection.toString(false);
-        if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
-            context->protocol().sendUidFetchSection(IntegerRegion(uids).toString(),
-                                                    msgSectionStr,
-                                                    _sectionStart, 
-                                                    _sectionEnd);
-        } else {
-            context->protocol().sendUidFetch(ContentFetchFlags, IntegerRegion(uids).toString());
         }
+
+        if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
+            context->protocol().sendUidFetchSection(numericUidSequence(_messageUids), msgSectionStr, _sectionStart, _sectionEnd);
+        } else {
+            context->protocol().sendUidFetch(ContentFetchFlags, numericUidSequence(_messageUids));
+        }
+
+        ++_outstandingFetches;
     }
 }
 
@@ -707,10 +1008,12 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
         _progressRetrievalSize += it.value().first.first;
         context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
 
+        _retrievalSize.erase(it);
+    }
+
+    if (_listSize) {
         int count = qMin(++_messageCountIncremental + 1, _listSize);
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
-
-        _retrievalSize.erase(it);
     }
 }
 
@@ -798,25 +1101,46 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     if (_transferState == List) {
         // We have selected this folder - find out how many undiscovered messages exist
+        const ImapMailboxProperties &properties(context->mailbox());
 
-        // We need the UID of the most recent message we have previously discovered in this folder
-        QMailFolderId folderId(context->mailbox().id);
-        QMailFolder folder(folderId);
+        if (properties.exists) {
+            quint32 minUid(0);
+            bool performSearch(true);
+            quint32 clientMaxUid(0);
 
-        // toUint returns 0 on error, which is an invalid IMAP uid
-        int clientMax(folder.customField("qmf-max-serveruid").toUInt());
-
-        if (clientMax && context->mailbox().exists) {
-            if (context->mailbox().uidNext > (clientMax + 1)) {
-                context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMax + 1).arg(context->mailbox().uidNext));
+            // If CONDSTORE is available, we may know that no changes have occurred
+            if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
+                performSearch = false;
             } else {
-                // There's no need to search if (clientMax <= (UIDNEXT - 1))
-                handleSearch(context);
+                // Find the UID of the most recent message we have previously discovered in this folder
+                QMailFolder folder(properties.id);
+                clientMaxUid = folder.customField("qmf-max-serveruid").toUInt();
+
+                if (properties.uidNext <= (clientMaxUid + 1)) {
+                    // There's no need to search because we already have the highest UID
+                    performSearch = false;
+                } else {
+                    // Start our search here
+                    minUid = clientMaxUid;
+                }
+            }
+
+            if (performSearch) {
+                if (!clientMaxUid) {
+                    quint32 minSequence(properties.exists);
+                    if (minSequence < 1)
+                        minSequence = 1;
+                    context->protocol().sendSearch(0, QString("%1:*").arg(minSequence));
+                } else {
+                    context->protocol().sendSearch(0, QString("UID %1:%2").arg(minUid + 1).arg(properties.uidNext));
+                }
+                return;
             }
         } else {
             // No messages - nothing to discover...
-            handleSearch(context);
         }
+
+        handleSearch(context);
     } else {
         ImapMessageListStrategy::handleSelect(context);
     }
@@ -862,7 +1186,7 @@ bool ImapFolderListStrategy::nextFolder()
         }
 
         // Process this folder
-        _currentMailbox = QMailFolder(folderId);
+        setCurrentMailbox(folderId);
 
         // Bypass any folder for which synchronization is disabled
         if (_currentMailbox.status() & QMailFolder::SynchronizationEnabled)
@@ -910,16 +1234,18 @@ void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMa
 
 void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     // Initial case set the undiscovered count to exists in the case of no 
     // max-serveruid set for the folder
-    int undiscovered(context->mailbox().exists);
+    int undiscovered(properties.exists);
 
     QMailFolder folder(_currentMailbox.id());
     int clientMax(folder.customField("qmf-max-serveruid").toUInt());
     if (clientMax) {
         // The undiscovered count for a folder is the number of messages on the server newer 
         // than the most recent (highest server uid) message in the folder.
-        undiscovered = context->mailbox().msnList.count();
+        undiscovered = properties.msnList.count();
     }
     
     if (uint(undiscovered) != folder.serverUndiscoveredCount()) {
@@ -954,8 +1280,7 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     // We have selected the current mailbox
     if (_transferState == Preview) {
-        // We're retrieving message metadata
-        fetchNextMailPreview(context);
+        // The scheduled fetch command was pipelined
     } else if (_transferState == Complete) {
         // We're completing a message or section
         messageListMessageAction(context);
@@ -967,9 +1292,12 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
 void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
     if (_transferState == Preview) {    //getting headers
-        fetchNextMailPreview(context);
-    } else if (_transferState == Complete) {    //getting complete messages
-        messageListMessageAction(context);
+        --_outstandingPreviews;
+        if (_outstandingPreviews == 0) {
+            fetchNextMailPreview(context);
+        }
+    } else if (_transferState == Complete) {
+        ImapFetchSelectedMessagesStrategy::handleUidFetch(context);
     }
 }
 
@@ -1004,15 +1332,17 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
 bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)
 {
     if (_retrieveUids.isEmpty()) {
-        _currentMailbox = QMailFolder();
+        setCurrentMailbox(QMailFolderId());
         _newUids = QStringList();
         return false;
     }
 
     // In preview mode, select the mailboxes where retrievable messages are located
     QPair<QMailFolderId, QStringList> next = _retrieveUids.takeFirst();
-    _currentMailbox = QMailFolder(next.first);
+    setCurrentMailbox(next.first);
+
     _newUids = next.second;
+    _outstandingPreviews = 0;
     
     FolderStatus folderState = _folderStatus[_currentMailbox.id()];
     if (folderState & NoSelect) {
@@ -1021,7 +1351,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
     } else {
         if (_currentMailbox.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
-            handleSelect(context);
+            fetchNextMailPreview(context);
         } else {
             if (_transferState == List) {
                 QString status = QObject::tr("Checking", "Checking <mailbox name>") + QChar(' ') + _currentMailbox.displayName();
@@ -1029,6 +1359,9 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
             }
 
             context->protocol().sendSelect( _currentMailbox );
+
+            // Send fetch command without waiting for Select response
+            fetchNextMailPreview(context);
         }
     }
 
@@ -1037,49 +1370,55 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
 
 void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
 {
-    if (_newUids.count() > 0) {
-        QStringList uidList;
-        foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
-            uidList << ImapProtocol::uid(s);
+    if (!_newUids.isEmpty()) {
+        while (!_newUids.isEmpty()) {
+            QStringList uidList;
+            foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
+                uidList << ImapProtocol::uid(s);
+            }
+
+            context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
+            ++_outstandingPreviews;
+
+            _newUids = _newUids.mid(uidList.count());
         }
+    } else {
+        // We have previewed all messages from the current folder
+        folderPreviewCompleted(context);
 
-        context->protocol().sendUidFetch(MetaDataFetchFlags, IntegerRegion(uidList).toString());
-        _newUids = _newUids.mid(uidList.count());
-        return;
-    }
-    
-    previewingCompleted(context);
-    if (!selectNextPreviewFolder(context)) {
-        // No more messages to preview
-        if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
-            if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
-                // Fetch the messages that need completion
-                clearSelection();
+        if (!selectNextPreviewFolder(context)) {
+            // No more messages to preview
+            if ((_transferState == Preview) || (_retrieveUids.isEmpty())) {
+                if (!_completionList.isEmpty() || !_completionSectionList.isEmpty()) {
+                    // Fetch the messages that need completion
+                    clearSelection();
 
-                selectedMailsAppend(_completionList);
+                    selectedMailsAppend(_completionList);
 
-                QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
-                for ( ; it != end; ++it) {
-                    if (it->second != 0) {
-                        selectedSectionsAppend(it->first, it->second);
-                    } else {
-                        selectedSectionsAppend(it->first);
+                    QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
+                    for ( ; it != end; ++it) {
+                        if (it->second != 0) {
+                            selectedSectionsAppend(it->first, it->second);
+                        } else {
+                            selectedSectionsAppend(it->first);
+                        }
                     }
+
+                    _completionList.clear();
+                    _completionSectionList.clear();
+
+                    resetMessageListTraversal();
+                    messageListMessageAction(context);
+                } else {
+                    // No messages to be completed
+                    messageListCompleted(context);
                 }
-
-                _completionList.clear();
-                _completionSectionList.clear();
-
-                messageListMessageAction(context);
-            } else {
-                // No messages to be completed
-                messageListCompleted(context);
             }
         }
     }
 }
 
-void ImapSynchronizeBaseStrategy::previewingCompleted(ImapStrategyContextBase *)
+void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase *)
 {
 }
 
@@ -1100,7 +1439,7 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
                 const QMailMessageContentType contentType(part.contentType());
 
                 if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
-                    if (bytesLeft > disposition.size()) {
+                    if (bytesLeft >= disposition.size()) {
                         _completionSectionList.append(qMakePair(part.location(), 0u));
                         bytesLeft -= disposition.size();
                         ++partsToRetrieve;
@@ -1372,26 +1711,22 @@ void ImapSynchronizeAllStrategy::transition(ImapStrategyContextBase *context, Im
 
 void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     switch(_searchState)
     {
     case Seen:
     {
-        _seenUids = context->mailbox().uidList;
+        _seenUids = properties.uidList;
 
-        if (_seenUids.count() == context->mailbox().exists) {
-            // All of the messages are seen
-            _unseenUids.clear();
-            processUidSearchResults(context);
-        } else {
-            _searchState = Unseen;
-            context->protocol().sendUidSearch(MFlag_Unseen);
-        }
+        // The Unseen search command was pipelined
+        _searchState = Unseen;
         break;
     }
     case Unseen:
     {
-        _unseenUids = context->mailbox().uidList;
-        if ((_unseenUids.count() + _seenUids.count()) == context->mailbox().exists) {
+        _unseenUids = properties.uidList;
+        if (static_cast<quint32>((_unseenUids.count() + _seenUids.count())) == properties.exists) {
             // We have a consistent set of search results
             processUidSearchResults(context);
         } else {
@@ -1407,8 +1742,8 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     }
     case All:
     {
-        _unseenUids = context->mailbox().uidList;
-        if (_unseenUids.count() != context->mailbox().exists) {
+        _unseenUids = properties.uidList;
+        if (static_cast<quint32>(_unseenUids.count()) != properties.exists) {
             qMailLog(IMAP) << "Inconsistent UID SEARCH result";
 
             // No consistent search result, so don't delete anything
@@ -1453,6 +1788,7 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
     if (context->mailbox().exists > 0) {
         // Start by looking for previously-seen and unseen messages
         context->protocol().sendUidSearch(MFlag_Seen);
+        context->protocol().sendUidSearch(MFlag_Unseen);
     } else {
         // No messages, so no need to perform search
         processUidSearchResults(context);
@@ -1504,7 +1840,9 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         searchInconclusive(context);
     } else {
         QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes));
+        QMailMessageKey removedStatusKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
         QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
+        QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
         QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
         QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
     
@@ -1513,7 +1851,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         _expungeRequired = !_removedUids.isEmpty();
 
         if (_options & ImportChanges) {
-            updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
+            updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
         }
 
         // Update messages on the server that are still flagged as unseen but have been read locally
@@ -1541,7 +1879,7 @@ bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
         _readUids.removeAll( msgUidl );
 
         context->updateStatus( msg );
-        context->protocol().sendUidStore(MFlag_Seen, ImapProtocol::uid(msgUidl));
+        context->protocol().sendUidStore(MFlag_Seen, true, ImapProtocol::uid(msgUidl));
         return true;
     }
 
@@ -1564,7 +1902,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
                 qWarning() << "Unable to purge message record for account:" << context->config().id();
             }
 
-            context->protocol().sendUidStore(MFlag_Deleted, ImapProtocol::uid(msgUidl));
+            context->protocol().sendUidStore(MFlag_Deleted, true, ImapProtocol::uid(msgUidl));
             return true;
         } else if (_expungeRequired) {
             // All messages flagged as deleted, expunge them
@@ -1576,12 +1914,14 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     return false;
 }
 
-void ImapSynchronizeAllStrategy::previewingCompleted(ImapStrategyContextBase *context)
+void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase *context)
 {
-    QMailFolder folder(context->mailbox().id);
-    if (context->mailbox().exists > 0) {
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    if (properties.exists > 0) {
+        QMailFolder folder(properties.id);
         folder.setCustomField("qmf-min-serveruid", QString::number(1));
-        folder.setCustomField("qmf-max-serveruid", QString::number(context->mailbox().uidNext - 1));
+        folder.setCustomField("qmf-max-serveruid", QString::number(properties.uidNext - 1));
         folder.setServerUndiscoveredCount(0);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -1678,7 +2018,8 @@ bool ImapExportUpdatesStrategy::nextFolder()
 
     QMap<QMailFolderId, QPair<QStringList, QStringList> >::iterator it = _folderMessageUids.begin();
 
-    _currentMailbox = QMailFolder(it.key());
+    setCurrentMailbox(it.key());
+
     _clientReadUids = it.value().first;
     _clientDeletedUids = it.value().second;
 
@@ -1757,25 +2098,21 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
 
 void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
+    const ImapMailboxProperties &properties(context->mailbox());
+
     switch(_searchState)
     {
     case Unseen:
     {
-        _unseenUids = context->mailbox().uidList;
+        _unseenUids = properties.uidList;
 
-        if (_unseenUids.count() == _serverUids.count()) {
-            // All of the messages are unseen
-            _seenUids.clear();
-            processUidSearchResults(context);
-        } else {
-            _searchState = Seen;
-            context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-        }
+        // The Seen search command was pipelined
+        _searchState = Seen;
         break;
     }
     case Seen:
     {
-        _seenUids = context->mailbox().uidList;
+        _seenUids = properties.uidList;
         processUidSearchResults(context);
         break;
     }
@@ -1789,7 +2126,16 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
 
 void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
-    if (context->mailbox().exists > 0) {
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
+        // The mod sequence has not changed for this folder
+        processNextFolder(context);
+        return;
+    }
+
+    //  If we have messages, we need to discover any flag changes
+    if (properties.exists > 0) {
         IntegerRegion clientRegion(stripFolderPrefix(_serverUids));
         _filter = clientRegion.toString();
         _searchState = Unseen;
@@ -1799,8 +2145,8 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
         // miss this change by searching Unseen first; if, however, we were to search Seen first,
         // then we would miss the message altogether and mark it as deleted...
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
+        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
     } else {
-        // No messages, so no need to perform search
         processUidSearchResults(context);
     }
 }
@@ -1824,7 +2170,8 @@ bool ImapUpdateMessagesFlagsStrategy::nextFolder()
 
     QMap<QMailFolderId, QStringList>::iterator it = _folderMessageUids.begin();
 
-    _currentMailbox = QMailFolder(it.key());
+    setCurrentMailbox(it.key());
+
     _serverUids = it.value();
 
     _folderMessageUids.erase(it);
@@ -1857,10 +2204,12 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
     QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes));
+    QMailMessageKey removedStatusKey(QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Includes));
     QMailMessageKey folderKey(context->client()->messagesKey(folderId) | context->client()->trashKey(folderId));
     QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
+    QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
     
-    updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey);
+    updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
 
     processNextFolder(context);
 }
@@ -1939,8 +2288,9 @@ void ImapRetrieveMessageListStrategy::folderListCompleted(ImapStrategyContextBas
 
 void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
-    QMailFolderId folderId(context->mailbox().id);
-    QMailFolder folder(folderId);
+    const ImapMailboxProperties &properties(context->mailbox());
+
+    QMailFolder folder(properties.id);
 
     bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
     int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
@@ -1951,7 +2301,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     if ((clientMin != 0) && (clientMax != 0))
         clientRegion = IntegerRegion(clientMin, clientMax);
     IntegerRegion serverRegion;
-    foreach(const QString &uid, context->mailbox().uidList) {
+    foreach(const QString &uid, properties.uidList) {
         bool ok;
         uint number = stripFolderPrefix(uid).toUInt(&ok);
         if (ok)
@@ -1973,11 +2323,11 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
     
     // TODO: Why is all this code not in processUidSearchResults?
-    _updatedFolders.append(folderId);
+    _updatedFolders.append(properties.id);
 
     IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
-        _retrieveUids.append(qMakePair(folderId, difference.toStringList()));
+        _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
         int newClientMin;
         int newClientMax;
         if (clientMin > 0)
@@ -1989,7 +2339,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         else
             newClientMax = serverRegion.maximum();
         if ((newClientMin > 0) && (newClientMax > 0))
-            _newMinMaxMap.insert(folderId, IntegerRegion(newClientMin, newClientMax));
+            _newMinMaxMap.insert(properties.id, IntegerRegion(newClientMin, newClientMax));
     }
 
     processUidSearchResults(context);
@@ -1998,64 +2348,69 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
 void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     // The current mailbox is now selected
-    QMailFolderId folderId(context->mailbox().id);
+    const ImapMailboxProperties &properties(context->mailbox());
 
     // Could get flag changes mod sequences when CONDSTORE is available
     
-    bool comparable(true);
-    int uidNext(-1);
-    int exists(-1);
-    int lastUidNext(-1);
-    int lastExists(-1);
-    if (_lastUidNextMap.contains(folderId))
-        lastUidNext = _lastUidNextMap.value(folderId);
-    if (_lastExistsMap.contains(folderId))
-        lastExists = _lastExistsMap.value(folderId);
-    
-    // Cache uidnext and exists
-    if (context->mailbox().isSelected()) {
-        uidNext = context->mailbox().uidNext;
-        exists = context->mailbox().exists;
-        _lastUidNextMap.insert(folderId, uidNext);
-        _lastExistsMap.insert(folderId, exists);
+    if ((properties.exists == 0) || (_minimum <= 0)) {
+        // No messages, so no need to perform search
+        processUidSearchResults(context);
+        return;
     }
-    if ((uidNext < 0) || (exists < 0) || (lastUidNext < 0) || (lastExists < 0)) {
-        comparable = false;
-    }
+
+    quint32 lastUidNext(0);
+    quint32 lastExists(0);
+    bool comparable(false);
+
     if (_minimum == 1) {
         // The don't select an already selected folder optimization is causing a problem,
         // we aren't picking up changes to uidNext or exists.
         // Work around this for push email at least for now.
         comparable = false;
+    } else {
+        if (properties.isSelected()) {
+            if (_lastUidNextMap.contains(properties.id) && _lastExistsMap.contains(properties.id)) {
+                lastUidNext = _lastUidNextMap.value(properties.id);
+                lastExists = _lastExistsMap.value(properties.id);
+            } else {
+                comparable = false;
+            }
+
+            // Update the cached values
+            _lastUidNextMap.insert(properties.id, properties.uidNext);
+            _lastExistsMap.insert(properties.id, properties.exists);
+        } else {
+            comparable = false;
+        }
     }
-    
-    // We're searching mailboxes
-    int start = context->mailbox().exists - _minimum + 1;
+
+    int start = static_cast<int>(properties.exists) - _minimum + 1;
     if (start < 1)
         start = 1;
-    if ((context->mailbox().exists <= 0) || (_minimum <= 0)) {
-        // No messages, so no need to perform search
-        processUidSearchResults(context);
-    } else if (!comparable || (lastExists != exists) || (lastUidNext != uidNext)) {
+
+    if (!comparable || (lastExists != properties.exists) || (lastUidNext != properties.uidNext)) {
+        // We need to determine these values again
         context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
+        return;
+    }
+
+    // No messages have been appended or expunged since we last retrieved messages
+    // should be safe to incrementally retrieve
+    QMailMessageKey folderKey(context->client()->messagesKey(properties.id));
+    QMailMessageKey folderTrashKey(context->client()->trashKey(properties.id));
+    uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
+    if ((onClient >= _minimum) || (onClient >= properties.exists)) {
+        // We already have _minimum mails
+        processUidSearchResults(context);
+        return;
+    }
+
+    int end = properties.exists - onClient;
+    if (end >= start) {
+        context->protocol().sendUidSearch(MFlag_All, QString("%1:%2").arg(start).arg(end));
     } else {
-        // No messages have been appended or expunged since we last retrieved messages
-        // should be safe to incrementally retrieve
-        QMailMessageKey folderKey(context->client()->messagesKey(folderId));
-        QMailMessageKey folderTrashKey(context->client()->trashKey(folderId));
-        uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
-        if (onClient >= _minimum) {
-            // We already have _minimum mails
-            processUidSearchResults(context);
-            return;
-        }
-        int end = context->mailbox().exists - onClient;
-        if (end >= start) {
-            context->protocol().sendUidSearch(MFlag_All, QString("%1:%2").arg(start).arg(end));
-        } else {
-            // We already have all the mails
-            processUidSearchResults(context);
-        }
+        // We already have all the mails
+        processUidSearchResults(context);
     }
 }
 
@@ -2068,17 +2423,24 @@ void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContex
 /* A strategy to copy selected messages.
 */
 // Note: the copy strategy is:
-// 1. Select the destination folder, and find UIDNEXT
-// 2. Copy each specified message to the destination
+// NB: UIDNEXT doesn't work as expected with Cyrus 2.2; instead, just use the \Recent flag to identify copies...
+//
+// 1. Select the destination folder, resetting the Recent flag
+// 2. Copy each specified message from its existing folder to the destination
 // 3. Select the destination folder
-// 4. Search for messages >= previous UIDNEXT
+// 4. Search for recent messages (unless we already have them because of UIDPLUS)
 // 5. Retrieve metadata only for found messages
+// 6. Delete any obsolete messages that were replaced by updated copies
 
-// NB: the above doesn't work with Cyrus 2.2; instead, just use the \Recent flag to identify copies...
-
-void ImapCopyMessagesStrategy::setDestination(const QMailFolderId& id)
+void ImapCopyMessagesStrategy::appendMessageSet(const QMailMessageIdList &messageIds, const QMailFolderId& folderId)
 {
-    _destination = QMailFolder(id);
+    _messageSets.append(qMakePair(messageIds, folderId));
+}
+
+void ImapCopyMessagesStrategy::clearSelection()
+{
+    ImapFetchSelectedMessagesStrategy::clearSelection();
+    _messageSets.clear();
 }
 
 void ImapCopyMessagesStrategy::newConnection(ImapStrategyContextBase *context)
@@ -2086,6 +2448,7 @@ void ImapCopyMessagesStrategy::newConnection(ImapStrategyContextBase *context)
     _sourceUid.clear();
     _sourceUids.clear();
     _sourceIndex = 0;
+    _obsoleteDestinationUids.clear();
 
     ImapFetchSelectedMessagesStrategy::newConnection(context);
 }
@@ -2099,9 +2462,21 @@ void ImapCopyMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
             break;
         }
         
+        case IMAP_Append:
+        {
+            handleAppend(context);
+            break;
+        }
+        
         case IMAP_UIDSearch:
         {
             handleUidSearch(context);
+            break;
+        }
+        
+        case IMAP_UIDStore:
+        {
+            handleUidStore(context);
             break;
         }
         
@@ -2115,26 +2490,22 @@ void ImapCopyMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
 
 void ImapCopyMessagesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    // We need to select the destination folder to discover it's UIDNEXT value
-    if (_destination.id() == context->mailbox().id) {
-        // We already have the appropriate mailbox selected
-        handleSelect(context);
-    } else {
-        context->protocol().sendSelect(_destination);
-    }
+    selectMessageSet(context);
 }
 
 void ImapCopyMessagesStrategy::handleSelect(ImapStrategyContextBase *context)
 {
     if (_transferState == Init) {
-        //_uidNext = context->mailbox().uidNext;
-
         // Begin copying messages
         messageListMessageAction(context);
     } else if (_transferState == Search) {
-        // We have selected the destination folder - find the newly added messages
-        //context->protocol().sendUidSearch(MFlag_Recent, QString("UID %1:*").arg(ImapProtocol::uid(_uidNext)));
-        context->protocol().sendUidSearch(MFlag_Recent);
+        if (_createdUids.isEmpty()) {
+            // We have selected the destination folder - find the newly added messages
+            context->protocol().sendUidSearch(MFlag_Recent);
+        } else {
+            // We already have the UIDs via UIDPLUS
+            removeObsoleteUids(context);
+        }
     } else {
         ImapFetchSelectedMessagesStrategy::handleSelect(context);
     }
@@ -2145,9 +2516,20 @@ void ImapCopyMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
     messageListMessageAction(context);
 }
 
+void ImapCopyMessagesStrategy::handleAppend(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
 void ImapCopyMessagesStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
     _createdUids = context->mailbox().uidList;
+
+    removeObsoleteUids(context);
+}
+
+void ImapCopyMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
     fetchNextCopy(context);
 }
 
@@ -2158,24 +2540,29 @@ void ImapCopyMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 
 void ImapCopyMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (selectNextMessageSequence(context, 1)) {
-        QStringList uids;
-        foreach (const QString &msgUid, _retrieveUid.split("\n")) {
-            _sourceUids.append(msgUid);
-            uids.append(ImapProtocol::uid(msgUid));
-        }
-
+    if (_messageCount < _listSize) {
         context->updateStatus( QObject::tr("Copying %1 / %2").arg(_messageCount + 1).arg(_listSize) );
-        _messageCount += uids.count();
+    }
 
-        context->protocol().sendUidCopy( IntegerRegion(uids).toString(), _destination );
+    copyNextMessage(context);
+}
+
+void ImapCopyMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
+{
+    if (_currentMailbox.id().isValid() && (_currentMailbox.id() == _destination.id())) {
+        // This message is already in the destination folder - we need to append a new copy
+        // after closing the destination folder
+        context->protocol().sendClose();
+    } else {
+        ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
     }
 }
 
 void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     if (_transferState == Search) {
-        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+        // Move on to the next message set
+        selectMessageSet(context);
     } else {
         // We have copied all the messages - now we need to retrieve the copies
         _transferState = Search;
@@ -2186,6 +2573,8 @@ void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
 void ImapCopyMessagesStrategy::messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid)
 {
     if (!createdUid.isEmpty()) {
+        _createdUids.append(createdUid);
+
         _sourceUid[createdUid] = copiedUid;
         _sourceUids.removeAll(copiedUid);
     }
@@ -2193,7 +2582,32 @@ void ImapCopyMessagesStrategy::messageCopied(ImapStrategyContextBase *context, c
     ImapFetchSelectedMessagesStrategy::messageCopied(context, copiedUid, createdUid);
 }
 
+void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid)
+{
+    if (!createdUid.isEmpty()) {
+        _createdUids.append(createdUid);
+
+        QString pseudoUid("id:" + QString::number(id.toULongLong()));
+        _sourceUid[createdUid] = pseudoUid;
+        _sourceUids.removeAll(pseudoUid);
+    }
+
+    ImapFetchSelectedMessagesStrategy::messageCreated(context, id, createdUid);
+}
+
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+{ 
+    QString sourceUid = copiedMessageFetched(context, message);
+
+    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+
+    if (!sourceUid.isEmpty()) {
+        // We're now completed with the source message also
+        context->completedMessageAction(sourceUid);
+    }
+}
+
+QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     // See if we can update the status of the copied message from the source message
     QString sourceUid = _sourceUid[message.serverUid()];
@@ -2205,15 +2619,23 @@ void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
     }
         
     if (!sourceUid.isEmpty()) {
-        const QMailMessage source(sourceUid, context->config().id());
+        QMailMessage source;
+        if (sourceUid.startsWith("id:")) {
+            source = QMailMessage(QMailMessageId(sourceUid.mid(3).toULongLong()));
+        } else {
+            source = QMailMessage(sourceUid, context->config().id());
+        }
+
         if (source.id().isValid()) {
             updateCopiedMessage(context, message, source);
         } else {
             qWarning() << "Unable to update message from UID:" << sourceUid << "to copy:" << message.serverUid();
         }
+
+        context->completedMessageCopy(message, source);
     }
 
-    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+    return sourceUid;
 }
 
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)
@@ -2223,6 +2645,44 @@ void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QM
     }
     if (source.status() & QMailMessage::Read) {
         message.setStatus(QMailMessage::Read, true);
+    }
+}
+
+void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
+{
+    if (selectNextMessageSequence(context, 1)) {
+        const QString &messageUid(_messageUids.first());
+        ++_messageCount;
+
+        _transferState = Copy;
+
+        if (messageUid.startsWith("id:")) {
+            // This message does not exist on the server - append it
+            QMailMessageId id(messageUid.mid(3).toULongLong());
+            context->protocol().sendAppend(_destination, id);
+        } else if (!context->mailbox().id.isValid()) {
+            // This message is in the destination folder, which we have closed
+            QMailMessageMetaData metaData(messageUid, context->config().id());
+            context->protocol().sendAppend(_destination, metaData.id());
+
+            // The existing message should be removed once we have appended the new message
+            _obsoleteDestinationUids.append(ImapProtocol::uid(messageUid));
+        } else {
+            // Copy this message from its current location to the destination
+            context->protocol().sendUidCopy(ImapProtocol::uid(messageUid), _destination);
+        }
+
+        _sourceUids.append(messageUid);
+    }
+}
+
+void ImapCopyMessagesStrategy::removeObsoleteUids(ImapStrategyContextBase *context)
+{
+    if (!_obsoleteDestinationUids.isEmpty()) {
+        context->protocol().sendUidStore(MFlag_Deleted, true, IntegerRegion(_obsoleteDestinationUids).toString());
+        _obsoleteDestinationUids.clear();
+    } else {
+        fetchNextCopy(context);
     }
 }
 
@@ -2236,35 +2696,51 @@ void ImapCopyMessagesStrategy::fetchNextCopy(ImapStrategyContextBase *context)
     }
 }
 
+void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context)
+{
+    if (!_messageSets.isEmpty()) {
+        const QPair<QMailMessageIdList, QMailFolderId> &set(_messageSets.first());
+
+        selectedMailsAppend(set.first);
+        resetMessageListTraversal();
+
+        _destination = QMailFolder(set.second);
+
+        _messageSets.takeFirst();
+
+        _transferState = Init;
+        _obsoleteDestinationUids.clear();
+
+        // We need to select the destination folder to reset the Recent list
+        if (_destination.id() == context->mailbox().id) {
+            // We already have the appropriate mailbox selected
+            handleSelect(context);
+        } else {
+            context->protocol().sendSelect(_destination);
+        }
+    } else {
+        // Nothing more to do
+        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+    }
+}
+
 
 /* A strategy to move selected messages.
 */
 // Note: the move strategy is:
-// 1. Select the destination folder, and find UIDNEXT
-// 2. Copy each specified message to the destination, recording the local ID
+// 1. Select the destination folder, resetting Recent
+// 2. Copy each specified message from its current folder to the destination, recording the local ID
 // 3. Mark each specified message as deleted
 // 4. Close each modified folder to expunge the marked messages
 // 5. Update the status for each modified folder
 // 6. Select the destination folder
-// 7. Search for messages >= previous UIDNEXT
+// 7. Search for recent messages
 // 8. Retrieve metadata only for found messages
 // 9. When the metadata for a copy is fetched, move the local body of the source message into the copy
 
 void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {
-        case IMAP_UIDStore:
-        {
-            handleUidStore(context);
-            break;
-        }
-        
-        case IMAP_Close:
-        {
-            handleClose(context);
-            break;
-        }
-        
         case IMAP_Examine:
         {
             handleExamine(context);
@@ -2282,23 +2758,27 @@ void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
 void ImapMoveMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
 {
     // Mark the copied message(s) as deleted
-    QStringList uids;
-    foreach (const QString &msgUid, _retrieveUid.split("\n"))
-        uids.append(ImapProtocol::uid(msgUid));
-
-    context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(uids).toString());
+    context->protocol().sendUidStore(MFlag_Deleted, true, numericUidSequence(_messageUids));
 }
 
 void ImapMoveMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
-    _lastMailbox = _currentMailbox;
-    messageListMessageAction(context);
+    if ((_transferState == Copy) || (_transferState == Complete)) {
+        _lastMailbox = _currentMailbox;
+        messageListMessageAction(context);
+    } else {
+        ImapCopyMessagesStrategy::handleUidStore(context);
+    }
 }
 
 void ImapMoveMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 {
-    context->protocol().sendExamine(_lastMailbox);
-    _lastMailbox = QMailFolder();
+    if (_transferState == Copy) {
+        context->protocol().sendExamine(_lastMailbox);
+        _lastMailbox = QMailFolder();
+    } else {
+        ImapCopyMessagesStrategy::handleClose(context);
+    }
 }
 
 void ImapMoveMessagesStrategy::handleExamine(ImapStrategyContextBase *context)
@@ -2325,79 +2805,196 @@ void ImapMoveMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *
 
 void ImapMoveMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (selectNextMessageSequence(context, 1)) {
-        QStringList uids;
-        foreach (const QString &msgUid, _retrieveUid.split("\n")) {
-            _sourceUids.append(msgUid);
-            uids.append(ImapProtocol::uid(msgUid));
-        }
-
+    if (_messageCount < _listSize) {
         context->updateStatus( QObject::tr("Moving %1 / %2").arg(_messageCount + 1).arg(_listSize) );
-        _messageCount += uids.count();
-
-        context->protocol().sendUidCopy( IntegerRegion(uids).toString(), _destination );
     }
+
+    copyNextMessage(context);
 }
 
 void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
 {
     if (_transferState == Search) {
         // We don't need to keep the source messages any longer
-        QStringList allSourceUids(_sourceUids + _sourceUid.values());
-        QMailMessageKey uidKey(QMailMessageKey::serverUid(allSourceUids));
-        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+        QStringList allSourceUids;
+        foreach (const QString &uid, (_sourceUids + _sourceUid.values())) {
+            if (!uid.startsWith("id:")) {
+                allSourceUids.append(uid);
+            } else {
+                // TODO: Are these messages removed?
+            }
+        }
 
-        if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
-            qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
+        if (!allSourceUids.isEmpty()) {
+            QMailMessageKey uidKey(QMailMessageKey::serverUid(allSourceUids));
+            QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+
+            if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
+                qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
+            }
         }
     }
 
     ImapCopyMessagesStrategy::messageListCompleted(context);
 }
 
-static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
-{
-    Q_ASSERT(destination.partCount() == source.partCount());
-
-    if (source.hasBody()) {
-        destination.setBody(source.body());
-    } else if (source.partCount() > 0) {
-        for (uint i = 0; i < source.partCount(); ++i) {
-            const QMailMessagePart &sourcePart = source.partAt(i);
-            QMailMessagePart &destinationPart = destination.partAt(i);
-
-            transferPartBodies(destinationPart, sourcePart);
-        }
-    }
-}
-
 void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source)
 { 
     ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
 
-    transferPartBodies(message, source);
+    // Move the content of the source message to the new message
+    transferMessageData(message, source);
 
-    if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
-        // We have modified the content, so the detached file data is no longer sufficient
-        message.removeCustomField("qtopiamail-detached-filename");
-    }
-
-    if (source.status() & QMailMessage::ContentAvailable) {
-        message.setStatus(QMailMessage::ContentAvailable, true);
-    }
-    if (source.status() & QMailMessage::PartialContentAvailable) {
-        message.setStatus(QMailMessage::PartialContentAvailable, true);
+    if (source.serverUid().isEmpty()) {
+        // This message has been moved to the external server - delete the local copy
+        if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {
+            qWarning() << "Unable to remove moved message:" << source.id();
+        }
     }
 }
 
-/* A strategy to delete selected messages.
+
+/* A strategy to make selected messages available from the external server.
 */
-void ImapDeleteMessagesStrategy::setLocalMessageRemoval(bool removal)
+// 1. Select and then close the destination folder, resetting the Recent flag
+// 2. Append each specified message to the destination folder
+// 3. Select the destination folder
+// 4. Search for recent messages 
+// 5. Replace the original local message with the remote one
+// 6. Generate authorized URLs for each message
+
+void ImapExternalizeMessagesStrategy::appendMessageSet(const QMailMessageIdList &messageIds, const QMailFolderId& folderId)
 {
-    _removal = removal;
+    if (folderId.isValid()) {
+        ImapCopyMessagesStrategy::appendMessageSet(messageIds, folderId);
+    } else {
+        // These messages can't be externalised - just remove the flag to proceed as normal
+        QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
+        if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::TransmitFromExternal, false)) {
+            qWarning() << "Unable to update message metadata to remove transmit from external flag";
+        }
+    }
 }
 
-void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+void ImapExternalizeMessagesStrategy::newConnection(ImapStrategyContextBase *context)
+{
+    _urlIds.clear();
+
+    if (!_messageSets.isEmpty()) {
+        ImapCopyMessagesStrategy::newConnection(context);
+    } else {
+        // Nothing to do
+        context->operationCompleted();
+    }
+}
+
+void ImapExternalizeMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+{
+    switch( command ) {
+        case IMAP_GenUrlAuth:
+        {
+            handleGenUrlAuth(context);
+            break;
+        }
+        
+        default:
+        {
+            ImapCopyMessagesStrategy::transition(context, command, status);
+            break;
+        }
+    }
+}
+
+void ImapExternalizeMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
+{
+    // We're finished with the previous location
+    _urlIds.takeFirst();
+
+    resolveNextMessage(context);
+}
+
+void ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+{ 
+    copiedMessageFetched(context, message);
+
+    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+
+    _urlIds.append(message.id());
+}
+
+void ImapExternalizeMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const QString &url)
+{
+    const QMailMessageId &id(_urlIds.first());
+
+    // We now have an authorized URL for this message
+    QMailMessage message(id);
+    message.setExternalLocationReference(url);
+
+    if (!QMailStore::instance()->updateMessage(&message)) {
+        qWarning() << "Unable to update message for account:" << message.parentAccountId();
+    }
+}
+
+void ImapExternalizeMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source)
+{ 
+    // Update the source message with the new 
+    ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
+
+    // Move the content of the source message to the new message
+    transferMessageData(message, source);
+
+    // Replace the source message with the new message
+    message.setId(source.id());
+
+    if (source.status() & QMailMessage::Outbox) {
+        message.setStatus(QMailMessage::Outbox, true);
+    }
+    if (source.status() & QMailMessage::TransmitFromExternal) {
+        message.setStatus(QMailMessage::TransmitFromExternal, true);
+    }
+}
+
+void ImapExternalizeMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
+{
+    resolveNextMessage(context);
+}
+
+void ImapExternalizeMessagesStrategy::resolveNextMessage(ImapStrategyContextBase *context)
+{
+    if (!_urlIds.isEmpty()) {
+        const QMailMessageId &id(_urlIds.first());
+
+        // Generate an authorized URL for this message
+        QMailMessagePart::Location location;
+        location.setContainingMessageId(id);
+        context->protocol().sendGenUrlAuth(location, false);
+    } else {
+        ImapCopyMessagesStrategy::messageListCompleted(context);
+    }
+}
+
+
+/* A strategy to flag selected messages.
+*/
+void ImapFlagMessagesStrategy::clearSelection()
+{
+    _setMask = 0;
+    _unsetMask = 0;
+    _outstandingStores = 0;
+
+    ImapFetchSelectedMessagesStrategy::clearSelection();
+}
+
+void ImapFlagMessagesStrategy::setMessageFlags(MessageFlags flags, bool set)
+{
+    if (set) {
+        _setMask |= flags;
+    } else {
+        _unsetMask |= flags;
+    }
+}
+
+void ImapFlagMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {
         case IMAP_UIDStore:
@@ -2406,6 +3003,50 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
             break;
         }
         
+        default:
+        {
+            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+            break;
+        }
+    }
+}
+
+void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
+{
+    --_outstandingStores;
+    if (_outstandingStores == 0) {
+        messageListMessageAction(context);
+    }
+}
+
+void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
+{
+    if (selectNextMessageSequence(context, 1000)) {
+        QString uidSequence(numericUidSequence(_messageUids));
+        if (_setMask) {
+            context->protocol().sendUidStore(_setMask, true, uidSequence);
+            ++_outstandingStores;
+        }
+        if (_unsetMask) {
+            context->protocol().sendUidStore(_unsetMask, false, uidSequence);
+            ++_outstandingStores;
+        }
+    }
+}
+
+
+/* A strategy to delete selected messages.
+*/
+void ImapDeleteMessagesStrategy::setLocalMessageRemoval(bool removal)
+{
+    _removal = removal;
+
+    setMessageFlags(MFlag_Deleted, true);
+}
+
+void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
+{
+    switch( command ) {
         case IMAP_Close:
         {
             handleClose(context);
@@ -2420,7 +3061,7 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
         
         default:
         {
-            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+            ImapFlagMessagesStrategy::transition(context, command, status);
             break;
         }
     }
@@ -2428,11 +3069,13 @@ void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, Im
 
 void ImapDeleteMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 {
-    // Add the stored UIDs to our list
-    _storedList += _retrieveUid.split("\n");
-    _lastMailbox = _currentMailbox;
+    if (_outstandingStores == 1) {
+        // Add the stored UIDs to our list
+        _storedList += _messageUids;
+        _lastMailbox = _currentMailbox;
+    }
 
-    messageListMessageAction(context);
+    ImapFlagMessagesStrategy::handleUidStore(context);
 }
 
 void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
@@ -2455,18 +3098,7 @@ void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
 void ImapDeleteMessagesStrategy::handleExamine(ImapStrategyContextBase *context)
 {
     // Select the next folder
-    ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
-}
-
-void ImapDeleteMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
-{
-    if (selectNextMessageSequence(context, 1000)) {
-        QStringList uids;
-        foreach (const QString &msgUid, _retrieveUid.split("\n"))
-            uids.append(ImapProtocol::uid(msgUid));
-
-        context->protocol().sendUidStore(MFlag_Deleted, IntegerRegion(uids).toString());
-    }
+    ImapFlagMessagesStrategy::messageListFolderAction(context);
 }
 
 void ImapDeleteMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *context)
@@ -2477,7 +3109,7 @@ void ImapDeleteMessagesStrategy::messageListFolderAction(ImapStrategyContextBase
     } else {
         // Select the next folder, and clear the stored list
         _storedList.clear();
-        ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
+        ImapFlagMessagesStrategy::messageListFolderAction(context);
     }
 }
 
@@ -2487,7 +3119,7 @@ void ImapDeleteMessagesStrategy::messageListCompleted(ImapStrategyContextBase *c
     if ((context->mailbox().isSelected()) && (_lastMailbox.id().isValid())) {
         context->protocol().sendClose();
     } else {
-        ImapFetchSelectedMessagesStrategy::messageListCompleted(context);
+        ImapFlagMessagesStrategy::messageListCompleted(context);
     }
 }
 
@@ -2497,3 +3129,4 @@ ImapStrategyContext::ImapStrategyContext(ImapClient *client)
     _strategy(0) 
 {
 }
+

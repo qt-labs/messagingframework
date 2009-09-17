@@ -41,11 +41,13 @@
 
 #include "imapsettings.h"
 #include "imapconfiguration.h"
-#include <QLineEdit>
-#include <QMessageBox>
+#include <emailfoldermodel.h>
 #include <qmailaccount.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailtransport.h>
+#include <selectfolder.h>
+#include <QLineEdit>
+#include <QMessageBox>
 
 namespace {
 
@@ -109,6 +111,27 @@ ImapSettings::ImapSettings()
     lblEncryptionIncoming->hide();
 #endif
 
+    connect(draftsButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(sentButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(trashButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    connect(junkButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+
+    QIcon clearIcon(":icon/clear_left");
+
+    clearBaseButton->setIcon(clearIcon);
+    connect(clearBaseButton, SIGNAL(clicked()), imapBaseDir, SLOT(clear()));
+
+    clearDraftsButton->setIcon(clearIcon);
+    connect(clearDraftsButton, SIGNAL(clicked()), imapDraftsDir, SLOT(clear()));
+
+    clearSentButton->setIcon(clearIcon);
+    connect(clearSentButton, SIGNAL(clicked()), imapSentDir, SLOT(clear()));
+
+    clearTrashButton->setIcon(clearIcon);
+    connect(clearTrashButton, SIGNAL(clicked()), imapTrashDir, SLOT(clear()));
+
+    clearJunkButton->setIcon(clearIcon);
+    connect(clearJunkButton, SIGNAL(clicked()), imapJunkDir, SLOT(clear()));
 }
 
 void ImapSettings::intervalCheckChanged(int enabled)
@@ -117,8 +140,67 @@ void ImapSettings::intervalCheckChanged(int enabled)
     roamingCheckBox->setEnabled(enabled);
 }
 
-void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
+void ImapSettings::selectFolder()
 {
+    AccountFolderModel model(accountId, this);
+    model.init();
+
+    // The account itself is not a selectable folder
+    QList<QMailMessageSet*> invalidItems;
+    invalidItems.append(model.itemFromIndex(model.indexFromAccountId(accountId)));
+
+    SelectFolderDialog selectFolderDialog(&model);
+    selectFolderDialog.setInvalidSelections(invalidItems);
+    selectFolderDialog.exec();
+
+    if (selectFolderDialog.result() == QDialog::Accepted) {
+        QMailFolder folder(model.folderIdFromIndex(model.indexFromItem(selectFolderDialog.selectedItem())));
+
+        if (sender() == static_cast<QObject*>(draftsButton)) {
+            imapDraftsDir->setText(folder.path());
+            clearDraftsButton->setEnabled(true);
+        } else if (sender() == static_cast<QObject*>(sentButton)) {
+            imapSentDir->setText(folder.path());
+            clearSentButton->setEnabled(true);
+        } else if (sender() == static_cast<QObject*>(trashButton)) {
+            imapTrashDir->setText(folder.path());
+            clearTrashButton->setEnabled(true);
+        } else if (sender() == static_cast<QObject*>(junkButton)) {
+            imapJunkDir->setText(folder.path());
+            clearJunkButton->setEnabled(true);
+        }
+    }
+}
+
+void ImapSettings::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config)
+{
+    accountId = account.id();
+    bool hasFolders(false);
+    if (accountId.isValid()) {
+        hasFolders = (QMailStore::instance()->countFolders(QMailFolderKey::parentAccountId(accountId)) > 0);
+    }
+
+    // Only allow the base folder to be specified before retrieval occurs
+    baseFolderLabel->setEnabled(!hasFolders);
+    imapBaseDir->setEnabled(!hasFolders);
+
+    // Only allow the other folders to be specified after we have a folder listing
+    draftsFolderLabel->setEnabled(hasFolders);
+    draftsButton->setEnabled(hasFolders);
+    imapDraftsDir->setEnabled(hasFolders);
+
+    sentFolderLabel->setEnabled(hasFolders);
+    sentButton->setEnabled(hasFolders);
+    imapSentDir->setEnabled(hasFolders);
+
+    trashFolderLabel->setEnabled(hasFolders);
+    trashButton->setEnabled(hasFolders);
+    imapTrashDir->setEnabled(hasFolders);
+
+    junkFolderLabel->setEnabled(hasFolders);
+    junkButton->setEnabled(hasFolders);
+    imapJunkDir->setEnabled(hasFolders);
+
     if (!config.services().contains(serviceKey)) {
         // New account
         mailUserInput->setText("");
@@ -151,6 +233,15 @@ void ImapSettings::displayConfiguration(const QMailAccount &, const QMailAccount
         intervalPeriod->setValue(qAbs(imapConfig.checkInterval()));
         roamingCheckBox->setChecked(!imapConfig.intervalCheckRoamingEnabled());
         imapBaseDir->setText(imapConfig.baseFolder());
+        clearBaseButton->setEnabled(!imapBaseDir->text().isEmpty());
+        imapDraftsDir->setText(imapConfig.draftsFolder());
+        clearDraftsButton->setEnabled(!imapDraftsDir->text().isEmpty());
+        imapSentDir->setText(imapConfig.sentFolder());
+        clearSentButton->setEnabled(!imapSentDir->text().isEmpty());
+        imapTrashDir->setText(imapConfig.trashFolder());
+        clearTrashButton->setEnabled(!imapTrashDir->text().isEmpty());
+        imapJunkDir->setText(imapConfig.junkFolder());
+        clearJunkButton->setEnabled(!imapJunkDir->text().isEmpty());
     }
 }
 
@@ -186,6 +277,10 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));
     imapConfig.setIntervalCheckRoamingEnabled(!roamingCheckBox->isChecked());
     imapConfig.setBaseFolder(imapBaseDir->text());
+    imapConfig.setDraftsFolder(imapDraftsDir->text());
+    imapConfig.setSentFolder(imapSentDir->text());
+    imapConfig.setTrashFolder(imapTrashDir->text());
+    imapConfig.setJunkFolder(imapJunkDir->text());
 
     // Do we have a configuration we can use?
     if (!imapConfig.mailServer().isEmpty() && !imapConfig.mailUserName().isEmpty())

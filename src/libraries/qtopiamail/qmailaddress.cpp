@@ -919,7 +919,7 @@ QList<QMailAddress> QMailAddress::groupMembers() const
 /*!
     Returns true if the address component has the form of a phone number; otherwise returns false.
 
-    \sa isEmailAddress(), isChatAddress(), matchContact()
+    \sa isEmailAddress()
 */
 bool QMailAddress::isPhoneNumber() const
 {
@@ -929,21 +929,18 @@ bool QMailAddress::isPhoneNumber() const
 /*!
     Returns true if the address component has the form of an email address; otherwise returns false.
 
-    \sa isPhoneNumber(), isChatAddress(), matchContact()
+    \sa isPhoneNumber()
 */
 bool QMailAddress::isEmailAddress() const
 {
     return d->isEmailAddress();
 }
 
-
 /*! \internal */
 QString QMailAddress::minimalPhoneNumber() const
 {
     return d->minimalPhoneNumber();
 }
-
-
 
 /*!
     Returns a string containing the name and address in a standardised format.

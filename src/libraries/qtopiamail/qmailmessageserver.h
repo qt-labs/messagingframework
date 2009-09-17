@@ -88,6 +88,7 @@ signals:
     void messagesDeleted(quint64, const QMailMessageIdList&);
     void messagesCopied(quint64, const QMailMessageIdList&);
     void messagesMoved(quint64, const QMailMessageIdList&);
+    void messagesFlagged(quint64, const QMailMessageIdList&);
     void storageActionCompleted(quint64);
 
     void matchingMessageIds(quint64, const QMailMessageIdList&);
@@ -117,6 +118,7 @@ public slots:
 
     void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
+    void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
 
     void cancelTransfer(quint64);
 

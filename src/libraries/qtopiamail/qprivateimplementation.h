@@ -198,15 +198,6 @@ public:
         increment(d);
     }
 
-    /* Not necessary?
-    template<typename U>
-    inline QPrivateImplementationPointer(const QPrivateImplementationPointer<U> &o)
-        : d(static_cast<T*>(o.d))
-    {
-        increment(d);
-    }
-    */
-
     inline ~QPrivateImplementationPointer()
     {
         decrement(d);
@@ -224,31 +215,12 @@ public:
         return *this;
     }
 
-    /* Not necessary?
-    template<typename U>
-    inline QPrivateImplementationPointer<T> &operator=(const QPrivateImplementationPointer<U> &o)
-    {
-        assign_helper(o.d);
-        return *this;
-    }
-    */
-
     inline bool operator!() const { return !d; }
 
 private:
-    inline void increment(T*& p)
-    {
-        if (p) p->ref();
-    }
+    void increment(T*& p);
 
-    inline void decrement(T*& p)
-    {
-        if (p) {
-            if (p->deref())  {
-                p = reinterpret_cast<T*>(~0);
-            }
-        }
-    }
+    void decrement(T*& p);
 
     inline T* assign_helper(T *p)
     {
@@ -283,29 +255,35 @@ public:
     QPrivatelyImplemented(const QPrivatelyImplemented& other);
 
     template<typename A1>
-    QPrivatelyImplemented(ImplementationType* p, A1 a1);
+    QTOPIAMAIL_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyImplemented();
 
     const QPrivatelyImplemented<ImplementationType>& operator=(const QPrivatelyImplemented<ImplementationType>& other);
 
     template<typename ImplementationSubclass>
-    ImplementationSubclass* impl();
+    inline ImplementationSubclass* impl()
+    {
+        return static_cast<ImplementationSubclass*>(static_cast<ImplementationType*>(d));
+    }
 
     template<typename InterfaceType>
-    typename InterfaceType::ImplementationType* impl(InterfaceType*);
+    inline typename InterfaceType::ImplementationType* impl(InterfaceType*)
+    {
+        return impl<typename InterfaceType::ImplementationType>();
+    }
 
     template<typename ImplementationSubclass>
-    const ImplementationSubclass* impl() const;
+    inline const ImplementationSubclass* impl() const
+    {
+        return static_cast<const ImplementationSubclass*>(static_cast<const ImplementationType*>(d));
+    }
 
     template<typename InterfaceType>
-    const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
-
-    /* Comparison functions passed through to the implementation type?
-    bool operator== (const QPrivatelyImplemented<ImplementationType>& other) const;
-    bool operator!= (const QPrivatelyImplemented<ImplementationType>& other) const;
-    bool operator< (const QPrivatelyImplemented<ImplementationType>& other) const;
-    */
+    inline const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const
+    {
+        return impl<const typename InterfaceType::ImplementationType>();
+    }
 
 protected:
     QPrivateImplementationPointer<ImplementationType> d;
@@ -381,22 +359,14 @@ public:
     {
     }
 
-    inline ~QPrivateNoncopyablePointer()
-    {
-        d->delete_self();
-    }
+    ~QPrivateNoncopyablePointer();
 
     inline bool operator!() const { return !d; }
 
 private:
-    inline QPrivateNoncopyablePointer<T> &operator=(T *p);
+    inline QPrivateNoncopyablePointer<T> &operator=(T *) { return *this; }
 
-    inline QPrivateNoncopyablePointer<T> &operator=(const QPrivateNoncopyablePointer<T> &o);
-
-    /* Not necessary?
-    template<typename U>
-    inline QPrivateNoncopyablePointer<T> &operator=(const QPrivateNoncopyablePointer<U> &o);
-    */
+    inline QPrivateNoncopyablePointer<T> &operator=(const QPrivateNoncopyablePointer<T> &) { return *this; }
 
 public:
     T *d;
@@ -409,27 +379,33 @@ public:
     QPrivatelyNoncopyable(ImplementationType* p);
 
     template<typename A1>
-    QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
+    QTOPIAMAIL_EXPORT QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyNoncopyable();
 
     template<typename ImplementationSubclass>
-    ImplementationSubclass* impl();
+    inline ImplementationSubclass* impl()
+    {
+        return static_cast<ImplementationSubclass*>(static_cast<ImplementationType*>(d));
+    }
 
     template<typename InterfaceType>
-    typename InterfaceType::ImplementationType* impl(InterfaceType*);
+    inline typename InterfaceType::ImplementationType* impl(InterfaceType*)
+    {
+        return impl<typename InterfaceType::ImplementationType>();
+    }
 
     template<typename ImplementationSubclass>
-    const ImplementationSubclass* impl() const;
+    inline const ImplementationSubclass* impl() const
+    {
+        return static_cast<const ImplementationSubclass*>(static_cast<const ImplementationType*>(d));
+    }
 
     template<typename InterfaceType>
-    const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const;
-
-    /* Comparison functions passed through to the implementation type?
-    bool operator== (const QPrivatelyNoncopyable<ImplementationType>& other) const;
-    bool operator!= (const QPrivatelyNoncopyable<ImplementationType>& other) const;
-    bool operator< (const QPrivatelyNoncopyable<ImplementationType>& other) const;
-    */
+    inline const typename InterfaceType::ImplementationType* impl(const InterfaceType*) const
+    {
+        return impl<const typename InterfaceType::ImplementationType>();
+    }
 
 protected:
     QPrivateNoncopyablePointer<ImplementationType> d;

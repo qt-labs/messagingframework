@@ -9,15 +9,11 @@ SUBDIRS = src/libraries/qtopiamail \
           src/plugins/contentmanagers/qtopiamailfile \
           src/plugins/viewers/generic \
           src/plugins/composers/email \
-          src/settings/messagingaccounts \
           src/tools/messageserver \
-          src/applications/qtmail \
+          examples/applications/qtmail \
+          examples/settings/messagingaccounts \
           tests \
           benchmarks \
 
 CONFIG += ordered
-
-# Make it so projects can find our specific features
-system(touch $$OUT_PWD/.qmake.cache)
-system(if ! [ -e $$OUT_PWD/features ]; then ln -s $$PWD/features $$OUT_PWD/features; fi)
 

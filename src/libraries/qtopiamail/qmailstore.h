@@ -56,7 +56,7 @@
 #include "qmailglobal.h"
 
 class QMailStore;
-class QMailStorePrivate;
+class QMailStoreImplementation;
 
 #ifdef QMAILSTOREINSTANCE_DEFINED_HERE
 static QMailStore* QMailStoreInstance();
@@ -101,7 +101,9 @@ public:
         ConstraintFailure,
         ContentInaccessible,
         NotYetImplemented,
-        FrameworkFault
+        ContentNotRemoved,
+        FrameworkFault,
+        StorageInaccessible
     };
 
 public:
@@ -143,9 +145,9 @@ public:
 
     int sizeOfMessages(const QMailMessageKey& key = QMailMessageKey()) const;
 
-    const QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(), const QMailAccountSortKey& sortKey = QMailAccountSortKey()) const;
-    const QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(), const QMailFolderSortKey& sortKey = QMailFolderSortKey()) const;
-    const QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(), const QMailMessageSortKey& sortKey = QMailMessageSortKey()) const;
+    const QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(), const QMailAccountSortKey& sortKey = QMailAccountSortKey(), uint limit = 0, uint offset = 0) const;
+    const QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(), const QMailFolderSortKey& sortKey = QMailFolderSortKey(), uint limit = 0, uint offset = 0) const;
+    const QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(), const QMailMessageSortKey& sortKey = QMailMessageSortKey(), uint limit = 0, uint offset = 0) const;
 
     QMailAccount account(const QMailAccountId& id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId& id) const;
@@ -231,7 +233,7 @@ private:
     void emitRetrievalInProgress(const QMailAccountIdList &ids);
     void emitTransmissionInProgress(const QMailAccountIdList &ids);
 
-    QMailStorePrivate* d;
+    QMailStoreImplementation* d;
 };
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

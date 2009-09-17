@@ -262,3 +262,18 @@
     \value IdentityFormat       The entire message is serialized to RFC 2822 form, with only Content-Type and Content-Transfer-Encoding headers added where required.
 */
 
+/*!
+    \enum QMailMessageFwd::ChunkType
+    
+    This enum type is used to denote the content of a single chunk in a partitioned output sequence.
+
+    \value Text         The chunk contains verbatim output text.
+    \value Reference    The chunk contains a reference to an external datum.
+*/
+
+/*!
+    \typedef QMailMessageFwd::MessageChunk
+
+    This type defines a single chunk in a sequence of partitioned ouput data.
+*/
+

@@ -52,6 +52,7 @@ class QStackedWidget;
 class DetailsPage;
 class RecipientListWidget;
 class QLineEdit;
+class QTextEdit;
 class AttachmentListWidget;
 
 class EmailComposerInterface : public QMailComposerInterface
@@ -75,13 +76,15 @@ public:
     virtual QString displayName(QMailMessage::MessageType type) const;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const;
 
-    void compose(ComposeContext context, const QMailMessage& source, QMailMessage::MessageType mtype);
+    void compose(QMailMessage::ResponseType type, const QMailMessage& source, const QMailMessagePart::Location& sourceLocation, QMailMessage::MessageType messageType);
+
     QList<QAction*> actions() const;
     QString status() const;
 
 public slots:
     void clear();
-    void setSignature( const QString &sig );
+    void setSignature(const QString &sig);
+    void setSendingAccountId(const QMailAccountId &accountId);
 
 protected slots:
     void selectAttachment();
@@ -89,9 +92,9 @@ protected slots:
     void setCursorPosition();
 
 private:
-    void create(const QMailMessage& source);
-    void reply(const QMailMessage& source, int action);
     void init();
+    void create(const QMailMessage& source);
+    void respond(QMailMessage::ResponseType type, const QMailMessage& source, const QMailMessagePart::Location& partLocation);
     void setPlainText( const QString& text, const QString& signature );
     void getDetails(QMailMessage& message) const;
     void setDetails(const QMailMessage& message);
@@ -101,6 +104,8 @@ private:
     int m_cursorIndex;
     QWidget* m_composerWidget;
     BodyTextEdit* m_bodyEdit;
+    QLabel* m_forwardLabel;
+    QTextEdit* m_forwardEdit;
     QLabel* m_attachmentsLabel;
     QStackedWidget* m_widgetStack;
     QAction* m_attachmentAction;
@@ -112,6 +117,7 @@ private:
     QLabel* m_columnLabel;
     QLabel* m_rowLabel;
     QStringList m_temporaries;
+    QMailAccountId m_accountId;
 };
 
 #endif

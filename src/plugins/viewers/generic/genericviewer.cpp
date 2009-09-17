@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "genericviewer.h"
-#include "browser.h"
+#include "browserwidget.h"
 #include "attachmentoptions.h"
 #include <QAction>
 #include <QGridLayout>
@@ -53,13 +53,13 @@
 
 GenericViewer::GenericViewer(QWidget* parent)
     : QMailViewerInterface(parent),
-      browser(new Browser(parent)),
+      browser(new BrowserWidget(parent)),
       attachmentDialog(0),
       message(0),
       plainTextMode(false)
 {
+
     connect(browser, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
-    connect(browser, SIGNAL(highlighted(QUrl)), this, SLOT(linkHighlighted(QUrl)));
 
     plainTextModeAction = new QAction(QIcon(":icon/txt"), tr("Plain text"), this);
     plainTextModeAction->setVisible(!plainTextMode);
@@ -69,7 +69,7 @@ GenericViewer::GenericViewer(QWidget* parent)
     richTextModeAction->setVisible(plainTextMode);
     richTextModeAction->setWhatsThis(tr("Display the message contents in Rich text format."));
 
-    widget()->installEventFilter(this);
+    installEventFilter(this);
 
     browser->addAction(plainTextModeAction);
     connect(plainTextModeAction, SIGNAL(triggered(bool)),
@@ -78,15 +78,7 @@ GenericViewer::GenericViewer(QWidget* parent)
     browser->addAction(richTextModeAction);
     connect(richTextModeAction, SIGNAL(triggered(bool)),
             this, SLOT(triggered(bool)));
-}
-
-GenericViewer::~GenericViewer()
-{
-}
-
-void GenericViewer::scrollToAnchor(const QString& a)
-{
-    browser->scrollToAnchor(a);
+ 
 }
 
 QWidget* GenericViewer::widget() const
@@ -94,23 +86,44 @@ QWidget* GenericViewer::widget() const
     return browser;
 }
 
-void GenericViewer::addActions(QMenu* menu) const
+void GenericViewer::addActions(const QList<QAction*>& actions)
 {
-    Q_UNUSED(menu);
+    browser->addActions(actions);
 }
 
-QString GenericViewer::key() const { return "GenericViewer"; }
-QMailViewerFactory::PresentationType GenericViewer::presentation() const { return QMailViewerFactory::StandardPresentation; }
-QList<int> GenericViewer::types() const { return QList<int>() << QMailMessage::PlainTextContent
-                                                           << QMailMessage::RichTextContent
-                                                           << QMailMessage::ImageContent
-                                                           << QMailMessage::AudioContent
-                                                           << QMailMessage::VideoContent
-                                                           << QMailMessage::MultipartContent
-                                                           << QMailMessage::HtmlContent         // temporary...
-                                                           << QMailMessage::VCardContent        // temporary...
-                                                           << QMailMessage::VCalendarContent    // temporary...
-                                                           << QMailMessage::ICalendarContent; } // temporary...
+void GenericViewer::removeAction(QAction* action)
+{
+    browser->removeAction(action);
+}
+
+void GenericViewer::scrollToAnchor(const QString& a)
+{
+    browser->scrollToAnchor(a);
+}
+
+QString GenericViewer::key() const
+{
+    return "GenericViewer";
+}
+
+QMailViewerFactory::PresentationType GenericViewer::presentation() const
+{
+    return QMailViewerFactory::StandardPresentation;
+}
+
+QList<QMailMessage::ContentType> GenericViewer::types() const 
+{ 
+    return QList<QMailMessage::ContentType>() << QMailMessage::PlainTextContent
+                                              << QMailMessage::RichTextContent
+                                              << QMailMessage::ImageContent
+                                              << QMailMessage::AudioContent
+                                              << QMailMessage::VideoContent
+                                              << QMailMessage::MultipartContent
+                                              << QMailMessage::HtmlContent         // temporary...
+                                              << QMailMessage::VCardContent        // temporary...
+                                              << QMailMessage::VCalendarContent    // temporary...
+                                              << QMailMessage::ICalendarContent;   // temporary...
+}
 
 bool GenericViewer::setMessage(const QMailMessage& mail)
 {
@@ -176,12 +189,13 @@ void GenericViewer::linkClicked(const QUrl& link)
                 QMailMessagePart::Location partLocation(location);
 
                 // Show the attachment dialog
-                attachmentDialog = new AttachmentOptions(widget());
+                attachmentDialog = new AttachmentOptions(browser);
                 attachmentDialog->setAttribute(Qt::WA_DeleteOnClose);
 
                 attachmentDialog->setAttachment(message->partAt(partLocation));
                 connect(attachmentDialog, SIGNAL(retrieve(QMailMessagePart)), this, SIGNAL(retrieveMessagePart(QMailMessagePart)));
                 connect(attachmentDialog, SIGNAL(retrievePortion(QMailMessagePart, uint)), this, SIGNAL(retrieveMessagePartPortion(QMailMessagePart, uint)));
+                connect(attachmentDialog, SIGNAL(respondToPart(QMailMessagePart::Location, QMailMessage::ResponseType)), this, SIGNAL(respondToMessagePart(QMailMessagePart::Location, QMailMessage::ResponseType)));
                 connect(attachmentDialog, SIGNAL(finished(int)), this, SLOT(dialogFinished(int)));
 
                 attachmentDialog->exec();
@@ -202,20 +216,6 @@ void GenericViewer::linkClicked(const QUrl& link)
     }
 
     emit anchorClicked(link);
-}
-
-void GenericViewer::linkHighlighted(const QUrl& link)
-{
-    QString command = link.toString();
-
-    QString number;
-    if (command.startsWith("dial;")) {
-        number = command.mid(5);
-    } else if (command.startsWith("mailto:")) {
-        QMailAddress address(command.mid(7));
-        if (address.isPhoneNumber())
-            number = address.address();
-    }
 }
 
 bool GenericViewer::eventFilter(QObject*, QEvent* event)

@@ -55,7 +55,7 @@
 
 #include <qmailserviceconfiguration.h>
 
-class QTOPIAMAIL_EXPORT SmtpConfiguration : public QMailServiceConfiguration
+class PLUGIN_EXPORT SmtpConfiguration : public QMailServiceConfiguration
 {
 public:
     enum AuthType {
@@ -82,7 +82,7 @@ public:
     int smtpEncryption() const;
 };
 
-class QTOPIAMAIL_EXPORT SmtpConfigurationEditor : public SmtpConfiguration
+class PLUGIN_EXPORT SmtpConfigurationEditor : public SmtpConfiguration
 {
 public:
     explicit SmtpConfigurationEditor(QMailAccountConfiguration *config);

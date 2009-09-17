@@ -41,13 +41,22 @@
 
 #include "benchmarkcontext.h"
 #include "testfsusage.h"
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN)
 #include "testmalloc.h"
+#endif
+#ifdef HAVE_VALGRIND
 #include "3rdparty/cycle_p.h"
 #include "3rdparty/callgrind_p.h"
 #include "3rdparty/valgrind_p.h"
+#else
+#define RUNNING_ON_VALGRIND 0
+#define CALLGRIND_ZERO_STATS
+#define CALLGRIND_DUMP_STATS
+#endif
 
 #include <qmailnamespace.h>
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QTest>
@@ -77,8 +86,10 @@ BenchmarkContext::BenchmarkContext(bool xml)
 
     d->time.start();
 
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN)
     TestMalloc::resetNow();
     TestMalloc::resetPeak();
+#endif
     CALLGRIND_ZERO_STATS;
 }
 
@@ -91,7 +102,7 @@ BenchmarkContext::~BenchmarkContext()
             // look for callgrind.out.<PID>.<NUM> in CWD
             QDir dir;
             QFile file;
-            QString match = QString("callgrind.out.%1.").arg(::getpid());
+            QString match = QString("callgrind.out.%1.").arg(QCoreApplication::applicationPid());
             foreach (QString const& entry, dir.entryList(QDir::Files,QDir::Name)) {
                 if (entry.startsWith(match)) {
                     file.setFileName(entry);
@@ -147,8 +158,13 @@ BenchmarkContext::~BenchmarkContext()
 #endif
 
         // Note, kilo means 1000, not 1024 !
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN)
         int heapUsageTotal  = TestMalloc::peakTotal()/1000;
         int heapUsageUsable = TestMalloc::peakUsable()/1000;
+#else
+        int heapUsageTotal  = 0;
+        int heapUsageUsable = 0;
+#endif
         int ms = d->time.elapsed();
         qint64 newQmfUsage = TestFsUsage::usage(QMail::dataPath());
 #ifdef HAVE_TICK_COUNTER

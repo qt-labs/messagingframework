@@ -1,21 +1,34 @@
 TEMPLATE = lib 
+CONFIG += warn_on
+
+include(../../../common.pri)
 
 TARGET = qtopiamail
 target.path += $$QMF_INSTALL_ROOT/lib 
 INSTALLS += target
 
-DEFINES += QT_BUILD_QCOP_LIB
+DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
+win32: {
+    # QLocalSocket is broken on win32 prior to 4.5.2
+    lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
+}
 
 QT *= sql network
+symbian: {
+    LIBS += -lefsrv
+    MMP_RULES += EXPORTUNFROZEN
+}
 
-CONFIG += warn_on
+DEPENDPATH += .
 
 INCLUDEPATH += support
 
 HEADERS += bind_p.h \
+           locks_p.h \
            longstream_p.h \
            longstring_p.h \
            mailkeyimpl_p.h \
+           mailsortkeyimpl_p.h \
            qmailaccount.h \
            qmailaccountconfiguration.h \
            qmailaccountkey.h \
@@ -28,30 +41,36 @@ HEADERS += bind_p.h \
            qmailcontentmanager.h \
            qmaildatacomparator.h \
            qmailfolder.h \
+           qmailfolderfwd.h \
            qmailfolderkey.h \
            qmailfolderkey_p.h \
            qmailfoldersortkey.h \
            qmailfoldersortkey_p.h \
            qmailid.h \
            qmailkeyargument.h \
+           qmailmessage_p.h \
            qmailmessage.h \
            qmailmessagefwd.h \
            qmailmessagekey.h \
            qmailmessagekey_p.h \
            qmailmessagelistmodel.h \
+           qmailmessagemodelbase.h \
            qmailmessageremovalrecord.h \
            qmailmessageserver.h \
+           qmailmessageset_p.h \
            qmailmessageset.h \
            qmailmessagesortkey.h \
            qmailmessagesortkey_p.h \
+           qmailmessagethreadedmodel.h \
+           qmailserviceaction_p.h \
            qmailserviceaction.h \
+           qmailsortkeyargument.h \
            qmailstore.h \
            qmailstore_p.h \
            qmailstoreimplementation_p.h \
            qmailtimestamp.h \
            qprivateimplementation.h \
            qprivateimplementationdef.h \
-           semaphore_p.h \
            support/qmailglobal.h \
            support/qmaillog.h \
            support/qmailnamespace.h \
@@ -79,22 +98,24 @@ SOURCES += longstream.cpp \
            qmailfolderkey.cpp \
            qmailfoldersortkey.cpp \
            qmailid.cpp \
+           qmailinstantiations.cpp \
            qmailkeyargument.cpp \
            qmailmessage.cpp \
            qmailmessagefwd.cpp \
            qmailmessagekey.cpp \
            qmailmessagelistmodel.cpp \
+           qmailmessagemodelbase.cpp \
            qmailmessageremovalrecord.cpp \
            qmailmessageserver.cpp \
            qmailmessageset.cpp \
            qmailmessagesortkey.cpp \
+           qmailmessagethreadedmodel.cpp \
            qmailserviceaction.cpp \
            qmailstore.cpp \
            qmailstore_p.cpp \
            qmailstoreimplementation_p.cpp \
            qmailtimestamp.cpp \
            qprivateimplementation.cpp \
-           semaphore.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
            support/qcopadaptor.cpp \
@@ -104,7 +125,14 @@ SOURCES += longstream.cpp \
            support/qcopserver.cpp \
            support/qmailpluginmanager.cpp
 
+win32: {
+    SOURCES += locks_win32.cpp
+} else {
+    SOURCES += locks.cpp
+}
+
 RESOURCES += qtopiamail.qrc \
+             qtopiamail_icons.qrc \
              qtopiamail_qt.qrc
 
 TRANSLATIONS += libqtopiamail-ar.ts \

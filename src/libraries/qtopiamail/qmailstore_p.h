@@ -139,9 +139,9 @@ public:
 
     int sizeOfMessages(const QMailMessageKey &key) const;
 
-    QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey) const;
-    QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey) const;
-    QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey) const;
+    QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const;
+    QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const;
+    QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const;
 
     QMailAccount account(const QMailAccountId &id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const;
@@ -179,12 +179,12 @@ public:
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
 
+    enum AttemptResult { Success = 0, Failure, DatabaseFailure };
+    
 private:
     friend class Transaction;
     friend class ReadLock;
 
-    enum AttemptResult { Success = 0, Failure, DatabaseFailure };
-    
     static ProcessMutex& contentManagerMutex(void);
 
     ProcessMutex& databaseMutex(void) const;
@@ -196,12 +196,9 @@ private:
     static const QMailMessageKey::Properties &updatableMessageProperties();
     static const QMailMessageKey::Properties &allMessageProperties();
 
-    bool containsProperty(const QMailMessageKey::Property& p, const QMailMessageKey& key) const;
-    bool containsProperty(const QMailMessageSortKey::Property& p, const QMailMessageSortKey& sortkey) const;
-
     QString expandProperties(const QMailMessageKey::Properties& p, bool update = false) const;
 
-    int databaseIdentifier(int n) const;
+    QString databaseIdentifier() const;
 
     bool ensureVersionInfo();
     qint64 tableVersion(const QString &name) const;
@@ -218,6 +215,13 @@ private:
     typedef QPair<quint64, QString> FolderInfo;
     bool setupFolders(const QList<FolderInfo> &folderList);
 
+    bool purgeMissingAncestors();
+    bool purgeObsoleteFiles();
+
+    bool performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void));
+
+    bool performMaintenance();
+
     void createTemporaryTable(const QMailMessageKey::ArgumentType &arg, const QString &dataType) const;
     void destroyTemporaryTables(void);
 
@@ -232,7 +236,7 @@ private:
     bool execute(QSqlQuery& q, bool batch = false);
     int queryError(void) const;
 
-    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
+    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 
     bool executeFile(QFile &file);
 
@@ -242,6 +246,7 @@ private:
     QSqlQuery simpleQuery(const QString& statement, const Key& key, const QString& descriptor);
     QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);
     QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
+    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor);
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);
@@ -292,6 +297,8 @@ private:
                            const QMailFolderIdList& folderIds = QMailFolderIdList(),
                            const QMailAccountIdList& accountIds = QMailAccountIdList());
 
+    bool obsoleteContent(const QString& identifier);
+
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
 
@@ -307,11 +314,11 @@ private:
                                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                    Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddMessage(QMailMessage *message,
+    AttemptResult attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                     Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData,
+    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                     Transaction &t, bool commitOnSuccess);
 
@@ -343,10 +350,6 @@ private:
                                        QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                        Transaction &t, bool commitOnSuccess);
 
-    AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
-
-    AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
-
     AttemptResult attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data, 
                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                 Transaction &t, bool commitOnSuccess); 
@@ -376,15 +379,15 @@ private:
                                         int *result, 
                                         ReadLock &);
 
-    AttemptResult attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, 
+    AttemptResult attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset,
                                        QMailAccountIdList *ids, 
                                        ReadLock &);
 
-    AttemptResult attemptQueryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, 
+    AttemptResult attemptQueryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset,
                                       QMailFolderIdList *ids, 
                                       ReadLock &);
 
-    AttemptResult attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey,
+    AttemptResult attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset,
                                        QMailMessageIdList *ids, 
                                        ReadLock &);
 
@@ -447,6 +450,18 @@ private:
                                    quint64 *result, 
                                    ReadLock &);
 
+    AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
+
+    AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
+
+    AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences, bool *missingAncestor);
+
+    AttemptResult identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds, QMailMessageIdList *ancestorIds);
+
+    AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, const QString &baseSubject, quint64 messageId, QMailMessageIdList *updatedMessageIds);
+
+    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId, bool missingAncestor);
+
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailFolder extractFolder(const QSqlRecord& r);
     QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties = allMessageProperties());
@@ -472,7 +487,6 @@ private:
     static const QString &defaultContentScheme();
     static const QString &messagesBodyPath();
     static QString messageFilePath(const QString &fileName);
-    static int pathIdentifier(const QString &filePath);
 
     static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 

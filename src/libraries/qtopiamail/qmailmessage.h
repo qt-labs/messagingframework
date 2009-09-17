@@ -288,8 +288,11 @@ public:
     void setMultipartType(MultipartType type);
 
     uint partCount() const;
+
     void appendPart(const QMailMessagePart &part);
     void prependPart(const QMailMessagePart &part);
+
+    void removePartAt(uint pos);
 
     const QMailMessagePart& partAt(uint pos) const;
     QMailMessagePart& partAt(uint pos);
@@ -328,6 +331,15 @@ public:
 
     virtual bool contentAvailable() const = 0;
     virtual bool partialContentAvailable() const = 0;
+
+    template <typename F>
+    bool foreachPart(F func);
+
+    template <typename F>
+    bool foreachPart(F func) const;
+
+    static MultipartType multipartTypeForName(const QByteArray &name);
+    static QByteArray nameForMultipartType(MultipartType type);
 
 protected:
     template<typename Subclass>
@@ -467,6 +479,42 @@ Stream& operator<<(Stream &stream, const QMailMessagePart& part) { part.serializ
 template <typename Stream> 
 Stream& operator>>(Stream &stream, QMailMessagePart& part) { part.deserialize(stream); return stream; }
 
+template <typename F>
+bool QMailMessagePartContainer::foreachPart(F func)
+{
+    for (uint i = 0; i < partCount(); ++i) {
+        QMailMessagePart &part(partAt(i));
+        
+        if (!func(part)) {
+            return false;
+        } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
+            if (!part.foreachPart(func)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+template <typename F>
+bool QMailMessagePartContainer::foreachPart(F func) const
+{
+    for (uint i = 0; i < partCount(); ++i) {
+        const QMailMessagePart &part(partAt(i));
+        
+        if (!func(part)) {
+            return false;
+        } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
+            if (!part.foreachPart(func)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 class QMailMessageMetaDataPrivate;
 
 class QTOPIAMAIL_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>, public QMailMessageMetaDataFwd
@@ -490,6 +538,12 @@ public:
     static const quint64 &Trash;
     static const quint64 &PartialContentAvailable;
     static const quint64 &HasAttachments;
+    static const quint64 &HasReferences;
+    static const quint64 &HasUnresolvedReferences;
+    static const quint64 &Draft;
+    static const quint64 &Outbox;
+    static const quint64 &Junk;
+    static const quint64 &TransmitFromExternal;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);
@@ -609,6 +663,8 @@ public:
     QByteArray toRfc2822(EncodingFormat format = TransmissionFormat) const;
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;
 
+    QList<QMailMessage::MessageChunk> toRfc2822Chunks(EncodingFormat format = TransmissionFormat) const;
+
     using QMailMessagePartContainer::partAt;
 
     const QMailMessagePart& partAt(const QMailMessagePart::Location& location) const;
@@ -658,6 +714,9 @@ public:
     virtual uint contentSize() const;
     virtual void setContentSize(uint size);
 
+    virtual QString externalLocationReference() const;
+    virtual void setExternalLocationReference(const QString &s);
+
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 
@@ -698,7 +757,6 @@ Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ContentType)
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ResponseType)
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::AttachmentsAction)
 
-#ifndef SUPPRESS_REGISTER_QMAILMESSAGE_METATYPES
 Q_DECLARE_USER_METATYPE(QMailMessage)
 Q_DECLARE_USER_METATYPE(QMailMessageMetaData)
 Q_DECLARE_USER_METATYPE(QMailMessagePart::Location)
@@ -710,6 +768,5 @@ Q_DECLARE_METATYPE(QMailMessageTypeList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageList, QMailMessageList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageMetaDataList, QMailMessageMetaDataList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageTypeList, QMailMessageTypeList)
-#endif
 
 #endif

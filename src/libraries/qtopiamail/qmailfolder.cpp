@@ -46,6 +46,13 @@
 static quint64 synchronizationEnabledFlag = 0;
 static quint64 synchronizedFlag = 0;
 static quint64 partialContentFlag = 0;
+static quint64 removedFlag = 0;
+static quint64 incomingFlag = 0;
+static quint64 outgoingFlag = 0;
+static quint64 sentFlag = 0;
+static quint64 trashFlag = 0;
+static quint64 draftsFlag = 0;
+static quint64 junkFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -122,6 +129,13 @@ public:
             synchronizationEnabledFlag = registerFlag("SynchronizationEnabled");
             synchronizedFlag = registerFlag("Synchronized");
             partialContentFlag = registerFlag("PartialContent");
+            removedFlag = registerFlag("Removed");
+            incomingFlag = registerFlag("Incoming");
+            outgoingFlag = registerFlag("Outgoing");
+            sentFlag = registerFlag("Sent");
+            trashFlag = registerFlag("Trash");
+            draftsFlag = registerFlag("Drafts");
+            junkFlag = registerFlag("Junk");
         }
     }
 
@@ -183,22 +197,92 @@ private:
 */
 
 /*!
+    \variable QMailFolder::Removed
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Removed" against the result of QMailFolder::status().
+
+    This flag indicates that a folder has been removed from the external server.
+*/
+
+/*!
+    \variable QMailFolder::Incoming
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Incoming" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that are incoming from the point of view of the account owner.
+*/
+
+/*!
+    \variable QMailFolder::Outgoing
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Outgoing" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that are outgoing from the point of view of the account owner.
+*/
+
+/*!
+    \variable QMailFolder::Sent
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Sent" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that were sent by the account owner.
+*/
+
+/*!
+    \variable QMailFolder::Trash
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Trash" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that have been marked as trash.
+*/
+
+/*!
+    \variable QMailFolder::Drafts
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Drafts" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that are drafts for potential transmission.
+*/
+
+/*!
+    \variable QMailFolder::Junk
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Junk" against the result of QMailFolder::status().
+
+    This flag indicates that a folder contains messages that have been marked as junk.
+*/
+
+/*!
     \enum QMailFolder::StandardFolder
 
-    This enum type describes the standard standard storage folders.
-    These folders cannot be removed or updated.
+    This enum type describes the standard folders pertinent to many account types.
 
     \value InboxFolder Represents the standard inbox folder.
     \value OutboxFolder Represents the standard outbox folder.
     \value DraftsFolder Represents the standard drafts folder.
     \value SentFolder Represents the standard sent folder.
     \value TrashFolder Represents the standard trash folder.
+    \value JunkFolder Represents the standard junk folder.
 */
 
 
 const quint64 &QMailFolder::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailFolder::Synchronized = synchronizedFlag;
 const quint64 &QMailFolder::PartialContent = partialContentFlag;
+const quint64 &QMailFolder::Removed = removedFlag;
+const quint64 &QMailFolder::Incoming = incomingFlag;
+const quint64 &QMailFolder::Outgoing = outgoingFlag;
+const quint64 &QMailFolder::Sent = sentFlag;
+const quint64 &QMailFolder::Trash = trashFlag;
+const quint64 &QMailFolder::Drafts = draftsFlag;
+const quint64 &QMailFolder::Junk = junkFlag;
 
 /*!
   Constructor that creates an empty and invalid \c QMailFolder.
@@ -209,15 +293,6 @@ const quint64 &QMailFolder::PartialContent = partialContentFlag;
 QMailFolder::QMailFolder()
 {
     d = new QMailFolderPrivate();
-}
-
-/*!
-  Constructor that loads a standard QMailFolder specified by \a sf from the message store.
-*/
-
-QMailFolder::QMailFolder(const StandardFolder& sf)
-{
-    *this = QMailStore::instance()->folder(QMailFolderId(static_cast<quint64>(sf)));
 }
 
 /*!

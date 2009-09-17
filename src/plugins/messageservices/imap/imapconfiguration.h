@@ -55,7 +55,7 @@
 
 #include <qmailserviceconfiguration.h>
 
-class QTOPIAMAIL_EXPORT ImapConfiguration : public QMailServiceConfiguration
+class PLUGIN_EXPORT ImapConfiguration : public QMailServiceConfiguration
 {
 public:
     explicit ImapConfiguration(const QMailAccountConfiguration &config);
@@ -74,13 +74,18 @@ public:
     QString preferredTextSubtype() const;
 
     bool pushEnabled() const;
+
     QString baseFolder() const;
+    QString draftsFolder() const;
+    QString sentFolder() const;
+    QString trashFolder() const;
+    QString junkFolder() const;
 
     int checkInterval() const;
     bool intervalCheckRoamingEnabled() const;
 };
 
-class QTOPIAMAIL_EXPORT ImapConfigurationEditor : public ImapConfiguration
+class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration
 {
 public:
     explicit ImapConfigurationEditor(QMailAccountConfiguration *config);
@@ -100,7 +105,12 @@ public:
     void setPreferredTextSubtype(const QString &str);
 
     void setPushEnabled(bool enabled);
+
     void setBaseFolder(const QString &s);
+    void setDraftsFolder(const QString &s);
+    void setSentFolder(const QString &s);
+    void setTrashFolder(const QString &s);
+    void setJunkFolder(const QString &s);
 
     void setCheckInterval(int i);
     void setIntervalCheckRoamingEnabled(bool enabled);

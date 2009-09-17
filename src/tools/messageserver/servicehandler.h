@@ -78,6 +78,7 @@ public slots:
     void deleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
     void copyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
+    void flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void cancelSearch(quint64);
@@ -99,6 +100,7 @@ signals:
     void messagesDeleted(quint64 action, const QMailMessageIdList&);
     void messagesCopied(quint64 action, const QMailMessageIdList&);
     void messagesMoved(quint64 action, const QMailMessageIdList&);
+    void messagesFlagged(quint64 action, const QMailMessageIdList&);
     void storageActionCompleted(quint64 action);
 
     void matchingMessageIds(quint64 action, const QMailMessageIdList&);
@@ -123,6 +125,7 @@ private slots:
     void messagesDeleted(const QMailMessageIdList&);
     void messagesCopied(const QMailMessageIdList&);
     void messagesMoved(const QMailMessageIdList&);
+    void messagesFlagged(const QMailMessageIdList&);
     void messagesPrepared(const QMailMessageIdList&);
     void matchingMessageIds(const QMailMessageIdList&);
 
@@ -174,8 +177,9 @@ private:
     typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
     typedef void (ServiceHandler::*CompletionSignal)(quint64);
 
-    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion);
+    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
+    bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
     bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
     bool dispatchRetrieveFolderListAccount(quint64, const QByteArray &data);
     bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
@@ -192,14 +196,13 @@ private:
     bool dispatchCopyMessages(quint64 action, const QByteArray &data);
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
     bool dispatchMoveMessages(quint64 action, const QByteArray &data);
-    bool dispatchMoveToTrash(quint64 action, const QByteArray &data);
+    bool dispatchFlagMessages(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 
     void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(), const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(), const QMailMessageId& = QMailMessageId());
     void reportFailure(quint64, const QMailServiceAction::Status);
 
-    void activateAction(quint64, const QSet<QMailMessageService*> &, CompletionSignal);
     void updateAction(quint64);
 
     void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);
@@ -235,6 +238,7 @@ private:
         quint64 action;
         QByteArray data;
         QSet<QMailMessageService*> services;
+        QSet<QMailMessageService*> preconditions;
         RequestServicer servicer;
         CompletionSignal completion;
     };
@@ -271,6 +275,7 @@ private:
 
     QList<MessageSearch> mSearches;
     QMailMessageIdList mMatchingIds;
+    QMailMessageIdList mSentIds;
 
     QFile _requestsFile;
     QSet<quint64> _outstandingRequests;

@@ -67,7 +67,7 @@ class QMailMessageService;
 class QMailMessageServiceConfigurator;
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceFactory
+class MESSAGESERVER_EXPORT QMailMessageServiceFactory
 {
 public:
     enum ServiceType { Any = 0, Source, Sink, Storage };
@@ -82,7 +82,7 @@ public:
 };
 
 
-struct QTOPIAMAIL_EXPORT QMailMessageServicePluginInterface : public QFactoryInterface
+struct MESSAGESERVER_EXPORT QMailMessageServicePluginInterface : public QFactoryInterface
 {
     virtual QString key() const = 0;
     virtual bool supports(QMailMessageServiceFactory::ServiceType type) const = 0;
@@ -97,7 +97,7 @@ struct QTOPIAMAIL_EXPORT QMailMessageServicePluginInterface : public QFactoryInt
 Q_DECLARE_INTERFACE(QMailMessageServicePluginInterface, QMailMessageServicePluginInterface_iid)
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
+class MESSAGESERVER_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(QMailMessageServicePluginInterface:QFactoryInterface)
@@ -112,12 +112,12 @@ public:
 
 class QMailMessageSourcePrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSource : public QObject
+class MESSAGESERVER_EXPORT QMailMessageSource : public QObject
 {
     Q_OBJECT
 
 public:
-    ~QMailMessageSource();
+    virtual ~QMailMessageSource();
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const;
 
@@ -140,10 +140,11 @@ public slots:
 
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
 
-    virtual bool prepareMessages(const QMailMessageIdList &ids);
+    virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
     virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
 
@@ -153,6 +154,7 @@ signals:
     void messagesDeleted(const QMailMessageIdList &ids);
     void messagesCopied(const QMailMessageIdList &ids);
     void messagesMoved(const QMailMessageIdList &ids);
+    void messagesFlagged(const QMailMessageIdList &ids);
 
     void matchingMessageIds(const QMailMessageIdList &ids);
 
@@ -164,11 +166,13 @@ protected slots:
     void deleteMessages();
     void copyMessages();
     void moveMessages();
+    void flagMessages();
 
 protected:
     QMailMessageSource(QMailMessageService *service);
 
     void notImplemented();
+    bool modifyMessageFlags(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
 private:
     QMailMessageSource();
@@ -178,10 +182,9 @@ private:
     QMailMessageSourcePrivate *d;
 };
 
-
 class QMailMessageSinkPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSink : public QObject
+class MESSAGESERVER_EXPORT QMailMessageSink : public QObject
 {
     Q_OBJECT
 
@@ -208,7 +211,7 @@ private:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageService : public QObject
+class MESSAGESERVER_EXPORT QMailMessageService : public QObject
 {
     Q_OBJECT
 
@@ -262,7 +265,7 @@ private:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceEditor : public QWidget
+class MESSAGESERVER_EXPORT QMailMessageServiceEditor : public QWidget
 {
     Q_OBJECT
 
@@ -275,7 +278,7 @@ public:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageServiceConfigurator
+class MESSAGESERVER_EXPORT QMailMessageServiceConfigurator
 {
 public:
     QMailMessageServiceConfigurator();
@@ -288,6 +291,5 @@ public:
 
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) = 0;
 };
-
 
 #endif

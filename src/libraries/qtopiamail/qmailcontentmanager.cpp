@@ -248,7 +248,16 @@ QStringList QMailContentManagerPlugin::keys() const
 */
 
 /*!
-    \fn QMailStore::ErrorCode QMailContentManager::add(QMailMessage *message)
+    \enum QMailContentManager::DurabilityRequirement
+    
+    This enum type is used to define the dequirement for durability in a content management request.
+
+    \value EnsureDurability     The content manager should make the requested changes durable before reporting success.
+    \value DeferDurability      The content manager may defer ensuring that changes are durable until the next invocation of ensureDurability().
+*/
+
+/*!
+    \fn QMailStore::ErrorCode QMailContentManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 
     Requests that the content manager add the content of \a message to its storage.  The 
     message should be updated such that its \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
@@ -258,10 +267,14 @@ QStringList QMailContentManagerPlugin::keys() const
     If \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} is already populated at invocation, 
     the content manager should determine whether the supplied identifier can be used.  If not, it should 
     use an alternate location and update \a message with the new identifier.
+
+    If \a durability is \l{QMailContentManager::EnsureDurability}{EnsureDurability} then the content
+    manager should ensure that the message addition has been recorded in a durable fashion before reporting
+    success to the caller.
 */
 
 /*!
-    \fn QMailStore::ErrorCode QMailContentManager::update(QMailMessage *message)
+    \fn QMailStore::ErrorCode QMailContentManager::update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 
     Requests that the content manager update the message content stored at the location indicated 
     by \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}, to contain the current 
@@ -271,14 +284,34 @@ QStringList QMailContentManagerPlugin::keys() const
     If the updated content is not stored to the existing location, the content manager should 
     use an alternate location and update \a message with the new 
     \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}.
+
+    The existing content should be removed if the update causes a new content identifier to 
+    be allocated.  If the previous content cannot be removed, but the update was otherwise 
+    successful, the content manager should return \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} 
+    to indicate that removal of the content should be retried at a later time.
+
+    If \a durability is \l{QMailContentManager::EnsureDurability}{EnsureDurability} then the content
+    manager should ensure that the message update has been recorded in a durable fashion before reporting
+    success to the caller.
+*/
+
+/*!
+    \fn QMailStore::ErrorCode QMailContentManager::ensureDurability()
+
+    Requests that the content manager ensure that any previous actions that were performed with the
+    \l{QMailContentManager::DeferDurability}{DeferDurability} option be made durable.
 */
 
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::remove(const QString &identifier)
 
     Requests that the content manager remove the message content stored at the location indicated
-    by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content has been successfully
-    removed.
+    by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content 
+    has been successfully removed.
+
+    If the content cannot be removed, the content manager should return 
+    \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
+    should be retried at a later time.
 
     If the identified content does not already exist, the content manager should return \l{QMailStore::InvalidId}{InvalidId}.
 */

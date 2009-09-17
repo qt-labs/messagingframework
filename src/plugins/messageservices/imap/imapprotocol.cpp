@@ -92,7 +92,7 @@ protected:
 static QString messageId(const QString& uid)
 {
     int index = 0;
-    if ((index = uid.lastIndexOf('|')) != -1)
+    if ((index = uid.lastIndexOf(UID_SEPARATOR)) != -1)
         return uid.mid(index + 1);
     else
         return uid;
@@ -100,7 +100,7 @@ static QString messageId(const QString& uid)
 
 static QString messageUid(const QMailFolderId &folderId, const QString &id)
 {
-    return QString::number(folderId.toULongLong()) + '|' + id;
+    return QString::number(folderId.toULongLong()) + UID_SEPARATOR + id;
 }
 
 static QString extractUid(const QString &field, const QMailFolderId &folderId)
@@ -160,21 +160,23 @@ static bool parseFlags(const QString& field, MessageFlags& flags)
     if (pattern.indexIn(field) == -1)
         return false;
 
-    QString messageFlags = pattern.cap(1);
+    QString messageFlags = pattern.cap(1).toLower();
 
     flags = 0;
-    if (messageFlags.indexOf("\\Seen") != -1)
+    if (messageFlags.indexOf("\\seen") != -1)
         flags |= MFlag_Seen;
-    if (messageFlags.indexOf("\\Answered") != -1)
+    if (messageFlags.indexOf("\\answered") != -1)
         flags |= MFlag_Answered;
-    if (messageFlags.indexOf("\\Flagged") != -1)
+    if (messageFlags.indexOf("\\flagged") != -1)
         flags |= MFlag_Flagged;
-    if (messageFlags.indexOf("\\Deleted") != -1)
+    if (messageFlags.indexOf("\\deleted") != -1)
         flags |= MFlag_Deleted;
-    if (messageFlags.indexOf("\\Draft") != -1)
+    if (messageFlags.indexOf("\\draft") != -1)
         flags |= MFlag_Draft;
-    if (messageFlags.indexOf("\\Recent") != -1)
+    if (messageFlags.indexOf("\\recent") != -1)
         flags |= MFlag_Recent;
+    if (messageFlags.indexOf("$forwarded") != -1)
+        flags |= MFlag_Forwarded;
 
     return true;
 }
@@ -228,26 +230,71 @@ static QList<uint> sequenceUids(const QString &sequence)
 
 static QString searchFlagsToString(MessageFlags flags)
 {
-    QString result;
+    QStringList result;
 
     if (flags != 0) {
         if (flags & MFlag_Recent)
-            result += " RECENT";
+            result.append("RECENT");
         if (flags & MFlag_Deleted)
-            result += " DELETED";
+            result.append("DELETED");
         if (flags & MFlag_Answered)
-            result += " ANSWERED";
+            result.append("ANSWERED");
         if (flags & MFlag_Flagged)
-            result += " FLAGGED";
+            result.append("FLAGGED");
         if (flags & MFlag_Seen)
-            result += " SEEN";
+            result.append("SEEN");
         if (flags & MFlag_Unseen)
-            result += " UNSEEN";
+            result.append("UNSEEN");
         if (flags & MFlag_Draft)
-            result += " DRAFT";
+            result.append("DRAFT");
+        if (flags & MFlag_Forwarded)
+            result.append("$FORWARDED");
     }
 
-    return result.trimmed();
+    return result.join(" ");
+}
+
+static QString messageFlagsToString(MessageFlags flags)
+{
+    QStringList result;
+
+    // Note that \Recent flag is ignored as only the server is allowed to modify that flag 
+    if (flags != 0) {
+        if (flags & MFlag_Deleted)
+            result.append("\\Deleted");
+        if (flags & MFlag_Answered)
+            result.append("\\Answered");
+        if (flags & MFlag_Flagged)
+            result.append("\\Flagged");
+        if (flags & MFlag_Seen)
+            result.append("\\Seen");
+        if (flags & MFlag_Draft)
+            result.append("\\Draft");
+        if (flags & MFlag_Forwarded)
+            result.append("$Forwarded");
+    }
+
+    return result.join(" ");
+}
+
+static MessageFlags flagsForMessage(const QMailMessageMetaData &metaData)
+{
+    MessageFlags result(0);
+
+    if (metaData.status() & (QMailMessage::Read | QMailMessage::ReadElsewhere | QMailMessage::Outgoing)) {
+        result |= MFlag_Seen;
+    }
+    if (metaData.status() & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
+        result |= MFlag_Answered;
+    }
+    if (metaData.status() & QMailMessage::Forwarded) {
+        result |= MFlag_Forwarded;
+    }
+    if (metaData.status() & QMailMessage::Draft) {
+        result |= MFlag_Draft;
+    }
+
+    return result;
 }
 
 
@@ -263,8 +310,10 @@ public:
     void continuation(ImapCommand c, const QString &s) { mProtocol->continuation(c, s); }
     void operationCompleted(ImapCommand c, OperationStatus s) { mProtocol->operationCompleted(c, s); }
 
-    QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
-    void sendData(const QString &data) { mProtocol->sendData(data); }
+    virtual QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
+    virtual QString sendCommandLiteral(const QString &cmd, uint length) { return mProtocol->sendCommandLiteral(cmd, length); }
+    virtual void sendData(const QString &data) { mProtocol->sendData(data); }
+    virtual void sendDataLiteral(const QString &data, uint length) { mProtocol->sendDataLiteral(data, length); }
 
     ImapProtocol *protocol() { return mProtocol; }
     const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
@@ -277,14 +326,17 @@ public:
 
     // Update the protocol's mailbox properties
     void setMailbox(const QMailFolder &mailbox) { mProtocol->_mailbox = ImapMailboxProperties(mailbox); }
-    void setExists(int n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
-    void setRecent(int n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
-    void setUnseen(int n) { mProtocol->_mailbox.unseen = n; }
+    void setExists(quint32 n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
+    void setRecent(quint32 n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
+    void setUnseen(quint32 n) { mProtocol->_mailbox.unseen = n; }
     void setUidValidity(const QString &validity) { mProtocol->_mailbox.uidValidity = validity; emit mProtocol->uidValidity(validity); }
-    void setUidNext(int n) { mProtocol->_mailbox.uidNext = n; }
+    void setUidNext(quint32 n) { mProtocol->_mailbox.uidNext = n; }
     void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
     void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
     void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
+    void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
+    void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
+    void setPermanentFlags(const QStringList &flags) { mProtocol->_mailbox.permanentFlags = flags; }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -312,7 +364,7 @@ public:
     
     virtual bool permitsPipelining() const { return false; }
 
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
     virtual void untaggedResponse(ImapContext *c, const QString &line);
     virtual void taggedResponse(ImapContext *c, const QString &line);
     virtual void literalResponse(ImapContext *c, const QString &line);
@@ -337,15 +389,23 @@ private:
     QString mTag;
 };
 
-void ImapState::continuationResponse(ImapContext *, const QString &line)
+bool ImapState::continuationResponse(ImapContext *, const QString &line)
 {
     qWarning() << "Unexpected continuation response!" << line;
+    return false;
 }
 
 void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.indexOf("[ALERT]") != -1)
+    if (line.indexOf("[ALERT]") != -1) {
         qWarning(line.mid(line.indexOf("[ALERT]")).toAscii());
+    } else if (line.indexOf("[CAPABILITY", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        c->protocol()->setCapabilities(capabilities);
+    }
+
     c->buffer().append(line);
 }
 
@@ -418,8 +478,10 @@ public:
     virtual void untaggedResponse(ImapContext *c, const QString &line);
 };
 
-void InitState::untaggedResponse(ImapContext *c, const QString &)
+void InitState::untaggedResponse(ImapContext *c, const QString &line)
 {
+    ImapState::untaggedResponse(c, line);
+
     // We're only waiting for an untagged response here
     setStatus(OpOk);
     c->operationCompleted(command(), status());
@@ -475,6 +537,8 @@ void StartTlsState::taggedResponse(ImapContext *c, const QString &)
 #ifndef QT_NO_OPENSSL
     // Switch to encrypted comms mode
     c->switchToEncrypted();
+#else
+    Q_UNUSED(c)
 #endif
 }
 
@@ -490,7 +554,8 @@ public:
 
     virtual void init();
     virtual QString transmit(ImapContext *c);
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
 
 private:
     QMailAccountConfiguration _config;
@@ -515,7 +580,7 @@ QString LoginState::transmit(ImapContext *c)
     return c->sendCommand(ImapAuthenticator::getAuthentication(_config.serviceConfiguration("imap4"), _capabilities));
 }
 
-void LoginState::continuationResponse(ImapContext *c, const QString &received)
+bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 {
     // The server input is Base64 encoded
     QByteArray challenge = QByteArray::fromBase64(received.toAscii());
@@ -524,6 +589,20 @@ void LoginState::continuationResponse(ImapContext *c, const QString &received)
     if (!response.isEmpty()) {
         c->sendData(response.toBase64());
     }
+
+    return false;
+}
+
+void LoginState::taggedResponse(ImapContext *c, const QString &line)
+{
+    if (line.indexOf("[CAPABILITY") != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        c->protocol()->setCapabilities(capabilities);
+    }
+
+    ImapState::taggedResponse(c, line);
 }
 
 
@@ -547,9 +626,10 @@ void LogoutState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
         c->protocol()->close();
+        c->operationCompleted(command(), OpOk);
+    } else {
+        ImapState::taggedResponse(c, line);
     }
-
-    ImapState::taggedResponse(c, line);
 }
 
 
@@ -668,6 +748,231 @@ void ListState::taggedResponse(ImapContext *c, const QString &line)
 }
 
 
+class GenUrlAuthState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    GenUrlAuthState() : ImapState(IMAP_GenUrlAuth, "GenUrlAuth") {}
+
+    void setUrl(const QString &url, const QString &mechanism);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+
+signals:
+    void urlAuthorized(const QString &url);
+
+private:
+    QList<QPair<QString, QString> > _parameters;
+};
+
+void GenUrlAuthState::setUrl(const QString &url, const QString &mechanism)
+{
+    _parameters.append(qMakePair(url, (mechanism.isEmpty() ? "INTERNAL" : mechanism)));
+}
+
+void GenUrlAuthState::init()
+{
+    ImapState::init();
+    _parameters.clear();
+}
+
+QString GenUrlAuthState::transmit(ImapContext *c)
+{
+    const QPair<QString, QString> &params(_parameters.first());
+
+    return c->sendCommand("GENURLAUTH \"" + params.first + "\" " + params.second);
+}
+
+void GenUrlAuthState::leave(ImapContext *)
+{
+    ImapState::init();
+    _parameters.removeFirst();
+}
+
+void GenUrlAuthState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    if (!line.startsWith("* GENURLAUTH")) {
+        ImapState::untaggedResponse(c, line);
+        return;
+    }
+
+    emit urlAuthorized(QMail::unquoteString(line.mid(13).trimmed()));
+}
+
+
+class AppendState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    AppendState() : ImapState(IMAP_Append, "Append") {}
+
+    void setParameters(const QMailFolder &folder, const QMailMessageId &messageId);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+
+signals:
+    void messageCreated(const QMailMessageId&, const QString&);
+
+private:
+    struct AppendParameters
+    {
+        AppendParameters() : mCatenate(false) {}
+
+        QMailFolder mDestination;
+        QMailMessageId mMessageId;
+        QList<QPair<QByteArray, uint> > mData;
+        bool mCatenate;
+    };
+
+    QList<AppendParameters> mParameters;
+};
+
+void AppendState::setParameters(const QMailFolder &folder, const QMailMessageId &messageId)
+{
+    AppendParameters params;
+    params.mDestination = folder;
+    params.mMessageId = messageId;
+
+    mParameters.append(params);
+}
+
+void AppendState::init()
+{
+    ImapState::init();
+    mParameters.clear();
+}
+
+static QList<QPair<QByteArray, uint> > dataSequence(QList<QMailMessage::MessageChunk> &chunks)
+{
+    QList<QPair<QByteArray, uint> > result;
+    QByteArray sequence;
+
+    while (!chunks.isEmpty()) {
+        const QMailMessage::MessageChunk &chunk(chunks.first());
+
+        if (chunk.first == QMailMessage::Text) {
+            sequence.append(" TEXT");
+
+            // We can't send any more in this sequence
+            uint literalLength = chunk.second.length();
+            result.append(qMakePair(sequence, literalLength));
+
+            sequence.clear();
+            sequence.append(chunk.second);
+        } else if (chunk.first == QMailMessage::Reference) {
+            sequence.append(" URL ");
+            sequence.append(chunk.second);
+        }
+
+        // We're finished with this chunk
+        chunks.takeFirst();
+    }
+
+    if (!sequence.isEmpty()) {
+        result.append(qMakePair(sequence, 0u));
+    }
+
+    return result;
+}
+
+QString AppendState::transmit(ImapContext *c)
+{
+    AppendParameters &params(mParameters.first());
+
+    QMailMessage message(params.mMessageId);
+
+    QByteArray cmd("APPEND ");
+    cmd += ImapProtocol::quoteString(params.mDestination.path());
+    cmd += " (";
+    cmd += messageFlagsToString(flagsForMessage(message));
+    cmd += ") \"";
+    cmd += message.date().toString(QMailTimeStamp::Rfc3501);
+    cmd += "\"";
+
+    uint length = 0;
+
+    if (c->protocol()->capabilities().contains("CATENATE")) {
+        QList<QMailMessage::MessageChunk> chunks(message.toRfc2822Chunks(QMailMessage::TransmissionFormat));
+        if ((chunks.count() == 1) && (chunks.first().first == QMailMessage::Text)) {
+            // This is a single piece of text - no benefit to using catenate
+            params.mData.append(qMakePair(chunks.first().second, 0u));
+            length = params.mData.first().first.length();
+        } else {
+            params.mData = dataSequence(chunks);
+            params.mCatenate = true;
+
+            // Skip the leading space in the first element
+            cmd.append(" CATENATE (");
+            cmd.append(params.mData.first().first.mid(1));
+            length = params.mData.first().second;
+
+            params.mData.takeFirst();
+            if (params.mData.isEmpty()) {
+                // We have no literal data to send
+                cmd.append(")");
+                return c->sendCommand(cmd);
+            }
+        }
+    } else {
+        params.mData.append(qMakePair(message.toRfc2822(QMailMessage::TransmissionFormat), 0u));
+        length = params.mData.first().first.length();
+    }
+
+    return c->sendCommandLiteral(cmd, length);
+}
+
+void AppendState::leave(ImapContext *)
+{
+    ImapState::init();
+    mParameters.removeFirst();
+}
+
+bool AppendState::continuationResponse(ImapContext *c, const QString &)
+{
+    AppendParameters &params(mParameters.first());
+
+    QPair<QByteArray, uint> data(params.mData.takeFirst());
+
+    if (params.mData.isEmpty()) {
+        // This is the last element
+        if (params.mCatenate) {
+            data.first.append(")");
+        }
+        c->sendData(data.first);
+        return false;
+    } else {
+        // There is more literal data to follow
+        c->sendDataLiteral(data.first, data.second);
+        return true;
+    }
+}
+
+void AppendState::taggedResponse(ImapContext *c, const QString &line)
+{
+    if (status() == OpOk) {
+        // See if we got an APPENDUID response
+        QRegExp appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)");
+        if (appenduidResponsePattern.indexIn(line) != -1) {
+            const AppendParameters &params(mParameters.first());
+            emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), appenduidResponsePattern.cap(2)));
+        }
+    }
+    
+    ImapState::taggedResponse(c, line);
+}
+
+
 // Handles untagged responses in the selected IMAP state
 class SelectedState : public ImapState
 {
@@ -686,14 +991,14 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     if (line.indexOf("EXISTS", 0) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
-        int exists = temp.toInt(&result);
+        quint32 exists = temp.toUInt(&result);
         if (!result)
             exists = 0;
         c->setExists(exists);
     } else if (line.indexOf("RECENT", 0) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
-        int recent = temp.toInt(&result);
+        quint32 recent = temp.toUInt(&result);
         if (!result)
            recent = 0;
         c->setRecent(recent);
@@ -704,13 +1009,12 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("UIDVALIDITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QString validity = temp.mid( 12 );
-        c->setUidValidity(validity);
+        c->setUidValidity(temp.mid(12).trimmed());
     } else if (line.indexOf("UIDNEXT", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString nextStr = temp.mid( 8 );
-        int next = nextStr.toInt(&result);
+        quint32 next = nextStr.toUInt(&result);
         if (!result)
             next = 0;
         c->setUidNext(next);
@@ -718,10 +1022,20 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString unseenStr = temp.mid( 7 );
-        int unseen = unseenStr.toInt(&result);
+        quint32 unseen = unseenStr.toUInt(&result);
         if (!result)
             unseen = 0;
         c->setUnseen(unseen);
+    } else if (line.indexOf("HIGHESTMODSEQ", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '[', ']', &start);
+        c->setHighestModSeq(temp.mid(14).trimmed());
+    } else if (line.indexOf("NOMODSEQ", 0) != -1) {
+        c->setNoModSeq();
+    } else if (line.indexOf("PERMANENTFLAGS", 0) != -1) {
+        int start = 0;
+        QString temp = token(line, '(', ')', &start);
+        c->setPermanentFlags(temp.split(" ", QString::SkipEmptyParts));
     } else {
         ImapState::untaggedResponse(c, line);
     }
@@ -764,7 +1078,13 @@ void SelectState::init()
 
 QString SelectState::transmit(ImapContext *c)
 {
-    return c->sendCommand("SELECT " + ImapProtocol::quoteString(_mailboxList.last().path()));
+    QString cmd("SELECT " + ImapProtocol::quoteString(_mailboxList.last().path()));
+
+    if (c->protocol()->capabilities().contains("CONDSTORE")) {
+        cmd.append(" (CONDSTORE)");
+    }
+
+    return c->sendCommand(cmd);
 }
 
 void SelectState::enter(ImapContext *c)
@@ -791,7 +1111,13 @@ public:
 
 QString ExamineState::transmit(ImapContext *c)
 {
-    return c->sendCommand("EXAMINE " + ImapProtocol::quoteString(_mailboxList.last().path()));
+    QString cmd("EXAMINE " + ImapProtocol::quoteString(_mailboxList.last().path()));
+
+    if (c->protocol()->capabilities().contains("CONDSTORE")) {
+        cmd.append(" (CONDSTORE)");
+    }
+
+    return c->sendCommand(cmd);
 }
 
 
@@ -1107,7 +1433,7 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
             fp.mNewMsgUid = extractUid(str, c->mailbox().id);
 
             bool ok = false;
-            int index = fp.mNewMsgUid.lastIndexOf('|');
+            int index = fp.mNewMsgUid.lastIndexOf(UID_SEPARATOR);
             if (index == -1)
                 return;
             int uid = fp.mNewMsgUid.mid(index + 1).toInt(&ok);
@@ -1229,7 +1555,7 @@ class UidStoreState : public SelectedState
 public:
     UidStoreState() : SelectedState(IMAP_UIDStore, "UIDStore") { UidStoreState::init(); }
 
-    void setParameters(MessageFlags flags, const QString &range);
+    void setParameters(MessageFlags flags, bool set, const QString &range);
 
     virtual bool permitsPipelining() const { return true; }
     virtual void init();
@@ -1242,12 +1568,12 @@ signals:
 
 private:
     // The list of flags/range pairs we're storing (via multiple commands), in order
-    QList<QPair<MessageFlags, QString> > _parameters;
+    QList<QPair<QPair<MessageFlags, bool>, QString> > _parameters;
 };
 
-void UidStoreState::setParameters(MessageFlags flags, const QString &range)
+void UidStoreState::setParameters(MessageFlags flags, bool set, const QString &range)
 {
-    _parameters.append(qMakePair(flags, range));
+    _parameters.append(qMakePair(qMakePair(flags, set), range));
 }
 
 void UidStoreState::init()
@@ -1258,23 +1584,10 @@ void UidStoreState::init()
 
 QString UidStoreState::transmit(ImapContext *c)
 {
-    const QPair<MessageFlags, QString> &params(_parameters.last());
+    const QPair<QPair<MessageFlags, bool>, QString> &params(_parameters.last());
 
-    // Note that \Recent flag is ignored as only the server is allowed to modify that flag 
-    QString flagStr = "+FLAGS.SILENT (";
-    if (params.first & MFlag_Deleted)
-        flagStr += "\\Deleted "; // No tr
-    if (params.first & MFlag_Answered)
-        flagStr += "\\Answered "; // No tr
-    if (params.first & MFlag_Flagged)
-        flagStr += "\\Flagged "; // No tr
-    if (params.first & MFlag_Seen)
-        flagStr += "\\Seen "; // No tr
-    if (params.first & MFlag_Draft)
-        flagStr += "\\Draft "; // No tr
-    flagStr = flagStr.trimmed() + ")";
-
-    return c->sendCommand(QString("UID STORE %1 %2").arg(params.second).arg(flagStr));
+    QString flagStr = QString("FLAGS.SILENT (%1)").arg(messageFlagsToString(params.first.first));
+    return c->sendCommand(QString("UID STORE %1 %2%3").arg(params.second).arg(params.first.second ? '+' : '-').arg(flagStr));
 }
 
 void UidStoreState::leave(ImapContext *)
@@ -1286,7 +1599,7 @@ void UidStoreState::leave(ImapContext *)
 void UidStoreState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        const QPair<MessageFlags, QString> &params(_parameters.first());
+        const QPair<QPair<MessageFlags, bool>, QString> &params(_parameters.first());
 
         // Report all UIDs stored
         foreach (uint uid, sequenceUids(params.second))
@@ -1350,7 +1663,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
         const QPair<QString, QMailFolder> &params(_parameters.first());
 
         // See if we got a COPYUID response
-        QRegExp copyuidResponsePattern("COPYUID (\\w+) (\\w+) (\\w+)");
+        QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) ([^ \\t\\]]+)");
         if (copyuidResponsePattern.indexIn(line) != -1) {
             QList<uint> copiedUids = sequenceUids(copyuidResponsePattern.cap(2));
             QList<uint> createdUids = sequenceUids(copyuidResponsePattern.cap(3));
@@ -1417,8 +1730,9 @@ QString CloseState::transmit(ImapContext *c)
 void CloseState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        // After a close, we no longer have a selectd mailbox
+        // After a close, we no longer have a selected mailbox
         c->setMailbox(QMailFolder());
+        c->protocol()->setCapabilities(QStringList());
     }
 
     ImapState::taggedResponse(c, line);
@@ -1444,7 +1758,7 @@ public:
     void done(ImapContext *c);
 
     virtual QString transmit(ImapContext *c);
-    virtual void continuationResponse(ImapContext *c, const QString &line);
+    virtual bool continuationResponse(ImapContext *c, const QString &line);
     virtual void untaggedResponse(ImapContext *c, const QString &line);
 };
 
@@ -1458,9 +1772,10 @@ QString IdleState::transmit(ImapContext *c)
     return c->sendCommand("IDLE");
 }
 
-void IdleState::continuationResponse(ImapContext *c, const QString &)
+bool IdleState::continuationResponse(ImapContext *c, const QString &)
 {
     c->continuation(command(), QString("idling"));
+    return false;
 }
 
 void IdleState::untaggedResponse(ImapContext *c, const QString &line)
@@ -1490,6 +1805,8 @@ public:
     LoginState loginState;
     LogoutState logoutState;
     ListState listState;
+    GenUrlAuthState genUrlAuthState;
+    AppendState appendState;
     SelectState selectState;
     ExamineState examineState;
     SearchState searchState;
@@ -1502,7 +1819,9 @@ public:
     FullState fullState;
     IdleState idleState;
 
-    void continuationResponse(const QString &line) { state()->continuationResponse(this, line); }
+    virtual QString sendCommandLiteral(const QString &cmd, uint length);
+
+    bool continuationResponse(const QString &line) { return state()->continuationResponse(this, line); }
     void untaggedResponse(const QString &line) { state()->untaggedResponse(this, line); }
     void taggedResponse(const QString &line) { state()->taggedResponse(this, line); }
     void literalResponse(const QString &line) { state()->literalResponse(this, line); }
@@ -1522,21 +1841,42 @@ public:
     void setState(ImapState* s);
     void stateCompleted();
 
-  private:
+private:
     ImapState* mState;
     QList<QPair<ImapState*, QString> > mPendingStates;
 };
 
 ImapContextFSM::ImapContextFSM(ImapProtocol *protocol)
-    : ImapContext(protocol)
+    : ImapContext(protocol),
+      mState(&unconnectedState)
 { 
     reset();
 }
 
+QString ImapContextFSM::sendCommandLiteral(const QString &cmd, uint length)
+{ 
+    QString tag(ImapContext::sendCommandLiteral(cmd, length));
+
+    if (protocol()->capabilities().contains("LITERAL+")) {
+        // Send the continuation immediately
+        while (continuationResponse(QString())) {
+            // Keep sending continuations until there are no more
+        }
+    }
+
+    return tag;
+}
+
 void ImapContextFSM::reset()
 {
+    // Clear any existing state we have accumulated
+    while (!mPendingStates.isEmpty()) {
+        QPair<ImapState*, QString> state(mPendingStates.takeFirst());
+        state.first->init();
+    }
+
+    mState->init();
     mState = &unconnectedState;  
-    mPendingStates.clear();
 }
 
 void ImapContextFSM::setState(ImapState* s)
@@ -1598,6 +1938,10 @@ ImapProtocol::ImapProtocol()
             this, SLOT(incomingData()));
     connect(&_fsm->listState, SIGNAL(mailboxListed(QString &, QString &, QString &)),
             this, SIGNAL(mailboxListed(QString &, QString &, QString &)));
+    connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
+            this, SIGNAL(urlAuthorized(QString)));
+    connect(&_fsm->appendState, SIGNAL(messageCreated(QMailMessageId, QString)),
+            this, SIGNAL(messageCreated(QMailMessageId, QString)));
     connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)), 
             this, SIGNAL(downloadSize(QString, int)));
     connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)), 
@@ -1749,6 +2093,21 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
     _fsm->setState(&_fsm->listState);
 }
 
+void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism)
+{
+    QString dataUrl(url(location, true, bodyOnly));
+    dataUrl.append(";urlauth=anonymous");
+
+    _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);
+    _fsm->setState(&_fsm->genUrlAuthState);
+}
+
+void ImapProtocol::sendAppend(const QMailFolder &mailbox, const QMailMessageId &messageId)
+{
+    _fsm->appendState.setParameters(mailbox, messageId);
+    _fsm->setState(&_fsm->appendState);
+}
+
 void ImapProtocol::sendSelect(const QMailFolder &mailbox)
 {
     _fsm->selectState.setMailbox(mailbox);
@@ -1787,9 +2146,9 @@ void ImapProtocol::sendUidFetchSection(const QString &uid, const QString &sectio
     _fsm->setState(&_fsm->uidFetchState);
 }
 
-void ImapProtocol::sendUidStore(MessageFlags flags, const QString &range)
+void ImapProtocol::sendUidStore(MessageFlags flags, bool set, const QString &range)
 {
-    _fsm->uidStoreState.setParameters(flags, range);
+    _fsm->uidStoreState.setParameters(flags, set, range);
     _fsm->setState(&_fsm->uidStoreState);
 }
 
@@ -1847,6 +2206,15 @@ void ImapProtocol::sendData(const QString &cmd)
     qMailLog(IMAP) << objectName() << "SEND:" << qPrintable(logCmd);
 }
 
+void ImapProtocol::sendDataLiteral(const QString &cmd, uint length)
+{
+    QString trailer(" {%1%2}");
+    trailer = trailer.arg(length);
+    trailer = trailer.arg(capabilities().contains("LITERAL+") ? "+" : "");
+
+    sendData(cmd + trailer);
+}
+
 QString ImapProtocol::sendCommand(const QString &cmd)
 {
     QString tag = newCommandId();
@@ -1855,6 +2223,15 @@ QString ImapProtocol::sendCommand(const QString &cmd)
     sendData(tag + " " + cmd);
 
     return tag;
+}
+
+QString ImapProtocol::sendCommandLiteral(const QString &cmd, uint length)
+{
+    QString trailer(" {%1%2}");
+    trailer = trailer.arg(length);
+    trailer = trailer.arg(capabilities().contains("LITERAL+") ? "+" : "");
+
+    return sendCommand(cmd + trailer);
 }
 
 void ImapProtocol::incomingData()
@@ -2098,6 +2475,50 @@ QString ImapProtocol::uid( const QString &identifier )
     return messageId(identifier);
 }
 
+QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absolute, bool bodyOnly)
+{
+    QString result;
+
+    QMailMessageId id(location.containingMessageId());
+    QMailMessageMetaData metaData(id);
+
+    if (metaData.parentAccountId().isValid()) {
+        if (absolute) {
+            result.append("imap://");
+
+            QMailAccountConfiguration config(metaData.parentAccountId());
+            ImapConfiguration imapCfg(config);
+
+            if (!imapCfg.mailUserName().isEmpty()) {
+                result.append(imapCfg.mailUserName()).append('@');
+            }
+
+            result.append(imapCfg.mailServer());
+            if (imapCfg.mailPort() != 143) {
+                result.append(':').append(QString::number(imapCfg.mailPort()));
+            }
+        }
+        
+        result.append('/');
+
+        if (metaData.parentFolderId().isValid()) {
+            QMailFolder folder(metaData.parentFolderId());
+
+            result.append(folder.path()).append('/');
+        }
+
+        result.append(";uid=").append(uid(metaData.serverUid()));
+
+        if (location.isValid(false)) {
+            result.append("/;section=").append(location.toString(false));
+        } else if (bodyOnly) {
+            result.append("/;section=TEXT");
+        }
+    }
+
+    return result;
+}
+
 // Ensure a string is quoted, if required for IMAP transmission
 QString ImapProtocol::quoteString(const QString& input)
 {
@@ -2135,21 +2556,20 @@ QByteArray ImapProtocol::quoteString(const QByteArray& input)
 
 namespace {
 
+struct AttachmentDetector 
+{
+    bool operator()(const QMailMessagePart &part)
+    {
+        // Return false if there is an attachment to stop traversal
+        QMailMessageContentDisposition disposition(part.contentDisposition());
+        return (disposition.isNull() || (disposition.type() != QMailMessageContentDisposition::Attachment));
+    }
+};
+
 bool hasAttachments(const QMailMessagePartContainer &partContainer)
 {
-    for (uint i = 0; i < partContainer.partCount(); ++i) {
-        const QMailMessagePart &part(partContainer.partAt(i));
-
-        QMailMessageContentDisposition disposition(part.contentDisposition());
-        if (!disposition.isNull() && (disposition.type() == QMailMessageContentDisposition::Attachment)) {
-            return true;
-        } else if (part.multipartType() != QMailMessage::MultipartNone) {
-            if (hasAttachments(part))
-                return true;
-        }
-    }
-
-    return false;
+    // If foreachPart yields false there is at least one attachment
+    return (partContainer.foreachPart(AttachmentDetector()) == false);
 }
 
 }
@@ -2189,8 +2609,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     if (flags & MFlag_Answered) {
         mail.setStatus( QMailMessage::Replied, true );
     }
-
-    mail.setStatus( QMailMessage::Incoming, true );
 
     mail.setMessageType( QMailMessage::Email );
     mail.setSize( size );

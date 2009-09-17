@@ -54,7 +54,7 @@ class QSslSocket;
 class QSslError;
 #endif
 
-class QTOPIAMAIL_EXPORT QMailTransport : public QObject
+class MESSAGESERVER_EXPORT QMailTransport : public QObject
 {
     Q_OBJECT
 

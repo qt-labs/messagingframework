@@ -59,7 +59,7 @@ public:
 
     const QMailTimeStampPrivate& operator= (const QMailTimeStampPrivate& other);
 
-    QString toString() const;
+    QString toString(QMailTimeStamp::OutputFormat format) const;
 
     QDateTime toLocalTime() const;
     QDateTime toUTC() const;
@@ -244,28 +244,41 @@ const QMailTimeStampPrivate& QMailTimeStampPrivate::operator= (const QMailTimeSt
     return *this;
 }
 
-QString QMailTimeStampPrivate::toString() const
+QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) const
 {
+    // We can't use QDateTime to provide day and month names, since they may get localized into UTF-8
     static const char Days[] = "MonTueWedThuFriSatSun";
     static const char Months[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
 
     if (time.isNull() || !time.isValid())
         return QString();
 
+    QString result;
+
     QDateTime originalTime = time.addSecs( utcOffset );
-    QString result( originalTime.toString( "%1, d %2 yyyy hh:mm:ss %3" ) );
+    QDate originalDate = originalTime.date();
 
-    // We can't use QDateTime to provide day and month names, since they may get localized into UTF-8
-    QDate originalDate( originalTime.date() );
-    result = result.arg( QString::fromAscii( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
-    result = result.arg( QString::fromAscii( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
+    int hOffset = utcOffset / 3600;
+    int mOffset = ( abs(utcOffset) - abs(hOffset * 3600) ) / 60;
 
-    // Append the timezone specifier
-    QString timeDiff;
-    int h = utcOffset / 3600;
-    int m = ( abs(utcOffset) - abs(h * 3600) ) / 60;
-    timeDiff.sprintf( "%+.2d%.2d", h, m );
-    result = result.arg( timeDiff );
+    if (format == QMailTimeStamp::Rfc2822) {
+        result = QString( originalTime.toString( "%1, d %2 yyyy hh:mm:ss %3" ) );
+        result = result.arg( QString::fromAscii( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
+        result = result.arg( QString::fromAscii( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
+        result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
+    } else if (format == QMailTimeStamp::Rfc3501) {
+        result = QString( originalTime.toString( "dd-%1-yyyy hh:mm:ss %2" ) );
+        result = result.arg( QString::fromAscii( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
+        result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
+
+        // The day number should be space-padded
+        if (result[0] == '0') {
+            result[0] = ' ';
+        }
+    } else if (format == QMailTimeStamp::Rfc3339) {
+        result = QString( originalTime.toString( "yyyy-MM-ddThh:mm:ss%1" ) );
+        result = result.arg( utcOffset == 0 ? QString("Z") : QString().sprintf( "%+.2d:%.2d", hOffset, mOffset ) );
+    }
 
     return result;
 }
@@ -339,6 +352,16 @@ bool QMailTimeStampPrivate::operator>= (const QMailTimeStampPrivate& other) cons
 */
 
 /*!
+    \enum QMailTimeStamp::OutputFormat
+    
+    This enum type is used to select a format for timestamp output.
+
+    \value Rfc2822  The format used in SMTP message format; example: "Wed, 17 May 2006 20:45:00 +0100".
+    \value Rfc3501  The format used in IMAP message append; example: "17-May-2006 20:45:00 +0100".
+    \value Rfc3339  The format specified for future protocols (a variant of ISO 8601); example: "2006-05-17T20:45:00+01:00".
+*/
+
+/*!
     Returns a QMailTimeStamp object initialised to contain the current
     date and time, in the local time zone.
 */
@@ -392,16 +415,11 @@ const QMailTimeStamp& QMailTimeStamp::operator= (const QMailTimeStamp& other)
 }
 
 /*!
-    Returns the time stamp information in a standardised format, as required by RFC 2822.
-
-    The format used is "day_name, day_of_month month_name year hours:minutes:seconds utc_offset".
-    Day and month names are standard U.S. English abbreviations.
-
-    For example: "Wed, 17 May 2006 20:45:00 +0100".
+    Returns the time stamp information in the format specified by \a format.
 */
-QString QMailTimeStamp::toString() const
+QString QMailTimeStamp::toString(QMailTimeStamp::OutputFormat format) const
 {
-    return d->toString();
+    return d->toString(format);
 }
 
 /*!

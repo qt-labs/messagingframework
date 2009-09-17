@@ -67,7 +67,7 @@ class QCheckBox;
 class QMailAccount;
 class QMailAccountId;
 
-class QTOPIAMAIL_EXPORT DetailsPage : public QWidget
+class PLUGIN_EXPORT DetailsPage : public QWidget
 {
     Q_OBJECT
 

@@ -39,24 +39,19 @@
 **
 ****************************************************************************/
 
-// Ensure we don't try to instantiate types defined in qmailmessage.h
-#define SUPPRESS_REGISTER_QMAILMESSAGE_METATYPES
-#include "qprivateimplementationdef.h"
-#include "qmailserviceaction.h"
+#include "qmailserviceaction_p.h"
 #include "qmailipc.h"
 #include "qmailmessagekey.h"
-#include "qmailmessageserver.h"
 #include "qmailstore.h"
+#include "qmaillog.h"
+#include <QCoreApplication>
 #include <QPair>
 #include <QTimer>
-#include "qmaillog.h"
-#include <sys/types.h>
-#include <unistd.h>
 
 namespace {
 
 uint messageCounter = 0;
-const uint pid = ::getpid();
+const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
 quint64 nextMessageAction()
 {
@@ -70,68 +65,6 @@ QPair<uint, uint> messageActionParts(quint64 action)
 
 }
 
-
-// Note: this implementation is still using the QMailMessageServer interface, which will 
-// probably be deprecated.  The entire implementation is likely to change; this is a 
-// transitional version, allowing qtmail conversion but not providing true mapping
-// of events to actions, nor unicasting of event messages.
-
-class QMailServiceActionPrivate 
-    : public QObject,
-      public QPrivateNoncopyableBase
-{
-    Q_OBJECT
-
-public:
-    template<typename Subclass>
-    QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i);
-
-    ~QMailServiceActionPrivate();
-
-    void cancelOperation();
-
-protected slots:
-    void activityChanged(quint64, QMailServiceAction::Activity activity);
-    void connectivityChanged(quint64, QMailServiceAction::Connectivity connectivity);
-    void statusChanged(quint64, const QMailServiceAction::Status status);
-    void progressChanged(quint64, uint progress, uint total);
-
-protected:
-    friend class QMailServiceAction;
-
-    virtual void init();
-
-    quint64 newAction();
-    bool validAction(quint64 action);
-
-    void setActivity(QMailServiceAction::Activity newActivity);
-    void setConnectivity(QMailServiceAction::Connectivity newConnectivity);
-
-    void setStatus(const QMailServiceAction::Status &status);
-    void setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text);
-    void setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId);
-
-    void setProgress(uint newProgress, uint newTotal);
-
-    void emitChanges();
-
-    QMailServiceAction *_interface;
-    QMailMessageServer *_server;
-
-    QMailServiceAction::Connectivity _connectivity;
-    QMailServiceAction::Activity _activity;
-    QMailServiceAction::Status _status;
-
-    uint _total;
-    uint _progress;
-
-    quint64 _action;
-
-    bool _connectivityChanged;
-    bool _activityChanged;
-    bool _progressChanged;
-    bool _statusChanged;
-};
 
 template<typename Subclass>
 QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i)
@@ -220,7 +153,7 @@ quint64 QMailServiceActionPrivate::newAction()
 {
     if (_action != 0) {
         qWarning() << "Unable to allocate new action - oustanding:" << messageActionParts(_action).second;
-        return 0;
+        return _action;
     }
 
     init();
@@ -245,9 +178,6 @@ bool QMailServiceActionPrivate::validAction(quint64 action)
 
     if (incoming.second == outstanding.second)
         return true;
-
-    if (incoming.second > outstanding.second)
-        qWarning() << "Weird - got response for:" << incoming.second << "while waiting for:" << outstanding.second;
 
     return false;
 }
@@ -335,8 +265,6 @@ void QMailServiceActionPrivate::emitChanges()
         emit _interface->statusChanged(_status);
     }
 }
-
-template class QPrivatelyNoncopyable<QMailServiceActionPrivate>;
 
 
 /*!
@@ -463,6 +391,8 @@ void QMailServiceAction::Status::serialize(Stream &stream) const
     stream << messageId;
 }
 
+template void QMailServiceAction::Status::serialize(QDataStream &) const;
+
 /*! 
     \fn QMailServiceAction::Status::deserialize(Stream&)
     \internal 
@@ -477,6 +407,7 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
     stream >> messageId;
 }
 
+template void QMailServiceAction::Status::deserialize(QDataStream &);
 
 /*!
     \class QMailServiceAction
@@ -663,34 +594,6 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
 }
 
 
-class QMailRetrievalActionPrivate : public QMailServiceActionPrivate
-{
-    Q_OBJECT
-
-public:
-    QMailRetrievalActionPrivate(QMailRetrievalAction *);
-
-    void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-
-    void retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
-    void retrieveMessagePart(const QMailMessagePart::Location &partLocation);
-
-    void retrieveMessageRange(const QMailMessageId &messageId, uint minimum);
-    void retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
-
-    void retrieveAll(const QMailAccountId &accountId);
-    void exportUpdates(const QMailAccountId &accountId);
-
-    void synchronize(const QMailAccountId &accountId);
-
-protected slots:
-    void retrievalCompleted(quint64);
-
-private:
-    friend class QMailRetrievalAction;
-};
-
 QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i)
     : QMailServiceActionPrivate(this, i)
 {
@@ -752,8 +655,6 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
         emitChanges();
     }
 }
-
-template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
 
 
 /*!
@@ -992,28 +893,6 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId)
 }
 
 
-class QMailTransmitActionPrivate : public QMailServiceActionPrivate
-{
-    Q_OBJECT
-
-public:
-    QMailTransmitActionPrivate(QMailTransmitAction *i);
-
-    void transmitMessages(const QMailAccountId &accountId);
-
-protected:
-    virtual void init();
-
-protected slots:
-    void messagesTransmitted(quint64, const QMailMessageIdList &id);
-    void transmissionCompleted(quint64);
-
-private:
-    friend class QMailTransmitAction;
-
-    QMailMessageIdList _ids;
-};
-
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
     : QMailServiceActionPrivate(this, i)
 {
@@ -1030,8 +909,7 @@ void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountI
     _server->transmitMessages(newAction(), accountId);
 
     QMailAccount account(accountId);
-    _ids = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId) & 
-                                                 QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
+    _ids = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId) & QMailMessageKey::status(QMailMessage::Outbox));
 
     emitChanges();
 }
@@ -1059,8 +937,6 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
         emitChanges();
     }
 }
-
-template class QPrivatelyNoncopyable<QMailTransmitActionPrivate>;
 
 
 /*!
@@ -1112,32 +988,6 @@ void QMailTransmitAction::transmitMessages(const QMailAccountId &accountId)
 }
 
 
-class QMailStorageActionPrivate : public QMailServiceActionPrivate
-{
-    Q_OBJECT
-
-public:
-    QMailStorageActionPrivate(QMailStorageAction *i);
-
-    void deleteMessages(const QMailMessageIdList &ids);
-    void discardMessages(const QMailMessageIdList &ids);
-
-    void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
-    void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
-
-protected:
-    virtual void init();
-
-protected slots:
-    void messagesEffected(quint64, const QMailMessageIdList &id);
-    void actionCompleted(quint64);
-
-private:
-    friend class QMailStorageAction;
-
-    QMailMessageIdList _ids;
-};
-
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     : QMailServiceActionPrivate(this, i)
 {
@@ -1147,9 +997,11 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
     connect(_server, SIGNAL(messagesCopied(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
+    connect(_server, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
+            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
 
     connect(_server, SIGNAL(storageActionCompleted(quint64)),
-            this, SLOT(actionCompleted(quint64)));
+            this, SLOT(storageActionCompleted(quint64)));
 
     init();
 }
@@ -1182,6 +1034,16 @@ void QMailStorageActionPrivate::moveMessages(const QMailMessageIdList &ids, cons
     emitChanges();
 }
 
+void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    // Ensure that nothing is both set and unset
+    setMask &= ~unsetMask;
+    _server->flagMessages(newAction(), ids, setMask, unsetMask);
+
+    _ids = ids;
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::init()
 {
     QMailServiceActionPrivate::init();
@@ -1197,7 +1059,7 @@ void QMailStorageActionPrivate::messagesEffected(quint64 action, const QMailMess
     }
 }
 
-void QMailStorageActionPrivate::actionCompleted(quint64 action)
+void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
 {
     if (validAction(action)) {
         QMailServiceAction::Activity result(_ids.isEmpty() ? QMailServiceAction::Successful : QMailServiceAction::Failed);
@@ -1205,8 +1067,6 @@ void QMailStorageActionPrivate::actionCompleted(quint64 action)
         emitChanges();
     }
 }
-
-template class QPrivatelyNoncopyable<QMailStorageActionPrivate>;
 
 
 /*!
@@ -1282,34 +1142,21 @@ void QMailStorageAction::moveMessages(const QMailMessageIdList &ids, const QMail
     impl(this)->moveMessages(ids, destinationId);
 }
 
+/*!
+    Requests that the message server flag each message listed in \a ids, by setting any status flags
+    set in the \a setMask, and unsetting any status flags set in the \a unsetMask.  The status
+    flag values should correspond to those of QMailMessage::status().
 
-class QMailSearchActionPrivate : public QMailServiceActionPrivate
+    The service implementing the account may choose to take further actions in response to flag
+    changes, such as moving or deleting messages.
+
+    \sa QMailMessage::setStatus(), QMailStore::updateMessagesMetaData()
+*/
+void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
 {
-    Q_OBJECT
+    impl(this)->flagMessages(ids, setMask, unsetMask);
+}
 
-public:
-    QMailSearchActionPrivate(QMailSearchAction *i);
-
-    void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void cancelOperation();
-
-protected:
-    virtual void init();
-
-signals:
-    void messageIdsMatched(const QMailMessageIdList &ids);
-
-private slots:
-    void matchingMessageIds(quint64 action, const QMailMessageIdList &ids);
-    void searchCompleted(quint64 action);
-
-    void finaliseSearch();
-
-private:
-    friend class QMailSearchAction;
-
-    QMailMessageIdList _matchingIds;
-};
 
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     : QMailServiceActionPrivate(this, i)
@@ -1374,8 +1221,6 @@ void QMailSearchActionPrivate::finaliseSearch()
     setActivity(QMailServiceAction::Successful);
     emitChanges();
 }
-
-template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
 
 
 /*!
@@ -1465,26 +1310,6 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
 */
 
 
-class QMailProtocolActionPrivate : public QMailServiceActionPrivate
-{
-    Q_OBJECT
-
-public:
-    QMailProtocolActionPrivate(QMailProtocolAction *i);
-
-    void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
-
-signals:
-    void protocolResponse(const QString &response, const QVariant &data);
-
-private slots:
-    void protocolResponse(quint64 action, const QString &response, const QVariant &data);
-    void protocolRequestCompleted(quint64 action);
-
-private:
-    friend class QMailProtocolAction;
-};
-
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)
 {
@@ -1515,8 +1340,6 @@ void QMailProtocolActionPrivate::protocolRequestCompleted(quint64 action)
         emitChanges();
     }
 }
-
-template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
 
 
 /*!
@@ -1576,17 +1399,4 @@ void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const
     This signal is emitted when the response \a response is emitted by the messageserver,
     with the associated \a data.
 */
-
-
-Q_IMPLEMENT_USER_METATYPE(QMailServiceAction::Status)
-
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Connectivity)
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Activity)
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Status::ErrorCode)
-
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
-
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
-
-#include "qmailserviceaction.moc"
 

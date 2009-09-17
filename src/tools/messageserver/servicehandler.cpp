@@ -178,6 +178,67 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     return map;
 }
 
+namespace {
+
+struct ResolverSet
+{
+    QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > map;
+
+    void append(const QMailMessageMetaData &metaData)
+    {
+        QMailMessagePart::Location location;
+        location.setContainingMessageId(metaData.id());
+
+        map[metaData.parentAccountId()].append(qMakePair(location, QMailMessagePart::Location()));
+    }
+
+    bool operator()(const QMailMessagePart &part)
+    {
+        if ((part.referenceType() != QMailMessagePart::None) && part.referenceResolution().isEmpty()) {
+            // We need to resolve this part's reference
+            if (part.referenceType() == QMailMessagePart::MessageReference) {
+                // Link this message to the referenced message
+                QMailMessageMetaData referencedMessage(part.messageReference());
+
+                QMailMessagePart::Location location;
+                location.setContainingMessageId(referencedMessage.id());
+                map[referencedMessage.parentAccountId()].append(qMakePair(location, part.location()));
+            } else if (part.referenceType() == QMailMessagePart::PartReference) {
+                // Link this message to the referenced part's location
+                QMailMessageMetaData referencedMessage(part.partReference().containingMessageId());
+
+                QMailMessagePart::Location location(part.partReference());
+                map[referencedMessage.parentAccountId()].append(qMakePair(location, part.location()));
+            }
+        }
+
+        return true;
+    }
+};
+
+}
+
+QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > messageResolvers(const QMailMessageIdList &ids)
+{
+    // Find all the unresolved references in these messages
+    ResolverSet set;
+
+    foreach (const QMailMessageId id, ids) {
+        QMailMessage outgoing(id);
+
+        if (outgoing.status() & QMailMessage::HasUnresolvedReferences) {
+            // Record the locations of parts needed for this message
+            outgoing.foreachPart<ResolverSet&>(set);
+        }
+        if (outgoing.status() & QMailMessage::TransmitFromExternal) {
+            // Just record this message's location
+            set.append(outgoing);
+        }
+    }
+
+    return set.map;
+}
+
 void extractAccounts(const QMailMessageKey &key, bool parentNegated, QSet<QMailAccountId> &include, QSet<QMailAccountId> &exclude)
 {
     bool isNegated(parentNegated);
@@ -231,6 +292,29 @@ QSet<QMailAccountId> keyAccounts(const QMailMessageKey &key, const QSet<QMailAcc
     return include;
 }
 
+namespace {
+
+struct TextPartSearcher
+{
+    QString text;
+
+    TextPartSearcher(const QString &text) : text(text) {}
+
+    bool operator()(const QMailMessagePart &part)
+    {
+        if (part.contentType().type().toLower() == "text") {
+            if (part.body().data().contains(text, Qt::CaseInsensitive)) {
+                return false;
+            }
+        }
+
+        // Keep searching
+        return true;
+    }
+};
+
+}
+
 bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 {
     // Search only messages or message parts that are of type 'text/*'
@@ -240,15 +324,9 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
                 return true;
         }
     } else if (message.multipartType() != QMailMessage::MultipartNone) {
-        // We could do a recursive search for text elements, but since we can't currently
-        // display generic multipart messages anyway, let's just search the top level
-        for (uint i = 0; i < message.partCount(); ++i) {
-            const QMailMessagePart &part = message.partAt(i);
-
-            if (part.contentType().type().toLower() == "text") {
-                if (part.body().data().contains(text, Qt::CaseInsensitive))
-                    return true;
-            }
+        TextPartSearcher searcher(text);
+        if (message.foreachPart<TextPartSearcher&>(searcher) == false) {
+            return true;
         }
     }
 
@@ -497,6 +575,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(messagesDeleted(QMailMessageIdList)), this, SLOT(messagesDeleted(QMailMessageIdList)));
     connect(source, SIGNAL(messagesCopied(QMailMessageIdList)), this, SLOT(messagesCopied(QMailMessageIdList)));
     connect(source, SIGNAL(messagesMoved(QMailMessageIdList)), this, SLOT(messagesMoved(QMailMessageIdList)));
+    connect(source, SIGNAL(messagesFlagged(QMailMessageIdList)), this, SLOT(messagesFlagged(QMailMessageIdList)));
     connect(source, SIGNAL(messagesPrepared(QMailMessageIdList)), this, SLOT(messagesPrepared(QMailMessageIdList)));
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SLOT(matchingMessageIds(QMailMessageIdList)));
     connect(source, SIGNAL(protocolResponse(QString, QVariant)), this, SLOT(protocolResponse(QString, QVariant)));
@@ -662,12 +741,13 @@ quint64 ServiceHandler::serviceAction(QMailMessageService *service) const
     return 0;
 }
 
-void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion)
+void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QSet<QMailMessageService*> &preconditions)
 {
     Request req;
     req.action = action;
     req.data = data;
     req.services = services;
+    req.preconditions = preconditions;
     req.servicer = servicer;
     req.completion = completion;
 
@@ -690,7 +770,7 @@ void ServiceHandler::dispatchRequest()
     if (!mRequests.isEmpty()) {
         const Request &request(mRequests.first());
 
-        foreach (QMailMessageService *service, request.services) {
+        foreach (QMailMessageService *service, request.services + request.preconditions) {
             if (!serviceAvailable(service)) {
                 // We can't dispatch this request yet...
                 return;
@@ -702,9 +782,26 @@ void ServiceHandler::dispatchRequest()
             mServiceAction.insert(service, request.action);
 
         // The services required for this request are available
+        ActionData data;
+        data.services = request.services;
+        data.completion = request.completion;
+        data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
+        data.reported = false;
+
+        mActiveActions.insert(request.action, data);
+
         if ((this->*request.servicer)(request.action, request.data)) {
-            activateAction(request.action, request.services, request.completion);
+            // This action is now underway
+            emit activityChanged(request.action, QMailServiceAction::InProgress);
+
+            if (mActionExpiry.isEmpty()) {
+                // Start the expiry timer
+                QTimer::singleShot(ExpiryPeriod, this, SLOT(expireAction()));
+            }
+            mActionExpiry.append(request.action);
         } else {
+            mActiveActions.remove(request.action);
+
             qMailLog(Messaging) << "Unable to dispatch request:" << request.action << "to services:" << request.services;
             emit activityChanged(request.action, QMailServiceAction::Failed);
 
@@ -714,28 +811,6 @@ void ServiceHandler::dispatchRequest()
 
         mRequests.takeFirst();
     }
-}
-
-void ServiceHandler::activateAction(quint64 action, const QSet<QMailMessageService*> &services, CompletionSignal completion)
-{
-    // The specified services are now busy
-    ActionData data;
-    data.services = services;
-    data.completion = completion;
-    data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
-    data.reported = false;
-
-    mActiveActions.insert(action, data);
-
-    if (mActionExpiry.isEmpty()) {
-        // Start the expiry timer
-        QTimer::singleShot(ExpiryPeriod, this, SLOT(expireAction()));
-    }
-
-    mActionExpiry.append(action);
-
-    // This action is now underway
-    emit activityChanged(action, QMailServiceAction::InProgress);
 }
 
 void ServiceHandler::updateAction(quint64 action)
@@ -885,8 +960,58 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
     if (sinks.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to enqueue messages for transmission"));
     } else {
-        enqueueRequest(action, serialize(accountId), sinks, &ServiceHandler::dispatchTransmitMessages, &ServiceHandler::transmissionCompleted);
+        // We need to see if any sources are required to prepare these messages
+        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
+
+        // We need to prepare messages to;
+        // - resolve references
+        // - move to Sent prior to transmission
+        quint64 preparationStatus(QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal);
+        QMailMessageKey unresolvedKey(QMailMessageKey::status(preparationStatus, QMailDataComparator::Includes));
+
+        QSet<QMailMessageService*> sources;
+
+        QMailMessageIdList unresolvedMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey & unresolvedKey));
+        if (!unresolvedMessages.isEmpty()) {
+            // Find the accounts that own these messages
+            QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists(messageResolvers(unresolvedMessages));
+
+            sources = sourceServiceSet(unresolvedLists.keys().toSet());
+
+            // Emit no signal after completing preparation
+            enqueueRequest(action, serialize(unresolvedLists), sources, &ServiceHandler::dispatchPrepareMessages, 0);
+        }
+
+        // The transmit action is dependent on the availability of the sources, since they must complete their preparation step first
+        enqueueRequest(action, serialize(accountId), sinks, &ServiceHandler::dispatchTransmitMessages, &ServiceHandler::transmissionCompleted, sources);
     }
+}
+
+bool ServiceHandler::dispatchPrepareMessages(quint64 action, const QByteArray &data)
+{
+    QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists;
+
+    deserialize(data, unresolvedLists);
+
+    // Prepare any unresolved messages for transmission
+    QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > >::const_iterator it = unresolvedLists.begin(), end = unresolvedLists.end();
+    for ( ; it != end; ++it) {
+        if (QMailMessageSource *source = accountSource(it.key())) {
+            if (!source->prepareMessages(it.value())) {
+                qMailLog(Messaging) << "Unable to service request to prepare messages for account:" << it.key();
+                return false;
+            } else {
+                // This account is now transmitting
+                setTransmissionInProgress(it.key(), true);
+            }
+        } else {
+            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), it.key());
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &data)
@@ -898,13 +1023,9 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
     if (QMailMessageSink *sink = accountSink(accountId)) {
         // Transmit any messages in the Outbox for this account
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
 
-        QMailAccount account(accountId);
-        QMailMessageKey folderKey(QMailMessageKey::parentFolderId(account.standardFolder(QMailFolder::OutboxFolder)));
-
-        // TODO: Prepare any unresolved messages for transmission
-
-        if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & folderKey))) {
+        if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey))) {
             qMailLog(Messaging) << "Unable to service request to add messages to sink for account:" << accountId;
             return false;
         } else {
@@ -1382,18 +1503,12 @@ void ServiceHandler::moveMessages(quint64 action, const QMailMessageIdList& mess
 {
     QSet<QMailMessageService*> sources;
 
-    if (destination == QMailFolderId(QMailFolder::TrashFolder)) {
-        // Special case - move to local Trash folder.  
-        // Note - if the account has configured an external trash folder, the above test is not true
-        enqueueRequest(action, serialize(messageIds, destination), sources, &ServiceHandler::dispatchMoveToTrash, &ServiceHandler::storageActionCompleted);
+    QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
+    sources = sourceServiceSet(messageLists.keys().toSet());
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
     } else {
-        QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
-        sources = sourceServiceSet(messageLists.keys().toSet());
-        if (sources.isEmpty()) {
-            reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
-        } else {
-            enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchMoveMessages, &ServiceHandler::storageActionCompleted);
-        }
+        enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchMoveMessages, &ServiceHandler::storageActionCompleted);
     }
 }
 
@@ -1420,33 +1535,41 @@ bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data
     return true;
 }
 
-bool ServiceHandler::dispatchMoveToTrash(quint64 action, const QByteArray &data)
+void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& messageIds, quint64 setMask, quint64 unsetMask)
 {
-    QMailMessageIdList messageIds;
-    QMailFolderId destination;
+    QSet<QMailMessageService*> sources;
 
-    deserialize(data, messageIds, destination);
-    if (messageIds.isEmpty())
-        return false;
+    QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
+    sources = sourceServiceSet(messageLists.keys().toSet());
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to flag messages for unconfigured account"));
+    } else {
+        enqueueRequest(action, serialize(messageLists, setMask, unsetMask), sources, &ServiceHandler::dispatchFlagMessages, &ServiceHandler::storageActionCompleted);
+    }
+}
 
-    emit progressChanged(action, 0, messageIds.count());
+bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data)
+{
+    QMap<QMailAccountId, QMailMessageIdList> messageLists;
+    quint64 setMask;
+    quint64 unsetMask;
 
-    // Move these messages logically, but don't tell the source to physically move them
-    QMailMessageMetaData metaData;
-    metaData.setParentFolderId(destination);
+    deserialize(data, messageLists, setMask, unsetMask);
 
-    QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
-    if (QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId, metaData)) {
-        // Mark these messages as Trash messages
-        if (QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::Trash, true)) {
-            emit progressChanged(action, messageIds.count(), messageIds.count());
-            emit activityChanged(action, QMailServiceAction::Successful);
-            return true;
+    QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
+    for ( ; it != end; ++it) {
+        if (QMailMessageSource *source = accountSource(it.key())) {
+            if (!source->flagMessages(it.value(), setMask, unsetMask)) {
+                qMailLog(Messaging) << "Unable to service request to flag messages for account:" << it.key();
+                return false;
+            }
+        } else {
+            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), it.key());
+            return false;
         }
     }
 
-    reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to move messages to Trash folder"));
-    return false;
+    return true;
 }
 
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
@@ -1579,9 +1702,14 @@ void ServiceHandler::messagesMoved(const QMailMessageIdList &messageIds)
         emit messagesMoved(action, messageIds);
 }
 
+void ServiceHandler::messagesFlagged(const QMailMessageIdList &messageIds)
+{
+    if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
+        emit messagesFlagged(action, messageIds);
+}
+
 void ServiceHandler::messagesPrepared(const QMailMessageIdList &messageIds)
 {
-    // TODO: transmit messages after preparation
     Q_UNUSED(messageIds)
 }
 
@@ -1599,8 +1727,13 @@ void ServiceHandler::protocolResponse(const QString &response, const QVariant &d
 
 void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
 {
-    if (quint64 action = sinkAction(qobject_cast<QMailMessageSink*>(sender())))
-        emit messagesTransmitted(action, messageIds);
+    if (QMailMessageSink *sink = qobject_cast<QMailMessageSink*>(sender())) {
+        if (quint64 action = sinkAction(sink)) {
+            mSentIds << messageIds;
+
+            emit messagesTransmitted(action, messageIds);
+        }
+    }
 }
 
 void ServiceHandler::availabilityChanged(bool available)
@@ -1661,6 +1794,23 @@ void ServiceHandler::actionCompleted(bool success)
             if (it != mActiveActions.end()) {
                 ActionData &data(it.value());
 
+                if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
+                    // Mark these message as Sent, via the source service
+                    if (QMailMessageSource *source = accountSource(service->accountId())) {
+                        source->flagMessages(mSentIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft));
+
+                        // The source is now the service responsible for this action
+                        mServiceAction.remove(service);
+                        data.services.remove(service);
+
+                        mServiceAction.insert(sourceService[source], action);
+                        data.services.insert(sourceService[source]);
+                    }
+
+                    mSentIds.clear();
+                    return;
+                }
+
                 QSet<QMailMessageService*>::iterator sit = data.services.find(service);
                 if (sit != data.services.end()) {
                     // Remove this service from the set for the action
@@ -1677,7 +1827,7 @@ void ServiceHandler::actionCompleted(bool success)
                     }
 
                     if (success) {
-                        if (data.services.isEmpty() && (data.reported == false)) {
+                        if (data.services.isEmpty() && data.completion && (data.reported == false)) {
                             // Report success
                             emit (this->*data.completion)(action);
                             data.reported = true;

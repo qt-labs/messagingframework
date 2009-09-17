@@ -78,6 +78,7 @@ signals:
 
     void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
+    void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
 
     void cancelTransfer(quint64);
 
@@ -138,6 +139,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
     connectIpc(this, SIGNAL(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)),
                adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
+    connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
+               adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(cancelSearch(quint64)),
@@ -162,6 +165,10 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(messagesCopied(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(messagesMoved(quint64, QMailMessageIdList)),
                parent, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)),
+               parent, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(storageActionCompleted(quint64)),
+               parent, SIGNAL(storageActionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(retrievalCompleted(quint64)),
                parent, SIGNAL(retrievalCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(messagesTransmitted(quint64, QMailMessageIdList)),
@@ -323,11 +330,20 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 */
 
 /*!
+    \fn void QMailMessageServer::messagesFlagged(quint64 action, const QMailMessageIdList& list);
+
+    Emitted when the messages identified by \a list have been flagged with the specified
+    set of status flags, in response to the request identified by \a action.
+
+    \sa flagMessages()
+*/
+
+/*!
     \fn void QMailMessageServer::storageActionCompleted(quint64 action);
 
-    Emitted when the copy or move operation identified by \a action is completed.
+    Emitted when the storage operation identified by \a action is completed.
 
-    \sa copyMessages(), moveMessages()
+    \sa deleteMessages(), copyMessages(), moveMessages(), flagMessages()
 */
 
 /*!
@@ -542,6 +558,20 @@ void QMailMessageServer::copyMessages(quint64 action, const QMailMessageIdList& 
 void QMailMessageServer::moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
 {
     emit d->moveMessages(action, mailList, destinationId);
+}
+
+/*!
+    Requests that the MessageServer flag each message listed in \a mailList by setting
+    the status flags set in \a setMask, and unsetting the status flags set in \a unsetMask.
+    The request has the identifier \a action.
+
+    The protocol must ensure that the local message records are appropriately modified, 
+    although the external changes may be buffered and effected at the next invocation 
+    of exportUpdates().
+*/
+void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
+{
+    emit d->flagMessages(action, mailList, setMask, unsetMask);
 }
 
 /*!

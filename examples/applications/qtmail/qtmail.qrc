@@ -1,0 +1,28 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icon">
+<file alias="qtmail">pics/EMail_48.png</file>
+<file alias="quit">pics/icons/16x16/exit.png</file>
+<file alias="allfields">pics/icons/14x14/allfields.png</file>
+<file alias="attach">pics/attach.png</file>
+<file alias="new">pics/icons/16x16/mail_new.png</file>
+<file alias="settings">pics/icons/16x16/configure.png</file>
+<file alias="cancel">pics/icons/14x14/cancel.png</file>
+<file alias="reset">pics/icons/14x14/reset.png</file>
+<file alias="edit">pics/icons/14x14/edit.png</file>
+<file alias="compose">pics/icons/14x14/compose.png</file>
+<file alias="draft">pics/icons/14x14/draft.png</file>
+<file alias="activity_working">pics/activity_working.gif</file>
+<file alias="activity_idle">pics/activity_idle.gif</file>
+<file alias="clear_right">pics/clear_right.png</file>
+<file alias="mail_generic">pics/mail_generic.png</file>
+<file alias="forward">pics/mail_forward.png</file>
+<file alias="reply">pics/mail_reply.png</file>
+<file alias="replyall">pics/mail_replyall.png</file>
+<file alias="exec">pics/exec.png</file>
+<file alias="tick">pics/button_ok.png</file>
+<file alias="cross">pics/button_cancel.png</file>
+<file alias="close">pics/fileclose.png</file>
+<file alias="stop">pics/stop.png</file>
+<file alias="sync">pics/reload.png</file>
+</qresource>
+</RCC>

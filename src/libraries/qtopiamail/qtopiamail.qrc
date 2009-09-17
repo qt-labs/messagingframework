@@ -12,6 +12,7 @@
 <file alias="mailfolders">resources/mailfolders.sqlite.sql</file>
 <file alias="mailfolders-101-102">resources/mailfolders-101-102.sqlite.sql</file>
 <file alias="mailfolders-102-103">resources/mailfolders-102-103.sqlite.sql</file>
+<file alias="mailfolders-103-104">resources/mailfolders-103-104.sqlite.sql</file>
 <file alias="mailfoldercustom">resources/mailfoldercustom.sqlite.sql</file>
 <file alias="mailfolderlinks">resources/mailfolderlinks.sqlite.sql</file>
 <file alias="mailmessages">resources/mailmessages.sqlite.sql</file>
@@ -25,5 +26,17 @@
 <file alias="deletedmessages-100-101">resources/deletedmessages-100-101.sqlite.sql</file>
 <file alias="mailstatusflags">resources/mailstatusflags.sqlite.sql</file>
 <file alias="mailstatusflags-100-101">resources/mailstatusflags-100-101.sqlite.sql</file>
+<file alias="mailmessageidentifiers">resources/mailmessageidentifiers.sqlite.sql</file>
+<file alias="mailmessageidentifiers-100-101">resources/mailmessageidentifiers-100-101.sqlite.sql</file>
+<file alias="mailsubjects">resources/mailsubjects.sqlite.sql</file>
+<file alias="mailthreads">resources/mailthreads.sqlite.sql</file>
+<file alias="mailthreadsubjects">resources/mailthreadsubjects.sqlite.sql</file>
+<file alias="mailthreadmessages">resources/mailthreadmessages.sqlite.sql</file>
+<file alias="missingmessages">resources/missingmessages.sqlite.sql</file>
+<file alias="missingmessages-100-101">resources/missingmessages-100-101.sqlite.sql</file>
+<file alias="missingancestors">resources/missingancestors.sqlite.sql</file>
+<file alias="missingancestors-100-101">resources/missingancestors-100-101.sqlite.sql</file>
+<file alias="maintenancerecord">resources/maintenancerecord.sqlite.sql</file>
+<file alias="obsoletefiles">resources/obsoletefiles.sqlite.sql</file>
 </qresource>
 </RCC>

@@ -43,9 +43,10 @@
 #define QMAILFOLDERSORTKEY_H
 
 #include "qmailglobal.h"
+#include "qmailipc.h"
+#include "qmailsortkeyargument.h"
 #include <QSharedData>
 #include <QtGlobal>
-#include <QPair>
 
 class QMailFolderSortKeyPrivate;
 
@@ -65,7 +66,7 @@ public:
         ServerUndiscoveredCount,
     };
 
-    typedef QPair<Property, Qt::SortOrder> ArgumentType;
+    typedef QMailSortKeyArgument<Property> ArgumentType;
 
 public:
     QMailFolderSortKey();
@@ -76,7 +77,7 @@ public:
     QMailFolderSortKey& operator&=(const QMailFolderSortKey& other);
 
     bool operator==(const QMailFolderSortKey& other) const;
-    bool operator !=(const QMailFolderSortKey& other) const;
+    bool operator!=(const QMailFolderSortKey& other) const;
 
     QMailFolderSortKey& operator=(const QMailFolderSortKey& other);
 
@@ -84,23 +85,30 @@ public:
 
     const QList<ArgumentType> &arguments() const;
 
+    template <typename Stream> void serialize(Stream &stream) const;
+    template <typename Stream> void deserialize(Stream &stream);
+
     static QMailFolderSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey path(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey parentFolderId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey displayName(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailFolderSortKey status(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverCount(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverUnreadCount(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailFolderSortKey serverUndiscoveredCount(Qt::SortOrder order = Qt::AscendingOrder);
 
+    static QMailFolderSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
+
 private:
-    QMailFolderSortKey(Property p, Qt::SortOrder order);
+    QMailFolderSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
+    QMailFolderSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
     friend class QMailStorePrivate;
 
     QSharedDataPointer<QMailFolderSortKeyPrivate> d;
 };
+
+Q_DECLARE_USER_METATYPE(QMailFolderSortKey);
 
 #endif

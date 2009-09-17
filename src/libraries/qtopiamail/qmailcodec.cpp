@@ -201,10 +201,10 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& charse
         QByteArray decoded;
         {
             QDataStream decodedStream(&decoded, QIODevice::WriteOnly);
-
+            
+            char* buffer = new char[MaxCharacters];
             while (!in.atEnd())
             {
-                char buffer[MaxCharacters];
                 int length = in.readRawData(buffer, MaxCharacters);
 
                 // Allow for decoded data to be twice the size without reallocation
@@ -212,6 +212,7 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& charse
 
                 decodeChunk(decodedStream, buffer, length, in.atEnd());
             }
+            delete [] buffer;
         }
 
         // This is an unfortunately-necessary copy operation; we should investigate
@@ -228,13 +229,14 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& charse
 */
 void QMailCodec::encode(QDataStream& out, QDataStream& in)
 {
+    char* buffer = new char[MaxCharacters];
     while (!in.atEnd())
     {
-        char buffer[MaxCharacters];
         int length = in.readRawData(buffer, MaxCharacters);
 
         encodeChunk(out, reinterpret_cast<unsigned char*>(buffer), length, in.atEnd());
     }
+    delete [] buffer;
 }
 
 /*!
@@ -243,13 +245,14 @@ void QMailCodec::encode(QDataStream& out, QDataStream& in)
 */
 void QMailCodec::decode(QDataStream& out, QDataStream& in)
 {
+    char* buffer = new char[MaxCharacters];
     while (!in.atEnd())
     {
-        char buffer[MaxCharacters];
         int length = in.readRawData(buffer, MaxCharacters);
 
         decodeChunk(out, buffer, length, in.atEnd());
     }
+    delete [] buffer;
 }
 
 /*!
@@ -257,12 +260,13 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
 */
 void QMailCodec::copy(QDataStream& out, QDataStream& in)
 {
+    char* buffer = new char[MaxCharacters];
     while (!in.atEnd())
     {
-        char buffer[MaxCharacters];
         int length = in.readRawData(buffer, MaxCharacters);
         out.writeRawData(buffer, length);
     }
+    delete [] buffer;
 }
 
 /*!

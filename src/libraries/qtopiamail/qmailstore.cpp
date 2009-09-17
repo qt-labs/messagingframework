@@ -151,7 +151,9 @@
     \value ConstraintFailure    The operation failed due to the violation of a database constraint.
     \value ContentInaccessible  The operation failed because the content data cannot be accessed by the mail store.
     \value NotYetImplemented    The operation failed because the mail store does not yet implement the operation.
+    \value ContentNotRemoved    The operation failed only because content could not be removed from storage.
     \value FrameworkFault       The operation failed because the mail store encountered an error in performing the operation.
+    \value StorageInaccessible  The operation failed because the mail storage mechanism cannot be accessed by the mail store.
 */
 
 /*!
@@ -621,12 +623,22 @@ int QMailStore::sizeOfMessages(const QMailMessageKey& key) const
     all accounts identifiers will be returned.
     If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
     by \a sortKey.
+    If \a limit is non-zero, then no more than \a limit matching account IDs should be
+    returned.
+    If \a offset is non-zero, then the first \a offset matching IDs should be omitted
+    from the returned list.
+
+    Note: if the implementation cannot support the \a limit and \a offset parameters,
+    it should not attempt to perform a query where either of these values is non-zero; 
+    instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
 const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
-                                                   const QMailAccountSortKey& sortKey) const
+                                                   const QMailAccountSortKey& sortKey,
+                                                   uint limit,
+                                                   uint offset) const
 {
     d->setLastError(NoError);
-    return d->queryAccounts(key, sortKey);
+    return d->queryAccounts(key, sortKey, limit, offset);
 }
 
 /*!
@@ -635,12 +647,22 @@ const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
     all folder identifiers will be returned.
     If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
     by \a sortKey.
+    If \a limit is non-zero, then no more than \a limit matching folder IDs should be
+    returned.
+    If \a offset is non-zero, then the first \a offset matching IDs should be omitted
+    from the returned list.
+
+    Note: if the implementation cannot support the \a limit and \a offset parameters,
+    it should not attempt to perform a query where either of these values is non-zero; 
+    instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
 const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
-                                                 const QMailFolderSortKey& sortKey) const
+                                                 const QMailFolderSortKey& sortKey,
+                                                 uint limit,
+                                                 uint offset) const
 {
     d->setLastError(NoError);
-    return d->queryFolders(key, sortKey);
+    return d->queryFolders(key, sortKey, limit, offset);
 }
 
 /*!
@@ -649,12 +671,22 @@ const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
     all message identifiers will be returned.
     If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
     by \a sortKey.
+    If \a limit is non-zero, then no more than \a limit matching message IDs should be
+    returned.
+    If \a offset is non-zero, then the first \a offset matching IDs should be omitted
+    from the returned list.
+
+    Note: if the implementation cannot support the \a limit and \a offset parameters,
+    it should not attempt to perform a query where either of these values is non-zero; 
+    instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
 const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key, 
-                                                   const QMailMessageSortKey& sortKey) const
+                                                   const QMailMessageSortKey& sortKey,
+                                                   uint limit,
+                                                   uint offset) const
 {
     d->setLastError(NoError);
-    return d->queryMessages(key, sortKey);
+    return d->queryMessages(key, sortKey, limit, offset);
 }
 
 /*!
@@ -1078,7 +1110,12 @@ QMailStore* QMailStore::instance()
     static bool init = false;
     if (!init) {
         init = true;
-        QMailStoreInstance()->d->initialize();
+        QMailStore *store(QMailStoreInstance());
+        store->d->initialize();
+        if (initializationState() == QMailStore::InitializationFailed) {
+            delete store->d;
+            store->d = new QMailStoreNullImplementation(store);
+        }
     }
     return QMailStoreInstance();
 }

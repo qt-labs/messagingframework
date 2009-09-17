@@ -50,10 +50,13 @@ struct ImapMailboxProperties
     ImapMailboxProperties(const QMailFolder &folder = QMailFolder())
         : id(folder.id()),
           path(folder.path()),
+          status(folder.status()),
           exists(0),
           recent(0),
           unseen(0),
-          uidNext(0)
+          uidNext(0),
+          highestModSeq(0),
+          noModSeq(true)
     {
     }
 
@@ -61,14 +64,18 @@ struct ImapMailboxProperties
 
     QMailFolderId id;
     QString path;
-    int exists;
-    int recent;
-    int unseen;
+    quint64 status;
+    quint32 exists;
+    quint32 recent;
+    quint32 unseen;
     QString uidValidity;
-    int uidNext;
+    quint32 uidNext;
     QString flags;
     QStringList uidList;
     QList<uint> msnList;
+    QString highestModSeq;
+    bool noModSeq;
+    QStringList permanentFlags;
 };
 
 #endif

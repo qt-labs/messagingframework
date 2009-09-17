@@ -53,12 +53,9 @@
 class QMenu;
 class QMailAccount;
 
-class QTOPIAMAIL_EXPORT QMailComposerInterface : public QWidget
+class QMFUTIL_EXPORT QMailComposerInterface : public QWidget
 {
     Q_OBJECT
-
-public:
-    enum ComposeContext { Create = 0, Reply = 1, ReplyToAll = 2, Forward = 3 };
 
 public:
     QMailComposerInterface( QWidget *parent = 0 );
@@ -78,9 +75,11 @@ public:
     }
 
     virtual QString title() const = 0;
-    virtual void compose(ComposeContext context = Create,
+    virtual void compose(QMailMessage::ResponseType type,
                          const QMailMessage& source = QMailMessage(),
+                         const QMailMessagePart::Location& sourceLocation = QMailMessagePart::Location(),
                          QMailMessage::MessageType = QMailMessage::AnyType) = 0;
+
     virtual QMailMessage message() const = 0;
     virtual QList<QAction*> actions() const;
     virtual bool isEmpty() const = 0;
@@ -90,7 +89,8 @@ public:
 public slots:
     virtual void clear() = 0;
     //virtual void attach( const QContent &lnk, QMailMessage::AttachmentsAction action = QMailMessage::LinkToAttachments );
-    virtual void setSignature( const QString &sig );
+    virtual void setSignature(const QString &sig);
+    virtual void setSendingAccountId(const QMailAccountId &accountId);
 
 signals:
     void sendMessage();
@@ -99,7 +99,7 @@ signals:
     void statusChanged(const QString& status);
 };
 
-class QTOPIAMAIL_EXPORT QMailComposerFactory
+class QMFUTIL_EXPORT QMailComposerFactory
 {
 public:
     // Yield the key for each interface supporting the supplied type

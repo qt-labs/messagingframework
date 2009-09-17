@@ -1,0 +1,12 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/icon">
+<file alias="folder">pics/icons/16x16/folder.png</file>
+<file alias="account">pics/icons/16x16/server.png</file>
+<file alias="find">pics/icons/mail_find.png</file>
+<file alias="inbox">pics/icons/16x16/folder_inbox.png</file>
+<file alias="drafts">pics/icons/16x16/edit.png</file>
+<file alias="sent">pics/icons/16x16/folder_sent_mail.png</file>
+<file alias="outbox">pics/icons/16x16/folder_outbox.png</file>
+<file alias="trash">pics/icons/16x16/trash.png</file>
+</qresource>
+</RCC>

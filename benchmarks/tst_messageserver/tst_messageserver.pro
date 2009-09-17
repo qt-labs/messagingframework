@@ -1,11 +1,19 @@
 CONFIG += qtestlib unittest
+
+BASE=../../
+include($$BASE/common.pri)
+
 TEMPLATE = app
 TARGET = tst_messageserver 
 target.path += $$QMF_INSTALL_ROOT/tests
 INSTALLS += target
 DEPENDPATH += . 3rdparty
 
-BASE=../../
+DEFINES += PLUGIN_STATIC_LINK
+
+!symbian:!win32 {
+	DEFINES += HAVE_VALGRIND
+}
 
 IMAP_PLUGIN=$$BASE/src/plugins/messageservices/imap/
 MESSAGE_SERVER=$$BASE/src/tools/messageserver
@@ -25,8 +33,6 @@ QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qtopiamail \
 HEADERS += benchmarkcontext.h \
            qscopedconnection.h \
            testfsusage.h \
-           testmalloc.h \
-           3rdparty/cycle_p.h \
            $$IMAP_PLUGIN/imapconfiguration.h \
            $$MESSAGE_SERVER/mailmessageclient.h \
            $$MESSAGE_SERVER/messageserver.h \
@@ -36,7 +42,6 @@ HEADERS += benchmarkcontext.h \
 SOURCES += benchmarkcontext.cpp \
            qscopedconnection.cpp \
            testfsusage.cpp \
-           testmalloc.cpp \
            tst_messageserver.cpp \
            $$IMAP_PLUGIN/imapconfiguration.cpp \
            $$MESSAGE_SERVER/mailmessageclient.cpp \
@@ -45,5 +50,9 @@ SOURCES += benchmarkcontext.cpp \
            $$MESSAGE_SERVER/servicehandler.cpp \
            $$MESSAGE_SERVER/newcountnotifier.cpp
 
+!symbian:!win32 {
+	HEADERS += testmalloc.h 3rdparty/cycle_p.h
+	SOURCES += testmalloc.cpp
+}
 
 

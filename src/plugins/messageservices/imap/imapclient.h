@@ -100,6 +100,8 @@ signals:
     void progressChanged(uint, uint);
     void retrievalCompleted();
 
+    void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
+
     void messageActionCompleted(const QString &uid);
 
     void allMessagesReceived();
@@ -116,7 +118,9 @@ public slots:
     void nonexistentUid(const QString &uid);
     void messageStored(const QString &);
     void messageCopied(const QString &, const QString &);
+    void messageCreated(const QMailMessageId &, const QString &);
     void downloadSize(const QString &uid, int);
+    void urlAuthorized(const QString &url);
 
 protected slots:
     void connectionInactive();

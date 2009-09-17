@@ -40,10 +40,9 @@
 ****************************************************************************/
 
 #include "qmailstoreimplementation_p.h"
-#include "qmaillog.h"
 #include "qmailipc.h"
+#include "qmaillog.h"
 #include <QCoreApplication>
-#include <unistd.h>
 
 namespace {
 
@@ -52,6 +51,8 @@ const int preFlushTimeout = 250;
 
 // Events occurring within this period are batched
 const int flushTimeout = 1000;
+
+const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
 typedef QPair<int,int> Segment; //start,end - end non inclusive
 typedef QList<Segment> SegmentList;
@@ -88,14 +89,14 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
 
                 QCopAdaptor a("QPE/Qtopiamail");
                 QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-                e << ::getpid();
+				e << pid;
                 e << idSegment; 
             }
         } else {
 
             QCopAdaptor a("QPE/Qtopiamail");
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << ::getpid();
+            e << pid;
             e << ids;
         }
     } else {
@@ -152,6 +153,10 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
             SLOT(aboutToQuit()));
 }
 
+QMailStoreImplementationBase::~QMailStoreImplementationBase()
+{
+}
+
 void QMailStoreImplementationBase::initialize()
 {
     initState = (initStore() ? QMailStore::Initialized : QMailStore::InitializationFailed);
@@ -169,6 +174,11 @@ QMailStore::ErrorCode QMailStoreImplementationBase::lastError() const
 
 void QMailStoreImplementationBase::setLastError(QMailStore::ErrorCode code) const
 {
+    if (initState == QMailStore::InitializationFailed) {
+        // Enforce the error code to be this if we can't init:
+        code = QMailStore::StorageInaccessible;
+    }
+
     if (errorCode != code) {
         errorCode = code;
 
@@ -191,7 +201,7 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     // Tell the recipients to process the notifications synchronously
     QCopAdaptor a("QPE/Qtopiamail");
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
-    e << ::getpid();
+    e << pid;
 
     if (flushTimer.isActive()) {
         // We interrupted a batching period - reset the flush timer to its full period
@@ -440,90 +450,91 @@ bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountI
 
 QString QMailStoreImplementationBase::accountAddedSig()
 {
-    static QString s("accountAdded(int,QList<quint64>)");
+    static QString s("accountAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountRemovedSig()
 {
-    static QString s("accountRemoved(int,QList<quint64>)");
+    static QString s("accountRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountUpdatedSig()
 {
-    static QString s("accountUpdated(int,QList<quint64>)");
+    static QString s("accountUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::accountContentsModifiedSig()
 {
-    static QString s("accountContentsModified(int,QList<quint64>)");
+    static QString s("accountContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageAddedSig()
 {
-    static QString s("messageAdded(int,QList<quint64>)");
+    static QString s("messageAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovedSig()
 {
-    static QString s("messageRemoved(int,QList<quint64>)");
+    static QString s("messageRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageUpdatedSig()
 {
-    static QString s("messageUpdated(int,QList<quint64>)");
+    static QString s("messageUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageContentsModifiedSig()
 {
-    static QString s("messageContentsModified(int,QList<quint64>)");
+    static QString s("messageContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderAddedSig()
 {
-    static QString s("folderAdded(int,QList<quint64>)");
+    static QString s("folderAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderRemovedSig()
 {
-    static QString s("folderRemoved(int,QList<quint64>)");
+    static QString s("folderRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderUpdatedSig()
 {
-    static QString s("folderUpdated(int,QList<quint64>)");
+    static QString s("folderUpdated(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::folderContentsModifiedSig()
 {
-    static QString s("folderContentsModified(int,QList<quint64>)");
+    static QString s("folderContentsModified(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsAddedSig()
 {
-    static QString s("messageRemovalRecordsAdded(int,QList<quint64>)");
+    static QString s("messageRemovalRecordsAdded(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()
 {
-    static QString s("messageRemovalRecordsRemoved(int,QList<quint64>)");
+    static QString s("messageRemovalRecordsRemoved(uint,QList<quint64>)");
     return s;
 }
 
 QString QMailStoreImplementationBase::retrievalInProgressSig()
 {
+	// TODO: why no PID in theses messages?
     static QString s("retrievalInProgress(QList<quint64>)");
     return s;
 }
@@ -601,10 +612,10 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
 {
     QDataStream ds(data);
 
-    int pid;
-    ds >> pid;
+    uint origin;
+    ds >> origin;
 
-    if(::getpid() == pid) //dont notify ourselves 
+    if (pid == origin) //dont notify ourselves 
         return;
 
     if (message == "forceIpcFlush") {
@@ -639,8 +650,8 @@ bool QMailStoreImplementationBase::emitIpcNotification()
 
     QDataStream ds(data);
 
-    int pid;
-    ds >> pid;
+    uint origin;
+    ds >> origin;
 
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
     static FolderUpdateSignalMap folderUpdateSignals(initFolderUpdateSignals());
@@ -698,5 +709,206 @@ void QMailStoreImplementationBase::emitIpcNotification(MessageUpdateSignal signa
 QMailStoreImplementation::QMailStoreImplementation(QMailStore* parent)
     : QMailStoreImplementationBase(parent)
 {
+}
+
+
+QMailStoreNullImplementation::QMailStoreNullImplementation(QMailStore* parent)
+    : QMailStoreImplementation(parent)
+{
+    setLastError(QMailStore::StorageInaccessible);
+}
+
+void QMailStoreNullImplementation::clearContent()
+{
+}
+
+bool QMailStoreNullImplementation::addAccount(QMailAccount *, QMailAccountConfiguration *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::addFolder(QMailFolder *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateAccount(QMailAccount *, QMailAccountConfiguration *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateAccountConfiguration(QMailAccountConfiguration *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateFolder(QMailFolder *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, const QMailMessageMetaData &, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::restoreToPreviousFolder(const QMailMessageKey &, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::purgeMessageRemovalRecords(const QMailAccountId &, const QStringList &)
+{
+    return false;
+}
+
+int QMailStoreNullImplementation::countAccounts(const QMailAccountKey &) const
+{
+    return 0;
+}
+
+int QMailStoreNullImplementation::countFolders(const QMailFolderKey &) const
+{
+    return 0;
+}
+
+int QMailStoreNullImplementation::countMessages(const QMailMessageKey &) const
+{
+    return 0;
+}
+
+int QMailStoreNullImplementation::sizeOfMessages(const QMailMessageKey &) const
+{
+    return 0;
+}
+
+QMailAccountIdList QMailStoreNullImplementation::queryAccounts(const QMailAccountKey &, const QMailAccountSortKey &, uint, uint) const
+{
+    return QMailAccountIdList();
+}
+
+QMailFolderIdList QMailStoreNullImplementation::queryFolders(const QMailFolderKey &, const QMailFolderSortKey &, uint, uint) const
+{
+    return QMailFolderIdList();
+}
+
+QMailMessageIdList QMailStoreNullImplementation::queryMessages(const QMailMessageKey &, const QMailMessageSortKey &, uint, uint) const
+{
+    return QMailMessageIdList();
+}
+
+QMailAccount QMailStoreNullImplementation::account(const QMailAccountId &) const
+{
+    return QMailAccount();
+}
+
+QMailAccountConfiguration QMailStoreNullImplementation::accountConfiguration(const QMailAccountId &) const
+{
+    return QMailAccountConfiguration();
+}
+
+QMailFolder QMailStoreNullImplementation::folder(const QMailFolderId &) const
+{
+    return QMailFolder();
+}
+
+QMailMessage QMailStoreNullImplementation::message(const QMailMessageId &) const
+{
+    return QMailMessage();
+}
+
+QMailMessage QMailStoreNullImplementation::message(const QString &, const QMailAccountId &) const
+{
+    return QMailMessage();
+}
+
+QMailMessageMetaData QMailStoreNullImplementation::messageMetaData(const QMailMessageId &) const
+{
+    return QMailMessageMetaData();
+}
+
+QMailMessageMetaData QMailStoreNullImplementation::messageMetaData(const QString &, const QMailAccountId &) const
+{
+    return QMailMessageMetaData();
+}
+
+QMailMessageMetaDataList QMailStoreNullImplementation::messagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, QMailStore::ReturnOption) const
+{
+    return QMailMessageMetaDataList();
+}
+
+QMailMessageRemovalRecordList QMailStoreNullImplementation::messageRemovalRecords(const QMailAccountId &, const QMailFolderId &) const
+{
+    return QMailMessageRemovalRecordList();
+}
+
+bool QMailStoreNullImplementation::registerAccountStatusFlag(const QString &)
+{
+    return false;
+}
+
+quint64 QMailStoreNullImplementation::accountStatusMask(const QString &) const
+{
+    return 0;
+}
+
+bool QMailStoreNullImplementation::registerFolderStatusFlag(const QString &)
+{
+    return false;
+}
+
+quint64 QMailStoreNullImplementation::folderStatusMask(const QString &) const
+{
+    return 0;
+}
+
+bool QMailStoreNullImplementation::registerMessageStatusFlag(const QString &)
+{
+    return false;
+}
+
+quint64 QMailStoreNullImplementation::messageStatusMask(const QString &) const
+{
+    return 0;
+}
+
+bool QMailStoreNullImplementation::initStore()
+{
+    return false;
 }
 

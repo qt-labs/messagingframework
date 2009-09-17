@@ -47,7 +47,7 @@
 
 class QMailMessageDelegatePrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageDelegate : public QtopiaItemDelegate
+class QMFUTIL_EXPORT QMailMessageDelegate : public QtopiaItemDelegate
 {
 public:
     enum DisplayMode
@@ -77,7 +77,7 @@ private:
 
 class QtopiaHomeMailMessageDelegatePrivate;
 
-class QTOPIAMAIL_EXPORT QtopiaHomeMailMessageDelegate : public QtopiaItemDelegate
+class QMFUTIL_EXPORT QtopiaHomeMailMessageDelegate : public QtopiaItemDelegate
 {
     Q_OBJECT
 public:

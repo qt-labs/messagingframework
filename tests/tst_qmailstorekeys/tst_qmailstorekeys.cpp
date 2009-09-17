@@ -41,6 +41,8 @@
 
 #include <QObject>
 #include <QTest>
+#include <qmailmessagelistmodel.h>
+#include <qmailmessagethreadedmodel.h>
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
@@ -94,6 +96,9 @@ private slots:
     void messageInResponseTo();
     void messageResponseType();
     void messageCustom();
+
+    void listModel();
+    void threadedModel();
 
 private:
     // We only want to compare sets, disregarding ordering
@@ -155,11 +160,7 @@ void tst_QMailStoreKeys::initTestCase()
 
     // Create the data set we will test our keys upon
 
-    standardFolders << QMailFolderId(QMailFolder::InboxFolder);
-    standardFolders << QMailFolderId(QMailFolder::OutboxFolder);
-    standardFolders << QMailFolderId(QMailFolder::DraftsFolder);
-    standardFolders << QMailFolderId(QMailFolder::SentFolder);
-    standardFolders << QMailFolderId(QMailFolder::TrashFolder);
+    standardFolders << QMailFolderId(QMailFolder::LocalStorageFolderId);
 
     {
         QMailAccount account;
@@ -345,7 +346,7 @@ void tst_QMailStoreKeys::initTestCase()
         QMailMessage message;
         message.setMessageType(QMailMessage::Sms);
         message.setParentAccountId(accountId4);
-        message.setParentFolderId(QMailFolderId(QMailFolder::InboxFolder));
+        message.setParentFolderId(QMailFolder::LocalStorageFolderId);
         message.setFrom(QMailAddress("0404404040"));
         message.setTo(QMailAddress("0404040404"));
         message.setSubject("Where are you?");
@@ -970,8 +971,8 @@ void tst_QMailStoreKeys::folderPath()
     QString path1("Inbox/Saved"), path2("Inbox/Saved/Archived"), sub("Saved");
 
     // Equality
-    QCOMPARE(folderSet(QMailFolderKey::path(QString("Outbox"), Equal)), folderSet() << QMailFolderId(QMailFolder::OutboxFolder));
-    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Outbox"), Equal)), (folderSet() << QMailFolderId(QMailFolder::InboxFolder) << QMailFolderId(QMailFolder::DraftsFolder) << QMailFolderId(QMailFolder::SentFolder) << QMailFolderId(QMailFolder::TrashFolder)) + allFolders);
+    QCOMPARE(folderSet(QMailFolderKey::path(QString("Local Storage"), Equal)), folderSet() << QMailFolder::LocalStorageFolderId);
+    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Local Storage"), Equal)), allFolders);
     QCOMPARE(folderSet(QMailFolderKey::path(path1, Equal)), folderSet() << savedId1 << savedId2);
     QCOMPARE(folderSet(~QMailFolderKey::path(path1, Equal)), standardFolders + folderSet() << inboxId1 << archivedId1 << inboxId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::path(path2, Equal)), folderSet() << archivedId1 << archivedId2);
@@ -982,8 +983,8 @@ void tst_QMailStoreKeys::folderPath()
     QCOMPARE(folderSet(~QMailFolderKey::path(QString(), Equal)), standardFolders + allFolders);
 
     // Inequality
-    QCOMPARE(folderSet(QMailFolderKey::path(QString("Outbox"), NotEqual)), (folderSet() << QMailFolderId(QMailFolder::InboxFolder) << QMailFolderId(QMailFolder::DraftsFolder) << QMailFolderId(QMailFolder::SentFolder) << QMailFolderId(QMailFolder::TrashFolder)) + allFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Outbox"), NotEqual)), folderSet() << QMailFolderId(QMailFolder::OutboxFolder));
+    QCOMPARE(folderSet(QMailFolderKey::path(QString("Local Storage"), NotEqual)), allFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Local Storage"), NotEqual)), folderSet() << QMailFolder::LocalStorageFolderId);
     QCOMPARE(folderSet(QMailFolderKey::path(path1, NotEqual)), standardFolders + folderSet() << inboxId1 << archivedId1 << inboxId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::path(path1, NotEqual)), folderSet() << savedId1 << savedId2);
     QCOMPARE(folderSet(QMailFolderKey::path(path2, NotEqual)), standardFolders + folderSet() << inboxId1 << savedId1 << inboxId2 << savedId2);
@@ -1012,8 +1013,8 @@ void tst_QMailStoreKeys::folderPath()
     // Inclusion
     QCOMPARE(folderSet(QMailFolderKey::path(sub, Includes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::path(sub, Includes)), standardFolders + folderSet() << inboxId1 << inboxId2);
-    QCOMPARE(folderSet(QMailFolderKey::path(QString("Outb"), Includes)), folderSet() << QMailFolderId(QMailFolder::OutboxFolder));
-    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Outb"), Includes)), (folderSet() << QMailFolderId(QMailFolder::InboxFolder) << QMailFolderId(QMailFolder::DraftsFolder) << QMailFolderId(QMailFolder::SentFolder) << QMailFolderId(QMailFolder::TrashFolder)) + allFolders);
+    QCOMPARE(folderSet(QMailFolderKey::path(QString("ocal"), Includes)), folderSet() << QMailFolder::LocalStorageFolderId);
+    QCOMPARE(folderSet(~QMailFolderKey::path(QString("ocal"), Includes)), allFolders);
     QCOMPARE(folderSet(QMailFolderKey::path(QString(""), Includes)), standardFolders + allFolders);
     QCOMPARE(folderSet(~QMailFolderKey::path(QString(""), Includes)), noFolders);
     QCOMPARE(folderSet(QMailFolderKey::path(QString(), Includes)), standardFolders + allFolders);
@@ -1022,8 +1023,8 @@ void tst_QMailStoreKeys::folderPath()
     // Exclusion
     QCOMPARE(folderSet(QMailFolderKey::path(sub, Excludes)), standardFolders + folderSet() << inboxId1 << inboxId2);
     QCOMPARE(folderSet(~QMailFolderKey::path(sub, Excludes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2);
-    QCOMPARE(folderSet(QMailFolderKey::path(QString("Outb"), Excludes)), (folderSet() << QMailFolderId(QMailFolder::InboxFolder) << QMailFolderId(QMailFolder::DraftsFolder) << QMailFolderId(QMailFolder::SentFolder) << QMailFolderId(QMailFolder::TrashFolder)) + allFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::path(QString("Outb"), Excludes)), folderSet() << QMailFolderId(QMailFolder::OutboxFolder));
+    QCOMPARE(folderSet(QMailFolderKey::path(QString("ocal"), Excludes)), allFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::path(QString("ocal"), Excludes)), folderSet() << QMailFolder::LocalStorageFolderId);
     QCOMPARE(folderSet(QMailFolderKey::path(QString(""), Excludes)), noFolders);
     QCOMPARE(folderSet(~QMailFolderKey::path(QString(""), Excludes)), standardFolders + allFolders);
     QCOMPARE(folderSet(QMailFolderKey::path(QString(), Excludes)), noFolders);
@@ -1148,7 +1149,7 @@ void tst_QMailStoreKeys::folderParentAccountId()
 
 void tst_QMailStoreKeys::folderDisplayName()
 {
-    // Note: the standrad folders do not have display names pre-configured
+    // Note: the standard folders do not have display names pre-configured
     QString name1("Saved"), name2("Archived"), sub("box");
 
     // Equality
@@ -1254,16 +1255,16 @@ void tst_QMailStoreKeys::folderAncestorFolderIds()
     QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(inboxId1, Includes)), standardFolders + folderSet() << inboxId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(savedId2, Includes)), folderSet() << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(savedId2, Includes)), standardFolders + folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2);
-    QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Includes)), noFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Includes)), standardFolders + allFolders);
+    QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Includes)), noFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Includes)), standardFolders + allFolders);
 
     // ID exclusion
     QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(inboxId1, Excludes)), standardFolders + folderSet() << inboxId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(inboxId1, Excludes)), folderSet() << savedId1 << archivedId1);
     QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(savedId2, Excludes)), standardFolders + folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2);
     QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(savedId2, Excludes)), folderSet() << archivedId2);
-    QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Excludes)), standardFolders + allFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Excludes)), noFolders);
+    QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Excludes)), standardFolders + allFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Excludes)), noFolders);
 
     // List inclusion
     QCOMPARE(folderSet(QMailFolderKey::ancestorFolderIds(QMailFolderIdList())), noFolders);
@@ -1483,19 +1484,19 @@ void tst_QMailStoreKeys::messageType()
 
 void tst_QMailStoreKeys::messageParentFolderId()
 {
-    QMailFolderId inboxFolder(QMailFolder::InboxFolder);
+    QMailFolderId localFolder(QMailFolder::LocalStorageFolderId);
 
     // ID equality
-    QCOMPARE(messageSet(QMailMessageKey::parentFolderId(inboxFolder, Equal)), messageSet() << smsMessage);
-    QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(inboxFolder, Equal)), allEmailMessages);
+    QCOMPARE(messageSet(QMailMessageKey::parentFolderId(localFolder, Equal)), messageSet() << smsMessage);
+    QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(localFolder, Equal)), allEmailMessages);
     QCOMPARE(messageSet(QMailMessageKey::parentFolderId(inboxId1, Equal)), messageSet() << inboxMessage1);
     QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(inboxId1, Equal)), messageSet() << smsMessage << archivedMessage1 << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::parentFolderId(QMailFolderId(), Equal)), noMessages);
     QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(QMailFolderId(), Equal)), allMessages);
 
     // ID inequality
-    QCOMPARE(messageSet(QMailMessageKey::parentFolderId(inboxFolder, NotEqual)), allEmailMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(inboxFolder, NotEqual)), messageSet() << smsMessage);
+    QCOMPARE(messageSet(QMailMessageKey::parentFolderId(localFolder, NotEqual)), allEmailMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(localFolder, NotEqual)), messageSet() << smsMessage);
     QCOMPARE(messageSet(QMailMessageKey::parentFolderId(inboxId1, NotEqual)), messageSet() << smsMessage << archivedMessage1 << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::parentFolderId(inboxId1, NotEqual)), messageSet() << inboxMessage1);
     QCOMPARE(messageSet(QMailMessageKey::parentFolderId(QMailFolderId(), NotEqual)), allMessages);
@@ -1873,11 +1874,56 @@ void tst_QMailStoreKeys::messageStatus()
     QCOMPARE(messageSet(~QMailMessageKey::status(sinkSet, Excludes)), messageSet() << archivedMessage1);
     QCOMPARE(messageSet(QMailMessageKey::status(0, Excludes)), allMessages);
     QCOMPARE(messageSet(~QMailMessageKey::status(0, Excludes)), noMessages);
+
+    // Test sorting by status
+    QMailMessageSortKey sort;
+    sort = QMailMessageSortKey::status(QMailMessage::Incoming);                  // All incoming before outgoing
+    sort &= QMailMessageSortKey::status(QMailMessage::New);                      // New before non-new
+    sort &= QMailMessageSortKey::status(QMailMessage::Read, Qt::AscendingOrder); // Read after non-read
+
+    QMailMessageIdList sortedIds;
+    sortedIds << inboxMessage1 << inboxMessage2 << savedMessage2 << smsMessage << archivedMessage1;
+    
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
+
+    // Invert the sort
+    sort = QMailMessageSortKey::status(QMailMessage::Incoming, Qt::AscendingOrder); // All incoming after outgoing
+    sort &= QMailMessageSortKey::status(QMailMessage::New, Qt::AscendingOrder);     // New after non-new
+    sort &= QMailMessageSortKey::status(QMailMessage::Read);                        // Read before non-read
+
+    sortedIds.clear();
+    sortedIds << archivedMessage1 << smsMessage << savedMessage2 << inboxMessage2 << inboxMessage1;
+    
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
 }
 
 void tst_QMailStoreKeys::messageConversation()
 {
-    // Not yet implemented
+    // ID inclusion
+    QCOMPARE(messageSet(QMailMessageKey::conversation(smsMessage)), messageSet() << smsMessage);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(smsMessage)), messageSet() << inboxMessage1 << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage1)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage1)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage2)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage2)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageId())), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageId())), allMessages);
+
+    // List inclusion
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList())), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList())), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1)), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1 << archivedMessage1)), messageSet() << inboxMessage1 << inboxMessage2 << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageIdList() << inboxMessage1 << archivedMessage1)), messageSet() << smsMessage);
+
+    // Key matching
+    QCOMPARE(messageSet(QMailMessageKey::id(inboxMessage1, Equal)), messageSet() << inboxMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::id(inboxMessage1, Equal)), messageSet() << smsMessage << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageKey::id(inboxMessage1, Equal))), messageSet() << inboxMessage1 << inboxMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::conversation(~QMailMessageKey::id(inboxMessage1, Equal))), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageKey::id(inboxMessage1, Equal))), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::conversation(~QMailMessageKey::id(inboxMessage1, Equal))), noMessages);
 }
 
 void tst_QMailStoreKeys::messageServerUid()
@@ -2062,16 +2108,16 @@ void tst_QMailStoreKeys::messageAncestorFolderIds()
     QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(inboxId1, Includes)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(inboxId2, Includes)), messageSet() << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(inboxId2, Includes)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1 << inboxMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Includes)), noMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Includes)), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Includes)), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Includes)), allMessages);
 
     // ID exclusion
     QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(inboxId1, Excludes)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(inboxId1, Excludes)), messageSet() << archivedMessage1);
     QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(inboxId2, Excludes)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1 << inboxMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(inboxId2, Excludes)), messageSet() << savedMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Excludes)), allMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::SentFolder), Excludes)), noMessages);
+    QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Excludes)), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), Excludes)), noMessages);
 
     // List inclusion
     QCOMPARE(messageSet(QMailMessageKey::ancestorFolderIds(QMailFolderIdList())), noMessages);
@@ -2150,19 +2196,19 @@ void tst_QMailStoreKeys::messageContentType()
 
 void tst_QMailStoreKeys::messagePreviousParentFolderId()
 {
-    QMailFolderId inboxFolder(QMailFolder::InboxFolder);
+    QMailFolderId localFolder(QMailFolder::LocalStorageFolderId);
 
     // ID equality
-    QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(inboxFolder, Equal)), noMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(inboxFolder, Equal)), messageSet() << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(localFolder, Equal)), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(localFolder, Equal)), messageSet() << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(inboxId1, Equal)), messageSet() << archivedMessage1);
     QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(inboxId1, Equal)), messageSet() << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(QMailFolderId(), Equal)), noMessages);
     QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(QMailFolderId(), Equal)), messageSet() << archivedMessage1 << savedMessage2);
 
     // ID inequality
-    QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(inboxFolder, NotEqual)), messageSet() << archivedMessage1 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(inboxFolder, NotEqual)), noMessages);
+    QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(localFolder, NotEqual)), messageSet() << archivedMessage1 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(localFolder, NotEqual)), noMessages);
     QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(inboxId1, NotEqual)), messageSet() << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::previousParentFolderId(inboxId1, NotEqual)), messageSet() << archivedMessage1);
     QCOMPARE(messageSet(QMailMessageKey::previousParentFolderId(QMailFolderId(), NotEqual)), messageSet() << archivedMessage1 << savedMessage2);
@@ -2382,5 +2428,121 @@ void tst_QMailStoreKeys::messageCustom()
     QCOMPARE(messageSet(~QMailMessageKey::customField("todo", QString(""), Excludes)), messageSet() << smsMessage << inboxMessage2);
     QCOMPARE(messageSet(QMailMessageKey::customField("todo", QString(), Excludes)), noMessages);
     QCOMPARE(messageSet(~QMailMessageKey::customField("todo", QString(), Excludes)), messageSet() << smsMessage << inboxMessage2);
+}
+
+void tst_QMailStoreKeys::listModel()
+{
+    QMailMessageListModel model(this);
+
+    // Default sort
+    model.setKey(QMailMessageKey());
+
+    QCOMPARE(model.indexFromId(smsMessage).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 3);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 4);
+
+    QCOMPARE(model.rowCount(), 5);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(3, 0)), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(4, 0)), savedMessage2);
+
+    // Sort by descending subject - note majuscules sort before miniscules
+    model.setKey(QMailMessageKey());
+    model.setSortKey(QMailMessageSortKey::subject(Qt::DescendingOrder));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(smsMessage).row(), 2);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 3);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 4);
+
+    QCOMPARE(model.rowCount(), 5);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(3, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(4, 0)), inboxMessage2);
+
+    // Only display messages from inbox1, or with a response type
+    model.setKey(QMailMessageKey::parentFolderId(inboxId1) | QMailMessageKey::responseType(QMailMessage::NoResponse, QMailDataComparator::NotEqual));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 1);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 2);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), inboxMessage2);
+}
+
+void tst_QMailStoreKeys::threadedModel()
+{
+    QMailMessageThreadedModel model(this);
+
+    // Default sort
+    model.setKey(QMailMessageKey());
+
+    QCOMPARE(model.indexFromId(smsMessage).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 1);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).parent().row(), 2);
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+    QCOMPARE(model.rowCount(model.indexFromId(archivedMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(archivedMessage1))), savedMessage2);
+
+    // Sort by descending subject - note majuscules sort before miniscules
+    model.setKey(QMailMessageKey());
+    model.setSortKey(QMailMessageSortKey::subject(Qt::DescendingOrder));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(archivedMessage1).row(), 1);
+    QCOMPARE(model.indexFromId(smsMessage).row(), 2);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).parent().row(), 1);
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+    QCOMPARE(model.rowCount(model.indexFromId(archivedMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), archivedMessage1);
+    QCOMPARE(model.idFromIndex(model.index(2, 0)), smsMessage);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(archivedMessage1))), savedMessage2);
+
+    // Only display messages from inbox1, or with a response type
+    model.setKey(QMailMessageKey::parentFolderId(inboxId1) | QMailMessageKey::responseType(QMailMessage::NoResponse, QMailDataComparator::NotEqual));
+
+    QCOMPARE(model.indexFromId(inboxMessage1).row(), 0);
+    QCOMPARE(model.indexFromId(savedMessage2).row(), 1);
+    QCOMPARE(model.indexFromId(inboxMessage2).row(), 0);
+    QCOMPARE(model.indexFromId(inboxMessage2).parent().row(), 0);
+
+    QCOMPARE(model.rowCount(), 2);
+    QCOMPARE(model.rowCount(model.indexFromId(inboxMessage1)), 1);
+
+    QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
+    QCOMPARE(model.idFromIndex(model.index(1, 0)), savedMessage2);
+    QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
 }
 

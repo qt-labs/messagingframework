@@ -288,6 +288,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     switch( command ) {
         case IMAP_Init:
         {
+            // We need to request the capabilities
             sendCapability();
             return;
         }
@@ -324,6 +325,12 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         {
             // Restart idling (TODO: unless we're closing)
             sendIdle();
+            return;
+        }
+        case IMAP_Logout:
+        {
+            // Ensure connection is closed on logout
+            close();
             return;
         }
         default:        //default = all critical messages
@@ -423,8 +430,12 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(messageStored(QString)) );
     connect(&_protocol, SIGNAL(messageCopied(QString, QString)),
             this, SLOT(messageCopied(QString, QString)) );
+    connect(&_protocol, SIGNAL(messageCreated(QMailMessageId, QString)),
+            this, SLOT(messageCreated(QMailMessageId, QString)) );
     connect(&_protocol, SIGNAL(downloadSize(QString, int)),
             this, SLOT(downloadSize(QString, int)) );
+    connect(&_protocol, SIGNAL(urlAuthorized(QString)),
+            this, SLOT(urlAuthorized(QString)) );
     connect(&_protocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)) );
     connect(&_protocol, SIGNAL(connectionError(int,QString)),
@@ -560,6 +571,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
     switch( command ) {
         case IMAP_Init:
         {
+            // We need to request the capabilities
             emit updateStatus( tr("Checking capabilities" ) );
             _protocol.sendCapability();
             break;
@@ -609,33 +621,79 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             break;
         }
 
+        case IMAP_Login:
+        {
+            // Once we have logged in, we now have the full set of capabilities (either from 
+            // a capability command or from an untagged response)
+
+            // Now that we know the capabilities, check for Reference support
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
+
+            QMailAccount account(_config.id());
+            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
+                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)) {
+                account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
+                if (!QMailStore::instance()->updateAccount(&account)) {
+                    qWarning() << "Unable to update account" << account.id() << "to set CanReferenceExternalData";
+                }
+            }
+
+            _strategyContext->commandTransition(command, status);
+            break;
+        }
+
+        case IMAP_Logout:
+        {
+            // Ensure connection is closed on logout
+            _protocol.close();
+            return;
+        }
+
         case IMAP_Select:
         case IMAP_Examine:
         {
             if (_protocol.mailbox().isSelected()) {
-                QString uidValidity(_protocol.mailbox().uidValidity);
-                uint serverCount(_protocol.mailbox().exists);
-                uint unreadCount(_protocol.mailbox().unseen);
-                
-                QMailFolder folder(_protocol.mailbox().id);
+                const ImapMailboxProperties &properties(_protocol.mailbox());
+
+                // See if we have anything to record about this mailbox
+                QMailFolder folder(properties.id);
 
                 bool modified(false);
-                if ((folder.serverCount() != serverCount) || (folder.serverUnreadCount() != unreadCount)) {
-                    folder.setServerCount(serverCount);
-                    folder.setServerUnreadCount(unreadCount);
+                if ((folder.serverCount() != properties.exists) || (folder.serverUnreadCount() != properties.unseen)) {
+                    folder.setServerCount(properties.exists);
+                    folder.setServerUnreadCount(properties.unseen);
                     modified = true;
 
                     // See how this compares to the local mailstore count
                     updateFolderCountStatus(&folder);
                 }
                 
-                if (folder.customField("qmf-uidvalidity") != uidValidity) {
-                    folder.setCustomField("qmf-uidvalidity", uidValidity);
+                if (folder.customField("qmf-uidvalidity") != properties.uidValidity) {
+                    folder.setCustomField("qmf-uidvalidity", properties.uidValidity);
+                    modified = true;
+                }
+
+                if (!properties.noModSeq) {
+                    if (folder.customField("qmf-highestmodseq") != properties.highestModSeq) {
+                        folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
+                        modified = true;
+                    }
+                }
+
+                QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
+                if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
+                    if (supportsForwarded.isEmpty()) {
+                        folder.removeCustomField("qmf-supports-forwarded");
+                    } else {
+                        folder.setCustomField("qmf-supports-forwarded", supportsForwarded);
+                    }
                     modified = true;
                 }
 
                 if (modified) {
-                    QMailStore::instance()->updateFolder(&folder);
+                    if (!QMailStore::instance()->updateFolder(&folder)) {
+                        qWarning() << "Unable to update folder" << folder.id() << "to update server counts!";
+                    }
                 }
             }
             // fall through
@@ -681,6 +739,20 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
             folder.setDisplayName(decodeFolderName(*it));
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
 
+            // Is this a special folder?
+            ImapConfiguration imapCfg(_config);
+            if (!imapCfg.trashFolder().isEmpty() && (imapCfg.trashFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
+            } else if (!imapCfg.sentFolder().isEmpty() && (imapCfg.sentFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, true);
+            } else if (!imapCfg.draftsFolder().isEmpty() && (imapCfg.draftsFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, true);
+            } else if (!imapCfg.junkFolder().isEmpty() && (imapCfg.junkFolder() == mailboxPath)) {
+                folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
+            } else {
+                folder.setStatus(QMailFolder::Incoming, true);
+            }
+
             // The reported flags pertain to the listed folder only
             QString folderFlags;
             if (mailboxPath == path) {
@@ -699,7 +771,30 @@ void ImapClient::messageFetched(QMailMessage& mail)
 {
     if (mail.status() & QMailMessage::New) {
         mail.setParentAccountId(_config.id());
-        mail.setParentFolderId(_protocol.mailbox().id);
+
+        // Some properties are inherited from the folder
+        const ImapMailboxProperties &properties(_protocol.mailbox());
+
+        mail.setParentFolderId(properties.id);
+
+        if (properties.status & QMailFolder::Incoming) {
+            mail.setStatus(QMailMessage::Incoming, true); 
+        }
+        if (properties.status & QMailFolder::Outgoing) {
+            mail.setStatus(QMailMessage::Outgoing, true); 
+        }
+        if (properties.status & QMailFolder::Drafts) {
+            mail.setStatus(QMailMessage::Draft, true); 
+        }
+        if (properties.status & QMailFolder::Sent) {
+            mail.setStatus(QMailMessage::Sent, true); 
+        }
+        if (properties.status & QMailFolder::Trash) {
+            mail.setStatus(QMailMessage::Trash, true); 
+        }
+        if (properties.status & QMailFolder::Junk) {
+            mail.setStatus(QMailMessage::Junk, true); 
+        }
     } else {
         // We need to update the message from the existing data
         QMailMessageMetaData existing(mail.serverUid(), _config.id());
@@ -717,6 +812,8 @@ void ImapClient::messageFetched(QMailMessage& mail)
             mail.setContent(existing.content());
             mail.setReceivedDate(existing.receivedDate());
             mail.setPreviousParentFolderId(existing.previousParentFolderId());
+            mail.setInResponseTo(existing.inResponseTo());
+            mail.setResponseType(existing.responseType());
             mail.setContentScheme(existing.contentScheme());
             mail.setContentIdentifier(existing.contentIdentifier());
             mail.setCustomFields(existing.customFields());
@@ -801,7 +898,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 
 class TemporaryFile
 {
-    enum { AppendBufferSize = 4096 };
+    enum { BufferSize = 4096 };
 
     QString _fileName;
 
@@ -832,33 +929,104 @@ public:
         return true;
     }
 
-    bool appendAndReplace(const QString &fileName)
+    static bool copyFileData(QFile &srcFile, QFile &dstFile, qint64 maxLength = -1)
     {
-        QFile existingFile(_fileName);
-        QFile dataFile(fileName);
+        char buffer[BufferSize];
 
-        if (!existingFile.exists()) {
-            if (!QFile::copy(fileName, _fileName)) {
+        while (!srcFile.atEnd() && (maxLength != 0)) {
+            qint64 readSize = ((maxLength > 0) ? qMin<qint64>(maxLength, BufferSize) : static_cast<qint64>(BufferSize));
+            readSize = srcFile.read(buffer, readSize);
+            if (readSize == -1) {
                 return false;
             }
-        } else if (existingFile.open(QIODevice::Append) && dataFile.open(QIODevice::ReadOnly)) {
-            char buffer[AppendBufferSize];
-            qint64 readSize;
-            while (!dataFile.atEnd()) {
-                readSize = dataFile.read(buffer, AppendBufferSize);
-                if (readSize == -1)
-                    return false;
-                if (existingFile.write(buffer, readSize) != readSize)
-                    return false;
+
+            if (maxLength > 0) {
+                maxLength -= readSize;
             }
-        } else {
-            return false;
+            if (dstFile.write(buffer, readSize) != readSize) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool appendAndReplace(const QString &fileName)
+    {
+        {
+            QFile existingFile(_fileName);
+            QFile dataFile(fileName);
+
+            if (!existingFile.exists()) {
+                if (!QFile::copy(fileName, _fileName)) {
+                    qWarning() << "Unable to copy - fileName:" << fileName << "_fileName:" << _fileName;
+                    return false;
+                }
+            } else if (existingFile.open(QIODevice::Append)) {
+                // On windows, this file will be unwriteable if it is open elsewhere
+                if (dataFile.open(QIODevice::ReadOnly)) {
+                    if (!copyFileData(dataFile, existingFile)) {
+                        qWarning() << "Unable to append data to file:" << _fileName;
+                        return false;
+                    }
+                } else {
+                    qWarning() << "Unable to open new data for read:" << fileName;
+                    return false;
+                }
+            } else if (existingFile.open(QIODevice::ReadOnly)) {
+                if (dataFile.open(QIODevice::WriteOnly)) {
+                    qint64 existingLength = QFileInfo(existingFile).size();
+                    qint64 dataLength = QFileInfo(dataFile).size();
+
+                    if (!dataFile.resize(existingLength + dataLength)) {
+                        qWarning() << "Unable to resize data file:" << fileName;
+                        return false;
+                    } else {
+                        QFile readDataFile(fileName);
+                        if (!readDataFile.open(QIODevice::ReadOnly)) {
+                            qWarning() << "Unable to reopen data file for read:" << fileName;
+                            return false;
+                        }
+
+                        // Copy the data to the end of the file
+                        dataFile.seek(existingLength);
+                        if (!copyFileData(readDataFile, dataFile, dataLength)) {
+                            qWarning() << "Unable to copy existing data in file:" << fileName;
+                            return false;
+                        }
+                    }
+
+                    // Copy the existing data before the new data
+                    dataFile.seek(0);
+                    if (!copyFileData(existingFile, dataFile, existingLength)) {
+                        qWarning() << "Unable to copy existing data to file:" << fileName;
+                        return false;
+                    }
+                } else {
+                    qWarning() << "Unable to open new data for write:" << fileName;
+                    return false;
+                }
+
+                // The complete data is now in the new file
+                if (!QFile::remove(_fileName)) {
+                    qWarning() << "Unable to remove pre-existing:" << _fileName;
+                    return false;
+                }
+
+                _fileName = fileName;
+                return true;
+            } else {
+                qWarning() << "Unable to open:" << _fileName;
+                return false;
+            }
         }
 
         if (!QFile::remove(fileName)) {
+            qWarning() << "Unable to remove:" << fileName;
             return false;
         }
         if (!QFile::rename(_fileName, fileName)) {
+            qWarning() << "Unable to rename:" << _fileName << fileName;
             return false;
         }
 
@@ -1005,9 +1173,19 @@ void ImapClient::messageCopied(const QString &copiedUid, const QString &createdU
     _strategyContext->messageCopied(copiedUid, createdUid);
 }
 
+void ImapClient::messageCreated(const QMailMessageId &id, const QString &uid)
+{
+    _strategyContext->messageCreated(id, uid);
+}
+
 void ImapClient::downloadSize(const QString &uid, int size)
 {
     _strategyContext->downloadSize(uid, size);
+}
+
+void ImapClient::urlAuthorized(const QString &url)
+{
+    _strategyContext->urlAuthorized(url);
 }
 
 void ImapClient::setAccount(const QMailAccountId &id)
@@ -1142,8 +1320,8 @@ QMailMessageKey ImapClient::messagesKey(const QMailFolderId &folderId) const
 QMailMessageKey ImapClient::trashKey(const QMailFolderId &folderId) const
 {
     return (QMailMessageKey::parentAccountId(_config.id()) &
-            QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)) &
-            QMailMessageKey::previousParentFolderId(folderId));
+            QMailMessageKey::parentFolderId(folderId) &
+            QMailMessageKey::status(QMailMessage::Trash));
 }
 
 QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
@@ -1160,11 +1338,8 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 {
     // Find the local mailstore count for this folder
     QMailMessageKey folderContent(QMailMessageKey::parentFolderId(folder->id()));
-    QMailMessageKey previousFolderContent(QMailMessageKey::previousParentFolderId(folder->id()));
-    QMailMessageKey trashContent(QMailMessageKey::parentFolderId(QMailFolderId(QMailFolder::TrashFolder)));
 
-    uint count = QMailStore::instance()->countMessages(folderContent | (previousFolderContent & trashContent));
-
+    uint count = QMailStore::instance()->countMessages(folderContent);
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 

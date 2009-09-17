@@ -268,7 +268,7 @@ void tst_QMailMessage::toRfc2822_data()
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Content-Type: text/plain; charset=UTF-8" CRLF
-"Content-Transfer-Encoding:<ENCODING>" CRLF 
+"<ENCODING>"
 "MIME-Version: 1.0" CRLF )
         /* rfc_body_text     */ << QByteArray(
 "Plain text.");
@@ -288,20 +288,19 @@ void tst_QMailMessage::toRfc2822_data()
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Content-Type: multipart/alternative; boundary=bound01" CRLF
-"Content-Transfer-Encoding: 7bit" CRLF 
 "MIME-Version: 1.0" CRLF
 CRLF
 "This is a multipart message in Mime 1.0 format" CRLF )
         /* rfc_body_text     */ << QByteArray(
 "--bound01" CRLF
 "Content-Type: text/plain" CRLF
-"Content-Transfer-Encoding:<ENCODING>" CRLF 
+"<ENCODING>"
 "Content-Disposition: inline" CRLF 
 CRLF
 "<ENCODED_TEXT_0>" CRLF
 "--bound01" CRLF
 "Content-Type: text/html" CRLF
-"Content-Transfer-Encoding:<ENCODING>" CRLF 
+"<ENCODING>"
 "Content-Disposition: inline" CRLF 
 CRLF
 "<ENCODED_TEXT_1>" CRLF
@@ -332,7 +331,7 @@ void tst_QMailMessage::toRfc2822()
         QMailMessageContentType type(content_type);
 
         if (type.type().toLower() == "multipart") {
-            message.setBody(QMailMessageBody::fromData(QString(), type, QMailMessageBody::SevenBit));
+            message.setBody(QMailMessageBody::fromData(QString(), type, QMailMessageBody::NoEncoding));
 
             QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
 
@@ -351,8 +350,8 @@ void tst_QMailMessage::toRfc2822()
         QByteArray body_text(rfc_body_text);
         {
             if (te[i] == QMailMessageBody::Base64) {
-                rfc_text.replace("<ENCODING>", " base64");
-                body_text.replace("<ENCODING>", " base64");
+                rfc_text.replace("<ENCODING>", "Content-Transfer-Encoding: base64" CRLF);
+                body_text.replace("<ENCODING>", "Content-Transfer-Encoding: base64" CRLF);
 
                 if (message.multipartType() == QMailMessage::MultipartNone) {
                     QMailBase64Codec codec(QMailBase64Codec::Text);
@@ -368,8 +367,8 @@ void tst_QMailMessage::toRfc2822()
                     rfc_text.append(body_text);
                 }
             } else if (te[i] == QMailMessageBody::QuotedPrintable ) {
-                rfc_text.replace("<ENCODING>", " quoted-printable");
-                body_text.replace("<ENCODING>", " quoted-printable");
+                rfc_text.replace("<ENCODING>", "Content-Transfer-Encoding: quoted-printable" CRLF);
+                body_text.replace("<ENCODING>", "Content-Transfer-Encoding: quoted-printable" CRLF);
 
                 if (message.multipartType() == QMailMessage::MultipartNone) {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);

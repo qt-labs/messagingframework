@@ -51,6 +51,13 @@
 #include <qmailserviceaction.h>
 #include <qmailtransport.h>
 
+#ifdef Q_OS_WIN
+// Pipe is not a legal filename char in Windows
+#define UID_SEPARATOR '#'
+#else
+#define UID_SEPARATOR '|'
+#endif
+
 class QMailMessage;
 
 enum ImapCommand
@@ -66,11 +73,13 @@ enum ImapCommand
     IMAP_Select,
     IMAP_Examine,
     IMAP_Search,
+    IMAP_Append,
     IMAP_UIDSearch,
     IMAP_UIDFetch,
     IMAP_UIDStore,
     IMAP_UIDCopy,
     IMAP_Expunge,
+    IMAP_GenUrlAuth,
     IMAP_Close,
     IMAP_Full,
     IMAP_Idle
@@ -85,7 +94,8 @@ enum MessageFlag
     MFlag_Deleted   = (1 << 3),
     MFlag_Draft     = (1 << 4),
     MFlag_Recent    = (1 << 5),
-    MFlag_Unseen    = (1 << 6)
+    MFlag_Unseen    = (1 << 6),
+    MFlag_Forwarded = (1 << 7)
 };
 
 typedef uint MessageFlags;
@@ -151,6 +161,8 @@ public:
 
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);
+    void sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism = QString());
+    void sendAppend(const QMailFolder &mailbox, const QMailMessageId &message);
     void sendSelect(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
 
@@ -159,7 +171,7 @@ public:
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);
     void sendUidFetchSection(const QString &uid, const QString &section, int start, int end);
-    void sendUidStore(MessageFlags flags, const QString &range);
+    void sendUidStore(MessageFlags flags, bool set, const QString &range);
     void sendUidCopy(const QString &range, const QMailFolder &destination);
     void sendExpunge();
     void sendClose();
@@ -170,6 +182,8 @@ public:
     void sendLogout();
 
     static QString uid(const QString &identifier);
+
+    static QString url(const QMailMessagePart::Location &location, bool absolute, bool bodyOnly);
 
     static QString quoteString(const QString& input);
     static QByteArray quoteString(const QByteArray& input);
@@ -182,6 +196,8 @@ signals:
     void nonexistentUid(const QString& uid);
     void messageStored(const QString& uid);
     void messageCopied(const QString& copiedUid, const QString& createdUid);
+    void messageCreated(const QMailMessageId& id, const QString& uid);
+    void urlAuthorized(const QString& url);
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);
@@ -195,6 +211,8 @@ signals:
     void recent(int);
     void uidValidity(const QString &);
     void flags(const QString &);
+    void highestModSeq(const QString &);
+    void noModSeq();
 
 protected slots:
     void connected(QMailTransport::EncryptType encryptType);
@@ -224,11 +242,13 @@ private:
     void nextAction(const QString &line);
 
     void sendData(const QString &cmd);
+    void sendDataLiteral(const QString &cmd, uint length);
 
     QString newCommandId();
     QString commandId(QString in);
     OperationStatus commandResponse(QString in);
     QString sendCommand(const QString &cmd);
+    QString sendCommandLiteral(const QString &cmd, uint length);
 
     void parseChange();
 

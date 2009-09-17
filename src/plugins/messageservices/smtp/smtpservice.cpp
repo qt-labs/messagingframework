@@ -73,10 +73,7 @@ bool SmtpService::Sink::transmitMessages(const QMailMessageIdList &ids)
     QMailServiceAction::Status::ErrorCode errorCode = QMailServiceAction::Status::ErrNoError;
     QString errorText;
 
-    if (ids.isEmpty()) {
-        errorCode = QMailServiceAction::Status::ErrInvalidData;
-        errorText = tr("No messages to transmit");
-    } else {
+    if (!ids.isEmpty()) {
         foreach (const QMailMessageId id, ids) {
             QMailMessage message(id);
             if ((errorCode = _service->_client.addMail(message)) != QMailServiceAction::Status::ErrNoError) {
@@ -103,7 +100,6 @@ void SmtpService::Sink::messageTransmitted(const QMailMessageId &id)
 void SmtpService::Sink::sendCompleted()
 {
     emit _service->actionCompleted(true);
-    emit _service->activityChanged(QMailServiceAction::Successful);
 }
 
 

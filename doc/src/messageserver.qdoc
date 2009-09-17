@@ -10,7 +10,7 @@ The \i MessageServer application provides message transport services to Messagin
 It can send and retrieve messages of various types, to and from external message service providers such as POP and IMAP servers, or local resources such as a SIM card.
 Protocol implementations are loaded from plugin libraries, so that the system can be extended with new services, without modification to the MessageServer application.
  
-The MessageServer application is a daemon managed by the QPE server; it is always running and available to client applications.  
+The MessageServer application is a daemon process; it is designed to be always running and available to client applications.  
 If the MessageServer experiences a fault and restarts, clients do not need to re-establish communication with the server process.
 
 \section1 Features 

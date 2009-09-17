@@ -46,6 +46,7 @@
 #include <QtDebug>
 #include <qmailnamespace.h>
 
+
 /*!
   \class QMailPluginManager
 
@@ -103,7 +104,18 @@
   \endcode
 */
 
+namespace {
 
+QStringList pluginFilePatterns()
+{
+#ifdef Q_OS_WIN
+	return QStringList() << "*.dll" << "*.DLL";
+#else
+	return QStringList() << "*.so*";
+#endif
+}
+
+}
 
 class QMailPluginManagerPrivate
 {
@@ -121,7 +133,7 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 {
     //initialize the plugin map
     QDir dir(pluginPath.toLatin1());
-    QStringList libs = dir.entryList(QStringList() << "*.so*",QDir::Files);
+    QStringList libs = dir.entryList(pluginFilePatterns(), QDir::Files);
 
     if(libs.isEmpty())
     {

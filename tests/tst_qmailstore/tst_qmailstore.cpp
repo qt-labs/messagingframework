@@ -114,7 +114,8 @@ void tst_QMailStore::addAccount()
     account1.setFromAddress(QMailAddress("Account 1", "account1@example.org"));
     account1.setStatus(QMailAccount::SynchronizationEnabled, true);
     account1.setStatus(QMailAccount::Synchronized, false);
-    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(QMailFolder::InboxFolder));
+    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(333));
+    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(666));
     account1.setCustomField("question", "What is your dog's name?");
     account1.setCustomField("answer", "Fido");
 
@@ -152,9 +153,9 @@ void tst_QMailStore::addAccount()
     QCOMPARE(account2.name(), account1.name());
     QCOMPARE(account2.fromAddress(), account1.fromAddress());
     QCOMPARE(account2.status(), account1.status());
-    QCOMPARE(account2.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(QMailFolder::SentFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), QMailFolderId(QMailFolder::InboxFolder));
+    QCOMPARE(account2.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
+    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(333));
+    QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), QMailFolderId(666));
     QCOMPARE(account2.customFields(), account1.customFields());
     QCOMPARE(account2.customField("answer"), QString("Fido"));
 
@@ -198,6 +199,12 @@ void tst_QMailStore::addAccount()
     QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Includes)), 0);
     QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 0);
     QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 1);
+
+    // Test basic limit/offset
+    QMailAccountKey key;
+    QMailAccountSortKey sort;
+    QMailAccountIdList accountIds(QMailStore::instance()->queryAccounts(key, sort));
+    QCOMPARE(QMailStore::instance()->queryAccounts(key, sort, 1, 0), accountIds);
 }
 
 void tst_QMailStore::addFolder()
@@ -306,6 +313,17 @@ void tst_QMailStore::addFolder()
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId())), 2);
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId(), QMailDataComparator::NotEqual)), 1);
     QCOMPARE(QMailStore::instance()->countFolders(QMailFolderKey::parentFolderId(QMailFolderId(), QMailDataComparator::NotEqual) & QMailFolderKey::path(folder6.path())), 1);
+
+    // Test basic limit/offset
+    QMailFolderKey key;
+    QMailFolderSortKey sort;
+    QMailFolderIdList folderIds(QMailStore::instance()->queryFolders(key, sort));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 0), folderIds.mid(0, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 1), folderIds.mid(1, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 1, 2), folderIds.mid(2, 1));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 2, 0), folderIds.mid(0, 2));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 2, 1), folderIds.mid(1, 2));
+    QCOMPARE(QMailStore::instance()->queryFolders(key, sort, 3, 0), folderIds);
 }
 
 void tst_QMailStore::addMessage()
@@ -452,6 +470,17 @@ void tst_QMailStore::addMessages()
         QCOMPARE(message.subject(), QString("Message %1").arg(i));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i));
     }
+
+    // Test basic limit/offset
+    QMailMessageKey key;
+    QMailMessageSortKey sort;
+    QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sort));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 0), messageIds.mid(0, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 3), messageIds.mid(3, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 6), messageIds.mid(6, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 0), messageIds.mid(0, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 1), messageIds.mid(1, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 10, 0), messageIds);
 }
 
 void tst_QMailStore::updateAccount()
@@ -494,7 +523,7 @@ void tst_QMailStore::updateAccount()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     QCOMPARE(account1.standardFolders().count(), 2);
-    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
+    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
     QCOMPARE(account1.standardFolder(QMailFolder::SentFolder), folder.id());
     QCOMPARE(account1.standardFolder(QMailFolder::TrashFolder), folder.id());
 
@@ -503,7 +532,7 @@ void tst_QMailStore::updateAccount()
     account1.setFromAddress(QMailAddress("Not Account 1", "account2@somewhere.test"));
     account1.setStatus(QMailAccount::SynchronizationEnabled, false);
     account1.setStatus(QMailAccount::Synchronized, true);
-    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(QMailFolder::SentFolder));
+    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId());
     account1.setCustomField("answer", "Fido");
     account1.setCustomField("permanent", "true");
     account1.removeCustomField("temporary");
@@ -536,8 +565,8 @@ void tst_QMailStore::updateAccount()
     QCOMPARE(account2.status(), account1.status());
     QCOMPARE(account2.standardFolders(), account1.standardFolders());
     QCOMPARE(account2.standardFolders().count(), 1);
-    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId(QMailFolder::InboxFolder));
-    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(QMailFolder::SentFolder));
+    QCOMPARE(account1.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
+    QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId());
     QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), folder.id());
     QCOMPARE(account2.customFields(), account1.customFields());
     QCOMPARE(account2.customField("answer"), QString("Fido"));
@@ -1197,19 +1226,22 @@ void tst_QMailStore::removeMessage()
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    // Verify that retrieval yields matching result
-    QMailMessage message2(message1.id());
-    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    QCOMPARE(message2.id(), message1.id());
-    QCOMPARE(message2.parentFolderId(), message1.parentFolderId());
-    QCOMPARE(message2.messageType(), message1.messageType());
-    QCOMPARE(message2.subject(), message1.subject());
-    QCOMPARE(message2.to(), message1.to());
-    QCOMPARE(message2.from(), message1.from());
-    QCOMPARE(message2.body().data(), message1.body().data());
-    QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
-    QCOMPARE(message2.customFields(), message1.customFields());
-    QCOMPARE(message2.customField("answer"), QString("Fido"));
+	// On win32, the message cannot be removed while someone has the body object open!
+	{
+		// Verify that retrieval yields matching result
+		QMailMessage message2(message1.id());
+		QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+		QCOMPARE(message2.id(), message1.id());
+		QCOMPARE(message2.parentFolderId(), message1.parentFolderId());
+		QCOMPARE(message2.messageType(), message1.messageType());
+		QCOMPARE(message2.subject(), message1.subject());
+		QCOMPARE(message2.to(), message1.to());
+		QCOMPARE(message2.from(), message1.from());
+		QCOMPARE(message2.body().data(), message1.body().data());
+		QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
+		QCOMPARE(message2.customFields(), message1.customFields());
+		QCOMPARE(message2.customField("answer"), QString("Fido"));
+	}
 
     // Verify that removal is successful 
     QVERIFY(QMailStore::instance()->removeMessage(message1.id()));

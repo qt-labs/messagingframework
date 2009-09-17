@@ -46,7 +46,7 @@
 #include <QString>
 
 
-class QTOPIAMAIL_EXPORT QMailServiceConfiguration
+class MESSAGESERVER_EXPORT QMailServiceConfiguration
 {
 public:
     enum ServiceType { Unknown = 0, Source, Sink, SourceAndSink, Storage };

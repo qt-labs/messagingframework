@@ -138,6 +138,7 @@ void SmtpClient::newConnection()
     status = Init;
     sending = true;
     domainName = QByteArray();
+    outstandingResponses = 0;
 
     if (!transport) {
         // Set up the transport
@@ -167,6 +168,11 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
             qMailLog(Messaging) << "Message" << id << "still in send map...";
 
         sendSize.clear();
+    }
+
+    if (mail.status() & QMailMessage::HasUnresolvedReferences) {
+        qMailLog(Messaging) << "Cannot send SMTP message with unresolved references!";
+        return QMailServiceAction::Status::ErrInvalidData;
     }
 
     if (mail.from().address().isEmpty()) {
@@ -247,6 +253,8 @@ void SmtpClient::sendCommand(const char *data, int len)
     out.writeRawData(data, len);
     out.writeRawData("\r\n", 2);
 
+    ++outstandingResponses;
+
     if (len) {
         qMailLog(SMTP) << "SEND:" << data;
     }
@@ -262,12 +270,30 @@ void SmtpClient::sendCommand(const QByteArray &cmd)
     sendCommand(cmd.data(), cmd.length());
 }
 
+void SmtpClient::sendCommands(const QStringList &cmds)
+{
+    foreach (const QString &cmd, cmds)
+        sendCommand(cmd.toAscii());
+}
+
 void SmtpClient::incomingData()
 {
     while (transport->canReadLine()) {
         QString response = transport->readLine();
         qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
-        nextAction(response);
+
+        if (outstandingResponses > 0) {
+            --outstandingResponses;
+        }
+
+        if (outstandingResponses > 0) {
+            // For pipelined commands, just ensure that they did not fail
+            if (!response.isEmpty() && (response[0] != QChar('2'))) {
+                operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
+            }
+        } else {
+            nextAction(response);
+        }
     }
 }
 
@@ -324,12 +350,37 @@ void SmtpClient::nextAction(const QString &response)
     case Extension:
     {
         if (responseCode == 250) {
-            capabilities.append(response.mid(4));
+            capabilities.append(response.mid(4).trimmed());
 
             if (response[3] == '-') {
                 // More to follow
             } else {
-                // This is the terminating extension - proceed to TLS negotiation
+                // This is the terminating extension
+                // Now that we know the capabilities, check for Reference support
+                bool supportsBURL(false);
+                bool supportsChunking(false);
+                foreach (const QString &capability, capabilities) {
+                    // Although technically only BURL is needed for Reference support, CHUNKING
+                    // is also necessary to allow any additional data to accompany the reference
+                    if ((capability == "BURL") || (capability.startsWith("BURL "))) {
+                        supportsBURL = true;
+                    } else if (capability == "CHUNKING") {
+                        supportsChunking = true;
+                    }
+                }
+
+                const bool supportsReferences(supportsBURL && supportsChunking);
+
+                QMailAccount account(config.id());
+                if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences) ||
+                    (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences)) {
+                    account.setStatus(QMailAccount::CanTransmitViaReference, supportsReferences);
+                    if (!QMailStore::instance()->updateAccount(&account)) {
+                        qWarning() << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
+                    }
+                }
+
+                // Proceed to TLS negotiation
                 status = StartTLS;
                 nextAction(QString());
             }
@@ -388,14 +439,14 @@ void SmtpClient::nextAction(const QString &response)
         QByteArray authCmd(SmtpAuthenticator::getAuthentication(config.serviceConfiguration("smtp"), capabilities));
         if (!authCmd.isEmpty()) {
             sendCommand(authCmd);
-            status = Auth;
+            status = Authenticating;
         } else {
-            status = From;
+            status = Authenticated;
             nextAction(QString());
         }
         break;
     }
-    case Auth:
+    case Authenticating:
     {
         if (responseCode == 334) {
             // This is a continuation containing a challenge string (in Base64)
@@ -409,7 +460,7 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else if (responseCode == 235) {
             // We are now authenticated
-            status = From;
+            status = Authenticated;
             nextAction(QString());
         } else {
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
@@ -418,7 +469,39 @@ void SmtpClient::nextAction(const QString &response)
         // Otherwise, we're authenticated
         break;
     }
+    case Authenticated:
+    {
+        if (mailItr == mailList.end()) {
+            // Nothing to send
+            status = Quit;
+        } else {
+            status = MetaData;
+        }
+        nextAction(QString());
+        break;
+    }
 
+    case MetaData:
+    {
+        if (capabilities.contains("PIPELINING")) {
+            // We can send all our non-message commands together
+            QStringList commands;
+            commands.append("MAIL FROM: " + mailItr->from);
+            for (it = mailItr->to.begin(); it != mailItr->to.end(); ++it) {
+                commands.append("RCPT TO: <" + *it + ">");
+            }
+            sendCommands(commands);
+
+            // Continue on with the message data proper
+            status = PrepareData;
+            nextAction(QString());
+        } else {
+            // Send meta data elements individually
+            status = From;
+            nextAction(QString());
+        }
+        break;
+    }
     case From:  
     {
         sendCommand("MAIL FROM: " + mailItr->from);
@@ -448,13 +531,34 @@ void SmtpClient::nextAction(const QString &response)
             it++;
             if ( it != mailItr->to.end() ) {
                 sendCommand("RCPT TO: <" + *it + ">");
-            } else  {
-                status = Data;
+            } else {
+                status = PrepareData;
                 nextAction(QString());
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
+        break;
+    }
+
+    case PrepareData:  
+    {
+        if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
+            // We can replace this entire message by a reference to its external location
+            mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toAscii()));
+            status = Chunk;
+        } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
+            mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
+            if (mailChunks.isEmpty()) {
+                // Nothing to send?
+                status = Sent;
+            } else {
+                status = Chunk;
+            }
+        } else {
+            status = Data;
+        }
+        nextAction(QString());
         break;
     }
 
@@ -487,6 +591,45 @@ void SmtpClient::nextAction(const QString &response)
         }
         break;
     }
+
+    case Chunk:
+    {
+        const bool pipelining(capabilities.contains("PIPELINING"));
+
+        do {
+            const bool isLast(mailChunks.count() == 1);
+            QMailMessage::MessageChunk chunk(mailChunks.takeFirst());
+
+            QByteArray command;
+            if (chunk.first == QMailMessage::Text) {
+                sendCommand("BDAT " + QByteArray::number(chunk.second.size()) + (isLast ? " LAST" : ""));
+
+                // The data follows immediately
+                transport->stream().writeRawData(chunk.second.constData(), chunk.second.size());
+            } else if (chunk.first == QMailMessage::Reference) {
+                sendCommand("BURL " + chunk.second + (isLast ? " LAST" : ""));
+            }
+
+            status = (isLast ? Sent : ChunkSent);
+        } while (pipelining && !mailChunks.isEmpty());
+
+        break;
+    }
+    case ChunkSent:
+    {
+        if (responseCode == 250) {
+            // Move on to the next chunk
+            status = Chunk;
+            nextAction(QString());
+        } else {
+            QMailMessageId msgId(mailItr->mail.id());
+
+            operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
+            messageProcessed(msgId);
+        }
+        break;
+    }
+
     case Sent:  
     {
         QMailMessageId msgId(mailItr->mail.id());
@@ -494,10 +637,9 @@ void SmtpClient::nextAction(const QString &response)
         // The last send operation is complete
         if (responseCode == 250) {
             if (msgId.isValid()) {
-                // Update the message to store the message-ID and mark as sent
-                mailItr->mail.setStatus(Sent, true);
+                // Update the message to store the message-ID
                 if (!QMailStore::instance()->updateMessage(&mailItr->mail)) {
-                    qWarning() << "Unable to update message after transmission:" << msgId;
+                    qWarning() << "Unable to update message with Message-ID:" << msgId;
                 }
 
                 emit messageTransmitted(msgId);
@@ -508,26 +650,36 @@ void SmtpClient::nextAction(const QString &response)
 
             mailItr++;
             if (mailItr == mailList.end()) {
-                // Completed successfully
-                sendCommand("QUIT");
-
-                sending = false;
-                status = Done;
-                transport->close();
-                qMailLog(SMTP) << "Closed connection" << flush;
-
-                int count = mailList.count();
-                mailList.clear();
-
-                emit updateStatus(tr("Sent %n messages", "", count));
+                status = Quit;
             } else {
                 // More messages to send
-                status = From;
-                nextAction(QString());
+                status = MetaData;
             }
+            nextAction(QString());
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
             messageProcessed(msgId);
+        }
+        break;
+    }
+
+    case Quit:  
+    {
+        // Completed successfully
+        sendCommand("QUIT");
+
+        sending = false;
+        status = Done;
+        transport->close();
+        qMailLog(SMTP) << "Closed connection" << flush;
+
+        int count = mailList.count();
+        if (count) {
+            mailList.clear();
+            emit updateStatus(tr("Sent %n messages", "", count));
+        } else {
+            // There was nothing to send
+            emit sendCompleted();
         }
         break;
     }
