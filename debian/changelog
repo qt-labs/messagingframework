@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W38-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+  * Disable sparq patch.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Fri, 18 Sep 2009 11:37:13 +1000
+
 qt4-messagingframework (2009W27-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
