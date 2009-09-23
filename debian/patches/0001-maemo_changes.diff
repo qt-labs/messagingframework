@@ -1,0 +1,40 @@
+diff --cc qmf.pro
+index aaa9ee7,433465f..c7035b3
+--- a/qmf.pro
++++ b/qmf.pro
+@@ -2,6 +2,7 @@ TEMPLATE = subdirs
+ SUBDIRS = src/libraries/qtopiamail \
+           src/libraries/messageserver \
+           src/libraries/qmfutil \
++          src/libraries/sparql \
+           src/plugins/messageservices/imap \
+           src/plugins/messageservices/pop \
+           src/plugins/messageservices/smtp \
+diff --cc src/libraries/qtopiamail/qtopiamail.pro
+index 08344a9..3a82267 100644
+--- a/src/libraries/qtopiamail/qtopiamail.pro
++++ b/src/libraries/qtopiamail/qtopiamail.pro
+@@ -151,3 +151,23 @@ TRANSLATIONS += libqtopiamail-ar.ts \
+ 
+ include(../../common.pri)
+ 
++sparql {
++
++DEFINES += SPARQL_STORE
++
++HEADERS += qmailstore_sparql.h \
++
++SOURCES += qmailstore_sparql.cpp \
++
++INCLUDEPATH += ../sparql ../sparql/tracker
++
++LIBS += -L../sparql -lsparql
++
++} else {
++
++HEADERS += qmailstore_p.h \
++
++SOURCES += qmailstore_p.cpp \
++
++}
++
