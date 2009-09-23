@@ -4999,6 +4999,7 @@ static quint64 draftFlag = 0;
 static quint64 outboxFlag = 0;
 static quint64 junkFlag = 0;
 static quint64 transmitFromExternalFlag = 0;
+static quint64 localOnlyFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5043,6 +5044,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         outboxFlag = registerFlag("Outbox");
         junkFlag = registerFlag("Junk");
         transmitFromExternalFlag = registerFlag("TransmitFromExternal");
+        localOnlyFlag = registerFlag("LocalOnly");
     }
 }
 
@@ -5503,6 +5505,15 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message should be transmitted by reference to its external server location.
 */
 
+/*!
+    \variable QMailMessageMetaData::LocalOnly
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "LocalOnly" against the result of QMailMessage::status().
+
+    This flag indicates that the message exists only on the local device, and has no representation on any external server.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -5525,6 +5536,7 @@ const quint64 &QMailMessageMetaData::Draft = draftFlag;
 const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
 const quint64 &QMailMessageMetaData::Junk = junkFlag;
 const quint64 &QMailMessageMetaData::TransmitFromExternal = transmitFromExternalFlag;
+const quint64 &QMailMessageMetaData::LocalOnly = localOnlyFlag;
 
 /*!
     Constructs an empty message meta data object.

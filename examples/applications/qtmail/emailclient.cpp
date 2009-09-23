@@ -1020,6 +1020,8 @@ void EmailClient::enqueueMail(QMailMessage& mail)
 
     bool inserted(false);
     if (!mail.id().isValid()) {
+        // This message is present only on the local device until we externalise or send it
+        mail.setStatus(QMailMessage::LocalOnly, true);
         inserted = QMailStore::instance()->addMessage(&mail);
     } else {
         inserted = QMailStore::instance()->updateMessage(&mail);
@@ -1059,6 +1061,8 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 
     bool inserted(false);
     if (!mail.id().isValid()) {
+        // This message is present only on the local device until we externalise or send it
+        mail.setStatus(QMailMessage::LocalOnly, true);
         inserted = QMailStore::instance()->addMessage(&mail);
     } else {
         inserted = QMailStore::instance()->updateMessage(&mail);
