@@ -5494,6 +5494,15 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message has been marked as junk, and should be considered unsuitable for standard listings.
 */
 
+/*!
+    \variable QMailMessageMetaData::TransmitFromExternal
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "TransmitFromExternal" against the result of QMailMessage::status().
+
+    This flag indicates that the message should be transmitted by reference to its external server location.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
