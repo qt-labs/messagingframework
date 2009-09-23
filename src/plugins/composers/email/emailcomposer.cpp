@@ -300,11 +300,11 @@ void RecipientListWidget::reset()
 
 void RecipientListWidget::clear()
 {
-	foreach(RecipientWidget* r, m_widgetList)
-	{
-		m_widgetList.removeAll(r);
+    foreach(RecipientWidget* r, m_widgetList)
+    {
+        m_widgetList.removeAll(r);
         delete r;
-	}
+    }
 }
 
 int RecipientListWidget::emptyRecipientSlots() const
@@ -518,7 +518,8 @@ EmailComposerInterface::EmailComposerInterface( QWidget *parent )
     m_recipientListWidget(0),
     m_attachmentListWidget(0),
     m_subjectEdit(0),
-    m_title(QString())
+    m_title(QString()),
+    m_sourceStatus(0)
 {
     init();
 }
@@ -682,6 +683,7 @@ QMailMessage EmailComposerInterface::message() const
                 }
 
                 QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+                disposition.setSize(referencedMessage.size());
                 mail.appendPart(QMailMessagePart::fromMessageReference(referencedMessage.id(), disposition, type, referencedMessage.transferEncoding()));
 
                 mail.setStatus(QMailMessage::HasReferences, true);
@@ -691,7 +693,12 @@ QMailMessage EmailComposerInterface::message() const
                 const QMailMessage referencedMessage(partLocation.containingMessageId());
                 const QMailMessagePart &existingPart(referencedMessage.partAt(partLocation));
 
+                QMailMessageContentDisposition existingDisposition(existingPart.contentDisposition());
+                
                 QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+                disposition.setFilename(existingDisposition.filename());
+                disposition.setSize(existingDisposition.size());
+
                 mail.appendPart(QMailMessagePart::fromPartReference(existingPart.location(), disposition, existingPart.contentType(), existingPart.transferEncoding()));
 
                 mail.setStatus(QMailMessage::HasReferences, true);
@@ -706,6 +713,7 @@ QMailMessage EmailComposerInterface::message() const
 
                 QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
                 disposition.setFilename(partName.toLatin1());
+                disposition.setSize(fi.size());
 
                 QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
                 mail.appendPart(part);
@@ -720,6 +728,13 @@ QMailMessage EmailComposerInterface::message() const
 
     mail.setMessageType( QMailMessage::Email );
     getDetails(mail);
+
+    if (m_sourceStatus & QMailMessage::LocalOnly) {
+        mail.setStatus(QMailMessage::LocalOnly, true);
+
+        // Set the size estimate
+        mail.setSize(mail.indicativeSize() * 1024);
+    }
 
     return mail;
 }
@@ -738,6 +753,9 @@ void EmailComposerInterface::clear()
             qWarning() << "Unable to remove temporary file:" << file;
         }
     }
+
+    // Any newly-composed messages are local messages only
+    m_sourceStatus |= QMailMessage::LocalOnly;
 }
 
 void EmailComposerInterface::setSignature( const QString &sig )
@@ -877,6 +895,12 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
 
     //set the details
     setDetails(sourceMail);
+
+    m_sourceStatus = sourceMail.status(); 
+    if (!sourceMail.id().isValid()) {
+        // This is a new message
+        m_sourceStatus |= QMailMessage::LocalOnly;
+    }
 
     m_bodyEdit->setFocus();
     m_bodyEdit->moveCursor(QTextCursor::Start);

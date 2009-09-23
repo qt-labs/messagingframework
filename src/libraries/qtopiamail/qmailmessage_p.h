@@ -152,7 +152,7 @@ public:
     void output(QDataStream& out, bool includeAttachments) const;
 
     // We will express the indicative size of the body in units of this:
-    static const uint IndicativeSizeUnit = 2048;
+    static const uint IndicativeSizeUnit = 1024;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);

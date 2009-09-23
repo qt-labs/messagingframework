@@ -2616,11 +2616,7 @@ int QMailMessageBodyPrivate::length() const
 
 uint QMailMessageBodyPrivate::indicativeSize() const
 {
-    // Treat the body as a part at least comparable to the header block.  We need to
-    // differentiate between small and large parts, but the size difference should be 
-    // underestimated, since most of the latency is borne by the header (the protocols
-    // require per-message exchanges).
-    return ((_bodyData.length() / IndicativeSizeUnit) + 1);
+    return (_bodyData.length() / IndicativeSizeUnit);
 }
 
 void QMailMessageBodyPrivate::output(QDataStream& out, bool includeAttachments) const
@@ -6668,13 +6664,8 @@ bool QMailMessage::hasRecipients() const
 /*! \reimp */  
 uint QMailMessage::indicativeSize() const
 {
-    if (status() & QMailMessage::Incoming) {
-        return metaDataImpl()->indicativeSize();
-    } else if (status() & QMailMessage::Outgoing) {
-        return partContainerImpl()->indicativeSize();
-    }
-
-    return 0;
+    // Count the message header as one size unit
+    return partContainerImpl()->indicativeSize() + 1;
 }
 
 /*!
