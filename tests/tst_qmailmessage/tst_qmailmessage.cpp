@@ -89,6 +89,7 @@ private slots:
     void setParentFolderId();
 
     void messageType();
+    void setMessageType_data();
     void setMessageType();
 
     void setFrom();
@@ -151,12 +152,16 @@ static void testHeader(const QString& name, void (QMailMessage::*setter)(const Q
         QCOMPARE(m.headerFieldText(name), QString());
         QCOMPARE(m.headerFieldsText(name), QStringList());
     }
+    QCOMPARE(m.contentModified(), false);
 
     (m.*setter)(value1);
     QCOMPARE((m.*getter)(), value1);
     if (!name.isNull()) {
         QCOMPARE(m.headerFieldText(name), value1);
         QCOMPARE(m.headerFieldsText(name), QStringList(value1));
+        QCOMPARE(m.contentModified(), true);
+    } else {
+        QCOMPARE(m.dataModified(), true);
     }
 
     (m.*setter)(value2);
@@ -164,6 +169,9 @@ static void testHeader(const QString& name, void (QMailMessage::*setter)(const Q
     if (!name.isNull()) {
         QCOMPARE(m.headerFieldText(name), value2);
         QCOMPARE(m.headerFieldsText(name), QStringList(value2));
+        QCOMPARE(m.contentModified(), true);
+    } else {
+        QCOMPARE(m.dataModified(), true);
     }
 
     if (expandEncodedWords && !name.isNull())
@@ -175,6 +183,7 @@ static void testHeader(const QString& name, void (QMailMessage::*setter)(const Q
         QCOMPARE((m.*getter)(), value4);
         QCOMPARE(m.headerFieldText(name), value4);
         QCOMPARE(m.headerFieldsText(name), QStringList(value4));
+        QCOMPARE(m.contentModified(), true);
     }
 }
 
@@ -187,16 +196,19 @@ static void testAddressHeader(const QString& name, void (QMailMessage::*setter)(
     QCOMPARE((m.*getter)(), QMailAddress());
     QCOMPARE(m.headerFieldText(name), QString());
     QCOMPARE(m.headerFieldsText(name), QStringList());
+    QCOMPARE(m.contentModified(), false);
 
     (m.*setter)(addr1);
     QCOMPARE((m.*getter)(), addr1);
     QCOMPARE(m.headerFieldText(name), addr1.toString());
     QCOMPARE(m.headerFieldsText(name), QStringList(addr1.toString()));
+    QCOMPARE(m.contentModified(), true);
 
     (m.*setter)(addr2);
     QCOMPARE((m.*getter)(), addr2);
     QCOMPARE(m.headerFieldText(name), addr2.toString());
     QCOMPARE(m.headerFieldsText(name), QStringList(addr2.toString()));
+    QCOMPARE(m.contentModified(), true);
 }
 
 
@@ -865,10 +877,12 @@ void tst_QMailMessage::setId()
     QMailMessageId id;
     QMailMessage message;
     QCOMPARE( message.id(), id );
+    QCOMPARE( message.dataModified(), false );
 
     id = QMailStore::getId(100);
     message.setId(id);
     QCOMPARE( message.id(), id );
+    QCOMPARE( message.dataModified(), true );
 }
 
 void tst_QMailMessage::parentFolderId()
@@ -881,10 +895,12 @@ void tst_QMailMessage::setParentFolderId()
     QMailFolderId id;
     QMailMessage message;
     QCOMPARE( message.parentFolderId(), id );
+    QCOMPARE( message.dataModified(), false );
 
     id = QMailStore::getFolderId(200);
     message.setParentFolderId(id);
     QCOMPARE( message.parentFolderId(), id );
+    QCOMPARE( message.dataModified(), true );
 }
 
 void tst_QMailMessage::messageType()
@@ -892,21 +908,27 @@ void tst_QMailMessage::messageType()
     // Tested by: setMessageType
 }
 
+void tst_QMailMessage::setMessageType_data()
+{
+    QTest::addColumn<QMailMessage::MessageType>( "type" );
+
+    QTest::newRow("SMS") << QMailMessage::Sms;
+    QTest::newRow("MMS") << QMailMessage::Mms;
+    QTest::newRow("Email") << QMailMessage::Email;
+    QTest::newRow("System") << QMailMessage::System;
+}
+
 void tst_QMailMessage::setMessageType()
 {
+    QFETCH(QMailMessage::MessageType, type);
+
     QMailMessage message;
     QCOMPARE( message.messageType(), QMailMessage::None );
+    QCOMPARE( message.dataModified(), false );
 
-    QList<QMailMessage::MessageType> list;
-    list.append(QMailMessage::Sms);
-    list.append(QMailMessage::Mms);
-    list.append(QMailMessage::Email);
-    list.append(QMailMessage::System);
-    foreach (QMailMessage::MessageType type, list)
-    {
-        message.setMessageType(type);
-        QCOMPARE( message.messageType(), type );
-    }
+    message.setMessageType(type);
+    QCOMPARE( message.messageType(), type );
+    QCOMPARE( message.dataModified(), true );
 }
 
 void tst_QMailMessage::from()
@@ -943,16 +965,22 @@ void tst_QMailMessage::setDate()
     QCOMPARE(m.date().toString(), QString());
     QCOMPARE(m.headerFieldText("Date"), QString());
     QCOMPARE(m.headerFieldsText("Date"), QStringList());
+    QCOMPARE(m.dataModified(), false);
+    QCOMPARE(m.contentModified(), false);
 
     m.setDate(QMailTimeStamp(value1));
     QCOMPARE(m.date().toString(), value1);
     QCOMPARE(m.headerFieldText("Date"), value1);
     QCOMPARE(m.headerFieldsText("Date"), QStringList(value1));
+    QCOMPARE(m.dataModified(), true);
+    QCOMPARE(m.contentModified(), true);
 
     m.setDate(QMailTimeStamp(value2));
     QCOMPARE(m.date().toString(), value2);
     QCOMPARE(m.headerFieldText("Date"), value2);
     QCOMPARE(m.headerFieldsText("Date"), QStringList(value2));
+    QCOMPARE(m.dataModified(), true);
+    QCOMPARE(m.contentModified(), true);
 }
 
 void tst_QMailMessage::to()
@@ -994,30 +1022,44 @@ void tst_QMailMessage::setTo()
         QMailMessage m;
         QCOMPARE(QMailAddress::toStringList(m.to()).join(","), QString());
         QCOMPARE(m.headerFieldText("To"), QString());
+        QCOMPARE(m.dataModified(), false);
+        QCOMPARE(m.contentModified(), false);
 
         m.setTo(list);
         QCOMPARE(m.to(), list);
         QCOMPARE(QMailAddress::fromStringList(m.headerFieldText("To")), list);
+        if (!list.isEmpty()) {
+            QCOMPARE(m.dataModified(), true);
+            QCOMPARE(m.contentModified(), true);
+        }
     }
 
     {
         QMailMessage m;
         QCOMPARE(QMailAddress::toStringList(m.cc()).join(","), QString());
         QCOMPARE(m.headerFieldText("CC"), QString());
+        QCOMPARE(m.contentModified(), false);
 
         m.setCc(list);
         QCOMPARE(m.cc(), list);
         QCOMPARE(QMailAddress::fromStringList(m.headerFieldText("CC")), list);
+        if (!list.isEmpty()) {
+            QCOMPARE(m.contentModified(), true);
+        }
     }
 
     {
         QMailMessage m;
         QCOMPARE(QMailAddress::toStringList(m.bcc()).join(","), QString());
         QCOMPARE(m.headerFieldText("BCC"), QString());
+        QCOMPARE(m.contentModified(), false);
 
         m.setBcc(list);
         QCOMPARE(m.bcc(), list);
         QCOMPARE(QMailAddress::fromStringList(m.headerFieldText("BCC")), list);
+        if (!list.isEmpty()) {
+            QCOMPARE(m.contentModified(), true);
+        }
     }
 }
 
