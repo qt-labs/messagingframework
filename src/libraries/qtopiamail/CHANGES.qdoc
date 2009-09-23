@@ -50,6 +50,8 @@ Changes since the QMF-1.0 release on 15/05/09:
 13. Added 'QMailMessagePartContainer::multipartTypeForName(const QByteArray&)' and
           'QMailMessagePartContainer::nameForMultipartType(QMailMessagePartContainer::MultipartType)'.
 
+14. Added 'QMailMessageMetaData::LocalOnly'.
+
 
 *****************************************************************************
 
