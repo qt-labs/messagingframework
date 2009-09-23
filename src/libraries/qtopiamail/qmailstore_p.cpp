@@ -4514,6 +4514,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     metaData->setId(QMailMessageId(insertId));
+    metaData->setUnmodified();
     addedMessageIds->append(metaData->id());
     *modifiedFolderIds = folderIds;
     if (metaData->parentAccountId().isValid())

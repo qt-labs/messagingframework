@@ -368,12 +368,16 @@ void tst_QMailStore::addMessage()
     message1.setCustomField("answer", "Fido");
 
     // Verify that addition is successful
+    QCOMPARE(message1.dataModified(), true);
+    QCOMPARE(message1.contentModified(), true);
     QCOMPARE(QMailStore::instance()->countMessages(), 0);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(!message1.id().isValid());
     QVERIFY(QMailStore::instance()->addMessage(&message1));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(message1.id().isValid());
+    QCOMPARE(message1.dataModified(), false);
+    QCOMPARE(message1.contentModified(), false);
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
@@ -392,6 +396,8 @@ void tst_QMailStore::addMessage()
     QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
     QCOMPARE(message2.customFields(), message1.customFields());
     QCOMPARE(message2.customField("answer"), QString("Fido"));
+    QCOMPARE(message2.dataModified(), false);
+    QCOMPARE(message2.contentModified(), false);
 
     // Verify that UID/Account retrieval yields matching result
     QMailMessage message3(message1.serverUid(), message1.parentAccountId());
@@ -408,6 +414,8 @@ void tst_QMailStore::addMessage()
     QCOMPARE((message3.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
     QCOMPARE(message3.customFields(), message1.customFields());
     QCOMPARE(message3.customField("answer"), QString("Fido"));
+    QCOMPARE(message3.dataModified(), false);
+    QCOMPARE(message3.contentModified(), false);
 }
 
 void tst_QMailStore::addMessages()
@@ -796,9 +804,13 @@ void tst_QMailStore::updateMessage()
     message1.removeCustomField("temporary");
 
     // Verify that update is successful
+    QCOMPARE(message1.dataModified(), true);
+    QCOMPARE(message1.contentModified(), true);
     QVERIFY(QMailStore::instance()->updateMessage(&message1));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(message1.id().isValid());
+    QCOMPARE(message1.dataModified(), false);
+    QCOMPARE(message1.contentModified(), false);
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
@@ -817,6 +829,8 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(message2.customFields(), message1.customFields());
     QCOMPARE(message2.customField("answer"), QString("Fido"));
     QCOMPARE(message2.customField("tag"), QString("Work"));
+    QCOMPARE(message2.dataModified(), false);
+    QCOMPARE(message2.contentModified(), false);
 
     // Add an additional message
     QMailMessage message3;

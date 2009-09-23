@@ -17,3 +17,10 @@ SUBDIRS = src/libraries/qtopiamail \
 
 CONFIG += ordered
 
+# Custom target 'doc' to generate documentation
+dox.target = doc
+dox.commands = THISYEAR=2009 qdoc3 $$_PRO_FILE_PWD_/doc/src/qmf.qdocconf
+dox.depends =
+
+QMAKE_EXTRA_TARGETS += dox
+
