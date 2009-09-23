@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W39-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+  * Readd patch.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 23 Sep 2009 16:30:49 +1000
+
 qt4-messagingframework (2009W38-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
