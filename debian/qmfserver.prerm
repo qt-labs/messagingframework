@@ -2,8 +2,8 @@
 #
 # We should stop messageserver before removing the package.
 #
-set -e
+#set -e
 
-/etc/init.d/messageserver stop
+#/etc/init.d/messageserver stop
 
 

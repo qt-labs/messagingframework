@@ -2,6 +2,6 @@
 #
 # Start messageserver as soon as it was installed
 #
-set -e
+#set -e
 
 #/etc/init.d/messageserver start
