@@ -776,8 +776,8 @@ CRLF
                       << int( 0 ); // message_part_count
 
     QTest::newRow("encoded_words") << QByteArray(
-"From:=?UTF-8?Q?John=20Doe?= <jdoe@machine.example>" CRLF
-"To:=?UTF-8?Q?Mary_Smith?= <mary@example.net>" CRLF
+"From:=?UTF-8?Q?J=6fhn=20D=6fe?= <jdoe@machine.example>" CRLF
+"To:=?UTF-8?Q?Mary_S=6dith?= <mary@example.net>" CRLF
 "Subject:=?\"UTF-8\"?B?U2F5aW5nIEhlbGxv?= =?ISO-8859-1?Q?_Encoded_?= =?UTF-8?Q?=41=42=43?=" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Message-ID: <1234@local.machine.example>" CRLF
