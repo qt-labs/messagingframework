@@ -106,6 +106,7 @@ static QString messageUid(const QMailFolderId &folderId, const QString &id)
 static QString extractUid(const QString &field, const QMailFolderId &folderId)
 {
     QRegExp uidFormat("UID *(\\d+)");
+    uidFormat.setCaseSensitivity(Qt::CaseInsensitive);
     if (uidFormat.indexIn(field) != -1) {
         return messageUid(folderId, uidFormat.cap(1));
     }
@@ -116,6 +117,7 @@ static QString extractUid(const QString &field, const QMailFolderId &folderId)
 static QDateTime extractDate(const QString& field)
 {
     QRegExp dateFormat("INTERNALDATE *\"([^\"]*)\"");
+    dateFormat.setCaseSensitivity(Qt::CaseInsensitive);
     if (dateFormat.indexIn(field) != -1) {
         QString date(dateFormat.cap(1));
 
@@ -140,6 +142,7 @@ static QDateTime extractDate(const QString& field)
 static uint extractSize(const QString& field)
 {
     QRegExp sizeFormat("RFC822\\.SIZE *(\\d+)");
+    sizeFormat.setCaseSensitivity(Qt::CaseInsensitive);
     if (sizeFormat.indexIn(field) != -1) {
         return sizeFormat.cap(1).toUInt();
     }
@@ -156,6 +159,7 @@ static bool parseFlags(const QString& field, MessageFlags& flags)
 {
     QRegExp pattern("FLAGS *\\((.*)\\)");
     pattern.setMinimal(true);
+    pattern.setCaseSensitivity(Qt::CaseInsensitive);
 
     if (pattern.indexIn(field) == -1)
         return false;
@@ -397,8 +401,9 @@ bool ImapState::continuationResponse(ImapContext *, const QString &line)
 
 void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.indexOf("[ALERT]") != -1) {
-        qWarning(line.mid(line.indexOf("[ALERT]")).toAscii());
+    int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
+    if (index != -1) {
+        qWarning(line.mid(index).toAscii());
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
@@ -411,8 +416,9 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 
 void ImapState::taggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.indexOf("[ALERT]") != -1)
-        qWarning(line.mid(line.indexOf("[ALERT]")).toAscii());
+    int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
+    if (index != -1)
+        qWarning(line.mid(index).toAscii());
 
     c->operationCompleted(mCommand, mStatus);
 }
@@ -595,7 +601,7 @@ bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 
 void LoginState::taggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.indexOf("[CAPABILITY") != -1) {
+    if (line.indexOf("[CAPABILITY", Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
@@ -963,6 +969,7 @@ void AppendState::taggedResponse(ImapContext *c, const QString &line)
     if (status() == OpOk) {
         // See if we got an APPENDUID response
         QRegExp appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)");
+        appenduidResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
         if (appenduidResponsePattern.indexIn(line) != -1) {
             const AppendParameters &params(mParameters.first());
             emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), appenduidResponsePattern.cap(2)));
@@ -988,29 +995,29 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
 {
     bool result;
 
-    if (line.indexOf("EXISTS", 0) != -1) {
+    if (line.indexOf("EXISTS", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
         quint32 exists = temp.toUInt(&result);
         if (!result)
             exists = 0;
         c->setExists(exists);
-    } else if (line.indexOf("RECENT", 0) != -1) {
+    } else if (line.indexOf("RECENT", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, ' ', ' ', &start);
         quint32 recent = temp.toUInt(&result);
         if (!result)
            recent = 0;
         c->setRecent(recent);
-    } else if (line.startsWith("* FLAGS")) {
+    } else if (line.startsWith("* FLAGS", Qt::CaseInsensitive)) {
         int start = 0;
         QString flags = token(line, '(', ')', &start);
         c->setFlags(flags);
-    } else if (line.indexOf("UIDVALIDITY", 0) != -1) {
+    } else if (line.indexOf("UIDVALIDITY", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         c->setUidValidity(temp.mid(12).trimmed());
-    } else if (line.indexOf("UIDNEXT", 0) != -1) {
+    } else if (line.indexOf("UIDNEXT", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString nextStr = temp.mid( 8 );
@@ -1018,7 +1025,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         if (!result)
             next = 0;
         c->setUidNext(next);
-    } else if (line.indexOf("UNSEEN", 0) != -1) {
+    } else if (line.indexOf("UNSEEN", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         QString unseenStr = temp.mid( 7 );
@@ -1026,13 +1033,13 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         if (!result)
             unseen = 0;
         c->setUnseen(unseen);
-    } else if (line.indexOf("HIGHESTMODSEQ", 0) != -1) {
+    } else if (line.indexOf("HIGHESTMODSEQ", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
         c->setHighestModSeq(temp.mid(14).trimmed());
-    } else if (line.indexOf("NOMODSEQ", 0) != -1) {
+    } else if (line.indexOf("NOMODSEQ", 0, Qt::CaseInsensitive) != -1) {
         c->setNoModSeq();
-    } else if (line.indexOf("PERMANENTFLAGS", 0) != -1) {
+    } else if (line.indexOf("PERMANENTFLAGS", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '(', ')', &start);
         c->setPermanentFlags(temp.split(" ", QString::SkipEmptyParts));
@@ -1541,7 +1548,8 @@ bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
         pattern = QRegExp("BODY\\[\\S*\\] ");
     }
 
-    int index = preceding.lastIndexOf(pattern);
+    pattern.setCaseSensitivity(Qt::CaseInsensitive);
+    int index = pattern.lastIndexIn(preceding);
     if (index != -1) {
         if ((index + pattern.cap(0).length()) == preceding.length()) {
             // Detach the retrieved data to a file we have ownership of
@@ -1671,6 +1679,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
 
         // See if we got a COPYUID response
         QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) ([^ \\t\\]]+)");
+        copyuidResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
         if (copyuidResponsePattern.indexIn(line) != -1) {
             QList<uint> copiedUids = sequenceUids(copyuidResponsePattern.cap(2));
             QList<uint> createdUids = sequenceUids(copyuidResponsePattern.cap(3));
