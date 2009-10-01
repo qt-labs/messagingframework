@@ -509,7 +509,7 @@ void setMessageContentFromStructure(const QStringList &structure, QMailMessage *
 QStringList getMessageStructure(const QString &field)
 {
     static const QString marker("BODYSTRUCTURE (");
-    int index = field.indexOf(marker);
+    int index = field.indexOf(marker, Qt::CaseInsensitive);
     if (index != -1) {
         return decomposeStructure(field, index + marker.length());
     }

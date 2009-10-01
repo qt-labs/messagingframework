@@ -2616,11 +2616,7 @@ int QMailMessageBodyPrivate::length() const
 
 uint QMailMessageBodyPrivate::indicativeSize() const
 {
-    // Treat the body as a part at least comparable to the header block.  We need to
-    // differentiate between small and large parts, but the size difference should be 
-    // underestimated, since most of the latency is borne by the header (the protocols
-    // require per-message exchanges).
-    return ((_bodyData.length() / IndicativeSizeUnit) + 1);
+    return (_bodyData.length() / IndicativeSizeUnit);
 }
 
 void QMailMessageBodyPrivate::output(QDataStream& out, bool includeAttachments) const
@@ -4999,6 +4995,7 @@ static quint64 draftFlag = 0;
 static quint64 outboxFlag = 0;
 static quint64 junkFlag = 0;
 static quint64 transmitFromExternalFlag = 0;
+static quint64 localOnlyFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5043,6 +5040,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         outboxFlag = registerFlag("Outbox");
         junkFlag = registerFlag("Junk");
         transmitFromExternalFlag = registerFlag("TransmitFromExternal");
+        localOnlyFlag = registerFlag("LocalOnly");
     }
 }
 
@@ -5494,6 +5492,24 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message has been marked as junk, and should be considered unsuitable for standard listings.
 */
 
+/*!
+    \variable QMailMessageMetaData::TransmitFromExternal
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "TransmitFromExternal" against the result of QMailMessage::status().
+
+    This flag indicates that the message should be transmitted by reference to its external server location.
+*/
+
+/*!
+    \variable QMailMessageMetaData::LocalOnly
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "LocalOnly" against the result of QMailMessage::status().
+
+    This flag indicates that the message exists only on the local device, and has no representation on any external server.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -5516,6 +5532,7 @@ const quint64 &QMailMessageMetaData::Draft = draftFlag;
 const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
 const quint64 &QMailMessageMetaData::Junk = junkFlag;
 const quint64 &QMailMessageMetaData::TransmitFromExternal = transmitFromExternalFlag;
+const quint64 &QMailMessageMetaData::LocalOnly = localOnlyFlag;
 
 /*!
     Constructs an empty message meta data object.
@@ -6647,13 +6664,8 @@ bool QMailMessage::hasRecipients() const
 /*! \reimp */  
 uint QMailMessage::indicativeSize() const
 {
-    if (status() & QMailMessage::Incoming) {
-        return metaDataImpl()->indicativeSize();
-    } else if (status() & QMailMessage::Outgoing) {
-        return partContainerImpl()->indicativeSize();
-    }
-
-    return 0;
+    // Count the message header as one size unit
+    return partContainerImpl()->indicativeSize() + 1;
 }
 
 /*!

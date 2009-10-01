@@ -964,9 +964,9 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
         QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
 
-        // We need to prepare messages to;
+        // We need to prepare messages to:
         // - resolve references
-        // - move to Sent prior to transmission
+        // - move to the Sent folder prior to transmission
         quint64 preparationStatus(QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal);
         QMailMessageKey unresolvedKey(QMailMessageKey::status(preparationStatus, QMailDataComparator::Includes));
 
@@ -1797,7 +1797,7 @@ void ServiceHandler::actionCompleted(bool success)
                 if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
                     // Mark these message as Sent, via the source service
                     if (QMailMessageSource *source = accountSource(service->accountId())) {
-                        source->flagMessages(mSentIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft));
+                        source->flagMessages(mSentIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly));
 
                         // The source is now the service responsible for this action
                         mServiceAction.remove(service);

@@ -118,6 +118,7 @@ private:
     QLabel* m_rowLabel;
     QStringList m_temporaries;
     QMailAccountId m_accountId;
+    quint64 m_sourceStatus;
 };
 
 #endif

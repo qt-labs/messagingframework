@@ -544,6 +544,7 @@ public:
     static const quint64 &Outbox;
     static const quint64 &Junk;
     static const quint64 &TransmitFromExternal;
+    static const quint64 &LocalOnly;
 
     QMailMessageMetaData();
     QMailMessageMetaData(const QMailMessageId& id);
