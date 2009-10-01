@@ -783,7 +783,7 @@ void GenUrlAuthState::init()
 
 QString GenUrlAuthState::transmit(ImapContext *c)
 {
-    const QPair<QString, QString> &params(_parameters.first());
+    const QPair<QString, QString> &params(_parameters.first());  // TODO: should be last()?
 
     return c->sendCommand("GENURLAUTH \"" + params.first + "\" " + params.second);
 }
@@ -888,7 +888,7 @@ static QList<QPair<QByteArray, uint> > dataSequence(QList<QMailMessage::MessageC
 
 QString AppendState::transmit(ImapContext *c)
 {
-    AppendParameters &params(mParameters.first());
+    AppendParameters &params(mParameters.first());  // TODO: should be last()?
 
     QMailMessage message(params.mMessageId);
 
@@ -1471,12 +1471,19 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
             }
 
             if (fp.mDataItems & F_BodySection) {
-                if (fp.mDetachedFile.isEmpty()) {
-                    // The buffer has not been detached to a file yet
-                    fp.mDetachedSize = c->buffer().length();
-                    fp.mDetachedFile = c->buffer().detach();
+                // Test that we have the section we're expecting
+                QString section("BODY[%1]");
+                section = section.arg(fp.mSection.isEmpty() ? "TEXT" : fp.mSection);
+                if (!str.contains(section)) {
+                    qWarning() << "Invalid section -" << section << "not in:" << str;
+                } else {
+                    if (fp.mDetachedFile.isEmpty()) {
+                        // The buffer has not been detached to a file yet
+                        fp.mDetachedSize = c->buffer().length();
+                        fp.mDetachedFile = c->buffer().detach();
+                    }
+                    c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
                 }
-                c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
             } else {
                 if (fp.mNewMsgSize == 0) {
                     fp.mNewMsgSize = fp.mDetachedSize;
