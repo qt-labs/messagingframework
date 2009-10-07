@@ -69,11 +69,13 @@ public:
 
     static bool isIntegerRegion(QStringList uids);
 
+    static QList<int> toList(const QString &region);
+
 #if 0
 // TODO Convert these tests to standard qunit style
     static IntegerRegion fromBinaryString(const QString &);
     static QString toBinaryString(const IntegerRegion &);
-    static void tests();
+    static int tests();
 #endif
 
 private:
