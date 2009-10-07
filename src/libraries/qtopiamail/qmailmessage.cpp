@@ -3000,6 +3000,23 @@ int QMailMessagePartContainerPrivate::partNumber() const
     return (_indices.last() - 1);
 }
 
+bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location& location) const
+{
+    const QMailMessagePart* part = 0; 
+    const QList<QMailMessagePart>* partList = &_messageParts; 
+
+    foreach (uint index, location.d->_indices) {
+        if (partList->count() < index) {
+            return false;
+        }
+
+        part = &(partList->at(index - 1));
+        partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
+    }
+
+    return true;
+}
+
 const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location) const
 {
     const QMailMessagePart* part = 0; 
@@ -6373,6 +6390,14 @@ QMailMessage QMailMessage::fromRfc2822File(const QString& fileName)
 {
     LongString ls(fileName);
     return fromRfc2822(ls);
+}
+
+/*!
+    Returns true if the message contains a part with the location \a location.
+*/
+bool QMailMessage::contains(const QMailMessagePart::Location& location) const
+{
+    return partContainerImpl()->contains(location);
 }
 
 /*!

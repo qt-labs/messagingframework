@@ -1260,6 +1260,8 @@ void tst_QMailMessage::multiMultipart()
         const QMailMessagePart& p1 = m.partAt(i);
 
         QMailMessagePart::Location loc1(p1.location());
+        QVERIFY(m.contains(loc1));
+
         const QMailMessagePart& lp1 = m.partAt(loc1);
 
         QCOMPARE(lp1.partNumber(), p1.partNumber());
@@ -1269,6 +1271,7 @@ void tst_QMailMessage::multiMultipart()
             const QMailMessagePart& p2 = p1.partAt(j);
 
             QMailMessagePart::Location loc2(p2.location());
+            QVERIFY(m.contains(loc2));
             const QMailMessagePart& lp2 = m.partAt(loc2);
 
             QCOMPARE(lp2.partNumber(), p2.partNumber());
@@ -1306,6 +1309,8 @@ void tst_QMailMessage::multiMultipart()
         const QMailMessagePart& p1 = m4.partAt(i);
 
         QMailMessagePart::Location loc1(p1.location());
+        QVERIFY(m.contains(loc1));
+
         const QMailMessagePart& lp1 = m.partAt(loc1);
 
         QCOMPARE( p1.partNumber(), lp1.partNumber());
@@ -1319,6 +1324,8 @@ void tst_QMailMessage::multiMultipart()
             const QMailMessagePart& p2 = p1.partAt(j);
 
             QMailMessagePart::Location loc2(p2.location());
+            QVERIFY(m.contains(loc2));
+
             const QMailMessagePart& lp2 = m.partAt(loc2);
 
             QCOMPARE( p2.partNumber(), lp2.partNumber());
