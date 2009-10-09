@@ -4282,6 +4282,13 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
     messages.  These include the 'name' and 'filename' parameters of the Content-Type 
     and Content-Disposition fields, and the Content-Id and Content-Location fields.
 
+    A message part may consist entirely of a reference to an external message, or
+    a part within an external message.  Parts that consists of references may be 
+    used with some protocols that permit data to be transmitted by reference, such
+    as IMAP with the URLAUTH extension.  Not all messaging protocols support the
+    use of content references. The partReference() and messageReference() functions
+    enable the creation of reference parts.
+
     \sa QMailMessagePartContainer
 */
 
@@ -4599,6 +4606,8 @@ QMailMessagePart QMailMessagePart::fromPartReference(const QMailMessagePart::Loc
     The message reference can only be resolved by transmitting the message to an external 
     server, where both the originating server of the referenced message and the receiving 
     server of the new message support resolution of the content reference.
+
+    \sa referenceType(), setReferenceResolution()
 */
 void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding)
 {
@@ -4612,6 +4621,8 @@ void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessage
     The part reference can only be resolved by transmitting the message to an external 
     server, where both the originating server of the referenced part's message and the 
     receiving server of the new message support resolution of the content reference.
+
+    \sa referenceType(), setReferenceResolution()
 */
 void QMailMessagePart::setReference(const QMailMessagePart::Location &location, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding)
 {
@@ -4792,6 +4803,8 @@ QString QMailMessagePart::identifier() const
 
 /*!
     Returns the type of reference that this message part constitutes.
+
+    \sa setReference()
 */
 QMailMessagePart::ReferenceType QMailMessagePart::referenceType() const
 {
@@ -4800,6 +4813,11 @@ QMailMessagePart::ReferenceType QMailMessagePart::referenceType() const
 
 /*!
     Returns the identifier of the message that this part references.
+
+    The result will be meaningful only when referenceType() yields
+    \l{QMailMessagePartFwd::MessageReference}{QMailMessagePart::MessageReference}.
+
+    \sa referenceType(), partReference(), referenceResolution()
 */
 QMailMessageId QMailMessagePart::messageReference() const
 {
@@ -4808,6 +4826,11 @@ QMailMessageId QMailMessagePart::messageReference() const
 
 /*!
     Returns the location of the message part that this part references.
+
+    The result will be meaningful only when referenceType() yields
+    \l{QMailMessagePartFwd::PartReference}{QMailMessagePart::PartReference}.
+
+    \sa referenceType(), messageReference(), referenceResolution()
 */
 QMailMessagePart::Location QMailMessagePart::partReference() const
 {
@@ -4816,6 +4839,11 @@ QMailMessagePart::Location QMailMessagePart::partReference() const
 
 /*!
     Returns the URI that resolves the reference encoded into this message part.
+
+    The result will be meaningful only when referenceType() yields other than
+    \l{QMailMessagePartFwd::None}{QMailMessagePart::None}.
+
+    \sa setReferenceResolution(), referenceType()
 */
 QString QMailMessagePart::referenceResolution() const
 {
@@ -4824,6 +4852,11 @@ QString QMailMessagePart::referenceResolution() const
 
 /*!
     Sets the URI that resolves the reference encoded into this message part to \a uri.
+
+    The reference URI is meaningful only when referenceType() yields other than
+    \l{QMailMessagePartFwd::None}{QMailMessagePart::None}.
+
+    \sa referenceResolution(), referenceType()
 */
 void QMailMessagePart::setReferenceResolution(const QString &uri)
 {
