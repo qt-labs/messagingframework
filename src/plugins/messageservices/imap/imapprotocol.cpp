@@ -1303,9 +1303,8 @@ class UidFetchState : public SelectedState
 public:
     UidFetchState() : SelectedState(IMAP_UIDFetch, "UIDFetch") { UidFetchState::init(); }
 
-    void setDataItems(FetchItemFlags flags);
-    void setUidList(const QString &uidList);
-    void setSection(const QString &uid, const QString &section, int start, int end);
+    void setUidList(const QString &uidList, FetchItemFlags flags);
+    void setSection(const QString &uid, const QString &section, int start, int end, FetchItemFlags flags);
 
     virtual bool permitsPipelining() const { return true; }
     virtual void init();
@@ -1344,7 +1343,12 @@ private:
     };
 
     QList<FetchParameters> mParameters;
+    int mCurrentIndex;
+    QMap<QString, int> mParametersMap;
+    int mLiteralIndex;
     
+    static QString fetchResponseElement(const QString &line);
+
     static const int MAX_LINES = 30;
 };
 
@@ -1360,28 +1364,50 @@ UidFetchState::FetchParameters::FetchParameters()
 void UidFetchState::init() 
 { 
     SelectedState::init();
+    mParametersMap.clear();
     mParameters.clear();
+    mCurrentIndex = -1;
+    mLiteralIndex = -1;
 }
 
-void UidFetchState::setDataItems(FetchItemFlags flags)
+void UidFetchState::setUidList(const QString &uidList, FetchItemFlags flags)
 {
+    int appendIndex = mParameters.count();
     mParameters.append(FetchParameters());
 
     mParameters.last().mDataItems = flags;
-}
-
-void UidFetchState::setUidList(const QString &uidList)
-{
     mParameters.last().mUidList = uidList;
     mParameters.last().mExpectedMessages = IntegerRegion(uidList);
+
+    foreach (int uid, IntegerRegion::toList(uidList)) {
+        mParametersMap.insert(QString::number(uid), appendIndex);
+    }
+    
+    if (mCurrentIndex == -1) {
+        mCurrentIndex = 0;
+    }
 }
 
-void UidFetchState::setSection(const QString &uid, const QString &section, int start, int end)
+void UidFetchState::setSection(const QString &uid, const QString &section, int start, int end, FetchItemFlags flags)
 {
+    int appendIndex = mParameters.count();
+    mParameters.append(FetchParameters());
+
+    mParameters.last().mDataItems = flags;
     mParameters.last().mUidList = uid;
     mParameters.last().mSection = section;
     mParameters.last().mStart = start;
     mParameters.last().mEnd = end;
+
+    QString element(uid + ' ' + (section.isEmpty() ? "TEXT" : section));
+    if (end > 0) {
+        element.append(QString("<%1>").arg(QString::number(start)));
+    }
+    mParametersMap.insert(element, appendIndex);
+
+    if (mCurrentIndex == -1) {
+        mCurrentIndex = 0;
+    }
 }
 
 QString UidFetchState::transmit(ImapContext *c)
@@ -1426,7 +1452,7 @@ QString UidFetchState::transmit(ImapContext *c)
 void UidFetchState::leave(ImapContext *)
 {
     SelectedState::init();
-    mParameters.removeFirst();
+    ++mCurrentIndex;
 }
 
 void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
@@ -1434,69 +1460,71 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
     QString str = line;
     QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
     if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
-        FetchParameters &fp(mParameters.first());
+        QString element(fetchResponseElement(str));
+        QMap<QString, int>::iterator it = mParametersMap.find(element);
+        if (it != mParametersMap.end()) {
+            FetchParameters &fp(mParameters[*it]);
 
-        if (fp.mDataItems & F_Uid) {
-            fp.mNewMsgUid = extractUid(str, c->mailbox().id);
+            if (fp.mDataItems & F_Uid) {
+                fp.mNewMsgUid = extractUid(str, c->mailbox().id);
 
-            bool ok = false;
-            int index = fp.mNewMsgUid.lastIndexOf(UID_SEPARATOR);
-            if (index == -1)
-                return;
-            int uid = fp.mNewMsgUid.mid(index + 1).toInt(&ok);
-            if (!ok)
-                return;
-            fp.mReceivedMessages.add(uid);
-            fp.mMessageLength = 0;
-            
-            // See what we can extract from the FETCH response
-            fp.mNewMsgFlags = 0;
-            if (fp.mDataItems & F_Flags) {
-                parseFlags(str, fp.mNewMsgFlags);
-            }
+                bool ok = false;
+                int index = fp.mNewMsgUid.lastIndexOf(UID_SEPARATOR);
+                if (index == -1)
+                    return;
+                int uid = fp.mNewMsgUid.mid(index + 1).toInt(&ok);
+                if (!ok)
+                    return;
+                fp.mReceivedMessages.add(uid);
+                fp.mMessageLength = 0;
+                
+                // See what we can extract from the FETCH response
+                fp.mNewMsgFlags = 0;
+                if (fp.mDataItems & F_Flags) {
+                    parseFlags(str, fp.mNewMsgFlags);
+                }
 
-            if (fp.mNewMsgFlags & MFlag_Deleted) {
-                // This message has been deleted - there is no more information to process
-                emit nonexistentUid(fp.mNewMsgUid);
-                return;
-            }
+                if (fp.mNewMsgFlags & MFlag_Deleted) {
+                    // This message has been deleted - there is no more information to process
+                    emit nonexistentUid(fp.mNewMsgUid);
+                    return;
+                }
 
-            if (fp.mDataItems & F_Date) {
-                fp.mDate = extractDate(str);
-            }
+                if (fp.mDataItems & F_Date) {
+                    fp.mDate = extractDate(str);
+                }
 
-            if (fp.mDataItems & F_Rfc822_Size) {
-                fp.mNewMsgSize = extractSize(str);
-            }
+                if (fp.mDataItems & F_Rfc822_Size) {
+                    fp.mNewMsgSize = extractSize(str);
+                }
 
-            if (!c->literalResponseCompleted())
-                return;
+                if (!c->literalResponseCompleted()) {
+                    // Wait for the literal data to be received
+                    mLiteralIndex = *it;
+                    return;
+                }
 
-            // All message data should be retrieved at this point - create new mail/part
-            if (fp.mDataItems & F_BodyStructure) {
-                fp.mNewMsgStructure = extractStructure(str);
-            }
+                // All message data should be retrieved at this point - create new mail/part
+                if (fp.mDataItems & F_BodyStructure) {
+                    fp.mNewMsgStructure = extractStructure(str);
+                }
 
-            if (fp.mDataItems & F_BodySection) {
-                // Test that we have the section we're expecting
-                QString section("BODY[%1]");
-                section = section.arg(fp.mSection.isEmpty() ? "TEXT" : fp.mSection);
-                if (!str.contains(section)) {
-                    qWarning() << "Invalid section -" << section << "not in:" << str;
-                } else {
+                if (fp.mDataItems & F_BodySection) {
                     if (fp.mDetachedFile.isEmpty()) {
                         // The buffer has not been detached to a file yet
                         fp.mDetachedSize = c->buffer().length();
                         fp.mDetachedFile = c->buffer().detach();
                     }
                     c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
+                } else {
+                    if (fp.mNewMsgSize == 0) {
+                        fp.mNewMsgSize = fp.mDetachedSize;
+                    }
+                    c->createMail(fp.mNewMsgUid, fp.mDate, fp.mNewMsgSize, fp.mNewMsgFlags, fp.mDetachedFile, fp.mNewMsgStructure);
                 }
-            } else {
-                if (fp.mNewMsgSize == 0) {
-                    fp.mNewMsgSize = fp.mDetachedSize;
-                }
-                c->createMail(fp.mNewMsgUid, fp.mDate, fp.mNewMsgSize, fp.mNewMsgFlags, fp.mDetachedFile, fp.mNewMsgStructure);
             }
+        } else {
+            qWarning() << "untaggedResponse: Unable to find fetch parameters for:" << str;
         }
     } else {
         SelectedState::untaggedResponse(c, line);
@@ -1506,7 +1534,7 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
 void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
-        FetchParameters &fp(mParameters.first());
+        FetchParameters &fp(mParameters[mCurrentIndex]);
 
         IntegerRegion missingUids = fp.mExpectedMessages.subtract(fp.mReceivedMessages);
         foreach(const QString &uid, missingUids.toStringList()) {
@@ -1521,45 +1549,78 @@ void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
 void UidFetchState::literalResponse(ImapContext *c, const QString &line)
 {
     if (!c->literalResponseCompleted()) {
-        FetchParameters &fp(mParameters.first());
-        ++fp.mReadLines;
+        if (mLiteralIndex != -1) {
+            FetchParameters &fp(mParameters[mLiteralIndex]);
 
-        if ((fp.mDataItems & F_Rfc822) || (fp.mDataItems & F_BodySection)) {
-            fp.mMessageLength += line.length();
+            ++fp.mReadLines;
+            if ((fp.mDataItems & F_Rfc822) || (fp.mDataItems & F_BodySection)) {
+                fp.mMessageLength += line.length();
 
-            if (fp.mReadLines > MAX_LINES) {
-                fp.mReadLines = 0;
-                emit downloadSize(fp.mNewMsgUid, fp.mMessageLength);
+                if (fp.mReadLines > MAX_LINES) {
+                    fp.mReadLines = 0;
+                    emit downloadSize(fp.mNewMsgUid, fp.mMessageLength);
+                }
             }
+        } else {
+            qWarning() << "Literal data received with invalid literal index!";
         }
     }
 }
 
 bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
 {
-    FetchParameters &fp(mParameters.first());
+    if (mLiteralIndex != -1) {
+        FetchParameters &fp(mParameters[mLiteralIndex]);
 
-    QRegExp pattern;
-    if (fp.mDataItems & F_Rfc822_Header) {
-        // If the literal is the header data, keep it in the buffer file
-        pattern = QRegExp("RFC822\\.HEADER ");
-    } else {
-        // If the literal is the body data, keep it in the buffer file
-        pattern = QRegExp("BODY\\[\\S*\\] ");
-    }
+        // We're finished with this literal data
+        mLiteralIndex = -1;
 
-    pattern.setCaseSensitivity(Qt::CaseInsensitive);
-    int index = pattern.lastIndexIn(preceding);
-    if (index != -1) {
-        if ((index + pattern.cap(0).length()) == preceding.length()) {
-            // Detach the retrieved data to a file we have ownership of
-            fp.mDetachedSize = c->buffer().length();
-            fp.mDetachedFile = c->buffer().detach();
-            return false;
+        QRegExp pattern;
+        if (fp.mDataItems & F_Rfc822_Header) {
+            // If the literal is the header data, keep it in the buffer file
+            pattern = QRegExp("RFC822\\.HEADER ");
+        } else {
+            // If the literal is the body data, keep it in the buffer file
+            pattern = QRegExp("BODY\\[\\S*\\] ");
         }
+
+        pattern.setCaseSensitivity(Qt::CaseInsensitive);
+        int index = pattern.lastIndexIn(preceding);
+        if (index != -1) {
+            if ((index + pattern.cap(0).length()) == preceding.length()) {
+                // Detach the retrieved data to a file we have ownership of
+                fp.mDetachedSize = c->buffer().length();
+                fp.mDetachedFile = c->buffer().detach();
+                return false;
+            }
+        }
+    } else {
+        qWarning() << "Literal data appended with invalid literal index!";
     }
 
     return true;
+}
+
+QString UidFetchState::fetchResponseElement(const QString &line)
+{
+    QString result;
+
+    QRegExp uidPattern("UID\\s+(\\d+)");
+    uidPattern.setCaseSensitivity(Qt::CaseInsensitive);
+    if (uidPattern.indexIn(line) != -1) {
+        result = uidPattern.cap(1);
+    }
+
+    QRegExp bodyPattern("BODY\\[([^\\]]*)\\](<[^>]*>)?");
+    bodyPattern.setCaseSensitivity(Qt::CaseInsensitive);
+    if (bodyPattern.indexIn(line) != -1) {
+        QString section(bodyPattern.cap(1));
+        if (!section.isEmpty()) {
+            result.append(' ' + section + bodyPattern.cap(2));
+        }
+    }
+
+    return result;
 }
 
 
@@ -2150,15 +2211,13 @@ void ImapProtocol::sendUidSearch(MessageFlags flags, const QString &range)
 
 void ImapProtocol::sendUidFetch(FetchItemFlags items, const QString &uidList)
 {
-    _fsm->uidFetchState.setDataItems(items | F_Flags);
-    _fsm->uidFetchState.setUidList(uidList);
+    _fsm->uidFetchState.setUidList(uidList, (items | F_Flags));
     _fsm->setState(&_fsm->uidFetchState);
 }
 
 void ImapProtocol::sendUidFetchSection(const QString &uid, const QString &section, int start, int end)
 {
-    _fsm->uidFetchState.setDataItems(F_Uid | F_BodySection);
-    _fsm->uidFetchState.setSection(uid, section, start, end);
+    _fsm->uidFetchState.setSection(uid, section, start, end, (F_Uid | F_BodySection));
     _fsm->setState(&_fsm->uidFetchState);
 }
 

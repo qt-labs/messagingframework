@@ -121,6 +121,7 @@ class QMailPluginManagerPrivate
 {
 public:
     QMailPluginManagerPrivate(const QString& ident);
+    ~QMailPluginManagerPrivate();
 
 public:
     QMap<QString,QPluginLoader*> pluginMap;
@@ -143,6 +144,14 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 
     foreach(const QString& libname,libs)
         pluginMap[libname] = 0;
+}
+
+QMailPluginManagerPrivate::~QMailPluginManagerPrivate()
+{
+    foreach (QPluginLoader *lib, pluginMap.values()) {
+        lib->unload();
+        delete lib;
+    }
 }
 
 QMailPluginManager::QMailPluginManager(const QString& dir, QObject* parent)

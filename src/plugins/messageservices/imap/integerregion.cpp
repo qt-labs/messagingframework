@@ -325,6 +325,37 @@ bool IntegerRegion::isIntegerRegion(QStringList uids)
     return true;
 }
 
+/* 
+    Returns the list of integers contained by the description \a region.
+*/
+QList<int> IntegerRegion::toList(const QString &region)
+{
+    QList<int> result;
+
+    QRegExp range("(\\d+)(?::(\\d+))?(?:,)?");
+
+    int index = 0;
+    while ((index = range.indexIn(region, index)) != -1) {
+        index += range.cap(0).length();
+
+        int first = range.cap(1).toInt();
+        int second = first;
+        if (!range.cap(2).isEmpty()) {
+            second = range.cap(2).toInt();
+            if (second < first) {
+                second = first;
+            }
+        }
+
+        for ( ; first <= second; ++first) {
+            result.append(first);
+        }
+    }
+
+    return result;
+}
+
+
 #if 0
 //TODO Convert these tests to standard qunit style
 
@@ -369,16 +400,24 @@ QString IntegerRegion::toBinaryString(const IntegerRegion &ir)
   
   Run through some tests.
 */
-void IntegerRegion::tests()
+int IntegerRegion::tests()
 {
+    QList<int> values;
+    values << 12 << 13 << 16 << 20 << 22 << 23 << 24 << 27 << 28 << 34;
+
     QStringList list;
-    list << "12" << "13" << "16" << "20" << "22" << "23" << "24" << "27" << "28" << "34";
+    foreach (const int &v, values) {
+        list << QString::number(v);
+    }
+
     qMailLog(Messaging) << "Constructing from QStringList " << list;
     
     IntegerRegion ir(list);
     qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
     qMailLog(Messaging) << "IntegerRegion::IntegerRegion(QStringList) test1"
                         << ((ir.toString() == "12:13,16,20,22:24,27:28,34") ? "passed" : "failed");
+    qMailLog(Messaging) << "IntegerRegion::toList(QString) test1"
+                        << ((IntegerRegion::toList(ir.toString()) == values) ? "passed" : "failed");
     qMailLog(Messaging) << "Adding 31. Insert new region between existing regions.";
     ir.add(31);
     qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
@@ -423,6 +462,13 @@ void IntegerRegion::tests()
     qMailLog(Messaging) << "IntegerRegion::isIntegerRegion test5: " 
                     << (IntegerRegion::isIntegerRegion(hippo) ? "failed" : "passed");
 
+    QList<int> newValues;
+    foreach (const QString &number, ir.toStringList()) {
+        newValues << number.toInt();
+    }
+    qMailLog(Messaging) << "IntegerRegion::toList(QString) test2"
+                        << ((IntegerRegion::toList(ir.toString()) == newValues) ? "passed" : "failed");
+
     QString a("    --  -  --  --- -- -- -   --   -- -  -");
     QString b("  - -- -- ----  -   - -   -   -- --  -   ");
     QString c("               - - -   - -   -     -    -");
@@ -459,5 +505,9 @@ void IntegerRegion::tests()
     qMailLog(Messaging) << "c3 " << ar.toString();
     qMailLog(Messaging) << "IntegerRegion::fromString test8: " 
                         << ((ar.toString() == a3) ? "passed" : "failed");
+
+    return 1;
 }
+
+static const int testsRun = IntegerRegion::tests();
 #endif

@@ -179,6 +179,7 @@ public:
 
     const QMailMessagePartContainerPrivate* parentContainerPrivate() const;
 
+    bool contains(const QMailMessagePart::Location& location) const;
     const QMailMessagePart& partAt(const QMailMessagePart::Location& location) const;
     QMailMessagePart& partAt(const QMailMessagePart::Location& location);
 

@@ -168,7 +168,7 @@ static bool findFetchContinuationStart(const QMailMessage &message, const QMailM
 {
     if (message.id().isValid()) {
         *start = 0;
-        if (location.isValid()) {
+        if (location.isValid() && message.contains(location)) {
             const QMailMessagePart &part(message.partAt(location));
             if (part.hasBody()) {
                 *start = part.body().length();
@@ -538,17 +538,21 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
     QMailMessageId referringId(pair.second.containingMessageId());
     if (referringId.isValid()) {
         QMailMessage referer(referringId);
-        QMailMessagePart &part(referer.partAt(pair.second));
+        if (referer.contains(pair.second)) {
+            QMailMessagePart &part(referer.partAt(pair.second));
 
-        part.setReferenceResolution(url);
+            part.setReferenceResolution(url);
 
-        // Have we resolved all references in this message?
-        if (!hasUnresolvedReferences(referer)) {
-            referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
-        }
+            // Have we resolved all references in this message?
+            if (!hasUnresolvedReferences(referer)) {
+                referer.setStatus(QMailMessage::HasUnresolvedReferences, false);
+            }
 
-        if (!QMailStore::instance()->updateMessage(&referer)) {
-            qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+            if (!QMailStore::instance()->updateMessage(&referer)) {
+                qWarning() << "Unable to update message for account:" << referer.parentAccountId();
+            }
+        } else {
+            qWarning() << "Unable to resolve reference to invalid part:" << pair.second.toString(false);
         }
     } else {
         // Update this message with its own location reference
@@ -877,7 +881,7 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
 
         if (minimum > 0) {
             size = 1;
-        } else if (location.isValid()) {
+        } else if (location.isValid() && message.contains(location)) {
             // Find the size of this part
             const QMailMessagePart &part(message.partAt(location));
             size = part.indicativeSize();

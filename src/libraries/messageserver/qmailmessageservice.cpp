@@ -56,32 +56,30 @@
 
 namespace {
 
-typedef QMap<QString, QMailMessageServicePlugin*> PluginMap;
-
-PluginMap initMap(QMailPluginManager &manager)
+class PluginMap : public QMap<QString, QMailMessageServicePlugin*>
 {
-    PluginMap map;
-
-    foreach (const QString &item, manager.list()) {
-        QObject *instance(manager.instance(item));
-        if (QMailMessageServicePlugin *iface = qobject_cast<QMailMessageServicePlugin*>(instance))
-            map.insert(iface->key(), iface);
+public:
+    PluginMap()
+        : QMap<QString, QMailMessageServicePlugin*>(),
+          _manager(PLUGIN_KEY)
+    {
+        foreach (const QString &item, _manager.list()) {
+            QObject *instance(_manager.instance(item));
+            if (QMailMessageServicePlugin *iface = qobject_cast<QMailMessageServicePlugin*>(instance))
+                insert(iface->key(), iface);
+        }
     }
+    
+private:
+    QMailPluginManager _manager;
+};
 
-    return map;
-}
-
-PluginMap &pluginMap()
-{
-    static QMailPluginManager manager(PLUGIN_KEY);
-    static PluginMap map(initMap(manager));
-    return map;
-}
+Q_GLOBAL_STATIC(PluginMap, pluginMap);
 
 QMailMessageServicePlugin *mapping(const QString &key)
 {
-    PluginMap::const_iterator it = pluginMap().find(key);
-    if (it != pluginMap().end())
+    PluginMap::const_iterator it = pluginMap()->find(key);
+    if (it != pluginMap()->end())
         return it.value();
 
     qMailLog(Messaging) << "Unable to map service for key:" << key;
@@ -125,10 +123,10 @@ QMailMessageServicePlugin *mapping(const QString &key)
 QStringList QMailMessageServiceFactory::keys(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Any)
-        return pluginMap().keys();
+        return pluginMap()->keys();
 
     QStringList result;
-    foreach (QMailMessageServicePlugin *plugin, pluginMap().values())
+    foreach (QMailMessageServicePlugin *plugin, pluginMap()->values())
         if (plugin->supports(type))
             result.append(plugin->key());
 

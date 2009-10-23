@@ -1075,13 +1075,13 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             // If this message was previously marked read, that is no longer true
             mail.setStatus(QMailMessage::Read, false);
         } else {
-            // TEMPORARY:
-            const char *sectionString(section.toAscii());
-
             // This is data for a sub-part of the message
             QMailMessagePart::Location partLocation(section);
             if (!partLocation.isValid(false)) {
                 qWarning() << "Unable to locate part for invalid section:" << section;
+                return;
+            } else if (!mail.contains(partLocation)) {
+                qWarning() << "Unable to update invalid part for section:" << section;
                 return;
             }
 
