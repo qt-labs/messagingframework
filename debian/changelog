@@ -1,3 +1,10 @@
+qt4-messagingframework (2009W44-0maemo1) hardy; urgency=low
+
+  * Pull from upstream.
+  * Update patch to add upstart support for message server.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Tue, 27 Oct 2009 17:42:36 +1000
+
 qt4-messagingframework (2009W40-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
