@@ -6369,6 +6369,25 @@ index 0000000..cf1c939
 +set -e
 +
 +/etc/init.d/messageserver start
+diff --git a/src/tools/messageserver/etc/event.d/messageserver b/src/tools/messageserver/etc/event.d/messageserver
+new file mode 100644
+index 0000000..b1e8a21
+--- /dev/null
++++ b/src/tools/messageserver/etc/event.d/messageserver
+@@ -0,0 +1,13 @@
++description "QMF Message Server"
++author "Dmitry Zelenkovsky"
++
++console none
++
++start on XSESSIONS_STARTING
++stop on stopped xomap
++
++respawn
++
++
++exec su - user -c "DISPLAY=:0 /usr/bin/messageserver"
++
 diff --git a/src/tools/messageserver/etc/messageserver b/src/tools/messageserver/etc/messageserver
 new file mode 100755
 index 0000000..e9ccb1a
@@ -6462,24 +6481,22 @@ index 0000000..e9ccb1a
 +exit 0
 +
 diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
-index ac1748f..dee4947 100644
+index a5a7e18..2b577df 100644
 --- a/src/tools/messageserver/messageserver.pro
 +++ b/src/tools/messageserver/messageserver.pro
-@@ -41,3 +41,14 @@ TRANSLATIONS += messageserver-ar.ts \
+@@ -41,8 +41,8 @@ TRANSLATIONS += messageserver-ar.ts \
                  messageserver-zh_CN.ts \
                  messageserver-zh_TW.ts
  
-+initstart.files = etc/messageserver
-+initstart.path  = /etc/init.d
+-unix {
+-    # Uncomment this to shutdown cleanly on termination signal
+-    #DEFINES += HANDLE_SHUTDOWN_SIGNALS
+-}
++eventd.files = etc/event.d/messageserver
++eventd.path  = /etc/event.d
 +
-+xsessionpost.files = etc/Xsession/51messageserver
-+xsessionpost.path  = /etc/X11/Xsession.post
-+
-+xsessionactdead.files = etc/Xsession/51messageserver
-+xsessionactdead.path  = /etc/X11/Xsession.actdead
-+
-+INSTALLS += target initstart xsessionpost xsessionactdead
-+
++INSTALLS += target eventd
+ 
 diff --git a/tests/tst_qmailstore/tst_qmailstore.cpp b/tests/tst_qmailstore/tst_qmailstore.cpp
 index b806edf..f531186 100644
 --- a/tests/tst_qmailstore/tst_qmailstore.cpp
