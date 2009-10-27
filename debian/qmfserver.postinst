@@ -2,6 +2,11 @@
 #
 # Start messageserver as soon as it was installed
 #
-#set -e
+set -e
 
-#/etc/init.d/messageserver start
+if [ ! -d /scratchbox ]; then
+    echo "Starting Message server...";
+    start messageserver
+else
+    echo "Running under srcratchbox, do not start message server.";
+fi

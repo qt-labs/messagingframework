@@ -2,8 +2,13 @@
 #
 # We should stop messageserver before removing the package.
 #
-#set -e
+set -e
 
-#/etc/init.d/messageserver stop
+if [ ! -d /scratchbox ]; then
+    echo "Stopping Message server...";
+    stop messageserver
+else 
+    echo "Runing under scrachbox, do not stop Message server.";
+fi
 
 

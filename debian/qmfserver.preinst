@@ -1,8 +1,14 @@
 #!/bin/sh
+#
 # Check if there is message server installed already, stop it first.
 #
+set -e
 
-#if [ -x /etc/init.d/messageserver ]; then
-#    /etc/init.d/messageserver stop
-#fi
-
+if [ ! -d /scratchbox ]; then
+    if [ -x /etc/event.d/messageserver ]; then
+        echo "Stop Message server...";
+	stop messageserver
+    fi
+else
+    echo "Running under scratchbox, do not stop Message server.";
+fi

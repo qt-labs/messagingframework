@@ -1,4 +1,2 @@
-etc/init.d/messageserver
-etc/X11/Xsession.post/51messageserver
-etc/X11/Xsession.actdead/51messageserver
+etc/event.d/messageserver
 usr/bin/messageserver
