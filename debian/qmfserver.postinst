@@ -4,7 +4,7 @@
 #
 set -e
 
-if [ ! -d /scratchbox ]; then
+if [ ! -d /targets/links/scratchbox.config ]; then
     echo "Starting Message server...";
     start messageserver
 else

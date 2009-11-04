@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W44-0maemo2) hardy; urgency=low
+
+  * Fix postinst script to work with scratchbox2.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Wed, 04 Nov 2009 18:03:11 +1000
+
 qt4-messagingframework (2009W44-0maemo1) hardy; urgency=low
 
   * Pull from upstream.
