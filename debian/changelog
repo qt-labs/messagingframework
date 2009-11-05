@@ -1,6 +1,7 @@
 qt4-messagingframework (2009W44-0maemo2) hardy; urgency=low
 
   * Fix postinst script to work with scratchbox2.
+  * Fixes: NB#145329 - Errorneous checking of scratchbox in qmfserver package
 
  -- Shane Bradley <shane.bradley@nokia.com>  Wed, 04 Nov 2009 18:03:11 +1000
 
