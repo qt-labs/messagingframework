@@ -4,9 +4,9 @@
 #
 set -e
 
-if [ ! -d /targets/links/scratchbox.config ]; then
+if [ ! -e /targets/links/scratchbox.config ]; then
     echo "Starting Message server...";
     start messageserver
 else
-    echo "Running under srcratchbox, do not start message server.";
+    echo "Running under scratchbox, do not start message server.";
 fi

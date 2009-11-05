@@ -4,7 +4,7 @@
 #
 set -e
 
-if [ ! -d /scratchbox ]; then
+if [ ! -e /targets/links/scratchbox.config ]; then
     echo "Stopping Message server...";
     stop messageserver
 else 

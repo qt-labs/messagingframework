@@ -4,7 +4,7 @@
 #
 set -e
 
-if [ ! -d /scratchbox ]; then
+if [ ! -e /targets/links/scratchbox.config ]; then
     if [ -x /etc/event.d/messageserver ]; then
         echo "Stop Message server...";
 	stop messageserver
