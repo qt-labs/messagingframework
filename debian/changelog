@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W44-0maemo3) hardy; urgency=low
+
+  * Update patch to add integration with Accounts subsystem.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 12 Nov 2009 18:22:47 +1000
+
 qt4-messagingframework (2009W44-0maemo2) hardy; urgency=low
 
   * Fix postinst script to work with scratchbox2.

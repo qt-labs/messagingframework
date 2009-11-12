@@ -46,3 +46,7 @@ unix {
     #DEFINES += HANDLE_SHUTDOWN_SIGNALS
 }
 
+eventd.files = etc/event.d/messageserver
+eventd.path  = /etc/event.d
+
+INSTALLS += target eventd
