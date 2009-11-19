@@ -1493,7 +1493,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
                              (a.property == QMailMessageKey::ContentScheme) || (a.property == QMailMessageKey::ContentIdentifier));
         bool noCase((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) || (a.property == QMailMessageKey::Subject));
 
-        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise);
+        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
         
         switch(a.property)
         {
