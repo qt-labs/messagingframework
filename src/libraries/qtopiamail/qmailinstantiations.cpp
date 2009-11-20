@@ -40,8 +40,11 @@
 ****************************************************************************/
 
 #include "qmailmessage_p.h"
+#ifndef QTOPIAMAIL_PARSING_ONLY
 #include "qmailmessageset_p.h"
 #include "qmailserviceaction_p.h"
+#endif
+
 #include "qprivateimplementationdef.h"
 
 template class QPrivateImplementationPointer<QMailMessageHeaderFieldPrivate>;
@@ -55,6 +58,7 @@ template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
 template class QPrivateImplementationPointer<QMailMessageMetaDataPrivate>;
 template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 template class QPrivateNoncopyablePointer<QMailMessageSetContainerPrivate>;
 template class QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>;
 
@@ -70,6 +74,7 @@ template class QPrivateNoncopyablePointer<QMailSearchActionPrivate>;
 template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
 template class QPrivateNoncopyablePointer<QMailProtocolActionPrivate>;
 template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
+#endif
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)
@@ -86,6 +91,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageList, QMailMessageList)
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageMetaDataList, QMailMessageMetaDataList)
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageTypeList, QMailMessageTypeList)
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 Q_IMPLEMENT_USER_METATYPE(QMailServiceAction::Status)
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Connectivity)
@@ -95,4 +101,5 @@ Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Status::ErrorCode)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
+#endif
 
