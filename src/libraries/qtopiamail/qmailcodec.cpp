@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include <qmailcodec.h>
+#include "qmailcodec.h"
+#include "qmaillog.h"
 #include <QIODevice>
 #include <QTextCodec>
-#include "qmaillog.h"
-#include <ctype.h>
 #include <QtDebug>
+#include <ctype.h>
 
 // Allow these values to be reduced from test harness code:
 int QTOPIAMAIL_EXPORT MaxCharacters = QMailCodec::ChunkCharacters;
