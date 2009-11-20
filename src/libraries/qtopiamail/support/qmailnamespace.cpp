@@ -261,6 +261,7 @@ QString QMail::messageSettingsPath()
     return QApplication::applicationDirPath() + "/";
 }
 
+#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!
     Returns the database where the Messaging framework will store its message meta-data. 
     If the database does not exist, it is created.
@@ -284,6 +285,7 @@ QSqlDatabase QMail::createDatabase()
     }
     return db;
 }
+#endif
 
 /*!
     \internal
