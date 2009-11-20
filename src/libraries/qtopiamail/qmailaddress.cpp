@@ -44,6 +44,8 @@
 #include "qmailmessage.h"
 #include "qmailnamespace.h"
 
+namespace {
+
 struct CharacterProcessor
 {
     virtual ~CharacterProcessor();
@@ -456,6 +458,86 @@ static QString removeWhitespace(const QString& input)
     return remover._result;
 }
 
+QPair<int, int> findDelimiters(const QString& text)
+{
+    int first = -1;
+    int second = -1;
+
+    bool quoted = false;
+    bool escaped = false;
+
+    const QChar* const begin = text.constData();
+    const QChar* const end = begin + text.length();
+    for (const QChar* it = begin; it != end; ++it ) {
+        if ( !escaped && ( *it == '\\' ) ) {
+            escaped = true;
+            continue;
+        }
+
+        if ( !quoted && *it == '"' && !escaped ) {
+            quoted = true;
+        }
+        else if ( quoted && *it == '"' && !escaped ) {
+            quoted = false;
+        }
+
+        if ( !quoted ) {
+            if ( first == -1 && *it == '<' ) {
+                first = (it - begin);
+            }
+            else if ( second == -1 && *it == '>' ) {
+                second = (it - begin);
+                break;
+            }
+        }
+
+        escaped = false;
+    }
+
+    return qMakePair(first, second);
+}
+
+void parseMailbox(QString& input, QString& name, QString& address, QString& suffix)
+{
+    // See if there is a trailing suffix
+    int pos = input.indexOf("/TYPE=");
+    if (pos != -1)
+    {
+        suffix = input.mid(pos + 6);
+        input = input.left(pos);
+    }
+
+    // Separate the email address from the name
+    QPair<int, int> delimiters = findDelimiters(input);
+
+    if (delimiters.first == -1 && delimiters.second == -1)
+    {
+        name = address = input.trimmed();
+    }
+    else 
+    {
+        if (delimiters.first == -1)
+        {
+            // Unmatched '>'
+            address = input.left( delimiters.second );
+        }
+        else
+        {
+            name = input.left( delimiters.first );
+
+            if (delimiters.second == -1)
+                address = input.right(input.length() - delimiters.first - 1);
+            else
+                address = input.mid(delimiters.first + 1, (delimiters.second - delimiters.first - 1)).trimmed();
+        }
+
+        if ( name.isEmpty() ) 
+            name = address;
+    } 
+}
+
+}
+
 
 /* QMailAddress */
 class QMailAddressPrivate : public QSharedData
@@ -503,84 +585,6 @@ QMailAddressPrivate::QMailAddressPrivate()
     : _group(false),
       _searchCompleted(false)
 {
-}
-
-static QPair<int, int> findDelimiters(const QString& text)
-{
-    int first = -1;
-    int second = -1;
-
-    bool quoted = false;
-    bool escaped = false;
-
-    const QChar* const begin = text.constData();
-    const QChar* const end = begin + text.length();
-    for (const QChar* it = begin; it != end; ++it ) {
-        if ( !escaped && ( *it == '\\' ) ) {
-            escaped = true;
-            continue;
-        }
-
-        if ( !quoted && *it == '"' && !escaped ) {
-            quoted = true;
-        }
-        else if ( quoted && *it == '"' && !escaped ) {
-            quoted = false;
-        }
-
-        if ( !quoted ) {
-            if ( first == -1 && *it == '<' ) {
-                first = (it - begin);
-            }
-            else if ( second == -1 && *it == '>' ) {
-                second = (it - begin);
-                break;
-            }
-        }
-
-        escaped = false;
-    }
-
-    return qMakePair(first, second);
-}
-
-static void parseMailbox(QString& input, QString& name, QString& address, QString& suffix)
-{
-    // See if there is a trailing suffix
-    int pos = input.indexOf("/TYPE=");
-    if (pos != -1)
-    {
-        suffix = input.mid(pos + 6);
-        input = input.left(pos);
-    }
-
-    // Separate the email address from the name
-    QPair<int, int> delimiters = findDelimiters(input);
-
-    if (delimiters.first == -1 && delimiters.second == -1)
-    {
-        name = address = input.trimmed();
-    }
-    else 
-    {
-        if (delimiters.first == -1)
-        {
-            // Unmatched '>'
-            address = input.left( delimiters.second );
-        }
-        else
-        {
-            name = input.left( delimiters.first );
-
-            if (delimiters.second == -1)
-                address = input.right(input.length() - delimiters.first - 1);
-            else
-                address = input.mid(delimiters.first + 1, (delimiters.second - delimiters.first - 1)).trimmed();
-        }
-
-        if ( name.isEmpty() ) 
-            name = address;
-    } 
 }
 
 QMailAddressPrivate::QMailAddressPrivate(const QString& addressText) 
