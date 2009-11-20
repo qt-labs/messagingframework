@@ -472,7 +472,7 @@ static QString decodeWordSequence(const QByteArray& str)
     return out;
 }
 
-enum TokenType
+enum EncodingTokenType
 {
     Whitespace,
     Word,
@@ -480,9 +480,9 @@ enum TokenType
 };
 
 typedef QPair<const QChar*, int> TokenRange;
-typedef QPair<TokenType, TokenRange> Token;
+typedef QPair<EncodingTokenType, TokenRange> Token;
 
-static Token makeToken(TokenType type, const QChar* begin, const QChar* end, bool escaped)
+static Token makeToken(EncodingTokenType type, const QChar* begin, const QChar* end, bool escaped)
 {
     return qMakePair(type, qMakePair(begin, (int)(end - begin) - (escaped ? 1 : 0)));
 }
@@ -498,7 +498,7 @@ static QList<Token> tokenSequence(const QString& input)
     if (it != end) 
     {
         const QChar* token = it;
-        TokenType state = ((*it) == '"' ? Quote : ((*it).isSpace() ? Whitespace : Word)); 
+        EncodingTokenType state = ((*it) == '"' ? Quote : ((*it).isSpace() ? Whitespace : Word)); 
 
         for (++it; it != end; ++it) 
         {
