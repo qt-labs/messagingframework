@@ -5066,6 +5066,7 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
 {
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 void QMailMessageMetaDataPrivate::initializeFlags()
 {
     static bool flagsInitialized = false;
@@ -5097,6 +5098,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         localOnlyFlag = registerFlag("LocalOnly");
     }
 }
+#endif
 
 void QMailMessageMetaDataPrivate::setMessageType(QMailMessage::MessageType type)
 {
