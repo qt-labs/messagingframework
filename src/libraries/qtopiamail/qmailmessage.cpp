@@ -40,14 +40,18 @@
 ****************************************************************************/
 
 #include "qmailmessage_p.h"
+#include "qmailaddress.h"
+#include "qmailcodec.h"
 #include "qmaillog.h"
-#include <qmailaddress.h>
-#include <qmailcodec.h>
 #include "qmailnamespace.h"
-#include <qmailstore.h>
-#include <qmailtimestamp.h>
-#include "qmailaccount.h"
+#include "qmailtimestamp.h"
 #include "longstring_p.h"
+
+#ifndef QTOPIAMAIL_PARSING_ONLY
+#include "qmailaccount.h"
+#include "qmailfolder.h"
+#include "qmailstore.h"
+#endif
 
 #include <qcryptographichash.h>
 #include <qdir.h>
@@ -5099,6 +5103,7 @@ void QMailMessageMetaDataPrivate::setMessageType(QMailMessage::MessageType type)
     updateMember(_messageType, type);
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 void QMailMessageMetaDataPrivate::setParentFolderId(const QMailFolderId& id)
 {
     updateMember(_parentFolderId, id);
@@ -5108,6 +5113,7 @@ void QMailMessageMetaDataPrivate::setPreviousParentFolderId(const QMailFolderId&
 {
     updateMember(_previousParentFolderId, id);
 }
+#endif
 
 void QMailMessageMetaDataPrivate::setId(const QMailMessageId& id)
 {
@@ -5119,10 +5125,12 @@ void QMailMessageMetaDataPrivate::setStatus(quint64 newStatus)
     updateMember(_status, newStatus);
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 void QMailMessageMetaDataPrivate::setParentAccountId(const QMailAccountId& id)
 {
     updateMember(_parentAccountId, id);
 }
+#endif
 
 void QMailMessageMetaDataPrivate::setServerUid(const QString &uid)
 {
@@ -5203,6 +5211,7 @@ void QMailMessageMetaDataPrivate::setUnmodified()
     _customFieldsModified = false;
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 {
     if (!QMailStore::instance()->registerMessageStatusFlag(name)) {
@@ -5211,6 +5220,7 @@ quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 
     return QMailMessage::statusMask(name);
 }
+#endif
 
 QString QMailMessageMetaDataPrivate::customField(const QString &name) const
 {
@@ -5257,12 +5267,16 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _messageType;
     stream << _status;
     stream << _contentType;
+#ifndef QTOPIAMAIL_PARSING_ONLY
     stream << _parentAccountId;
+#endif
     stream << _serverUid;
     stream << _size;
     stream << _id;
+#ifndef QTOPIAMAIL_PARSING_ONLY
     stream << _parentFolderId;
     stream << _previousParentFolderId;
+#endif
     stream << _subject;
     stream << _date.toString();
     stream << _receivedDate.toString();
@@ -5285,12 +5299,16 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _messageType;
     stream >> _status;
     stream >> _contentType;
+#ifndef QTOPIAMAIL_PARSING_ONLY
     stream >> _parentAccountId;
+#endif
     stream >> _serverUid;
     stream >> _size;
     stream >> _id;
+#ifndef QTOPIAMAIL_PARSING_ONLY
     stream >> _parentFolderId;
     stream >> _previousParentFolderId;
+#endif
     stream >> _subject;
     stream >> timeStamp;
     _date = QMailTimeStamp(timeStamp);
@@ -5592,6 +5610,7 @@ QMailMessageMetaData::QMailMessageMetaData()
 {
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Constructs a message meta data object from data stored in the message store with QMailMessageId \a id.
 */
@@ -5610,6 +5629,7 @@ QMailMessageMetaData::QMailMessageMetaData(const QString& uid, const QMailAccoun
 {
     *this = QMailStore::instance()->messageMetaData(uid, accountId);
 }
+#endif
 
 /*!
     Sets the MessageType of the message to \a type.
@@ -5643,6 +5663,7 @@ QMailMessageMetaData::MessageType QMailMessageMetaData::messageType() const
     return impl(this)->_messageType;
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Return the QMailFolderId of the folder that contains the message.
 */
@@ -5658,6 +5679,7 @@ void QMailMessageMetaData::setParentFolderId(const QMailFolderId &id)
 {
     impl(this)->setParentFolderId(id);
 }
+#endif
 
 /*!
     Returns the Qt Extended unique QMailMessageId of the message.
@@ -5805,10 +5827,10 @@ void QMailMessageMetaData::setStatus(quint64 mask, bool set)
     impl(this)->setStatus(newStatus);
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Returns the id of the originating account for the message.
 */  
-
 QMailAccountId QMailMessageMetaData::parentAccountId() const
 {
     return impl(this)->_parentAccountId;
@@ -5821,6 +5843,7 @@ void QMailMessageMetaData::setParentAccountId(const QMailAccountId& id)
 {
     impl(this)->setParentAccountId(id);
 }
+#endif
 
 /*!
     Returns the identifier for the message on the originating server.
@@ -5883,6 +5906,7 @@ void QMailMessageMetaData::setContent(QMailMessage::ContentType type)
     impl(this)->setContent(type);
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Return the QMailFolderId of the folder that contained the message before it was 
     moved into the current parent folder.
@@ -5900,6 +5924,7 @@ void QMailMessageMetaData::setPreviousParentFolderId(const QMailFolderId &id)
 {
     impl(this)->setPreviousParentFolderId(id);
 }
+#endif
 
 /*!
     Returns the scheme used to store the content of this message.
@@ -6007,6 +6032,7 @@ void QMailMessageMetaData::setUnmodified()
     impl(this)->setUnmodified();
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Returns the status bitmask needed to test the result of QMailMessageMetaData::status() 
     against the QMailMessageMetaData status flag registered with the identifier \a flagName.
@@ -6017,6 +6043,7 @@ quint64 QMailMessageMetaData::statusMask(const QString &flagName)
 {
     return QMailStore::instance()->messageStatusMask(flagName);
 }
+#endif
 
 /*! 
     Returns the value recorded in the custom field named \a name.
@@ -6076,11 +6103,13 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
     d->_customFieldsModified = set;
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*! \internal */
 void QMailMessageMetaData::initStore()
 {
     QMailMessageMetaDataPrivate::initializeFlags();
 }
+#endif
 
 /*! 
     \fn QMailMessageMetaData::serialize(Stream&) const
@@ -6386,6 +6415,7 @@ QMailMessage::QMailMessage()
 {
 }
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
 /*!
     Constructs a message object from data stored in the message store with QMailMessageId \a id.
 */
@@ -6406,6 +6436,7 @@ QMailMessage::QMailMessage(const QString& uid, const QMailAccountId& accountId)
 {
     *this = QMailStore::instance()->message(uid, accountId);
 }
+#endif
 
 /*!
     Constructs a mail message from the RFC 2822 data contained in \a byteArray.

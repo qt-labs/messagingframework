@@ -547,14 +547,18 @@ public:
     static const quint64 &LocalOnly;
 
     QMailMessageMetaData();
+#ifndef QTOPIAMAIL_PARSING_ONLY
     QMailMessageMetaData(const QMailMessageId& id);
     QMailMessageMetaData(const QString& uid, const QMailAccountId& accountId);
+#endif
 
     virtual QMailMessageId id() const;
     virtual void setId(const QMailMessageId &id);
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     virtual QMailFolderId parentFolderId() const;
     virtual void setParentFolderId(const QMailFolderId &id);
+#endif
 
     virtual MessageType messageType() const;
     virtual void setMessageType(MessageType t);
@@ -579,8 +583,10 @@ public:
     virtual void setStatus(quint64 newStatus);
     virtual void setStatus(quint64 mask, bool set);
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     virtual QMailAccountId parentAccountId() const;
     virtual void setParentAccountId(const QMailAccountId& id);
+#endif
 
     virtual QString serverUid() const;
     virtual void setServerUid(const QString &s);
@@ -593,8 +599,10 @@ public:
     virtual ContentType content() const;
     virtual void setContent(ContentType type);
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     virtual QMailFolderId previousParentFolderId() const;
     virtual void setPreviousParentFolderId(const QMailFolderId &id);
+#endif
 
     virtual QString contentScheme() const;
     virtual bool setContentScheme(const QString &s);
@@ -611,7 +619,9 @@ public:
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     static quint64 statusMask(const QString &flagName);
+#endif
 
     QString customField(const QString &name) const;
     void setCustomField(const QString &name, const QString &value);
@@ -637,7 +647,9 @@ private:
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     static void initStore();
+#endif
 };
 
 class QMailMessagePrivate;
@@ -658,8 +670,10 @@ public:
     static QMailMessage fromRfc2822File(const QString& fileName);
 
     QMailMessage();
+#ifndef QTOPIAMAIL_PARSING_ONLY
     QMailMessage(const QMailMessageId& id);
     QMailMessage(const QString& uid, const QMailAccountId& accountId);
+#endif
 
     QByteArray toRfc2822(EncodingFormat format = TransmissionFormat) const;
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;
