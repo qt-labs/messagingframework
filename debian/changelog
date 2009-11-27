@@ -1,3 +1,13 @@
+qt4-messagingframework (2009W44-0maemo4) hardy; urgency=low
+
+  * Integration with Accounts subsustem finished, all unit tests are passed (except tst_QMailStoreKeys::accountCustomField)
+  * Integration with Tracker is partly done:
+       - Indexing of messages is implemented.
+       - Indexing of accounts and folders not yet.
+  * Integration with CI and automatic unit testing is done.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Fri, 27 Nov 2009 17:52:13 +1000
+
 qt4-messagingframework (2009W44-0maemo3) hardy; urgency=low
 
   * Update patch to add integration with Accounts subsystem.
