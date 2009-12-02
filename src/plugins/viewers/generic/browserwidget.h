@@ -42,13 +42,11 @@
 #ifndef BROWSERWIDGET_H
 #define BROWSERWIDGET_H
 
-#include <QList>
 #include <qmailaddress.h>
-#include <QMap>
+#include <QList>
 #include <QSet>
 #include <QString>
 #include <QUrl>
-#include <QVariant>
 #include <QWidget>
 
 class QMailMessage;
@@ -58,7 +56,7 @@ class QMailMessagePartContainer;
 class ContentAccessManager;
 class QWebView;
 #else
-class QTextBrowser;
+class ContentRenderer;
 #endif
 
 class BrowserWidget : public QWidget
@@ -69,8 +67,7 @@ public:
     BrowserWidget(QWidget *parent = 0);
 
 #ifndef USE_WEBKIT
-    void setResource( const QUrl& name, QVariant var );
-    virtual QVariant loadResource(int type, const QUrl& name);
+    void setResource(const QUrl& name, QVariant var);
 #endif
 
     void clearResources();
@@ -122,14 +119,13 @@ private:
     static QString refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing);
 
 private:
-    QMap<QUrl, QVariant> resourceMap;
     QString (BrowserWidget::*replySplitter)(const QString&) const;
     mutable QList<QString> numbers;
 #ifdef USE_WEBKIT
     ContentAccessManager *m_accessManager;
     QWebView* m_webView;
 #else
-    QTextBrowser* m_textBrowser;
+    ContentRenderer *m_renderer;
 #endif
 
 private:

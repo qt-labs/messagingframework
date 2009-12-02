@@ -40,17 +40,19 @@
 ****************************************************************************/
 
 #include "browserwidget.h"
-#include <QImageReader>
-#include <QKeyEvent>
-#include <QStyle>
-#include <QDebug>
-#include <QApplication>
+
 #include <qmailaddress.h>
 #include <qmailmessage.h>
 #include <qmailtimestamp.h>
-#include <limits.h>
-#include <QVBoxLayout>
+
+#include <QApplication>
+#include <QDebug>
+#include <QImageReader>
+#include <QKeyEvent>
+#include <QMenu>
+#include <QStyle>
 #include <QTextBrowser>
+#include <QVBoxLayout>
 #ifdef USE_WEBKIT
 #include <QBuffer>
 #include <QNetworkAccessManager>
@@ -58,8 +60,12 @@
 #include <QNetworkReply>
 #include <QTimer>
 #include <QWebView>
+#else
+#include <QMap>
+#include <QVariant>
 #endif
-#include <QMenu>
+
+#include <limits.h>
 
 static QColor replyColor(Qt::darkGreen);
 
@@ -196,6 +202,53 @@ QNetworkReply *ContentAccessManager::createRequest(Operation op, const QNetworkR
 
     return QNetworkAccessManager::createRequest(op, req, outgoingData);
 }
+#else
+class ContentRenderer : public QTextBrowser
+{
+    Q_OBJECT
+
+public:
+    ContentRenderer(QWidget *parent);
+    ~ContentRenderer();
+
+    void setResource(const QUrl &name, const QVariant &var);
+    virtual QVariant loadResource(int type, const QUrl &name);
+
+    void clear();
+
+private:
+    QMap<QUrl, QVariant> m_data;
+};
+
+ContentRenderer::ContentRenderer(QWidget *parent)
+    : QTextBrowser(parent)
+{
+}
+
+ContentRenderer::~ContentRenderer()
+{
+}
+
+void ContentRenderer::setResource(const QUrl& name, const QVariant &var)
+{
+    if (!m_data.contains(name)) {
+        m_data.insert(name, var);
+    }
+}
+
+void ContentRenderer::clear()
+{
+    m_data.clear();
+}
+
+QVariant ContentRenderer::loadResource(int type, const QUrl& name)
+{
+    if (m_data.contains(name)) {
+        return m_data[name];
+    }
+
+    return QTextBrowser::loadResource(type, name);
+}
 #endif
 
 BrowserWidget::BrowserWidget( QWidget *parent  )
@@ -217,14 +270,14 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
 
     l->addWidget(m_webView);
 #else
-    m_textBrowser = new QTextBrowser(this);
-    m_textBrowser->setFrameStyle(QFrame::NoFrame);
-    m_textBrowser->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_textBrowser->setOpenLinks(false);
-    connect(m_textBrowser,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
-    connect(m_textBrowser,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
+    m_renderer = new ContentRenderer(this);
+    m_renderer->setFrameStyle(QFrame::NoFrame);
+    m_renderer->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_renderer->setOpenLinks(false);
+    connect(m_renderer,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
+    connect(m_renderer,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
 
-    l->addWidget(m_textBrowser);
+    l->addWidget(m_renderer);
 #endif
 
     setFocusPolicy( Qt::StrongFocus );
@@ -233,9 +286,7 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
 #ifndef USE_WEBKIT
 void BrowserWidget::setResource( const QUrl& name, QVariant var )
 {
-    if (!resourceMap.contains(name)) {
-        resourceMap.insert(name, var);
-    }
+    m_renderer->setResource(name, var);
 }
 #endif
 
@@ -244,19 +295,10 @@ void BrowserWidget::clearResources()
 #ifdef USE_WEBKIT
     m_accessManager->clear();
 #else
-    resourceMap.clear();
+    m_renderer->clear();
 #endif
     numbers.clear();
 }
-
-#ifndef USE_WEBKIT
-QVariant BrowserWidget::loadResource(int type, const QUrl& name)
-{
-    if (resourceMap.contains(name))
-        return resourceMap[name];
-    return m_textBrowser->loadResource(type, name);
-}
-#endif
 
 QList<QString> BrowserWidget::embeddedNumbers() const
 {
@@ -406,9 +448,9 @@ void BrowserWidget::contextMenuRequested(const QPoint& pos)
     menu.addActions(m_webView->actions());
     menu.exec(mapToGlobal(pos));
 #else
-    QMenu* menu = m_textBrowser->createStandardContextMenu();
+    QMenu* menu = m_renderer->createStandardContextMenu();
     menu->addSeparator();
-    menu->addActions(m_textBrowser->actions());
+    menu->addActions(m_renderer->actions());
     menu->exec(mapToGlobal(pos));
     delete menu;
 #endif
@@ -583,7 +625,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
 #ifdef USE_WEBKIT
     // TODO
 #else
-    m_textBrowser->setPlainText(text);
+    m_renderer->setPlainText(text);
 #endif
 }
 
@@ -896,7 +938,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     m_webView->setHtml(html);
     m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 #else
-    m_textBrowser->setHtml(html);
+    m_renderer->setHtml(html);
 #endif
 }
 
@@ -1331,7 +1373,7 @@ void BrowserWidget::scrollToAnchor(const QString& anchor)
     // TODO
     Q_UNUSED(anchor);
 #else
-    m_textBrowser->scrollToAnchor(anchor);
+    m_renderer->scrollToAnchor(anchor);
 #endif
 }
 
@@ -1341,7 +1383,7 @@ void BrowserWidget::setPlainText(const QString& text)
     // TODO
     Q_UNUSED(text);
 #else
-    m_textBrowser->setPlainText(text);
+    m_renderer->setPlainText(text);
 #endif
 }
 
@@ -1350,7 +1392,7 @@ void BrowserWidget::addAction(QAction* action)
 #ifdef USE_WEBKIT
     m_webView->addAction(action);
 #else
-    m_textBrowser->addAction(action);
+    m_renderer->addAction(action);
 #endif
 }
 
@@ -1359,7 +1401,7 @@ void BrowserWidget::addActions(const QList<QAction*>& actions)
 #ifdef USE_WEBKIT
     m_webView->addActions(actions);
 #else
-    m_textBrowser->addActions(actions);
+    m_renderer->addActions(actions);
 #endif
 }
 
@@ -1368,7 +1410,7 @@ void BrowserWidget::removeAction(QAction* action)
 #ifdef USE_WEBKIT
     m_webView->removeAction(action);
 #else
-    m_textBrowser->removeAction(action);
+    m_renderer->removeAction(action);
 #endif
 }
 
@@ -1407,7 +1449,5 @@ QString BrowserWidget::refUrl(const QString& url, const QString& scheme, const Q
     return Qt::escape(leading) + "<a href=\"" + target + "\">" + escaped + "</a>" + Qt::escape(trailing);
 }
 
-#ifdef USE_WEBKIT
 #include "browserwidget.moc"
-#endif
 
