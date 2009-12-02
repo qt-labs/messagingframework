@@ -55,6 +55,7 @@ class QMailMessage;
 class QMailMessagePart;
 class QMailMessagePartContainer;
 #ifdef USE_WEBKIT
+class ContentAccessManager;
 class QWebView;
 #else
 class QTextBrowser;
@@ -67,12 +68,14 @@ class BrowserWidget : public QWidget
 public:
     BrowserWidget(QWidget *parent = 0);
 
+#ifndef USE_WEBKIT
     void setResource( const QUrl& name, QVariant var );
+    virtual QVariant loadResource(int type, const QUrl& name);
+#endif
+
     void clearResources();
 
     void setMessage( const QMailMessage& mail, bool plainTextMode );
-
-    virtual QVariant loadResource(int type, const QUrl& name);
 
     QList<QString> embeddedNumbers() const;
 
@@ -98,8 +101,8 @@ private:
     void displayPlainText(const QMailMessage* mail);
     void displayHtml(const QMailMessage* mail);
 
-    void setTextResource(const QSet<QUrl>& names, const QString& textData);
-    void setImageResource(const QSet<QUrl>& names, const QByteArray& imageData);
+    void setTextResource(const QSet<QUrl>& names, const QString& textData, const QString &contentType);
+    void setImageResource(const QSet<QUrl>& names, const QByteArray& imageData, const QString &contentType);
     void setPartResource(const QMailMessagePart& part);
 
     QString renderSimplePart(const QMailMessagePart& part);
@@ -123,6 +126,7 @@ private:
     QString (BrowserWidget::*replySplitter)(const QString&) const;
     mutable QList<QString> numbers;
 #ifdef USE_WEBKIT
+    ContentAccessManager *m_accessManager;
     QWebView* m_webView;
 #else
     QTextBrowser* m_textBrowser;

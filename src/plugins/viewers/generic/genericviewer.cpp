@@ -141,7 +141,12 @@ bool GenericViewer::setMessage(const QMailMessage& mail)
 
 void GenericViewer::setResource(const QUrl& name, QVariant var)
 {
+#ifndef USE_WEBKIT
     browser->setResource(name, var);
+#else
+    Q_UNUSED(name)
+    Q_UNUSED(var)
+#endif
 }
 
 void GenericViewer::clear()
