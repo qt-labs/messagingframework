@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -42,21 +42,22 @@
 #ifndef BROWSERWIDGET_H
 #define BROWSERWIDGET_H
 
-#include <qmailaddress.h>
 #include <QList>
+#include <qmailaddress.h>
+#include <QMap>
 #include <QSet>
 #include <QString>
 #include <QUrl>
+#include <QVariant>
 #include <QWidget>
 
 class QMailMessage;
 class QMailMessagePart;
 class QMailMessagePartContainer;
 #ifdef USE_WEBKIT
-class ContentAccessManager;
 class QWebView;
 #else
-class ContentRenderer;
+class QTextBrowser;
 #endif
 
 class BrowserWidget : public QWidget
@@ -66,13 +67,12 @@ class BrowserWidget : public QWidget
 public:
     BrowserWidget(QWidget *parent = 0);
 
-#ifndef USE_WEBKIT
-    void setResource(const QUrl& name, QVariant var);
-#endif
-
+    void setResource( const QUrl& name, QVariant var );
     void clearResources();
 
     void setMessage( const QMailMessage& mail, bool plainTextMode );
+
+    virtual QVariant loadResource(int type, const QUrl& name);
 
     QList<QString> embeddedNumbers() const;
 
@@ -98,8 +98,8 @@ private:
     void displayPlainText(const QMailMessage* mail);
     void displayHtml(const QMailMessage* mail);
 
-    void setTextResource(const QSet<QUrl>& names, const QString& textData, const QString &contentType);
-    void setImageResource(const QSet<QUrl>& names, const QByteArray& imageData, const QString &contentType);
+    void setTextResource(const QSet<QUrl>& names, const QString& textData);
+    void setImageResource(const QSet<QUrl>& names, const QByteArray& imageData);
     void setPartResource(const QMailMessagePart& part);
 
     QString renderSimplePart(const QMailMessagePart& part);
@@ -119,13 +119,13 @@ private:
     static QString refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing);
 
 private:
+    QMap<QUrl, QVariant> resourceMap;
     QString (BrowserWidget::*replySplitter)(const QString&) const;
     mutable QList<QString> numbers;
 #ifdef USE_WEBKIT
-    ContentAccessManager *m_accessManager;
     QWebView* m_webView;
 #else
-    ContentRenderer *m_renderer;
+    QTextBrowser* m_textBrowser;
 #endif
 
 private:

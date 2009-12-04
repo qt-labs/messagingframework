@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -48,14 +48,13 @@
 #include <QString>
 #include <QTime>
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 class QSqlDatabase;
-#endif
 
 namespace QMail
 {
     QTOPIAMAIL_EXPORT QString lastSystemErrorMessage();
     QTOPIAMAIL_EXPORT void usleep(unsigned long usecs);
+    QTOPIAMAIL_EXPORT QSqlDatabase createDatabase();
     QTOPIAMAIL_EXPORT QString dataPath();
     QTOPIAMAIL_EXPORT QString tempPath();
     QTOPIAMAIL_EXPORT QString pluginsPath();
@@ -64,13 +63,8 @@ namespace QMail
     QTOPIAMAIL_EXPORT QString messageSettingsPath();
     QTOPIAMAIL_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QTOPIAMAIL_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
-
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
     QTOPIAMAIL_EXPORT int fileLock(const QString& filePath);
     QTOPIAMAIL_EXPORT bool fileUnlock(int id);
-
-    QTOPIAMAIL_EXPORT QSqlDatabase createDatabase();
-#endif
 
     QTOPIAMAIL_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
     QTOPIAMAIL_EXPORT QStringList messageIdentifiers(const QString& str);

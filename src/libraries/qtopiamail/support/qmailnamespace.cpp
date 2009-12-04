@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -44,14 +44,11 @@
 #include <QDir>
 #include <QDebug>
 #include <QDir>
+#include <QSqlDatabase>
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
 #include <stdio.h>
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
-// Not available for windows mobile?
-#include <QSqlDatabase>
-#endif
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -92,7 +89,6 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 static QMap<int, HANDLE> lockedFiles;
 #endif
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!
     Convenience function that attempts to obtain a lock on a file with name \a lockFile.
     It is not necessary to create \a lockFile as this file is created temporarily.
@@ -197,7 +193,6 @@ bool QMail::fileUnlock(int id)
     return true;
 #endif
 }
-#endif
 
 /*!
     Returns the path to where the Messaging framework will store its data files.
@@ -261,7 +256,6 @@ QString QMail::messageSettingsPath()
     return QApplication::applicationDirPath() + "/";
 }
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!
     Returns the database where the Messaging framework will store its message meta-data. 
     If the database does not exist, it is created.
@@ -285,7 +279,6 @@ QSqlDatabase QMail::createDatabase()
     }
     return db;
 }
-#endif
 
 /*!
     \internal

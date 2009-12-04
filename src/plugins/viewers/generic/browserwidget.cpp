@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -40,32 +40,21 @@
 ****************************************************************************/
 
 #include "browserwidget.h"
-
+#include <QImageReader>
+#include <QKeyEvent>
+#include <QStyle>
+#include <QDebug>
+#include <QApplication>
 #include <qmailaddress.h>
 #include <qmailmessage.h>
 #include <qmailtimestamp.h>
-
-#include <QApplication>
-#include <QDebug>
-#include <QImageReader>
-#include <QKeyEvent>
-#include <QMenu>
-#include <QStyle>
-#include <QTextBrowser>
-#include <QVBoxLayout>
-#ifdef USE_WEBKIT
-#include <QBuffer>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QTimer>
-#include <QWebView>
-#else
-#include <QMap>
-#include <QVariant>
-#endif
-
 #include <limits.h>
+#include <QVBoxLayout>
+#include <QTextBrowser>
+#ifdef USE_WEBKIT
+#include <QWebView>
+#endif
+#include <QMenu>
 
 static QColor replyColor(Qt::darkGreen);
 
@@ -91,166 +80,6 @@ static uint qHash(const QUrl &url)
     return qHash(url.toString());
 }
 
-#ifdef USE_WEBKIT
-class ContentReply : public QNetworkReply
-{
-    Q_OBJECT
-
-public:
-    ContentReply(QObject *parent, QByteArray *data, const QString &contentType);
-    ~ContentReply();
-
-    qint64 bytesAvailable() const;
-    qint64 readData(char *data, qint64 maxSize);
-
-    void abort();
-
-private:
-    QBuffer m_buffer;
-};
-
-ContentReply::ContentReply(QObject *parent, QByteArray *data, const QString &contentType)
-    : QNetworkReply(parent)
-{
-    setOpenMode(QIODevice::ReadOnly | QIODevice::Unbuffered);
-    setHeader(QNetworkRequest::ContentTypeHeader, contentType);
-
-    m_buffer.setBuffer(data);
-    m_buffer.open(QIODevice::ReadOnly);
-
-    QTimer::singleShot(0, this, SIGNAL(readyRead()));
-    QTimer::singleShot(0, this, SIGNAL(finished()));
-}
-
-ContentReply::~ContentReply()
-{
-}
-
-qint64 ContentReply::bytesAvailable() const
-{
-    return m_buffer.bytesAvailable() + QIODevice::bytesAvailable();
-}
-
-qint64 ContentReply::readData(char *data, qint64 maxSize)
-{
-    return m_buffer.read(data, maxSize);
-}
-
-void ContentReply::abort()
-{
-    m_buffer.close();
-}
-
-class ContentAccessManager : public QNetworkAccessManager
-{
-    Q_OBJECT
-
-public:
-    ContentAccessManager(QObject *parent);
-    ~ContentAccessManager();
-
-    void setResource(const QSet<QUrl> &identifiers, const QByteArray &data, const QString &contentType);
-
-    void clear();
-
-protected:
-    QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData = 0);
-
-private:
-    QMap<QUrl, QPair<QByteArray, QString> > m_data;
-};
-
-ContentAccessManager::ContentAccessManager(QObject *parent)
-    : QNetworkAccessManager(parent)
-{
-}
-
-ContentAccessManager::~ContentAccessManager()
-{
-}
-
-void ContentAccessManager::setResource(const QSet<QUrl> &identifiers, const QByteArray &data, const QString &contentType)
-{
-    foreach (const QUrl url, identifiers) {
-        m_data.insert(url, qMakePair(data, contentType));
-    }
-}
-
-void ContentAccessManager::clear()
-{
-    m_data.clear();
-}
-
-QNetworkReply *ContentAccessManager::createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData)
-{
-    if (op == QNetworkAccessManager::GetOperation) {
-        QUrl url(req.url());
-        if (url.scheme() == "cid") {
-            QString identifier(url.path().trimmed());
-            // Remove any delimiters that are present
-            if (identifier.startsWith('<') && identifier.endsWith('>')) {
-                identifier = identifier.mid(1, identifier.length() - 2);
-            }
-
-            // See if we have any data for this content identifier   
-            QMap<QUrl, QPair<QByteArray, QString> >::iterator it = m_data.find(QUrl("cid:" + identifier));
-            if (it != m_data.end()) {
-                return new ContentReply(this, &it.value().first, it.value().second);
-            }
-        }
-    }
-
-    return QNetworkAccessManager::createRequest(op, req, outgoingData);
-}
-#else
-class ContentRenderer : public QTextBrowser
-{
-    Q_OBJECT
-
-public:
-    ContentRenderer(QWidget *parent);
-    ~ContentRenderer();
-
-    void setResource(const QUrl &name, const QVariant &var);
-    virtual QVariant loadResource(int type, const QUrl &name);
-
-    void clear();
-
-private:
-    QMap<QUrl, QVariant> m_data;
-};
-
-ContentRenderer::ContentRenderer(QWidget *parent)
-    : QTextBrowser(parent)
-{
-}
-
-ContentRenderer::~ContentRenderer()
-{
-}
-
-void ContentRenderer::setResource(const QUrl& name, const QVariant &var)
-{
-    if (!m_data.contains(name)) {
-        m_data.insert(name, var);
-    }
-}
-
-void ContentRenderer::clear()
-{
-    m_data.clear();
-}
-
-QVariant ContentRenderer::loadResource(int type, const QUrl& name)
-{
-    if (m_data.contains(name)) {
-        return m_data[name];
-    }
-
-    return QTextBrowser::loadResource(type, name);
-}
-#endif
-
 BrowserWidget::BrowserWidget( QWidget *parent  )
     : QWidget( parent ),
       replySplitter( &BrowserWidget::handleReplies )
@@ -258,46 +87,47 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
     QLayout* l = new QVBoxLayout(this);
     l->setSpacing(0);
     l->setContentsMargins(0,0,0,0);
-
 #ifdef USE_WEBKIT
-    m_accessManager = new ContentAccessManager(this);
-
     m_webView = new QWebView(this);
-    m_webView->page()->setNetworkAccessManager(m_accessManager);
-    m_webView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_webView,SIGNAL(linkClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
-    connect(m_webView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
-
     l->addWidget(m_webView);
+    connect(m_webView,SIGNAL(linkClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
+    m_webView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_webView,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
 #else
-    m_renderer = new ContentRenderer(this);
-    m_renderer->setFrameStyle(QFrame::NoFrame);
-    m_renderer->setContextMenuPolicy(Qt::CustomContextMenu);
-    m_renderer->setOpenLinks(false);
-    connect(m_renderer,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
-    connect(m_renderer,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
-
-    l->addWidget(m_renderer);
+    m_textBrowser = new QTextBrowser(this);
+    m_textBrowser->setFrameStyle(QFrame::NoFrame);
+    l->addWidget(m_textBrowser);
+    connect(m_textBrowser,SIGNAL(anchorClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
+    m_textBrowser->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_textBrowser,SIGNAL(customContextMenuRequested(QPoint)),this,SLOT(contextMenuRequested(QPoint)));
+    m_textBrowser->setOpenLinks(false);
 #endif
 
     setFocusPolicy( Qt::StrongFocus );
 }
 
-#ifndef USE_WEBKIT
 void BrowserWidget::setResource( const QUrl& name, QVariant var )
 {
-    m_renderer->setResource(name, var);
+    if (!resourceMap.contains(name)) {
+        resourceMap.insert(name, var);
+    }
 }
-#endif
 
 void BrowserWidget::clearResources()
 {
-#ifdef USE_WEBKIT
-    m_accessManager->clear();
-#else
-    m_renderer->clear();
-#endif
+    resourceMap.clear();
     numbers.clear();
+}
+
+QVariant BrowserWidget::loadResource(int type, const QUrl& name)
+{
+    if (resourceMap.contains(name))
+        return resourceMap[name];
+#ifdef USE_WEBKIT
+    return QVariant();
+#else
+    return m_textBrowser->loadResource(type, name);
+#endif
 }
 
 QList<QString> BrowserWidget::embeddedNumbers() const
@@ -306,21 +136,15 @@ QList<QString> BrowserWidget::embeddedNumbers() const
     return result;
 }
 
-void BrowserWidget::setTextResource(const QSet<QUrl>& names, const QString& textData, const QString &contentType)
+void BrowserWidget::setTextResource(const QSet<QUrl>& names, const QString& textData)
 {
-#ifdef USE_WEBKIT
-    m_accessManager->setResource(names, textData.toUtf8(), contentType);
-#else
     QVariant data(textData);
     foreach (const QUrl &url, names) {
         setResource(url, data);
     }
-
-    Q_UNUSED(contentType);
-#endif
 }
 
-void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& imageData, const QString &contentType)
+void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& imageData)
 {
     // Create a image from the data
     QDataStream imageStream(&const_cast<QByteArray&>(imageData), QIODevice::ReadOnly);
@@ -335,17 +159,12 @@ void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& 
         imageSize = imageReader.size();
 
         // See if the image needs to be down-scaled during load
-        if (imageSize.width() > maxWidth) {
+        if (imageSize.width() > maxWidth)
+        {
             // And the loaded size should maintain the image aspect ratio
             imageSize.scale(maxWidth, (INT_MAX >> 4), Qt::KeepAspectRatio);
             imageReader.setQuality( 49 ); // Otherwise Qt smooth scales
             imageReader.setScaledSize(imageSize);
-#ifdef USE_WEBKIT
-        } else {
-            // We can use the image directly
-            m_accessManager->setResource(names, imageData, contentType);
-            return;
-#endif
         }
     }
 
@@ -353,81 +172,40 @@ void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& 
 
     if (!imageReader.supportsOption(QImageIOHandler::Size)) {
         // We need to scale it down now
-        if (image.width() > maxWidth) {
+        if (image.width() > maxWidth)
             image = image.scaled(maxWidth, INT_MAX, Qt::KeepAspectRatio);
-#ifdef USE_WEBKIT
-        } else {
-            // We can use the image directly
-            m_accessManager->setResource(names, imageData, contentType);
-            return;
-#endif
-        }
     }
 
-#ifdef USE_WEBKIT
-    QByteArray scaledData;
-    {
-        // Write the scaled image data to a buffer
-        QBuffer buffer(&scaledData);
-        image.save(&buffer);
-    }
-    m_accessManager->setResource(names, scaledData, contentType);
-#else
     QVariant data(image);
     foreach (const QUrl &url, names) {
         setResource(url, data);
     }
-
-    Q_UNUSED(contentType);
-#endif
 }
 
 void BrowserWidget::setPartResource(const QMailMessagePart& part)
 {
     QSet<QUrl> names;
 
-#ifdef USE_WEBKIT
-    QString name(Qt::escape(part.contentID()));
-    if (!name.isEmpty()) {
-        // We can only resolve URLs using the cid: scheme
-        if (name.startsWith("cid:", Qt::CaseInsensitive)) {
-            names.insert(QUrl(name));
-        } else {
-            names.insert(QUrl("cid:" + name));
-        }
-    }
-#else
     QString name(part.displayName());
     if (!name.isEmpty()) {
         names.insert(QUrl(Qt::escape(name)));
     }
 
-    name = Qt::escape(part.contentID());
+    name = part.contentID();
     if (!name.isEmpty()) {
-        // Add the content both with and without the cid: prefix
-        names.insert(name);
-        if (name.startsWith("cid:", Qt::CaseInsensitive)) {
-            names.insert(QUrl(name.mid(4)));
-        } else {
-            names.insert(QUrl("cid:" + name));
-        }
+        names.insert(QUrl("cid:" + name));
+        names.insert(QUrl("CID:" + name));
     }
 
     name = part.contentType().name();
     if (!name.isEmpty()) {
         names.insert(QUrl(Qt::escape(name)));
     }
-#endif
 
-    const QMailMessageContentType &ct(part.contentType());
-
-    // Ignore any charset info in the content type, since we extract string data as unicode
-    QString contentType(ct.type() + '/' + ct.subType());
-
-    if (ct.type().toLower() == "text") {
-        setTextResource(names, part.body().data(), contentType);
-    } else if (ct.type().toLower() == "image") {
-        setImageResource(names, part.body().data(QMailMessageBody::Decoded), contentType);
+    if (part.contentType().type().toLower() == "text") {
+        setTextResource(names, part.body().data());
+    } else if (part.contentType().type().toLower() == "image") {
+        setImageResource(names, part.body().data(QMailMessageBody::Decoded));
     }
 }
 
@@ -448,9 +226,9 @@ void BrowserWidget::contextMenuRequested(const QPoint& pos)
     menu.addActions(m_webView->actions());
     menu.exec(mapToGlobal(pos));
 #else
-    QMenu* menu = m_renderer->createStandardContextMenu();
+    QMenu* menu = m_textBrowser->createStandardContextMenu();
     menu->addSeparator();
-    menu->addActions(m_renderer->actions());
+    menu->addActions(m_textBrowser->actions());
     menu->exec(mapToGlobal(pos));
     delete menu;
 #endif
@@ -623,9 +401,8 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
         text += bodyText;
     }
 #ifdef USE_WEBKIT
-    // TODO
 #else
-    m_renderer->setPlainText(text);
+    m_textBrowser->setPlainText(text);
 #endif
 }
 
@@ -938,7 +715,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     m_webView->setHtml(html);
     m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 #else
-    m_renderer->setHtml(html);
+    m_textBrowser->setHtml(html);
 #endif
 }
 
@@ -1370,20 +1147,16 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 void BrowserWidget::scrollToAnchor(const QString& anchor)
 {
 #ifdef USE_WEBKIT
-    // TODO
-    Q_UNUSED(anchor);
 #else
-    m_renderer->scrollToAnchor(anchor);
+    m_textBrowser->scrollToAnchor(anchor);
 #endif
 }
 
 void BrowserWidget::setPlainText(const QString& text)
 {
 #ifdef USE_WEBKIT
-    // TODO
-    Q_UNUSED(text);
 #else
-    m_renderer->setPlainText(text);
+    m_textBrowser->setPlainText(text);
 #endif
 }
 
@@ -1392,7 +1165,7 @@ void BrowserWidget::addAction(QAction* action)
 #ifdef USE_WEBKIT
     m_webView->addAction(action);
 #else
-    m_renderer->addAction(action);
+    m_textBrowser->addAction(action);
 #endif
 }
 
@@ -1401,7 +1174,7 @@ void BrowserWidget::addActions(const QList<QAction*>& actions)
 #ifdef USE_WEBKIT
     m_webView->addActions(actions);
 #else
-    m_renderer->addActions(actions);
+    m_textBrowser->addActions(actions);
 #endif
 }
 
@@ -1410,7 +1183,7 @@ void BrowserWidget::removeAction(QAction* action)
 #ifdef USE_WEBKIT
     m_webView->removeAction(action);
 #else
-    m_renderer->removeAction(action);
+    m_textBrowser->removeAction(action);
 #endif
 }
 
@@ -1448,6 +1221,4 @@ QString BrowserWidget::refUrl(const QString& url, const QString& scheme, const Q
 
     return Qt::escape(leading) + "<a href=\"" + target + "\">" + escaped + "</a>" + Qt::escape(trailing);
 }
-
-#include "browserwidget.moc"
 

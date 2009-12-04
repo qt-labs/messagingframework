@@ -8,9 +8,7 @@ INSTALLS += target
 
 DEFINES += PLUGIN_INTERNAL
 
-# Use webkit to render mail if available
-contains(QT_CONFIG,webkit){
-    QT += webkit network
+contains(QT,webkit){
     DEFINES += USE_WEBKIT
 }
 

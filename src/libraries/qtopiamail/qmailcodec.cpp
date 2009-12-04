@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qmailcodec.h"
-#include "qmaillog.h"
+#include <qmailcodec.h>
 #include <QIODevice>
 #include <QTextCodec>
-#include <QtDebug>
+#include "qmaillog.h"
 #include <ctype.h>
+#include <QtDebug>
 
 // Allow these values to be reduced from test harness code:
 int QTOPIAMAIL_EXPORT MaxCharacters = QMailCodec::ChunkCharacters;

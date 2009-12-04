@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -141,12 +141,7 @@ bool GenericViewer::setMessage(const QMailMessage& mail)
 
 void GenericViewer::setResource(const QUrl& name, QVariant var)
 {
-#ifndef USE_WEBKIT
     browser->setResource(name, var);
-#else
-    Q_UNUSED(name)
-    Q_UNUSED(var)
-#endif
 }
 
 void GenericViewer::clear()
