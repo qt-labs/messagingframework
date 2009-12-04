@@ -5,8 +5,9 @@ qt4-messagingframework (2009W44-0maemo4) hardy; urgency=low
        - Indexing of messages is implemented.
        - Indexing of accounts and folders not yet.
   * Integration with CI and automatic unit testing is done.
+  * Fixes: NB#147708 - Groovemail and Gallery throw runtime errors related to compilation upon UI launch
 
- -- Shane Bradley <shane.bradley@nokia.com>  Fri, 27 Nov 2009 17:52:13 +1000
+ -- Shane Bradley <shane.bradley@nokia.com>  Fri, 04 Dec 2009 16:15:11 +1000
 
 qt4-messagingframework (2009W44-0maemo3) hardy; urgency=low
 
