@@ -32,7 +32,7 @@ Clients can add, remove or update messaging data via the wrapper classes, with a
 Clients access messaging data via the Client library which provides a direct connection to the messaging database. 
 Notifications of database changes that occur as a result of other clients' actions are received by IPC, and the messaging library automatically reflects those changes in all clients.
 
-A model/view architecture is provided for clients to access the messaging data content.
+A set of model/view classes are provided for clients to access the messaging data content.
 A flexible system of filtering and sorting keys is provided, enabling clients to display a specific subset of the library's data with minimal resource overhead.
 
 Rather than requiring each client application to perform transmission and retrieval of messages from external sources, a server application provides these services to any Client library client.
