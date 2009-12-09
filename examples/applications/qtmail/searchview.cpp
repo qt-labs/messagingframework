@@ -410,9 +410,9 @@ SearchKey::SearchKey(SearchTermWidget::Property property, SearchTermWidget::Comp
 :
 QMailMessageKey()
 {
-    QMailDataComparator::EqualityComparator ec;
-    QMailDataComparator::InclusionComparator ic;
-    QMailDataComparator::RelationComparator rc;
+    QMailDataComparator::EqualityComparator ec = QMailDataComparator::Equal;
+    QMailDataComparator::InclusionComparator ic = QMailDataComparator::Includes;
+    QMailDataComparator::RelationComparator rc = QMailDataComparator::GreaterThan;
 
     enum compartorType{Equality,Inclusion,Relation,Presence,None} ct = None;
 
