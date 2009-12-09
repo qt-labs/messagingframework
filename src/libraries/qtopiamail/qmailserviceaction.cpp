@@ -1044,6 +1044,24 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
     emitChanges();
 }
 
+void QMailStorageActionPrivate::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    _server->createFolder(newAction(), name, accountId, parentId);
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::renameFolder(const QMailFolderId &folderId, const QString &name)
+{
+    _server->renameFolder(newAction(), folderId, name);
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::deleteFolder(const QMailFolderId &folderId)
+{
+    _server->deleteFolder(newAction(), folderId);
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::init()
 {
     QMailServiceActionPrivate::init();
@@ -1155,6 +1173,40 @@ void QMailStorageAction::moveMessages(const QMailMessageIdList &ids, const QMail
 void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
 {
     impl(this)->flagMessages(ids, setMask, unsetMask);
+}
+
+/*!
+    Requests that the message server create a new folder named \a name, created in the
+    account identified by \a accountId.
+    If \a parentId is a valid folder identifier the new folder will be a child of the parent;
+    otherwise the folder will be have no parent and will be created at the highest level.
+
+    \sa deleteFolder()
+*/
+void QMailStorageAction::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    impl(this)->createFolder(name, accountId, parentId);
+}
+
+/*!
+    Requests that the message server rename the folder identified by \a folderId to \a name.
+
+    \sa createFolder()
+*/
+void QMailStorageAction::renameFolder(const QMailFolderId &folderId, const QString &name)
+{
+    impl(this)->renameFolder(folderId, name);
+}
+
+/*!
+    Requests that the message server delete the folder identified by \a folderId.
+    Any existing folders or messages contained by the folder will also be deleted.
+
+    \sa createFolder(), renameFolder()
+*/
+void QMailStorageAction::deleteFolder(const QMailFolderId &folderId)
+{
+    impl(this)->deleteFolder(folderId);
 }
 
 

@@ -80,6 +80,10 @@ signals:
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
 
+    void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
+    void deleteFolder(quint64, const QMailFolderId &folderId);
+
     void cancelTransfer(quint64);
 
     void deleteMessages(quint64, const QMailMessageIdList& id, QMailStore::MessageRemovalOption);
@@ -141,6 +145,12 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
     connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
                adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+    connectIpc(this, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
+               adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
+    connectIpc(this, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),
+               adaptor, MESSAGE(renameFolder(quint64, QMailFolderId, QString)));
+    connectIpc(this, SIGNAL(deleteFolder(quint64, QMailFolderId)),
+               adaptor, MESSAGE(deleteFolder(quint64, QMailFolderId)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(cancelSearch(quint64)),
@@ -167,6 +177,12 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)),
                parent, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(folderCreated(quint64, QMailFolderId)),
+               parent, SIGNAL(folderCreated(quint64, QMailFolderId)));
+    connectIpc(adaptor, MESSAGE(folderRenamed(quint64, QMailFolderId)),
+               parent, SIGNAL(folderRenamed(quint64, QMailFolderId)));
+    connectIpc(adaptor, MESSAGE(folderDeleted(quint64, QMailFolderId)),
+               parent, SIGNAL(folderDeleted(quint64, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(storageActionCompleted(quint64)),
                parent, SIGNAL(storageActionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(retrievalCompleted(quint64)),
@@ -336,6 +352,33 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     set of status flags, in response to the request identified by \a action.
 
     \sa flagMessages()
+*/
+
+/*!
+    \fn void QMailMessageServer::folderCreated(quint64 action, const QMailFolderId& folderId);
+
+    Emitted when the folder identified by \a folderId has been created, in response to the request
+    identified by \a action.
+
+    \sa createFolder()
+*/
+
+/*!
+    \fn void QMailMessageServer::folderRenamed(quint64 action, const QMailFolderId& folderId);
+
+    Emitted when the folder identified by \a folderId has been renamed, in response to the request
+    identified by \a action.
+
+    \sa renameFolder()
+*/
+
+/*!
+    \fn void QMailMessageServer::folderDeleted(quint64 action, const QMailFolderId& folderId);
+
+    Emitted when the folder identified by \a folderId has been deleted, in response to the request
+    identified by \a action.
+
+    \sa deleteFolder()
 */
 
 /*!
@@ -572,6 +615,44 @@ void QMailMessageServer::moveMessages(quint64 action, const QMailMessageIdList& 
 void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
 {
     emit d->flagMessages(action, mailList, setMask, unsetMask);
+}
+
+/*!
+    Requests that the MessageServer create a new folder named \a name, created in the
+    account identified by \a accountId.
+    If \a parentId is a valid folder identifier the new folder will be a child of the parent;
+    otherwise the folder will be have no parent and will be created at the highest level.
+
+    The request has the identifier \a action.
+
+    \sa deleteFolder()
+*/
+void QMailMessageServer::createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    emit d->createFolder(action, name, accountId, parentId);
+}
+
+/*!
+    Requests that the MessageServer rename the folder identified by \a folderId to \a name.
+    The request has the identifier \a action.
+
+    \sa createFolder()
+*/
+void QMailMessageServer::renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
+{
+    emit d->renameFolder(action, folderId, name);
+}
+
+/*!
+    Requests that the MessageServer delete the folder identified by \a folderId.
+    Any existing folders or messages contained by the folder will also be deleted.
+    The request has the identifier \a action.
+
+    \sa createFolder(), renameFolder()
+*/
+void QMailMessageServer::deleteFolder(quint64 action, const QMailFolderId &folderId)
+{
+    emit d->deleteFolder(action, folderId);
 }
 
 /*!

@@ -1572,6 +1572,27 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
     return true;
 }
 
+void ServiceHandler::createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    reportFailure(action, QMailServiceAction::Status::ErrNotImplemented, tr("Not implemented"));
+    Q_UNUSED(name)
+    Q_UNUSED(accountId)
+    Q_UNUSED(parentId)
+}
+
+void ServiceHandler::renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
+{
+    reportFailure(action, QMailServiceAction::Status::ErrNotImplemented, tr("Not implemented"));
+    Q_UNUSED(folderId)
+    Q_UNUSED(name)
+}
+
+void ServiceHandler::deleteFolder(quint64 action, const QMailFolderId &folderId)
+{
+    reportFailure(action, QMailServiceAction::Status::ErrNotImplemented, tr("Not implemented"));
+    Q_UNUSED(folderId)
+}
+
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     if (spec == QMailSearchAction::Remote) {

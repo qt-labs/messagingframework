@@ -142,6 +142,10 @@ public slots:
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
+    virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
+    virtual bool deleteFolder(const QMailFolderId &folderId);
+
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);

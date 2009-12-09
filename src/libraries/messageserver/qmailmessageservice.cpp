@@ -742,6 +742,66 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
 }
 
 /*!
+    Invoked by the message server to create a new folder.
+
+    Creates a new folder named \a name, created in the account identified by \a accountId.
+    If \a parentId is a valid folder identifier the new folder will be a child of the parent;
+    otherwise the folder will be have no parent and will be created at the highest level.
+
+    Return true if an operation is initiated.
+
+    \sa deleteFolder()
+*/
+bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    notImplemented();
+    return false;
+
+    Q_UNUSED(name)
+    Q_UNUSED(accountId)
+    Q_UNUSED(parentId)
+}
+
+/*!
+    Invoked by the message server to rename a folder.
+
+    Renames the folder identified by \a folderId to \a name. The location of the folder
+    in the existing hierarchy should not change.
+
+    Return true if an operation is initiated.
+
+    \sa deleteFolder(), createFolder()
+*/
+bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QString &name)
+{
+    notImplemented();
+    return false;
+
+    Q_UNUSED(folderId)
+    Q_UNUSED(name)
+}
+
+/*!
+    Invoked by the message server to delete a folder.
+
+    Deletes the folder identified by \a folderId. It is the responsibility of the
+    message source to ensure all subfolders and messages are also deleted.
+
+    Return true if an operation is initiated.
+
+    \sa createFolder()
+*/
+bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
+{
+    notImplemented();
+    return false;
+
+    Q_UNUSED(folderId)
+}
+
+
+
+/*!
     Invoked by the message server to initiate a remote message search operation.
 
     Search the remote server for messages that match the search criteria encoded by 
