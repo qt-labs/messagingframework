@@ -359,6 +359,9 @@ private:
     QAction *threadAction;
     bool enableMessageActions;
 
+    QMailAccountId selectedAccountId;
+    QMailFolderId selectedFolderId;
+
     QAction *moveAction;
     QAction *copyAction;
     QAction *restoreAction;

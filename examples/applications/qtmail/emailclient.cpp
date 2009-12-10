@@ -1835,6 +1835,8 @@ void EmailClient::folderSelected(QMailMessageSet *item)
 
         if (accountId.isValid()) {
             atAccount = true;
+            selectedAccountId = accountId;
+
             QMailAccount account(accountId);
             getAccountButton->setText(tr("Get mail for %1", "%1:account name").arg(account.name()));
             getAccountButton->setData(accountId);
@@ -1842,10 +1844,8 @@ void EmailClient::folderSelected(QMailMessageSet *item)
             // See if this is a folder that can have a menu
             if (folderId.isValid()) {
                 atFolder = true;
-                createFolderAction->setData(folderId);
-                deleteFolderAction->setData(folderId);
-                renameFolderAction->setData(folderId);
-                synchronizeAction->setData(folderId);
+                selectedFolderId = folderId;
+
                 if (item->data(EmailFolderModel::FolderSynchronizationEnabledRole).value<bool>())
                     synchronizeAction->setText(tr("Exclude folder"));
                 else
@@ -1854,7 +1854,7 @@ void EmailClient::folderSelected(QMailMessageSet *item)
             else
             {
                 //Can still create a root folder
-                createFolderAction->setData(0);
+                selectedFolderId = QMailFolderId(0);
             }
         }
 
@@ -1892,25 +1892,33 @@ void EmailClient::deleteFolder()
 
     if(QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         return;
+
+    storageAction->deleteFolder(folderId);
 }
 
 void EmailClient::createFolder()
 {
-    QMailFolderId parentFolderId = createFolderAction->data().value<QMailFolderId>();
     QString name = QInputDialog::getText(this, tr("New Folder Name"), tr("The name of the new folder should be: "));
 
     if(name.isEmpty())
         return;
+
+    storageAction->createFolder(name, selectedAccountId, selectedFolderId);
+
 }
 
 void EmailClient::renameFolder()
 {
-    QMailFolderId folderId = renameFolderAction->data().value<QMailFolderId>();
-    QString oldName = QMailFolder(folderId).displayName();
-    QString newName = QInputDialog::getText(this, tr("Rename Folder"), tr("Rename folder %1 to: ").arg(oldName));
+    if(selectedFolderId.isValid())
+    {
+        QString oldName = QMailFolder(selectedFolderId).displayName();
+        QString newName = QInputDialog::getText(this, tr("Rename Folder"), tr("Rename folder %1 to: ").arg(oldName));
 
-    if(newName.isEmpty())
-        return;
+        if(newName.isEmpty())
+            return;
+
+        storageAction->renameFolder(selectedFolderId, newName);
+    }
 }
 
 void EmailClient::search()
@@ -2521,37 +2529,33 @@ void EmailClient::threadMessages()
 
 void EmailClient::synchronizeFolder()
 {
-    if (const QAction* action = static_cast<const QAction*>(sender())) {
-        QMailFolderId folderId(action->data().value<QMailFolderId>());
+    if (selectedFolderId.isValid()) {
+        QMailFolder folder(selectedFolderId);
+        bool excludeFolder = (folder.status() & QMailFolder::SynchronizationEnabled);
 
-        if (folderId.isValid()) {
-            QMailFolder folder(folderId);
-            bool excludeFolder = (folder.status() & QMailFolder::SynchronizationEnabled);
-
-            if (QMailStore *store = QMailStore::instance()) {
-                if (excludeFolder) {
-                    // Delete any messages which are in this folder or its sub-folders
-                    QMailMessageKey messageKey(QMailMessageKey::parentFolderId(folderId, QMailDataComparator::Equal));
-                    QMailMessageKey descendantKey(QMailMessageKey::ancestorFolderIds(folderId, QMailDataComparator::Includes));
-                    store->removeMessages(messageKey | descendantKey, QMailStore::NoRemovalRecord);
-                }
-
-                // Find any subfolders of this folder
-                QMailFolderKey subfolderKey(QMailFolderKey::ancestorFolderIds(folderId, QMailDataComparator::Includes));
-                QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(subfolderKey);
-
-                // Mark all of these folders as {un}synchronized
-                folderIds.append(folderId);
-                foreach (const QMailFolderId &id, folderIds) {
-                    QMailFolder folder(id);
-                    folder.setStatus(QMailFolder::SynchronizationEnabled, !excludeFolder);
-                    store->updateFolder(&folder);
-                }
+        if (QMailStore *store = QMailStore::instance()) {
+            if (excludeFolder) {
+                // Delete any messages which are in this folder or its sub-folders
+                QMailMessageKey messageKey(QMailMessageKey::parentFolderId(selectedFolderId, QMailDataComparator::Equal));
+                QMailMessageKey descendantKey(QMailMessageKey::ancestorFolderIds(selectedFolderId, QMailDataComparator::Includes));
+                store->removeMessages(messageKey | descendantKey, QMailStore::NoRemovalRecord);
             }
 
-            // Update the action to reflect the change
-            folderSelected(folderView()->currentItem());
+            // Find any subfolders of this folder
+            QMailFolderKey subfolderKey(QMailFolderKey::ancestorFolderIds(selectedFolderId, QMailDataComparator::Includes));
+            QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(subfolderKey);
+
+            // Mark all of these folders as {un}synchronized
+            folderIds.append(selectedFolderId);
+            foreach (const QMailFolderId &id, folderIds) {
+                QMailFolder folder(id);
+                folder.setStatus(QMailFolder::SynchronizationEnabled, !excludeFolder);
+                store->updateFolder(&folder);
+            }
         }
+
+        // Update the action to reflect the change
+        folderSelected(folderView()->currentItem());
     }
 }
 
