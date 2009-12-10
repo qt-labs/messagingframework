@@ -261,6 +261,9 @@ private slots:
     bool waitForMessageServer();
     void messageServerProcessError(QProcess::ProcessError);
 
+    void createFolder();
+    void deleteFolder();
+    void renameFolder();
 private:
     bool isMessageServerRunning() const;
     virtual EmailFolderView* createFolderView();
@@ -345,6 +348,9 @@ private:
     QAction *searchButton;
     QAction *cancelButton;
     QAction *synchronizeAction;
+    QAction *createFolderAction;
+    QAction *deleteFolderAction;
+    QAction *renameFolderAction;
     QAction *settingsAction;
     QAction *emptyTrashAction;
     QAction *deleteMailAction;
