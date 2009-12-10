@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -44,6 +44,11 @@
 
 #include <qglobal.h>
 
+#ifdef SINGLE_MODULE_QTOPIAMAIL
+#define QMF_DECL_EXPORT
+#define QMF_DECL_IMPORT
+#define QMF_VISIBILITY
+#else
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 #define QMF_DECL_EXPORT Q_DECL_EXPORT
 #define QMF_DECL_IMPORT Q_DECL_IMPORT
@@ -56,6 +61,7 @@
 #define QMF_DECL_EXPORT
 #define QMF_DECL_IMPORT
 #define QMF_VISIBILITY
+#endif
 #endif
 
 #ifdef QTOPIAMAIL_INTERNAL

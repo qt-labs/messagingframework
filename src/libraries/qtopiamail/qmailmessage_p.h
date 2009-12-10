@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -304,11 +304,15 @@ public:
     static void initializeFlags();
 
     void setMessageType(QMailMessage::MessageType type);
+#ifndef QTOPIAMAIL_PARSING_ONLY
     void setParentFolderId(const QMailFolderId& id);
     void setPreviousParentFolderId(const QMailFolderId& id);
+#endif
     void setId(const QMailMessageId& id);
     void setStatus(quint64 status);
+#ifndef QTOPIAMAIL_PARSING_ONLY
     void setParentAccountId(const QMailAccountId& id);
+#endif
     void setServerUid(const QString &server);
     void setSize(uint size);
     void setContent(QMailMessage::ContentType type);
@@ -342,12 +346,16 @@ public:
     quint64 _status;
     QMailMessage::ContentType _contentType;
 
+#ifndef QTOPIAMAIL_PARSING_ONLY
     QMailAccountId _parentAccountId;
+#endif
     QString _serverUid;
     uint _size;
     QMailMessageId _id;
+#ifndef QTOPIAMAIL_PARSING_ONLY
     QMailFolderId _parentFolderId;
     QMailFolderId _previousParentFolderId;
+#endif
 
     QString _subject;
     QMailTimeStamp _date;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -1367,8 +1367,10 @@ QString combineOperatorString(QMailKey::Combiner op)
     return QString();
 }
 
-QString columnExpression(const QString &column, QMailKey::Comparator op, const QString &value, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false)
+QString columnExpression(const QString &column, QMailKey::Comparator op, const QString &value, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
+    QString result;
+
     QString operation(operatorString(op, multipleArgs, patternMatch, bitwiseMultiples));
 
     QString expression(column + operation);
@@ -1376,25 +1378,32 @@ QString columnExpression(const QString &column, QMailKey::Comparator op, const Q
     // Special case handling:
     if (bitwiseMultiples && (op == QMailKey::Excludes)) {
         if (!value.isEmpty()) {
-            return "0 = (" + expression + value + ")";
+            result = "0 = (" + expression + value + ")";
         } else {
-            return "0 = " + expression;
+            result = "0 = " + expression;
         }
+    } else {
+        result = expression + value;
     }
 
-    return expression + value;
+    if (noCase && !operation.contains("LIKE")) {
+        // LIKE is already case-insensitive by default
+        result.append(" COLLATE NOCASE");
+    }
+
+    return result;
 }
 
-QString columnExpression(const QString &column, QMailKey::Comparator op, const QVariantList &valueList, bool patternMatch = false, bool bitwiseMultiples = false)
+QString columnExpression(const QString &column, QMailKey::Comparator op, const QVariantList &valueList, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
     QString value(QMailStorePrivate::expandValueList(valueList)); 
 
-    return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples);
+    return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples, noCase);
 }
 
-QString baseExpression(const QString &column, QMailKey::Comparator op, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false)
+QString baseExpression(const QString &column, QMailKey::Comparator op, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
-    return columnExpression(column, op, QString(), multipleArgs, patternMatch, bitwiseMultiples);
+    return columnExpression(column, op, QString(), multipleArgs, patternMatch, bitwiseMultiples, noCase);
 }
 
 
@@ -1417,8 +1426,9 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
 
         bool bitwise((a.property == QMailAccountKey::Status) || (a.property == QMailAccountKey::MessageType));
         bool patternMatching(a.property == QMailAccountKey::FromAddress);
+        bool noCase((a.property == QMailAccountKey::Name) || (a.property == QMailAccountKey::FromAddress));
 
-        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise);
+        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
         
         switch(a.property)
         {
@@ -1443,10 +1453,11 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
                 // Is this an existence test or a value test?
                 if ((a.op == QMailKey::Present) || (a.op == QMailKey::Absent)) {
                     q << qualifiedName("id", alias) << operatorString(a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias);
-                    q << " FROM mailaccountcustom " << nestedAlias << " WHERE name=? )";
+                    q << " FROM mailaccountcustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailaccountcustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? AND " << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? )";
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                      << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
             break;
@@ -1480,8 +1491,9 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
         bool bitwise((a.property == QMailMessageKey::Type) || (a.property == QMailMessageKey::Status));
         bool patternMatching((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) ||
                              (a.property == QMailMessageKey::ContentScheme) || (a.property == QMailMessageKey::ContentIdentifier));
+        bool noCase((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) || (a.property == QMailMessageKey::Subject));
 
-        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise);
+        QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
         
         switch(a.property)
         {
@@ -1553,10 +1565,11 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
                 // Is this an existence test or a value test?
                 if ((a.op == QMailKey::Present) || (a.op == QMailKey::Absent)) {
                     q << qualifiedName("id", alias) << operatorString(a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias);
-                    q << " FROM mailmessagecustom " << nestedAlias << " WHERE name=? )";
+                    q << " FROM mailmessagecustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailmessagecustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? AND " << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? )";
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                      << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
             break;
@@ -1639,7 +1652,9 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
         }
 
         bool bitwise(a.property == QMailFolderKey::Status);
-        QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise);
+        bool noCase((a.property == QMailFolderKey::Path) || (a.property == QMailFolderKey::DisplayName));
+
+        QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise, noCase);
         
         switch (a.property)
         {
@@ -1706,10 +1721,11 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
                 // Is this an existence test or a value test?
                 if ((a.op == QMailKey::Present) || (a.op == QMailKey::Absent)) {
                     q << qualifiedName("id", alias) << operatorString(a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias);
-                    q << " FROM mailfoldercustom " << nestedAlias << " WHERE name=? )";
+                    q << " FROM mailfoldercustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailfoldercustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? AND " << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? )";
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                      << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
             break;
@@ -4028,7 +4044,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     if (!obsoleteFields.isEmpty()) {
         // Remove the obsolete fields
-        QString sql("DELETE FROM %1 WHERE id=? AND name IN %2");
+        QString sql("DELETE FROM %1 WHERE id=? AND name IN %2 COLLATE NOCASE");
         QSqlQuery query(simpleQuery(sql.arg(tableName).arg(expandValueList(obsoleteFields)),
                                     QVariantList() << id << obsoleteFields,
                                     QString("%1 update custom delete query").arg(tableName)));
@@ -4038,7 +4054,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     if (!modifiedFields.isEmpty()) {
         // Batch update the modified fields
-        QString sql("UPDATE %1 SET value=? WHERE id=%2 AND name=?");
+        QString sql("UPDATE %1 SET value=? WHERE id=%2 AND name=? COLLATE NOCASE");
         QSqlQuery query(batchQuery(sql.arg(tableName).arg(QString::number(id)),
                                    QVariantList() << QVariant(modifiedValues)
                                                   << QVariant(modifiedFields),

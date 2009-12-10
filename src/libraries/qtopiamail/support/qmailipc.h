@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Messaging Framework.
 **
@@ -42,10 +42,13 @@
 #ifndef QMAILIPC_H
 #define QMAILIPC_H
 
+#ifndef QTOPIAMAIL_OMIT_QCOP
 #include "qcopadaptor.h"
 #include "qcopchannel.h"
-#include <QDataStream>
 #include "qcopserver.h"
+#endif
+#include <QDataStream>
+#include <QVariant>
 
 template <typename T>
 struct QMetaTypeRegister
