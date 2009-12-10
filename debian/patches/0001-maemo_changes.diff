@@ -640,7 +640,7 @@ index 0000000..cfbd6ca
 @@ -0,0 +1 @@
 +#include "qmailserviceaction.h"
 diff --git a/src/libraries/qtopiamail/qmailstore_p.cpp b/src/libraries/qtopiamail/qmailstore_p.cpp
-index 9de3960..d0584c8 100644
+index 65712cc..ce2d1de 100644
 --- a/src/libraries/qtopiamail/qmailstore_p.cpp
 +++ b/src/libraries/qtopiamail/qmailstore_p.cpp
 @@ -53,6 +53,7 @@
@@ -956,16 +956,16 @@ index 9de3960..d0584c8 100644
      {
      case And:
          return " AND ";
-@@ -1387,7 +1354,7 @@ QString columnExpression(const QString &column, QMailKey::Comparator op, const Q
+@@ -1396,7 +1363,7 @@ QString columnExpression(const QString &column, QMailKey::Comparator op, const Q
  
- QString columnExpression(const QString &column, QMailKey::Comparator op, const QVariantList &valueList, bool patternMatch = false, bool bitwiseMultiples = false)
+ QString columnExpression(const QString &column, QMailKey::Comparator op, const QVariantList &valueList, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
  {
 -    QString value(QMailStorePrivate::expandValueList(valueList)); 
 +    QString value(QMailStorePrivate::expandValueList(valueList));
  
-     return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples);
+     return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples, noCase);
  }
-@@ -1402,7 +1369,7 @@ template<typename Key>
+@@ -1411,7 +1378,7 @@ template<typename Key>
  QString whereClauseItem(const Key &key, const typename Key::ArgumentType &arg, const QString &alias, const QString &field, const QMailStorePrivate &store);
  
  template<>
@@ -974,10 +974,10 @@ index 9de3960..d0584c8 100644
  {
      QString item;
      {
-@@ -1419,52 +1386,18 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
-         bool patternMatching(a.property == QMailAccountKey::FromAddress);
+@@ -1429,53 +1396,18 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
+         bool noCase((a.property == QMailAccountKey::Name) || (a.property == QMailAccountKey::FromAddress));
  
-         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise);
+         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
 -        
 -        switch(a.property)
 -        {
@@ -1002,19 +1002,20 @@ index 9de3960..d0584c8 100644
 -                // Is this an existence test or a value test?
 -                if ((a.op == QMailKey::Present) || (a.op == QMailKey::Absent)) {
 -                    q << qualifiedName("id", alias) << operatorString(a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias);
--                    q << " FROM mailaccountcustom " << nestedAlias << " WHERE name=? )";
+-                    q << " FROM mailaccountcustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
 -                } else {
 -                    q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailaccountcustom " << nestedAlias;
--                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? AND " << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? )";
+-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+-                      << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
 -                }
 -            }
 -            break;
--
+ 
 -        case QMailAccountKey::Status:
 -        case QMailAccountKey::MessageType:
 -        case QMailAccountKey::Name:
 -        case QMailAccountKey::FromAddress:
- 
+-
 -            q << expression;
 -            break;
 -        }
@@ -1033,16 +1034,7 @@ index 9de3960..d0584c8 100644
  {
      QString item;
      {
-@@ -1482,7 +1415,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
-                              (a.property == QMailMessageKey::ContentScheme) || (a.property == QMailMessageKey::ContentIdentifier));
- 
-         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise);
--        
-+
-         switch(a.property)
-         {
-         case QMailMessageKey::Id:
-@@ -1536,10 +1469,12 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
+@@ -1548,10 +1480,12 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
          case QMailMessageKey::ParentAccountId:
              if(a.valueList.first().canConvert<QMailAccountKey>()) {
                  QMailAccountKey parentAccountKey = a.valueList.first().value<QMailAccountKey>();
@@ -1058,7 +1050,7 @@ index 9de3960..d0584c8 100644
              } else {
                  q << expression;
              }
-@@ -1618,14 +1553,14 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
+@@ -1631,14 +1565,14 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
          case QMailMessageKey::ContentIdentifier:
          case QMailMessageKey::ResponseType:
              q << expression;
@@ -1075,16 +1067,7 @@ index 9de3960..d0584c8 100644
  {
      QString item;
      {
-@@ -1640,7 +1575,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
- 
-         bool bitwise(a.property == QMailFolderKey::Status);
-         QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise);
--        
-+
-         switch (a.property)
-         {
-         case QMailFolderKey::Id:
-@@ -1689,10 +1624,12 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
+@@ -1704,10 +1638,12 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
          case QMailFolderKey::ParentAccountId:
              if(a.valueList.first().canConvert<QMailAccountKey>()) {
                  QMailAccountKey accountSubKey = a.valueList.first().value<QMailAccountKey>();
@@ -1100,7 +1083,7 @@ index 9de3960..d0584c8 100644
              } else {
                  q << expression;
              }
-@@ -1729,15 +1666,15 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
+@@ -1745,15 +1681,15 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
  }
  
  template<typename KeyType, typename ArgumentListType, typename KeyListType, typename CombineType>
@@ -1123,7 +1106,7 @@ index 9de3960..d0584c8 100644
                           const QMailStorePrivate& store)
  {
      QString whereClause;
-@@ -1759,12 +1696,12 @@ QString buildWhereClause(const KeyType &key,
+@@ -1775,12 +1711,12 @@ QString buildWhereClause(const KeyType &key,
  
          foreach (typename KeyListType::const_reference subkey, subKeys) {
              QString nestedWhere(store.buildWhereClause(QMailStorePrivate::Key(subkey, alias), true));
@@ -1139,7 +1122,7 @@ index 9de3960..d0584c8 100644
  
      // Finalise the where clause
      if (!whereClause.isEmpty()) {
-@@ -1794,6 +1731,427 @@ QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
+@@ -1810,6 +1746,427 @@ QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
      return (commitOnSuccess ? QMailContentManager::EnsureDurability : QMailContentManager::DeferDurability);
  }
  
@@ -1567,7 +1550,7 @@ index 9de3960..d0584c8 100644
  } // namespace
  
  
-@@ -1817,7 +2175,7 @@ public:
+@@ -1833,7 +2190,7 @@ public:
  };
  
  QMailStorePrivate::Transaction::Transaction(QMailStorePrivate* d)
@@ -1576,7 +1559,7 @@ index 9de3960..d0584c8 100644
        m_initted(false),
        m_committed(false)
  {
-@@ -1998,19 +2356,19 @@ const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
+@@ -2014,19 +2371,19 @@ const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
      return p;
  }
  
@@ -1599,7 +1582,7 @@ index 9de3960..d0584c8 100644
  {
      static QString scheme(QMailContentManagerFactory::defaultScheme());
      return scheme;
-@@ -2033,7 +2391,8 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
+@@ -2049,7 +2406,8 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
        inTransaction(false),
        lastQueryError(0),
        mutex(0),
@@ -1609,7 +1592,7 @@ index 9de3960..d0584c8 100644
  {
      ProcessMutex creationMutex(QDir::rootPath());
      MutexGuard guard(creationMutex);
-@@ -2087,9 +2446,6 @@ bool QMailStorePrivate::initStore()
+@@ -2103,9 +2461,6 @@ bool QMailStorePrivate::initStore()
  
          if (!ensureVersionInfo() ||
              !setupTables(QList<TableInfo>() << tableInfo("maintenancerecord", 100)
@@ -1619,7 +1602,7 @@ index 9de3960..d0584c8 100644
                                              << tableInfo("mailaccountfolders", 100)
                                              << tableInfo("mailfolders", 104)
                                              << tableInfo("mailfoldercustom", 100)
-@@ -2122,7 +2478,7 @@ bool QMailStorePrivate::initStore()
+@@ -2138,7 +2493,7 @@ bool QMailStorePrivate::initStore()
  
  #if defined(Q_USE_SQLITE)
      // default sqlite cache_size of 2000*1.5KB is too large, as we only want
@@ -1628,7 +1611,7 @@ index 9de3960..d0584c8 100644
      QSqlQuery query( database );
      query.exec(QLatin1String("PRAGMA cache_size=50"));
  #endif
-@@ -2150,6 +2506,22 @@ void QMailStorePrivate::clearContent()
+@@ -2166,6 +2521,22 @@ void QMailStorePrivate::clearContent()
  
      Transaction t(this);
  
@@ -1651,7 +1634,7 @@ index 9de3960..d0584c8 100644
      // Drop all data
      foreach (const QString &table, database.tables()) {
          if (table != "versioninfo") {
-@@ -2164,7 +2536,7 @@ void QMailStorePrivate::clearContent()
+@@ -2180,7 +2551,7 @@ void QMailStorePrivate::clearContent()
      if (!t.commit()) {
          qMailLog(Messaging) << "Could not commit clearContent operation to database";
      }
@@ -1660,7 +1643,7 @@ index 9de3960..d0584c8 100644
      // Remove all content
      QMailContentManagerFactory::clearContent();
  }
-@@ -2237,7 +2609,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
+@@ -2253,7 +2624,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
  
              {
                  QSqlQuery createQuery(database);
@@ -1669,7 +1652,7 @@ index 9de3960..d0584c8 100644
                      setQueryError(createQuery.lastError(), "Failed to create temporary table", queryText(createQuery));
                      qMailLog(Messaging) << "Unable to prepare query:" << sql;
                      return QSqlQuery();
-@@ -2264,13 +2636,13 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
+@@ -2280,13 +2651,13 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
  
                      switch (type) {
                      case 1:
@@ -1686,7 +1669,7 @@ index 9de3960..d0584c8 100644
                          break;
                      default:
                          qMailLog(Messaging) << "Unable to extract ID value from valuelist!";
-@@ -2286,7 +2658,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
+@@ -2302,7 +2673,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                      QSqlQuery insertQuery(database);
                      insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                      insertQuery.addBindValue(idValues);
@@ -1695,7 +1678,7 @@ index 9de3960..d0584c8 100644
                          setQueryError(insertQuery.lastError(), "Failed to populate integer temporary table", queryText(insertQuery));
                          qMailLog(Messaging) << "Unable to prepare query:" << sql;
                          return QSqlQuery();
-@@ -2301,7 +2673,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
+@@ -2317,7 +2688,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                      QSqlQuery insertQuery(database);
                      insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                      insertQuery.addBindValue(idValues);
@@ -1704,7 +1687,7 @@ index 9de3960..d0584c8 100644
                          setQueryError(insertQuery.lastError(), "Failed to populate varchar temporary table", queryText(insertQuery));
                          qMailLog(Messaging) << "Unable to prepare query:" << sql;
                          return QSqlQuery();
-@@ -2328,7 +2700,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
+@@ -2344,7 +2715,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
          return false;
      }
  
@@ -1713,7 +1696,7 @@ index 9de3960..d0584c8 100644
      qMailLog(Messaging) << "(" << pid << ")" << qPrintable(queryText(query));
  #endif
  
-@@ -2347,7 +2719,7 @@ bool QMailStorePrivate::commit(void)
+@@ -2363,7 +2734,7 @@ bool QMailStorePrivate::commit(void)
          qMailLog(Messaging) << "(" << pid << ")" << "Transaction does not exist at commit!";
          qWarning() << "Transaction does not exist at commit!";
      }
@@ -1722,7 +1705,7 @@ index 9de3960..d0584c8 100644
      if (!database.commit()) {
          setQueryError(database.lastError(), "Failed to commit transaction");
          return false;
-@@ -2368,7 +2740,7 @@ void QMailStorePrivate::rollback(void)
+@@ -2384,7 +2755,7 @@ void QMailStorePrivate::rollback(void)
          qMailLog(Messaging) << "(" << pid << ")" << "Transaction does not exist at rollback!";
          qWarning() << "Transaction does not exist at rollback!";
      }
@@ -1731,7 +1714,7 @@ index 9de3960..d0584c8 100644
      inTransaction = false;
  
      if (!database.rollback()) {
-@@ -2396,7 +2768,7 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
+@@ -2412,7 +2783,7 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
      qWarning() << qPrintable(s);
  }
  
@@ -1740,7 +1723,7 @@ index 9de3960..d0584c8 100644
  {
      lastQueryError = QSqlError::NoError;
  }
-@@ -2460,9 +2832,10 @@ bool QMailStorePrivate::idValueExists(quint64 id, const QString& table)
+@@ -2476,9 +2847,10 @@ bool QMailStorePrivate::idValueExists(quint64 id, const QString& table)
      return (query.first());
  }
  
@@ -1753,7 +1736,7 @@ index 9de3960..d0584c8 100644
  }
  
  bool QMailStorePrivate::idExists(const QMailFolderId& id, const QString& table)
-@@ -2475,17 +2848,17 @@ bool QMailStorePrivate::idExists(const QMailMessageId& id, const QString& table)
+@@ -2491,17 +2863,17 @@ bool QMailStorePrivate::idExists(const QMailMessageId& id, const QString& table)
      return idValueExists(id.toULongLong(), (table.isEmpty() ? "mailmessages" : table));
  }
  
@@ -1779,7 +1762,7 @@ index 9de3960..d0584c8 100644
  
      return result;
  }
-@@ -2596,7 +2969,7 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
+@@ -2612,7 +2984,7 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
                  break;
          }
      }
@@ -1788,7 +1771,7 @@ index 9de3960..d0584c8 100644
      if (unloadedProperties) {
          // This message is not completely loaded
          metaData->setStatus(QMailMessage::UnloadedData, true);
-@@ -2644,7 +3017,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
+@@ -2660,7 +3032,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
          if (!lock.lock(1000)) {
              qMailLog(Messaging) << "Unable to acquire message body mutex in extractMessage!";
              return QMailMessage();
@@ -1797,7 +1780,7 @@ index 9de3960..d0584c8 100644
  
          QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first);
          if (contentManager) {
-@@ -2687,9 +3060,10 @@ QString QMailStorePrivate::buildOrderClause(const Key& key) const
+@@ -2703,9 +3075,10 @@ QString QMailStorePrivate::buildOrderClause(const Key& key) const
          const QMailFolderSortKey &sortKey(key.key<QMailFolderSortKey>());
          return ::buildOrderClause(sortKey.arguments(), key.alias());
      } else if (key.isType<QMailAccountSortKey>()) {
@@ -1811,7 +1794,7 @@ index 9de3960..d0584c8 100644
  
      return QString();
  }
-@@ -2731,7 +3105,7 @@ QVariantList QMailStorePrivate::whereClauseValues(const Key& key) const
+@@ -2747,7 +3120,7 @@ QVariantList QMailStorePrivate::whereClauseValues(const Key& key) const
      } else if (key.isType<QMailAccountKey>()) {
          const QMailAccountKey &accountKey(key.key<QMailAccountKey>());
          return ::whereClauseValues(accountKey);
@@ -1820,7 +1803,7 @@ index 9de3960..d0584c8 100644
  
      return QVariantList();
  }
-@@ -2946,7 +3320,7 @@ bool QMailStorePrivate::executeFile(QFile &file)
+@@ -2962,7 +3335,7 @@ bool QMailStorePrivate::executeFile(QFile &file)
      QTextStream ts(&file);
      ts.setCodec(QTextCodec::codecForName("utf8"));
      ts.setAutoDetectUnicode(true);
@@ -1829,7 +1812,7 @@ index 9de3960..d0584c8 100644
      QString sql = parseSql(ts);
      while (result && !sql.isEmpty()) {
          QSqlQuery query(database);
-@@ -3109,7 +3483,7 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
+@@ -3125,7 +3498,7 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
              }
          }
      }
@@ -1838,7 +1821,7 @@ index 9de3960..d0584c8 100644
      return result;
  }
  
-@@ -3118,7 +3492,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
+@@ -3134,7 +3507,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
      QSet<quint64> folderIds;
  
      {
@@ -1847,7 +1830,7 @@ index 9de3960..d0584c8 100644
                                      "folder ids query"));
          if (query.lastError().type() != QSqlError::NoError)
              return false;
-@@ -3281,8 +3655,8 @@ QString QMailStorePrivate::parseSql(QTextStream& ts)
+@@ -3297,8 +3670,8 @@ QString QMailStorePrivate::parseSql(QTextStream& ts)
          if (line.trimmed ().length () == 0)
              continue;
          qry += line;
@@ -1858,7 +1841,7 @@ index 9de3960..d0584c8 100644
              qry += QLatin1String(" ");
          else
              return qry;
-@@ -3311,7 +3685,7 @@ QString QMailStorePrivate::expandValueList(int valueCount)
+@@ -3327,7 +3700,7 @@ QString QMailStorePrivate::expandValueList(int valueCount)
      }
  }
  
@@ -1867,7 +1850,7 @@ index 9de3960..d0584c8 100644
  {
      QString out;
  
-@@ -3324,7 +3698,7 @@ QString QMailStorePrivate::expandProperties(const QMailMessageKey::Properties& p
+@@ -3340,7 +3713,7 @@ QString QMailStorePrivate::expandProperties(const QMailMessageKey::Properties& p
      foreach (QMailMessageKey::Property p, messagePropertyList()) {
          if (properties & p) {
              if (!out.isEmpty())
@@ -1876,7 +1859,7 @@ index 9de3960..d0584c8 100644
              out += map.value(p);
              if (update)
                  out += "=?";
-@@ -3337,18 +3711,18 @@ QString QMailStorePrivate::expandProperties(const QMailMessageKey::Properties& p
+@@ -3353,18 +3726,18 @@ QString QMailStorePrivate::expandProperties(const QMailMessageKey::Properties& p
  bool QMailStorePrivate::addAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                     QMailAccountIdList *addedAccountIds)
  {
@@ -1902,7 +1885,7 @@ index 9de3960..d0584c8 100644
                                     "addFolder");
  }
  
-@@ -3372,9 +3746,9 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
+@@ -3388,9 +3761,9 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
              }
          }
  
@@ -1914,7 +1897,7 @@ index 9de3960..d0584c8 100644
                                       "addMessages",
                                       &t)) {
              return false;
-@@ -3419,9 +3793,9 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
+@@ -3435,9 +3808,9 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
          QString identifier;
          QStringList references;
  
@@ -1926,7 +1909,7 @@ index 9de3960..d0584c8 100644
                                       "addMessages",
                                       &t)) {
              return false;
-@@ -3439,54 +3813,54 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
+@@ -3455,54 +3828,54 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
  bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
                                         QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
  {
@@ -1999,7 +1982,7 @@ index 9de3960..d0584c8 100644
                                     "updateFolder");
  }
  
-@@ -3500,9 +3874,9 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*,
+@@ -3516,9 +3889,9 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*,
      typedef QPair<QMailMessageMetaData*, QMailMessage*> PairType;
  
      foreach (const PairType &pair, messages) {
@@ -2011,7 +1994,7 @@ index 9de3960..d0584c8 100644
                                       "updateMessages",
                                       &t)) {
              return false;
-@@ -3538,42 +3912,42 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*,
+@@ -3554,42 +3927,42 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*,
  bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
  {
@@ -2066,7 +2049,7 @@ index 9de3960..d0584c8 100644
                             "countAccounts");
      return result;
  }
-@@ -3581,8 +3955,8 @@ int QMailStorePrivate::countAccounts(const QMailAccountKey &key) const
+@@ -3597,8 +3970,8 @@ int QMailStorePrivate::countAccounts(const QMailAccountKey &key) const
  int QMailStorePrivate::countFolders(const QMailFolderKey &key) const
  {
      int result(0);
@@ -2077,7 +2060,7 @@ index 9de3960..d0584c8 100644
                             "countFolders");
      return result;
  }
-@@ -3590,8 +3964,8 @@ int QMailStorePrivate::countFolders(const QMailFolderKey &key) const
+@@ -3606,8 +3979,8 @@ int QMailStorePrivate::countFolders(const QMailFolderKey &key) const
  int QMailStorePrivate::countMessages(const QMailMessageKey &key) const
  {
      int result(0);
@@ -2088,7 +2071,7 @@ index 9de3960..d0584c8 100644
                             "countMessages");
      return result;
  }
-@@ -3599,8 +3973,8 @@ int QMailStorePrivate::countMessages(const QMailMessageKey &key) const
+@@ -3615,8 +3988,8 @@ int QMailStorePrivate::countMessages(const QMailMessageKey &key) const
  int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
  {
      int result(0);
@@ -2099,7 +2082,7 @@ index 9de3960..d0584c8 100644
                             "sizeOfMessages");
      return result;
  }
-@@ -3608,8 +3982,8 @@ int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
+@@ -3624,8 +3997,8 @@ int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
  QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const
  {
      QMailAccountIdList ids;
@@ -2110,7 +2093,7 @@ index 9de3960..d0584c8 100644
                             "queryAccounts");
      return ids;
  }
-@@ -3617,8 +3991,8 @@ QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key,
+@@ -3633,8 +4006,8 @@ QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key,
  QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const
  {
      QMailFolderIdList ids;
@@ -2121,7 +2104,7 @@ index 9de3960..d0584c8 100644
                             "queryFolders");
      return ids;
  }
-@@ -3626,8 +4000,8 @@ QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, con
+@@ -3642,8 +4015,8 @@ QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, con
  QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const
  {
      QMailMessageIdList ids;
@@ -2132,7 +2115,7 @@ index 9de3960..d0584c8 100644
                             "queryMessages");
      return ids;
  }
-@@ -3638,8 +4012,8 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
+@@ -3654,8 +4027,8 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
          return accountCache.lookup(id);
  
      QMailAccount account;
@@ -2143,7 +2126,7 @@ index 9de3960..d0584c8 100644
                             "account");
      return account;
  }
-@@ -3647,8 +4021,8 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
+@@ -3663,8 +4036,8 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
  QMailAccountConfiguration QMailStorePrivate::accountConfiguration(const QMailAccountId &id) const
  {
      QMailAccountConfiguration config;
@@ -2154,7 +2137,7 @@ index 9de3960..d0584c8 100644
                             "accountConfiguration");
      return config;
  }
-@@ -3659,8 +4033,8 @@ QMailFolder QMailStorePrivate::folder(const QMailFolderId &id) const
+@@ -3675,8 +4048,8 @@ QMailFolder QMailStorePrivate::folder(const QMailFolderId &id) const
          return folderCache.lookup(id);
  
      QMailFolder folder;
@@ -2165,7 +2148,7 @@ index 9de3960..d0584c8 100644
                             "folder");
      return folder;
  }
-@@ -3671,8 +4045,8 @@ QMailMessage QMailStorePrivate::message(const QMailMessageId &id) const
+@@ -3687,8 +4060,8 @@ QMailMessage QMailStorePrivate::message(const QMailMessageId &id) const
      AttemptResult (QMailStorePrivate::*func)(const QMailMessageId&, QMailMessage*, ReadLock&) = &QMailStorePrivate::attemptMessage;
  
      QMailMessage msg;
@@ -2176,7 +2159,7 @@ index 9de3960..d0584c8 100644
                             "message(id)");
      return msg;
  }
-@@ -3683,8 +4057,8 @@ QMailMessage QMailStorePrivate::message(const QString &uid, const QMailAccountId
+@@ -3699,8 +4072,8 @@ QMailMessage QMailStorePrivate::message(const QString &uid, const QMailAccountId
      AttemptResult (QMailStorePrivate::*func)(const QString&, const QMailAccountId&, QMailMessage*, ReadLock&) = &QMailStorePrivate::attemptMessage;
  
      QMailMessage msg;
@@ -2187,7 +2170,7 @@ index 9de3960..d0584c8 100644
                             "message(uid, accountId)");
      return msg;
  }
-@@ -3716,15 +4090,15 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
+@@ -3732,15 +4105,15 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
          // Resolve from overloaded member functions:
          AttemptResult (QMailStorePrivate::*func)(const QMailMessageId&, QMailMessageMetaData*, ReadLock&) = &QMailStorePrivate::attemptMessageMetaData;
  
@@ -2207,7 +2190,7 @@ index 9de3960..d0584c8 100644
                                           "messageMetaData(uid/accountId)");
      }
  
-@@ -3739,8 +4113,8 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
+@@ -3755,8 +4128,8 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
  QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const
  {
      QMailMessageMetaDataList metaData;
@@ -2218,7 +2201,7 @@ index 9de3960..d0584c8 100644
                             "messagesMetaData");
      return metaData;
  }
-@@ -3748,8 +4122,8 @@ QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageK
+@@ -3764,8 +4137,8 @@ QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageK
  QMailMessageRemovalRecordList QMailStorePrivate::messageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &folderId) const
  {
      QMailMessageRemovalRecordList removalRecords;
@@ -2229,7 +2212,7 @@ index 9de3960..d0584c8 100644
                             "messageRemovalRecords(accountId, folderId)");
      return removalRecords;
  }
-@@ -3761,7 +4135,7 @@ bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
+@@ -3777,7 +4150,7 @@ bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
  
      static const QString context("accountstatus");
      return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
@@ -2238,7 +2221,7 @@ index 9de3960..d0584c8 100644
                                     "registerAccountStatusBit");
  }
  
-@@ -3780,7 +4154,7 @@ bool QMailStorePrivate::registerFolderStatusFlag(const QString &name)
+@@ -3796,7 +4169,7 @@ bool QMailStorePrivate::registerFolderStatusFlag(const QString &name)
  
      static const QString context("folderstatus");
      return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
@@ -2247,7 +2230,7 @@ index 9de3960..d0584c8 100644
                                     "registerFolderStatusBit");
  }
  
-@@ -3799,7 +4173,7 @@ bool QMailStorePrivate::registerMessageStatusFlag(const QString &name)
+@@ -3815,7 +4188,7 @@ bool QMailStorePrivate::registerMessageStatusFlag(const QString &name)
  
      static const QString context("messagestatus");
      return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
@@ -2256,7 +2239,7 @@ index 9de3960..d0584c8 100644
                                     "registerMessageStatusBit");
  }
  
-@@ -3818,8 +4192,8 @@ quint64 QMailStorePrivate::queryStatusMap(const QString &name, const QString &co
+@@ -3834,8 +4207,8 @@ quint64 QMailStorePrivate::queryStatusMap(const QString &name, const QString &co
          return it.value();
  
      int result(0);
@@ -2267,7 +2250,7 @@ index 9de3960..d0584c8 100644
                             "folderStatusMask");
      if (result == 0)
          return 0;
-@@ -3840,7 +4214,7 @@ QMailFolderIdList QMailStorePrivate::folderAncestorIds(const QMailFolderIdList&
+@@ -3856,7 +4229,7 @@ QMailFolderIdList QMailStorePrivate::folderAncestorIds(const QMailFolderIdList&
          *result = self->attemptFolderAncestorIds(ids, &ancestorIds, l);
      } else {
          bool ok = repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptFolderAncestorIds, self,
@@ -2276,7 +2259,7 @@ index 9de3960..d0584c8 100644
                                           "folderAncestorIds");
          if (result)
              *result = ok ? Success : Failure;
-@@ -3923,7 +4297,7 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
+@@ -3939,7 +4312,7 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
                  setLastError(errorType(AccessType()));
              }
              return false;
@@ -2285,7 +2268,7 @@ index 9de3960..d0584c8 100644
              // result == DatabaseFailure
              if (queryError() == Sqlite3BusyErrorNumber) {
                  if (attemptCount < MaxAttempts) {
-@@ -3957,6 +4331,110 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
+@@ -3973,6 +4346,110 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
      return false;
  }
  
@@ -2396,7 +2379,7 @@ index 9de3960..d0584c8 100644
  QMailStorePrivate::AttemptResult QMailStorePrivate::addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName)
  {
      if (!fields.isEmpty()) {
-@@ -4076,8 +4554,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::customFields(quint64 id, QMa
+@@ -4092,8 +4569,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::customFields(quint64 id, QMa
      return Success;
  }
  
@@ -2407,7 +2390,7 @@ index 9de3960..d0584c8 100644
                                                                        Transaction &t, bool commitOnSuccess)
  {
      if (account->id().isValid() && idExists(account->id())) {
-@@ -4085,29 +4563,34 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
+@@ -4101,29 +4578,34 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
          return Failure;
      }
  
@@ -2449,10 +2432,10 @@ index 9de3960..d0584c8 100644
 +    ssoAccount->setValue("status", account->status());
 +    ssoAccount->setValue("signature", account->signature());
 +    ssoAccount->setValue("emailaddress", account->fromAddress().toString(true));
- 
++
 +    if (!ssoAccount->syncAndBlock())
 +        return DatabaseFailure;
-+
+ 
 +    // Extract the id
 +    QMailAccountId insertId = QMailAccountId(ssoAccount->id());
 +
@@ -2460,7 +2443,7 @@ index 9de3960..d0584c8 100644
          // Insert any standard folders configured for this account
          const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
          if (!folders.isEmpty()) {
-@@ -4127,38 +4610,48 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
+@@ -4143,38 +4625,48 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
                                                        << QVariant(folderIds),
                                         "addAccount mailaccountfolders query"));
              if (query.lastError().type() != QSqlError::NoError)
@@ -2522,7 +2505,7 @@ index 9de3960..d0584c8 100644
          }
  
          config->setId(insertId);
-@@ -4170,6 +4663,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
+@@ -4186,6 +4678,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
          qMailLog(Messaging) << "Could not commit account changes to database";
  
          account->setId(QMailAccountId()); //revert the id
@@ -2531,7 +2514,7 @@ index 9de3960..d0584c8 100644
          return DatabaseFailure;
      }
  
-@@ -4177,10 +4672,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
+@@ -4193,10 +4687,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
      return Success;
  }
  
@@ -2544,7 +2527,7 @@ index 9de3960..d0584c8 100644
      //check that the parent folder actually exists
      if (!checkPreconditions(*folder))
          return Failure;
-@@ -4220,7 +4715,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
+@@ -4236,7 +4730,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
              //add records for each ancestor folder
              QSqlQuery query(simpleQuery("INSERT INTO mailfolderlinks "
                                          "SELECT DISTINCT id,? FROM mailfolderlinks WHERE descendantid=?",
@@ -2553,7 +2536,7 @@ index 9de3960..d0584c8 100644
                                                         << folder->parentFolderId().toULongLong(),
                                          "mailfolderlinks insert ancestors"));
              if (query.lastError().type() != QSqlError::NoError)
-@@ -4230,7 +4725,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
+@@ -4246,7 +4740,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
          {
              // Our direct parent is also an ancestor
              QSqlQuery query(simpleQuery("INSERT INTO mailfolderlinks VALUES (?,?)",
@@ -2562,7 +2545,7 @@ index 9de3960..d0584c8 100644
                                                         << folder->id().toULongLong(),
                                          "mailfolderlinks insert parent"));
              if (query.lastError().type() != QSqlError::NoError)
-@@ -4244,7 +4739,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
+@@ -4260,7 +4754,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
          folder->setId(QMailFolderId()); //revert the id
          return DatabaseFailure;
      }
@@ -2571,7 +2554,7 @@ index 9de3960..d0584c8 100644
      addedFolderIds->append(insertId);
      if (folder->parentAccountId().isValid())
          modifiedAccountIds->append(folder->parentAccountId());
-@@ -4307,7 +4802,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
+@@ -4323,7 +4817,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
      if (!lock.lock(1000)) {
          qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
          return Failure;
@@ -2580,7 +2563,7 @@ index 9de3960..d0584c8 100644
  
      ReferenceStorer refStorer(message);
      const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
-@@ -4347,7 +4842,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
+@@ -4363,7 +4857,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
  }
  
  QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
@@ -2589,7 +2572,7 @@ index 9de3960..d0584c8 100644
                                                                        Transaction &t, bool commitOnSuccess)
  {
      if (!metaData->parentFolderId().isValid()) {
-@@ -4522,7 +5017,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
+@@ -4538,7 +5032,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
      return Success;
  }
  
@@ -2598,7 +2581,7 @@ index 9de3960..d0584c8 100644
                                                                            QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                            Transaction &t, bool commitOnSuccess)
  {
-@@ -4539,7 +5034,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const
+@@ -4555,7 +5049,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const
      return DatabaseFailure;
  }
  
@@ -2607,7 +2590,7 @@ index 9de3960..d0584c8 100644
                                                                           QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                           Transaction &t, bool commitOnSuccess)
  {
-@@ -4556,7 +5051,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const Q
+@@ -4572,7 +5066,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const Q
      return DatabaseFailure;
  }
  
@@ -2616,7 +2599,7 @@ index 9de3960..d0584c8 100644
                                                                            QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                            Transaction &t, bool commitOnSuccess)
  {
-@@ -4573,7 +5068,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const
+@@ -4589,7 +5083,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const
      return DatabaseFailure;
  }
  
@@ -2625,7 +2608,7 @@ index 9de3960..d0584c8 100644
                                                                           QMailAccountIdList *updatedAccountIds,
                                                                           Transaction &t, bool commitOnSuccess)
  {
-@@ -4581,22 +5076,27 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4597,22 +5091,27 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
      if (!id.isValid())
          return Failure;
  
@@ -2668,7 +2651,7 @@ index 9de3960..d0584c8 100644
  
          // Update any standard folders configured
          const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
-@@ -4604,7 +5104,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4620,7 +5119,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
  
          {
              // Find the existing folders
@@ -2677,7 +2660,7 @@ index 9de3960..d0584c8 100644
                                          QVariantList() << id.toULongLong(),
                                          "updateAccount mailaccountfolders select query"));
              if (query.lastError().type() != QSqlError::NoError)
-@@ -4673,7 +5173,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4689,7 +5188,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
          }
  
          if (account->customFieldsModified()) {
@@ -2686,7 +2669,7 @@ index 9de3960..d0584c8 100644
              if (result != Success)
                  return result;
          }
-@@ -4693,18 +5193,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4709,18 +5208,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
                  fields.insert(qMakePair(service, it.key()), it.value());
          }
  
@@ -2718,7 +2701,7 @@ index 9de3960..d0584c8 100644
          }
  
          QMap<QString, QVariantList> obsoleteFields;
-@@ -4738,50 +5241,57 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4754,50 +5256,57 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
          if (!obsoleteFields.isEmpty()) {
              // Remove the obsolete fields
              QMap<QString, QVariantList>::const_iterator it = obsoleteFields.begin(), end = obsoleteFields.end();
@@ -2800,7 +2783,7 @@ index 9de3960..d0584c8 100644
              }
          }
      }
-@@ -4790,7 +5300,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4806,7 +5315,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
          qMailLog(Messaging) << "Could not commit account update to database";
          return DatabaseFailure;
      }
@@ -2812,7 +2795,7 @@ index 9de3960..d0584c8 100644
      if (account) {
          // Update the account cache
          if (accountCache.contains(id))
-@@ -4801,7 +5314,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
+@@ -4817,7 +5329,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
      return Success;
  }
  
@@ -2821,7 +2804,7 @@ index 9de3960..d0584c8 100644
                                                                          QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                          Transaction &t, bool commitOnSuccess)
  {
-@@ -4841,7 +5354,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
+@@ -4857,7 +5369,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
          if (query.lastError().type() != QSqlError::NoError)
              return DatabaseFailure;
      }
@@ -2830,7 +2813,7 @@ index 9de3960..d0584c8 100644
      if (folder->customFieldsModified()) {
          AttemptResult result = updateCustomFields(folder->id().toULongLong(), folder->customFields(), "mailfoldercustom");
          if (result != Success)
-@@ -4868,7 +5381,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
+@@ -4884,7 +5396,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
              //add links to the new parent
              QSqlQuery query(simpleQuery("INSERT INTO mailfolderlinks "
                                          "SELECT DISTINCT id,? FROM mailfolderlinks WHERE descendantid=?",
@@ -2839,7 +2822,7 @@ index 9de3960..d0584c8 100644
                                                         << folder->parentFolderId().toULongLong(),
                                          "mailfolderlinks insert ancestors"));
              if (query.lastError().type() != QSqlError::NoError)
-@@ -4884,7 +5397,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
+@@ -4900,7 +5412,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
                  return DatabaseFailure;
          }
      }
@@ -2848,7 +2831,7 @@ index 9de3960..d0584c8 100644
      if (commitOnSuccess && !t.commit()) {
          qMailLog(Messaging) << "Could not commit folder update to database";
          return DatabaseFailure;
-@@ -4898,7 +5411,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
+@@ -4914,7 +5426,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
      return Success;
  }
  
@@ -2857,7 +2840,7 @@ index 9de3960..d0584c8 100644
                                                                           QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                                                           Transaction &t, bool commitOnSuccess)
  {
-@@ -4930,7 +5443,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
+@@ -4946,7 +5458,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
      // Do we actually have an update to perform?
      bool updateContent(message && message->contentModified());
      if (metaData->dataModified() || updateContent) {
@@ -2866,7 +2849,7 @@ index 9de3960..d0584c8 100644
          {
              QSqlQuery query(simpleQuery("SELECT parentaccountid,parentfolderid,responseid,mailfile FROM mailmessages WHERE id=?",
                                          QVariantList() << updateId,
-@@ -5000,7 +5513,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
+@@ -5016,7 +5528,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
              if (!lock.lock(1000)) {
                  qMailLog(Messaging) << "Unable to acquire message body mutex in updateMessage!";
                  return Failure;
@@ -2875,7 +2858,7 @@ index 9de3960..d0584c8 100644
  
              if (QMailContentManager *contentManager = QMailContentManagerFactory::create(metaData->contentScheme())) {
                  QString contentUri(::contentUri(*metaData));
-@@ -5120,7 +5633,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
+@@ -5136,7 +5648,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                          return DatabaseFailure;
                  }
              }
@@ -2884,7 +2867,7 @@ index 9de3960..d0584c8 100644
              // Remove any missing message/ancestor references associated with this message
  
              {
-@@ -5307,16 +5820,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
+@@ -5323,16 +5835,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
      return Success;
  }
  
@@ -2904,7 +2887,7 @@ index 9de3960..d0584c8 100644
      QMailMessageKey::Properties properties(props);
  
      if (properties & QMailMessageKey::ParentFolderId) {
-@@ -5421,8 +5934,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
+@@ -5437,8 +5949,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
      return Success;
  }
  
@@ -2915,7 +2898,7 @@ index 9de3960..d0584c8 100644
                                                                                  Transaction &t, bool commitOnSuccess)
  {
      //get the valid ids
-@@ -5465,8 +5978,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
+@@ -5481,8 +5993,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
      return Success;
  }
  
@@ -2926,7 +2909,7 @@ index 9de3960..d0584c8 100644
                                                                                     Transaction &t, bool commitOnSuccess)
  {
      // Find the message and folders that are affected by this update
-@@ -5544,7 +6057,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
+@@ -5560,7 +6072,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
              bindValues << uidValues;
          }
  
@@ -2935,7 +2918,7 @@ index 9de3960..d0584c8 100644
                                      bindValues,
                                      "purgeMessageRemovalRecord info query"));
          if (query.lastError().type() != QSqlError::NoError)
-@@ -5571,22 +6084,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
+@@ -5587,22 +6099,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
      return Success;
  }
  
@@ -2962,7 +2945,7 @@ index 9de3960..d0584c8 100644
                                                                          ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailfolders",
-@@ -5601,8 +6107,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountFolders(const QM
+@@ -5617,8 +6122,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountFolders(const QM
      return Success;
  }
  
@@ -2973,7 +2956,7 @@ index 9de3960..d0584c8 100644
                                                                           ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailmessages",
-@@ -5617,8 +6123,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountMessages(const Q
+@@ -5633,8 +6138,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountMessages(const Q
      return Success;
  }
  
@@ -2984,7 +2967,7 @@ index 9de3960..d0584c8 100644
                                                                            ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT SUM(size FROM mailmessages",
-@@ -5634,25 +6140,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const
+@@ -5650,25 +6155,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const
  }
  
  QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset,
@@ -3017,7 +3000,7 @@ index 9de3960..d0584c8 100644
                                                                          ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT id FROM mailfolders",
-@@ -5670,7 +6172,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QM
+@@ -5686,7 +6187,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QM
  }
  
  QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset,
@@ -3026,7 +3009,7 @@ index 9de3960..d0584c8 100644
                                                                           ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
-@@ -5690,116 +6192,118 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const Q
+@@ -5706,116 +6207,118 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const Q
      return Success;
  }
  
@@ -3226,7 +3209,7 @@ index 9de3960..d0584c8 100644
  
      result->setId(id);
      result->setModified(false);
-@@ -5807,8 +6311,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
+@@ -5823,8 +6326,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
      return Success;
  }
  
@@ -3237,7 +3220,7 @@ index 9de3960..d0584c8 100644
                                                                    ReadLock &)
  {
      {
-@@ -5833,7 +6337,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFol
+@@ -5849,7 +6352,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFol
          result->setCustomFields(fields);
          result->setCustomFieldsModified(false);
  
@@ -3246,7 +3229,7 @@ index 9de3960..d0584c8 100644
          folderCache.insert(*result);
          return Success;
      }
-@@ -5841,8 +6345,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFol
+@@ -5857,8 +6360,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFol
      return Failure;
  }
  
@@ -3257,7 +3240,7 @@ index 9de3960..d0584c8 100644
                                                                     ReadLock &)
  {
      // Find any custom fields for this message
-@@ -5866,8 +6370,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
+@@ -5882,8 +6385,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
      return Failure;
  }
  
@@ -3268,7 +3251,7 @@ index 9de3960..d0584c8 100644
                                                                     ReadLock &lock)
  {
      quint64 id(0);
-@@ -5875,7 +6379,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QString
+@@ -5891,7 +6394,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QString
      AttemptResult attemptResult = attemptMessageId(uid, accountId, &id, lock);
      if (attemptResult != Success)
          return attemptResult;
@@ -3277,7 +3260,7 @@ index 9de3960..d0584c8 100644
      if (id != 0) {
          return attemptMessage(QMailMessageId(id), result, lock);
      }
-@@ -5884,7 +6388,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QString
+@@ -5900,7 +6403,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QString
  }
  
  QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const QMailMessageId &id,
@@ -3286,7 +3269,7 @@ index 9de3960..d0584c8 100644
                                                                             ReadLock &)
  {
      // Find any custom fields for this message
-@@ -5908,8 +6412,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
+@@ -5924,8 +6427,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
      return Failure;
  }
  
@@ -3297,7 +3280,7 @@ index 9de3960..d0584c8 100644
                                                                             ReadLock &lock)
  {
      quint64 id(0);
-@@ -5917,7 +6421,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
+@@ -5933,7 +6436,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
      AttemptResult attemptResult = attemptMessageId(uid, accountId, &id, lock);
      if (attemptResult != Success)
          return attemptResult;
@@ -3306,7 +3289,7 @@ index 9de3960..d0584c8 100644
      if (id != 0) {
          return attemptMessageMetaData(QMailMessageId(id), result, lock);
      }
-@@ -5925,8 +6429,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
+@@ -5941,8 +6444,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
      return Failure;
  }
  
@@ -3317,7 +3300,7 @@ index 9de3960..d0584c8 100644
                                                                              ReadLock &)
  {
      if (properties == QMailMessageKey::Custom) {
-@@ -6017,8 +6521,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
+@@ -6033,8 +6536,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
      return Success;
  }
  
@@ -3328,7 +3311,7 @@ index 9de3960..d0584c8 100644
                                                                                   ReadLock &)
  {
      QVariantList values;
-@@ -6042,8 +6546,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageRemovalRecords
+@@ -6058,8 +6561,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageRemovalRecords
      return Success;
  }
  
@@ -3339,7 +3322,7 @@ index 9de3960..d0584c8 100644
                                                                              ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT DISTINCT t0.parentfolderid FROM mailmessages t0",
-@@ -6058,8 +6562,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageFolderIds(cons
+@@ -6074,8 +6577,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageFolderIds(cons
      return Success;
  }
  
@@ -3350,7 +3333,7 @@ index 9de3960..d0584c8 100644
                                                                              ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT DISTINCT parentaccountid FROM mailfolders t0",
-@@ -6074,8 +6578,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAccountIds(cons
+@@ -6090,8 +6593,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAccountIds(cons
      return Success;
  }
  
@@ -3361,7 +3344,7 @@ index 9de3960..d0584c8 100644
                                                                               ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT DISTINCT id FROM mailfolderlinks",
-@@ -6158,8 +6662,8 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
+@@ -6174,8 +6677,8 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
      }
  }
  
@@ -3372,7 +3355,7 @@ index 9de3960..d0584c8 100644
                                                                       ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?",
-@@ -6175,13 +6679,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptStatusBit(const QStri
+@@ -6191,13 +6694,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptStatusBit(const QStri
      return Success;
  }
  
@@ -3388,7 +3371,7 @@ index 9de3960..d0584c8 100644
          QSqlQuery query(simpleQuery("SELECT MAX(statusbit) FROM mailstatusflags WHERE context=?",
                                      QVariantList() << context,
                                      "mailstatusflags register select"));
-@@ -6210,8 +6714,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
+@@ -6226,8 +6729,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
      return Success;
  }
  
@@ -3399,7 +3382,7 @@ index 9de3960..d0584c8 100644
                                                                       ReadLock &)
  {
      QSqlQuery query(simpleQuery("SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?",
-@@ -6224,7 +6728,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageId(const QStri
+@@ -6240,7 +6743,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageId(const QStri
          *result = extractValue<quint64>(query.value(0));
          return Success;
      }
@@ -3408,7 +3391,7 @@ index 9de3960..d0584c8 100644
      return Failure;
  }
  
-@@ -6341,9 +6845,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
+@@ -6357,9 +6860,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                                          ")"
                                      ") "
                                      "ORDER BY stamp DESC",
@@ -3421,7 +3404,7 @@ index 9de3960..d0584c8 100644
                                                      << baseSubject,
                                      "messagePredecessor mailmessages select query"));
          if (query.lastError().type() != QSqlError::NoError)
-@@ -6630,7 +7134,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
+@@ -6646,7 +7149,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
          if (query.next())
              subjectId = extractValue<quint64>(query.value(0));
      }
@@ -3430,7 +3413,7 @@ index 9de3960..d0584c8 100644
      if (subjectId == 0) {
          QSqlQuery query(simpleQuery("INSERT INTO mailsubjects (basesubject) VALUES (?)",
                                      QVariantList() << baseSubject,
-@@ -6655,7 +7159,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
+@@ -6671,7 +7174,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
          if (query.next())
              count = extractValue<int>(query.value(0));
      }
@@ -3439,7 +3422,7 @@ index 9de3960..d0584c8 100644
      if (count == 0) {
          QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
                                      QVariantList() << subjectId << messageId,
-@@ -6700,8 +7204,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
+@@ -6716,8 +7219,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
  
  bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool update)
  {
@@ -3450,7 +3433,7 @@ index 9de3960..d0584c8 100644
  
      if(!update)
      {
-@@ -6711,7 +7215,7 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
+@@ -6727,7 +7230,7 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
              return false;
          }
      }
@@ -3459,7 +3442,7 @@ index 9de3960..d0584c8 100644
      {
          if(!folder.id().isValid())
          {
-@@ -6737,21 +7241,30 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
+@@ -6753,21 +7256,30 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
  
      if(folder.parentAccountId().isValid())
      {
@@ -3496,7 +3479,7 @@ index 9de3960..d0584c8 100644
                                         QMailFolderIdList& modifiedFolderIds,
                                         QMailAccountIdList& modifiedAccountIds)
  {
-@@ -6774,7 +7287,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
+@@ -6790,7 +7302,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
          while (query.next()) {
              QMailMessageId messageId(extractValue<quint64>(query.value(0)));
              deletedMessageIds.append(messageId);
@@ -3505,7 +3488,7 @@ index 9de3960..d0584c8 100644
              QString contentUri(extractValue<QString>(query.value(1)));
              if (!contentUri.isEmpty())
                  expiredContent.append(contentUri);
-@@ -6960,13 +7473,13 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
+@@ -6976,13 +7488,13 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
      return true;
  }
  
@@ -3526,7 +3509,7 @@ index 9de3960..d0584c8 100644
                                        QMailAccountIdList& modifiedAccountIds)
  {
      {
-@@ -6982,16 +7495,16 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
+@@ -6998,16 +7510,16 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
      }
  
      // No folders? Then we're already done
@@ -3546,7 +3529,7 @@ index 9de3960..d0584c8 100644
      // Delete any references to these folders in the mailfolderlinks table
      QString statement("DELETE FROM mailfolderlinks WHERE %1 IN ( SELECT t0.id FROM mailfolders t0");
      statement += buildWhereClause(Key(key, "t0")) + " )";
-@@ -7054,45 +7567,36 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
+@@ -7070,45 +7582,36 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
      return true;
  }
  
@@ -3606,7 +3589,7 @@ index 9de3960..d0584c8 100644
  
      // Delete all the messages contained by the folders we're deleting
      if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedAccountIds))
-@@ -7117,30 +7621,15 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
+@@ -7133,30 +7636,15 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
      }
  
      {
@@ -3646,7 +3629,7 @@ index 9de3960..d0584c8 100644
      }
  
      // Do not report any deleted entities as updated
-@@ -7305,3 +7794,39 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpd
+@@ -7321,3 +7809,39 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpd
      QMailStoreImplementation::emitIpcNotification(signal, ids);
  }
  
@@ -3687,7 +3670,7 @@ index 9de3960..d0584c8 100644
 +    return accountList;
 +}
 diff --git a/src/libraries/qtopiamail/qmailstore_p.h b/src/libraries/qtopiamail/qmailstore_p.h
-index a08f487..55ff5d1 100644
+index 0bcc387..9ae3980 100644
 --- a/src/libraries/qtopiamail/qmailstore_p.h
 +++ b/src/libraries/qtopiamail/qmailstore_p.h
 @@ -56,6 +56,9 @@
@@ -8951,14 +8934,14 @@ index 0000000..e5d7303
 +  <icon>generic_provider</icon>
 +</provider>
 diff --git a/src/libraries/qtopiamail/support/qmaillog.h b/src/libraries/qtopiamail/support/qmaillog.h
-index 846b7b8..b0c37d5 100644
+index fae4f9e..f57e0a4 100644
 --- a/src/libraries/qtopiamail/support/qmaillog.h
 +++ b/src/libraries/qtopiamail/support/qmaillog.h
 @@ -122,6 +122,7 @@ QLOG_ENABLE(Messaging)
  QLOG_ENABLE(IMAP)
  QLOG_ENABLE(SMTP)
  QLOG_ENABLE(POP)
-+QLOG_DISABLE(SPARQL)
++QLOG_ENABLE(SPARQL)
  QLOG_DISABLE(ImapData)
  QLOG_DISABLE(MessagingState)
  #else
@@ -8971,10 +8954,10 @@ index 846b7b8..b0c37d5 100644
  QLOG_DISABLE(MessagingState)
  #endif
 diff --git a/src/libraries/qtopiamail/support/qmailnamespace.cpp b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-index 16b1c1b..c356874 100644
+index dd572f0..c8ad36b 100644
 --- a/src/libraries/qtopiamail/support/qmailnamespace.cpp
 +++ b/src/libraries/qtopiamail/support/qmailnamespace.cpp
-@@ -223,7 +223,8 @@ QString QMail::pluginsPath()
+@@ -228,7 +228,8 @@ QString QMail::pluginsPath()
      if(!pluginsEnv.isEmpty())
          return pluginsEnv + "/";
      //default to "." if no env set
@@ -9988,19 +9971,6 @@ index 0000000..9a2d59a
 +
 +  </interface>
 +</node>
-diff --git a/src/tools/messageserver/etc/Xsession/51messageserver b/src/tools/messageserver/etc/Xsession/51messageserver
-new file mode 100755
-index 0000000..cf1c939
---- /dev/null
-+++ b/src/tools/messageserver/etc/Xsession/51messageserver
-@@ -0,0 +1,7 @@
-+#!/bin/sh
-+#
-+# Start messageserver as soon as it was installed
-+#
-+set -e
-+
-+/etc/init.d/messageserver start
 diff --git a/src/tools/messageserver/etc/event.d/messageserver b/src/tools/messageserver/etc/event.d/messageserver
 new file mode 100644
 index 0000000..b1e8a21
@@ -10020,111 +9990,21 @@ index 0000000..b1e8a21
 +
 +exec su - user -c "DISPLAY=:0 /usr/bin/messageserver"
 +
-diff --git a/src/tools/messageserver/etc/messageserver b/src/tools/messageserver/etc/messageserver
-new file mode 100755
-index 0000000..e9ccb1a
---- /dev/null
-+++ b/src/tools/messageserver/etc/messageserver
-@@ -0,0 +1,86 @@
-+#!/bin/sh
-+### BEGIN INIT INFO
-+# Provides:          messageserver
-+# Required-Start:    Xsession
-+# Required-Stop:
-+# Should-Start:      
-+# Should-Stop:
-+# Default-Start:     0
-+# Default-Stop:
-+# Short-Description: Starts QMF message server
-+# Description:
-+### END INIT INFO
-+
-+DAEMON=/usr/bin/messageserver
-+NAME=messageserver
-+DESC="QMF Message Server"
-+RESPAWN="-c 3 -T 180 -f"
-+
-+set -e
-+
-+clean_pid() {
-+    if [ -f /var/tmp/messageserver-instance.lock ]; then
-+        rm /var/tmp/messageserver-instance.lock
-+    fi
-+
-+    if [ -f /var/tmp/qcop-server-0 ]; then
-+        rm /var/tmp/qcop-server-0
-+    fi
-+
-+    if [ -f /tmp/qcop-server-0 ]; then
-+        rm /tmp/qcop-server-0
-+    fi
-+
-+    if [ -z $DISPLAY ]; then
-+        export DISPLAY=0:0
-+    fi
-+}
-+
-+# abort if no executable exists
-+test -x $DAEMON || exit 0
-+
-+# When inside scratchbox we are not really root nor do we have 'user' user
-+if [ ! -f /targets/links/scratchbox.config ]; then
-+  USER=user
-+  HOME=/home/$USER
-+  if [ `id -u` = 0 ]; then
-+    CHUID="--chuid $USER"
-+    NICE="--nice=19"
-+  fi
-+fi
-+
-+# Setup X display if it is not defined yet
-+if [ -z $DISPLAY ]; then
-+    export DISPLAY=0:0
-+fi
-+
-+# Start/stop or restart messageserver daemon.
-+case "$1" in
-+  start)
-+    printf "Starting $DESC: $NAME"
-+    clean_pid
-+    dsmetool $NICE -U $USER $RESPAWN $DAEMON
-+    printf ".\n"
-+    ;;
-+  stop)
-+    printf "Stopping: $DESC: $NAME"
-+    dsmetool -k $DAEMON
-+    printf ".\n"
-+    ;;
-+  restart|force-reload)
-+    printf "Restarting $DESC: $NAME"
-+    dsmetool -k $DAEMON
-+    sleep 1
-+    clean_pid
-+    dsmetool $NICE -U $USER $RESPAWN $DAEMON
-+    printf ".\n"
-+    ;;
-+  *)
-+    N=/etc/init.d/$NAME
-+    echo "Usage: $N {start|stop|restart|force-reload}" >&2
-+    exit 1
-+    ;;
-+esac
-+
-+exit 0
-+
 diff --git a/src/tools/messageserver/main.cpp b/src/tools/messageserver/main.cpp
-index 27eb7f5..c1b4820 100644
+index 952b267..03d6e35 100644
 --- a/src/tools/messageserver/main.cpp
 +++ b/src/tools/messageserver/main.cpp
-@@ -40,6 +40,7 @@
+@@ -40,7 +40,8 @@
  ****************************************************************************/
  
  #include "messageserver.h"
+-#include <QApplication>
 +#include "sparqlindexer.h"
- #include <QApplication>
++#include <QCoreApplication>
  #include <QDebug>
  #include <qmailnamespace.h>
-@@ -60,7 +61,6 @@ static void shutdown(int n)
+ 
+@@ -60,11 +61,10 @@ static void shutdown(int n)
  
  int main(int argc, char** argv)
  {
@@ -10132,8 +10012,13 @@ index 27eb7f5..c1b4820 100644
      if(QMail::fileLock("messageserver-instance.lock") == -1)
          qFatal("Could not get messageserver lock. Messageserver might already be running!");
  
+-    QApplication app(argc, argv);
++    QCoreApplication app(argc, argv);
+ 
+     MessageServer server;
+ 
 diff --git a/src/tools/messageserver/messageserver.cpp b/src/tools/messageserver/messageserver.cpp
-index 94ecdcf..21991ac 100644
+index e8507d0..274f739 100644
 --- a/src/tools/messageserver/messageserver.cpp
 +++ b/src/tools/messageserver/messageserver.cpp
 @@ -42,6 +42,7 @@
@@ -10150,11 +10035,29 @@ index 94ecdcf..21991ac 100644
        newMessageTotal(0),
 -      completionAttempted(false)
 +      completionAttempted(false),
-+      indexer(new SparqlIndexer(this))
++      indexer(NULL)
  {
      qMailLog(Messaging) << "MessageServer ctor begin";
      new QCopServer(this);
-@@ -89,28 +91,28 @@ MessageServer::MessageServer(QObject *parent)
+@@ -71,6 +73,17 @@ MessageServer::MessageServer(QObject *parent)
+         qFatal("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
+         // Do not close, however, or QPE will start another instance.
+     } else {
++        indexer = new SparqlIndexer(this);
++
++        // Connect singlas from store to SPARQL indexer handlers
++        connect(store, SIGNAL(accountsAdded(QMailAccountIdList)),   indexer, SLOT(addAccounts(QMailAccountIdList)));
++        connect(store, SIGNAL(accountsUpdated(QMailAccountIdList)), indexer, SLOT(updateAccounts(QMailAccountIdList)));
++        connect(store, SIGNAL(accountsRemoved(QMailAccountIdList)), indexer, SLOT(removeAccounts(QMailAccountIdList)));
++
++        connect(store, SIGNAL(foldersAdded(QMailFolderIdList)),   indexer, SLOT(addFolders(QMailFolderIdList)));
++        connect(store, SIGNAL(foldersUpdated(QMailFolderIdList)), indexer, SLOT(updateFolders(QMailFolderIdList)));
++        connect(store, SIGNAL(foldersRemoved(QMailFolderIdList)), indexer, SLOT(removeFolders(QMailFolderIdList)));
++
+         handler = new ServiceHandler(this);
+ 
+         connect(store, SIGNAL(messagesAdded(QMailMessageIdList)),
+@@ -89,28 +102,28 @@ MessageServer::MessageServer(QObject *parent)
                  client, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)));
          connect(handler, SIGNAL(progressChanged(quint64, uint, uint)),
                  client, SIGNAL(progressChanged(quint64, uint, uint)));
@@ -10191,7 +10094,16 @@ index 94ecdcf..21991ac 100644
                  this, SLOT(transmissionCompleted(quint64)));
          connect(handler, SIGNAL(retrievalCompleted(quint64)),
                  this, SLOT(retrievalCompleted(quint64)));
-@@ -341,11 +343,20 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
+@@ -154,7 +167,7 @@ MessageServer::MessageServer(QObject *parent)
+                 handler, SLOT(cancelSearch(quint64)));
+         connect(client, SIGNAL(shutdown()),
+                 handler, SLOT(shutdown()));
+-       connect(handler, SIGNAL(newMessagesAvailable()),
++        connect(handler, SIGNAL(newMessagesAvailable()),
+                 this, SLOT(reportNewCounts()));
+         connect(client, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),
+                 this, SLOT(acknowledgeNewMessages(QMailMessageTypeList)));
+@@ -341,11 +354,20 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
                      message.content() == QMailMessage::VideomailContent) {
                      complete = true;
                  }
@@ -10212,7 +10124,7 @@ index 94ecdcf..21991ac 100644
      }
  }
  
-@@ -354,16 +365,22 @@ void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
+@@ -354,16 +376,22 @@ void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
      if (QMailStore::instance()->asynchronousEmission()) {
          // Only need to check message counts if the update occurred in another process
          updateNewMessageCounts();
@@ -10236,7 +10148,7 @@ index 94ecdcf..21991ac 100644
          }
      }
  }
-@@ -376,6 +393,9 @@ void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
+@@ -376,6 +404,9 @@ void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
      }
  
      updateNewMessageCounts();
@@ -10247,7 +10159,7 @@ index 94ecdcf..21991ac 100644
  
  void MessageServer::updateNewMessageCounts()
 diff --git a/src/tools/messageserver/messageserver.h b/src/tools/messageserver/messageserver.h
-index b20e5ae..72e36b3 100644
+index 508752a..f7cd380 100644
 --- a/src/tools/messageserver/messageserver.h
 +++ b/src/tools/messageserver/messageserver.h
 @@ -52,6 +52,7 @@ class QDSData;
@@ -10267,10 +10179,20 @@ index b20e5ae..72e36b3 100644
  
  #endif
 diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
-index 6216729..5d979ae 100644
+index 6216729..b04ad88 100644
 --- a/src/tools/messageserver/messageserver.pro
 +++ b/src/tools/messageserver/messageserver.pro
-@@ -10,22 +10,26 @@ DEPENDPATH += .
+@@ -2,6 +2,9 @@ TEMPLATE = app
+ 
+ include(../../../common.pri)
+ 
++CONFIG -= x11
++CONFIG += console
++
+ TARGET = messageserver
+ target.path += $$QMF_INSTALL_ROOT/bin
+ INSTALLS += target
+@@ -10,22 +13,26 @@ DEPENDPATH += .
  
  INCLUDEPATH += . ../../libraries/qtopiamail \
                   ../../libraries/qtopiamail/support \
@@ -10301,7 +10223,7 @@ index 6216729..5d979ae 100644
  
  TRANSLATIONS += messageserver-ar.ts \
                  messageserver-de.ts \
-@@ -43,10 +47,11 @@ TRANSLATIONS += messageserver-ar.ts \
+@@ -43,10 +50,11 @@ TRANSLATIONS += messageserver-ar.ts \
  
  unix {
      # Uncomment this to shutdown cleanly on termination signal
@@ -10316,10 +10238,10 @@ index 6216729..5d979ae 100644
 +
 diff --git a/src/tools/messageserver/sparqlindexer.cpp b/src/tools/messageserver/sparqlindexer.cpp
 new file mode 100644
-index 0000000..5c5fede
+index 0000000..a7e2f1a
 --- /dev/null
 +++ b/src/tools/messageserver/sparqlindexer.cpp
-@@ -0,0 +1,347 @@
+@@ -0,0 +1,425 @@
 +/****************************************************************************
 +**
 +** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -10444,7 +10366,76 @@ index 0000000..5c5fede
 +    return contentUri(message.contentScheme(), message.contentIdentifier());
 +}
 +
-+QString nmoRecipients(const QList<QMailAddress>& recipients)
++QString insertObjectQuery(const QMailAccount& account)
++{
++    QString query;
++    QTextStream q(&query);
++
++    MailAccountUri accountUri(account.id());
++
++    q << "INSERT {" << endl;
++    q << accountUri.uri() << " rdf:type nmo:Mailbox ;" << endl;
++    q << "   nmo:accountName \"" << account.name() << "\" ;"<< endl;
++    q << "   nmo:signature \"" << account.signature() << "\" ;" << endl;
++    q << "   nmo:fromAddress [ " << endl;
++    q << "       rdf:type nco:EmailAddress ;" << endl;
++    q << "       nco:emailAddress \"" << account.fromAddress().toString(true) << "\" ] ." << endl;
++    q << "}";
++
++    return query;
++}
++
++QString dropObjectsQuery(const QMailAccountIdList& ids)
++{
++    Q_ASSERT(!ids.isEmpty());
++
++    QString query;
++    QTextStream q(&query);
++
++    foreach (const QMailAccountId& id, ids)
++    {
++        MailAccountUri accountUri(id);
++        q << "DROP GRAPH " << accountUri.uri() << endl;
++    }
++    return query;
++}
++
++QString insertObjectQuery(const QMailFolder& folder)
++{
++    QString query;
++    QTextStream q(&query);
++
++    MailFolderUri folderUri(folder.id());
++    MailFolderUri  parentFolderUri(folder.parentFolderId());
++    MailAccountUri accountUri(folder.parentAccountId());
++
++    q << "INSERT {" << endl;
++    q << folderUri.uri() <<  " rdf:type nmo:MailFolder ;" << endl;
++    q << "   nmo:folderName \"" << folder.displayName() << "\" ;" << endl;
++    q << "   nie:isLogicalPartOf " <<  parentFolderUri.uri() << " ;" << endl;
++    q << "   nie:relatedTo " << accountUri.uri() << " ." << endl;
++    q << "}";
++
++    return query;
++}
++
++QString dropObjectsQuery(const QMailFolderIdList& ids)
++{
++    Q_ASSERT(!ids.isEmpty());
++
++    QString query;
++    QTextStream q(&query);
++
++    foreach (const QMailFolderId& id, ids)
++    {
++        MailFolderUri folderUri(id);
++        q << "DROP GRAPH " << folderUri.uri() << endl;
++    }
++    return query;
++}
++
++
++QString recipients(const QList<QMailAddress>& recipients)
 +{
 +    QString result;
 +    QTextStream q(&result);
@@ -10459,7 +10450,7 @@ index 0000000..5c5fede
 +    return result;
 +}
 +
-+QString insertMessage(const QMailMessageMetaData& message)
++QString insertObjectQuery(const QMailMessageMetaData& message)
 +{
 +    QString query;
 +    QTextStream q(&query);
@@ -10476,7 +10467,7 @@ index 0000000..5c5fede
 +    if (message.from().name() != message.from().address())
 +        q << "       nco:fullname \"" << message.from().name() << "\" ;" << endl;
 +    q << "       nco:hasEmailAddress <mailto:" << message.from().address() << "> ] ;" << endl;
-+    q <<       nmoRecipients(message.to()) << endl;
++    q <<       recipients(message.to()) << endl;
 +    q << "   nmo:messageSubject \"" << message.subject() << "\" ;" << endl;
 +    q << "   nmo:sentDate \"" << QMailTimeStamp(message.date()).toLocalTime().toString() << "\"^^xsd:dateTime ;" << endl;
 +    q << "   nie:relatedTo "  << parentAccountUri.uri() << ";" << endl;
@@ -10488,17 +10479,13 @@ index 0000000..5c5fede
 +    q << "   nie:mimeType \""    << contentMimeType(message.content())   << "\" ;" << endl;
 +    if (message.inResponseTo().isValid())
 +        q << "   nmo:inReplyTo \""   << message.inResponseTo().toULongLong() << "\" ;" << endl;
-+    q << "   nmo:messageHeader [" << endl;
-+    q << "     rdf:type nmo:MessageHeader ;" << endl;
-+    q << "     nmo:headerName \"responseType\" ;" << endl;
-+    q << "     nmo:headerValue \"" << message.responseType() << "\" ] ;" << endl;
 +    q << "   nmo:receivedDate \"" << QMailTimeStamp(message.receivedDate()).toLocalTime().toString() << "\"^^xsd:dateTime ." << endl;
 +    q << "}";
 +
 +    return query;
 +}
 +
-+QString dropMessages(const QMailMessageIdList& ids)
++QString dropObjectsQuery(const QMailMessageIdList& ids)
 +{
 +    Q_ASSERT(!ids.isEmpty());
 +
@@ -10513,22 +10500,83 @@ index 0000000..5c5fede
 +    return query;
 +}
 +
-+QString removeMessages(const QMailMessageIdList& ids)
++template <class MailObject, class MailObjectId>
++bool addObjects(const QList<MailObjectId> ids)
 +{
 +    Q_ASSERT(!ids.isEmpty());
 +
-+    QString query;
-+    QTextStream q(&query);
-+
-+    q << "DELETE {" << endl;
-+    foreach (const QMailMessageId& id, ids)
++    SparqlQuery query(SparqlQuery::BatchUpdate);
++    foreach (const MailObjectId& id, ids)
 +    {
-+        MailMessageUri uri(id);
-+        q << uri.uri() << " rdf:type nmo:Email ." << endl;
-+    }
-+    q << "}";
++        MailObject object(id);
 +
-+    return query;
++        // Check wheither message was loaded successfully
++        if (object.id().isValid())
++        {
++            QString request(insertObjectQuery(object));
++            if (!query.prepare(request))
++            {
++                qMailLog(Messaging) << "Fail to prepare query to add object in Tracker." << query.error();
++                continue;
++            }
++        }
++    }
++
++    if (!query.exec())
++    {
++        qMailLog(Messaging) << "Fail to add objects to Tracker." << query.error();
++        return false;
++    }
++    return true;
++}
++
++template <class MailObject, class MailObjectId>
++bool updateObjects(const QList<MailObjectId> ids)
++{
++    Q_ASSERT(!ids.isEmpty());
++
++    SparqlQuery query(SparqlQuery::BatchUpdate);
++    foreach (const MailObjectId& id, ids)
++    {
++        MailObject object(id);
++
++        // Check wheither message was loaded successfully
++        if (object.id().isValid())
++        {
++            QString request;
++            QTextStream q(&request);
++
++            q << dropObjectsQuery(QList<MailObjectId>() << id);
++            q << insertObjectQuery(object);
++
++            if (!query.prepare(request))
++            {
++                qMailLog(Messaging) << "Fail to update objects in Tracker." << query.error();
++                continue;
++            }
++        }
++    }
++
++    if (!query.exec())
++    {
++        qMailLog(Messaging) << "Fail to update objects in Tracker." << query.error();
++        return false;
++    }
++    return true;
++}
++
++template <class MailObjectId>
++bool removeObjects(const QList<MailObjectId> ids)
++{
++    QString request(dropObjectsQuery(ids));
++
++    SparqlQuery query(SparqlQuery::UpdateQuery, request);
++    if (!query.exec())
++    {
++        qMailLog(Messaging) << "Fail to remove objects from Tracker:" << query.error();
++        return false;
++    }
++    return true;
 +}
 +
 +} // end of namespace
@@ -10548,7 +10596,7 @@ index 0000000..5c5fede
 +
 +bool SparqlIndexer::addMessageMetaData(const QMailMessageMetaData& message)
 +{
-+    QString request(insertMessage(message));
++    QString request(insertObjectQuery(message));
 +    SparqlQuery query(SparqlQuery::UpdateQuery, request);
 +    if (!query.exec())
 +    {
@@ -10558,19 +10606,13 @@ index 0000000..5c5fede
 +    return true;
 +}
 +
-+bool SparqlIndexer::addMessagePartContainer(const QMailMessagePartContainer& partContainer)
-+{
-+    // TBD: Add information about all message's MIME parts to the Tracker
-+    return false;
-+}
-+
 +bool SparqlIndexer::updateMessageMetaData(const QMailMessageMetaData& message)
 +{
 +    QString request;
 +    QTextStream q(&request);
 +
-+    q << dropMessages(QMailMessageIdList() << message.id());
-+    q << insertMessage(message);
++    q << dropObjectsQuery(QMailMessageIdList() << message.id());
++    q << insertObjectQuery(message);
 +
 +    SparqlQuery query(SparqlQuery::UpdateQuery, request);
 +    if (!query.exec())
@@ -10581,98 +10623,56 @@ index 0000000..5c5fede
 +    return true;
 +}
 +
-+bool SparqlIndexer::updateMessagePartContainer(const QMailMessagePartContainer& partContainer)
++bool SparqlIndexer::addAccounts(const QMailAccountIdList& ids)
 +{
-+    // TBD: Update information about all message's MIME parts to the Tracker
-+    return false;
++    return ::addObjects<QMailAccount,QMailAccountId>(ids);
++}
++
++bool SparqlIndexer::updateAccounts(const QMailAccountIdList& ids)
++{
++    return ::updateObjects<QMailAccount,QMailAccountId>(ids);
++}
++
++bool SparqlIndexer::removeAccounts(const QMailAccountIdList& ids)
++{
++    return ::removeObjects(ids);
++}
++
++bool SparqlIndexer::addFolders(const QMailFolderIdList& ids)
++{
++    return ::addObjects<QMailFolder,QMailFolderId>(ids);
++}
++
++bool SparqlIndexer::updateFolders(const QMailFolderIdList& ids)
++{
++    return ::updateObjects<QMailFolder,QMailFolderId>(ids);
++}
++
++bool SparqlIndexer::removeFolders(const QMailFolderIdList& ids)
++{
++    return ::removeObjects(ids);
 +}
 +
 +bool SparqlIndexer::addMessages(const QMailMessageIdList& ids)
 +{
-+    Q_ASSERT(!ids.isEmpty());
-+
-+    SparqlQuery query(SparqlQuery::BatchUpdate);
-+    foreach (const QMailMessageId& id, ids)
-+    {
-+        QMailMessageMetaData message(id);
-+
-+        // Check wheither message was loaded successfully
-+        if (message.id().isValid())
-+        {
-+            QString request(insertMessage(message));
-+            if (!query.prepare(request))
-+            {
-+                qMailLog(Messaging) << "Failed to prepare SPARQL query while adding messages." << query.error();
-+                continue;
-+            }
-+        }
-+    }
-+
-+    if (!query.exec())
-+    {
-+        qMailLog(Messaging) << "Failed to batch-add information about messages to Tracker:" << query.error();
-+        return false;
-+    }
-+    return true;
++    return addObjects<QMailMessage,QMailMessageId>(ids);
 +}
 +
 +bool SparqlIndexer::updateMessages(const QMailMessageIdList& ids)
 +{
-+    Q_ASSERT(!ids.isEmpty());
-+
-+    SparqlQuery query(SparqlQuery::BatchUpdate);
-+    foreach (const QMailMessageId& id, ids)
-+    {
-+        QMailMessageMetaData message(id);
-+
-+        // Check wheither message was loaded successfully
-+        if (message.id().isValid())
-+        {
-+            QString request;
-+            QTextStream q(&request);
-+
-+            q << dropMessages(QMailMessageIdList() << id);
-+            q << insertMessage(message);
-+
-+            if (!query.prepare(request))
-+            {
-+                qMailLog(Messaging) << "Failed to prepare SPARQL query while adding messages." << query.error();
-+                continue;
-+            }
-+        }
-+    }
-+
-+    if (!query.exec())
-+    {
-+        qMailLog(Messaging) << "Failed to batch-update information about messages in Tracker:" << query.error();
-+        return false;
-+    }
-+    return true;
++    return updateObjects<QMailMessage,QMailMessageId>(ids);
 +}
 +
 +bool SparqlIndexer::removeMessages(const QMailMessageIdList& ids)
 +{
-+    QString request(dropMessages(ids));
-+
-+    SparqlQuery query(SparqlQuery::UpdateQuery, request);
-+    if (!query.exec())
-+    {
-+        qMailLog(Messaging) << "Failed to remove message information from Tracker:" << query.error();
-+        return false;
-+    }
-+    return true;
-+}
-+
-+bool SparqlIndexer::removeMessage(const QMailMessageId& id)
-+{
-+    return removeMessages(QMailMessageIdList() << id);
++    return removeObjects(ids);
 +}
 diff --git a/src/tools/messageserver/sparqlindexer.h b/src/tools/messageserver/sparqlindexer.h
 new file mode 100644
-index 0000000..1b0e2cb
+index 0000000..41f4139
 --- /dev/null
 +++ b/src/tools/messageserver/sparqlindexer.h
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,80 @@
 +/****************************************************************************
 +**
 +** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -10718,10 +10718,14 @@ index 0000000..1b0e2cb
 +#define SPARQLINDEXER_H
 +
 +#include <QObject>
++
++#include <qmailaccount.h>
++#include <qmailfolder.h>
 +#include <qmailmessage.h>
++
 +#include <sparqldatabase.h>
 +
-+class SparqlIndexer : QObject
++class SparqlIndexer : public QObject
 +{
 +    Q_OBJECT
 +public:
@@ -10729,18 +10733,20 @@ index 0000000..1b0e2cb
 +    virtual ~SparqlIndexer();
 +
 +    bool addMessageMetaData(const QMailMessageMetaData& message);
-+    bool addMessagePartContainer(const QMailMessagePartContainer& partContainer);
-+
 +    bool updateMessageMetaData(const QMailMessageMetaData& message);
-+    bool updateMessagePartContainer(const QMailMessagePartContainer& partContainer);
 +
 +public slots:
++    bool addAccounts(const QMailAccountIdList& ids);
++    bool updateAccounts(const QMailAccountIdList& ids);
++    bool removeAccounts(const QMailAccountIdList& ids);
++
++    bool addFolders(const QMailFolderIdList& ids);
++    bool updateFolders(const QMailFolderIdList& ids);
++    bool removeFolders(const QMailFolderIdList& ids);
++
 +    bool addMessages(const QMailMessageIdList& ids);
-+
 +    bool updateMessages(const QMailMessageIdList& ids);
-+
 +    bool removeMessages(const QMailMessageIdList& ids);
-+    bool removeMessage(const QMailMessageId& id);
 +
 +private:
 +    SparqlDatabase mDatabase;
@@ -10770,7 +10776,7 @@ index 0000000..cabc65d
 +<testdefinition version="0.1"><suite name="libqmf-tests"><set description="libqmf-tests:tst_qmailmessagepart" name="/usr/tests/qmf/tst_qmailmessagepart"><case description="libqmf-tests:tst_qmailmessagepart:contentID" name="tst_qmailmessagepart-contentID"><step>/usr/tests/qmf/tst_qmailmessagepart contentID</step></case><case description="libqmf-tests:tst_qmailmessagepart:setContentID" name="tst_qmailmessagepart-setContentID"><step>/usr/tests/qmf/tst_qmailmessagepart setContentID</step></case><case description="libqmf-tests:tst_qmailmessagepart:contentLocation" name="tst_qmailmessagepart-contentLocation"><step>/usr/tests/qmf/tst_qmailmessagepart contentLocation</step></case><case description="libqmf-tests:tst_qmailmessagepart:setContentLocation" name="tst_qmailmessagepart-setContentLocation"><step>/usr/tests/qmf/tst_qmailmessagepart setContentLocation</step></case><case description="libqmf-tests:tst_qmailmessagepart:contentDescription" name="tst_qmailmessagepart-contentDescription"><step>/usr/tests/qmf/tst_qmailmessagepart contentDescription</step></case><case description="libqmf-tests:tst_qmailmessagepart:setContentDescription" name="tst_qmailmessagepart-setContentDescription"><step>/usr/tests/qmf/tst_qmailmessagepart setContentDescription</step></case><case description="libqmf-tests:tst_qmailmessagepart:contentDisposition" name="tst_qmailmessagepart-contentDisposition"><step>/usr/tests/qmf/tst_qmailmessagepart contentDisposition</step></case><case description="libqmf-tests:tst_qmailmessagepart:setContentDisposition" name="tst_qmailmessagepart-setContentDisposition"><step>/usr/tests/qmf/tst_qmailmessagepart setContentDisposition</step></case><case description="libqmf-tests:tst_qmailmessagepart:contentLanguage" name="tst_qmailmessagepart-contentLanguage"><step>/usr/tests/qmf/tst_qmailmessagepart contentLanguage</step></case><case description="libqmf-tests:tst_qmailmessagepart:setContentLanguage" name="tst_qmailmessagepart-setContentLanguage"><step>/usr/tests/qmf/tst_qmailmessagepart setContentLanguage</step></case><case description="libqmf-tests:tst_qmailmessagepart:headerField" name="tst_qmailmessagepart-headerField"><step>/usr/tests/qmf/tst_qmailmessagepart headerField</step></case><case description="libqmf-tests:tst_qmailmessagepart:headerFieldText" name="tst_qmailmessagepart-headerFieldText"><step>/usr/tests/qmf/tst_qmailmessagepart headerFieldText</step></case><case description="libqmf-tests:tst_qmailmessagepart:headerFields" name="tst_qmailmessagepart-headerFields"><step>/usr/tests/qmf/tst_qmailmessagepart headerFields</step></case><case description="libqmf-tests:tst_qmailmessagepart:headerFieldsText" name="tst_qmailmessagepart-headerFieldsText"><step>/usr/tests/qmf/tst_qmailmessagepart headerFieldsText</step></case><case description="libqmf-tests:tst_qmailmessagepart:setHeaderField" name="tst_qmailmessagepart-setHeaderField"><step>/usr/tests/qmf/tst_qmailmessagepart setHeaderField</step></case><case description="libqmf-tests:tst_qmailmessagepart:appendHeaderField" name="tst_qmailmessagepart-appendHeaderField"><step>/usr/tests/qmf/tst_qmailmessagepart appendHeaderField</step></case><case description="libqmf-tests:tst_qmailmessagepart:removeHeaderField" name="tst_qmailmessagepart-removeHeaderField"><step>/usr/tests/qmf/tst_qmailmessagepart removeHeaderField</step></case><case description="libqmf-tests:tst_qmailmessagepart:testSerialization" name="tst_qmailmessagepart-testSerialization"><step>/usr/tests/qmf/tst_qmailmessagepart testSerialization</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailmessageheader" name="/usr/tests/qmf/tst_qmailmessageheader"><case description="libqmf-tests:tst_qmailmessageheader:" name="tst_qmailmessageheader-"><step>/usr/tests/qmf/tst_qmailmessageheader </step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailaddress" name="/usr/tests/qmf/tst_qmailaddress"><case description="libqmf-tests:tst_qmailaddress:constructor1" name="tst_qmailaddress-constructor1"><step>/usr/tests/qmf/tst_qmailaddress constructor1</step></case><case description="libqmf-tests:tst_qmailaddress:constructor2" name="tst_qmailaddress-constructor2"><step>/usr/tests/qmf/tst_qmailaddress constructor2</step></case><case description="libqmf-tests:tst_qmailaddress:name" name="tst_qmailaddress-name"><step>/usr/tests/qmf/tst_qmailaddress name</step></case><case description="libqmf-tests:tst_qmailaddress:address" name="tst_qmailaddress-address"><step>/usr/tests/qmf/tst_qmailaddress address</step></case><case description="libqmf-tests:tst_qmailaddress:isGroup" name="tst_qmailaddress-isGroup"><step>/usr/tests/qmf/tst_qmailaddress isGroup</step></case><case description="libqmf-tests:tst_qmailaddress:groupMembers" name="tst_qmailaddress-groupMembers"><step>/usr/tests/qmf/tst_qmailaddress groupMembers</step></case><case description="libqmf-tests:tst_qmailaddress:notGroup" name="tst_qmailaddress-notGroup"><step>/usr/tests/qmf/tst_qmailaddress notGroup</step></case><case description="libqmf-tests:tst_qmailaddress:toString" name="tst_qmailaddress-toString"><step>/usr/tests/qmf/tst_qmailaddress toString</step></case><case description="libqmf-tests:tst_qmailaddress:isPhoneNumber" name="tst_qmailaddress-isPhoneNumber"><step>/usr/tests/qmf/tst_qmailaddress isPhoneNumber</step></case><case description="libqmf-tests:tst_qmailaddress:isEmailAddress" name="tst_qmailaddress-isEmailAddress"><step>/usr/tests/qmf/tst_qmailaddress isEmailAddress</step></case><case description="libqmf-tests:tst_qmailaddress:toStringList" name="tst_qmailaddress-toStringList"><step>/usr/tests/qmf/tst_qmailaddress toStringList</step></case><case description="libqmf-tests:tst_qmailaddress:fromStringList1" name="tst_qmailaddress-fromStringList1"><step>/usr/tests/qmf/tst_qmailaddress fromStringList1</step></case><case description="libqmf-tests:tst_qmailaddress:fromStringList2" name="tst_qmailaddress-fromStringList2"><step>/usr/tests/qmf/tst_qmailaddress fromStringList2</step></case><case description="libqmf-tests:tst_qmailaddress:removeComments" name="tst_qmailaddress-removeComments"><step>/usr/tests/qmf/tst_qmailaddress removeComments</step></case><case description="libqmf-tests:tst_qmailaddress:removeWhitespace" name="tst_qmailaddress-removeWhitespace"><step>/usr/tests/qmf/tst_qmailaddress removeWhitespace</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailmessagebody" name="/usr/tests/qmf/tst_qmailmessagebody"><case description="libqmf-tests:tst_qmailmessagebody:fromQByteArray" name="tst_qmailmessagebody-fromQByteArray"><step>/usr/tests/qmf/tst_qmailmessagebody fromQByteArray</step></case><case description="libqmf-tests:tst_qmailmessagebody:fromQString" name="tst_qmailmessagebody-fromQString"><step>/usr/tests/qmf/tst_qmailmessagebody fromQString</step></case><case description="libqmf-tests:tst_qmailmessagebody:fromFile" name="tst_qmailmessagebody-fromFile"><step>/usr/tests/qmf/tst_qmailmessagebody fromFile</step></case><case description="libqmf-tests:tst_qmailmessagebody:toFile" name="tst_qmailmessagebody-toFile"><step>/usr/tests/qmf/tst_qmailmessagebody toFile</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailcodec" name="/usr/tests/qmf/tst_qmailcodec"><case description="libqmf-tests:tst_qmailcodec:encode" name="tst_qmailcodec-encode"><step>/usr/tests/qmf/tst_qmailcodec encode</step></case><case description="libqmf-tests:tst_qmailcodec:decode" name="tst_qmailcodec-decode"><step>/usr/tests/qmf/tst_qmailcodec decode</step></case><case description="libqmf-tests:tst_qmailcodec:line_lengths" name="tst_qmailcodec-line_lengths"><step>/usr/tests/qmf/tst_qmailcodec line_lengths</step></case><case description="libqmf-tests:tst_qmailcodec:buffer_sizes" name="tst_qmailcodec-buffer_sizes"><step>/usr/tests/qmf/tst_qmailcodec buffer_sizes</step></case><case description="libqmf-tests:tst_qmailcodec:embedded_newlines" name="tst_qmailcodec-embedded_newlines"><step>/usr/tests/qmf/tst_qmailcodec embedded_newlines</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_messageserver" name="/usr/tests/qmf/tst_messageserver"><case description="libqmf-tests:tst_messageserver:completeRetrievalImap" name="tst_messageserver-completeRetrievalImap"><step>/usr/tests/qmf/tst_messageserver completeRetrievalImap</step></case><case description="libqmf-tests:tst_messageserver:removeMessages" name="tst_messageserver-removeMessages"><step>/usr/tests/qmf/tst_messageserver removeMessages</step></case><case description="libqmf-tests:tst_messageserver:replaceMessages" name="tst_messageserver-replaceMessages"><step>/usr/tests/qmf/tst_messageserver replaceMessages</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailstorekeys" name="/usr/tests/qmf/tst_qmailstorekeys"><case description="libqmf-tests:tst_qmailstorekeys:simpleKeys" name="tst_qmailstorekeys-simpleKeys"><step>/usr/tests/qmf/tst_qmailstorekeys simpleKeys</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountId" name="tst_qmailstorekeys-accountId"><step>/usr/tests/qmf/tst_qmailstorekeys accountId</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountName" name="tst_qmailstorekeys-accountName"><step>/usr/tests/qmf/tst_qmailstorekeys accountName</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountMessageType" name="tst_qmailstorekeys-accountMessageType"><step>/usr/tests/qmf/tst_qmailstorekeys accountMessageType</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountFromAddress" name="tst_qmailstorekeys-accountFromAddress"><step>/usr/tests/qmf/tst_qmailstorekeys accountFromAddress</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountStatus" name="tst_qmailstorekeys-accountStatus"><step>/usr/tests/qmf/tst_qmailstorekeys accountStatus</step></case><case description="libqmf-tests:tst_qmailstorekeys:accountCustomField" name="tst_qmailstorekeys-accountCustomField"><step>/usr/tests/qmf/tst_qmailstorekeys accountCustomField</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderId" name="tst_qmailstorekeys-folderId"><step>/usr/tests/qmf/tst_qmailstorekeys folderId</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderPath" name="tst_qmailstorekeys-folderPath"><step>/usr/tests/qmf/tst_qmailstorekeys folderPath</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderParentFolderId" name="tst_qmailstorekeys-folderParentFolderId"><step>/usr/tests/qmf/tst_qmailstorekeys folderParentFolderId</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderParentAccountId" name="tst_qmailstorekeys-folderParentAccountId"><step>/usr/tests/qmf/tst_qmailstorekeys folderParentAccountId</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderDisplayName" name="tst_qmailstorekeys-folderDisplayName"><step>/usr/tests/qmf/tst_qmailstorekeys folderDisplayName</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderStatus" name="tst_qmailstorekeys-folderStatus"><step>/usr/tests/qmf/tst_qmailstorekeys folderStatus</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderAncestorFolderIds" name="tst_qmailstorekeys-folderAncestorFolderIds"><step>/usr/tests/qmf/tst_qmailstorekeys folderAncestorFolderIds</step></case><case description="libqmf-tests:tst_qmailstorekeys:folderCustomField" name="tst_qmailstorekeys-folderCustomField"><step>/usr/tests/qmf/tst_qmailstorekeys folderCustomField</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageId" name="tst_qmailstorekeys-messageId"><step>/usr/tests/qmf/tst_qmailstorekeys messageId</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageType" name="tst_qmailstorekeys-messageType"><step>/usr/tests/qmf/tst_qmailstorekeys messageType</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageParentFolderId" name="tst_qmailstorekeys-messageParentFolderId"><step>/usr/tests/qmf/tst_qmailstorekeys messageParentFolderId</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageSender" name="tst_qmailstorekeys-messageSender"><step>/usr/tests/qmf/tst_qmailstorekeys messageSender</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageRecipients" name="tst_qmailstorekeys-messageRecipients"><step>/usr/tests/qmf/tst_qmailstorekeys messageRecipients</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageSubject" name="tst_qmailstorekeys-messageSubject"><step>/usr/tests/qmf/tst_qmailstorekeys messageSubject</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageTimeStamp" name="tst_qmailstorekeys-messageTimeStamp"><step>/usr/tests/qmf/tst_qmailstorekeys messageTimeStamp</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageReceptionTimeStamp" name="tst_qmailstorekeys-messageReceptionTimeStamp"><step>/usr/tests/qmf/tst_qmailstorekeys messageReceptionTimeStamp</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageStatus" name="tst_qmailstorekeys-messageStatus"><step>/usr/tests/qmf/tst_qmailstorekeys messageStatus</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageConversation" name="tst_qmailstorekeys-messageConversation"><step>/usr/tests/qmf/tst_qmailstorekeys messageConversation</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageServerUid" name="tst_qmailstorekeys-messageServerUid"><step>/usr/tests/qmf/tst_qmailstorekeys messageServerUid</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageSize" name="tst_qmailstorekeys-messageSize"><step>/usr/tests/qmf/tst_qmailstorekeys messageSize</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageParentAccountId" name="tst_qmailstorekeys-messageParentAccountId"><step>/usr/tests/qmf/tst_qmailstorekeys messageParentAccountId</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageAncestorFolderIds" name="tst_qmailstorekeys-messageAncestorFolderIds"><step>/usr/tests/qmf/tst_qmailstorekeys messageAncestorFolderIds</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageContentType" name="tst_qmailstorekeys-messageContentType"><step>/usr/tests/qmf/tst_qmailstorekeys messageContentType</step></case><case description="libqmf-tests:tst_qmailstorekeys:messagePreviousParentFolderId" name="tst_qmailstorekeys-messagePreviousParentFolderId"><step>/usr/tests/qmf/tst_qmailstorekeys messagePreviousParentFolderId</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageInResponseTo" name="tst_qmailstorekeys-messageInResponseTo"><step>/usr/tests/qmf/tst_qmailstorekeys messageInResponseTo</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageResponseType" name="tst_qmailstorekeys-messageResponseType"><step>/usr/tests/qmf/tst_qmailstorekeys messageResponseType</step></case><case description="libqmf-tests:tst_qmailstorekeys:messageCustom" name="tst_qmailstorekeys-messageCustom"><step>/usr/tests/qmf/tst_qmailstorekeys messageCustom</step></case><case description="libqmf-tests:tst_qmailstorekeys:listModel" name="tst_qmailstorekeys-listModel"><step>/usr/tests/qmf/tst_qmailstorekeys listModel</step></case><case description="libqmf-tests:tst_qmailstorekeys:threadedModel" name="tst_qmailstorekeys-threadedModel"><step>/usr/tests/qmf/tst_qmailstorekeys threadedModel</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qprivateimplementation" name="/usr/tests/qmf/tst_qprivateimplementation"><case description="libqmf-tests:tst_qprivateimplementation:basicTest" name="tst_qprivateimplementation-basicTest"><step>/usr/tests/qmf/tst_qprivateimplementation basicTest</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_python_email" name="/usr/tests/qmf/tst_python_email"><case description="libqmf-tests:tst_python_email:test_get_all" name="tst_python_email-test_get_all"><step>/usr/tests/qmf/tst_python_email test_get_all</step></case><case description="libqmf-tests:tst_python_email:test_get_charsets" name="tst_python_email-test_get_charsets"><step>/usr/tests/qmf/tst_python_email test_get_charsets</step></case><case description="libqmf-tests:tst_python_email:test_get_filename" name="tst_python_email-test_get_filename"><step>/usr/tests/qmf/tst_python_email test_get_filename</step></case><case description="libqmf-tests:tst_python_email:test_get_filename_with_name_parameter" name="tst_python_email-test_get_filename_with_name_parameter"><step>/usr/tests/qmf/tst_python_email test_get_filename_with_name_parameter</step></case><case description="libqmf-tests:tst_python_email:test_get_boundary" name="tst_python_email-test_get_boundary"><step>/usr/tests/qmf/tst_python_email test_get_boundary</step></case><case description="libqmf-tests:tst_python_email:test_set_boundary" name="tst_python_email-test_set_boundary"><step>/usr/tests/qmf/tst_python_email test_set_boundary</step></case><case description="libqmf-tests:tst_python_email:test_get_decoded_payload" name="tst_python_email-test_get_decoded_payload"><step>/usr/tests/qmf/tst_python_email test_get_decoded_payload</step></case><case description="libqmf-tests:tst_python_email:test_decoded_generator" name="tst_python_email-test_decoded_generator"><step>/usr/tests/qmf/tst_python_email test_decoded_generator</step></case><case description="libqmf-tests:tst_python_email:test_as_string" name="tst_python_email-test_as_string"><step>/usr/tests/qmf/tst_python_email test_as_string</step></case><case description="libqmf-tests:tst_python_email:test_get_params" name="tst_python_email-test_get_params"><step>/usr/tests/qmf/tst_python_email test_get_params</step></case><case description="libqmf-tests:tst_python_email:test_get_param_liberal" name="tst_python_email-test_get_param_liberal"><step>/usr/tests/qmf/tst_python_email test_get_param_liberal</step></case><case description="libqmf-tests:tst_python_email:test_get_param" name="tst_python_email-test_get_param"><step>/usr/tests/qmf/tst_python_email test_get_param</step></case><case description="libqmf-tests:tst_python_email:test_get_param_funky_continuation_lines" name="tst_python_email-test_get_param_funky_continuation_lines"><step>/usr/tests/qmf/tst_python_email test_get_param_funky_continuation_lines</step></case><case description="libqmf-tests:tst_python_email:test_get_param_with_semis_in_quotes" name="tst_python_email-test_get_param_with_semis_in_quotes"><step>/usr/tests/qmf/tst_python_email test_get_param_with_semis_in_quotes</step></case><case description="libqmf-tests:tst_python_email:test_has_key" name="tst_python_email-test_has_key"><step>/usr/tests/qmf/tst_python_email test_has_key</step></case><case description="libqmf-tests:tst_python_email:test_del_param" name="tst_python_email-test_del_param"><step>/usr/tests/qmf/tst_python_email test_del_param</step></case><case description="libqmf-tests:tst_python_email:test_get_content_type_from_message_implicit" name="tst_python_email-test_get_content_type_from_message_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_type_from_message_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_type_from_message_explicit" name="tst_python_email-test_get_content_type_from_message_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_type_from_message_explicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_type_from_message_text_plain_implicit" name="tst_python_email-test_get_content_type_from_message_text_plain_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_type_from_message_text_plain_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_type_from_message_text_plain_explicit" name="tst_python_email-test_get_content_type_from_message_text_plain_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_type_from_message_text_plain_explicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_maintype_from_message_implicit" name="tst_python_email-test_get_content_maintype_from_message_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_maintype_from_message_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_maintype_from_message_explicit" name="tst_python_email-test_get_content_maintype_from_message_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_maintype_from_message_explicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_maintype_from_message_text_plain_implicit" name="tst_python_email-test_get_content_maintype_from_message_text_plain_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_maintype_from_message_text_plain_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_maintype_from_message_text_plain_explicit" name="tst_python_email-test_get_content_maintype_from_message_text_plain_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_maintype_from_message_text_plain_explicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_subtype_from_message_implicit" name="tst_python_email-test_get_content_subtype_from_message_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_subtype_from_message_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_subtype_from_message_explicit" name="tst_python_email-test_get_content_subtype_from_message_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_subtype_from_message_explicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_subtype_from_message_text_plain_implicit" name="tst_python_email-test_get_content_subtype_from_message_text_plain_implicit"><step>/usr/tests/qmf/tst_python_email test_get_content_subtype_from_message_text_plain_implicit</step></case><case description="libqmf-tests:tst_python_email:test_get_content_subtype_from_message_text_plain_explicit" name="tst_python_email-test_get_content_subtype_from_message_text_plain_explicit"><step>/usr/tests/qmf/tst_python_email test_get_content_subtype_from_message_text_plain_explicit</step></case><case description="libqmf-tests:tst_python_email:test_replace_header" name="tst_python_email-test_replace_header"><step>/usr/tests/qmf/tst_python_email test_replace_header</step></case><case description="libqmf-tests:tst_python_email:test_broken_base64_payload" name="tst_python_email-test_broken_base64_payload"><step>/usr/tests/qmf/tst_python_email test_broken_base64_payload</step></case><case description="libqmf-tests:tst_python_email:test_default_cte" name="tst_python_email-test_default_cte"><step>/usr/tests/qmf/tst_python_email test_default_cte</step></case><case description="libqmf-tests:tst_python_email:test_long_nonstring" name="tst_python_email-test_long_nonstring"><step>/usr/tests/qmf/tst_python_email test_long_nonstring</step></case><case description="libqmf-tests:tst_python_email:test_long_header_encode" name="tst_python_email-test_long_header_encode"><step>/usr/tests/qmf/tst_python_email test_long_header_encode</step></case><case description="libqmf-tests:tst_python_email:test_no_semis_header_splitter" name="tst_python_email-test_no_semis_header_splitter"><step>/usr/tests/qmf/tst_python_email test_no_semis_header_splitter</step></case><case description="libqmf-tests:tst_python_email:test_no_split_long_header" name="tst_python_email-test_no_split_long_header"><step>/usr/tests/qmf/tst_python_email test_no_split_long_header</step></case><case description="libqmf-tests:tst_python_email:test_splitting_multiple_long_lines" name="tst_python_email-test_splitting_multiple_long_lines"><step>/usr/tests/qmf/tst_python_email test_splitting_multiple_long_lines</step></case><case description="libqmf-tests:tst_python_email:test_splitting_first_line_only_is_long" name="tst_python_email-test_splitting_first_line_only_is_long"><step>/usr/tests/qmf/tst_python_email test_splitting_first_line_only_is_long</step></case><case description="libqmf-tests:tst_python_email:test_long_8bit_header" name="tst_python_email-test_long_8bit_header"><step>/usr/tests/qmf/tst_python_email test_long_8bit_header</step></case><case description="libqmf-tests:tst_python_email:test_long_to_header" name="tst_python_email-test_long_to_header"><step>/usr/tests/qmf/tst_python_email test_long_to_header</step></case><case description="libqmf-tests:tst_python_email:test_long_field_name" name="tst_python_email-test_long_field_name"><step>/usr/tests/qmf/tst_python_email test_long_field_name</step></case><case description="libqmf-tests:tst_python_email:test_string_headerinst_eq" name="tst_python_email-test_string_headerinst_eq"><step>/usr/tests/qmf/tst_python_email test_string_headerinst_eq</step></case><case description="libqmf-tests:tst_python_email:test_another_long_multiline_header" name="tst_python_email-test_another_long_multiline_header"><step>/usr/tests/qmf/tst_python_email test_another_long_multiline_header</step></case><case description="libqmf-tests:tst_python_email:test_long_lines_with_different_header" name="tst_python_email-test_long_lines_with_different_header"><step>/usr/tests/qmf/tst_python_email test_long_lines_with_different_header</step></case><case description="libqmf-tests:tst_python_email:TestMIMEAudio" name="tst_python_email-TestMIMEAudio"><step>/usr/tests/qmf/tst_python_email TestMIMEAudio</step></case><case description="libqmf-tests:tst_python_email:TestMIMEImage" name="tst_python_email-TestMIMEImage"><step>/usr/tests/qmf/tst_python_email TestMIMEImage</step></case><case description="libqmf-tests:tst_python_email:test_hierarchy" name="tst_python_email-test_hierarchy"><step>/usr/tests/qmf/tst_python_email test_hierarchy</step></case><case description="libqmf-tests:tst_python_email:test_empty_multipart_idempotent" name="tst_python_email-test_empty_multipart_idempotent"><step>/usr/tests/qmf/tst_python_email test_empty_multipart_idempotent</step></case><case description="libqmf-tests:tst_python_email:test_no_parts_in_a_multipart_with_none_epilogue" name="tst_python_email-test_no_parts_in_a_multipart_with_none_epilogue"><step>/usr/tests/qmf/tst_python_email test_no_parts_in_a_multipart_with_none_epilogue</step></case><case description="libqmf-tests:tst_python_email:test_no_parts_in_a_multipart_with_empty_epilogue" name="tst_python_email-test_no_parts_in_a_multipart_with_empty_epilogue"><step>/usr/tests/qmf/tst_python_email test_no_parts_in_a_multipart_with_empty_epilogue</step></case><case description="libqmf-tests:tst_python_email:test_one_part_in_a_multipart" name="tst_python_email-test_one_part_in_a_multipart"><step>/usr/tests/qmf/tst_python_email test_one_part_in_a_multipart</step></case><case description="libqmf-tests:tst_python_email:test_message_external_body" name="tst_python_email-test_message_external_body"><step>/usr/tests/qmf/tst_python_email test_message_external_body</step></case><case description="libqmf-tests:tst_python_email:test_double_boundary" name="tst_python_email-test_double_boundary"><step>/usr/tests/qmf/tst_python_email test_double_boundary</step></case><case description="libqmf-tests:tst_python_email:test_nested_inner_contains_outer_boundary" name="tst_python_email-test_nested_inner_contains_outer_boundary"><step>/usr/tests/qmf/tst_python_email test_nested_inner_contains_outer_boundary</step></case><case description="libqmf-tests:tst_python_email:test_nested_with_same_boundary" name="tst_python_email-test_nested_with_same_boundary"><step>/usr/tests/qmf/tst_python_email test_nested_with_same_boundary</step></case><case description="libqmf-tests:tst_python_email:test_boundary_in_non_multipart" name="tst_python_email-test_boundary_in_non_multipart"><step>/usr/tests/qmf/tst_python_email test_boundary_in_non_multipart</step></case><case description="libqmf-tests:tst_python_email:test_boundary_with_leading_space" name="tst_python_email-test_boundary_with_leading_space"><step>/usr/tests/qmf/tst_python_email test_boundary_with_leading_space</step></case><case description="libqmf-tests:tst_python_email:test_boundary_without_trailing_newline" name="tst_python_email-test_boundary_without_trailing_newline"><step>/usr/tests/qmf/tst_python_email test_boundary_without_trailing_newline</step></case><case description="libqmf-tests:tst_python_email:test_parse_missing_minor_type" name="tst_python_email-test_parse_missing_minor_type"><step>/usr/tests/qmf/tst_python_email test_parse_missing_minor_type</step></case><case description="libqmf-tests:tst_python_email:test_same_boundary_inner_outer" name="tst_python_email-test_same_boundary_inner_outer"><step>/usr/tests/qmf/tst_python_email test_same_boundary_inner_outer</step></case><case description="libqmf-tests:tst_python_email:test_multipart_no_boundary" name="tst_python_email-test_multipart_no_boundary"><step>/usr/tests/qmf/tst_python_email test_multipart_no_boundary</step></case><case description="libqmf-tests:tst_python_email:test_invalid_content_type" name="tst_python_email-test_invalid_content_type"><step>/usr/tests/qmf/tst_python_email test_invalid_content_type</step></case><case description="libqmf-tests:tst_python_email:test_no_start_boundary" name="tst_python_email-test_no_start_boundary"><step>/usr/tests/qmf/tst_python_email test_no_start_boundary</step></case><case description="libqmf-tests:tst_python_email:test_no_separating_blank_line" name="tst_python_email-test_no_separating_blank_line"><step>/usr/tests/qmf/tst_python_email test_no_separating_blank_line</step></case><case description="libqmf-tests:tst_python_email:test_lying_multipart" name="tst_python_email-test_lying_multipart"><step>/usr/tests/qmf/tst_python_email test_lying_multipart</step></case><case description="libqmf-tests:tst_python_email:test_missing_start_boundary" name="tst_python_email-test_missing_start_boundary"><step>/usr/tests/qmf/tst_python_email test_missing_start_boundary</step></case><case description="libqmf-tests:tst_python_email:test_whitespace_eater_unicode" name="tst_python_email-test_whitespace_eater_unicode"><step>/usr/tests/qmf/tst_python_email test_whitespace_eater_unicode</step></case><case description="libqmf-tests:tst_python_email:test_whitespace_eater_unicode_2" name="tst_python_email-test_whitespace_eater_unicode_2"><step>/usr/tests/qmf/tst_python_email test_whitespace_eater_unicode_2</step></case><case description="libqmf-tests:tst_python_email:test_rfc2047_without_whitespace" name="tst_python_email-test_rfc2047_without_whitespace"><step>/usr/tests/qmf/tst_python_email test_rfc2047_without_whitespace</step></case><case description="libqmf-tests:tst_python_email:test_rfc2047_with_whitespace" name="tst_python_email-test_rfc2047_with_whitespace"><step>/usr/tests/qmf/tst_python_email test_rfc2047_with_whitespace</step></case><case description="libqmf-tests:tst_python_email:test_generate" name="tst_python_email-test_generate"><step>/usr/tests/qmf/tst_python_email test_generate</step></case><case description="libqmf-tests:tst_python_email:test_parse_message_rfc822" name="tst_python_email-test_parse_message_rfc822"><step>/usr/tests/qmf/tst_python_email test_parse_message_rfc822</step></case><case description="libqmf-tests:tst_python_email:test_dsn" name="tst_python_email-test_dsn"><step>/usr/tests/qmf/tst_python_email test_dsn</step></case><case description="libqmf-tests:tst_python_email:test_epilogue" name="tst_python_email-test_epilogue"><step>/usr/tests/qmf/tst_python_email test_epilogue</step></case><case description="libqmf-tests:tst_python_email:test_default_type" name="tst_python_email-test_default_type"><step>/usr/tests/qmf/tst_python_email test_default_type</step></case><case description="libqmf-tests:tst_python_email:test_default_type_with_explicit_container_type" name="tst_python_email-test_default_type_with_explicit_container_type"><step>/usr/tests/qmf/tst_python_email test_default_type_with_explicit_container_type</step></case><case description="libqmf-tests:tst_python_email:TestIdempotent" name="tst_python_email-TestIdempotent"><step>/usr/tests/qmf/tst_python_email TestIdempotent</step></case><case description="libqmf-tests:tst_python_email:test_crlf_separation" name="tst_python_email-test_crlf_separation"><step>/usr/tests/qmf/tst_python_email test_crlf_separation</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_get_param" name="tst_python_email-test_rfc2231_get_param"><step>/usr/tests/qmf/tst_python_email test_rfc2231_get_param</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_set_param" name="tst_python_email-test_rfc2231_set_param"><step>/usr/tests/qmf/tst_python_email test_rfc2231_set_param</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset" name="tst_python_email-test_rfc2231_no_language_or_charset"><step>/usr/tests/qmf/tst_python_email test_rfc2231_no_language_or_charset</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_filename" name="tst_python_email-test_rfc2231_no_language_or_charset_in_filename"><step>/usr/tests/qmf/tst_python_email test_rfc2231_no_language_or_charset_in_filename</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_partly_encoded" name="tst_python_email-test_rfc2231_partly_encoded"><step>/usr/tests/qmf/tst_python_email test_rfc2231_partly_encoded</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_boundary" name="tst_python_email-test_rfc2231_no_language_or_charset_in_boundary"><step>/usr/tests/qmf/tst_python_email test_rfc2231_no_language_or_charset_in_boundary</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_charset" name="tst_python_email-test_rfc2231_no_language_or_charset_in_charset"><step>/usr/tests/qmf/tst_python_email test_rfc2231_no_language_or_charset_in_charset</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_bad_encoding_in_filename" name="tst_python_email-test_rfc2231_bad_encoding_in_filename"><step>/usr/tests/qmf/tst_python_email test_rfc2231_bad_encoding_in_filename</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_bad_encoding_in_charset" name="tst_python_email-test_rfc2231_bad_encoding_in_charset"><step>/usr/tests/qmf/tst_python_email test_rfc2231_bad_encoding_in_charset</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_bad_character_in_charset" name="tst_python_email-test_rfc2231_bad_character_in_charset"><step>/usr/tests/qmf/tst_python_email test_rfc2231_bad_character_in_charset</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_bad_character_in_filename" name="tst_python_email-test_rfc2231_bad_character_in_filename"><step>/usr/tests/qmf/tst_python_email test_rfc2231_bad_character_in_filename</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_single_tick_in_filename_extended" name="tst_python_email-test_rfc2231_single_tick_in_filename_extended"><step>/usr/tests/qmf/tst_python_email test_rfc2231_single_tick_in_filename_extended</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_tick_attack_extended" name="tst_python_email-test_rfc2231_tick_attack_extended"><step>/usr/tests/qmf/tst_python_email test_rfc2231_tick_attack_extended</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_no_extended_values" name="tst_python_email-test_rfc2231_no_extended_values"><step>/usr/tests/qmf/tst_python_email test_rfc2231_no_extended_values</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_encoded_then_unencoded_segments" name="tst_python_email-test_rfc2231_encoded_then_unencoded_segments"><step>/usr/tests/qmf/tst_python_email test_rfc2231_encoded_then_unencoded_segments</step></case><case description="libqmf-tests:tst_python_email:test_rfc2231_unencoded_then_encoded_segments" name="tst_python_email-test_rfc2231_unencoded_then_encoded_segments"><step>/usr/tests/qmf/tst_python_email test_rfc2231_unencoded_then_encoded_segments</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_longstring" name="/usr/tests/qmf/tst_longstring"><case description="libqmf-tests:tst_longstring:indexOf" name="tst_longstring-indexOf"><step>/usr/tests/qmf/tst_longstring indexOf</step></case><case description="libqmf-tests:tst_longstring:left" name="tst_longstring-left"><step>/usr/tests/qmf/tst_longstring left</step></case><case description="libqmf-tests:tst_longstring:right" name="tst_longstring-right"><step>/usr/tests/qmf/tst_longstring right</step></case><case description="libqmf-tests:tst_longstring:mid" name="tst_longstring-mid"><step>/usr/tests/qmf/tst_longstring mid</step></case><case description="libqmf-tests:tst_longstring:length" name="tst_longstring-length"><step>/usr/tests/qmf/tst_longstring length</step></case><case description="libqmf-tests:tst_longstring:isEmpty" name="tst_longstring-isEmpty"><step>/usr/tests/qmf/tst_longstring isEmpty</step></case><case description="libqmf-tests:tst_longstring:toQByteArray" name="tst_longstring-toQByteArray"><step>/usr/tests/qmf/tst_longstring toQByteArray</step></case><case description="libqmf-tests:tst_longstring:dataStream" name="tst_longstring-dataStream"><step>/usr/tests/qmf/tst_longstring dataStream</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailstore" name="/usr/tests/qmf/tst_qmailstore"><case description="libqmf-tests:tst_qmailstore:addAccount" name="tst_qmailstore-addAccount"><step>/usr/tests/qmf/tst_qmailstore addAccount</step></case><case description="libqmf-tests:tst_qmailstore:addFolder" name="tst_qmailstore-addFolder"><step>/usr/tests/qmf/tst_qmailstore addFolder</step></case><case description="libqmf-tests:tst_qmailstore:addMessage" name="tst_qmailstore-addMessage"><step>/usr/tests/qmf/tst_qmailstore addMessage</step></case><case description="libqmf-tests:tst_qmailstore:addMessages" name="tst_qmailstore-addMessages"><step>/usr/tests/qmf/tst_qmailstore addMessages</step></case><case description="libqmf-tests:tst_qmailstore:addMessages2" name="tst_qmailstore-addMessages2"><step>/usr/tests/qmf/tst_qmailstore addMessages2</step></case><case description="libqmf-tests:tst_qmailstore:updateAccount" name="tst_qmailstore-updateAccount"><step>/usr/tests/qmf/tst_qmailstore updateAccount</step></case><case description="libqmf-tests:tst_qmailstore:updateFolder" name="tst_qmailstore-updateFolder"><step>/usr/tests/qmf/tst_qmailstore updateFolder</step></case><case description="libqmf-tests:tst_qmailstore:updateMessage" name="tst_qmailstore-updateMessage"><step>/usr/tests/qmf/tst_qmailstore updateMessage</step></case><case description="libqmf-tests:tst_qmailstore:updateMessages" name="tst_qmailstore-updateMessages"><step>/usr/tests/qmf/tst_qmailstore updateMessages</step></case><case description="libqmf-tests:tst_qmailstore:removeAccount" name="tst_qmailstore-removeAccount"><step>/usr/tests/qmf/tst_qmailstore removeAccount</step></case><case description="libqmf-tests:tst_qmailstore:removeFolder" name="tst_qmailstore-removeFolder"><step>/usr/tests/qmf/tst_qmailstore removeFolder</step></case><case description="libqmf-tests:tst_qmailstore:removeMessage" name="tst_qmailstore-removeMessage"><step>/usr/tests/qmf/tst_qmailstore removeMessage</step></case><case description="libqmf-tests:tst_qmailstore:remove1000Messages" name="tst_qmailstore-remove1000Messages"><step>/usr/tests/qmf/tst_qmailstore remove1000Messages</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set><set description="libqmf-tests:tst_qmailmessage" name="/usr/tests/qmf/tst_qmailmessage"><case description="libqmf-tests:tst_qmailmessage:toRfc2822" name="tst_qmailmessage-toRfc2822"><step>/usr/tests/qmf/tst_qmailmessage toRfc2822</step></case><case description="libqmf-tests:tst_qmailmessage:fromRfc2822" name="tst_qmailmessage-fromRfc2822"><step>/usr/tests/qmf/tst_qmailmessage fromRfc2822</step></case><case description="libqmf-tests:tst_qmailmessage:id" name="tst_qmailmessage-id"><step>/usr/tests/qmf/tst_qmailmessage id</step></case><case description="libqmf-tests:tst_qmailmessage:setId" name="tst_qmailmessage-setId"><step>/usr/tests/qmf/tst_qmailmessage setId</step></case><case description="libqmf-tests:tst_qmailmessage:parentFolderId" name="tst_qmailmessage-parentFolderId"><step>/usr/tests/qmf/tst_qmailmessage parentFolderId</step></case><case description="libqmf-tests:tst_qmailmessage:setParentFolderId" name="tst_qmailmessage-setParentFolderId"><step>/usr/tests/qmf/tst_qmailmessage setParentFolderId</step></case><case description="libqmf-tests:tst_qmailmessage:messageType" name="tst_qmailmessage-messageType"><step>/usr/tests/qmf/tst_qmailmessage messageType</step></case><case description="libqmf-tests:tst_qmailmessage:setMessageType" name="tst_qmailmessage-setMessageType"><step>/usr/tests/qmf/tst_qmailmessage setMessageType</step></case><case description="libqmf-tests:tst_qmailmessage:setFrom" name="tst_qmailmessage-setFrom"><step>/usr/tests/qmf/tst_qmailmessage setFrom</step></case><case description="libqmf-tests:tst_qmailmessage:from" name="tst_qmailmessage-from"><step>/usr/tests/qmf/tst_qmailmessage from</step></case><case description="libqmf-tests:tst_qmailmessage:subject" name="tst_qmailmessage-subject"><step>/usr/tests/qmf/tst_qmailmessage subject</step></case><case description="libqmf-tests:tst_qmailmessage:setSubject" name="tst_qmailmessage-setSubject"><step>/usr/tests/qmf/tst_qmailmessage setSubject</step></case><case description="libqmf-tests:tst_qmailmessage:date" name="tst_qmailmessage-date"><step>/usr/tests/qmf/tst_qmailmessage date</step></case><case description="libqmf-tests:tst_qmailmessage:setDate" name="tst_qmailmessage-setDate"><step>/usr/tests/qmf/tst_qmailmessage setDate</step></case><case description="libqmf-tests:tst_qmailmessage:to" name="tst_qmailmessage-to"><step>/usr/tests/qmf/tst_qmailmessage to</step></case><case description="libqmf-tests:tst_qmailmessage:setTo" name="tst_qmailmessage-setTo"><step>/usr/tests/qmf/tst_qmailmessage setTo</step></case><case description="libqmf-tests:tst_qmailmessage:cc" name="tst_qmailmessage-cc"><step>/usr/tests/qmf/tst_qmailmessage cc</step></case><case description="libqmf-tests:tst_qmailmessage:setCc" name="tst_qmailmessage-setCc"><step>/usr/tests/qmf/tst_qmailmessage setCc</step></case><case description="libqmf-tests:tst_qmailmessage:bcc" name="tst_qmailmessage-bcc"><step>/usr/tests/qmf/tst_qmailmessage bcc</step></case><case description="libqmf-tests:tst_qmailmessage:setBcc" name="tst_qmailmessage-setBcc"><step>/usr/tests/qmf/tst_qmailmessage setBcc</step></case><case description="libqmf-tests:tst_qmailmessage:recipients" name="tst_qmailmessage-recipients"><step>/usr/tests/qmf/tst_qmailmessage recipients</step></case><case description="libqmf-tests:tst_qmailmessage:hasRecipients" name="tst_qmailmessage-hasRecipients"><step>/usr/tests/qmf/tst_qmailmessage hasRecipients</step></case><case description="libqmf-tests:tst_qmailmessage:replyTo" name="tst_qmailmessage-replyTo"><step>/usr/tests/qmf/tst_qmailmessage replyTo</step></case><case description="libqmf-tests:tst_qmailmessage:setReplyTo" name="tst_qmailmessage-setReplyTo"><step>/usr/tests/qmf/tst_qmailmessage setReplyTo</step></case><case description="libqmf-tests:tst_qmailmessage:inReplyTo" name="tst_qmailmessage-inReplyTo"><step>/usr/tests/qmf/tst_qmailmessage inReplyTo</step></case><case description="libqmf-tests:tst_qmailmessage:setInReplyTo" name="tst_qmailmessage-setInReplyTo"><step>/usr/tests/qmf/tst_qmailmessage setInReplyTo</step></case><case description="libqmf-tests:tst_qmailmessage:serverUid" name="tst_qmailmessage-serverUid"><step>/usr/tests/qmf/tst_qmailmessage serverUid</step></case><case description="libqmf-tests:tst_qmailmessage:setServerUid" name="tst_qmailmessage-setServerUid"><step>/usr/tests/qmf/tst_qmailmessage setServerUid</step></case><case description="libqmf-tests:tst_qmailmessage:multiMultipart" name="tst_qmailmessage-multiMultipart"><step>/usr/tests/qmf/tst_qmailmessage multiMultipart</step></case><case description="libqmf-tests:tst_qmailmessage:copyAndAssign" name="tst_qmailmessage-copyAndAssign"><step>/usr/tests/qmf/tst_qmailmessage copyAndAssign</step></case><environments><scratchbox>true</scratchbox><hardware>true</hardware></environments></set></suite></testdefinition>
 \ No newline at end of file
 diff --git a/tests/tst_qmailstore/tst_qmailstore.cpp b/tests/tst_qmailstore/tst_qmailstore.cpp
-index b806edf..f531186 100644
+index 0a12c85..20e431b 100644
 --- a/tests/tst_qmailstore/tst_qmailstore.cpp
 +++ b/tests/tst_qmailstore/tst_qmailstore.cpp
 @@ -71,6 +71,7 @@ private slots:

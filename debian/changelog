@@ -1,3 +1,9 @@
+qt4-messagingframework (2009W49-0maemo1) hardy; urgency=low
+
+  * Update baseline to 2009W29.
+
+ -- Shane Bradley <shane.bradley@nokia.com>  Thu, 10 Dec 2009 17:56:43 +1000
+
 qt4-messagingframework (2009W44-0maemo4) hardy; urgency=low
 
   * Integration with Accounts subsustem finished, all unit tests are passed (except tst_QMailStoreKeys::accountCustomField)
