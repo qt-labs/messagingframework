@@ -205,6 +205,9 @@ private:
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
     bool dispatchMoveMessages(quint64 action, const QByteArray &data);
     bool dispatchFlagMessages(quint64 action, const QByteArray &data);
+    bool dispatchCreateFolder(quint64 action, const QByteArray &data);
+    bool dispatchDeleteFolder(quint64 action, const QByteArray &data);
+    bool dispatchRenameFolder(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 
