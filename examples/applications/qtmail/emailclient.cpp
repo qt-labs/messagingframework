@@ -1887,13 +1887,12 @@ void EmailClient::folderSelected(QMailMessageSet *item)
 
 void EmailClient::deleteFolder()
 {
-    QMailFolderId folderId = deleteFolderAction->data().value<QMailFolderId>();
-    QString folderName = QMailFolder(folderId).displayName();
+    QString folderName = QMailFolder(selectedFolderId).displayName();
 
     if(QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         return;
 
-    storageAction->deleteFolder(folderId);
+    storageAction->deleteFolder(selectedFolderId);
 }
 
 void EmailClient::createFolder()
