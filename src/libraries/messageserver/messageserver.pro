@@ -35,5 +35,3 @@ SOURCES += qmailauthenticator.cpp \
            qmailstoreaccountfilter.cpp \
            qmailtransport.cpp
 
-include(../../common.pri)
-

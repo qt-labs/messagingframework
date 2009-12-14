@@ -52,5 +52,3 @@ TRANSLATIONS += libqmfutil-ar.ts \
 
 RESOURCES += qmfutil.qrc
 
-include(../../common.pri)
-
