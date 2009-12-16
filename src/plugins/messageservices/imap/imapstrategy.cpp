@@ -1181,14 +1181,6 @@ bool ImapFolderListStrategy::nextFolder()
     while (!_mailboxIds.isEmpty()) {
         QMailFolderId folderId(_mailboxIds.takeFirst());
 
-        if (_folderStatus.contains(folderId)) {
-            FolderStatus folderState = _folderStatus[folderId];
-            if (folderState & NoSelect) {
-                // We can't select this folder
-                continue;
-            }
-        }
-
         // Process this folder
         setCurrentMailbox(folderId);
 
@@ -1202,8 +1194,11 @@ bool ImapFolderListStrategy::nextFolder()
 
 void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
-    // Attempt to select the current folder
-    context->protocol().sendSelect(_currentMailbox);
+    QMailFolderId folderId = _currentMailbox.id();
+    if(_folderStatus.contains(folderId) && _folderStatus[folderId] & NoSelect)
+        context->protocol().sendList(_currentMailbox, "%");
+    else
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -2189,8 +2184,10 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
         !_monitoredFoldersIds.contains(folderId)) {
         _monitoredFoldersIds << folderId;
     }
-
-    context->protocol().sendSelect(_currentMailbox);
+    
+    //not not try select an unselectable mailbox
+    if(!_folderStatus.contains(folderId) || !_folderStatus[folderId] & NoSelect)
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)
