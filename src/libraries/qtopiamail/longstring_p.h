@@ -58,8 +58,12 @@
 #include <QFile>
 #include "qmailglobal.h"
 
+QT_BEGIN_NAMESPACE
+
 class QDataStream;
 class QTextStream;
+
+QT_END_NAMESPACE
 
 class LongStringPrivate;
 

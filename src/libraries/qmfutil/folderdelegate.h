@@ -45,8 +45,12 @@
 #include "foldermodel.h"
 #include <QItemDelegate>
 
+QT_BEGIN_NAMESPACE
+
 class QAbstractItemView;
 class QScrollBar;
+
+QT_END_NAMESPACE
 
 class FolderDelegate : public QItemDelegate
 {

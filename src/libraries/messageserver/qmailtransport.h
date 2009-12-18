@@ -47,12 +47,16 @@
 #include <QObject>
 #include <QAbstractSocket>
 
+QT_BEGIN_NAMESPACE
+
 class QString;
 class QTimer;
 #ifndef QT_NO_OPENSSL
 class QSslSocket;
 class QSslError;
 #endif
+
+QT_END_NAMESPACE
 
 class MESSAGESERVER_EXPORT QMailTransport : public QObject
 {

@@ -46,11 +46,15 @@
 #include <qmailid.h>
 #include <qmailmessageset.h>
 
+class FolderModel;
+class FolderView;
+
+QT_BEGIN_NAMESPACE
 
 class QListWidget;
 class QPushButton;
-class FolderModel;
-class FolderView;
+
+QT_END_NAMESPACE
 
 class QMFUTIL_EXPORT SelectFolderDialog : public QDialog
 {

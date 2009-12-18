@@ -46,14 +46,19 @@
 #include <qmailcomposer.h>
 
 class AddAttDialog;
-class QLabel;
 class BodyTextEdit;
-class QStackedWidget;
-class DetailsPage;
 class RecipientListWidget;
-class QLineEdit;
-class QTextEdit;
 class AttachmentListWidget;
+class DetailsPage;
+
+QT_BEGIN_NAMESPACE
+
+class QLabel;
+class QLineEdit;
+class QStackedWidget;
+class QTextEdit;
+
+QT_END_NAMESPACE
 
 class EmailComposerInterface : public QMailComposerInterface
 {
