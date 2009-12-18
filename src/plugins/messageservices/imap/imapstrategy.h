@@ -144,6 +144,8 @@ public:
     virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void downloadSize(ImapStrategyContextBase *context, const QString &uid, int length);
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
+    void clearError() { _error = false; } 
+    bool error() { return _error; } 
 
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);
@@ -152,6 +154,7 @@ protected:
 
     TransferState _transferState;
     QString _baseFolder;
+    bool _error;
 };
 
 class ImapPrepareMessagesStrategy : public ImapStrategy
@@ -677,7 +680,7 @@ public:
     ImapRetrieveMessageListStrategy retrieveMessageListStrategy;
     ImapRetrieveAllStrategy retrieveAllStrategy;
 
-    void newConnection() { _strategy->newConnection(this); }
+    void newConnection() { _strategy->clearError(); _strategy->newConnection(this); }
     void commandTransition(const ImapCommand command, const OperationStatus status) { _strategy->transition(this, command, status); }
 
     void mailboxListed(QMailFolder& folder, const QString &flags, const QString &delimiter) { _strategy->mailboxListed(this, folder, flags, delimiter); }
