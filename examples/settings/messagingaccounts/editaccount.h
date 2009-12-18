@@ -51,11 +51,16 @@ class QMailAccount;
 class QMailAccountConfiguration;
 class QMailMessageServiceConfigurator;
 class QMailMessageServiceEditor;
-class QTabWidget;
+
+QT_BEGIN_NAMESPACE
+
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
+class QTabWidget;
 class QVBoxLayout;
+
+QT_END_NAMESPACE
 
 class EditAccount : public QDialog
 {

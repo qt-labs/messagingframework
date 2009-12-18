@@ -60,17 +60,23 @@ class UILocation;
 class ReadMail;
 class WriteMail;
 class SearchProgressDialog;
-class QAction;
+class QuickSearchWidget;
+
 class QMailAccount;
 class QMailMessageSet;
 class QMailRetrievalAction;
 class QMailSearchAction;
 class QMailTransmitAction;
 class QMailStorageAction;
+
+QT_BEGIN_NAMESPACE
+
+class QAction;
 class QStackedWidget;
 class QStringList;
 class QToolBar;
-class QuickSearchWidget;
+
+QT_END_NAMESPACE
 
 class MessageUiBase : public QMainWindow
 {
