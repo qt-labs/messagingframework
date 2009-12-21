@@ -47,9 +47,14 @@
 #include <QString>
 #include <QWidget>
 
+class SelectListWidget;
+
+QT_BEGIN_NAMESPACE
+
 class QListWidget;
 class QListWidgetItem;
-class SelectListWidget;
+
+QT_END_NAMESPACE
 
 class SelectComposerWidget : public QWidget
 {

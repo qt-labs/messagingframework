@@ -60,17 +60,23 @@ class UILocation;
 class ReadMail;
 class WriteMail;
 class SearchProgressDialog;
-class QAction;
+class QuickSearchWidget;
+
 class QMailAccount;
 class QMailMessageSet;
 class QMailRetrievalAction;
 class QMailSearchAction;
 class QMailTransmitAction;
 class QMailStorageAction;
+
+QT_BEGIN_NAMESPACE
+
+class QAction;
 class QStackedWidget;
 class QStringList;
 class QToolBar;
-class QuickSearchWidget;
+
+QT_END_NAMESPACE
 
 class MessageUiBase : public QMainWindow
 {
@@ -261,6 +267,9 @@ private slots:
     bool waitForMessageServer();
     void messageServerProcessError(QProcess::ProcessError);
 
+    void createFolder();
+    void deleteFolder();
+    void renameFolder();
 private:
     bool isMessageServerRunning() const;
     virtual EmailFolderView* createFolderView();
@@ -345,6 +354,9 @@ private:
     QAction *searchButton;
     QAction *cancelButton;
     QAction *synchronizeAction;
+    QAction *createFolderAction;
+    QAction *deleteFolderAction;
+    QAction *renameFolderAction;
     QAction *settingsAction;
     QAction *emptyTrashAction;
     QAction *deleteMailAction;
@@ -352,6 +364,9 @@ private:
     QAction *markAction;
     QAction *threadAction;
     bool enableMessageActions;
+
+    QMailAccountId selectedAccountId;
+    QMailFolderId selectedFolderId;
 
     QAction *moveAction;
     QAction *copyAction;

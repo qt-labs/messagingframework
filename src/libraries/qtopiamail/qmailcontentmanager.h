@@ -72,8 +72,12 @@ struct QTOPIAMAIL_EXPORT QMailContentManagerPluginInterface : public QFactoryInt
 };
 
 
+QT_BEGIN_NAMESPACE
+
 #define QMailContentManagerPluginInterface_iid "com.trolltech.Qtopia.Qtopiamail.QMailContentManagerPluginInterface"
 Q_DECLARE_INTERFACE(QMailContentManagerPluginInterface, QMailContentManagerPluginInterface_iid)
+
+QT_END_NAMESPACE
 
 
 class QTOPIAMAIL_EXPORT QMailContentManagerPlugin : public QObject, public QMailContentManagerPluginInterface

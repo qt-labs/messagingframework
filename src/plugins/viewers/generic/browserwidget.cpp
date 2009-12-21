@@ -86,10 +86,14 @@ static QString dateString(const QDateTime& dt)
     }
 }
 
+QT_BEGIN_NAMESPACE
+
 static uint qHash(const QUrl &url)
 {
     return qHash(url.toString());
 }
+
+QT_END_NAMESPACE
 
 #ifdef USE_WEBKIT
 class ContentReply : public QNetworkReply

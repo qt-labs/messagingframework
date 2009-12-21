@@ -79,6 +79,9 @@ public slots:
     void copyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name);
+    void deleteFolder(quint64 action, const QMailFolderId &folderId);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void cancelSearch(quint64);
@@ -101,6 +104,11 @@ signals:
     void messagesCopied(quint64 action, const QMailMessageIdList&);
     void messagesMoved(quint64 action, const QMailMessageIdList&);
     void messagesFlagged(quint64 action, const QMailMessageIdList&);
+
+    void folderCreated(quint64 action, const QMailFolderId&);
+    void folderRenamed(quint64 action, const QMailFolderId&);
+    void folderDeleted(quint64 action, const QMailFolderId&); 
+
     void storageActionCompleted(quint64 action);
 
     void matchingMessageIds(quint64 action, const QMailMessageIdList&);
@@ -197,6 +205,9 @@ private:
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
     bool dispatchMoveMessages(quint64 action, const QByteArray &data);
     bool dispatchFlagMessages(quint64 action, const QByteArray &data);
+    bool dispatchCreateFolder(quint64 action, const QByteArray &data);
+    bool dispatchDeleteFolder(quint64 action, const QByteArray &data);
+    bool dispatchRenameFolder(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 

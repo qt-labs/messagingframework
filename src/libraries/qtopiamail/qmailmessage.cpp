@@ -3013,7 +3013,7 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
     const QMailMessagePart* part = 0; 
     const QList<QMailMessagePart>* partList = &_messageParts; 
 
-    foreach (uint index, location.d->_indices) {
+    foreach (int index, location.d->_indices) {
         if (partList->count() < index) {
             return false;
         }

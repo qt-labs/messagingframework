@@ -47,12 +47,17 @@
 #include <QMainWindow>
 #include <QString>
 
+class SelectComposerWidget;
+class QMailComposerInterface;
+
+QT_BEGIN_NAMESPACE
+
 class QAction;
 class QComboBox;
 class QContent;
-class QMailComposerInterface;
 class QStackedWidget;
-class SelectComposerWidget;
+
+QT_END_NAMESPACE
 
 class WriteMail : public QMainWindow
 {

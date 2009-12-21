@@ -128,24 +128,27 @@ static bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSel
     return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
 }
 
-static void updateMessagesMetaData(ImapStrategyContextBase *context, 
+static bool updateMessagesMetaData(ImapStrategyContextBase *context, 
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
                                    const QMailMessageKey &seenKey,
                                    const QMailMessageKey &unreadElsewhereKey,
                                    const QMailMessageKey &unavailableKey)
 {
+    bool result = true;
     QMailMessageKey reportedKey(seenKey | unseenKey);
 
     // Mark as deleted any messages that the server does not report
     QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
     if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
+        result = false;
         qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
     }
     
     // Restore any messages thought to be unavailable that the server now reports
     QMailMessageKey reexistentKey(unavailableKey & reportedKey);
     if (!QMailStore::instance()->updateMessagesMetaData(reexistentKey, QMailMessage::Removed, false)) {
+        result = false;
         qWarning() << "Unable to update un-removed message metadata for account:" << context->config().id();
     }
 
@@ -153,6 +156,7 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
         const QString &uid(r.serverUid()); 
         // We might have a deletion record for this UID
         if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
+            result = false;
             qWarning() << "Unable to purge message records for account:" << context->config().id();
         }
         context->completedMessageAction(uid);
@@ -160,8 +164,10 @@ static void updateMessagesMetaData(ImapStrategyContextBase *context,
 
     // Update any messages that are reported as read elsewhere, that previously were not
     if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
+        result = false;
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
+    return result;
 }
 
 static bool findFetchContinuationStart(const QMailMessage &message, const QMailMessagePart::Location &location, int *start)
@@ -323,6 +329,7 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder,
             (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
             (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
             if (!QMailStore::instance()->addFolder(&folder)) {
+                _error = true;
                 qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
             }
         }
@@ -336,11 +343,13 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage
     // Store this message to the mail store
     if (message.id().isValid()) {
         if (!QMailStore::instance()->updateMessage(&message)) {
+            _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
     } else {
         if (!QMailStore::instance()->addMessage(&message)) {
+            _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
@@ -355,6 +364,7 @@ void ImapStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &m
 {
     // Store the updated message
     if (!QMailStore::instance()->updateMessage(&message)) {
+        _error = true;
         qWarning() << "Unable to update message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
         return;
     }
@@ -371,6 +381,7 @@ void ImapStrategy::nonexistentUid(ImapStrategyContextBase *context, const QStrin
     if (message.id().isValid()) {
         message.setStatus(QMailMessage::Removed, true);
         if (!QMailStore::instance()->updateMessage(&message)) {
+            _error = true;
             qWarning() << "Unable to update nonexistent message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
@@ -466,6 +477,7 @@ void ImapPrepareMessagesStrategy::transition(ImapStrategyContextBase *context, I
         
         default:
         {
+            _error = true;
             qWarning() << "Unhandled IMAP response:" << command;
             break;
         }
@@ -549,9 +561,11 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
             }
 
             if (!QMailStore::instance()->updateMessage(&referer)) {
+                _error = true;
                 qWarning() << "Unable to update message for account:" << referer.parentAccountId();
             }
         } else {
+            _error = true;
             qWarning() << "Unable to resolve reference to invalid part:" << pair.second.toString(false);
         }
     } else {
@@ -560,6 +574,7 @@ void ImapPrepareMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, const
         referencedMessage.setExternalLocationReference(url);
 
         if (!QMailStore::instance()->updateMessage(&referencedMessage)) {
+            _error = true;
             qWarning() << "Unable to update message for account:" << referencedMessage.parentAccountId();
         }
     }
@@ -642,6 +657,7 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
         
         default:
         {
+            _error = true;
             qWarning() << "Unhandled IMAP response:" << command;
             break;
         }
@@ -1181,14 +1197,6 @@ bool ImapFolderListStrategy::nextFolder()
     while (!_mailboxIds.isEmpty()) {
         QMailFolderId folderId(_mailboxIds.takeFirst());
 
-        if (_folderStatus.contains(folderId)) {
-            FolderStatus folderState = _folderStatus[folderId];
-            if (folderState & NoSelect) {
-                // We can't select this folder
-                continue;
-            }
-        }
-
         // Process this folder
         setCurrentMailbox(folderId);
 
@@ -1202,8 +1210,11 @@ bool ImapFolderListStrategy::nextFolder()
 
 void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
-    // Attempt to select the current folder
-    context->protocol().sendSelect(_currentMailbox);
+    QMailFolderId folderId = _currentMailbox.id();
+    if(_folderStatus.contains(folderId) && _folderStatus[folderId] & NoSelect)
+        context->protocol().sendList(_currentMailbox, "%");
+    else
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -1256,6 +1267,7 @@ void ImapFolderListStrategy::updateUndiscoveredCount(ImapStrategyContextBase *co
         folder.setServerUndiscoveredCount(undiscovered);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
             qWarning() << "Unable to update folder for account:" << context->config().id();
         }
     }
@@ -1307,6 +1319,7 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
 
 void ImapSynchronizeBaseStrategy::processUidSearchResults(ImapStrategyContextBase *)
 {
+    _error = true;
     qWarning() << "ImapSynchronizeBaseStrategy::processUidSearchResults: Unexpected location!";
 }
 
@@ -1661,6 +1674,7 @@ void ImapRetrieveFolderListStrategy::removeDeletedMailboxes(ImapStrategyContextB
             }
 
             if (!QMailStore::instance()->removeFolder(boxId)) {
+                _error = true;
                 qWarning() << "Unable to remove nonexistent folder for account:" << context->config().id();
             }
 
@@ -1818,6 +1832,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         folder.setStatus(QMailFolder::Synchronized, true);
     }
     if (!QMailStore::instance()->updateFolder(&folder)) {
+        _error = true;
         qWarning() << "Unable to update folder for account:" << context->config().id();
     }
 
@@ -1855,7 +1870,9 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         _expungeRequired = !_removedUids.isEmpty();
 
         if (_options & ImportChanges) {
-            updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
+            if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey)) {
+                _error = true;
+            }
         }
 
         // Update messages on the server that are still flagged as unseen but have been read locally
@@ -1903,6 +1920,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
 
             //remove records of deleted messages
             if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << msgUidl)) {
+                _error = true;
                 qWarning() << "Unable to purge message record for account:" << context->config().id();
             }
 
@@ -1929,6 +1947,7 @@ void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase 
         folder.setServerUndiscoveredCount(0);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
             qWarning() << "Unable to update folder for account:" << context->config().id();
         }
     }
@@ -2189,8 +2208,10 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
         !_monitoredFoldersIds.contains(folderId)) {
         _monitoredFoldersIds << folderId;
     }
-
-    context->protocol().sendSelect(_currentMailbox);
+    
+    //not not try select an unselectable mailbox
+    if(!_folderStatus.contains(folderId) || !_folderStatus[folderId] & NoSelect)
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)
@@ -2213,7 +2234,8 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
     QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
     
-    updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey);
+    if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey))
+        _error = true;
 
     processNextFolder(context);
 }
@@ -2254,6 +2276,7 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _fillingGap = false;
     _completionList.clear();
     _completionSectionList.clear();
+    _newMinMaxMap.clear();
     
     ImapSynchronizeBaseStrategy::handleLogin(context);
 }
@@ -2264,7 +2287,8 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
         QMailFolder folder(folderId);
 
         bool modified(false);
-        if (_newMinMaxMap.contains(folderId)) {
+        if (!_error // Only update the range of downloaded messages if no store errors, including add errors have occurred
+            && _newMinMaxMap.contains(folderId)) {
             folder.setCustomField("qmf-min-serveruid", QString::number(_newMinMaxMap[folderId].minimum()));
             folder.setCustomField("qmf-max-serveruid", QString::number(_newMinMaxMap[folderId].maximum()));
             modified = true;
@@ -2276,6 +2300,7 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
         }
 
         if (modified && !QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
             qWarning() << "Unable to update folder for account:" << context->config().id();
         }
     }
@@ -2633,6 +2658,7 @@ QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *
         if (source.id().isValid()) {
             updateCopiedMessage(context, message, source);
         } else {
+            _error = true;
             qWarning() << "Unable to update message from UID:" << sourceUid << "to copy:" << message.serverUid();
         }
 
@@ -2834,6 +2860,7 @@ void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
             QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
 
             if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
+                _error = true;
                 qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
             }
         }
@@ -2852,6 +2879,7 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
     if (source.serverUid().isEmpty()) {
         // This message has been moved to the external server - delete the local copy
         if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {
+            _error = true;
             qWarning() << "Unable to remove moved message:" << source.id();
         }
     }
@@ -2875,6 +2903,7 @@ void ImapExternalizeMessagesStrategy::appendMessageSet(const QMailMessageIdList 
         // These messages can't be externalised - just remove the flag to proceed as normal
         QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
         if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessage::TransmitFromExternal, false)) {
+            _error = true;
             qWarning() << "Unable to update message metadata to remove transmit from external flag";
         }
     }
@@ -2935,6 +2964,7 @@ void ImapExternalizeMessagesStrategy::urlAuthorized(ImapStrategyContextBase *, c
     message.setExternalLocationReference(url);
 
     if (!QMailStore::instance()->updateMessage(&message)) {
+        _error = true;
         qWarning() << "Unable to update message for account:" << message.parentAccountId();
     }
 }
@@ -3090,6 +3120,7 @@ void ImapDeleteMessagesStrategy::handleClose(ImapStrategyContextBase *context)
         QMailMessageKey uidKey(QMailMessageKey::serverUid(_storedList));
 
         if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
+            _error = true;
             qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << _storedList;
         }
     }

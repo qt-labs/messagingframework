@@ -1572,6 +1572,104 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
     return true;
 }
 
+void ServiceHandler::createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    if(accountId.isValid()) {
+        QSet<QMailAccountId> accounts = folderAccount(parentId);
+        QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
+
+        enqueueRequest(action, serialize(name, accountId, parentId), sources, &ServiceHandler::dispatchCreateFolder, &ServiceHandler::storageActionCompleted);
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to create folder for invalid account"));
+    }
+}
+
+bool ServiceHandler::dispatchCreateFolder(quint64 action, const QByteArray &data)
+{
+    QString name;
+    QMailAccountId accountId;
+    QMailFolderId parentId;
+
+    deserialize(data, name, accountId, parentId);
+
+    if(QMailMessageSource *source = accountSource(accountId)) {
+        if(source->createFolder(name, accountId, parentId)) {
+            return true;
+        } else {
+            qMailLog(Messaging) << "Unable to service request to create folder for account:" << accountId;
+            return false;
+        }
+
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
+        return false;
+    }
+}
+
+void ServiceHandler::renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
+{
+    if(folderId.isValid()) {
+        QSet<QMailAccountId> accounts = folderAccount(folderId);
+        QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
+
+        enqueueRequest(action, serialize(folderId, name), sources, &ServiceHandler::dispatchRenameFolder, &ServiceHandler::storageActionCompleted);
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to rename invalid folder"));
+    }
+}
+
+bool ServiceHandler::dispatchRenameFolder(quint64 action, const QByteArray &data)
+{
+    QMailFolderId folderId;
+    QString newFolderName;
+
+    deserialize(data, folderId, newFolderName);
+
+    if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
+        if(source->renameFolder(folderId, newFolderName)) {
+            return true;
+        } else {
+            qMailLog(Messaging) << "Unable to service request to rename folder id:" << folderId;
+            return false;
+        }
+
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), QMailFolder(folderId).parentAccountId());
+        return false;
+    }
+}
+
+void ServiceHandler::deleteFolder(quint64 action, const QMailFolderId &folderId)
+{
+    if(folderId.isValid()) {
+        QSet<QMailAccountId> accounts = folderAccount(folderId);
+        QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
+
+        enqueueRequest(action, serialize(folderId), sources, &ServiceHandler::dispatchRenameFolder, &ServiceHandler::storageActionCompleted);
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to delete invalid folder"));
+    }
+}
+
+bool ServiceHandler::dispatchDeleteFolder(quint64 action, const QByteArray &data)
+{
+    QMailFolderId folderId;
+
+    deserialize(data, folderId);
+
+    if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
+        if(source->deleteFolder(folderId)) {
+            return true;
+        } else {
+            qMailLog(Messaging) << "Unable to service request to delete folder id:" << folderId;
+            return false;
+        }
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), QMailFolder(folderId).parentAccountId());
+        return false;
+    }
+}
+
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     if (spec == QMailSearchAction::Remote) {

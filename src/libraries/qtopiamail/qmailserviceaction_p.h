@@ -179,8 +179,11 @@ public:
 
     void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
-
     void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
+    void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void renameFolder(const QMailFolderId &id, const QString &name);
+    void deleteFolder(const QMailFolderId &id);
 
 protected:
     virtual void init();

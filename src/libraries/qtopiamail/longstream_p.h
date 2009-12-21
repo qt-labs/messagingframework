@@ -56,8 +56,12 @@
 #include <QString>
 #include "qmailglobal.h"
 
+QT_BEGIN_NAMESPACE
+
 class QTemporaryFile;
 class QDataStream;
+
+QT_END_NAMESPACE
 
 class QTOPIAMAIL_EXPORT LongStream
 {

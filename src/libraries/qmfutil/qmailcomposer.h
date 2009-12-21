@@ -50,8 +50,13 @@
 #include <qmailmessage.h>
 #include <QAction>
 
-class QMenu;
 class QMailAccount;
+
+QT_BEGIN_NAMESPACE
+
+class QMenu;
+
+QT_END_NAMESPACE
 
 class QMFUTIL_EXPORT QMailComposerInterface : public QWidget
 {

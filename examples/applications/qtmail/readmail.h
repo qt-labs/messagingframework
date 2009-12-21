@@ -48,12 +48,17 @@
 #include <qmailviewer.h>
 #include <QFrame>
 
+class QMailViewerInterface;
+
+QT_BEGIN_NAMESPACE
+
 class QAction;
 class QLabel;
-class QMailViewerInterface;
 class QMenu;
 class QStackedWidget;
 class QUrl;
+
+QT_END_NAMESPACE
 
 class ReadMail : public QFrame
 {
