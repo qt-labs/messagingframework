@@ -495,7 +495,12 @@ void setMessageContentFromStructure(const QStringList &structure, QMailMessage *
         if (!description.isEmpty()) {
             uint size = 0;
             if (structure.count() == 1) {
-                setBodyFromDescription(decomposeElements(description), message, &size);
+                QStringList details(decomposeElements(description));
+                if (details.count() < 7) {
+                    qWarning() << "Ill-formed body structure:" << details;
+                } else {
+                    setBodyFromDescription(details, message, &size);
+                }
             } else {
                 // This is a multi-part message
                 setMultipartFromDescription(structure, message, 0, &size);
