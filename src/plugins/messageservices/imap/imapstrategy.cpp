@@ -313,7 +313,7 @@ void ImapStrategy::initialAction(ImapStrategyContextBase *context)
     }
 }
 
-void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder, const QString &flags, const QString &delimiter)
+void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder, const QString &flags)
 {
     if (!folder.id().isValid()) {
         // Only folders beneath the base folder are relevant
@@ -321,7 +321,7 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *, QMailFolder& folder,
 
         if (_baseFolder.isEmpty() || 
             (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
-            (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+            (path.startsWith(_baseFolder + c->protocol().delimiter(), Qt::CaseInsensitive))) {
             if (!QMailStore::instance()->addFolder(&folder)) {
                 qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
             }
@@ -412,6 +412,182 @@ void ImapStrategy::urlAuthorized(ImapStrategyContextBase *context, const QString
 {
     Q_UNUSED(context)
     Q_UNUSED(url)
+}
+
+void ImapStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(folder)
+}
+
+void ImapStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(folder)
+}
+
+void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
+{
+    QChar delimiter = context->protocol().delimiter();
+    QString name;
+
+    if(folder.path().count(delimiter) == 0)
+        name = newPath;
+    else {
+        name = newPath.section(delimiter, -1, -1);
+
+        QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
+        QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
+
+        while(!affectedFolders.isEmpty()) {
+            QMailFolder childFolder(affectedFolders.takeFirst());
+            QString path = childFolder.path();
+            path.replace(0, folder.path().length(), newPath);
+            childFolder.setPath(path);
+            if(!QMailStore::instance()->updateFolder(&childFolder))
+                qWarning() << "Unable to locally change path of a subfolder";
+        }
+    }
+
+    QMailFolder newFolder = folder;
+    newFolder.setPath(newPath);
+    newFolder.setDisplayName(name);
+
+    if(!QMailStore::instance()->updateFolder(&newFolder))
+        qWarning() << "Unable to locally rename folder";
+
+}
+
+/* A strategy to create a folder */
+void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+    case IMAP_Create:
+        handleCreateFolder(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapCreateFolderStrategy::createFolder(const QMailFolderId &folderParent, const QString &name)
+{
+    _folders.append(qMakePair(folderParent, name));
+}
+
+void ImapCreateFolderStrategy::handleCreateFolder(ImapStrategyContextBase *context)
+{
+    while(_folders.count() > 0) {
+        QPair<QMailFolderId, QString> folder = _folders.takeFirst();
+        context->protocol().sendCreate(folder.first, folder.second);
+    }
+
+    context->operationCompleted();
+}
+
+
+void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
+{
+    QMailFolder mailFolder;
+    mailFolder.setPath(folder);
+    ImapStrategy::mailboxListed(context, mailFolder, "");
+}
+
+
+
+/* A strategy to delete a folder */
+void ImapDeleteFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+    case IMAP_Delete:
+        handleDeleteFolder(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId& folderId)
+{
+    _folderIds.append(folderId);
+}
+
+void ImapDeleteFolderStrategy::handleDeleteFolder(ImapStrategyContextBase *context)
+{
+    while(_folderIds.count() > 0) {
+        deleteFolder(_folderIds.takeFirst(), context);
+    }
+
+    context->operationCompleted();
+}
+
+void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapStrategyContextBase *context)
+{
+    QMailFolderKey childKey(QMailFolderKey::parentFolderId(folderId));
+    QMailFolderIdList childrenList = QMailStore::instance()->queryFolders(childKey);
+
+    foreach(QMailFolderId fid, childrenList) {
+        deleteFolder(fid, context);
+    }
+
+    //now the parent is safe to delete
+    context->protocol().sendDelete(QMailFolder(folderId));
+}
+
+void ImapDeleteFolderStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
+{
+    if(!QMailStore::instance()->removeFolder(folder.id()))
+        qWarning() << "Unable to remove folder id: " << folder.id();
+
+    Q_UNUSED(context)
+}
+
+/* A strategy to rename a folder */
+void ImapRenameFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+    case IMAP_Rename:
+        handleRenameFolder(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapRenameFolderStrategy::renameFolder(const QMailFolderId &folderId, const QString &newName)
+{
+    _folderNewNames.append(qMakePair(folderId, newName));
+}
+
+void ImapRenameFolderStrategy::handleRenameFolder(ImapStrategyContextBase *context)
+{
+    while(_folderNewNames.count() > 0) {
+        const QPair<QMailFolderId, QString> &folderId_name =  _folderNewNames.takeFirst();
+
+        context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
+    }
+
+    context->operationCompleted();
+}
+
+void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
+{
+    ImapStrategy::folderRenamed(context, folder, newPath);
 }
 
 
@@ -629,6 +805,24 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
             break;
         }
         
+        case IMAP_Create:
+        {
+            handleCreate(context);
+            break;
+        }
+        
+        case IMAP_Delete:
+        {
+            handleDelete(context);
+            break;
+        }
+        
+        case IMAP_Rename:
+        {
+            handleRename(context);
+            break;
+        }
+        
         case IMAP_Close:
         {
             handleClose(context);
@@ -658,6 +852,22 @@ void ImapMessageListStrategy::handleSelect(ImapStrategyContextBase *context)
     // We're completing a message or section
     messageListMessageAction(context);
 }
+
+void ImapMessageListStrategy::handleCreate(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
+void ImapMessageListStrategy::handleDelete(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
+void ImapMessageListStrategy::handleRename(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
 
 void ImapMessageListStrategy::handleClose(ImapStrategyContextBase *context)
 {
@@ -1181,14 +1391,6 @@ bool ImapFolderListStrategy::nextFolder()
     while (!_mailboxIds.isEmpty()) {
         QMailFolderId folderId(_mailboxIds.takeFirst());
 
-        if (_folderStatus.contains(folderId)) {
-            FolderStatus folderState = _folderStatus[folderId];
-            if (folderState & NoSelect) {
-                // We can't select this folder
-                continue;
-            }
-        }
-
         // Process this folder
         setCurrentMailbox(folderId);
 
@@ -1202,8 +1404,11 @@ bool ImapFolderListStrategy::nextFolder()
 
 void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
-    // Attempt to select the current folder
-    context->protocol().sendSelect(_currentMailbox);
+    QMailFolderId folderId = _currentMailbox.id();
+    if(_folderStatus.contains(folderId) && _folderStatus[folderId] & NoSelect)
+        context->protocol().sendList(_currentMailbox, "%");
+    else
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -1212,9 +1417,9 @@ void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *contex
     messageListMessageAction(context);
 }
 
-void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
+void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
 {
-    ImapStrategy::mailboxListed(context, folder, flags, delimiter);
+    ImapStrategy::mailboxListed(context, folder, flags);
 
     if (folder.id().isValid()) {
         // Record the status of the listed mailbox
@@ -1609,9 +1814,9 @@ void ImapRetrieveFolderListStrategy::folderListCompleted(ImapStrategyContextBase
     messageListMessageAction(context);
 }
 
-void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags, const QString &delimiter)
+void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder &folder, const QString &flags)
 {
-    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags, delimiter);
+    ImapSynchronizeBaseStrategy::mailboxListed(context, folder, flags);
 
     _mailboxPaths.append(folder.path());
 
@@ -1622,14 +1827,14 @@ void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *cont
             if (folder.id() != _currentMailbox.id()) {
                 if (_baseFolder.isEmpty() || 
                     (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
-                    (path.startsWith(_baseFolder + delimiter, Qt::CaseInsensitive))) {
+                    (path.startsWith(_baseFolder + context->protocol().delimiter(), Qt::CaseInsensitive))) {
                     // We need to list this folder's contents, too
                     selectedFoldersAppend(QMailFolderIdList() << folder.id());
                 }
             }
         } else {
             if (!_ancestorPaths.contains(path)) {
-                if (_baseFolder.startsWith(path + delimiter, Qt::CaseInsensitive)) {
+                if (_baseFolder.startsWith(path + context->protocol().delimiter(), Qt::CaseInsensitive)) {
                     // This folder must be an ancestor of the base folder - list its contents
                     _ancestorPaths.insert(path);
                     _ancestorSearchPaths.append(path);
@@ -2189,8 +2394,10 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
         !_monitoredFoldersIds.contains(folderId)) {
         _monitoredFoldersIds << folderId;
     }
-
-    context->protocol().sendSelect(_currentMailbox);
+    
+    //not not try select an unselectable mailbox
+    if(!_folderStatus.contains(folderId) || !_folderStatus[folderId] & NoSelect)
+        context->protocol().sendSelect(_currentMailbox);
 }
 
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)

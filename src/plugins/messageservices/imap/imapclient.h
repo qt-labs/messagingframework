@@ -112,7 +112,7 @@ public slots:
     void transportError(int, const QString &msg);
     void transportError(QMailServiceAction::Status::ErrorCode, const QString &msg);
 
-    void mailboxListed(QString &, QString &, QString &);
+    void mailboxListed(const QString &, const QString &);
     void messageFetched(QMailMessage& mail);
     void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void nonexistentUid(const QString &uid);
@@ -121,6 +121,9 @@ public slots:
     void messageCreated(const QMailMessageId &, const QString &);
     void downloadSize(const QString &uid, int);
     void urlAuthorized(const QString &url);
+    void folderDeleted(const QMailFolder &folder);
+    void folderCreated(const QString &folder);
+    void folderRenamed(const QMailFolder &folder, const QString &newName);
 
 protected slots:
     void connectionInactive();
