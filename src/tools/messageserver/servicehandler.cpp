@@ -1645,7 +1645,7 @@ void ServiceHandler::deleteFolder(quint64 action, const QMailFolderId &folderId)
         QSet<QMailAccountId> accounts = folderAccount(folderId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
-        enqueueRequest(action, serialize(folderId), sources, &ServiceHandler::dispatchRenameFolder, &ServiceHandler::storageActionCompleted);
+        enqueueRequest(action, serialize(folderId), sources, &ServiceHandler::dispatchDeleteFolder, &ServiceHandler::storageActionCompleted);
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to delete invalid folder"));
     }
