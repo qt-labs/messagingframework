@@ -614,8 +614,10 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
 
 bool ImapService::Source::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    if(!accountId.isValid())
-        qWarning() << "Attempting to create a folder on an invalid account.";
+    if (!accountId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
+        return false;
+    }
     //here we'll create a QMailFolder and give it to the strategy
     //if it is successful, we'll let it register it as a real folder in the QMailStore
     if(name.isEmpty()) {
