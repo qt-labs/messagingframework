@@ -69,11 +69,16 @@ typedef QTcpServer QCopLocalServer;
 #include <QtCore/qregexp.h>
 #include <qringbuffer_p.h>
 
-class QEventLoop;
 class QCopChannel;
 class QCopChannelMonitor;
 class QCopServer;
 class QCopLoopbackDevice;
+
+QT_BEGIN_NAMESPACE
+
+class QEventLoop;
+
+QT_END_NAMESPACE
 
 #define	QCopCmd_RegisterChannel	    1
 #define	QCopCmd_Send		    2

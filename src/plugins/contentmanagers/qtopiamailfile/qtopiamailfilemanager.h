@@ -50,7 +50,12 @@
 
 class QMailMessagePart;
 class QMailMessagePartContainer;
+
+QT_BEGIN_NAMESPACE
+
 class QFile;
+
+QT_END_NAMESPACE
 
 class QtopiamailfileManager : public QObject, public QMailContentManager
 {

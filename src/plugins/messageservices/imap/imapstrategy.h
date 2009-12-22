@@ -148,6 +148,9 @@ public:
     virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
     virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName);
 
+    void clearError() { _error = false; } 
+    bool error() { return _error; } 
+
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);
 
@@ -155,6 +158,7 @@ protected:
 
     TransferState _transferState;
     QString _baseFolder;
+    bool _error;
 };
 
 class ImapCreateFolderStrategy : public ImapStrategy
@@ -730,7 +734,7 @@ public:
     ImapDeleteFolderStrategy deleteFolderStrategy;
     ImapRenameFolderStrategy renameFolderStrategy;
 
-    void newConnection() { _strategy->newConnection(this); }
+    void newConnection() { _strategy->clearError(); _strategy->newConnection(this); }
     void commandTransition(const ImapCommand command, const OperationStatus status) { _strategy->transition(this, command, status); }
 
     void mailboxListed(QMailFolder& folder, const QString &flags) { _strategy->mailboxListed(this, folder, flags); }

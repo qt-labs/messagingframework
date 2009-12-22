@@ -2078,20 +2078,14 @@ void EmailClient::retrieveMoreMessages()
         QMailFolder folder(folderId);
 
         // Find how many messages we have requested for this folder
-        int retrievedMinimum = folder.customField("qtmail-retrieved-minimum").toInt();
-        if (retrievedMinimum == 0) {
-            retrievedMinimum = QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(folderId));
-        }
-
+        int retrievedMinimum = QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(folderId));
+        
         // Request more messages
         retrievedMinimum += MoreMessagesIncrement;
 
         setRetrievalInProgress(true);
 
         retrievalAction->retrieveMessageList(folder.parentAccountId(), folderId, retrievedMinimum);
-
-        folder.setCustomField("qtmail-retrieved-minimum", QString::number(retrievedMinimum));
-        QMailStore::instance()->updateFolder(&folder);
     }
 }
 

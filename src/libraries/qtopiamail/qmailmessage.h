@@ -55,9 +55,14 @@
 
 class QMailMessagePart;
 class QMailMessagePartContainerPrivate;
+
+QT_BEGIN_NAMESPACE
+
 class QDataStream;
 class QTextStream;
 class QFile;
+
+QT_END_NAMESPACE
 
 class QMailMessageHeaderFieldPrivate;
 

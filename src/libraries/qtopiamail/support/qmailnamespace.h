@@ -49,7 +49,11 @@
 #include <QTime>
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
+QT_BEGIN_NAMESPACE
+
 class QSqlDatabase;
+
+QT_END_NAMESPACE
 #endif
 
 namespace QMail

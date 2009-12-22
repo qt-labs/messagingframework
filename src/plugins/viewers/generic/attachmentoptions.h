@@ -49,10 +49,14 @@
 #include <QSize>
 #include <QString>
 
+QT_BEGIN_NAMESPACE
+
 class QByteArray;
 class QLabel;
 class QPushButton;
 class QString;
+
+QT_END_NAMESPACE
 
 class AttachmentOptions : public QDialog
 {

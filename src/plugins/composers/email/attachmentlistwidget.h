@@ -44,14 +44,19 @@
 
 #include <QWidget>
 
+class AttachmentListView;
+class AttachmentListModel;
+class AttachmentListDelegate;
+
+QT_BEGIN_NAMESPACE
+
 class QListView;
 class QStringListModel;
 class QLabel;
 class QTreeView;
-class AttachmentListView;
-class AttachmentListModel;
-class AttachmentListDelegate;
 class QModelIndex;
+
+QT_END_NAMESPACE
 
 class AttachmentListWidget : public QWidget
 {

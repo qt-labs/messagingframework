@@ -56,8 +56,13 @@
 class QMailAccountPrivate;
 class QMailAccountId;
 class QMailFolderId;
+
+QT_BEGIN_NAMESPACE
+
 class QSettings;
 class QTimer;
+
+QT_END_NAMESPACE
 
 class QTOPIAMAIL_EXPORT QMailAccount
 {

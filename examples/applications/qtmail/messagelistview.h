@@ -50,17 +50,22 @@
 #include <qmailmessagesortkey.h>
 
 class MessageList;
+class QMailMessageModelBase;
+class QMailMessageDelegate;
+class QtopiaHomeMailMessageDelegate;
+class QuickSearchWidget;
+
+QT_BEGIN_NAMESPACE
+
 class QFrame;
 class QLineEdit;
-class QMailMessageModelBase;
 class QPushButton;
 class QSortFilterProxyModel;
 class QTabBar;
 class QToolButton;
 class QItemDelegate;
-class QMailMessageDelegate;
-class QtopiaHomeMailMessageDelegate;
-class QuickSearchWidget;
+
+QT_END_NAMESPACE
 
 class MessageListView : public QWidget
 {
