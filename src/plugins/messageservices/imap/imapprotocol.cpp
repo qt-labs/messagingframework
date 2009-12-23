@@ -991,7 +991,7 @@ void GenUrlAuthState::init()
 
 QString GenUrlAuthState::transmit(ImapContext *c)
 {
-    const QPair<QString, QString> &params(_parameters.first());  // TODO: should be last()?
+    const QPair<QString, QString> &params(_parameters.first());
 
     return c->sendCommand("GENURLAUTH \"" + params.first + "\" " + params.second);
 }
@@ -1096,7 +1096,7 @@ static QList<QPair<QByteArray, uint> > dataSequence(QList<QMailMessage::MessageC
 
 QString AppendState::transmit(ImapContext *c)
 {
-    AppendParameters &params(mParameters.first());  // TODO: should be last()?
+    AppendParameters &params(mParameters.last());
 
     QMailMessage message(params.mMessageId);
 
