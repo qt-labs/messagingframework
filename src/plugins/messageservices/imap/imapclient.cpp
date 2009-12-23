@@ -418,8 +418,8 @@ ImapClient::ImapClient(QObject* parent)
     _strategyContext->setStrategy(&_strategyContext->synchronizeAccountStrategy);
     connect(&_protocol, SIGNAL(completed(ImapCommand, OperationStatus)),
             this, SLOT(commandCompleted(ImapCommand, OperationStatus)) );
-    connect(&_protocol, SIGNAL(mailboxListed(QString&,QString&,QString&)),
-            this, SLOT(mailboxListed(QString&,QString&,QString&)) );
+    connect(&_protocol, SIGNAL(mailboxListed(QString,QString)),
+            this, SLOT(mailboxListed(QString,QString)));
     connect(&_protocol, SIGNAL(messageFetched(QMailMessage&)),
             this, SLOT(messageFetched(QMailMessage&)) );
     connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
@@ -436,6 +436,12 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(downloadSize(QString, int)) );
     connect(&_protocol, SIGNAL(urlAuthorized(QString)),
             this, SLOT(urlAuthorized(QString)) );
+    connect(&_protocol, SIGNAL(folderCreated(QString)),
+            this, SLOT(folderCreated(QString)));
+    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder)),
+            this, SLOT(folderDeleted(QMailFolder)));
+    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString)),
+            this, SLOT(folderRenamed(QMailFolder, QString)));
     connect(&_protocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)) );
     connect(&_protocol, SIGNAL(connectionError(int,QString)),
@@ -710,7 +716,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 /*  Mailboxes retrieved from the server goes here.  If the INBOX mailbox
     is new, it means it is the first time the account is used.
 */
-void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path)
+void ImapClient::mailboxListed(const QString &flags, const QString &path)
 {
     QMailFolderId parentId;
     QMailFolderId boxId;
@@ -718,10 +724,10 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
     QMailAccount account(_config.id());
 
     QString mailboxPath;
-    QStringList list = path.split(delimiter);
+    QStringList list = path.split(_protocol.delimiter());
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
         if (!mailboxPath.isEmpty())
-            mailboxPath.append(delimiter);
+            mailboxPath.append(_protocol.delimiter());
         mailboxPath.append(*it);
 
         boxId = mailboxId(mailboxPath);
@@ -729,7 +735,7 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
             // This element already exists
             if (mailboxPath == path) {
                 QMailFolder folder(boxId); 
-                _strategyContext->mailboxListed(folder, flags, delimiter);
+                _strategyContext->mailboxListed(folder, flags);
             }
 
             parentId = boxId;
@@ -759,7 +765,7 @@ void ImapClient::mailboxListed(QString &flags, QString &delimiter, QString &path
                 folderFlags = flags;
             }
 
-            _strategyContext->mailboxListed(folder, folderFlags, delimiter);
+            _strategyContext->mailboxListed(folder, folderFlags);
 
             boxId = mailboxId(mailboxPath);
             parentId = boxId;
@@ -835,6 +841,23 @@ void ImapClient::messageFetched(QMailMessage& mail)
     _classifier.classifyMessage(mail);
 
     _strategyContext->messageFetched(mail);
+}
+
+
+void ImapClient::folderCreated(const QString &folder)
+{
+    mailboxListed(QString(), folder);
+}
+
+void ImapClient::folderDeleted(const QMailFolder &folder)
+{
+    _strategyContext->folderDeleted(folder);
+}
+
+void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath)
+{
+
+    _strategyContext->folderRenamed(folder, newPath);
 }
 
 static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)

@@ -124,8 +124,11 @@ public slots:
 
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
-
     virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
+    virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    virtual bool deleteFolder(const QMailFolderId &folderId);
+    virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
@@ -607,6 +610,54 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     }
 
     return true;
+}
+
+bool ImapService::Source::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+{
+    if (!accountId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
+        return false;
+    }
+    //here we'll create a QMailFolder and give it to the strategy
+    //if it is successful, we'll let it register it as a real folder in the QMailStore
+    if(name.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot create empty named folder"));
+        return false;
+    }
+
+    _service->_client.strategyContext()->createFolderStrategy.createFolder(parentId, name);
+
+    return setStrategy(&_service->_client.strategyContext()->createFolderStrategy);
+}
+
+bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
+{
+    if(!folderId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Deleting invalid folder"));
+        return false;
+    }
+
+    //remove remote copy
+    _service->_client.strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
+    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+
+    return setStrategy(&_service->_client.strategyContext()->deleteFolderStrategy);
+}
+
+bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QString &name)
+{
+    if(name.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot rename to an empty folder"));
+        return false;
+    }
+    if(!folderId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot rename an invalid folder"));
+        return false;
+    }
+
+    _service->_client.strategyContext()->renameFolderStrategy.renameFolder(folderId, name);
+
+    return setStrategy(&_service->_client.strategyContext()->renameFolderStrategy);
 }
 
 bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &messageIds)

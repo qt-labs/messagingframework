@@ -82,7 +82,10 @@ enum ImapCommand
     IMAP_GenUrlAuth,
     IMAP_Close,
     IMAP_Full,
-    IMAP_Idle
+    IMAP_Idle,
+    IMAP_Create,
+    IMAP_Delete,
+    IMAP_Rename
 };
 
 enum MessageFlag
@@ -144,6 +147,7 @@ public:
     bool encrypted() const;
     bool inUse() const;
     bool loggingOut() const;
+    QChar delimiter() const;
 
     QString lastError() const { return _lastError; };
 
@@ -161,10 +165,14 @@ public:
 
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);
+    void sendDiscoverDelimiter();
     void sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism = QString());
     void sendAppend(const QMailFolder &mailbox, const QMailMessageId &message);
     void sendSelect(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
+    void sendCreate(const QMailFolderId &parentFolderId, const QString &name);
+    void sendDelete(const QMailFolder &mailbox);
+    void sendRename(const QMailFolder &mailbox, const QString &newname);
 
     /*  Valid in Selected state only */
     void sendSearch(MessageFlags flags, const QString &range = QString());
@@ -189,7 +197,7 @@ public:
     static QByteArray quoteString(const QByteArray& input);
 
 signals:
-    void mailboxListed(QString &flags, QString &delimiter, QString &name);
+    void mailboxListed(const QString &flags, const QString &name);
     void messageFetched(QMailMessage& mail);
     void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void downloadSize(const QString &uid, int);
@@ -198,6 +206,10 @@ signals:
     void messageCopied(const QString& copiedUid, const QString& createdUid);
     void messageCreated(const QMailMessageId& id, const QString& uid);
     void urlAuthorized(const QString& url);
+
+    void folderCreated(const QString &folder);
+    void folderDeleted(const QMailFolder &name);
+    void folderRenamed(const QMailFolder &folder, const QString &newPath);
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);
@@ -215,6 +227,7 @@ signals:
     void noModSeq();
 
 protected slots:
+    void setDelimiter(QChar delimiter);
     void connected(QMailTransport::EncryptType encryptType);
     void errorHandling(int status, QString msg);
     void incomingData();
@@ -270,6 +283,7 @@ private:
     QString _unprocessedInput;
 
     QTimer _incomingDataTimer;
+    QChar _delimiter;
 
     static const int MAX_LINES = 30;
 };

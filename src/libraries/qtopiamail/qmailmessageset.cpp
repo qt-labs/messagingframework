@@ -501,11 +501,19 @@ void QMailFolderMessageSet::foldersRemoved(const QMailFolderIdList &)
 /*! \internal */
 void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
 {
-    if (impl(this)->_hierarchical)
+    const ImplementationType *i = impl(this);
+
+    if (i->_hierarchical)
         synchronizeChildren();
 
-    if (ids.contains(impl(this)->_id))
+    if (ids.contains(i->_id)) {
+        //check to see if the name has changed
+        if (i->_id.isValid()) {
+            QMailFolder folder(i->_id);
+            i->_name = folder.displayName();
+        }
         update(this);
+    }
 }
 
 /*! \internal */
