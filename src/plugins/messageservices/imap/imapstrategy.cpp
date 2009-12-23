@@ -2150,7 +2150,7 @@ void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase 
 {
     const ImapMailboxProperties &properties(context->mailbox());
 
-    if (properties.exists > 0) {
+    if (!_error && (properties.exists > 0)) {
         QMailFolder folder(properties.id);
         folder.setCustomField("qmf-min-serveruid", QString::number(1));
         folder.setCustomField("qmf-max-serveruid", QString::number(properties.uidNext - 1));
@@ -2588,6 +2588,7 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
 {
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
+    _fillingGap = false;
 
     // Could get flag changes mod sequences when CONDSTORE is available
     
