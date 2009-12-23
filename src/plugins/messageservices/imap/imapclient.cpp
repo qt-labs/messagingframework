@@ -758,6 +758,19 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             } else {
                 folder.setStatus(QMailFolder::Incoming, true);
             }
+            if(QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
+                //don't let inbox be deleted/renamed
+                folder.setStatus(QMailFolder::DeletionPermitted, false);
+                folder.setStatus(QMailFolder::RenamePermitted, false);
+            } else {
+                folder.setStatus(QMailFolder::DeletionPermitted, true);
+                folder.setStatus(QMailFolder::RenamePermitted, true);
+            }
+
+            if(flags.contains("\\NoInferiors"))
+                folder.setStatus(QMailFolder::ChildCreationPermitted, false);
+            else
+                folder.setStatus(QMailFolder::ChildCreationPermitted, true);
 
             // The reported flags pertain to the listed folder only
             QString folderFlags;
