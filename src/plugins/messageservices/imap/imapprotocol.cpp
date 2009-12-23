@@ -991,7 +991,7 @@ void GenUrlAuthState::init()
 
 QString GenUrlAuthState::transmit(ImapContext *c)
 {
-    const QPair<QString, QString> &params(_parameters.first());
+    const QPair<QString, QString> &params(_parameters.last());
 
     return c->sendCommand("GENURLAUTH \"" + params.first + "\" " + params.second);
 }
