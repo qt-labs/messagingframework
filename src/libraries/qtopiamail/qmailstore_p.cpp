@@ -2168,7 +2168,7 @@ void QMailStorePrivate::clearContent()
 
     // Drop all data
     foreach (const QString &table, database.tables()) {
-        if (table != "versioninfo") {
+        if (table != "versioninfo" && table != "mailstatusflags") {
             QString sql("DELETE FROM %1");
             QSqlQuery query(database);
             if (!query.exec(sql.arg(table))) {
@@ -2180,7 +2180,7 @@ void QMailStorePrivate::clearContent()
     if (!t.commit()) {
         qMailLog(Messaging) << "Could not commit clearContent operation to database";
     }
-    
+
     // Remove all content
     QMailContentManagerFactory::clearContent();
 }
