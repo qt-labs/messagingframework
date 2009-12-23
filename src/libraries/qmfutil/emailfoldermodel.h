@@ -147,6 +147,9 @@ public:
         FolderIdRole = FolderModel::FolderIdRole,
         FolderSynchronizationEnabledRole,
         ContextualAccountIdRole,
+        FolderDeletionPermittedRole,
+        FolderChildCreationPermittedRole,
+        FolderRenamePermittedRole
     };
 
     EmailFolderModel(QObject *parent = 0);
@@ -168,6 +171,7 @@ protected:
     virtual FolderModel::StatusText standardFolderStatusText(EmailStandardFolderMessageSet *item) const;
 
     virtual bool itemSynchronizationEnabled(QMailMessageSet *item) const;
+    virtual bool itemPermitted(QMailMessageSet *item, Roles role) const;
     virtual QMailAccountId itemContextualAccountId(QMailMessageSet *item) const;
 };
 

@@ -1827,8 +1827,7 @@ void EmailClient::folderSelected(QMailMessageSet *item)
     if (item) {
         contextStatusUpdate();
 
-        bool atAccount(false);
-        bool atFolder(false);
+        bool atAccount(false), atFolder(false), showCreate(false), showDelete(false), showRename(false);
 
         QMailAccountId accountId(item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>());
         QMailFolderId folderId(item->data(EmailFolderModel::FolderIdRole).value<QMailFolderId>());
@@ -1850,18 +1849,25 @@ void EmailClient::folderSelected(QMailMessageSet *item)
                     synchronizeAction->setText(tr("Exclude folder"));
                 else
                     synchronizeAction->setText(tr("Include folder"));
-            }
-            else
-            {
+
+                if (item->data(EmailFolderModel::FolderChildCreationPermittedRole).value<bool>())
+                    showCreate = true;
+                if (item->data(EmailFolderModel::FolderDeletionPermittedRole).value<bool>())
+                    showDelete = true;
+                if (item->data(EmailFolderModel::FolderRenamePermittedRole).value<bool>())
+                    showRename = true;
+            } else {
                 //Can still create a root folder
                 selectedFolderId = QMailFolderId(0);
+                //TODO: check if account supports creating folders
+                showCreate = true;
             }
         }
 
         setActionVisible(synchronizeAction, atFolder);
-        setActionVisible(createFolderAction, atAccount);
-        setActionVisible(deleteFolderAction, atFolder);
-        setActionVisible(renameFolderAction, atFolder);
+        setActionVisible(createFolderAction, showCreate);
+        setActionVisible(deleteFolderAction, showDelete);
+        setActionVisible(renameFolderAction, showRename);
 
         updateGetAccountButton();
 
