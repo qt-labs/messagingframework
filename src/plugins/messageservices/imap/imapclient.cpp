@@ -562,9 +562,10 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
     
     switch (command) {
         case IMAP_Full:
-            // fall through
-        case IMAP_Unconnected:
             qFatal( "Logic error, IMAP_Full" );
+            break;
+        case IMAP_Unconnected:
+            qFatal( "Logic error, Unconnected" );
             break;
         default:
             break;
