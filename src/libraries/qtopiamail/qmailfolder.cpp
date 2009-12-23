@@ -53,6 +53,9 @@ static quint64 sentFlag = 0;
 static quint64 trashFlag = 0;
 static quint64 draftsFlag = 0;
 static quint64 junkFlag = 0;
+static quint64 childCreationPermittedFlag = 0;
+static quint64 renamePermittedFlag = 0;
+static quint64 deletionPermittedFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -136,6 +139,9 @@ public:
             trashFlag = registerFlag("Trash");
             draftsFlag = registerFlag("Drafts");
             junkFlag = registerFlag("Junk");
+            childCreationPermittedFlag = registerFlag("ChildCreationPermitted");
+            renamePermittedFlag = registerFlag("RenamePermitted");
+            deletionPermittedFlag = registerFlag("DeletionPermitted");
         }
     }
 
@@ -283,6 +289,10 @@ const quint64 &QMailFolder::Sent = sentFlag;
 const quint64 &QMailFolder::Trash = trashFlag;
 const quint64 &QMailFolder::Drafts = draftsFlag;
 const quint64 &QMailFolder::Junk = junkFlag;
+const quint64 &QMailFolder::ChildCreationPermitted = childCreationPermittedFlag;
+const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
+const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
+
 
 /*!
   Constructor that creates an empty and invalid \c QMailFolder.

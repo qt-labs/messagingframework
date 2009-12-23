@@ -73,6 +73,9 @@ public:
     static const quint64 &Trash;
     static const quint64 &Drafts;
     static const quint64 &Junk;
+    static const quint64 &ChildCreationPermitted;
+    static const quint64 &RenamePermitted;
+    static const quint64 &DeletionPermitted;
 
     QMailFolder();
 
