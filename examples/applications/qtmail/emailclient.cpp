@@ -1827,7 +1827,11 @@ void EmailClient::folderSelected(QMailMessageSet *item)
     if (item) {
         contextStatusUpdate();
 
-        bool atAccount(false), atFolder(false), showCreate(false), showDelete(false), showRename(false);
+        bool atAccount(false);
+        bool atFolder(false);
+        bool showCreate(false);
+        bool showDelete(false);
+        bool showRename(false);
 
         QMailAccountId accountId(item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>());
         QMailFolderId folderId(item->data(EmailFolderModel::FolderIdRole).value<QMailFolderId>());
