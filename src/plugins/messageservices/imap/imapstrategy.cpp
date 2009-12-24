@@ -1333,41 +1333,30 @@ void ImapFolderListStrategy::handleSelect(ImapStrategyContextBase *context)
         // We have selected this folder - find out how many undiscovered messages exist
         const ImapMailboxProperties &properties(context->mailbox());
 
-        if (properties.exists) {
-            quint32 minUid(0);
-            bool performSearch(true);
-            quint32 clientMaxUid(0);
-
+        if (properties.exists == 0) {
+            // No messages - nothing to discover...
+        } else {
             // If CONDSTORE is available, we may know that no changes have occurred
             if (!properties.noModSeq && (properties.highestModSeq == _currentModSeq)) {
-                performSearch = false;
+                // No changes have occurred - bypass searching entirely
             } else {
                 // Find the UID of the most recent message we have previously discovered in this folder
                 QMailFolder folder(properties.id);
-                clientMaxUid = folder.customField("qmf-max-serveruid").toUInt();
+                quint32 clientMaxUid(folder.customField("qmf-max-serveruid").toUInt());
 
-                if (properties.uidNext <= (clientMaxUid + 1)) {
-                    // There's no need to search because we already have the highest UID
-                    performSearch = false;
+                if (clientMaxUid == 0) {
+                    // We don't have any messages for this folder - fall through to handleSearch,
+                    // where undiscoveredCount will be set to properties.exists
                 } else {
-                    // Start our search here
-                    minUid = clientMaxUid;
+                    if (properties.uidNext <= (clientMaxUid + 1)) {
+                        // There's no need to search because we already have the highest UID
+                    } else {
+                        // Start our search above the current highest UID
+                        context->protocol().sendSearch(0, QString("UID %1:%2").arg(clientMaxUid + 1).arg(properties.uidNext));
+                        return;
+                    }
                 }
             }
-
-            if (performSearch) {
-                if (!clientMaxUid) {
-                    quint32 minSequence(properties.exists);
-                    if (minSequence < 1)
-                        minSequence = 1;
-                    context->protocol().sendSearch(0, QString("%1:*").arg(minSequence));
-                } else {
-                    context->protocol().sendSearch(0, QString("UID %1:%2").arg(minUid + 1).arg(properties.uidNext));
-                }
-                return;
-            }
-        } else {
-            // No messages - nothing to discover...
         }
 
         handleSearch(context);
