@@ -2494,7 +2494,7 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
         }
 
         if (folder.serverUndiscoveredCount() != 0) {
-            folder.setServerUndiscoveredCount(0);
+            folder.setServerUndiscoveredCount(0); // All undiscovered messages have been retrieved
             modified = true;
         }
 
@@ -2587,44 +2587,36 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
         return;
     }
 
-    quint32 lastUidNext(0);
-    quint32 lastExists(0);
     bool comparable(false);
-
-    if (_minimum == 1) {
-        // The don't select an already selected folder optimization is causing a problem,
-        // we aren't picking up changes to uidNext or exists.
-        // Work around this for push email at least for now.
-        comparable = false;
-    } else {
-        if (properties.isSelected()) {
-            if (_lastUidNextMap.contains(properties.id) && _lastExistsMap.contains(properties.id)) {
-                lastUidNext = _lastUidNextMap.value(properties.id);
-                lastExists = _lastExistsMap.value(properties.id);
-            } else {
-                comparable = false;
-            }
-
-            // Update the cached values
-            _lastUidNextMap.insert(properties.id, properties.uidNext);
-            _lastExistsMap.insert(properties.id, properties.exists);
-        } else {
-            comparable = false;
-        }
-    }
-
+    
+    // Compute starting sequence number
     int start = static_cast<int>(properties.exists) - _minimum + 1;
+    // In the case of retrieving new messages only (minimum = 1) and multiple messages 
+    // have arrived could possibly save a round trip by: 
+    //   start -= QMailFolder(properties.id).serverUndiscoveredCount(); 
     if (start < 1)
         start = 1;
 
-    if (!comparable || (lastExists != properties.exists) || (lastUidNext != properties.uidNext)) {
+    if (!comparable) {
         // We need to determine these values again
         context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
         return;
     }
 
-    // No messages have been appended or expunged since we last retrieved messages
-    // should be safe to incrementally retrieve
+    // Optimized case, currently unreachable
+    
+    // The idea here is that we don't need to re-retrieve the uids of already stored messages.
+    // Problems occur because there's no simple way to say in IMAP 
+    //  search for the highest n uids less than uid x for some numbers n and x,
+    // so sequence numbers are used, but they are fragile. Since:
+    // 
+    //   Messages may arrive in the currently selected folder, but this is not easy to
+    //   determine, even when monitoring for unsolicited EXISTS responses
+    //   (there's no unsolicited UIDNEXT reponses, and race conditions with the EXIST response).
+    //
+    //   Also potentially messages may be deleted by an external client, this is even a problem 
+    //   in the above robust case, as it may cause too many messages to be retrieved.
+    
     QMailMessageKey folderKey(context->client()->messagesKey(properties.id));
     QMailMessageKey folderTrashKey(context->client()->trashKey(properties.id));
     uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
