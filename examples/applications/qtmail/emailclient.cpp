@@ -2226,7 +2226,8 @@ void EmailClient::setupUi()
     menuLayout->setContentsMargins(0,0,5,0);
     menuLayout->addWidget(mainMenuBar);
 
-    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << retrievalAction
+    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << storageAction
+                                                                             << retrievalAction
                                                                              << transmitAction
                                                                              << flagRetrievalAction,this);
     menuLayout->addWidget(statusIcon);
