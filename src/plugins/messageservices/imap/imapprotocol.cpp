@@ -785,7 +785,6 @@ signals:
 private:
     QString buildNewPath(ImapContext *c , const QMailFolder &folder, QString &newName);
     QList<QPair<QMailFolder, QString> > _mailboxNames;
-    QChar _delimiter;
 };
 
 void RenameState::setNewMailboxName(const QMailFolder &mailbox, const QString &newName)
