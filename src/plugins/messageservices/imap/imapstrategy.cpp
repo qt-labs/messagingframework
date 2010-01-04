@@ -439,25 +439,30 @@ void ImapStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFo
 
 void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
 {
-    QChar delimiter = context->protocol().delimiter();
     QString name;
 
-    if(folder.path().count(delimiter) == 0)
-        name = newPath;
-    else {
-        name = newPath.section(delimiter, -1, -1);
+    if(!context->protocol().delimiter().isNull()) {
+        //only update if we're dealing with a hierachical system
+        QChar delimiter = context->protocol().delimiter();
+        if(folder.path().count(delimiter) == 0) {
+            name = newPath;
+        } else {
+            name = newPath.section(delimiter, -1, -1);
 
-        QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
-        QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
+            QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
+            QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
 
-        while(!affectedFolders.isEmpty()) {
-            QMailFolder childFolder(affectedFolders.takeFirst());
-            QString path = childFolder.path();
-            path.replace(0, folder.path().length(), newPath);
-            childFolder.setPath(path);
-            if(!QMailStore::instance()->updateFolder(&childFolder))
-                qWarning() << "Unable to locally change path of a subfolder";
+            while(!affectedFolders.isEmpty()) {
+                QMailFolder childFolder(affectedFolders.takeFirst());
+                QString path = childFolder.path();
+                path.replace(0, folder.path().length(), newPath);
+                childFolder.setPath(path);
+                if(!QMailStore::instance()->updateFolder(&childFolder))
+                    qWarning() << "Unable to locally change path of a subfolder";
+            }
         }
+    } else {
+        name = newPath;
     }
 
     QMailFolder newFolder = folder;

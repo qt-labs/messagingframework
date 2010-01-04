@@ -676,7 +676,7 @@ QString CreateState::transmit(ImapContext *c)
     const QMailFolderId &parent = _mailboxes.last().first;
     const QString &name = _mailboxes.last().second;
 
-    if(parent.isValid() && c->protocol()->delimiter().isNull()) {
+    if(parent.isValid() && c->protocol()->delimiterUnknown()) {
         // We are waiting on delim to create
         return QString();
     }
@@ -706,11 +706,13 @@ QString CreateState::makePath(ImapContext *c, const QMailFolderId &parent, const
     QString path;
 
     if(parent.isValid()) {
-        path = QMailFolder(parent).path() + c->protocol()->delimiter();
-    }
-    path += name;
+        if(!c->protocol()->delimiterUnknown())
+            path = QMailFolder(parent).path() + c->protocol()->delimiter();
+        else
+            qWarning() << "Cannot create a child folder, without a delimiter";
 
-    return path;
+    }
+    return (path + name);
 }
 
 class DeleteState : public ImapState
@@ -800,7 +802,7 @@ void RenameState::init()
 
 QString RenameState::transmit(ImapContext *c)
 {
-    if(c->protocol()->delimiter().isNull()) {
+    if(c->protocol()->delimiterUnknown()) {
         // We are waiting on delim to create
         return QString();
     }
@@ -829,7 +831,7 @@ void RenameState::taggedResponse(ImapContext *c, const QString &line)
 QString RenameState::buildNewPath(ImapContext *c , const QMailFolder &folder, QString &newName)
 {
     QString path;
-    if(folder.path().count(c->protocol()->delimiter()) == 0)
+    if(c->protocol()->flatHierarchy() || folder.path().count(c->protocol()->delimiter()) == 0)
         path = newName;
     else
         path = folder.path().section(c->protocol()->delimiter(), 0, -2) + c->protocol()->delimiter() + newName;
@@ -854,7 +856,6 @@ public:
     virtual void taggedResponse(ImapContext *c, const QString &line);
     
 signals:
-    void foundDelimiter(QChar delimiter);
     void mailboxListed(const QString &flags, const QString &path);
 
 private:
@@ -883,7 +884,7 @@ QString ListState::transmit(ImapContext *c)
     const QPair<QString, QString> &params(_parameters.last());
 
     if (!params.first.isEmpty()) {
-        if (c->protocol()->delimiter().isNull()) {
+        if (c->protocol()->delimiterUnknown()) {
             //Don't do anything, we're waiting on our delimiter.
             return QString();
         }
@@ -919,23 +920,28 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     flags = token(str, '(', ')', &index);
 
     delimiter = token(str, ' ', ' ', &index);
-    pos = 0;
-    if (token(delimiter, '"', '"', &pos) != QString::null) {
-        pos = 0;
-        delimiter = token(delimiter, '"', '"', &pos);
+    if(c->protocol()->delimiterUnknown()) //only figure it out precisely if needed
+    {
+        if(delimiter == "NIL") {
+            c->protocol()->setFlatHierarchy(true);
+        } else {
+            pos = 0;
+            if (token(delimiter, '"', '"', &pos) != QString::null) {
+                pos = 0;
+                delimiter = token(delimiter, '"', '"', &pos);
+            }
+            if(delimiter.length() != 1)
+                qWarning() << "Delimiter length is" << delimiter.length() << "while should only be 1 character";
+            c->protocol()->setDelimiter(*delimiter.begin());
+        }
     }
 
-    index--;    //to point back to previous => () NIL "INBOX"
+    index--;    //to point back to previous ' ' so we can find it with next search
     path = token(str, ' ', '\n', &index).trimmed();
     pos = 0;
     if (token(path, '"', '"', &pos) != QString::null) {
         pos = 0;
         path = token(path, '"', '"', &pos);
-    }
-
-    QChar delim = *delimiter.begin();
-    if(c->protocol()->delimiter().isNull() && !delim.isNull()) {
-        emit foundDelimiter(delim);
     }
 
     if (!path.isEmpty()) {
@@ -2214,12 +2220,11 @@ ImapProtocol::ImapProtocol()
     : _fsm(new ImapContextFSM(this)),
       _transport(0),
       _literalDataRemaining(0),
+      _flatHierarchy(false),
       _delimiter(0)
 {
     connect(&_incomingDataTimer, SIGNAL(timeout()),
             this, SLOT(incomingData()));
-    connect(&_fsm->listState, SIGNAL(foundDelimiter(QChar)),
-            this, SLOT(setDelimiter(QChar)));
     connect(&_fsm->listState, SIGNAL(mailboxListed(QString, QString)),
             this, SIGNAL(mailboxListed(QString, QString)));
     connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
@@ -2311,6 +2316,21 @@ bool ImapProtocol::inUse() const
     return (_transport && _transport->inUse());
 }
 
+bool ImapProtocol::delimiterUnknown() const
+{
+    return !flatHierarchy() && delimiter().isNull();
+}
+
+bool ImapProtocol::flatHierarchy() const
+{
+    return _flatHierarchy;
+}
+
+void ImapProtocol::setFlatHierarchy(bool flat)
+{
+    _flatHierarchy = flat;
+}
+
 QChar ImapProtocol::delimiter() const
 {
     return _delimiter;
@@ -2382,7 +2402,7 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
 
     if (!path.isEmpty()) {
         // If we don't have the delimiter for this account, we need to discover it
-        if (delimiter().isNull()) {
+        if (delimiterUnknown()) {
             sendDiscoverDelimiter();
         }
     }
@@ -2431,7 +2451,7 @@ void ImapProtocol::sendCreate(const QMailFolderId &parentFolderId, const QString
     QString mailboxPath;
     if(parentFolderId.isValid())
     {
-        if(delimiter().isNull()) {
+        if (delimiterUnknown()) {
             sendDiscoverDelimiter();
         }
     }
@@ -2447,7 +2467,7 @@ void ImapProtocol::sendDelete(const QMailFolder &mailbox)
 
 void ImapProtocol::sendRename(const QMailFolder &mailbox, const QString &newName)
 {
-    if(delimiter().isNull()) {
+    if (delimiterUnknown()) {
         sendDiscoverDelimiter();
     }
     _fsm->renameState.setNewMailboxName(mailbox, newName);

@@ -725,7 +725,12 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QMailAccount account(_config.id());
 
     QString mailboxPath;
-    QStringList list = path.split(_protocol.delimiter());
+
+    if(_protocol.delimiterUnknown())
+        qWarning() << "Delimiter has not yet been discovered, which is essential to know the structure of a mailbox";
+
+    QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
+
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
         if (!mailboxPath.isEmpty())
             mailboxPath.append(_protocol.delimiter());

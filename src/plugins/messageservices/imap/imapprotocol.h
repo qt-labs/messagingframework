@@ -147,7 +147,14 @@ public:
     bool encrypted() const;
     bool inUse() const;
     bool loggingOut() const;
+
+    bool delimiterUnknown() const;
+
+    bool flatHierarchy() const;
+    void setFlatHierarchy(bool flat);
+
     QChar delimiter() const;
+    void setDelimiter(QChar delimiter);
 
     QString lastError() const { return _lastError; };
 
@@ -227,7 +234,6 @@ signals:
     void noModSeq();
 
 protected slots:
-    void setDelimiter(QChar delimiter);
     void connected(QMailTransport::EncryptType encryptType);
     void errorHandling(int status, QString msg);
     void incomingData();
@@ -283,6 +289,7 @@ private:
     QString _unprocessedInput;
 
     QTimer _incomingDataTimer;
+    bool _flatHierarchy;
     QChar _delimiter;
 
     static const int MAX_LINES = 30;
