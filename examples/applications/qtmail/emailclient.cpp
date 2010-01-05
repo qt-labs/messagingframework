@@ -1863,8 +1863,8 @@ void EmailClient::folderSelected(QMailMessageSet *item)
             } else {
                 //Can still create a root folder
                 selectedFolderId = QMailFolderId(0);
-                //TODO: check if account supports creating folders
-                showCreate = true;
+                //check if account supports creating folders
+                showCreate = (account.status() & QMailAccount::CanCreateFolders);
             }
         }
 

@@ -282,6 +282,7 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setTrashFolder(imapTrashDir->text());
     imapConfig.setJunkFolder(imapJunkDir->text());
 
+    account->setStatus(QMailAccount::CanCreateFolders, true);
     // Do we have a configuration we can use?
     if (!imapConfig.mailServer().isEmpty() && !imapConfig.mailUserName().isEmpty())
         account->setStatus(QMailAccount::CanRetrieve, true);
