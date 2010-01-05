@@ -164,45 +164,55 @@ protected:
 class ImapCreateFolderStrategy : public ImapStrategy
 {
 public:
-    ImapCreateFolderStrategy() { }
+    ImapCreateFolderStrategy(): _inProgress(0) { }
     virtual ~ImapCreateFolderStrategy() {}
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void createFolder(const QMailFolderId &folder, const QString &name);
     virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
 protected:
-    virtual void handleCreateFolder(ImapStrategyContextBase *context);
+    virtual void handleCreate(ImapStrategyContextBase *context);
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void process(ImapStrategyContextBase *context);
+
     QList<QPair<QMailFolderId, QString> > _folders;
+    int _inProgress;
 };
 
 
 class ImapDeleteFolderStrategy : public ImapStrategy
 {
 public:
-    ImapDeleteFolderStrategy() { }
+    ImapDeleteFolderStrategy() : _inProgress(0) { }
     virtual ~ImapDeleteFolderStrategy() {}
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void deleteFolder(const QMailFolderId &folderId);
     virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
 protected:
-    virtual void handleDeleteFolder(ImapStrategyContextBase *context);
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleDelete(ImapStrategyContextBase *context);
+    virtual void process(ImapStrategyContextBase *context);
     virtual void deleteFolder(const QMailFolderId &folderId, ImapStrategyContextBase *context);
     QList<QMailFolderId> _folderIds;
+    int _inProgress;
 };
 
 class ImapRenameFolderStrategy : public ImapStrategy
 {
 public:
-    ImapRenameFolderStrategy() { }
+    ImapRenameFolderStrategy() : _inProgress(0) { }
     virtual ~ImapRenameFolderStrategy() {}
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void renameFolder(const QMailFolderId &folderId, const QString &newName);
     virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &name);
 protected:
-    virtual void handleRenameFolder(ImapStrategyContextBase *context);
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleRename(ImapStrategyContextBase *context);
+    virtual void process(ImapStrategyContextBase *context);
     QList<QPair<QMailFolderId, QString> > _folderNewNames;
+    int _inProgress;
 };
 
 class ImapPrepareMessagesStrategy : public ImapStrategy

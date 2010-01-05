@@ -439,6 +439,172 @@ void ImapStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFo
 
 void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
 {
+    Q_UNUSED(context)
+    Q_UNUSED(folder)
+    Q_UNUSED(newPath)
+}
+
+/* A strategy to create a folder */
+void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
+    case IMAP_Create:
+        handleCreate(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapCreateFolderStrategy::createFolder(const QMailFolderId &folderParent, const QString &name)
+{
+    _folders.append(qMakePair(folderParent, name));
+}
+
+void ImapCreateFolderStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapCreateFolderStrategy::handleCreate(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapCreateFolderStrategy::process(ImapStrategyContextBase *context)
+{
+    while(_folders.count() > 0) {
+        QPair<QMailFolderId, QString> folder = _folders.takeFirst();
+        context->protocol().sendCreate(folder.first, folder.second);
+        _inProgress++;
+    }
+}
+
+void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
+{
+    if(--_inProgress == 0)
+        context->operationCompleted();
+
+    Q_UNUSED(folder)
+}
+
+
+/* A strategy to delete a folder */
+void ImapDeleteFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
+    case IMAP_Delete:
+        handleDelete(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId& folderId)
+{
+    _folderIds.append(folderId);
+}
+
+void ImapDeleteFolderStrategy::handleLogin(ImapStrategyContextBase* context)
+{
+    process(context);
+}
+
+void ImapDeleteFolderStrategy::handleDelete(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapDeleteFolderStrategy::process(ImapStrategyContextBase *context)
+{
+    while(_folderIds.count() > 0) {
+        deleteFolder(_folderIds.takeFirst(), context);
+    }
+}
+
+void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapStrategyContextBase *context)
+{
+    QMailFolderKey childKey(QMailFolderKey::parentFolderId(folderId));
+    QMailFolderIdList childrenList = QMailStore::instance()->queryFolders(childKey);
+
+    foreach(QMailFolderId fid, childrenList) {
+        deleteFolder(fid, context);
+    }
+
+    //now the parent is safe to delete
+    context->protocol().sendDelete(QMailFolder(folderId));
+    _inProgress++;
+}
+
+void ImapDeleteFolderStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
+{
+    if(!QMailStore::instance()->removeFolder(folder.id()))
+        qWarning() << "Unable to remove folder id: " << folder.id();
+
+    if(--_inProgress == 0)
+       context->operationCompleted();
+}
+
+/* A strategy to rename a folder */
+void ImapRenameFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if(op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch(cmd)
+    {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
+    case IMAP_Rename:
+        handleRename(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapRenameFolderStrategy::renameFolder(const QMailFolderId &folderId, const QString &newName)
+{
+    _folderNewNames.append(qMakePair(folderId, newName));
+}
+
+void ImapRenameFolderStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapRenameFolderStrategy::handleRename(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapRenameFolderStrategy::process(ImapStrategyContextBase *context)
+{
+    while(_folderNewNames.count() > 0) {
+        const QPair<QMailFolderId, QString> &folderId_name =  _folderNewNames.takeFirst();
+        context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
+        _inProgress++;
+    }
+}
+
+void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
+{
     QString name;
 
     if(!context->protocol().delimiter().isNull()) {
@@ -471,141 +637,9 @@ void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFo
 
     if(!QMailStore::instance()->updateFolder(&newFolder))
         qWarning() << "Unable to locally rename folder";
-
+    if(--_inProgress == 0)
+        context->operationCompleted();
 }
-
-/* A strategy to create a folder */
-void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
-{
-    if(op != OpOk)
-        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
-
-    switch(cmd)
-    {
-    case IMAP_Login:
-    case IMAP_Create:
-        handleCreateFolder(context);
-        break;
-    default:
-        qWarning() << "Unhandled IMAP response:" << cmd;
-    }
-}
-
-void ImapCreateFolderStrategy::createFolder(const QMailFolderId &folderParent, const QString &name)
-{
-    _folders.append(qMakePair(folderParent, name));
-}
-
-void ImapCreateFolderStrategy::handleCreateFolder(ImapStrategyContextBase *context)
-{
-    while(_folders.count() > 0) {
-        QPair<QMailFolderId, QString> folder = _folders.takeFirst();
-        context->protocol().sendCreate(folder.first, folder.second);
-    }
-
-    context->operationCompleted();
-}
-
-
-void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
-{
-    QMailFolder mailFolder;
-    mailFolder.setPath(folder);
-    ImapStrategy::mailboxListed(context, mailFolder, "");
-}
-
-
-
-/* A strategy to delete a folder */
-void ImapDeleteFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
-{
-    if(op != OpOk)
-        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
-
-    switch(cmd)
-    {
-    case IMAP_Login:
-    case IMAP_Delete:
-        handleDeleteFolder(context);
-        break;
-    default:
-        qWarning() << "Unhandled IMAP response:" << cmd;
-    }
-}
-
-void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId& folderId)
-{
-    _folderIds.append(folderId);
-}
-
-void ImapDeleteFolderStrategy::handleDeleteFolder(ImapStrategyContextBase *context)
-{
-    while(_folderIds.count() > 0) {
-        deleteFolder(_folderIds.takeFirst(), context);
-    }
-
-    context->operationCompleted();
-}
-
-void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapStrategyContextBase *context)
-{
-    QMailFolderKey childKey(QMailFolderKey::parentFolderId(folderId));
-    QMailFolderIdList childrenList = QMailStore::instance()->queryFolders(childKey);
-
-    foreach(QMailFolderId fid, childrenList) {
-        deleteFolder(fid, context);
-    }
-
-    //now the parent is safe to delete
-    context->protocol().sendDelete(QMailFolder(folderId));
-}
-
-void ImapDeleteFolderStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
-{
-    if(!QMailStore::instance()->removeFolder(folder.id()))
-        qWarning() << "Unable to remove folder id: " << folder.id();
-
-    Q_UNUSED(context)
-}
-
-/* A strategy to rename a folder */
-void ImapRenameFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
-{
-    if(op != OpOk)
-        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
-
-    switch(cmd)
-    {
-    case IMAP_Login:
-    case IMAP_Rename:
-        handleRenameFolder(context);
-        break;
-    default:
-        qWarning() << "Unhandled IMAP response:" << cmd;
-    }
-}
-
-void ImapRenameFolderStrategy::renameFolder(const QMailFolderId &folderId, const QString &newName)
-{
-    _folderNewNames.append(qMakePair(folderId, newName));
-}
-
-void ImapRenameFolderStrategy::handleRenameFolder(ImapStrategyContextBase *context)
-{
-    while(_folderNewNames.count() > 0) {
-        const QPair<QMailFolderId, QString> &folderId_name =  _folderNewNames.takeFirst();
-
-        context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
-    }
-
-    context->operationCompleted();
-}
-
-void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
-{
-    ImapStrategy::folderRenamed(context, folder, newPath);
-}
-
 
 /* A strategy to traverse a list of messages, preparing each one for transmission
    by generating a URLAUTH token.

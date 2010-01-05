@@ -639,8 +639,6 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
 
     //remove remote copy
     _service->_client.strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
-    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
-
     return setStrategy(&_service->_client.strategyContext()->deleteFolderStrategy);
 }
 

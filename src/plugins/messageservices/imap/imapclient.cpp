@@ -866,6 +866,7 @@ void ImapClient::messageFetched(QMailMessage& mail)
 void ImapClient::folderCreated(const QString &folder)
 {
     mailboxListed(QString(), folder);
+    _strategyContext->folderCreated(folder);
 }
 
 void ImapClient::folderDeleted(const QMailFolder &folder)
@@ -875,7 +876,6 @@ void ImapClient::folderDeleted(const QMailFolder &folder)
 
 void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath)
 {
-
     _strategyContext->folderRenamed(folder, newPath);
 }
 
