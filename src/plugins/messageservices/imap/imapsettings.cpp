@@ -221,7 +221,6 @@ void PushFolderList::selectFolder()
         QMailFolder folder(model.folderIdFromIndex(model.indexFromItem(selectFolderDialog.selectedItem())));
 
         int index(_dirButtons.indexOf(static_cast<QToolButton*>(sender())));
-        qWarning() << "dirButton index" << index;
         if (index != -1) {
             _dirTexts.at(index)->setText(folder.path());
             _clearButtons.at(index)->setEnabled(true);
@@ -232,7 +231,6 @@ void PushFolderList::selectFolder()
         }
         
     }
-    // if it's the last item then remove then add a new row to the gridlayout
 }
 
 QStringList PushFolderList::folderNames()
