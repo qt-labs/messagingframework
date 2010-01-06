@@ -127,6 +127,11 @@ QString ImapConfiguration::junkFolder() const
     return value("junkFolder");
 }
 
+QStringList ImapConfiguration::pushFolders() const
+{
+    return value("pushFolders").split(QChar('\x0A'), QString::SkipEmptyParts);
+}
+
 int ImapConfiguration::checkInterval() const
 {
     return value("checkInterval", "-1").toInt();
@@ -220,6 +225,11 @@ void ImapConfigurationEditor::setTrashFolder(const QString &s)
 void ImapConfigurationEditor::setJunkFolder(const QString &s)
 {
     setValue("junkFolder", s);
+}
+
+void ImapConfigurationEditor::setPushFolders(const QStringList &s)
+{
+    setValue("pushFolders", QString("") + s.join(QChar('\x0A'))); // can't setValue to null string
 }
 
 void ImapConfigurationEditor::setCheckInterval(int i)

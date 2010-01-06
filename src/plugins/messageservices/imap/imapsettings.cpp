@@ -86,10 +86,170 @@ QValidator::State PortValidator::validate(QString &str, int &) const
 
 }
 
+class PushFolderList : public QObject {
+    Q_OBJECT
+    
+public:
+    PushFolderList(QWidget *parent, QGridLayout *parentLayout);
+    void setAccountId(const QMailAccountId &id);
+    void addRow(const QString &s);
+    void populate(const QStringList &pushFolderNames);
+    QStringList folderNames();
+                                             
+public slots:
+    void setHasFolders(bool hasFolders);
+    void setPushEnabled(int pushEnabled);
+    void selectFolder();
+
+private:
+    QWidget *_parent;
+    QGridLayout *_parentLayout;
+    QMailAccountId _accountId;
+    bool _hasFolders;
+    bool _pushEnabled;
+    int _startRow;
+    int _items;
+    QList<QWidget*> _widgets;
+    QList<QHBoxLayout*> _layouts;
+    QList<QLineEdit*> _dirTexts;
+    QList<QToolButton*> _clearButtons;
+    QList<QToolButton*> _dirButtons;
+};
+
+PushFolderList::PushFolderList(QWidget *parent, QGridLayout *parentLayout)
+    :QObject(parent),
+     _parent(parent),
+     _parentLayout(parentLayout),
+     _hasFolders(false),
+     _pushEnabled(false),
+     _startRow(parentLayout->rowCount()),
+     _items(0)
+{
+}
+
+void PushFolderList::setAccountId(const QMailAccountId &id)
+{
+    _accountId = id;
+}
+
+void PushFolderList::setHasFolders(bool hasFolders)
+{
+    _hasFolders = hasFolders;
+    foreach(QWidget *widget, _widgets)
+        widget->setEnabled(_hasFolders && _pushEnabled);
+}
+
+void PushFolderList::setPushEnabled(int pushEnabled)
+{
+    _pushEnabled = (pushEnabled != Qt::Unchecked);
+    foreach(QWidget *widget, _widgets)
+        widget->setEnabled(_hasFolders && _pushEnabled);
+}
+
+void PushFolderList::addRow(const QString &s)
+{
+    QIcon clearIcon(":icon/clear_left");
+    QLabel *pushLabel = new QLabel(tr("Push folder"), _parent);
+    QHBoxLayout *layout = new QHBoxLayout();
+    QLineEdit *pushDir = new QLineEdit(_parent);
+    QToolButton *clearPushEmailButton = new QToolButton(_parent);
+    QToolButton *choosePushDirButton = new QToolButton(_parent);
+    pushDir->setReadOnly(true);
+    pushDir->setFocusPolicy(Qt::NoFocus);
+    pushDir->setText(s);
+    clearPushEmailButton->setIcon(clearIcon);
+    clearPushEmailButton->setEnabled(!s.isEmpty());
+    choosePushDirButton->setText(tr("..."));
+    pushDir->setEnabled(_hasFolders && _pushEnabled);
+    clearPushEmailButton->setEnabled(_hasFolders && _pushEnabled);
+    choosePushDirButton->setEnabled(_hasFolders && _pushEnabled);
+    connect(clearPushEmailButton, SIGNAL(clicked()), pushDir, SLOT(clear()));
+    connect(choosePushDirButton, SIGNAL(clicked()), this, SLOT(selectFolder()));
+    _dirTexts.append(pushDir);
+    _clearButtons.append(clearPushEmailButton);
+    _dirButtons.append(choosePushDirButton);
+    _layouts.append(layout);
+    _widgets.append(pushLabel);
+    _widgets.append(pushDir);
+    _widgets.append(clearPushEmailButton);
+    _widgets.append(choosePushDirButton);
+    layout->addWidget(pushDir);
+    layout->addWidget(clearPushEmailButton);
+    layout->addWidget(choosePushDirButton);
+    _parentLayout->addWidget(pushLabel, _startRow + _items, 0);
+    _parentLayout->addLayout(layout, _startRow + _items, 1);
+    ++_items;
+}
+
+void PushFolderList::populate(const QStringList &pushFolderNames)
+{
+    _items = 0;
+    foreach(QWidget *widget, _widgets) {
+        _parentLayout->removeWidget(widget);
+        delete widget;
+    }
+    foreach(QHBoxLayout *layout, _layouts) {
+        _parentLayout->removeItem(layout);
+        delete layout;
+    }
+    _widgets.clear();
+    _layouts.clear();
+    _dirTexts.clear();
+    _clearButtons.clear();
+    _dirButtons.clear();
+    QStringList folderNames(pushFolderNames);
+    folderNames.append("");
+    foreach(const QString &s, folderNames) {
+        addRow(s);
+    }
+}
+
+void PushFolderList::selectFolder()
+{
+    AccountFolderModel model(_accountId, _parent);
+    model.init();
+
+    // The account itself is not a selectable folder
+    QList<QMailMessageSet*> invalidItems;
+    invalidItems.append(model.itemFromIndex(model.indexFromAccountId(_accountId)));
+
+    SelectFolderDialog selectFolderDialog(&model);
+    selectFolderDialog.setInvalidSelections(invalidItems);
+    selectFolderDialog.exec();
+
+    if (selectFolderDialog.result() == QDialog::Accepted) {
+        QMailFolder folder(model.folderIdFromIndex(model.indexFromItem(selectFolderDialog.selectedItem())));
+
+        int index(_dirButtons.indexOf(static_cast<QToolButton*>(sender())));
+        qWarning() << "dirButton index" << index;
+        if (index != -1) {
+            _dirTexts.at(index)->setText(folder.path());
+            _clearButtons.at(index)->setEnabled(true);
+
+            if (index + 1 == _dirTexts.count()) {
+                addRow("");
+            }
+        }
+        
+    }
+    // if it's the last item then remove then add a new row to the gridlayout
+}
+
+QStringList PushFolderList::folderNames()
+{
+    QStringList result;
+    foreach(QLineEdit* edit, _dirTexts) {
+        if (!edit->text().isEmpty())
+            result.append(edit->text());
+    }
+    result.removeDuplicates();
+    return result;
+}
 
 ImapSettings::ImapSettings()
     : QMailMessageServiceEditor(),
-      warningEmitted(false)
+      warningEmitted(false),
+      pushFolderList(0)
 {
     setupUi(this);
     setLayoutDirection(qApp->layoutDirection());
@@ -132,6 +292,14 @@ ImapSettings::ImapSettings()
 
     clearJunkButton->setIcon(clearIcon);
     connect(clearJunkButton, SIGNAL(clicked()), imapJunkDir, SLOT(clear()));
+
+    QGridLayout *gridLayout = findChild<QGridLayout *>("gridlayout1");
+    if (gridLayout) {
+        pushFolderList = new PushFolderList(this, gridLayout);
+        connect(pushCheckBox, SIGNAL(stateChanged(int)), pushFolderList, SLOT(setPushEnabled(int)));
+    } else {
+        qWarning() << "Gridlayout not found";
+    }
 }
 
 void ImapSettings::intervalCheckChanged(int enabled)
@@ -175,9 +343,11 @@ void ImapSettings::selectFolder()
 void ImapSettings::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config)
 {
     accountId = account.id();
+    QStringList pushFolders;
     bool hasFolders(false);
     if (accountId.isValid()) {
         hasFolders = (QMailStore::instance()->countFolders(QMailFolderKey::parentAccountId(accountId)) > 0);
+        pushFolderList->setAccountId(accountId);
     }
 
     // Only allow the base folder to be specified before retrieval occurs
@@ -201,6 +371,8 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
     junkButton->setEnabled(hasFolders);
     imapJunkDir->setEnabled(hasFolders);
 
+    pushCheckBox->setEnabled(hasFolders);
+    
     if (!config.services().contains(serviceKey)) {
         // New account
         mailUserInput->setText("");
@@ -242,6 +414,13 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         clearTrashButton->setEnabled(!imapTrashDir->text().isEmpty());
         imapJunkDir->setText(imapConfig.junkFolder());
         clearJunkButton->setEnabled(!imapJunkDir->text().isEmpty());
+        pushFolders = imapConfig.pushFolders();
+    }
+        
+    if (pushFolderList) {
+        pushFolderList->setHasFolders(hasFolders);
+        pushFolderList->setPushEnabled(pushCheckBox->checkState());
+        pushFolderList->populate(pushFolders);
     }
 }
 
@@ -281,6 +460,8 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setSentFolder(imapSentDir->text());
     imapConfig.setTrashFolder(imapTrashDir->text());
     imapConfig.setJunkFolder(imapJunkDir->text());
+    if (pushFolderList)
+        imapConfig.setPushFolders(pushFolderList->folderNames());
 
     account->setStatus(QMailAccount::CanCreateFolders, true);
     // Do we have a configuration we can use?
@@ -289,4 +470,6 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
 
     return true;
 }
+
+#include "imapsettings.moc"
 
