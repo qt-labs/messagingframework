@@ -2310,7 +2310,6 @@ void ImapUpdateMessagesFlagsStrategy::clearSelection()
 {
     ImapFolderListStrategy::clearSelection();
 
-    _monitoredFoldersIds.clear();
     _selectedMessageIds.clear();
     _folderMessageUids.clear();
 }
@@ -2414,10 +2413,6 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
 
 void ImapUpdateMessagesFlagsStrategy::folderListCompleted(ImapStrategyContextBase *context)
 {
-    // Only allow monitoring of one folder other than the inbox
-    if (_monitoredFoldersIds.count() > 1)
-        _monitoredFoldersIds.clear();
-
     messageListCompleted(context);
 }
 
@@ -2440,10 +2435,6 @@ bool ImapUpdateMessagesFlagsStrategy::nextFolder()
 void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *context)
 {
     QMailFolderId folderId(_currentMailbox.id());
-    if ((folderId != context->client()->mailboxId("INBOX")) && 
-        !_monitoredFoldersIds.contains(folderId)) {
-        _monitoredFoldersIds << folderId;
-    }
     
     //not not try select an unselectable mailbox
     if(!_folderStatus.contains(folderId) || !_folderStatus[folderId] & NoSelect)
