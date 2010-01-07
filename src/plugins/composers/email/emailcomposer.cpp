@@ -71,6 +71,7 @@
 #include "attachmentlistwidget.h"
 #include <support/qmailnamespace.h>
 #include <QUrl>
+#include <QSyntaxHighlighter>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -386,6 +387,79 @@ void RecipientListWidget::recipientChanged()
     }
 }
 
+class Dictionary {
+public:
+    static Dictionary *instance();
+    bool contains(const QString &word) { return _words.contains(word.toLower()); }
+    bool empty() { return _words.isEmpty(); }
+
+private:
+    Dictionary();
+    static Dictionary *_sDictionary;
+    QSet<QString> _words;
+};
+
+Dictionary* Dictionary::_sDictionary = 0;
+
+Dictionary* Dictionary::instance()
+{
+    if (!_sDictionary)
+        _sDictionary = new Dictionary();
+    return _sDictionary;
+}
+
+Dictionary::Dictionary()
+{
+    //TODO Consider using Hunspell
+    QStringList dictionaryFiles;
+    dictionaryFiles << "/usr/share/dict/words" << "/usr/dict/words";
+    foreach(QString fileName, dictionaryFiles) {
+        QFileInfo info(fileName);
+        if (info.isReadable()) {
+            QFile file(fileName);
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+                continue;
+            QTextStream stream(&file);
+            QString line;
+            while (!stream.atEnd()) {
+                line = stream.readLine();
+                if (!line.isEmpty())
+                    _words.insert(line.toLower());
+            }
+            file.close();
+            return;
+        }
+    }
+}
+
+class SpellingHighlighter : public QSyntaxHighlighter
+{
+    Q_OBJECT
+    
+public:    
+    SpellingHighlighter(QTextEdit *parent) :QSyntaxHighlighter(parent) {};
+
+protected:
+    virtual void highlightBlock(const QString &text);
+};
+
+void SpellingHighlighter::highlightBlock(const QString &text)
+{
+    Dictionary *dictionary = Dictionary::instance();
+    QTextCharFormat spellingFormat;
+    spellingFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    spellingFormat.setUnderlineColor(Qt::red);
+
+    QRegExp wordExpression("\\b\\w+\\b");
+    int index = text.indexOf(wordExpression);
+    while (index >= 0) {
+        int length = wordExpression.matchedLength();
+        if (!dictionary->contains(text.mid(index, length)))
+            setFormat(index, length, spellingFormat);
+        index = text.indexOf(wordExpression, index + length);
+    }
+}
+
 class BodyTextEdit : public QTextEdit
 {
     Q_OBJECT
@@ -562,6 +636,7 @@ void EmailComposerInterface::init()
 
     //body edit
     m_bodyEdit = new BodyTextEdit(this,m_composerWidget);
+    new SpellingHighlighter(m_bodyEdit);
     m_bodyEdit->setWordWrapMode(QTextOption::WordWrap);
     connect(m_bodyEdit, SIGNAL(textChanged()), this, SIGNAL(changed()) );
     connect(m_bodyEdit->document(), SIGNAL(contentsChanged()), this, SLOT(updateLabel()));
