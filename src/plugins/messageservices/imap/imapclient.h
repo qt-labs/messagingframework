@@ -89,8 +89,7 @@ public:
     QMailMessageKey trashKey(const QMailFolderId &folderId) const;
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
-    void idling();
-    bool idlesConnected();
+    void idling(const QMailFolderId &id);
     QMailFolderIdList configurationIdleFolderIds();
     void monitor(const QMailFolderIdList &mailboxIds);
 
@@ -98,6 +97,7 @@ signals:
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
     void updateStatus(const QString &);
+    void restartPushEmail();
 
     void progressChanged(uint, uint);
     void retrievalCompleted();
@@ -154,6 +154,7 @@ private:
 
     QMailFolder _idleFolder;
     bool _waitingForIdle;
+    QMailFolderIdList _waitingForIdleFolderIds;
     bool _idlesEstablished;
 
     QMailMessageClassifier _classifier;

@@ -885,6 +885,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+    connect(&_client, SIGNAL(restartPushEmail()), this, SLOT(initiatePushEmail()));
 
     _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
@@ -936,6 +937,17 @@ bool ImapService::cancelOperation()
     _client.closeConnection();
     _source->retrievalTerminated();
     return true;
+}
+
+void ImapService::initiatePushEmail()
+{
+    cancelOperation();
+    QMailFolderIdList ids(_client.configurationIdleFolderIds());
+    if (ids.count()) {
+        foreach(QMailFolderId id, ids) {
+            _source->queueMailCheck(id);
+        }
+    }
 }
 
 void ImapService::errorOccurred(int code, const QString &text)

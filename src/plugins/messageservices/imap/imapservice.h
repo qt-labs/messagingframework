@@ -65,6 +65,7 @@ public:
 
 public slots:
     virtual bool cancelOperation();
+    virtual void initiatePushEmail();
 
 protected slots:
     void errorOccurred(int code, const QString &text);
