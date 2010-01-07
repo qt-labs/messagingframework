@@ -834,7 +834,11 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
     _mailCheckFolderId = folderId;
 
     emit _service->availabilityChanged(false);
-    retrieveFolderList(_service->accountId(), folderId, true);
+    if (folderId.isValid()) {
+        retrievalCompleted(); // move onto retrieveMessageList stage
+    } else {
+        retrieveFolderList(_service->accountId(), folderId, true);
+    }
 }
 
 void ImapService::Source::queueFlagsChangedCheck()
@@ -885,8 +889,14 @@ ImapService::ImapService(const QMailAccountId &accountId)
     _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
     ImapConfiguration imapCfg(accountCfg);
-    if (imapCfg.pushEnabled())
-        QTimer::singleShot(0, _source, SLOT(queueMailCheckAll()));
+    if (imapCfg.pushEnabled()) {
+        QMailFolderIdList ids(_client.configurationIdleFolderIds());
+        if (ids.count()) {
+            foreach(QMailFolderId id, ids) {
+                _source->queueMailCheck(id);
+            }
+        }
+    }
     _source->setIntervalTimer(imapCfg.checkInterval());
 }
 

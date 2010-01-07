@@ -2418,8 +2418,6 @@ void ImapUpdateMessagesFlagsStrategy::folderListCompleted(ImapStrategyContextBas
     if (_monitoredFoldersIds.count() > 1)
         _monitoredFoldersIds.clear();
 
-    context->client()->monitor(_monitoredFoldersIds);
-
     messageListCompleted(context);
 }
 

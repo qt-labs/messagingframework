@@ -90,6 +90,8 @@ public:
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
     void idling();
+    bool idlesConnected();
+    QMailFolderIdList configurationIdleFolderIds();
     void monitor(const QMailFolderIdList &mailboxIds);
 
 signals:
@@ -150,9 +152,9 @@ private:
     ImapProtocol _protocol;
     QTimer _inactiveTimer;
 
-    IdleProtocol *_idleProtocol;
     QMailFolder _idleFolder;
     bool _waitingForIdle;
+    bool _idlesEstablished;
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;

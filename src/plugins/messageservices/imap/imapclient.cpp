@@ -182,16 +182,16 @@ public:
     IdleProtocol(ImapClient *client, const QMailFolder &folder);
     virtual ~IdleProtocol() {}
 
-    virtual void handleIdling() {}
+    virtual void handleIdling() { _client->idling(); }
     virtual void handleInitialIdling();
     virtual bool open(const ImapConfiguration& config);
     int idleRetryDelay() { return _idleRetryDelay; }
-    
+
 signals:
     void idleNewMailNotification(QMailFolderId);
     void idleFlagsChangedNotification(QMailFolderId);
     void openRequest(IdleProtocol*);
-    
+
 protected slots:
     virtual void idleContinuation(ImapCommand, const QString &);
     virtual void idleCommandTransition(ImapCommand, OperationStatus);
@@ -202,7 +202,7 @@ protected slots:
 protected:
     ImapClient *_client;
     QMailFolder _folder;
-    
+
 private:
     QTimer _idleTimer; // Send a DONE command every 29 minutes
     QTimer _idleRecoveryTimer; // Check command hasn't hung
@@ -214,7 +214,7 @@ private:
 IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder)
     :_idleRetryDelay(InitialIdleRetryDelay),
      _initialIdling(true)
-{ 
+{
     _client = client;
     _folder = folder;
     connect(this, SIGNAL(continuationRequired(ImapCommand, QString)),
@@ -378,41 +378,14 @@ void IdleProtocol::idleErrorRecovery()
     emit openRequest(this);
 }
 
-class PrimaryIdleProtocol : public IdleProtocol {
-    Q_OBJECT
-
-public:
-    PrimaryIdleProtocol(ImapClient *client, const QMailFolder &folder) : IdleProtocol(client, folder) {};
-    virtual ~PrimaryIdleProtocol() {};
-
-    virtual void handleIdling() { _client->idling(); }
-    virtual void handleInitialIdling() {}
-
-private slots:
-    virtual void idleContinuation(ImapCommand, const QString &);
-};
-
-void PrimaryIdleProtocol::idleContinuation(ImapCommand command, const QString &type)
-{
-    if (!(_folder.id().isValid())
-        &&_client->mailboxId("INBOX").isValid()) {
-        _folder = QMailFolder(_client->mailboxId("INBOX"));
-    }
-    IdleProtocol::idleContinuation(command, type)       ;
-}
-
 ImapClient::ImapClient(QObject* parent)
     : QObject(parent),
-      _waitingForIdle(false)
+      _waitingForIdle(false),
+      _idlesEstablished(false)
 {
     static int count(0);
     ++count;
-    QMailFolder idleFolder("INBOX"); // Folders may not have been listed on server
-    if (mailboxId("INBOX").isValid()) {
-        idleFolder = QMailFolder(mailboxId("INBOX"));
-    }
-    _idleProtocol = new PrimaryIdleProtocol(this, idleFolder);
-    _idleProtocol->setObjectName(QString("I:%1").arg(count));
+
     _protocol.setObjectName(QString("%1").arg(count));
     _strategyContext = new ImapStrategyContext(this);
     _strategyContext->setStrategy(&_strategyContext->synchronizeAccountStrategy);
@@ -452,25 +425,12 @@ ImapClient::ImapClient(QObject* parent)
     _inactiveTimer.setSingleShot(true);
     connect(&_inactiveTimer, SIGNAL(timeout()),
             this, SLOT(connectionInactive()));
-
-    connect(_idleProtocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
-            this, SIGNAL(idleNewMailNotification(QMailFolderId)));
-    connect(_idleProtocol, SIGNAL(idleFlagsChangedNotification(QMailFolderId)),
-            this, SIGNAL(idleFlagsChangedNotification(QMailFolderId)));
-    connect(_idleProtocol, SIGNAL(updateStatus(QString)),
-            this, SLOT(transportStatus(QString)));
-    connect(_idleProtocol, SIGNAL(openRequest(IdleProtocol *)),
-            this, SLOT(idleOpenRequested(IdleProtocol *)));
 }
 
 ImapClient::~ImapClient()
 {
     if (_protocol.inUse()) {
         _protocol.close();
-    }
-    if (_idleProtocol->inUse()) {
-        _idleProtocol->close();
-        delete _idleProtocol;
     }
     foreach(QMailFolderId id, _monitored.keys()) {
         IdleProtocol *protocol = _monitored.take(id);
@@ -596,17 +556,23 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
 
             // We are now connected
-            ImapConfiguration imapCfg(_config);
+            ImapConfiguration imapCfg(_config);            
+            QMailFolderIdList idleFolderIds(configurationIdleFolderIds());
 
-            if (!_idleProtocol->connected()
+            if (!_idlesEstablished
                 && _protocol.supportsCapability("IDLE")
-                && imapCfg.pushEnabled()) {
+                && !idleFolderIds.isEmpty()) {
                 _waitingForIdle = true;
                 emit updateStatus( tr("Logging in idle connection" ) );
-                _idleProtocol->open(imapCfg);
+                monitor(idleFolderIds);
             } else {
-                if (!imapCfg.pushEnabled() && _idleProtocol->connected())
-                    _idleProtocol->close();
+                if (!imapCfg.pushEnabled()) {
+                    foreach(QMailFolderId id, _monitored.keys()) {
+                        IdleProtocol *protocol = _monitored.take(id);
+                        protocol->close();
+                        delete protocol;
+                    }
+                }
                 emit updateStatus( tr("Logging in" ) );
                 _protocol.sendLogin(_config);
             }
@@ -615,9 +581,12 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         
         case IMAP_Idle_Continuation:
         {
-            _waitingForIdle = false;
-            emit updateStatus( tr("Logging in" ) );
-            _protocol.sendLogin(_config);
+            if (idlesConnected()) {
+                _waitingForIdle = false;
+                _idlesEstablished = true;
+                emit updateStatus( tr("Logging in" ) );
+                _protocol.sendLogin(_config);
+            }
             break;
         }
         
@@ -1394,17 +1363,41 @@ void ImapClient::idling()
         commandCompleted(IMAP_Idle_Continuation, OpOk);
 }
 
+bool ImapClient::idlesConnected()
+{
+    foreach(QMailFolderId id, _monitored.keys()) {
+        if (!_monitored[id]->connected()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+QMailFolderIdList ImapClient::configurationIdleFolderIds()
+{
+    ImapConfiguration imapCfg(_config);            
+    QMailFolderIdList folderIds;
+    if (!imapCfg.pushEnabled())
+        return folderIds;
+    foreach(QString folderName, imapCfg.pushFolders()) {
+        QMailFolderId idleFolderId(mailboxId(folderName));
+        if (idleFolderId.isValid()) {
+            folderIds.append(idleFolderId);
+        }
+    }
+    return folderIds;
+}
+
 void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 {
     static int count(0);
-    ++count;
     
     ImapConfiguration imapCfg(_config);
     if (!_protocol.supportsCapability("IDLE")
         || !imapCfg.pushEnabled()) {
         return;
     }
-                
+    
     foreach(QMailFolderId id, _monitored.keys()) {
         if (!mailboxIds.contains(id)) {
             IdleProtocol *protocol = _monitored.take(id);
@@ -1415,8 +1408,9 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
     
     foreach(QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
+            ++count;
             IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id));
-            protocol->setObjectName(QString("J:%1").arg(count));
+            protocol->setObjectName(QString("I:%1").arg(count));
             _monitored.insert(id, protocol);
             connect(protocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
                     this, SIGNAL(idleNewMailNotification(QMailFolderId)));
@@ -1429,32 +1423,28 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
     }
 }
 
-void ImapClient::idleOpenRequested(IdleProtocol *protocol)
+void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
 {
-    if (protocol == _idleProtocol) {
-        if (_protocol.inUse()) { // Setting up new idle connection may be in progress
-            const int oneHour = 60*60;
-            if (protocol->idleRetryDelay() == oneHour) {
-                operationFailed(QMailServiceAction::Status::ErrTimeout, tr("No response"));
-                return;
-            }
+    if (_protocol.inUse()) { // Setting up new idle connection may be in progress
+        const int oneHour = 60*60;
+        if (idleProtocol->idleRetryDelay() == oneHour) {
+            operationFailed(QMailServiceAction::Status::ErrTimeout, tr("No response"));
+        } else {
             qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
-                "busy. Retrying to establish IDLE state in" << protocol->idleRetryDelay()/2 << "seconds.";
+                "busy. Retrying to establish IDLE state in" << idleProtocol->idleRetryDelay()/2 << "seconds.";
             return;
         }
-        _protocol.close();
-        _idleProtocol->close();
-        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
-        newConnection();
-    } else {
-        ImapConfiguration imapCfg(_config);
-        if (!_protocol.supportsCapability("IDLE")
-            || !imapCfg.pushEnabled()) {
-            return;
-        }
-        protocol->close();
-        protocol->open(imapCfg);
     }
+    _protocol.close();
+    foreach(QMailFolderId id, _monitored.keys()) {
+        IdleProtocol *protocol = _monitored.take(id);
+        if (protocol->inUse())
+            protocol->close();
+        delete protocol;
+    }
+    _idlesEstablished = false;
+    qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
+    newConnection(); // Possibly should emit a signal and have the imapservice retrieveMessageList for all push folders
 }
 
 #include "imapclient.moc"
