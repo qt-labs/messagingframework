@@ -1694,12 +1694,12 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
 
 bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &data)
 {
-    QMailAccountIdList accountIds;
+    QSet<QMailAccountId> accountIds;
     QMailMessageKey filter;
     QString bodyText;
     QMailMessageSortKey sort;
 
-    deserialize(data, filter, bodyText, sort);
+    deserialize(data, accountIds, filter, bodyText, sort);
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
