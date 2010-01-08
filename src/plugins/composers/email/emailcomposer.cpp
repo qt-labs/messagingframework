@@ -445,6 +445,9 @@ protected:
 
 void SpellingHighlighter::highlightBlock(const QString &text)
 {
+    if(text.startsWith(EmailComposerInterface::quotePrefix()))
+        return; //don't find errors in quoted text
+
     Dictionary *dictionary = Dictionary::instance();
     QTextCharFormat spellingFormat;
     spellingFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
@@ -1103,12 +1106,12 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
     } else {
         QDateTime dateTime = source.date().toLocalTime();
         bodyText = "\nOn " + dateTime.toString(Qt::ISODate) + ", ";
-        bodyText += source.from().name() + " wrote:\n> ";
+        bodyText += source.from().name() + " wrote:\n" + EmailComposerInterface::quotePrefix();
 
         int pos = bodyText.length();
         bodyText += originalText;
         while ((pos = bodyText.indexOf('\n', pos)) != -1)
-            bodyText.insert(++pos, "> ");
+            bodyText.insert(++pos, EmailComposerInterface::quotePrefix());
 
         bodyText.append("\n");
     }
@@ -1205,6 +1208,11 @@ QList<QAction*> EmailComposerInterface::actions() const
 QString EmailComposerInterface::status() const
 {
     return m_subjectEdit->text();
+}
+
+QString EmailComposerInterface::quotePrefix()
+{
+    return "> ";
 }
 
 Q_EXPORT_PLUGIN( EmailComposerInterface)

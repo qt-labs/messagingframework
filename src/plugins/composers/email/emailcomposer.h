@@ -85,6 +85,7 @@ public:
 
     QList<QAction*> actions() const;
     QString status() const;
+    static QString quotePrefix();
 
 public slots:
     void clear();
