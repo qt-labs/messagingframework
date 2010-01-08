@@ -160,6 +160,7 @@ void PushFolderList::addRow(const QString &s)
     clearPushEmailButton->setIcon(clearIcon);
     clearPushEmailButton->setEnabled(!s.isEmpty());
     choosePushDirButton->setText(tr("..."));
+    pushLabel->setEnabled(_hasFolders && _pushEnabled);
     pushDir->setEnabled(_hasFolders && _pushEnabled);
     clearPushEmailButton->setEnabled(_hasFolders && _pushEnabled);
     choosePushDirButton->setEnabled(_hasFolders && _pushEnabled);
@@ -384,6 +385,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         pushCheckBox->setChecked(false);
         intervalCheckBox->setChecked(false);
         roamingCheckBox->setChecked(false);
+        pushFolders << "INBOX";
     } else {
         ImapConfiguration imapConfig(config);
 
