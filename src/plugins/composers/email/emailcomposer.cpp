@@ -72,6 +72,7 @@
 #include <support/qmailnamespace.h>
 #include <QUrl>
 #include <QSyntaxHighlighter>
+#include <QCompleter>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -79,6 +80,29 @@ static const QString placeholder("(no subject)");
 enum RecipientType {To, Cc, Bcc };
 typedef QPair<RecipientType,QString> Recipient;
 typedef QList<Recipient> RecipientList;
+
+static QCompleter* sentFolderCompleter()
+{
+    const int completionAddressLimit(1000);
+    QSet<QString> addressSet;
+    QMailMessageKey::Properties props(QMailMessageKey::Recipients);
+    QMailMessageKey key(QMailMessageKey::status(QMailMessage::Outbox));
+    QMailMessageMetaDataList metaDataList(QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct));
+    foreach (const QMailMessageMetaData &metaData, metaDataList) {
+        foreach(QMailAddress address, metaData.to()) {
+            QString s(address.toString());
+            if (!s.simplified().isEmpty()) {
+                addressSet.insert(s);
+            }
+        }
+        if (addressSet.count() >= completionAddressLimit)
+            break;
+    }
+
+    QCompleter *completer(new QCompleter(addressSet.toList()));
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    return completer;
+}
 
 class RecipientWidget : public QWidget
 {
@@ -141,6 +165,8 @@ m_removeButton(new QToolButton(this))
     m_removeButton->setFocusPolicy(Qt::NoFocus);
 
     setFocusPolicy(Qt::StrongFocus);
+    
+    m_recipientEdit->setCompleter(sentFolderCompleter());
 }
 
 bool RecipientWidget::isRemoveEnabled() const
