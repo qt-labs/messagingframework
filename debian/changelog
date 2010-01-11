@@ -1,15 +1,9 @@
 qt4-messagingframework (2009W49-0maemo3) hardy; urgency=low
 
   * Rebuild against updated Qt.
-
- -- Shane Bradley <shane.bradley@nokia.com>  Mon, 11 Jan 2010 18:29:12 +1000
-
-qt4-messagingframework (2009W49-0maemo2) hardy; urgency=low
-
-  * Debug symbols now are compiled properly with -g flag.
   * Unnecessary files were removed.
 
- -- Shane Bradley <shane.bradley@nokia.com>  Tue, 15 Dec 2009 16:30:22 +1000
+ -- Shane Bradley <shane.bradley@nokia.com>  Mon, 11 Jan 2010 18:29:12 +1000
 
 qt4-messagingframework (2009W49-0maemo1) hardy; urgency=low
 

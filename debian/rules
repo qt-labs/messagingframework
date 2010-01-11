@@ -17,14 +17,14 @@ include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 include /usr/share/cdbs/1/rules/utils.mk
 
-DEB_MAKE_INVOKE := $(MAKE)
+DEB_MAKE_INVOKE := $(MAKE) QMAKE_CFLAGS="-g1 -O0"
 DEB_MAKE_INSTALL_TARGET := INSTALL_ROOT=$(DEB_DESTDIR) install
 DEB_DH_INSTALL_SOURCEDIR := debian/tmp
 #DEB_DH_INSTALL_ARGS := --list-missing
 
 common-configure-arch:: configure-stamp
 configure-stamp:
-	qmake QMF_INSTALL_ROOT=/usr CONFIG+=debug
+	qmake QMF_INSTALL_ROOT=/usr QMAKE_CXXFLAGS="-g1 -O0"
 	touch $@
 
 clean::
