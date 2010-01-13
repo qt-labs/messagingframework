@@ -1298,6 +1298,7 @@ void ImapFolderListStrategy::clearSelection()
 void ImapFolderListStrategy::selectedFoldersAppend(const QMailFolderIdList& ids) 
 {
     _mailboxIds += ids;
+    _processable += ids.count();
 }
 
 void ImapFolderListStrategy::newConnection(ImapStrategyContextBase *context)
@@ -1453,6 +1454,8 @@ void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
         context->protocol().sendList(_currentMailbox, "%");
     else
         context->protocol().sendSelect(_currentMailbox);
+
+    context->progressChanged(++_processed, _processable);
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -1839,21 +1842,11 @@ void ImapRetrieveFolderListStrategy::handleList(ImapStrategyContextBase *context
     ImapSynchronizeBaseStrategy::handleList(context);
 }
 
-void ImapRetrieveFolderListStrategy::processNextFolder(ImapStrategyContextBase *context)
+void ImapRetrieveFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
 {
-    if (nextFolder()) {
-        processFolder(context);
-        return;
-    }
-
     // We should have discovered all available mailboxes now
     _mailboxList = context->client()->mailboxIds();
 
-    folderListCompleted(context);
-}
-
-void ImapRetrieveFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
-{
     removeDeletedMailboxes(context);
 
     // We have retrieved all the folders - process any messages
