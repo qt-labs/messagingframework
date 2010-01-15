@@ -328,7 +328,7 @@ protected:
 class ImapFolderListStrategy : public ImapFetchSelectedMessagesStrategy
 {
 public:
-    ImapFolderListStrategy() {}
+    ImapFolderListStrategy() : _processed(0), _processable(0) {}
     virtual ~ImapFolderListStrategy() {}
 
     virtual void clearSelection();
@@ -366,6 +366,9 @@ protected:
 
     QMailFolderIdList _mailboxIds;
     QMap<QMailFolderId, FolderStatus> _folderStatus;
+
+    int _processed;
+    int _processable;
 };
 
 class ImapUpdateMessagesFlagsStrategy : public ImapFolderListStrategy 
@@ -459,8 +462,6 @@ protected:
     virtual void handleList(ImapStrategyContextBase *context);
 
     virtual void folderListCompleted(ImapStrategyContextBase *context);
-
-    virtual void processNextFolder(ImapStrategyContextBase *context);
 
     void removeDeletedMailboxes(ImapStrategyContextBase *context);
 
