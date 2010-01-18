@@ -499,6 +499,23 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
     }
 }
 
+void ServiceHandler::removeServiceFromActiveActions(QMailMessageService *removeService)
+{
+    if (removeService == NULL)
+        return;
+
+    QMap<quint64, ActionData>::iterator it = mActiveActions.begin();
+    QMap<quint64, ActionData>::iterator end = mActiveActions.end();
+
+    while (it != end) {
+       ActionData &data(it.value());
+       if (data.services.remove(removeService)) {
+           qMailLog(Messaging) << "Removed service from action";
+       }
+       it++;
+    }
+}
+
 void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
 {
     QMap<QPair<QMailAccountId, QString>, QMailMessageService*>::iterator it = serviceMap.begin(), end = serviceMap.end();
@@ -508,6 +525,7 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
             if (QMailMessageService *service = it.value()) {
                 qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
                 service->cancelOperation();
+                removeServiceFromActiveActions(service);
                 delete service;
             }
 

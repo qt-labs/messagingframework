@@ -157,6 +157,7 @@ private:
 
     void registerAccountServices(const QMailAccountIdList &ids);
     void deregisterAccountServices(const QMailAccountIdList &ids);
+    void removeServiceFromActiveActions(QMailMessageService *removeService);
 
     void reregisterAccountServices(const QMailAccountIdList &ids);
 
