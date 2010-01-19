@@ -1089,7 +1089,7 @@ static QList<QPair<QByteArray, uint> > dataSequence(QList<QMailMessage::MessageC
         }
 
         // We're finished with this chunk
-        chunks.takeFirst();
+        chunks.removeFirst();
     }
 
     if (!sequence.isEmpty()) {
@@ -1130,7 +1130,7 @@ QString AppendState::transmit(ImapContext *c)
             cmd.append(params.mData.first().first.mid(1));
             length = params.mData.first().second;
 
-            params.mData.takeFirst();
+            params.mData.removeFirst();
             if (params.mData.isEmpty()) {
                 // We have no literal data to send
                 cmd.append(")");

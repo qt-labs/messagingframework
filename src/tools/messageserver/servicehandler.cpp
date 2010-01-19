@@ -827,7 +827,7 @@ void ServiceHandler::dispatchRequest()
                 mServiceAction.remove(service);
         }
 
-        mRequests.takeFirst();
+        mRequests.removeFirst();
     }
 }
 
@@ -1716,29 +1716,24 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
     QMailMessageKey filter;
     QString bodyText;
     QMailMessageSortKey sort;
+    bool sentSearch = false;
+
 
     deserialize(data, accountIds, filter, bodyText, sort);
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
-            if (!source->searchMessages(filter, bodyText, sort)) {
+            if (source->searchMessages(filter, bodyText, sort)) {
+                sentSearch = true; //we've at least sent one
+            } else {
                 qMailLog(Messaging) << "Unable to service request to search messages for account:" << accountId;
-                return false;
             }
         } else {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
-            return false;
         }
     }
 
-    // Find the messages that match the filter criteria
-    QMailMessageIdList searchIds = QMailStore::instance()->queryMessages(filter, sort);
-
-    // Schedule this search
-    mSearches.append(MessageSearch(action, searchIds, bodyText));
-    QTimer::singleShot(0, this, SLOT(continueSearch()));
-
-    return true;
+    return sentSearch;
 }
 
 void ServiceHandler::cancelSearch(quint64 action)
@@ -2028,7 +2023,7 @@ void ServiceHandler::continueSearch()
                 // There is remote searching in progress - wait for completion
             } else {
                 // We're finished with this search
-                mSearches.takeFirst();
+                mSearches.removeFirst();
 
                 if (!mSearches.isEmpty())
                     QTimer::singleShot(0, this, SLOT(continueSearch()));
@@ -2053,7 +2048,7 @@ void ServiceHandler::finaliseSearch(quint64 action)
                 // This search is now finished
                 emit searchCompleted(currentSearch.action());
 
-                mSearches.takeFirst();
+                mSearches.removeFirst();
 
                 if (!mSearches.isEmpty())
                     QTimer::singleShot(0, this, SLOT(continueSearch()));
