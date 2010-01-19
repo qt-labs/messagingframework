@@ -1716,22 +1716,24 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
     QMailMessageKey filter;
     QString bodyText;
     QMailMessageSortKey sort;
+    bool sentSearch = false;
+
 
     deserialize(data, accountIds, filter, bodyText, sort);
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
-            if (!source->searchMessages(filter, bodyText, sort)) {
+            if (source->searchMessages(filter, bodyText, sort)) {
+                sentSearch = true; //we've at least sent one
+            } else {
                 qMailLog(Messaging) << "Unable to service request to search messages for account:" << accountId;
-                return false;
             }
         } else {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
-            return false;
         }
     }
 
-    return true;
+    return sentSearch;
 }
 
 void ServiceHandler::cancelSearch(quint64 action)
