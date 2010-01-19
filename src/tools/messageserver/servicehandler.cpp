@@ -1731,13 +1731,6 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
         }
     }
 
-    // Find the messages that match the filter criteria
-    QMailMessageIdList searchIds = QMailStore::instance()->queryMessages(filter, sort);
-
-    // Schedule this search
-    mSearches.append(MessageSearch(action, searchIds, bodyText));
-    QTimer::singleShot(0, this, SLOT(continueSearch()));
-
     return true;
 }
 
