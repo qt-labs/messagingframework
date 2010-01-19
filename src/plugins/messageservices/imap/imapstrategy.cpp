@@ -660,7 +660,7 @@ void ImapPrepareMessagesStrategy::newConnection(ImapStrategyContextBase *context
             QString url(ImapProtocol::url(pair.first, false, true));
             urlAuthorized(context, url);
 
-            _locations.takeFirst();
+            _locations.removeFirst();
         }
 
         context->operationCompleted();
@@ -707,7 +707,7 @@ void ImapPrepareMessagesStrategy::handleLogin(ImapStrategyContextBase *context)
 void ImapPrepareMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
 {
     // We're finished with the previous location
-    _locations.takeFirst();
+    _locations.removeFirst();
 
     nextMessageAction(context);
 }
@@ -3154,7 +3154,7 @@ void ImapExternalizeMessagesStrategy::transition(ImapStrategyContextBase *contex
 void ImapExternalizeMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *context)
 {
     // We're finished with the previous location
-    _urlIds.takeFirst();
+    _urlIds.removeFirst();
 
     resolveNextMessage(context);
 }

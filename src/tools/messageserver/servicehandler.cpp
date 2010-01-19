@@ -827,7 +827,7 @@ void ServiceHandler::dispatchRequest()
                 mServiceAction.remove(service);
         }
 
-        mRequests.takeFirst();
+        mRequests.removeFirst();
     }
 }
 
@@ -2028,7 +2028,7 @@ void ServiceHandler::continueSearch()
                 // There is remote searching in progress - wait for completion
             } else {
                 // We're finished with this search
-                mSearches.takeFirst();
+                mSearches.removeFirst();
 
                 if (!mSearches.isEmpty())
                     QTimer::singleShot(0, this, SLOT(continueSearch()));
@@ -2053,7 +2053,7 @@ void ServiceHandler::finaliseSearch(quint64 action)
                 // This search is now finished
                 emit searchCompleted(currentSearch.action());
 
-                mSearches.takeFirst();
+                mSearches.removeFirst();
 
                 if (!mSearches.isEmpty())
                     QTimer::singleShot(0, this, SLOT(continueSearch()));
