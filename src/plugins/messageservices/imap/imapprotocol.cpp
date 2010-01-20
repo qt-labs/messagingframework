@@ -434,8 +434,7 @@ bool ImapState::appendLiteralData(ImapContext *, const QString &)
 
 QString ImapState::error(const QString &line) 
 { 
-    // tr string from server - this seems ambitious
-    return QObject::tr(line.toAscii());
+    return line;
 }
 
 void ImapState::log(const QString &note)
@@ -1412,8 +1411,7 @@ void SearchState::untaggedResponse(ImapContext *c, const QString &line)
 
 QString SearchState::error(const QString &line)
 {
-    return SelectedState::error(line)
-        + QLatin1String("\n")
+    return line + QLatin1String("\n")
         + QObject::tr( "This server does not provide a complete "
                        "IMAP4rev1 implementation." );
 }
@@ -1496,8 +1494,7 @@ void UidSearchState::untaggedResponse(ImapContext *c, const QString &line)
 
 QString UidSearchState::error(const QString &line)
 {
-    return SelectedState::error(line)
-        + QLatin1String("\n")
+    return line + QLatin1String("\n")
         + QObject::tr( "This server does not provide a complete "
                        "IMAP4rev1 implementation." );
 }
