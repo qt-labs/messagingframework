@@ -237,6 +237,7 @@ public:
 
     virtual bool available() const = 0;
 
+    virtual bool requiresReregistration() { return true; }
 public slots:
     virtual bool cancelOperation() = 0;
 
