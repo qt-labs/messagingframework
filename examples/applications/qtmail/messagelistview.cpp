@@ -118,7 +118,7 @@ QWidget(parent)
     m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied));
     m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded));
     m_statusCombo->addItem(QIcon(":/icon/attach"),tr("Has Attachment"),QMailMessageKey::status(QMailMessage::HasAttachments));
-    m_statusCombo->addItem(tr("Not removed"),~QMailMessageKey::status(QMailMessage::Removed));
+    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Not removed"),~QMailMessageKey::status(QMailMessage::Removed));
     connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
     layout->addWidget(m_statusCombo);
 
