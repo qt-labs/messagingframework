@@ -78,6 +78,12 @@ MailMessageClient::MailMessageClient(QObject* parent)
                adaptor, MESSAGE(messagesMoved(quint64, QMailMessageIdList)));
     connectIpc(this, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
                adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)));
+    connectIpc(this, SIGNAL(folderCreated(quint64, QMailFolderId)), 
+               adaptor, MESSAGE(folderCreated(quint64, QMailFolderId)));
+    connectIpc(this, SIGNAL(folderRenamed(quint64, QMailFolderId)), 
+               adaptor, MESSAGE(folderRenamed(quint64, QMailFolderId)));
+    connectIpc(this, SIGNAL(folderDeleted(quint64, QMailFolderId)), 
+               adaptor, MESSAGE(folderDeleted(quint64, QMailFolderId)));
     connectIpc(this, SIGNAL(storageActionCompleted(quint64)), 
                adaptor, MESSAGE(storageActionCompleted(quint64)));
     connectIpc(this, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
@@ -117,6 +123,12 @@ MailMessageClient::MailMessageClient(QObject* parent)
                this, SIGNAL(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
                this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+    connectIpc(adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
+               this, SIGNAL(createFolder(quint64,QString,QMailAccountId,QMailFolderId)));
+    connectIpc(adaptor, MESSAGE(renameFolder(quint64, QMailFolderId, QString)),
+               this, SIGNAL(renameFolder(quint64,QMailFolderId,QString)));
+    connectIpc(adaptor, MESSAGE(deleteFolder(quint64, QMailFolderId)),
+               this, SIGNAL(deleteFolder(quint64,QMailFolderId)));
     connectIpc(adaptor, MESSAGE(cancelTransfer(quint64)),
                this, SIGNAL(cancelTransfer(quint64)));
     connectIpc(adaptor, MESSAGE(cancelSearch(quint64)),

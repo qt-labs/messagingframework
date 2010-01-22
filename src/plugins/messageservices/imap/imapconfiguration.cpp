@@ -89,7 +89,7 @@ bool ImapConfiguration::isAutoDownload() const
 
 int ImapConfiguration::maxMailSize() const
 {
-    return value("maxSize", "102400").toInt();
+    return value("maxSize", "20").toInt();
 }
 
 QString ImapConfiguration::preferredTextSubtype() const
@@ -125,6 +125,11 @@ QString ImapConfiguration::trashFolder() const
 QString ImapConfiguration::junkFolder() const
 {
     return value("junkFolder");
+}
+
+QStringList ImapConfiguration::pushFolders() const
+{
+    return value("pushFolders").split(QChar('\x0A'), QString::SkipEmptyParts);
 }
 
 int ImapConfiguration::checkInterval() const
@@ -220,6 +225,11 @@ void ImapConfigurationEditor::setTrashFolder(const QString &s)
 void ImapConfigurationEditor::setJunkFolder(const QString &s)
 {
     setValue("junkFolder", s);
+}
+
+void ImapConfigurationEditor::setPushFolders(const QStringList &s)
+{
+    setValue("pushFolders", QString("") + s.join(QChar('\x0A'))); // can't setValue to null string
 }
 
 void ImapConfigurationEditor::setCheckInterval(int i)

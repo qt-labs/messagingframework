@@ -49,9 +49,13 @@
 #include <qmailglobal.h>
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
+
 class QContact;
 class QMenu;
 class QUrl;
+
+QT_END_NAMESPACE
 
 class QMailViewerInterface;
 

@@ -112,12 +112,13 @@ QWidget(parent)
     layout->addWidget(new QLabel("Status:"));
 
     m_statusCombo = new QComboBox(this);
-    m_statusCombo->addItem(QIcon(":icon/exec"),"Any Status",QMailMessageKey());
-    m_statusCombo->addItem(QIcon(":icon/mail_generic"),"Unread",QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes));
-    m_statusCombo->addItem(QIcon(":icon/new"),"New",QMailMessageKey::status(QMailMessage::New));
-    m_statusCombo->addItem(QIcon(":icon/mail_reply"),"Replied",QMailMessageKey::status(QMailMessage::Replied));
-    m_statusCombo->addItem(QIcon(":icon/mail_forward"),"Forwarded",QMailMessageKey::status(QMailMessage::Forwarded));
-    m_statusCombo->addItem(QIcon(":/icon/attach"),"Has Attachment",QMailMessageKey::status(QMailMessage::HasAttachments));
+    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Any Status"),QMailMessageKey());
+    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes));
+    m_statusCombo->addItem(QIcon(":icon/new"),tr("New"),QMailMessageKey::status(QMailMessage::New));
+    m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied));
+    m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded));
+    m_statusCombo->addItem(QIcon(":/icon/attach"),tr("Has Attachment"),QMailMessageKey::status(QMailMessage::HasAttachments));
+    m_statusCombo->addItem(tr("Not removed"),~QMailMessageKey::status(QMailMessage::Removed));
     connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
     layout->addWidget(m_statusCombo);
 

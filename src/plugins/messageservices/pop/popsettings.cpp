@@ -179,6 +179,7 @@ bool PopSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration
     popConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));
     popConfig.setIntervalCheckRoamingEnabled(!roamingCheckBox->isChecked());
 
+    account->setStatus(QMailAccount::CanCreateFolders, false);
     // Do we have a configuration we can use?
     if (!popConfig.mailServer().isEmpty() && !popConfig.mailUserName().isEmpty())
         account->setStatus(QMailAccount::CanRetrieve, true);

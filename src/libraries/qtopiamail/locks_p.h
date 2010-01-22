@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef SEMAPHORE_P_H
-#define SEMAPHORE_P_H
+#ifndef LOCKS_P_H
+#define LOCKS_P_H
 
 //
 //  W A R N I N G
@@ -60,7 +60,7 @@
 // we will rely on process undo to maintain sensible semaphore values as
 // clients come and go...
 
-class QString;
+#include <QString>
 
 class ProcessMutexPrivate;
 

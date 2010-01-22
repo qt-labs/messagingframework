@@ -80,6 +80,7 @@ public:
     QString sentFolder() const;
     QString trashFolder() const;
     QString junkFolder() const;
+    QStringList pushFolders() const;
 
     int checkInterval() const;
     bool intervalCheckRoamingEnabled() const;
@@ -111,6 +112,7 @@ public:
     void setSentFolder(const QString &s);
     void setTrashFolder(const QString &s);
     void setJunkFolder(const QString &s);
+    void setPushFolders(const QStringList &s);
 
     void setCheckInterval(int i);
     void setIntervalCheckRoamingEnabled(bool enabled);

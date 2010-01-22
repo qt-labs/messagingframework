@@ -225,6 +225,10 @@ public slots:
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
     void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
+    void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void renameFolder(const QMailFolderId &folderId, const QString &name);
+    void deleteFolder(const QMailFolderId &folderId);
 };
 
 

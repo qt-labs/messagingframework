@@ -46,18 +46,23 @@
 #include <qmailmessagekey.h>
 #include <qmailserviceaction.h>
 
-class QPushButton;
-class QRadioButton;
-class QCheckBox;
-class QLineEdit;
-class QToolButton;
 class MessageListView;
 class SearchTermsComposer;
 class FolderSelectorWidget;
-class QMailSearchAction;
-class QStatusBar;
 class SearchButton;
 class BodySearchWidget;
+class QMailSearchAction;
+
+QT_BEGIN_NAMESPACE
+
+class QCheckBox;
+class QLineEdit;
+class QPushButton;
+class QRadioButton;
+class QStatusBar;
+class QToolButton;
+
+QT_END_NAMESPACE
 
 class SearchView : public QMainWindow
 {

@@ -93,9 +93,12 @@ struct MESSAGESERVER_EXPORT QMailMessageServicePluginInterface : public QFactory
 };
 
 
+QT_BEGIN_NAMESPACE
+
 #define QMailMessageServicePluginInterface_iid "com.trolltech.Qtopia.Qtopiamail.QMailMessageServicePluginInterface"
 Q_DECLARE_INTERFACE(QMailMessageServicePluginInterface, QMailMessageServicePluginInterface_iid)
 
+QT_END_NAMESPACE
 
 class MESSAGESERVER_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
 {
@@ -141,6 +144,10 @@ public slots:
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
     virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+
+    virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
+    virtual bool deleteFolder(const QMailFolderId &folderId);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
 

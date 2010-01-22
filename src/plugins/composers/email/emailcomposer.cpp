@@ -71,6 +71,8 @@
 #include "attachmentlistwidget.h"
 #include <support/qmailnamespace.h>
 #include <QUrl>
+#include <QSyntaxHighlighter>
+#include <QCompleter>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -78,6 +80,29 @@ static const QString placeholder("(no subject)");
 enum RecipientType {To, Cc, Bcc };
 typedef QPair<RecipientType,QString> Recipient;
 typedef QList<Recipient> RecipientList;
+
+static QCompleter* sentFolderCompleter()
+{
+    const int completionAddressLimit(1000);
+    QSet<QString> addressSet;
+    QMailMessageKey::Properties props(QMailMessageKey::Recipients);
+    QMailMessageKey key(QMailMessageKey::status(QMailMessage::Outbox));
+    QMailMessageMetaDataList metaDataList(QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct));
+    foreach (const QMailMessageMetaData &metaData, metaDataList) {
+        foreach(QMailAddress address, metaData.to()) {
+            QString s(address.toString());
+            if (!s.simplified().isEmpty()) {
+                addressSet.insert(s);
+            }
+        }
+        if (addressSet.count() >= completionAddressLimit)
+            break;
+    }
+
+    QCompleter *completer(new QCompleter(addressSet.toList()));
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    return completer;
+}
 
 class RecipientWidget : public QWidget
 {
@@ -140,6 +165,8 @@ m_removeButton(new QToolButton(this))
     m_removeButton->setFocusPolicy(Qt::NoFocus);
 
     setFocusPolicy(Qt::StrongFocus);
+    
+    m_recipientEdit->setCompleter(sentFolderCompleter());
 }
 
 bool RecipientWidget::isRemoveEnabled() const
@@ -386,6 +413,82 @@ void RecipientListWidget::recipientChanged()
     }
 }
 
+class Dictionary {
+public:
+    static Dictionary *instance();
+    bool contains(const QString &word) { return _words.contains(word.toLower()); }
+    bool empty() { return _words.isEmpty(); }
+
+private:
+    Dictionary();
+    static Dictionary *_sDictionary;
+    QSet<QString> _words;
+};
+
+Dictionary* Dictionary::_sDictionary = 0;
+
+Dictionary* Dictionary::instance()
+{
+    if (!_sDictionary)
+        _sDictionary = new Dictionary();
+    return _sDictionary;
+}
+
+Dictionary::Dictionary()
+{
+    //TODO Consider using Hunspell
+    QStringList dictionaryFiles;
+    dictionaryFiles << "/usr/share/dict/words" << "/usr/dict/words";
+    foreach(QString fileName, dictionaryFiles) {
+        QFileInfo info(fileName);
+        if (info.isReadable()) {
+            QFile file(fileName);
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+                continue;
+            QTextStream stream(&file);
+            QString line;
+            while (!stream.atEnd()) {
+                line = stream.readLine();
+                if (!line.isEmpty())
+                    _words.insert(line.toLower());
+            }
+            file.close();
+            return;
+        }
+    }
+}
+
+class SpellingHighlighter : public QSyntaxHighlighter
+{
+    Q_OBJECT
+    
+public:    
+    SpellingHighlighter(QTextEdit *parent) :QSyntaxHighlighter(parent) {};
+
+protected:
+    virtual void highlightBlock(const QString &text);
+};
+
+void SpellingHighlighter::highlightBlock(const QString &text)
+{
+    if(text.startsWith(EmailComposerInterface::quotePrefix()))
+        return; //don't find errors in quoted text
+
+    Dictionary *dictionary = Dictionary::instance();
+    QTextCharFormat spellingFormat;
+    spellingFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    spellingFormat.setUnderlineColor(Qt::red);
+
+    QRegExp wordExpression("\\b\\w+\\b");
+    int index = text.indexOf(wordExpression);
+    while (index >= 0) {
+        int length = wordExpression.matchedLength();
+        if (!dictionary->contains(text.mid(index, length)))
+            setFormat(index, length, spellingFormat);
+        index = text.indexOf(wordExpression, index + length);
+    }
+}
+
 class BodyTextEdit : public QTextEdit
 {
     Q_OBJECT
@@ -562,6 +665,7 @@ void EmailComposerInterface::init()
 
     //body edit
     m_bodyEdit = new BodyTextEdit(this,m_composerWidget);
+    new SpellingHighlighter(m_bodyEdit);
     m_bodyEdit->setWordWrapMode(QTextOption::WordWrap);
     connect(m_bodyEdit, SIGNAL(textChanged()), this, SIGNAL(changed()) );
     connect(m_bodyEdit->document(), SIGNAL(contentsChanged()), this, SLOT(updateLabel()));
@@ -1028,12 +1132,12 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
     } else {
         QDateTime dateTime = source.date().toLocalTime();
         bodyText = "\nOn " + dateTime.toString(Qt::ISODate) + ", ";
-        bodyText += source.from().name() + " wrote:\n> ";
+        bodyText += source.from().name() + " wrote:\n" + EmailComposerInterface::quotePrefix();
 
         int pos = bodyText.length();
         bodyText += originalText;
         while ((pos = bodyText.indexOf('\n', pos)) != -1)
-            bodyText.insert(++pos, "> ");
+            bodyText.insert(++pos, EmailComposerInterface::quotePrefix());
 
         bodyText.append("\n");
     }
@@ -1130,6 +1234,11 @@ QList<QAction*> EmailComposerInterface::actions() const
 QString EmailComposerInterface::status() const
 {
     return m_subjectEdit->text();
+}
+
+QString EmailComposerInterface::quotePrefix()
+{
+    return "> ";
 }
 
 Q_EXPORT_PLUGIN( EmailComposerInterface)

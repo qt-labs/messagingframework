@@ -315,7 +315,11 @@ QVariant EmailFolderModel::data(QMailMessageSet *item, int role, int column) con
     if (item) {
         if (role == FolderSynchronizationEnabledRole) {
             return itemSynchronizationEnabled(item);
-        } else if (role == ContextualAccountIdRole) {
+        } else if(role == FolderChildCreationPermittedRole || role == FolderDeletionPermittedRole
+                  || role == FolderRenamePermittedRole) {
+            return itemPermitted(item, static_cast<Roles>(role));
+        }
+        else if (role == ContextualAccountIdRole) {
             return itemContextualAccountId(item);
         }
         return FolderModel::data(item, role, column);
@@ -472,6 +476,30 @@ bool EmailFolderModel::itemSynchronizationEnabled(QMailMessageSet *item) const
 
     return true;
 }
+
+bool EmailFolderModel::itemPermitted(QMailMessageSet *item, Roles role) const
+{
+    if (QMailFolderMessageSet *folderItem = qobject_cast<QMailFolderMessageSet*>(item)) {
+        // Only relevant for account folders
+        QMailFolder folder(folderItem->folderId());
+        if (folder.parentAccountId().isValid()) {
+            quint64 folderStatus = folder.status();
+            switch(role) {
+            case FolderChildCreationPermittedRole:
+                return (folderStatus & QMailFolder::ChildCreationPermitted);
+            case FolderDeletionPermittedRole:
+                return (folderStatus & QMailFolder::DeletionPermitted);
+            case FolderRenamePermittedRole:
+                return (folderStatus & QMailFolder::RenamePermitted);
+            default:
+                qWarning() << "itemPermitted has been called on an unknown role: " << role;
+            }
+        }
+    }
+
+    return false;
+}
+
 
 QMailAccountId EmailFolderModel::itemContextualAccountId(QMailMessageSet *item) const
 {

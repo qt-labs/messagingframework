@@ -11,11 +11,9 @@ DEFINES += PLUGIN_INTERNAL
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qtopiamail \
-               ../../../libraries/messageserver \
                ../../../libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/messageserver -lmessageserver
+LIBS += -L../../../libraries/qtopiamail -lqtopiamail
 
 HEADERS += qtopiamailfilemanager.h
 

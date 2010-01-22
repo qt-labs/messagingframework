@@ -97,6 +97,12 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
         connect(handler, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
                 client, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
+        connect(handler, SIGNAL(folderCreated(quint64, QMailFolderId)),
+                client, SIGNAL(folderCreated(quint64, QMailFolderId)));
+        connect(handler, SIGNAL(folderRenamed(quint64, QMailFolderId)),
+                client, SIGNAL(folderRenamed(quint64, QMailFolderId)));
+        connect(handler, SIGNAL(folderDeleted(quint64, QMailFolderId)),
+                client, SIGNAL(folderDeleted(quint64, QMailFolderId)));
         connect(handler, SIGNAL(storageActionCompleted(quint64)),
                 client, SIGNAL(storageActionCompleted(quint64)));
         connect(handler, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
@@ -144,6 +150,12 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
         connect(client, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
                 handler, SLOT(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+        connect(client, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
+                handler, SLOT(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
+        connect(client, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),
+                handler, SLOT(renameFolder(quint64, QMailFolderId, QString)));
+        connect(client, SIGNAL(deleteFolder(quint64, QMailFolderId)),
+                handler, SLOT(deleteFolder(quint64, QMailFolderId)));
         connect(client, SIGNAL(cancelTransfer(quint64)),
                 handler, SLOT(cancelTransfer(quint64)));
         connect(client, SIGNAL(protocolRequest(quint64, QMailAccountId, QString, QVariant)),

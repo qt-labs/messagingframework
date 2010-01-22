@@ -45,6 +45,8 @@
 #include "ui_imapsettings.h"
 #include <qmailmessageservice.h>
 
+class PushFolderList;
+
 class ImapSettings : public QMailMessageServiceEditor, private Ui::ImapSettings
 {
     Q_OBJECT
@@ -62,6 +64,7 @@ private slots:
 private:
     QMailAccountId accountId;
     bool warningEmitted;
+    PushFolderList *pushFolderList;
 };
 
 #endif

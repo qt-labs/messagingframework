@@ -46,12 +46,17 @@
 #include <QString>
 #include <qmailviewer.h>
 
-class QAction;
-class QMailMessage;
-class QPushButton;
-class QToolButton;
 class AttachmentOptions;
 class BrowserWidget;
+class QMailMessage;
+
+QT_BEGIN_NAMESPACE
+
+class QAction;
+class QPushButton;
+class QToolButton;
+
+QT_END_NAMESPACE
 
 // A generic viewer able to show email, SMS or basic MMS
 class GenericViewer : public QMailViewerInterface

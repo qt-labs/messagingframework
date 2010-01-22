@@ -50,11 +50,16 @@
 
 class StatusDisplay;
 class QMailAccount;
+class QMailAccountListModel;
+
+QT_BEGIN_NAMESPACE
+
 class QMenu;
 class QAction;
 class QSmoothList;
-class QMailAccountListModel;
 class QListView;
+
+QT_END_NAMESPACE
 
 class AccountSettings : public QDialog
 {
