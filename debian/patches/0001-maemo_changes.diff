@@ -172,7 +172,7 @@ index 0000000..1b390c9
 @@ -0,0 +1 @@
 +#include "qmailtransport.h"
 diff --git a/src/libraries/messageserver/messageserver.pro b/src/libraries/messageserver/messageserver.pro
-index c04c36d..71c1bc2 100644
+index b6e78da..eaf1ff6 100644
 --- a/src/libraries/messageserver/messageserver.pro
 +++ b/src/libraries/messageserver/messageserver.pro
 @@ -17,6 +17,9 @@ DEFINES += MESSAGESERVER_INTERNAL
@@ -185,11 +185,10 @@ index c04c36d..71c1bc2 100644
  INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
  
  LIBS += -L../qtopiamail -lqtopiamail
-@@ -35,5 +38,14 @@ SOURCES += qmailauthenticator.cpp \
+@@ -35,3 +38,13 @@ SOURCES += qmailauthenticator.cpp \
             qmailstoreaccountfilter.cpp \
             qmailtransport.cpp
  
--include(../../common.pri)
 +# Install headers
 +headers.files = $$HEADERS include/*
 +headers.path  = $$QMF_INSTALL_ROOT/include/qmf
@@ -200,6 +199,17 @@ index c04c36d..71c1bc2 100644
 +QMAKE_PKGCONFIG_LIBDIR  = $$target.path
 +QMAKE_PKGCONFIG_INCDIR  = $$headers.path
 +QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+diff --git a/src/libraries/messageserver/qmailmessageservice.h b/src/libraries/messageserver/qmailmessageservice.h
+index e194a4d..449b9e6 100644
+--- a/src/libraries/messageserver/qmailmessageservice.h
++++ b/src/libraries/messageserver/qmailmessageservice.h
+@@ -237,6 +237,7 @@ public:
+ 
+     virtual bool available() const = 0;
+ 
++    virtual bool requiresReregistration() { return true; }
+ public slots:
+     virtual bool cancelOperation() = 0;
  
 diff --git a/src/libraries/qmfutil/include/QMailComposerFactory b/src/libraries/qmfutil/include/QMailComposerFactory
 new file mode 100644
@@ -249,7 +259,7 @@ index 0000000..6d19eb2
 +#include "qmailmessagedelegate.h"
 \ No newline at end of file
 diff --git a/src/libraries/qmfutil/qmfutil.pro b/src/libraries/qmfutil/qmfutil.pro
-index 370404c..2512455 100644
+index 760488c..75f459a 100644
 --- a/src/libraries/qmfutil/qmfutil.pro
 +++ b/src/libraries/qmfutil/qmfutil.pro
 @@ -18,6 +18,9 @@ INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
@@ -262,12 +272,11 @@ index 370404c..2512455 100644
  HEADERS += emailfoldermodel.h \
             emailfolderview.h \
             folderdelegate.h \
-@@ -52,5 +55,4 @@ TRANSLATIONS += libqmfutil-ar.ts \
+@@ -51,4 +54,3 @@ TRANSLATIONS += libqmfutil-ar.ts \
+                 libqmfutil-zh_TW.ts
  
  RESOURCES += qmfutil.qrc
- 
--include(../../common.pri)
- 
+-
 diff --git a/src/libraries/qtopiamail/include/MailId b/src/libraries/qtopiamail/include/MailId
 new file mode 100644
 index 0000000..e2db656
@@ -639,8 +648,44 @@ index 0000000..cfbd6ca
 +++ b/src/libraries/qtopiamail/include/Status
 @@ -0,0 +1 @@
 +#include "qmailserviceaction.h"
+diff --git a/src/libraries/qtopiamail/qmailmessagelistmodel.cpp b/src/libraries/qtopiamail/qmailmessagelistmodel.cpp
+index ee47531..2993830 100644
+--- a/src/libraries/qtopiamail/qmailmessagelistmodel.cpp
++++ b/src/libraries/qtopiamail/qmailmessagelistmodel.cpp
+@@ -571,15 +571,12 @@ QMailMessageListModel::~QMailMessageListModel()
+ }
+ 
+ /*! \reimp */
+-QModelIndex QMailMessageListModel::index(int row, int column, const QModelIndex &idx) const
++QModelIndex QMailMessageListModel::index(int row, int column, const QModelIndex &parent) const
+ {
+-    if (idx.isValid()) {
+-        return QModelIndex();
+-    }
+-
+-    return createIndex(row, column);
++    return hasIndex(row, column, parent) ? createIndex(row, column, 0) : QModelIndex();
+ }
+ 
++
+ /*! \reimp */
+ QModelIndex QMailMessageListModel::parent(const QModelIndex &idx) const
+ {
+diff --git a/src/libraries/qtopiamail/qmailmessagelistmodel.h b/src/libraries/qtopiamail/qmailmessagelistmodel.h
+index c779cb3..80310cf 100644
+--- a/src/libraries/qtopiamail/qmailmessagelistmodel.h
++++ b/src/libraries/qtopiamail/qmailmessagelistmodel.h
+@@ -55,7 +55,7 @@ public:
+     QMailMessageListModel(QObject* parent = 0);
+     virtual ~QMailMessageListModel();
+ 
+-    QModelIndex index(int row, int column = 0, const QModelIndex &idx = QModelIndex()) const;
++    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
+     QModelIndex parent(const QModelIndex &idx) const;
+ 
+     QModelIndex generateIndex(int row, int column, void *ptr);
 diff --git a/src/libraries/qtopiamail/qmailstore_p.cpp b/src/libraries/qtopiamail/qmailstore_p.cpp
-index 65712cc..a639a02 100644
+index 21b25f4..1f949c8 100644
 --- a/src/libraries/qtopiamail/qmailstore_p.cpp
 +++ b/src/libraries/qtopiamail/qmailstore_p.cpp
 @@ -53,6 +53,7 @@
@@ -1669,16 +1714,7 @@ index 65712cc..a639a02 100644
 +
      // Drop all data
      foreach (const QString &table, database.tables()) {
-         if (table != "versioninfo") {
-@@ -2180,7 +2551,7 @@ void QMailStorePrivate::clearContent()
-     if (!t.commit()) {
-         qMailLog(Messaging) << "Could not commit clearContent operation to database";
-     }
--    
-+
-     // Remove all content
-     QMailContentManagerFactory::clearContent();
- }
+         if (table != "versioninfo" && table != "mailstatusflags") {
 @@ -2253,7 +2624,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
  
              {
@@ -2436,7 +2472,7 @@ index 65712cc..a639a02 100644
 +    if (!ssoAccount)
 +    {
 +        qMailLog(Messaging) << "Failed to create account";
-+        return Failure;
++        return DatabaseFailure;
 +    }
  
 +    ssoAccount->setDisplayName(account->name());
@@ -4088,10 +4124,10 @@ index 0bcc387..9ae3980 100644
  {
      Cache<T, quint64>::remove(id.toULongLong());
 diff --git a/src/libraries/qtopiamail/qtopiamail.pro b/src/libraries/qtopiamail/qtopiamail.pro
-index 08344a9..15f0d07 100644
+index aea6614..e1adcd2 100644
 --- a/src/libraries/qtopiamail/qtopiamail.pro
 +++ b/src/libraries/qtopiamail/qtopiamail.pro
-@@ -1,153 +1,173 @@
+@@ -1,151 +1,172 @@
 -TEMPLATE = lib 
 -CONFIG += warn_on
 +TEMPLATE = lib
@@ -4358,8 +4394,6 @@ index 08344a9..15f0d07 100644
 -                libqtopiamail-pt_BR.ts \
 -                libqtopiamail-zh_CN.ts \
 -                libqtopiamail-zh_TW.ts
--
--include(../../common.pri)
 +    libqtopiamail-de.ts \
 +    libqtopiamail-en_GB.ts \
 +    libqtopiamail-en_SU.ts \
@@ -4386,12 +4420,11 @@ index 08344a9..15f0d07 100644
 +sso_services.path  = $$QMF_INSTALL_ROOT/share/accounts/services
 +
 +INSTALLS += headers sso_providers sso_services
-+
+ 
 +# Install pkgconfig file
 +QMAKE_PKGCONFIG_LIBDIR  = $$target.path
 +QMAKE_PKGCONFIG_INCDIR  = $$headers.path
 +QMAKE_PKGCONFIG_DESTDIR = pkgconfig
- 
 diff --git a/src/libraries/qtopiamail/share/GenericEmail.service b/src/libraries/qtopiamail/share/GenericEmail.service
 new file mode 100644
 index 0000000..3aed235
@@ -5559,7 +5592,7 @@ index 952b267..03d6e35 100644
      MessageServer server;
  
 diff --git a/src/tools/messageserver/messageserver.cpp b/src/tools/messageserver/messageserver.cpp
-index e8507d0..274f739 100644
+index e077ce7..6e9396c 100644
 --- a/src/tools/messageserver/messageserver.cpp
 +++ b/src/tools/messageserver/messageserver.cpp
 @@ -42,6 +42,7 @@
@@ -5598,7 +5631,7 @@ index e8507d0..274f739 100644
          handler = new ServiceHandler(this);
  
          connect(store, SIGNAL(messagesAdded(QMailMessageIdList)),
-@@ -89,28 +102,28 @@ MessageServer::MessageServer(QObject *parent)
+@@ -89,13 +102,13 @@ MessageServer::MessageServer(QObject *parent)
                  client, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)));
          connect(handler, SIGNAL(progressChanged(quint64, uint, uint)),
                  client, SIGNAL(progressChanged(quint64, uint, uint)));
@@ -5614,6 +5647,10 @@ index e8507d0..274f739 100644
 -        connect(handler, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
 +        connect(handler, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
                  client, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
+         connect(handler, SIGNAL(folderCreated(quint64, QMailFolderId)),
+                 client, SIGNAL(folderCreated(quint64, QMailFolderId)));
+@@ -105,18 +118,18 @@ MessageServer::MessageServer(QObject *parent)
+                 client, SIGNAL(folderDeleted(quint64, QMailFolderId)));
          connect(handler, SIGNAL(storageActionCompleted(quint64)),
                  client, SIGNAL(storageActionCompleted(quint64)));
 -        connect(handler, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
@@ -5635,7 +5672,7 @@ index e8507d0..274f739 100644
                  this, SLOT(transmissionCompleted(quint64)));
          connect(handler, SIGNAL(retrievalCompleted(quint64)),
                  this, SLOT(retrievalCompleted(quint64)));
-@@ -154,7 +167,7 @@ MessageServer::MessageServer(QObject *parent)
+@@ -166,7 +179,7 @@ MessageServer::MessageServer(QObject *parent)
                  handler, SLOT(cancelSearch(quint64)));
          connect(client, SIGNAL(shutdown()),
                  handler, SLOT(shutdown()));
@@ -5644,7 +5681,7 @@ index e8507d0..274f739 100644
                  this, SLOT(reportNewCounts()));
          connect(client, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),
                  this, SLOT(acknowledgeNewMessages(QMailMessageTypeList)));
-@@ -341,11 +354,20 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
+@@ -353,11 +366,20 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
                      message.content() == QMailMessage::VideomailContent) {
                      complete = true;
                  }
@@ -5665,7 +5702,7 @@ index e8507d0..274f739 100644
      }
  }
  
-@@ -354,16 +376,22 @@ void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
+@@ -366,16 +388,22 @@ void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
      if (QMailStore::instance()->asynchronousEmission()) {
          // Only need to check message counts if the update occurred in another process
          updateNewMessageCounts();
@@ -5689,7 +5726,7 @@ index e8507d0..274f739 100644
          }
      }
  }
-@@ -376,6 +404,9 @@ void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
+@@ -388,6 +416,9 @@ void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
      }
  
      updateNewMessageCounts();
@@ -5720,7 +5757,7 @@ index 508752a..f7cd380 100644
  
  #endif
 diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
-index 6216729..b04ad88 100644
+index 6216729..3d59f39 100644
 --- a/src/tools/messageserver/messageserver.pro
 +++ b/src/tools/messageserver/messageserver.pro
 @@ -2,6 +2,9 @@ TEMPLATE = app
@@ -5764,7 +5801,7 @@ index 6216729..b04ad88 100644
  
  TRANSLATIONS += messageserver-ar.ts \
                  messageserver-de.ts \
-@@ -43,10 +50,11 @@ TRANSLATIONS += messageserver-ar.ts \
+@@ -43,7 +50,7 @@ TRANSLATIONS += messageserver-ar.ts \
  
  unix {
      # Uncomment this to shutdown cleanly on termination signal
@@ -5773,10 +5810,32 @@ index 6216729..b04ad88 100644
  }
  
  eventd.files = etc/event.d/messageserver
- eventd.path  = /etc/event.d
+diff --git a/src/tools/messageserver/servicehandler.cpp b/src/tools/messageserver/servicehandler.cpp
+index 6112248..470891b 100644
+--- a/src/tools/messageserver/servicehandler.cpp
++++ b/src/tools/messageserver/servicehandler.cpp
+@@ -553,8 +553,19 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
+ void ServiceHandler::reregisterAccountServices(const QMailAccountIdList &ids)
+ {
+     // Remove and re-create these accounts' services
+-    deregisterAccountServices(ids);
+-    registerAccountServices(ids);
++    QMailAccountIdList reregisterIds;
++    QMap<QPair<QMailAccountId, QString>,  QMailMessageService*>::iterator it = serviceMap.begin();
++    while (it != serviceMap.end()) {
++        if (ids.contains(it.key().first)) {
++           QMailMessageService *service = it.value();
++           if (service && service->requiresReregistration()) {
++               reregisterIds.append(it.key().first);
++           }
++        }
++        ++it;
++    }
++    deregisterAccountServices(reregisterIds);
++    registerAccountServices(reregisterIds);
+ }
  
- INSTALLS += target eventd
-+
+ void ServiceHandler::accountsAdded(const QMailAccountIdList &ids)
 diff --git a/src/tools/messageserver/sparqlindexer.cpp b/src/tools/messageserver/sparqlindexer.cpp
 new file mode 100644
 index 0000000..a7e2f1a
