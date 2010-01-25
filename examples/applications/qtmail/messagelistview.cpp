@@ -451,12 +451,9 @@ QMailMessageKey MessageListView::key() const
 
 void MessageListView::setKey(const QMailMessageKey& key)
 {
-    mModel->setKey(key);
+    mModel->setKey(key & mQuickKey);
     mScrollTimer.stop();
     QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
-    mQuickSearchWidget->blockSignals(true);
-    mQuickSearchWidget->reset();
-    mQuickSearchWidget->blockSignals(false);
     mKey = key;
 }
 
@@ -843,6 +840,7 @@ void MessageListView::scrollTimeout()
 
 void MessageListView::quickSearch(const QMailMessageKey& key)
 {
+    mQuickKey = key;
     if (key.isEmpty()) {
         mModel->setKey(mKey);
         mKey = QMailMessageKey();
