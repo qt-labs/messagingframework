@@ -166,7 +166,6 @@ private:
     QMailMessageIdList mPreviousVisibleItems;
     QuickSearchWidget* mQuickSearchWidget;
     QMailMessageKey mKey;
-    QMailMessageKey mQuickKey;
     bool mShowMoreButton;
     bool mThreaded;
 };

@@ -91,6 +91,7 @@ private:
     QComboBox* m_statusCombo;
     QToolButton* m_fullSearchButton;
     QToolButton* m_clearButton;
+    QMailMessageKey m_key;
 };
 
 QuickSearchWidget::QuickSearchWidget(QWidget* parent)
@@ -112,13 +113,14 @@ QWidget(parent)
     layout->addWidget(new QLabel("Status:"));
 
     m_statusCombo = new QComboBox(this);
-    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Any Status"),QMailMessageKey());
-    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes));
-    m_statusCombo->addItem(QIcon(":icon/new"),tr("New"),QMailMessageKey::status(QMailMessage::New));
-    m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied));
-    m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded));
-    m_statusCombo->addItem(QIcon(":/icon/attach"),tr("Has Attachment"),QMailMessageKey::status(QMailMessage::HasAttachments));
-    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Not removed"),~QMailMessageKey::status(QMailMessage::Removed));
+    QMailMessageKey removed(QMailMessageKey::status(QMailMessage::Removed));
+    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Any Status"),~removed);
+    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/new"),tr("New"),QMailMessageKey::status(QMailMessage::New)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded)&~removed);
+    m_statusCombo->addItem(QIcon(":/icon/attach"),tr("Has Attachment"),QMailMessageKey::status(QMailMessage::HasAttachments)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/exec"),tr("Removed"), removed);
     connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
     layout->addWidget(m_statusCombo);
 
@@ -126,11 +128,13 @@ QWidget(parent)
     m_fullSearchButton->setIcon(QIcon(":icon/find"));
     connect(m_fullSearchButton,SIGNAL(clicked(bool)),this,SIGNAL(fullSearchRequested()));
     layout->addWidget(m_fullSearchButton);
+    
+    m_key = buildSearchKey();
 }
 
 QMailMessageKey QuickSearchWidget::searchKey() const
 {
-    return buildSearchKey();
+    return m_key;
 }
 
 void QuickSearchWidget::reset(bool emitReset)
@@ -143,21 +147,19 @@ void QuickSearchWidget::reset(bool emitReset)
 
 void QuickSearchWidget::searchTermsChanged()
 {
-    QMailMessageKey key = buildSearchKey();
-    emit quickSearchRequested(key);
+    m_key = buildSearchKey();
+    emit quickSearchRequested(m_key);
 }
 
 QMailMessageKey QuickSearchWidget::buildSearchKey() const
 {
+    QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
     if(m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
-        return QMailMessageKey();
+        return statusKey;
+    
     QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
     QMailMessageKey senderKey = QMailMessageKey::sender(m_searchTerms->text(),QMailDataComparator::Includes);
-
-    QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
-    if(!statusKey.isEmpty())
-        return ((subjectKey | senderKey) & statusKey);
-    return subjectKey | senderKey;
+    return ((subjectKey | senderKey) & statusKey);
 }
 
 
@@ -451,7 +453,7 @@ QMailMessageKey MessageListView::key() const
 
 void MessageListView::setKey(const QMailMessageKey& key)
 {
-    mModel->setKey(key & mQuickKey);
+    mModel->setKey(key & mQuickSearchWidget->searchKey());
     mScrollTimer.stop();
     QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
     mKey = key;
@@ -480,6 +482,10 @@ void MessageListView::setFolderId(const QMailFolderId& folderId)
 
 void MessageListView::init()
 {
+    mQuickSearchWidget = new QuickSearchWidget(this);
+    connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+    connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
+
     reset();
 
     mMessageList->setUniformRowHeights(true);
@@ -505,10 +511,6 @@ void MessageListView::init()
             this, SIGNAL(rowCountChanged()));
     connect(mMessageList, SIGNAL(expanded(QModelIndex)),
             this, SIGNAL(rowCountChanged()));
-
-    mQuickSearchWidget = new QuickSearchWidget(this);
-    connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
-    connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
 
     mScrollTimer.setSingleShot(true);
     connect(&mScrollTimer, SIGNAL(timeout()),
@@ -840,7 +842,6 @@ void MessageListView::scrollTimeout()
 
 void MessageListView::quickSearch(const QMailMessageKey& key)
 {
-    mQuickKey = key;
     if (key.isEmpty()) {
         mModel->setKey(mKey);
         mKey = QMailMessageKey();
@@ -950,7 +951,7 @@ void MessageListView::reset()
     mMessageList->setModel(mModel);
     mMessageList->setRootIsDecorated(mThreaded);
 
-    if (!key.isEmpty()) {
+    if (!key.isEmpty() || !mQuickSearchWidget->searchKey().isEmpty()) {
         setKey(key);
     }
     if (!sortKey.isEmpty()) {
