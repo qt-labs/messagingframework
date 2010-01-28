@@ -310,6 +310,9 @@ protected:
 
     void drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
+protected slots:
+    void rowsInserted(const QModelIndex &parent, int start, int end);
+    
 private:
     MessageListView *m_parent;
     QPoint pos;
@@ -425,6 +428,11 @@ void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
     }
 }
 
+void MessageList::rowsInserted(const QModelIndex &parent, int start, int end)
+{
+    setExpanded(parent, true);
+    QTreeView::rowsInserted(parent, start, end);
+}
 
 MessageListView::MessageListView(QWidget* parent)
 :
@@ -438,6 +446,8 @@ MessageListView::MessageListView(QWidget* parent)
     mShowMoreButton(false),
     mThreaded(true)
 {
+    connect(&mExpandAllTimer, SIGNAL(timeout()),
+            mMessageList, SLOT(expandAll()));
     init();
     showQuickSearch(true);
 }
@@ -454,6 +464,7 @@ QMailMessageKey MessageListView::key() const
 void MessageListView::setKey(const QMailMessageKey& key)
 {
     mModel->setKey(key & mQuickSearchWidget->searchKey());
+    mExpandAllTimer.start(0);
     mScrollTimer.stop();
     QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
     mKey = key;
@@ -852,6 +863,7 @@ void MessageListView::quickSearch(const QMailMessageKey& key)
         mModel->setKey(key & mKey);
         setMoreButtonVisible(false);
     }
+    mExpandAllTimer.start(0);
 }
 
 QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const
@@ -950,6 +962,7 @@ void MessageListView::reset()
 
     mMessageList->setModel(mModel);
     mMessageList->setRootIsDecorated(mThreaded);
+    mExpandAllTimer.start(0);
 
     if (!key.isEmpty() || !mQuickSearchWidget->searchKey().isEmpty()) {
         setKey(key);

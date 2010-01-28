@@ -168,6 +168,7 @@ private:
     QMailMessageKey mKey;
     bool mShowMoreButton;
     bool mThreaded;
+    QTimer mExpandAllTimer;
 };
 
 #endif
