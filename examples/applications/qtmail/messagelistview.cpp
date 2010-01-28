@@ -961,7 +961,7 @@ void MessageListView::reset()
             this, SLOT(reviewVisibleMessages()));
 
     mMessageList->setModel(mModel);
-    mMessageList->setRootIsDecorated(mThreaded);
+    mMessageList->setRootIsDecorated(false);
     mExpandAllTimer.start(0);
 
     if (!key.isEmpty() || !mQuickSearchWidget->searchKey().isEmpty()) {
