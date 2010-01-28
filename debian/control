@@ -40,7 +40,7 @@ Description: Qt Messaging Framework Library development files
 Package: libqmf-tests
 Section: tests
 Architecture: any
-Depends: libqmf0 (= ${binary:Version}), libqt4-dev (>= 4.5), ci-testing
+Depends: libqmf0 (= ${binary:Version}), ci-testing
 XB-Maemo-CI-Packages: libqmf0
 XB-Maemo-CI-Stage: staging, acceptance
 Description: Qt Messaging Framework Library unit tests
