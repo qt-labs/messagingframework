@@ -44,6 +44,7 @@
 #include <QPluginLoader>
 #include <QDir>
 #include <QtDebug>
+#include <QCoreApplication>
 #include <qmailnamespace.h>
 
 
@@ -125,25 +126,27 @@ public:
 
 public:
     QMap<QString,QPluginLoader*> pluginMap;
-    QString pluginPath;
 };
 
 QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
-:
-    pluginPath(QMail::pluginsPath() + path)
 {
-    //initialize the plugin map
-    QDir dir(pluginPath.toLatin1());
-    QStringList libs = dir.entryList(pluginFilePatterns(), QDir::Files);
+    QStringList libraryPaths;
+    libraryPaths << QMail::pluginsPath() << QCoreApplication::libraryPaths();
 
-    if(libs.isEmpty())
-    {
-        qWarning() << "Could not find any plugins in path " << pluginPath << "!";
-        return;
+    foreach(QString libraryPath, libraryPaths) {
+        QDir dir(libraryPath);
+        //Change into the sub directory, and make sure it's readable
+        if(!dir.cd(path) || !dir.isReadable())
+            continue;
+
+        foreach(const QString &libname, dir.entryList(pluginFilePatterns(), QDir::Files)) {
+            QString libfile = dir.absoluteFilePath(libname);
+            if(pluginMap.contains(libname))
+                pluginMap[libname]->setFileName(libfile);
+            else
+                pluginMap[libname] = new QPluginLoader(libfile);
+        }
     }
-
-    foreach(const QString& libname,libs)
-        pluginMap[libname] = 0;
 }
 
 QMailPluginManagerPrivate::~QMailPluginManagerPrivate()
@@ -173,23 +176,15 @@ QStringList QMailPluginManager::list() const
 
 QObject* QMailPluginManager::instance(const QString& name)
 {
-    QString libfile = d->pluginPath + "/" + name;
-    if (!QFile::exists(libfile))
-        return 0;
-
-    QPluginLoader *lib = 0;
-    QMap<QString,QPluginLoader*>::const_iterator it = d->pluginMap.find(name);
-    if (it != d->pluginMap.end())
-        lib = *it;
-    if ( !lib ) {
-        lib = new QPluginLoader(libfile);
-        lib->load();
-        if ( !lib->isLoaded() ) {
-            qWarning() << "Could not load" << libfile << "errorString()" << lib->errorString();
-            delete lib;
+    if (d->pluginMap.contains(name)) {
+        if(d->pluginMap[name]->load()) {
+            return d->pluginMap[name]->instance();
+        } else {
+            qWarning() << "Error loading" << name << "with errorString()" << d->pluginMap[name]->errorString();
             return 0;
         }
+    } else {
+        qWarning() << "Could not find" << name << "to load";
+        return 0;
     }
-    d->pluginMap[name] = lib;
-    return lib->instance();
 }
