@@ -571,13 +571,9 @@ QMailMessageListModel::~QMailMessageListModel()
 }
 
 /*! \reimp */
-QModelIndex QMailMessageListModel::index(int row, int column, const QModelIndex &idx) const
+QModelIndex QMailMessageListModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if (idx.isValid()) {
-        return QModelIndex();
-    }
-
-    return createIndex(row, column);
+    return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
 }
 
 /*! \reimp */

@@ -55,7 +55,7 @@ public:
     QMailMessageListModel(QObject* parent = 0);
     virtual ~QMailMessageListModel();
 
-    QModelIndex index(int row, int column = 0, const QModelIndex &idx = QModelIndex()) const;
+    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &idx) const;
 
     QModelIndex generateIndex(int row, int column, void *ptr);
