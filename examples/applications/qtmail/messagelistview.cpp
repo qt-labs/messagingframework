@@ -499,6 +499,7 @@ void MessageListView::init()
 
     reset();
 
+    mMessageList->setObjectName("messagelistview");
     mMessageList->setUniformRowHeights(true);
     mMessageList->setAlternatingRowColors(true);
     mMessageList->header()->setDefaultSectionSize(180);

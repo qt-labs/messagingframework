@@ -809,6 +809,7 @@ void EmailClient::initActions()
 
         deleteMailAction = new QAction( this );
         deleteMailAction->setIcon( QIcon(":icon/trash") );
+        deleteMailAction->setShortcut(QKeySequence(Qt::Key_Delete));
         connect(deleteMailAction, SIGNAL(triggered()), this, SLOT(deleteSelectedMessages()));
         setActionVisible(deleteMailAction, false);
 
@@ -834,6 +835,30 @@ void EmailClient::initActions()
         forwardAction = new QAction(QIcon(":icon/forward"),tr("Forward"), this );
         connect(forwardAction, SIGNAL(triggered()), this, SLOT(forwardClicked()));
 
+        nextMessageAction = new QAction( tr("Next Message"), this );
+        nextMessageAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Right));
+        connect(nextMessageAction, SIGNAL(triggered()), this, SLOT(nextMessage()));
+
+        previousMessageAction = new QAction( tr("Previous Message"), this );
+        previousMessageAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Left));
+        connect(previousMessageAction, SIGNAL(triggered()), this, SLOT(previousMessage()));
+
+        nextUnreadMessageAction = new QAction( tr("Next Unread Message"), this );
+        nextUnreadMessageAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Plus));
+        connect(nextUnreadMessageAction, SIGNAL(triggered()), this, SLOT(nextUnreadMessage()));
+
+        previousUnreadMessageAction = new QAction( tr("Previous Unread Message"), this );
+        previousUnreadMessageAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Minus));
+        connect(previousUnreadMessageAction, SIGNAL(triggered()), this, SLOT(previousUnreadMessage()));
+
+        scrollReaderDownAction = new QAction( tr("Scroll Reader Down"), this );
+        scrollReaderDownAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Down));
+        connect(scrollReaderDownAction, SIGNAL(triggered()), this, SLOT(scrollReaderDown()));
+
+        scrollReaderUpAction = new QAction( tr("Scroll Reader Up"), this );
+        scrollReaderUpAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Up));
+        connect(scrollReaderUpAction, SIGNAL(triggered()), this, SLOT(scrollReaderUp()));
+        
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
@@ -885,6 +910,11 @@ void EmailClient::initActions()
         messageListView()->addAction( markAction );
         messageListView()->addAction( threadAction );
         messageListView()->addAction( detachThreadAction );
+        messageListView()->addAction(createSeparator());
+        messageListView()->addAction( previousMessageAction );
+        messageListView()->addAction( nextMessageAction );
+        messageListView()->addAction( previousUnreadMessageAction );
+        messageListView()->addAction( nextUnreadMessageAction );
         messageListView()->setContextMenuPolicy(Qt::ActionsContextMenu);
 
         readMailWidget()->addAction(replyAction);
@@ -892,6 +922,9 @@ void EmailClient::initActions()
         readMailWidget()->addAction(forwardAction);
         readMailWidget()->addAction(createSeparator());
         readMailWidget()->addAction(deleteMailAction);
+        readMailWidget()->addAction(createSeparator());
+        readMailWidget()->addAction(scrollReaderDownAction);
+        readMailWidget()->addAction(scrollReaderUpAction);
     }
 }
 
@@ -2560,6 +2593,60 @@ void EmailClient::synchronizeFolder()
 
         // Update the action to reflect the change
         folderSelected(folderView()->currentItem());
+    }
+}
+
+void EmailClient::nextMessage()
+{
+    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    if (list) {
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
+    }
+}
+
+void EmailClient::previousMessage()
+{
+    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    if (list) {
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
+    }
+}
+   
+void EmailClient::nextUnreadMessage()
+{
+    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    if (list) {
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, Qt::AltModifier, "+"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, Qt::AltModifier, "+"));
+    }
+}
+
+void EmailClient::previousUnreadMessage()
+{
+    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    if (list) {
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, Qt::AltModifier, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, Qt::AltModifier, "-"));
+    }
+}
+
+void EmailClient::scrollReaderDown()
+{
+    QWidget *renderer(qFindChild<QWidget*>(readMailWidget(), "renderer"));
+    if (renderer) {
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
+    }
+}
+
+void EmailClient::scrollReaderUp()
+{
+    QWidget *renderer(qFindChild<QWidget*>(readMailWidget(), "renderer"));
+    if (renderer) {
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
     }
 }
 

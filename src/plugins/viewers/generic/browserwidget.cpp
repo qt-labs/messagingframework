@@ -267,6 +267,7 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
     m_accessManager = new ContentAccessManager(this);
 
     m_webView = new QWebView(this);
+    m_webView->setObjectName("renderer");
     m_webView->page()->setNetworkAccessManager(m_accessManager);
     m_webView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_webView,SIGNAL(linkClicked(QUrl)),this,SIGNAL(anchorClicked(QUrl)));
@@ -275,6 +276,7 @@ BrowserWidget::BrowserWidget( QWidget *parent  )
     l->addWidget(m_webView);
 #else
     m_renderer = new ContentRenderer(this);
+    m_renderer->setObjectName("renderer");
     m_renderer->setFrameStyle(QFrame::NoFrame);
     m_renderer->setContextMenuPolicy(Qt::CustomContextMenu);
     m_renderer->setOpenLinks(false);

@@ -233,6 +233,12 @@ protected slots:
     void replyClicked();
     void replyAllClicked();
     void forwardClicked();
+    void nextMessage();
+    void previousMessage();
+    void nextUnreadMessage();
+    void previousUnreadMessage();
+    void scrollReaderDown();
+    void scrollReaderUp();
 
     void respond(const QMailMessage& message, QMailMessage::ResponseType type);
     void respond(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType type);
@@ -375,6 +381,12 @@ private:
     QAction *replyAction;
     QAction *replyAllAction;
     QAction *forwardAction;
+    QAction *nextMessageAction;
+    QAction *previousMessageAction;
+    QAction *nextUnreadMessageAction;
+    QAction *previousUnreadMessageAction;
+    QAction *scrollReaderDownAction;
+    QAction *scrollReaderUpAction;
 
     bool closeAfterTransmissions;
     bool closeAfterWrite;
