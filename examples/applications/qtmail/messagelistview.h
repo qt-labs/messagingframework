@@ -144,6 +144,7 @@ protected slots:
     void reviewVisibleMessages();
     void scrollTimeout();
     void quickSearch(const QMailMessageKey& key);
+    void expandAll();
 
 protected:
     void showEvent(QShowEvent* e);

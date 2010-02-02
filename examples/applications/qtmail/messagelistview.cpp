@@ -447,7 +447,7 @@ MessageListView::MessageListView(QWidget* parent)
     mThreaded(true)
 {
     connect(&mExpandAllTimer, SIGNAL(timeout()),
-            mMessageList, SLOT(expandAll()));
+            this, SLOT(expandAll()));
     init();
     showQuickSearch(true);
 }
@@ -975,6 +975,11 @@ void MessageListView::reset()
     }
 }
 
+void MessageListView::expandAll()
+{
+    mExpandAllTimer.stop();
+    mMessageList->expandAll();
+}
 
 #include "messagelistview.moc"
 
