@@ -2602,6 +2602,8 @@ void EmailClient::nextMessage()
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
     }
 }
 
@@ -2611,6 +2613,8 @@ void EmailClient::previousMessage()
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
     }
 }
    
@@ -2618,8 +2622,8 @@ void EmailClient::nextUnreadMessage()
 {
     QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, Qt::AltModifier, "+"));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, Qt::AltModifier, "+"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, 0, "+"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, 0, "+"));
     }
 }
 
@@ -2627,8 +2631,10 @@ void EmailClient::previousUnreadMessage()
 {
     QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, Qt::AltModifier, "-"));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, Qt::AltModifier, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, 0, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, 0, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
     }
 }
 

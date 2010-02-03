@@ -60,6 +60,7 @@
 #include <QPainter>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QApplication>
 #include <qmaildatacomparator.h>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
@@ -345,6 +346,39 @@ void MessageList::keyPressEvent(QKeyEvent* e)
         case Qt::Key_Back:
         case Qt::Key_Backspace:
             emit backPressed();
+        break;
+        case Qt::Key_Plus:
+        case Qt::Key_Minus:
+        {
+            QModelIndex index(currentIndex());
+            if (!index.isValid())
+                break;
+            if (e->key() == Qt::Key_Plus) {
+                index = indexBelow(index);
+            } else if (e->key() == Qt::Key_Minus) {
+                index = indexAbove(index);
+            }
+            while (index.isValid()) {
+                QMailMessageId id(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
+                if (!id.isValid())
+                    break;
+                QMailMessageMetaData message(id);
+                quint64 status = message.status();
+                bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
+                if (unread) {
+                    setCurrentIndex(index);
+                    scrollTo(index);
+                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
+                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
+                    break;
+                }
+                if (e->key() == Qt::Key_Plus) {
+                    index = indexBelow(index);
+                } else if (e->key() == Qt::Key_Minus) {
+                    index = indexAbove(index);
+                }
+            }
+        }
         break;
         default: QTreeView::keyPressEvent(e);
     }
