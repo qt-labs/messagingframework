@@ -45,6 +45,7 @@
 #include <QModelIndex>
 #include <QTimer>
 #include <QWidget>
+#include <QCache>
 #include <qmailmessage.h>
 #include <qmailmessagekey.h>
 #include <qmailmessagesortkey.h>
@@ -145,6 +146,8 @@ protected slots:
     void scrollTimeout();
     void quickSearch(const QMailMessageKey& key);
     void expandAll();
+    QModelIndex find(const QModelIndex &start, const QMailMessageId &id);
+    void scrollTo(const QMailMessageId& id);
 
 protected:
     void showEvent(QShowEvent* e);
@@ -170,6 +173,8 @@ private:
     bool mShowMoreButton;
     bool mThreaded;
     QTimer mExpandAllTimer;
+    QCache<QByteArray, QMailMessageId> mPreviousCurrentCache;
+    QMailMessageId mPreviousCurrent;
 };
 
 #endif

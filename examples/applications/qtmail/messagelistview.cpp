@@ -286,6 +286,7 @@ QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) 
     return SuperType::data(index, role);
 }
 
+
 class MessageList : public QTreeView
 {
     Q_OBJECT
@@ -468,6 +469,7 @@ void MessageList::rowsInserted(const QModelIndex &parent, int start, int end)
     QTreeView::rowsInserted(parent, start, end);
 }
 
+
 MessageListView::MessageListView(QWidget* parent)
 :
     QWidget(parent),
@@ -480,8 +482,6 @@ MessageListView::MessageListView(QWidget* parent)
     mShowMoreButton(false),
     mThreaded(true)
 {
-    connect(&mExpandAllTimer, SIGNAL(timeout()),
-            this, SLOT(expandAll()));
     init();
     showQuickSearch(true);
 }
@@ -495,13 +495,26 @@ QMailMessageKey MessageListView::key() const
     return mModel->key();
 }
 
-void MessageListView::setKey(const QMailMessageKey& key)
+void MessageListView::setKey(const QMailMessageKey& newKey)
 {
-    mModel->setKey(key & mQuickSearchWidget->searchKey());
+    // Save the current index for the old key
+    QByteArray keyArray;
+    QDataStream keyStream(&keyArray, QIODevice::WriteOnly);
+    mKey.serialize(keyStream);
+    mPreviousCurrentCache.insert(keyArray, new QMailMessageId(current()));
+
+    // Find the previous current index for the new key
+    QByteArray newKeyArray;
+    QDataStream newKeyStream(&newKeyArray, QIODevice::WriteOnly);
+    newKey.serialize(newKeyStream);
+    if (mPreviousCurrentCache[newKeyArray]) {
+        mPreviousCurrent = *mPreviousCurrentCache[newKeyArray];
+    }
+    
+    mModel->setKey(newKey & mQuickSearchWidget->searchKey());
     mExpandAllTimer.start(0);
     mScrollTimer.stop();
-    QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
-    mKey = key;
+    mKey = newKey;
 }
 
 QMailMessageSortKey MessageListView::sortKey() const
@@ -527,6 +540,10 @@ void MessageListView::setFolderId(const QMailFolderId& folderId)
 
 void MessageListView::init()
 {
+    mPreviousCurrentCache.setMaxCost(10000); // Cache current item for 1,000 folders
+    connect(&mExpandAllTimer, SIGNAL(timeout()),
+            this, SLOT(expandAll()));
+    
     mQuickSearchWidget = new QuickSearchWidget(this);
     connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
     connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
@@ -888,6 +905,9 @@ void MessageListView::scrollTimeout()
 
 void MessageListView::quickSearch(const QMailMessageKey& key)
 {
+    if (current().isValid())
+        mPreviousCurrent = current();
+
     if (key.isEmpty()) {
         mModel->setKey(mKey);
         mKey = QMailMessageKey();
@@ -1014,6 +1034,37 @@ void MessageListView::expandAll()
 {
     mExpandAllTimer.stop();
     mMessageList->expandAll();
+    scrollTo(mPreviousCurrent);
+    QTimer::singleShot(0, this, SLOT(reviewVisibleMessages()));
+}
+
+QModelIndex MessageListView::find(const QModelIndex &start, const QMailMessageId &id)
+{
+    QModelIndex parent(start.parent());
+    for (int i = start.row(); i < mModel->rowCount(parent); ++i) {
+        QModelIndex index(mModel->index(i, 0, parent));
+        if (id == (mModel->idFromIndex(index))) {
+            return index;
+        }
+        if (mModel->hasChildren(index)) {
+            QModelIndex found(find(mModel->index(0, 0, index), id));
+            if (found.isValid())
+                return found;
+        }
+    }
+    return QModelIndex();
+}
+
+void MessageListView::scrollTo(const QMailMessageId &id)
+{
+    if (!id.isValid())
+        return;
+    
+    QModelIndex found(find(mModel->index(0,0), id));
+    if (found.isValid()) {
+        mMessageList->scrollTo(found);
+        mMessageList->setCurrentIndex(found);
+    }
 }
 
 #include "messagelistview.moc"
