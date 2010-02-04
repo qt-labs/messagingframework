@@ -146,7 +146,6 @@ protected slots:
     void scrollTimeout();
     void quickSearch(const QMailMessageKey& key);
     void expandAll();
-    QModelIndex find(const QModelIndex &start, const QMailMessageId &id);
     void scrollTo(const QMailMessageId& id);
 
 protected:
