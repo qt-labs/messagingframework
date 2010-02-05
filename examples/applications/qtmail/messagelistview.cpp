@@ -500,13 +500,13 @@ void MessageListView::setKey(const QMailMessageKey& newKey)
     // Save the current index for the old key
     QByteArray keyArray;
     QDataStream keyStream(&keyArray, QIODevice::WriteOnly);
-    mKey.serialize(keyStream);
+    mKey.serialize<QDataStream>(keyStream);
     mPreviousCurrentCache.insert(keyArray, new QMailMessageId(current()));
 
     // Find the previous current index for the new key
     QByteArray newKeyArray;
     QDataStream newKeyStream(&newKeyArray, QIODevice::WriteOnly);
-    newKey.serialize(newKeyStream);
+    newKey.serialize<QDataStream>(newKeyStream);
     if (mPreviousCurrentCache[newKeyArray]) {
         mPreviousCurrent = *mPreviousCurrentCache[newKeyArray];
     }
