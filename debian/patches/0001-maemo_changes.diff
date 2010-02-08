@@ -6478,7 +6478,64 @@ index 508752a..f7cd380 100644
  };
  
  #endif
-* Unmerged path src/tools/messageserver/messageserver.pro
+diff --git a/src/tools/messageserver/messageserver.pro b/src/tools/messageserver/messageserver.pro
+index 6216729..b04ad88 100644
+--- a/src/tools/messageserver/messageserver.pro
++++ b/src/tools/messageserver/messageserver.pro
+@@ -2,6 +2,9 @@ TEMPLATE = app
+ 
+ include(../../../common.pri)
+ 
++CONFIG -= x11
++CONFIG += console
++
+ TARGET = messageserver
+ target.path += $$QMF_INSTALL_ROOT/bin
+ INSTALLS += target
+@@ -10,22 +13,26 @@ DEPENDPATH += .
+ 
+ INCLUDEPATH += . ../../libraries/qtopiamail \
+                  ../../libraries/qtopiamail/support \
+-                 ../../libraries/messageserver
++                 ../../libraries/messageserver \
++                 ../../libraries/sparql
+ 
+ LIBS += -L../../libraries/messageserver -lmessageserver \
+-        -L../../libraries/qtopiamail -lqtopiamail
++        -L../../libraries/qtopiamail -lqtopiamail \
++        -L../../libraries/sparql -lsparql
+ 
+ HEADERS += mailmessageclient.h \
+            messageserver.h \
+            servicehandler.h \
+-           newcountnotifier.h
++           newcountnotifier.h \
++           sparqlindexer.h
+ 
+ SOURCES += mailmessageclient.cpp \
+            main.cpp \
+            messageserver.cpp \
+            prepareaccounts.cpp \
+            newcountnotifier.cpp \
+-           servicehandler.cpp
++           servicehandler.cpp \
++           sparqlindexer.cpp
+ 
+ TRANSLATIONS += messageserver-ar.ts \
+                 messageserver-de.ts \
+@@ -43,10 +50,11 @@ TRANSLATIONS += messageserver-ar.ts \
+ 
+ unix {
+     # Uncomment this to shutdown cleanly on termination signal
+-    #DEFINES += HANDLE_SHUTDOWN_SIGNALS
++    DEFINES += HANDLE_SHUTDOWN_SIGNALS
+ }
+ 
+ eventd.files = etc/event.d/messageserver
+ eventd.path  = /etc/event.d
+ 
+ INSTALLS += target eventd
++
 diff --git a/src/tools/messageserver/servicehandler.cpp b/src/tools/messageserver/servicehandler.cpp
 index 6112248..470891b 100644
 --- a/src/tools/messageserver/servicehandler.cpp
