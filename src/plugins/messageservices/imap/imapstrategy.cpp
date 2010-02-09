@@ -200,9 +200,12 @@ static QString numericUidSequence(const QStringList &uids)
     return IntegerRegion(numericUids).toString();
 }
 
-static void transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
+static bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
 {
-    Q_ASSERT(destination.partCount() == source.partCount());
+    if (destination.partCount() != source.partCount()) {
+        qWarning() << "transferPartBodies detected copy failure, aborting transfer. Part count, destination" << destination.partCount() << "source" << source.partCount();
+        return false; // copy failed, abort entire move
+    }
 
     if (source.hasBody()) {
         destination.setBody(source.body());
@@ -211,16 +214,18 @@ static void transferPartBodies(QMailMessagePartContainer &destination, const QMa
             const QMailMessagePart &sourcePart = source.partAt(i);
             QMailMessagePart &destinationPart = destination.partAt(i);
 
-            transferPartBodies(destinationPart, sourcePart);
+            return transferPartBodies(destinationPart, sourcePart);
         }
     }
+    return true;
 }
 
-static void transferMessageData(QMailMessage &message, const QMailMessage &source)
+static bool transferMessageData(QMailMessage &message, const QMailMessage &source)
 {
     // TODO: this whole concept is wrong - we might lose data by replacing the original message...
 
-    transferPartBodies(message, source);
+    if (!transferPartBodies(message, source))
+        return false;
 
     if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
         // We have modified the content, so the detached file data is no longer sufficient
@@ -233,6 +238,7 @@ static void transferMessageData(QMailMessage &message, const QMailMessage &sourc
     if (source.status() & QMailMessage::PartialContentAvailable) {
         message.setStatus(QMailMessage::PartialContentAvailable, true);
     }
+    return true;
 }
 
 
@@ -3087,7 +3093,11 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
     ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
 
     // Move the content of the source message to the new message
-    transferMessageData(message, source);
+    if (!transferMessageData(message, source)) {
+        _error = true;
+        qWarning() << "Unable to transfer message data";
+        return;
+    }
 
     if (source.serverUid().isEmpty()) {
         // This message has been moved to the external server - delete the local copy
@@ -3188,7 +3198,11 @@ void ImapExternalizeMessagesStrategy::updateCopiedMessage(ImapStrategyContextBas
     ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
 
     // Move the content of the source message to the new message
-    transferMessageData(message, source);
+    if (!transferMessageData(message, source)) {
+        _error = true;
+        qWarning() << "Unable to transfer message data";
+        return;
+    }
 
     // Replace the source message with the new message
     message.setId(source.id());

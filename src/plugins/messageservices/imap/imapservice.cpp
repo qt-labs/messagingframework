@@ -744,8 +744,13 @@ bool ImapService::Source::initiateStrategy()
     return setStrategy(data.first, data.second.latin1());
 }
 
+// Copy or Move Completed
 void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMailMessage &original)
 {
+    if (_service->_client.strategy()->error()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Destination message failed to match source message"));
+        return;
+    }
     if (_setMask || _unsetMask) {
         if (_setMask) {
             message.setStatus(_setMask, true);
