@@ -73,6 +73,7 @@ enum ImapCommand
     IMAP_Select,
     IMAP_Examine,
     IMAP_Search,
+    IMAP_Search_Message,
     IMAP_Append,
     IMAP_UIDSearch,
     IMAP_UIDFetch,
@@ -182,6 +183,7 @@ public:
     void sendRename(const QMailFolder &mailbox, const QString &newname);
 
     /*  Valid in Selected state only */
+    void sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort);
     void sendSearch(MessageFlags flags, const QString &range = QString());
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);

@@ -101,6 +101,8 @@ public:
     bool addMessages(const QList<QMailMessageMetaData *> &m,
                      QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
+    bool addTemporaryMessage(QMailMessage *m);
+
     bool removeAccounts(const QMailAccountKey &key,
                         QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
@@ -223,6 +225,7 @@ private:
     bool performMaintenance();
 
     void createTemporaryTable(const QMailMessageKey::ArgumentType &arg, const QString &dataType) const;
+    bool createTemporaryMessagesTable() const;
     void destroyTemporaryTables(void);
 
     bool transaction(void);
@@ -321,6 +324,8 @@ private:
     AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                     Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptAddTemporaryMessage(QMailMessage *message, Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveAccounts(const QMailAccountKey &key, 
                                         QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,

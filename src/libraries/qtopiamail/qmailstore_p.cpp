@@ -2440,6 +2440,55 @@ void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType
     requiredTableKeys.append(qMakePair(&arg, dataType));
 }
 
+bool QMailStorePrivate::createTemporaryMessagesTable() const
+{
+    //What we want to do is load mailmessage schema, then change
+    //the name of it, and make it temporary
+
+    if(database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
+        qMailLog(Messaging) << "Temporarymailmessages table already exists.";
+        return false;
+    }
+
+    // load schema of real mailmessages
+    QFile data(":/QtopiaSql/" + database.driverName() + "/mailmessages");
+    if (!data.open(QIODevice::ReadOnly)) {
+        qMailLog(Messaging) << "Failed to load mailmessages schema resource (so we can create a temp table of same structure).";
+        return false;
+    }
+    // build a streamer
+    QTextStream ts(&data);
+    ts.setCodec(QTextCodec::codecForName("utf8"));
+    ts.setAutoDetectUnicode(true);
+
+
+    //The first statement should be a create. We should change it to a create temporary table
+    QString sql = parseSql(ts);
+    if(sql.count("CREATE TABLE mailmessage", Qt::CaseInsensitive) != 1) {
+        qMailLog(Messaging) << "The mailmessage schema seems to have changed. Cannot change to create a temp table";
+        return false;
+    }
+
+    sql.replace("CREATE TABLE mailmessages", "CREATE TEMPORARY TABLE temporarymailmessages", Qt::CaseInsensitive);
+    QSqlQuery query(database);
+    if(!query.exec(sql)) {
+        qMailLog(Messaging) << "Unable to create temporarymailmessages table, with query: " << sql << " error: "
+                << query.lastError().text();
+    }
+
+    //Now lets go through all the other queries, making sure to replace 'mailmessages' with 'temporarymailmessages'
+    for(sql = parseSql(ts); !sql.isEmpty(); sql = parseSql(ts))
+    {
+        sql.replace("mailmessages", "temporarymailmessages");
+        if(!query.exec(sql)) {
+            qMailLog(Messaging) << "Failed to exec table creation SQL query:" << sql << "- error:" << query.lastError().text();
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void QMailStorePrivate::destroyTemporaryTables()
 {
     while (!expiredTableKeys.isEmpty()) {
@@ -3423,6 +3472,41 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
     return true;
 }
 
+bool QMailStorePrivate::addTemporaryMessage(QMailMessage *message)
+{
+    //ensure we have a temporary temporary table
+    if(!database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
+        createTemporaryMessagesTable();
+    }
+
+    AttemptResult (QMailStorePrivate::*func)(QMailMessage *, QMailStorePrivate::Transaction &, bool) = &QMailStorePrivate::attemptAddTemporaryMessage;
+
+    Transaction t(this);
+
+    // Find the message identifier and references from the header
+    QString identifier(identifierValue(message->headerFieldText("Message-ID")));
+    QStringList references(identifierValues(message->headerFieldText("References")));
+    QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
+    if (!predecessor.isEmpty()) {
+        if (references.isEmpty() || (references.last() != predecessor)) {
+            references.append(predecessor);
+        }
+    }
+
+    if (!repeatedly<WriteAccess>(bind(func, this, message), "addTemporaryMessages", &t)) {
+        return false;
+    }
+
+    // no point ensuring durability and the likes.. after all, its just a temporary message
+
+    if (!t.commit()) {
+        qMailLog(Messaging) << "Unable to commit successful addMessages!";
+        return false;
+    }
+
+    return true;
+}
+
 bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &messages,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
@@ -4361,6 +4445,76 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     return Success;
 }
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddTemporaryMessage(QMailMessage *message, Transaction &t, bool commitOnSuccess)
+{
+    if (!message->parentFolderId().isValid()) {
+        qMailLog(Messaging) << "Unable to add temporary message. Invalid parent folder id";
+        return Failure;
+    }
+
+    if (message->id().isValid() && idExists(message->id())) {
+        qMailLog(Messaging) << "Message ID" << message->id() << "already exists in database, use update instead";
+        return Failure;
+    }
+
+    bool replyOrForward(false);
+    QString baseSubject(QMail::baseSubject(message->subject(), &replyOrForward));
+
+    // Ensure that any phone numbers are added in minimal form
+    QMailAddress from(message->from());
+    QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
+
+    QStringList recipients;
+    foreach (const QMailAddress& address, message->to())
+        recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
+
+    QMap<QString, QVariant> values;
+
+    values.insert("type", static_cast<int>(message->messageType()));
+    values.insert("parentfolderid", message->parentFolderId().toULongLong());
+    values.insert("sender", fromText);
+    values.insert("recipients", recipients.join(","));
+    values.insert("subject", message->subject());
+    values.insert("stamp", QMailTimeStamp(message->date()).toLocalTime());
+    values.insert("status", static_cast<int>(message->status()));
+    values.insert("parentaccountid", message->parentAccountId().toULongLong());
+    values.insert("mailfile", ::contentUri(*message));
+    values.insert("serveruid", message->serverUid());
+    values.insert("size", message->size());
+    values.insert("contenttype", static_cast<int>(message->content()));
+    values.insert("responseid", message->inResponseTo().toULongLong());
+    values.insert("responsetype", message->responseType());
+    values.insert("receivedstamp", QMailTimeStamp(message->receivedDate()).toLocalTime());
+    if (message->previousParentFolderId().isValid()) {
+        values.insert("previousparentfolderid", message->previousParentFolderId().toULongLong());
+    }
+
+    const QStringList &list(values.keys());
+    QString columns = list.join(",");
+
+    // Add the record to the mailmessages table
+    QSqlQuery query(simpleQuery(QString("INSERT INTO temporarymailmessages (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
+                                values.values(),
+                                "addMessage mailmessages query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    //retrieve the insert id
+    quint64 insertId = extractValue<quint64>(query.lastInsertId());
+
+    // TODO: custom fields
+
+    if (commitOnSuccess && !t.commit()) {
+        qMailLog(Messaging) << "Could not commit message changes to database";
+        return DatabaseFailure;
+    }
+
+    message->setId(QMailMessageId(insertId | Q_UINT64_C(9223372036854775808))); //set the msb to 1, to denote its temporary
+    message->setUnmodified();
+    return Success;
+}
+
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                                                       QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 

@@ -1333,6 +1333,232 @@ QString ExamineState::transmit(ImapContext *c)
     return c->sendCommand(cmd);
 }
 
+class SearchMessageState : public SelectedState
+{
+    Q_OBJECT
+public:
+    SearchMessageState() : SelectedState(IMAP_Search_Message, "Search_Message") { }
+    virtual bool permitsPipelining() const { return true; }
+    void setParameters(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort);
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+protected:
+    QString convertValue(const QVariant &value, const QMailMessageKey::Property &property, const QMailKey::Comparator &comparer) const;
+    QString combine(const QStringList &searchKeys, const QMailKey::Combiner &combiner) const;
+    QString convertKey(const QMailMessageKey &key) const;
+
+    struct SearchArgument {
+        QMailMessageKey key;
+        QString body;
+        QMailMessageSortKey sort;
+    };
+    QList<SearchArgument> _searches;
+};
+
+void SearchMessageState::setParameters(const QMailMessageKey &searchKey, const QString &bodyText, const QMailMessageSortKey &sortKey)
+{
+    SearchArgument arg;
+    arg.key = searchKey;
+    arg.body = bodyText;
+    arg.sort = sortKey;
+    _searches.append(arg);
+}
+
+QString SearchMessageState::transmit(ImapContext *c)
+{
+    const SearchArgument &search = _searches.last();
+    QString searchQuery = convertKey(search.key);
+    //searchQuery =  ImapProtocol::quoteString(searchQuery);
+    searchQuery = "UID SEARCH " + searchQuery;
+
+    if(!search.body.isEmpty())
+        searchQuery += " BODY " + ImapProtocol::quoteString(search.body);
+
+    return c->sendCommand(searchQuery);
+}
+
+
+QString SearchMessageState::convertValue(const QVariant &value, const QMailMessageKey::Property &property,
+                                         const QMailKey::Comparator &comparer) const
+{
+
+    switch(property) {
+    case QMailMessageKey::Id:
+        qWarning() << "what is id??"; //TODO:
+        break;
+    case QMailMessageKey::Type:
+        qWarning() << "What is type??"; //TODO:
+        break;
+    case QMailMessageKey::Sender: {
+        QString sender = value.toString();
+        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
+            return QString("FROM %1").arg(sender);
+        else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
+            return QString("NOT (FROM %1)").arg(sender);
+        else
+            qWarning() << "Comparer " << comparer << " is unhandled for sender comparison";
+        break;
+    }
+    case QMailMessageKey::Recipients: {
+        QString recipients = ImapProtocol::quoteString(value.toString());
+        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
+            return QString("OR BCC %1 (OR CC %1 TO %1)").arg(recipients);
+        else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
+            return QString("NOT (OR BCC %1 (OR CC %1 TO %1))").arg(recipients);
+        else
+            qWarning() << "Comparer " << comparer << " is unhandled for recipients comparison";
+        break;
+    }
+    case QMailMessageKey::Subject: {
+        QString subject = ImapProtocol::quoteString(value.toString());
+        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
+            return QString("SUBJECT %1").arg(subject);
+        else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
+            return QString("NOT (SUBJECT %1)").arg(subject);
+        else
+            qWarning() << "Comparer " << comparer << " is unhandled for subject comparison";
+        break;
+    }
+    case QMailMessageKey::TimeStamp:
+
+        break;
+    case QMailMessageKey::Status:
+        break;
+    case QMailMessageKey::Conversation:
+        break;
+    case QMailMessageKey::ReceptionTimeStamp:
+        break;
+    case QMailMessageKey::ServerUid:
+
+        break;
+    case QMailMessageKey::Size: {
+        int size = value.toInt();
+
+        if(comparer == QMailKey::GreaterThan)
+            return QString("LARGER %1").arg(size);
+        else if(comparer == QMailKey::LessThan)
+            return QString("SMALLER %1").arg(size);
+        else if(comparer == QMailKey::GreaterThanEqual)
+            return QString("LARGER %1").arg(size-1); // imap has no >= search, so convert it to a >
+        else if(comparer == QMailKey::LessThanEqual)
+            return QString("SMALLER %1").arg(size+1); // ..same with <=
+        else if(comparer == QMailKey::Equal) // ..cause real men know how many bytes they're looking for
+            return QString("LARGER %1 SMALLER %2").arg(size-1).arg(size+1);
+        else
+            qWarning() << "Unknown comparer: " << comparer << "for size";
+        break;
+    }
+    case QMailMessageKey::ParentAccountId:
+        qWarning() << "Not handling parent account id? We're in the account? no?";
+        break;
+    case QMailMessageKey::AncestorFolderIds:
+        qWarning() << "Not handling ancestor folder ids for IMAP search..";
+        break;
+    case QMailMessageKey::ContentType:
+        break;
+    case QMailMessageKey::PreviousParentFolderId:
+        break;
+    case QMailMessageKey::ContentScheme:
+        break;
+    case QMailMessageKey::ContentIdentifier:
+        break;
+    case QMailMessageKey::InResponseTo:
+        break;
+    case QMailMessageKey::ResponseType:
+        break;
+    case QMailMessageKey::Custom:
+        qWarning() << "Custom searches are not handled..";
+        break;
+    default:
+        qDebug() << "Property " << property << " still not handled for search.";
+    }
+    return "ALL";
+}
+
+QString SearchMessageState::convertKey(const QMailMessageKey &key) const
+{
+    QString result;
+    QMailKey::Combiner combiner = key.combiner();
+
+    QList<QMailMessageKey::ArgumentType> args = key.arguments();
+
+    QStringList argSearches;
+    foreach(QMailMessageKey::ArgumentType arg, args) {
+        Q_ASSERT(arg.valueList.count() == 1); //shouldn't hae more than 1 element.
+        argSearches.append(convertValue(arg.valueList[0], arg.property, arg.op));
+    }
+    result = combine(argSearches, combiner);
+
+    QStringList subSearchKeys;
+    QList<QMailMessageKey> subkeys = key.subKeys();
+
+    foreach(QMailMessageKey subkey, subkeys) {
+        subSearchKeys.append(convertKey(subkey));
+    }
+    if(!subSearchKeys.isEmpty()) {
+        result += " " + combine(subSearchKeys, combiner);
+    }
+
+    return result;
+}
+
+QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKey::Combiner &combiner) const
+{
+    if(combiner == QMailKey::And) {
+        //IMAP uses AND by default, so just add a space and we're good to go!
+        return searchKeys.join(" ");
+    } else if(combiner == QMailKey::Or) {
+        //IMAP uses OR (value-1 value-2)
+        int left = searchKeys.count(); //how many are we joining
+        QString result;
+
+        //TODO: this is wrong
+        foreach(QString searchKey, searchKeys) {
+            if(left >= 3)
+                result += "OR (";
+            else if(left == 2)
+                result += "OR ";
+
+            result += searchKey;
+        }
+        result += QString(")").repeated(searchKeys.count() - 2); //add closing parenthesis
+        return result;
+    } else if(combiner == QMailKey::None) {
+        if(searchKeys.count() != 1)
+            qWarning() << "Attempting to combine more than thing, without a combiner?";
+        return searchKeys.join(" ");
+    } else {
+        qWarning() << "Unable to combine with an unknown combiner: " << combiner;
+        return QString("");
+    }
+}
+
+
+void SearchMessageState::leave(ImapContext *)
+{
+    _searches.removeFirst();
+}
+
+void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    if (line.startsWith("* SEARCH")) {
+        QStringList uidList;
+
+        int index = 7;
+        QString temp;
+        while ((temp = token(line, ' ', ' ', &index)) != QString::null) {
+            uidList.append(messageUid(c->mailbox().id, temp));
+            index--;
+        }
+        temp = token(line, ' ', '\n', &index);
+        if (temp != QString::null)
+            uidList.append(messageUid(c->mailbox().id, temp));
+        c->setUidList(uidList);
+    } else {
+        SelectedState::untaggedResponse(c, line);
+    }
+}
 
 class SearchState : public SelectedState
 {
@@ -2093,6 +2319,7 @@ public:
     CreateState createState;
     DeleteState deleteState;
     RenameState renameState;
+    SearchMessageState searchMessageState;
     SearchState searchState;
     UidSearchState uidSearchState;
     UidFetchState uidFetchState;
@@ -2469,6 +2696,12 @@ void ImapProtocol::sendRename(const QMailFolder &mailbox, const QString &newName
     }
     _fsm->renameState.setNewMailboxName(mailbox, newName);
     _fsm->setState(&_fsm->renameState);
+}
+
+void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort)
+{
+    _fsm->searchMessageState.setParameters(key, body, sort);
+    _fsm->setState(&_fsm->searchMessageState);
 }
 
 

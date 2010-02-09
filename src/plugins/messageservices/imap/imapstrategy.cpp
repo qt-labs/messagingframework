@@ -291,6 +291,11 @@ void ImapStrategyContextBase::operationCompleted()
     _client->retrieveOperationCompleted();
 }
 
+void ImapStrategyContextBase::partialSearchResults(const QList<QMailMessageId> &msgs)
+{
+    emit _client->partialSearchResults(msgs);
+}
+
 /* A basic strategy to achieve an authenticated state with the server,
    and to provide default responses to IMAP command completion notifications,
 */
@@ -1226,6 +1231,7 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
         if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
             context->protocol().sendUidFetchSection(numericUidSequence(_messageUids), msgSectionStr, _sectionStart, _sectionEnd);
         } else {
+            //TODO know if it's temp or not
             context->protocol().sendUidFetch(ContentFetchFlags, numericUidSequence(_messageUids));
         }
 
@@ -1285,7 +1291,158 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
     }
 }
+/* A strategy to search all folders */
 
+void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
+{
+   SearchData search;
+   search.criteria = searchCriteria;
+   search.bodyText = bodyText;
+   search.sort = sort;
+
+    _searches.append(search);
+}
+
+void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapCommand cmd, OperationStatus status)
+{
+    switch(cmd) {
+    case IMAP_Search_Message:
+        handleSearchMessage(c);
+        break;
+    default:
+        //qDebug() << "Hit cmd " << cmd << " with status " << status;
+        ImapRetrieveFolderListStrategy::transition(c, cmd, status);
+    }
+}
+
+void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::folderListFolderAction called..";
+    //if there are messages, lets search it
+    const ImapMailboxProperties &properties(context->mailbox());
+    if(properties.exists > 0) {
+        const SearchData &search = _searches.first();
+        context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
+    } else {
+        processNextFolder(context);
+    }
+}
+
+void ImapSearchMessageStrategy::previewDiscoveredMessages(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::previewDiscoveredMessages called";
+    ImapSynchronizeBaseStrategy::previewDiscoveredMessages(context);
+}
+
+bool ImapSearchMessageStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::selectNextPreviewFolder called";
+    return ImapSynchronizeBaseStrategy::selectNextPreviewFolder(context);
+}
+
+void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    // Store this message to the temporary mail store
+    Q_ASSERT(!message.id().isValid()); //We shouldn't be fetching messages we already have
+
+    bool stored = QMailStore::instance()->addTemporaryMessage(&message);
+
+    if (!stored) {
+            _error = true;
+            qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+            return;
+    }
+
+    context->partialSearchResults(QList<QMailMessageId>() << message.id());
+}
+
+void ImapSearchMessageStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::FetchNextMailPreview called";
+    ImapSynchronizeBaseStrategy::fetchNextMailPreview(context);
+}
+void ImapSearchMessageStrategy::folderPreviewCompleted(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::folderPreviewCompleted called";
+    ImapSynchronizeBaseStrategy::folderPreviewCompleted(context);
+}
+
+
+void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *context)
+{
+    const ImapMailboxProperties &properties(context->mailbox());
+    QList<QMailMessageId> searchResults;
+    IntegerRegion uidsToFetch;
+
+    if(properties.uidList.count() > 0) { //we've found some stuff :o !
+        QMailFolder folder(properties.id);
+
+        //make sure we're not doing a folder that we shouldn't??
+        bool syncfolder = folder.status() & QMailFolder::SynchronizationEnabled;
+        qDebug() << "Syncing is " << syncfolder << "for folder id:" << folder.id();
+        //TODO: use syncfolder to know to fetch if it's just outside of the
+        //contigious range
+
+        int clientMin(folder.customField("qmf-min-serveruid").toInt());
+        int clientMax(folder.customField("qmf-max-serveruid").toInt());
+
+        foreach(const QString &uidString, properties.uidList) {
+            int uid = stripFolderPrefix(uidString).toInt();
+            Q_ASSERT(uid > 0);
+            if(clientMin > 0 && clientMax > 0 && uid >= clientMin && uid <= clientMax) {
+                //it's in the range, therefor we should have it
+
+                QMailMessage msg = QMailStore::instance()->message(uidString, context->config().id());
+                if(QMailStore::instance()->lastError() != QMailStore::NoError)
+                    searchResults.append(msg.id());
+            } else {
+                uidsToFetch.add(uid);
+            }
+        }
+
+        if(!searchResults.isEmpty())
+            context->partialSearchResults(searchResults);
+
+    }
+
+    if(uidsToFetch.isEmpty())
+        processNextFolder(context);
+    else
+        context->protocol().sendUidFetch(MetaDataFetchFlags, uidsToFetch.toString());
+}
+
+//We have fetched the metadata of (some|all) the messages in the folder.. ;D
+void ImapSearchMessageStrategy::handleUidFetch(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::handleUidFetch hit..";
+    ImapRetrieveFolderListStrategy::handleUidFetch(context);
+    processNextFolder(context);
+}
+
+void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::folderListCompleted called..";
+    //ImapSearchMessageStrategy::previewDiscoveredMessages(context);
+    ImapRetrieveFolderListStrategy::folderListCompleted(context);
+}
+
+void ImapSearchMessageStrategy::mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags)
+{
+   // qDebug() << "ImapSearchMessageStrategy::mailboxListed called with folder id " << folder.id() << "and flags: " << flags;
+    ImapRetrieveFolderListStrategy::mailboxListed(context, folder, flags);
+}
+
+void ImapSearchMessageStrategy::messageListMessageAction(ImapStrategyContextBase *context)
+{
+    qDebug() << "ImapSearchMessageStrategy::messageListMessageAction invoked";
+    ImapFetchSelectedMessagesStrategy::messageListMessageAction(context);
+}
+
+ void ImapSearchMessageStrategy::messageListCompleted(ImapStrategyContextBase *context)
+ {
+     _searches.removeFirst();
+     context->operationCompleted();
+ }
 
 /* A strategy that provides an interface for processing a set of folders.
 */

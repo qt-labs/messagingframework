@@ -245,6 +245,19 @@ bool QMailStore::addMessage(QMailMessageMetaData* metaData)
 }
 
 /*!
+    Adds a QMailMessage object \a message into the message store, for a short period of time.
+    Messages added this way can only be retrieved from the store if explicitly
+    requested by id. Internally they are stored in a temporary table. This method is how a remote
+    search temporarily stores search result. Will not emit signals like modify/add/message.
+*/
+
+bool QMailStore::addTemporaryMessage(QMailMessage *message)
+{
+    d->setLastError(NoError);
+    return d->addTemporaryMessage(message);
+}
+
+/*!
     Adds a new QMailMessage object into the message store for each entry in
     the list \a messages, performing all respective integrity checks. 
     Returns \c true if the operation completed successfully, \c false otherwise. 
