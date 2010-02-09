@@ -919,5 +919,9 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
     return QMailMessageKey(Conversation, key, QMailKey::Includes);
 }
 
+//create implementations for QDataStream
+template void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+template void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);
 

@@ -199,6 +199,8 @@ public:
     virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
                              QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
+    virtual bool addTemporaryMessage(QMailMessage *m) = 0;
+
     virtual bool removeAccounts(const QMailAccountKey &key,
                                 QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
@@ -283,6 +285,8 @@ public:
 
     virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
                              QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool addTemporaryMessage(QMailMessage *m);
 
     virtual bool removeAccounts(const QMailAccountKey &key,
                                 QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);

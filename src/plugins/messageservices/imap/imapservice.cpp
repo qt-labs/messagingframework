@@ -130,6 +130,8 @@ public slots:
     virtual bool deleteFolder(const QMailFolderId &folderId);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
 
+    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
+
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
     void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
@@ -656,6 +658,18 @@ bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QStr
     _service->_client.strategyContext()->renameFolderStrategy.renameFolder(folderId, name);
 
     return setStrategy(&_service->_client.strategyContext()->renameFolderStrategy);
+}
+
+bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
+{
+    if(searchCriteria.isEmpty() && bodyText.isEmpty()) {
+        //we're not going to do an empty search (which returns all emails..)
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Empty search provided"));
+        return false;
+    }
+
+    _service->_client.strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, sort);
+    return setStrategy(&_service->_client.strategyContext()->searchMessageStrategy);
 }
 
 bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &messageIds)

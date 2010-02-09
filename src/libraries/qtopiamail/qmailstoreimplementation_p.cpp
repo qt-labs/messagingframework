@@ -742,6 +742,11 @@ bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData 
     return false;
 }
 
+bool QMailStoreNullImplementation::addTemporaryMessage(QMailMessage *)
+{
+    return false;
+}
+
 bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;

@@ -120,6 +120,7 @@ public:
     void completedMessageAction(const QString &uid);
     void completedMessageCopy(QMailMessage &message, const QMailMessage &original);
     void operationCompleted();
+    void partialSearchResults(const QList<QMailMessageId> &msgs);
 
 private:
     ImapClient *_client;
@@ -555,6 +556,38 @@ public:
     virtual ~ImapRetrieveAllStrategy() {}
 };
 
+class ImapSearchMessageStrategy : public ImapRetrieveFolderListStrategy
+{
+public:
+    ImapSearchMessageStrategy() { setBase(QMailFolderId()); setDescending(true); }
+    virtual ~ImapSearchMessageStrategy() {}
+
+    virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
+    virtual void transition(ImapStrategyContextBase *, ImapCommand, OperationStatus);
+    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+protected:
+    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
+    virtual void handleSearchMessage(ImapStrategyContextBase *context);
+    virtual void handleUidFetch(ImapStrategyContextBase *context);
+    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
+    virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
+
+    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+
+    virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
+    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    virtual void messageListCompleted(ImapStrategyContextBase *context);
+
+    struct SearchData {
+        QMailMessageKey criteria;
+        QString bodyText;
+        QMailMessageSortKey sort;
+    };
+    QList<SearchData> _searches;
+};
+
 class ImapExportUpdatesStrategy : public ImapSynchronizeAllStrategy
 {
 public:
@@ -741,6 +774,7 @@ public:
     ImapCreateFolderStrategy createFolderStrategy;
     ImapDeleteFolderStrategy deleteFolderStrategy;
     ImapRenameFolderStrategy renameFolderStrategy;
+    ImapSearchMessageStrategy searchMessageStrategy;
 
     void newConnection() { _strategy->clearError(); _strategy->newConnection(this); }
     void commandTransition(const ImapCommand command, const OperationStatus status) { _strategy->transition(this, command, status); }

@@ -80,7 +80,13 @@ MailId& MailId::operator=(const MailId& other)
 
 bool MailId::isValid() const
 {
-    return d->id != 0;
+    return d->id != 0; // Note: the msb is used as a flag, so it could (but shouldn't) trigger a false positive
+}
+
+bool MailId::isTemporaryMessage() const
+{
+    //we use the msb to indicate a temporary message
+    return (Q_UINT64_C(9223372036854775808) & (d->id)) != 0; //9223372036854775808 == 1 << 63. i.e. get the msb
 }
 
 quint64 MailId::toULongLong() const
@@ -473,6 +479,14 @@ QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other)
 bool QMailMessageId::isValid() const
 {
     return MailId::isValid();
+}
+
+/*!
+    Returns true if this object is a temporary message
+*/
+bool QMailMessageId::isTemporaryMessage() const
+{
+    return MailId::isTemporaryMessage();
 }
 
 /*! \internal */

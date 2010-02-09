@@ -2047,25 +2047,7 @@ void ServiceHandler::continueSearch()
 
 void ServiceHandler::finaliseSearch(quint64 action)
 {
-    if (!mSearches.isEmpty()) {
-        qWarning() << "Remote search complete but none pending!" << action;
-    } else {
-        MessageSearch &currentSearch(mSearches.first());
-
-        if (currentSearch.action() != action) {
-            qWarning() << "Remote search complete but not current!" << action;
-        } else {
-            if (currentSearch.isEmpty()) {
-                // This search is now finished
-                emit searchCompleted(currentSearch.action());
-
-                mSearches.removeFirst();
-
-                if (!mSearches.isEmpty())
-                    QTimer::singleShot(0, this, SLOT(continueSearch()));
-            }
-        }
-    }
+    emit searchCompleted(action);
 }
 
 void ServiceHandler::reportFailures()
