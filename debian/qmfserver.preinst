@@ -7,7 +7,7 @@ set -e
 if [ ! -e /targets/links/scratchbox.config ]; then
     if [ -x /etc/event.d/messageserver ]; then
         echo "Stop Message server...";
-	stop messageserver
+	stop xsession-default/messageserver
     fi
 else
     echo "Running under scratchbox, do not stop Message server.";

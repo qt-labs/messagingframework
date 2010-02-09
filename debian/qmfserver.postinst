@@ -6,7 +6,7 @@ set -e
 
 if [ ! -e /targets/links/scratchbox.config ]; then
     echo "Starting Message server...";
-    start messageserver
+    start xsession-default/messageserver
 else
     echo "Running under scratchbox, do not start message server.";
 fi

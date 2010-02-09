@@ -6,7 +6,7 @@ set -e
 
 if [ ! -e /targets/links/scratchbox.config ]; then
     echo "Stopping Message server...";
-    stop messageserver
+    stop xsession-default/messageserver
 else 
     echo "Runing under scrachbox, do not stop Message server.";
 fi
