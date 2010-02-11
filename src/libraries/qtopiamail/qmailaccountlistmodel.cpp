@@ -98,6 +98,7 @@ public:
                                  bool synchronizeEnabled);
     ~QMailAccountListModelPrivate();
 
+    void initialize() const;
     const QMailAccountIdList& ids() const;
 
     int indexOf(const QMailAccountId& id) const;
@@ -131,12 +132,17 @@ QMailAccountListModelPrivate::~QMailAccountListModelPrivate()
 {
 }
 
+void QMailAccountListModelPrivate::initialize() const
+{
+    idList = QMailStore::instance()->queryAccounts(key,sortKey);
+    init = true;
+    needSynchronize = false;
+}
+
 const QMailAccountIdList& QMailAccountListModelPrivate::ids() const
 {
     if (!init) {
-        idList = QMailStore::instance()->queryAccounts(key,sortKey);
-        init = true;
-        needSynchronize = false;
+        initialize();
     }
 
     return idList;
@@ -332,7 +338,7 @@ void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
     //use id sorted indexes
     
     if(!d->init)
-        return;
+        d->initialize();
     
     QMailAccountKey passKey = d->key & QMailAccountKey::id(ids);
     QMailAccountIdList results = QMailStore::instance()->queryAccounts(passKey);
@@ -387,7 +393,7 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
     //use id sorted indexes
 
     if(!d->init)
-        return;
+        d->initialize();
 
     QMailAccountKey idKey(QMailAccountKey::id(ids));
 
@@ -481,7 +487,7 @@ void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
         return;
 
     if(!d->init)
-        return;
+        d->initialize();
 
     foreach(const QMailAccountId &id, ids)
     {
