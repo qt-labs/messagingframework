@@ -465,8 +465,10 @@ void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
 
 void MessageList::rowsInserted(const QModelIndex &parent, int start, int end)
 {
-    setExpanded(parent, true);
     QTreeView::rowsInserted(parent, start, end);
+    for (int i = start; i < end; ++i) {
+        setExpanded(model()->index(i, 0,  parent), true);
+    }
 }
 
 
