@@ -216,7 +216,8 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& charse
         }
 
         // This is an unfortunately-necessary copy operation; we should investigate
-        // modifying QTextCodec to support a stream interface
+        // using QTextCodec::makeDecoder, and adding a factory method to 
+        // QMailMessagePartContainer that returns a readable QIODevice*
         QString unicode = codec->toUnicode(decoded);
         out << unicode;
         out.flush();
