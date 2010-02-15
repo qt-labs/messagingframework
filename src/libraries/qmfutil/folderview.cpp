@@ -41,9 +41,13 @@
 
 #include "folderview.h"
 #include <QKeyEvent>
+#include <qmailmessagekey.h>
+#include <qdatastream.h>
 
 FolderView::FolderView(QWidget *parent)
-    : QTreeView(parent)
+    : QTreeView(parent),
+      lastItem(0),
+      oldModel(0)
 {
     connect(this, SIGNAL(activated(QModelIndex)), this, SLOT(itemActivated(QModelIndex)));
     connect(this, SIGNAL(expanded(QModelIndex)), this, SLOT(itemExpanded(QModelIndex)));
@@ -145,17 +149,35 @@ void FolderView::itemSelected(const QModelIndex &index)
             emit selected(item);
 }
 
+static QByteArray arrayFromKey(const QMailMessageKey &key)
+{
+    QByteArray array;
+    QDataStream stream(&array, QIODevice::WriteOnly);
+    key.serialize<QDataStream>(stream);
+    return array;
+}
+
 void FolderView::itemExpanded(const QModelIndex &index)
 {
     if (FolderModel *folderModel = model()) {
+
         QMailFolderId folderId = folderModel->folderIdFromIndex(index);
         if (folderId.isValid()) {
             expandedFolders.insert(folderId);
-        } else {
-            QMailAccountId accountId = folderModel->accountIdFromIndex(index);
-            if (accountId.isValid()) {
-                expandedAccounts.insert(accountId);
-            }
+            return;
+        }
+        
+        QMailAccountId accountId = folderModel->accountIdFromIndex(index);
+        if (accountId.isValid()) {
+            expandedAccounts.insert(accountId);
+            return;
+        }
+
+        QMailMessageSet *item = folderModel->itemFromIndex(index);
+        if (item) {
+            QMailMessageKey key = item->messageKey();
+            expandedKeys.insert(arrayFromKey(key));
+            return;
         }
     }
 }
@@ -163,15 +185,25 @@ void FolderView::itemExpanded(const QModelIndex &index)
 void FolderView::itemCollapsed(const QModelIndex &index)
 {
     if (FolderModel *folderModel = model()) {
+
         QMailFolderId folderId = folderModel->folderIdFromIndex(index);
         if (folderId.isValid()) {
             expandedFolders.remove(folderId);
-        } else {
-            QMailAccountId accountId = folderModel->accountIdFromIndex(index);
-            if (accountId.isValid()) {
-                expandedAccounts.remove(accountId);
-            }
+            return;
         }
+        
+        QMailAccountId accountId = folderModel->accountIdFromIndex(index);
+        if (accountId.isValid()) {
+            expandedAccounts.remove(accountId);
+            return;
+        }
+
+        QMailMessageSet *item = folderModel->itemFromIndex(index);
+        if (item) {
+            QMailMessageKey key = item->messageKey();
+            expandedKeys.remove(arrayFromKey(key));
+            return;
+        }        
     }
 }
 
@@ -199,6 +231,16 @@ QModelIndex itemIndex<QMailFolderId>(const QMailFolderId &id, FolderModel *folde
     return folderModel->indexFromFolderId(id);
 }
 
+template<>
+QModelIndex itemIndex<QByteArray>(const QByteArray &key, FolderModel *folderModel)
+{
+    for (int i = 0; i < folderModel->count(); ++i) {
+        if (arrayFromKey(folderModel->at(i)->messageKey()) == key) {
+            return folderModel->indexFromItem(folderModel->at(i));
+        }
+    }
+    return QModelIndex();
+}
 }
 
 template<typename SetType>
@@ -250,6 +292,11 @@ void FolderView::removeNonexistent(SetType &ids, FolderModel *model)
     }
 }
 
+bool FolderView::expandKeys(QSet<QByteArray> &keys, FolderModel *model)
+{
+    return expandSet(keys, model);
+}
+
 bool FolderView::expandFolders(QSet<QMailFolderId> &folderIds, FolderModel *model)
 {
     return expandSet(folderIds, model);
@@ -264,10 +311,12 @@ void FolderView::modelReset()
 {
     if (FolderModel *folderModel = model()) {
         // Remove any items that are no longer in the model
+        removeNonexistent(expandedKeys, folderModel);
         removeNonexistent(expandedAccounts, folderModel);
         removeNonexistent(expandedFolders, folderModel);
 
         // Ensure all the expanded items are re-expanded
+        QSet<QByteArray> keys(expandedKeys);
         QSet<QMailAccountId> accountIds(expandedAccounts);
         QSet<QMailFolderId> folderIds(expandedFolders);
 
@@ -277,11 +326,15 @@ void FolderView::modelReset()
 
             // We need to repeat this process, because many items cannot be expanded until
             // their parent item is expanded...
+            itemsExpanded |= expandKeys(keys, folderModel);
             itemsExpanded |= expandAccounts(accountIds, folderModel);
             itemsExpanded |= expandFolders(folderIds, folderModel);
         } while (itemsExpanded);
 
         // Any remainining IDs must not be accessible in the model any longer
+        foreach (const QByteArray &key, keys)
+            expandedKeys.remove(key);
+
         foreach (const QMailAccountId &accountId, accountIds)
             expandedAccounts.remove(accountId);
 
@@ -317,11 +370,25 @@ void FolderView::showEvent(QShowEvent *e)
 {
     setIgnoreMailStoreUpdates(false);
     QTreeView::showEvent(e);
+    if (lastItem) {
+        setCurrentItem(lastItem);
+    }
+    lastItem = 0;
 }
 
 void FolderView::hideEvent(QHideEvent *e)
 {
+    lastItem = currentItem();
     setIgnoreMailStoreUpdates(true);
     QTreeView::hideEvent(e);
 }
 
+void FolderView::setModel(QAbstractItemModel *model)
+{
+    if (oldModel) {
+        disconnect(oldModel, SIGNAL(reset()), this, SLOT(modelReset()));
+    }
+    QTreeView::setModel(model);
+    oldModel = model;
+    connect(model, SIGNAL(modelReset()), this, SLOT(modelReset()));
+}

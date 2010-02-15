@@ -46,6 +46,7 @@
 #include "folderdelegate.h"
 #include <QSet>
 #include <QTreeView>
+#include <QPointer>
 
 class QMFUTIL_EXPORT FolderView : public QTreeView
 {
@@ -69,6 +70,8 @@ public:
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
 
+    virtual void setModel(QAbstractItemModel *model);
+
 signals:
     void selected(QMailMessageSet *);
     void activated(QMailMessageSet *);
@@ -80,13 +83,12 @@ protected slots:
     virtual void itemExpanded(const QModelIndex &index);
     virtual void itemCollapsed(const QModelIndex &index);
     virtual void currentChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex);
+    virtual void modelReset();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void showEvent(QShowEvent *e);
     virtual void hideEvent(QHideEvent *e);
-
-    virtual void modelReset();
 
 private:
     template<typename SetType>
@@ -95,11 +97,15 @@ private:
     template<typename SetType>
     void removeNonexistent(SetType &ids, FolderModel *model);
 
+    bool expandKeys(QSet<QByteArray> &keys, FolderModel *model);
     bool expandAccounts(QSet<QMailAccountId> &accountIds, FolderModel *model);
     bool expandFolders(QSet<QMailFolderId> &folderIds, FolderModel *model);
 
     QSet<QMailAccountId> expandedAccounts;
     QSet<QMailFolderId> expandedFolders;
+    QSet<QByteArray> expandedKeys;
+    QPointer<QMailMessageSet> lastItem;
+    QPointer<QAbstractItemModel> oldModel;
 };
 
 #endif
