@@ -1180,7 +1180,7 @@ int QMailMessageSetModel::columnCount(const QModelIndex &) const
 }
 
 /*! 
-    Returns true is the model contains no child message set objects.
+    Returns true if the model contains no child message set objects; otherwise returns false.
 */
 bool QMailMessageSetModel::isEmpty() const
 {
