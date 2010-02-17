@@ -920,8 +920,8 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
 }
 
 //create implementations for QDataStream
-template void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
-template void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+template void QTOPIAMAIL_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+template void QTOPIAMAIL_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);
 
