@@ -49,7 +49,7 @@
 #include <errno.h>
 
 
-#if !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_SYMBIAN) & !defined(Q_OS_MAC)
 union semun {
     int val;
 };

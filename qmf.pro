@@ -13,7 +13,11 @@ SUBDIRS = src/libraries/qtopiamail \
           examples/applications/qtmail \
           examples/settings/messagingaccounts \
           tests \
-          benchmarks \
+
+# disbale benchmark test on mac until ported
+!macx {
+          SUBDIRS += benchmarks
+}
 
 CONFIG += ordered
 

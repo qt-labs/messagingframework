@@ -51,6 +51,9 @@
 #include <f32file.h>
 #elif defined(Q_OS_WIN)
 #include <windows.h>
+#elif defined (Q_OS_MAC)
+#include <sys/statvfs.h>
+#include <sys/mount.h>
 #else
 #include <sys/vfs.h>
 #endif
