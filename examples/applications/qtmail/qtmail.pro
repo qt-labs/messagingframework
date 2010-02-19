@@ -1,10 +1,7 @@
 TEMPLATE = app
-
-include(../../../common.pri)
-
 TARGET = qtmail 
+CONFIG += qmfutil qtopiamail
 target.path += $$QMF_INSTALL_ROOT/bin
-INSTALLS += target
 
 DEPENDPATH += . 
 
@@ -12,8 +9,9 @@ INCLUDEPATH += . ../../../src/libraries/qtopiamail \
                  ../../../src/libraries/qtopiamail/support \
                  ../../../src/libraries/qmfutil
 
-LIBS += -L../../../src/libraries/qtopiamail -lqtopiamail \
-        -L../../../src/libraries/qmfutil -lqmfutil
+LIBS += -L../../../src/libraries/qtopiamail/build \
+        -L../../../src/libraries/qmfutil/build
+
 
 HEADERS += emailclient.h \
            messagelistview.h \
@@ -36,3 +34,4 @@ FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
 
+include(../../../common.pri)

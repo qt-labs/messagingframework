@@ -1,10 +1,9 @@
 TEMPLATE = lib 
-
-include(../../../../common.pri)
-
 TARGET = smtp 
+
+CONFIG += qtopiamail messageserver
+
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
-INSTALLS += target
 
 QT += network
 DEFINES += PLUGIN_INTERNAL
@@ -15,8 +14,8 @@ INCLUDEPATH += . ../../../libraries/qtopiamail \
                ../../../libraries/messageserver \
                ../../../libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/messageserver -lmessageserver
+LIBS += -L../../../libraries/qtopiamail/build \
+        -L../../../libraries/messageserver/build
 
 HEADERS += smtpauthenticator.h \
            smtpclient.h \
@@ -32,3 +31,4 @@ SOURCES += smtpauthenticator.cpp \
            smtpservice.cpp \
            smtpsettings.cpp
 
+include(../../../../common.pri)

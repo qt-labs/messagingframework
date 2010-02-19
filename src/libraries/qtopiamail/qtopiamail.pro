@@ -1,11 +1,8 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-
-include(../../../common.pri)
-
 TARGET = qtopiamail
+
 target.path += $$QMF_INSTALL_ROOT/lib 
-INSTALLS += target
 
 DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
 win32: {
@@ -149,3 +146,4 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
+include(../../../common.pri)

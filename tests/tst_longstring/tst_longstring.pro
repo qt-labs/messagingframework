@@ -1,19 +1,18 @@
 CONFIG += qtestlib unittest
+CONFIG += qtopiamail
 
-include(../../common.pri)
 
 TEMPLATE = app
 TARGET = tst_longstring
 target.path += $$QMF_INSTALL_ROOT/tests
-INSTALLS += target
 
 QTOPIAMAIL=../../src/libraries/qtopiamail
 
 DEPENDPATH += .
 INCLUDEPATH += . $$QTOPIAMAIL $$QTOPIAMAIL/support
-LIBS += -L$$QTOPIAMAIL -lqtopiamail
+LIBS += -L$$QTOPIAMAIL/build
 QMAKE_LFLAGS += -Wl,-rpath,$$QTOPIAMAIL
 
 SOURCES += tst_longstring.cpp
 
-
+include(../../common.pri)

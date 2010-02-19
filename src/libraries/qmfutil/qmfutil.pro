@@ -1,11 +1,9 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-
-include(../../../common.pri)
-
+CONFIG += qtopiamail
 TARGET = qmfutil 
+
 target.path += $$QMF_INSTALL_ROOT/lib
-INSTALLS += target
 
 DEFINES += QMFUTIL_INTERNAL
 symbian: {
@@ -16,7 +14,7 @@ DEPENDPATH += .
 
 INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
 
-LIBS += -L../qtopiamail -lqtopiamail
+LIBS += -L../qtopiamail/build
 
 HEADERS += emailfoldermodel.h \
            emailfolderview.h \
@@ -51,4 +49,6 @@ TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-zh_TW.ts
 
 RESOURCES += qmfutil.qrc
+
+include(../../../common.pri)
 

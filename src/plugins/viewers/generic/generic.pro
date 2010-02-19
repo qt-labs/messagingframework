@@ -1,10 +1,8 @@
 TEMPLATE = lib 
-
-include(../../../../common.pri)
-
 TARGET = genericviewer 
+CONFIG += qtopiamail qmfutil
+
 target.path += $$QMF_INSTALL_ROOT/plugins/viewers
-INSTALLS += target
 
 DEFINES += PLUGIN_INTERNAL
 
@@ -20,8 +18,8 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
                ../../../libraries/qtopiamail \
                ../../../libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/qmfutil -lqmfutil
+LIBS += -L../../../libraries/qtopiamail/build \
+        -L../../../libraries/qmfutil/build
 
 HEADERS += attachmentoptions.h browserwidget.h genericviewer.h
 
@@ -41,3 +39,4 @@ TRANSLATIONS += libgenericviewer-ar.ts \
                 libgenericviewer-zh_CN.ts \
                 libgenericviewer-zh_TW.ts
 
+include(../../../../common.pri)

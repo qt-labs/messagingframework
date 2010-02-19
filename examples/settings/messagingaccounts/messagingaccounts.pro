@@ -1,10 +1,7 @@
 TEMPLATE = app
-
-include(../../../common.pri)
-
 TARGET = messagingaccounts
 target.path += $$QMF_INSTALL_ROOT/bin
-INSTALLS += target
+CONFIG += qtopiamail messageserver
 
 DEPENDPATH += .
 
@@ -12,8 +9,8 @@ INCLUDEPATH += . ../../../src/libraries/qtopiamail \
                  ../../../src/libraries/qtopiamail/support \
                  ../../../src/libraries/messageserver
 
-LIBS += -L../../../src/libraries/qtopiamail -lqtopiamail \
-        -L../../../src/libraries/messageserver -lmessageserver
+LIBS += -L../../../src/libraries/qtopiamail/build \
+        -L../../../src/libraries/messageserver/build
 
 HEADERS += accountsettings.h \
            editaccount.h \
@@ -29,3 +26,4 @@ SOURCES += accountsettings.cpp \
 
 RESOURCES += messagingaccounts.qrc
 
+include(../../../common.pri)

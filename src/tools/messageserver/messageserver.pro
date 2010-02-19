@@ -1,10 +1,8 @@
 TEMPLATE = app
-
-include(../../../common.pri)
-
 TARGET = messageserver
+CONFIG += messageserver qtopiamail
+
 target.path += $$QMF_INSTALL_ROOT/bin
-INSTALLS += target
 
 DEPENDPATH += . 
 
@@ -12,8 +10,8 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
                  ../../libraries/qtopiamail/support \
                  ../../libraries/messageserver
 
-LIBS += -L../../libraries/messageserver -lmessageserver \
-        -L../../libraries/qtopiamail -lqtopiamail
+LIBS += -L../../libraries/messageserver/build \
+        -L../../libraries/qtopiamail/build
 
 HEADERS += mailmessageclient.h \
            messageserver.h \
@@ -46,3 +44,4 @@ unix {
     #DEFINES += HANDLE_SHUTDOWN_SIGNALS
 }
 
+include(../../../common.pri)

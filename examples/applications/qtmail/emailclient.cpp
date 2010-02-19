@@ -78,6 +78,12 @@
 #include <QStatusBar>
 #include <statusdisplay.h>
 
+#ifdef LOAD_DEBUG_VERSION
+static const QString debugSuffix("d");
+#else
+static const QString debugSuffix;
+#endif
+
 class ActivityIcon : public QLabel
 {
     Q_OBJECT
@@ -560,9 +566,9 @@ bool EmailClient::startMessageServer()
             this,SLOT(messageServerProcessError(QProcess::ProcessError)));
 
 #ifdef Q_OS_WIN
-	const QString binary("/messageserver.exe");
+	static const QString binary(QString("/messageserver%1.exe").arg(debugSuffix));
 #else
-	const QString binary("/messageserver");
+	static const QString binary(QString("/messageserver%1").arg(debugSuffix));
 #endif
 
 	m_messageServerProcess->start(QMail::messageServerPath() + binary);
@@ -2379,9 +2385,9 @@ void EmailClient::settings()
     contextStatusUpdate();
 
 #ifdef Q_OS_WIN
-    const QString binary("/messagingaccounts.exe");
+    static const QString binary(QString("/messagingaccounts%1.exe").arg(debugSuffix));
 #else
-    const QString binary("/messagingaccounts");
+    static const QString binary(QString("/messagingaccounts%1").arg(debugSuffix));
 #endif
 
     qMailLog(Messaging) << "Starting messagingaccounts process...";

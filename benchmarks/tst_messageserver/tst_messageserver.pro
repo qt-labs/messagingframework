@@ -1,12 +1,13 @@
-CONFIG += qtestlib unittest
+TEMPLATE = app
+CONFIG += qtestlib unittest 
+CONFIG += messageserver qtopiamail
+TARGET = tst_messageserver 
 
 BASE=../../
 include($$BASE/common.pri)
 
-TEMPLATE = app
-TARGET = tst_messageserver 
 target.path += $$QMF_INSTALL_ROOT/tests
-INSTALLS += target
+
 DEPENDPATH += . 3rdparty
 
 DEFINES += PLUGIN_STATIC_LINK
@@ -24,8 +25,8 @@ INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qtopiamail \
                  $$IMAP_PLUGIN \
                  $$MESSAGE_SERVER 
 
-LIBS += -L$$BASE/src/libraries/messageserver -lmessageserver \
-        -L$$BASE/src/libraries/qtopiamail -lqtopiamail
+LIBS += -L$$BASE/src/libraries/messageserver/build \
+        -L$$BASE/src/libraries/qtopiamail/build
 
 QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qtopiamail \
     -Wl,-rpath,$$BASE/src/libraries/messageserver

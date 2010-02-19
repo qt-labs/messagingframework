@@ -1,10 +1,8 @@
 TEMPLATE = lib 
-
-include(../../../../common.pri)
-
 TARGET = emailcomposer 
+CONFIG += qtopiamail qmfutil
+
 target.path += $$QMF_INSTALL_ROOT/plugins/composers
-INSTALLS += target
 
 DEFINES += PLUGIN_INTERNAL
 
@@ -14,8 +12,8 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
                ../../../libraries/qtopiamail \
                ../../../libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/qmfutil -lqmfutil
+LIBS += -L../../../libraries/qtopiamail/build \
+        -L../../../libraries/qmfutil/build
 
 HEADERS += emailcomposer.h \
            attachmentlistwidget.h
@@ -39,3 +37,4 @@ TRANSLATIONS += libemailcomposer-ar.ts \
 
 RESOURCES += email.qrc                
 
+include(../../../../common.pri)

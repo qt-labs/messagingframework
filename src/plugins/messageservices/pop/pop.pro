@@ -1,10 +1,8 @@
 TEMPLATE = lib 
-
-include(../../../../common.pri)
-
 TARGET = pop 
+CONFIG += qtopiamail messageserver
+
 target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
-INSTALLS += target
 
 QT += network
 DEFINES += PLUGIN_INTERNAL
@@ -15,8 +13,8 @@ INCLUDEPATH += . ../../../libraries/qtopiamail \
                ../../../libraries/messageserver \
                ../../../libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail -lqtopiamail \
-        -L../../../libraries/messageserver -lmessageserver
+LIBS += -L../../../libraries/qtopiamail/build \
+        -L../../../libraries/messageserver/build
 
 HEADERS += popclient.h \
            popconfiguration.h \
@@ -32,3 +30,4 @@ SOURCES += popclient.cpp \
 
 FORMS += popsettings.ui
 
+include(../../../../common.pri)

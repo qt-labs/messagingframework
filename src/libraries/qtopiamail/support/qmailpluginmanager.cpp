@@ -109,10 +109,16 @@ namespace {
 
 QStringList pluginFilePatterns()
 {
-#ifdef Q_OS_WIN
-	return QStringList() << "*.dll" << "*.DLL";
+#ifdef LOAD_DEBUG_VERSION
+    QString debugSuffix("d");
 #else
-	return QStringList() << "*.so*";
+    QString debugSuffix;
+#endif
+
+#ifdef Q_OS_WIN
+	return QStringList() << QString("*%1.dll").arg(debugSuffix) << QString("*%1.DLL").arg(debugSuffix);
+#else
+	return QStringList() << QString("*%1.so*").arg(debugSuffix);
 #endif
 }
 
