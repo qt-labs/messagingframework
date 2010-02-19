@@ -56,6 +56,13 @@ INSTALLS += target
 
 DESTDIR=build
 
-qtopiamail:qtAddLibrary(qtopiamail)
-messageserver:qtAddLibrary(messageserver)
-qmfutil:qtAddLibrary(qmfutil)
+!macx {
+	qtopiamail:qtAddLibrary(qtopiamail)
+	messageserver:qtAddLibrary(messageserver)
+	qmfutil:qtAddLibrary(qmfutil)
+} else {
+	qtopiamail:LIBS += -lqtopiamail
+	messageserver:LIBS += -lmessageserver
+	qmfutil:LIBS += -lqmfutil
+}
+
