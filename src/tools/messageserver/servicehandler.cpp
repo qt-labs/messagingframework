@@ -123,10 +123,19 @@ void deserialize(const QByteArray &data, T1& v1, T2& v2, T3& v3, T4& v4)
 
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
 {
-    // Find the accounts that own these messages
-    QSet<QMailAccountId> accountIds;
-    if (!ids.isEmpty()) {
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), 
+    QSet<QMailAccountId> accountIds; // Find the accounts that own these messages
+    QMailMessageIdList normalMessages; // messages that aren't temporary
+
+    foreach(QMailMessageId id, ids) {
+        if(id.isTemporaryMessage()) {
+            accountIds.insert(QMailMessage(id).parentAccountId());
+        } else {
+            normalMessages.append(id);
+        }
+    }
+
+    if (!normalMessages.isEmpty()) {
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(normalMessages),
                                                                                                 QMailMessageKey::ParentAccountId, 
                                                                                                 QMailStore::ReturnDistinct)) {
             if (metaData.parentAccountId().isValid())
@@ -166,8 +175,19 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
 {
     // Allocate each message to the relevant account
     QMap<QMailAccountId, QMailMessageIdList> map;
-    if (!ids.isEmpty()) {
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), 
+
+    QMailMessageIdList normalMessages; //messages that aren't temporary
+
+    foreach(QMailMessageId id, ids) {
+        if(id.isTemporaryMessage()) {
+            map[QMailMessage(id).parentAccountId()].append(id);
+        } else {
+            normalMessages.append(id);
+        }
+    }
+
+    if (!normalMessages.isEmpty()) {
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(normalMessages),
                                                                                                 QMailMessageKey::Id | QMailMessageKey::ParentAccountId, 
                                                                                                 QMailStore::ReturnAll)) {
             if (metaData.id().isValid() && metaData.parentAccountId().isValid())
@@ -256,6 +276,7 @@ void extractAccounts(const QMailMessageKey &key, bool parentNegated, QSet<QMailA
         if (arg.property == QMailMessageKey::ParentAccountId) {
             QSet<QMailAccountId> *set = 0;
 
+            //TODO: handle ranges
             if ((arg.op == QMailKey::Equal) || (arg.op == QMailKey::Includes)) {
                 set = (isNegated ? &exclude : &include);
             } else if ((arg.op == QMailKey::NotEqual) || (arg.op == QMailKey::Excludes)) {
@@ -269,7 +290,6 @@ void extractAccounts(const QMailMessageKey &key, bool parentNegated, QSet<QMailA
     }
 }
 
-// TODO: make sure this works correctly:
 QSet<QMailAccountId> keyAccounts(const QMailMessageKey &key, const QSet<QMailAccountId> &complete)
 {
     QSet<QMailAccountId> include;
@@ -421,8 +441,6 @@ ServiceHandler::ServiceHandler(QObject* parent)
         // All necessary accounts now exist - create the service instances
         registerAccountServices(store->queryAccounts());
     }
-
-    connect(this, SIGNAL(remoteSearchCompleted(quint64)), this, SLOT(finaliseSearch(quint64)));
 
     // See if there are any requests remaining from our previous run
     if (_requestsFile.exists()) {
@@ -1709,7 +1727,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to search messages for unconfigured account"));
         } else {
-            enqueueRequest(action, serialize(searchAccountIds, filter, bodyText, sort), sources, &ServiceHandler::dispatchSearchMessages, &ServiceHandler::remoteSearchCompleted);
+            enqueueRequest(action, serialize(searchAccountIds, filter, bodyText, sort), sources, &ServiceHandler::dispatchSearchMessages, &ServiceHandler::searchCompleted);
         }
     } else {
         // Find the messages that match the filter criteria
@@ -1734,10 +1752,14 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
+            //only dispatch to appropriate account
             if (source->searchMessages(filter, bodyText, sort)) {
                 sentSearch = true; //we've at least sent one
             } else {
-                qMailLog(Messaging) << "Unable to service request to search messages for account:" << accountId;
+                //do it locally instead
+                qMailLog(Messaging) << "Unable to do remote search, doing it locally instead";
+                mSearches.append(MessageSearch(action, QMailStore::instance()->queryMessages(filter, sort), bodyText));
+                QTimer::singleShot(0, this, SLOT(continueSearch()));
             }
         } else {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -2047,7 +2069,23 @@ void ServiceHandler::continueSearch()
 
 void ServiceHandler::finaliseSearch(quint64 action)
 {
-    emit searchCompleted(action);
+    if (mSearches.isEmpty()) {
+        qWarning() << "Remote search complete but none pending!" << action;
+    } else {
+        MessageSearch &currentSearch(mSearches.first());
+
+        if (currentSearch.action() != action) {
+            qWarning() << "Remote search complete but not current!" << action;
+        } else {
+            if (currentSearch.isEmpty()) {
+                // This search is now finished
+                emit searchCompleted(currentSearch.action());
+                mSearches.removeFirst();
+                if (!mSearches.isEmpty())
+                    QTimer::singleShot(0, this, SLOT(continueSearch()));
+            }
+        }
+    }
 }
 
 void ServiceHandler::reportFailures()

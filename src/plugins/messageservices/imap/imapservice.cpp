@@ -90,6 +90,7 @@ public:
         connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
         connect(&_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
         connect(&_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
+        connect(&_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
         connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheckAll()));
     }
     
@@ -900,7 +901,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
     checkConfiguration(accountId);
 
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
-
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));

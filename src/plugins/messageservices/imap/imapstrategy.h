@@ -120,7 +120,7 @@ public:
     void completedMessageAction(const QString &uid);
     void completedMessageCopy(QMailMessage &message, const QMailMessage &original);
     void operationCompleted();
-    void partialSearchResults(const QList<QMailMessageId> &msgs);
+    void matchingMessageIds(const QMailMessageIdList &msgs);
 
 private:
     ImapClient *_client;
@@ -564,9 +564,7 @@ public:
 
     virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
     virtual void transition(ImapStrategyContextBase *, ImapCommand, OperationStatus);
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
 protected:
-    virtual void fetchNextMailPreview(ImapStrategyContextBase *context);
     virtual void handleSearchMessage(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
@@ -574,10 +572,6 @@ protected:
     virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
 
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-
-    virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     struct SearchData {
@@ -586,6 +580,7 @@ protected:
         QMailMessageSortKey sort;
     };
     QList<SearchData> _searches;
+    QList<QMailMessageId> _fetchedList;
 };
 
 class ImapExportUpdatesStrategy : public ImapSynchronizeAllStrategy

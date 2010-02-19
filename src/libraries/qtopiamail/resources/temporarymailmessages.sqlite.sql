@@ -1,0 +1,23 @@
+CREATE TEMPORARY TABLE temporarymailmessages ( 
+    id INTEGER PRIMARY KEY NOT NULL,
+    type INTEGER NOT NULL,
+    parentfolderid INTEGER NOT NULL,
+    previousparentfolderid INTEGER,
+    sender VARCHAR,
+    recipients VARCHAR,
+    subject VARCHAR,
+    stamp TIMESTAMP,
+    status INTEGER,
+    parentaccountid INTEGER,
+    frommailbox VARCHAR,
+    mailfile VARCHAR,
+    serveruid VARCHAR,
+    size INTEGER,
+    contenttype INTEGER,
+    responseid INTEGER,
+    responsetype INTEGER,
+    receivedstamp TIMESTAMP,
+    identifier VARCHAR,
+    FOREIGN KEY (parentfolderid) REFERENCES mailfolders(id),
+    FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id));
+

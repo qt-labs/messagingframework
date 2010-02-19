@@ -1371,9 +1371,9 @@ QString SearchMessageState::transmit(ImapContext *c)
     QString searchQuery = convertKey(search.key);
     //searchQuery =  ImapProtocol::quoteString(searchQuery);
     searchQuery = "UID SEARCH " + searchQuery;
-
     if(!search.body.isEmpty())
         searchQuery += " BODY " + ImapProtocol::quoteString(search.body);
+    searchQuery += " NOT DELETED"; //needed because of limitations in fetching deleted messages
 
     return c->sendCommand(searchQuery);
 }

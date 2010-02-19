@@ -93,7 +93,7 @@ QString randomString(int length)
     return str;
 }
 
-QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString())
+QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString(), bool temporary = false)
 {
     static const quint64 pid = QCoreApplication::applicationPid();
 
@@ -106,14 +106,15 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
     filename.append(QString::number(pid));
     filename.append('.');
 
-    while (true) {
-        QString path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
-        if (!QFile::exists(path)) {
-            return path;
-        }
-    }
+    QString path;
+    do {
+        if (temporary)
+            path = QDir::tempPath() + "/" + filename + randomString(5);
+        else
+            path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
+    } while (QFile::exists(path));
 
-    return QString();
+    return path;
 }
 
 void recursivelyRemovePath(const QString &path, bool preserveTopDirectory = true)
@@ -240,13 +241,11 @@ QMailStore::ErrorCode QtopiamailfileManager::add(QMailMessage *message, QMailCon
 
 QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
 {
-    QString filePath;
-    if (message->contentIdentifier().isEmpty()) {
-        filePath = generateUniqueFileName(message->parentAccountId());
-    } else {
-        // Use the supplied identifier as a filename
-        filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier());
-    }
+    bool temp = !message->customField("qtopiamail-temporary-message").isEmpty();
+
+    // Use the supplied identifier as a filename
+    QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier(), temp);
+
 
     message->setContentIdentifier(filePath);
 
@@ -604,6 +603,7 @@ struct PartStorer
 
     bool operator()(const QMailMessagePart &part)
     {
+        qDebug() << "Part referenceType:" << part.referenceType() << "multipart:" << part.multipartType() << "has body: " << part.hasBody();
         if ((part.referenceType() == QMailMessagePart::None) &&
             (part.multipartType() == QMailMessagePartContainer::MultipartNone) &&
             part.hasBody()) {

@@ -106,7 +106,7 @@ signals:
 
     void messageActionCompleted(const QString &uid);
 
-    void partialSearchResults(const QList<QMailMessageId> &messages);
+    void matchingMessageIds(const QMailMessageIdList &messages);
 
     void allMessagesReceived();
     void idleNewMailNotification(QMailFolderId);
