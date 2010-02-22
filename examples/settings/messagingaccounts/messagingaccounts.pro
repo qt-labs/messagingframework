@@ -11,6 +11,9 @@ INCLUDEPATH += . ../../../src/libraries/qtopiamail \
 
 LIBS += -L../../../src/libraries/qtopiamail/build \
         -L../../../src/libraries/messageserver/build
+macx:LIBS += -F../../../src/libraries/qtopiamail/build \
+        -F../../../src/libraries/messageserver/build
+
 
 HEADERS += accountsettings.h \
            editaccount.h \

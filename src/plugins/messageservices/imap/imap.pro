@@ -19,6 +19,11 @@ LIBS += -L../../../libraries/qtopiamail/build \
         -L../../../libraries/messageserver/build \
         -L../../../libraries/qmfutil/build
 
+macx:LIBS += -F../../../libraries/qtopiamail/build \
+        -F../../../libraries/messageserver/build \
+        -F../../../libraries/qmfutil/build
+
+
 HEADERS += imapclient.h \
            imapconfiguration.h \
            imapmailboxproperties.h \

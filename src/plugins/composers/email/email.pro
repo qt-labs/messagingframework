@@ -14,6 +14,9 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
 
 LIBS += -L../../../libraries/qtopiamail/build \
         -L../../../libraries/qmfutil/build
+macx:LIBS += -F../../../libraries/qtopiamail/build \
+        -F../../../libraries/qmfutil/build
+
 
 HEADERS += emailcomposer.h \
            attachmentlistwidget.h

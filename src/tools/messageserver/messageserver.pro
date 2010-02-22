@@ -12,6 +12,9 @@ INCLUDEPATH += . ../../libraries/qtopiamail \
 
 LIBS += -L../../libraries/messageserver/build \
         -L../../libraries/qtopiamail/build
+macx:LIBS += -F../../libraries/messageserver/build \
+        -F../../libraries/qtopiamail/build
+
 
 HEADERS += mailmessageclient.h \
            messageserver.h \

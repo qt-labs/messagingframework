@@ -20,6 +20,8 @@ INCLUDEPATH += . ../../../libraries/qmfutil \
 
 LIBS += -L../../../libraries/qtopiamail/build \
         -L../../../libraries/qmfutil/build
+LIBS += -F../../../libraries/qtopiamail/build \
+        -F../../../libraries/qmfutil/build
 
 HEADERS += attachmentoptions.h browserwidget.h genericviewer.h
 

@@ -56,13 +56,18 @@ INSTALLS += target
 
 DESTDIR=build
 
-macx {
-    qtopiamail:LIBS += -lqtopiamail
-    messageserver:LIBS += -lmessageserver
-    qmfutil:LIBS += -lqmfutil
-} else {
-    qtopiamail:qtAddLibrary(qtopiamail)
-    messageserver:qtAddLibrary(messageserver)
-    qmfutil:qtAddLibrary(qmfutil)
+# build frameworks on mac
+
+mac:contains(QT_CONFIG,qt_framework) {
+    CONFIG += lib_bundle absolute_library_soname
+    FRAMEWORK_HEADERS.version = Versions
+    FRAMEWORK_HEADERS.files = $${PUBLIC_HEADERS}
+    FRAMEWORK_HEADERS.path = Headers
+    QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
 }
+
+qtopiamail:qtAddLibrary(qtopiamail)
+messageserver:qtAddLibrary(messageserver)
+qmfutil:qtAddLibrary(qmfutil)
+
 

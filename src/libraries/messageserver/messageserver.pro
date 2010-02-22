@@ -18,6 +18,7 @@ DEPENDPATH += .
 INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
 
 LIBS += -L../qtopiamail/build
+macx:LIBS += -F../qtopiamail/build
 
 HEADERS += qmailauthenticator.h \
            qmailmessageclassifier.h \

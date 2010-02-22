@@ -14,6 +14,7 @@ DEPENDPATH += .
 
 INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
 
+macx:LIBS += -F../qtopiamail/build
 LIBS += -L../qtopiamail/build
 
 HEADERS += emailfoldermodel.h \

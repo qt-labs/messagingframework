@@ -16,6 +16,8 @@ INCLUDEPATH += . ../../../libraries/qtopiamail \
 
 LIBS += -L../../../libraries/qtopiamail/build \
         -L../../../libraries/messageserver/build
+macx:LIBS += -F../../../libraries/qtopiamail/build \
+        -F../../../libraries/messageserver/build
 
 HEADERS += smtpauthenticator.h \
            smtpclient.h \

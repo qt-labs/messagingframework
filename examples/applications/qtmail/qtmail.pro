@@ -11,6 +11,10 @@ INCLUDEPATH += . ../../../src/libraries/qtopiamail \
 
 LIBS += -L../../../src/libraries/qtopiamail/build \
         -L../../../src/libraries/qmfutil/build
+macx:LIBS += -F../../../src/libraries/qtopiamail/build \
+        -F../../../src/libraries/qmfutil/build
+
+
 
 
 HEADERS += emailclient.h \

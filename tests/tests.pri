@@ -8,6 +8,7 @@ QTOPIAMAIL=../../src/libraries/qtopiamail
 DEPENDPATH += .
 INCLUDEPATH += . $$QTOPIAMAIL $$QTOPIAMAIL/support
 LIBS += -L$$QTOPIAMAIL/build
+macx:LIBS += -F$$QTOPIAMAIL/build
 QMAKE_LFLAGS += -Wl,-rpath,$$QTOPIAMAIL
 
 include(../common.pri)
