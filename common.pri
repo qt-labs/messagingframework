@@ -2,16 +2,19 @@ CONFIG(debug,debug|release) {
     DEFINES += QMF_ENABLE_LOGGING
 }
 
-win32 {
+
+win32 | macx {
 
     RELEASEMODE=unspecified
 
     !build_pass {
 
-        contains(CONFIG_WIN,debug) {
-            RELEASEMODE=debug
-        } else:contains(CONFIG_WIN,release) {
-            RELEASEMODE=release
+        win32 {
+            contains(CONFIG_WIN,debug) {
+                RELEASEMODE=debug
+            } else:contains(CONFIG_WIN,release) {
+                RELEASEMODE=release
+            }
         }
 
         # In Windows we want to build libraries in debug and release mode if the user
@@ -19,10 +22,12 @@ win32 {
         # This avoids problems for third parties as qmake builds debug mode by default
         # Silently disable unsupported configurations
 
+        # MacOSX always builds debug and release libs when using mac framework
+
         CONFIG -= debug release debug_and_release build_all
 
         contains(RELEASEMODE,unspecified) {
-            contains(QT_CONFIG,debug):contains(QT_CONFIG,release) {
+            contains(QT_CONFIG,debug):contains(QT_CONFIG,release) | macx:contains(QT_CONFIG,qt_framework):contains(TEMPLATE,.*lib) {
                 CONFIG += debug_and_release build_all
             } else {
                 contains(QT_CONFIG,debug): CONFIG+=debug
@@ -46,10 +51,9 @@ win32 {
         TARGET=$$qtLibraryTarget($${TARGET})
     } 
 
-    contains(TEMPLATE,.*app) {
+    win32:contains(TEMPLATE,.*app) {
         CONFIG(debug,debug|release):TARGET=$$join(TARGET,,,d)
     }
-
 }
 
 INSTALLS += target
