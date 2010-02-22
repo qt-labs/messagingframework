@@ -86,6 +86,8 @@ static QString dateString(const QDateTime& dt)
     }
 }
 
+#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
+
 QT_BEGIN_NAMESPACE
 
 static uint qHash(const QUrl &url)
@@ -94,6 +96,8 @@ static uint qHash(const QUrl &url)
 }
 
 QT_END_NAMESPACE
+
+#endif
 
 #ifdef USE_WEBKIT
 class ContentReply : public QNetworkReply
