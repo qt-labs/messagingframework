@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = qtopiamailfilemanager 
-CONFIG += qtopiamail
+CONFIG += qtopiamail plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/contentmanagers
 

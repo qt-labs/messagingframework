@@ -1,10 +1,8 @@
 TEMPLATE = lib 
 TARGET = genericviewer 
-CONFIG += qtopiamail qmfutil
+CONFIG += qtopiamail qmfutil plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/viewers
-
-DEFINES += PLUGIN_INTERNAL
 
 # Use webkit to render mail if available
 contains(QT_CONFIG,webkit){

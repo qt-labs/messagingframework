@@ -1,12 +1,11 @@
 TEMPLATE = lib 
 TARGET = smtp 
 
-CONFIG += qtopiamail messageserver
+CONFIG += qtopiamail messageserver plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
 QT += network
-DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 

@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = emailcomposer 
-CONFIG += qtopiamail qmfutil
+CONFIG += qtopiamail qmfutil plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/composers
 

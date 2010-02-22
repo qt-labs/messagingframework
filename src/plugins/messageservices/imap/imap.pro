@@ -1,12 +1,11 @@
 TEMPLATE = lib 
 TARGET = imap 
-CONFIG += messageserver qtopiamail qmfutil
+CONFIG += messageserver qtopiamail qmfutil plugin
 
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
 QT += network
-DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 

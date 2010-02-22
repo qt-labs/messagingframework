@@ -56,9 +56,13 @@ INSTALLS += target
 
 DESTDIR=build
 
-# build frameworks on mac
+plugin {
+    DEFINES += PLUGIN_INTERNAL
+}
 
-mac:contains(QT_CONFIG,qt_framework) {
+# build QMF libraries as frameworks on OSX, omitting plugins.
+
+mac:contains(QT_CONFIG,qt_framework):!plugin {
     CONFIG += lib_bundle absolute_library_soname
     FRAMEWORK_HEADERS.version = Versions
     FRAMEWORK_HEADERS.files = $${PUBLIC_HEADERS}
