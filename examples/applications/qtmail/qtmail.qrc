@@ -1,11 +1,11 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icon">
 <file alias="qtmail">pics/EMail_48.png</file>
-<file alias="quit">pics/icons/16x16/exit.png</file>
+<file alias="quit">pics/exit.png</file>
 <file alias="allfields">pics/icons/14x14/allfields.png</file>
 <file alias="attach">pics/attach.png</file>
-<file alias="new">pics/icons/16x16/mail_new.png</file>
-<file alias="settings">pics/icons/16x16/configure.png</file>
+<file alias="new">pics/mail_new.png</file>
+<file alias="settings">pics/configure.png</file>
 <file alias="cancel">pics/icons/14x14/cancel.png</file>
 <file alias="reset">pics/icons/14x14/reset.png</file>
 <file alias="edit">pics/icons/14x14/edit.png</file>
