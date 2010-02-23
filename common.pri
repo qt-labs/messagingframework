@@ -38,12 +38,7 @@ win32 | macx {
         }
     }
 
-    # If we are building both debug and release configuration, ensure
-    # debug binaries load debug versions of their dependents
-
-    CONFIG(debug,debug|release) {
-        DEFINES += LOAD_DEBUG_VERSION
-    }
+    
 
     #suffix changes
 
@@ -51,9 +46,19 @@ win32 | macx {
         TARGET=$$qtLibraryTarget($${TARGET})
     } 
 
-    win32:contains(TEMPLATE,.*app) {
-        CONFIG(debug,debug|release):TARGET=$$join(TARGET,,,d)
+    win32 {
+        contains(TEMPLATE,.*app) {
+            CONFIG(debug,debug|release):TARGET=$$join(TARGET,,,d)
+        }
+
+        # If we are building both debug and release configuration, ensure
+        # debug binaries load debug versions of their dependents
+
+        CONFIG(debug,debug|release) {
+            DEFINES += LOAD_DEBUG_VERSION
+        }
     }
+
 }
 
 INSTALLS += target
