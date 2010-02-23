@@ -249,7 +249,7 @@ void AcknowledgmentBox::keyPressEvent(QKeyEvent* event)
 
 MessageUiBase::MessageUiBase(QWidget *parent, Qt::WindowFlags f)
     : QMainWindow(parent,f),
-      appTitle(tr("Messages")),
+      appTitle(tr("QtMail")),
       suspendMailCount(true),
       markingMode(false),
       threaded(true),
@@ -876,6 +876,7 @@ void EmailClient::initActions()
         fileMenu->addSeparator();
 
         QAction* quitAction = fileMenu->addAction(QIcon(":icon/quit"),"Quit");
+        quitAction->setMenuRole(QAction::QuitRole);
         connect(quitAction,SIGNAL(triggered(bool)),
                 this,SLOT(quit()));
         connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
@@ -2253,17 +2254,24 @@ void EmailClient::setupUi()
     connect(this, SIGNAL(clearStatus()),
             status, SLOT(clearStatus()) );
 
-    QMenuBar* mainMenuBar = new QMenuBar();
+    QMenuBar* mainMenuBar = new QMenuBar(this);
+
     QMenu* file = mainMenuBar->addMenu("File");
+
     QMenu* help = mainMenuBar->addMenu("Help");
     QAction* aboutQt = help->addAction("About Qt");
+    aboutQt->setMenuRole(QAction::AboutQtRole);
     connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
 
     QWidget* menuWidget = new QWidget(this);
     QHBoxLayout*  menuLayout = new QHBoxLayout(menuWidget);
     menuLayout->setSpacing(0);
     menuLayout->setContentsMargins(0,0,5,0);
+#ifdef Q_OS_MAC
+    menuLayout->addStretch();
+#else
     menuLayout->addWidget(mainMenuBar);
+#endif
 
     QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << storageAction
                                                                              << retrievalAction
