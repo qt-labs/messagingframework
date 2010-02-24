@@ -4,5 +4,3 @@ SUBDIRS = \
 
 CONFIG += unittest
 
-include(../common.pri)
-

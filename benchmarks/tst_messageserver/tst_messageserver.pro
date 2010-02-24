@@ -1,12 +1,13 @@
 TEMPLATE = app
 CONFIG += qtestlib unittest 
 CONFIG += messageserver qtopiamail
+
 TARGET = tst_messageserver 
+target.path += $$QMF_INSTALL_ROOT/tests
 
 BASE=../../
 include($$BASE/common.pri)
 
-target.path += $$QMF_INSTALL_ROOT/tests
 
 DEPENDPATH += . 3rdparty
 

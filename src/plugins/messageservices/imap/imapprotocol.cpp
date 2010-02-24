@@ -403,7 +403,7 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1) {
-        qWarning(line.mid(index).toAscii());
+        qWarning() << line.mid(index).toAscii();
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
@@ -418,7 +418,7 @@ void ImapState::taggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1)
-        qWarning(line.mid(index).toAscii());
+        qWarning() << line.mid(index).toAscii();
 
     c->operationCompleted(mCommand, mStatus);
 }

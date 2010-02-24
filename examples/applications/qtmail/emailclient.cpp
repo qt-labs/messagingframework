@@ -591,7 +591,7 @@ void EmailClient::messageServerProcessError(QProcess::ProcessError e)
 {
     QString errorMsg = QString("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
     QMessageBox::critical(this,"Message Server",errorMsg);
-    qFatal(errorMsg.toLatin1());
+    qFatal(errorMsg.toLatin1(),"");
 }
 
 bool EmailClient::isMessageServerRunning() const

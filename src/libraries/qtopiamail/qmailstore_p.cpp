@@ -5212,7 +5212,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             updateProperties |= QMailMessageKey::ResponseType;
 
             // Join this message's thread to the predecessor's thread
-            quint64 threadId;
+            quint64 threadId = 0;
 
             if (metaData->inResponseTo().isValid()) {
                 {
