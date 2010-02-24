@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QTextStream;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class LongStringPrivate;
 

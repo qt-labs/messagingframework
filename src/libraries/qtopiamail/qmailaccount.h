@@ -53,16 +53,16 @@
 #include "qmailmessagefwd.h"
 #include "qmailmessagekey.h"
 
+class QMailFolderId;
 class QMailAccountPrivate;
 class QMailAccountId;
-class QMailFolderId;
 
 QT_BEGIN_NAMESPACE
 
 class QSettings;
 class QTimer;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class QTOPIAMAIL_EXPORT QMailAccount
 {

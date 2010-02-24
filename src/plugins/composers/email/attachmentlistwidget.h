@@ -56,7 +56,7 @@ class QLabel;
 class QTreeView;
 class QModelIndex;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class AttachmentListWidget : public QWidget
 {

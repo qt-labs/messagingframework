@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
 #define QMailMessageServicePluginInterface_iid "com.trolltech.Qtopia.Qtopiamail.QMailMessageServicePluginInterface"
 Q_DECLARE_INTERFACE(QMailMessageServicePluginInterface, QMailMessageServicePluginInterface_iid)
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class MESSAGESERVER_EXPORT QMailMessageServicePlugin : public QObject, public QMailMessageServicePluginInterface
 {

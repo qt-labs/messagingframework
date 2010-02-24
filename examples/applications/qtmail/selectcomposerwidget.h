@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 class QListWidget;
 class QListWidgetItem;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class SelectComposerWidget : public QWidget
 {

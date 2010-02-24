@@ -60,7 +60,7 @@ class QLineEdit;
 class QTabWidget;
 class QVBoxLayout;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class EditAccount : public QDialog
 {

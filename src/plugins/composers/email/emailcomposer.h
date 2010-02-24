@@ -58,7 +58,7 @@ class QLineEdit;
 class QStackedWidget;
 class QTextEdit;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class EmailComposerInterface : public QMailComposerInterface
 {

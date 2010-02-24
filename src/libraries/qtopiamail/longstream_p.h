@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 class QTemporaryFile;
 class QDataStream;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class QTOPIAMAIL_EXPORT LongStream
 {

@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QProgressBar;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class StatusDisplay : public QStatusBar
 {

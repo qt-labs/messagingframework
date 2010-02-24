@@ -76,7 +76,7 @@ class QStackedWidget;
 class QStringList;
 class QToolBar;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class MessageUiBase : public QMainWindow
 {

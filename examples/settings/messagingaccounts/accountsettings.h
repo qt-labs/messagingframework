@@ -59,7 +59,7 @@ class QAction;
 class QSmoothList;
 class QListView;
 
-QT_END_NAMESPACE
+QT_END_NAMESPACE;
 
 class AccountSettings : public QDialog
 {
