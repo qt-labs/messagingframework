@@ -1221,6 +1221,14 @@ QMailMessageSink &QMailMessageService::sink() const
 */
 
 /*!
+    \fn bool QMailMessageService::requiresReregistration() const;
+
+    Returns true if requests to reregister the service should be honored; otherwise returns false.
+    
+    An attempt to reregister the service is made when the account for which this service is configured is modified, or when an action associated with the service expires.
+*/
+
+/*!
     \fn bool QMailMessageService::cancelOperation();
 
     Invoked by the message server to attempt cancellation of any request currently in progress.
