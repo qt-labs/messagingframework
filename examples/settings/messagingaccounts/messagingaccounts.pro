@@ -5,9 +5,12 @@ CONFIG += qtopiamail messageserver
 
 DEPENDPATH += .
 
+QTMAIL_EXAMPLE=../../applications/qtmail
+
 INCLUDEPATH += . ../../../src/libraries/qtopiamail \
                  ../../../src/libraries/qtopiamail/support \
-                 ../../../src/libraries/messageserver
+                 ../../../src/libraries/messageserver \
+                 $$QTMAIL_EXAMPLE
 
 LIBS += -L../../../src/libraries/qtopiamail/build \
         -L../../../src/libraries/messageserver/build
@@ -15,17 +18,17 @@ macx:LIBS += -F../../../src/libraries/qtopiamail/build \
         -F../../../src/libraries/messageserver/build
 
 
-HEADERS += accountsettings.h \
-           editaccount.h \
-           mmseditaccount.h \
-           statusdisplay.h
+HEADERS += $$QTMAIL_EXAMPLE\accountsettings.h \
+           $$QTMAIL_EXAMPLE\editaccount.h \
+           $$QTMAIL_EXAMPLE\mmseditaccount.h \
+           $$QTMAIL_EXAMPLE\statusdisplay.h
 
 
-SOURCES += accountsettings.cpp \
-           editaccount.cpp \
+SOURCES += $$QTMAIL_EXAMPLE\accountsettings.cpp \
+           $$QTMAIL_EXAMPLE\editaccount.cpp \
            main.cpp \
-           mmseditaccount.cpp \
-           statusdisplay.cpp
+           $$QTMAIL_EXAMPLE\mmseditaccount.cpp \
+           $$QTMAIL_EXAMPLE\statusdisplay.cpp
 
 RESOURCES += messagingaccounts.qrc
 

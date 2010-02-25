@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "accountsettings.h"
+#include <accountsettings.h>
 #include <QApplication>
 #include <qmailnamespace.h>
 #include <QIcon>
