@@ -249,11 +249,10 @@ void EditAccount::accept()
 {
     QString name(accountNameInput->text());
     if (name.trimmed().isEmpty()) {
-        if (QMessageBox::warning(0, 
-                                 tr("Empty account name"), 
-                                 tr("Do you want to quit and discard any changes?"), 
-                                 QMessageBox::Yes, 
-                                 QMessageBox::No|QMessageBox::Default|QMessageBox::Escape) == QMessageBox::Yes) {
+        if (QMessageBox::question(0,
+                                 tr("Empty account name"),
+                                 tr("Do you want to quit and discard any changes?"),
+                                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
             reject();
         }
         return;
@@ -486,7 +485,7 @@ void AccountSettings::removeAccount()
     QMailAccount account(accountModel->idFromIndex(index));
 
     QString message = tr("Delete account:\n%1").arg(Qt::escape(account.name()));
-    if (QMessageBox::warning( this, tr("Email"), message, tr("Yes"), tr("No"), 0, 0, 1 ) == 0) {
+    if (QMessageBox::question( this, tr("Email"), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
         // We could simply delete the account since QMailStore::deleteAccount
         // will remove all folders and messages, but for now we will remove the
         // messages manually so we can give progress indication (eventually, we
@@ -534,7 +533,7 @@ void AccountSettings::resetAccount()
     QMailAccount account(accountModel->idFromIndex(index));
 
     QString message = tr("Reset account:\n%1").arg(Qt::escape(account.name()));
-    if (QMessageBox::warning( this, tr("Email"), message, tr("Yes"), tr("No"), 0, 0, 1 ) == 0) {
+    if (QMessageBox::question( this, tr("Email"), message, QMessageBox::Yes | QMessageBox::No,QMessageBox::No) == QMessageBox::Yes) {
         // Load the existing configuration
         QMailAccountConfiguration config(account.id());
 

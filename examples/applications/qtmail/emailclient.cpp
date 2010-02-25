@@ -157,7 +157,7 @@ enum ActivityType {
 
 static bool confirmDelete( QWidget *parent, const QString & caption, const QString & object ) {
     QString msg = "<qt>" + QString("Are you sure you want to delete: %1?").arg( object ) + "</qt>";
-    int r = QMessageBox::warning( parent, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default| QMessageBox::Escape, 0 );
+    int r = QMessageBox::question( parent, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default| QMessageBox::Escape, 0 );
     return r == QMessageBox::Yes;
 }
 
@@ -547,7 +547,7 @@ void EmailClient::resumeInterruptedComposition()
     mailconf.endGroup();
 
     if (lastDraftId.isValid()) {
-        if (QMessageBox::information(0,
+        if (QMessageBox::question(0,
                                      tr("Incomplete message"),
                                      tr("Messages was previously interrupted while composing a message.\n"
                                         "Do you want to resume composing the message?"),
@@ -1784,7 +1784,7 @@ void EmailClient::detachThread()
         QString caption(tr("Detach"));
         QString msg(tr("Are you sure you want to detach this message from its current thread?"));
 
-        if (QMessageBox::warning(this, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default|QMessageBox::Escape, 0) == QMessageBox::Yes) {
+        if (QMessageBox::question(this, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default|QMessageBox::Escape, 0) == QMessageBox::Yes) {
             QMailMessageMetaData metaData(ids.first());
             metaData.setInResponseTo(QMailMessageId());
 
