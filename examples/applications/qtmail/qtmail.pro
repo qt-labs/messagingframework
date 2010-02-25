@@ -29,8 +29,7 @@ HEADERS += emailclient.h \
            statusdisplay.h \
            readmail.h \
            writemail.h \
-           accountsettings.h \
-           editaccount.h
+           accountsettings.h
 
 
 SOURCES += emailclient.cpp \
@@ -41,8 +40,7 @@ SOURCES += emailclient.cpp \
            statusdisplay.cpp \
            readmail.cpp \
            writemail.cpp \
-           accountsettings.cpp \
-           editaccount.cpp
+           accountsettings.cpp
 
 FORMS += searchviewbasephone.ui
 

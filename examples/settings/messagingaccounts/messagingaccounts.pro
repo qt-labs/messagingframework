@@ -19,13 +19,11 @@ macx:LIBS += -F../../../src/libraries/qtopiamail/build \
 
 
 HEADERS += $$QTMAIL_EXAMPLE\accountsettings.h \
-           $$QTMAIL_EXAMPLE\editaccount.h \
            $$QTMAIL_EXAMPLE\mmseditaccount.h \
            $$QTMAIL_EXAMPLE\statusdisplay.h
 
 
 SOURCES += $$QTMAIL_EXAMPLE\accountsettings.cpp \
-           $$QTMAIL_EXAMPLE\editaccount.cpp \
            main.cpp \
            $$QTMAIL_EXAMPLE\mmseditaccount.cpp \
            $$QTMAIL_EXAMPLE\statusdisplay.cpp
