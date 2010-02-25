@@ -77,6 +77,7 @@
 #include <QMovie>
 #include <QStatusBar>
 #include <statusdisplay.h>
+#include "accountsettings.h"
 
 #ifdef LOAD_DEBUG_VERSION
 static const QString debugSuffix("d");
@@ -488,7 +489,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     //run account setup if we don't have any defined yet
     bool haveAccounts = QMailStore::instance()->countAccounts() > 0;
     if(!haveAccounts)
-        settings();
+        QTimer::singleShot(0,this,SLOT(settings()));
 
     init();
 
@@ -2392,15 +2393,8 @@ void EmailClient::settings()
     clearStatusText();
     contextStatusUpdate();
 
-#ifdef Q_OS_WIN
-    static const QString binary(QString("/messagingaccounts%1.exe").arg(debugSuffix));
-#else
-    static const QString binary(QString("/messagingaccounts%1").arg(debugSuffix));
-#endif
-
-    qMailLog(Messaging) << "Starting messagingaccounts process...";
-    QProcess settingsAppProcess(this);
-    settingsAppProcess.startDetached(QMail::messageSettingsPath() + binary);
+    AccountSettings settingsDialog(this);
+    settingsDialog.exec();
 }
 
 void EmailClient::accountsAdded(const QMailAccountIdList&)

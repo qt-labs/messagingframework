@@ -1,18 +1,23 @@
 TEMPLATE = app
 TARGET = qtmail 
-CONFIG += qmfutil qtopiamail
+CONFIG += qmfutil qtopiamail messageserver
 target.path += $$QMF_INSTALL_ROOT/bin
 
 DEPENDPATH += . 
 
 INCLUDEPATH += . ../../../src/libraries/qtopiamail \
                  ../../../src/libraries/qtopiamail/support \
-                 ../../../src/libraries/qmfutil
+                 ../../../src/libraries/qmfutil \
+                 ../../../src/libraries/messageserver
 
 LIBS += -L../../../src/libraries/qtopiamail/build \
-        -L../../../src/libraries/qmfutil/build
+        -L../../../src/libraries/qmfutil/build \
+        -L../../../src/libraries/messageserver/build
+
 macx:LIBS += -F../../../src/libraries/qtopiamail/build \
-        -F../../../src/libraries/qmfutil/build
+        -F../../../src/libraries/qmfutil/build \
+        -F../../../src/libraries/messageserver/build
+
 
 
 
@@ -23,7 +28,10 @@ HEADERS += emailclient.h \
            selectcomposerwidget.h \
            statusdisplay.h \
            readmail.h \
-           writemail.h
+           writemail.h \
+           accountsettings.h \
+           editaccount.h
+
 
 SOURCES += emailclient.cpp \
            main.cpp \
@@ -32,7 +40,9 @@ SOURCES += emailclient.cpp \
            selectcomposerwidget.cpp \
            statusdisplay.cpp \
            readmail.cpp \
-           writemail.cpp
+           writemail.cpp \
+           accountsettings.cpp \
+           editaccount.cpp
 
 FORMS += searchviewbasephone.ui
 

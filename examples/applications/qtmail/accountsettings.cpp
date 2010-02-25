@@ -98,8 +98,8 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
     context->addAction( resetAccountAction );
 
-    QAction* exitAction = new QAction(tr("Quit"), this );
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QAction* exitAction = new QAction(tr("Close"), this );
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
     context->addAction(exitAction);
 
     statusDisplay = new StatusDisplay(this);
