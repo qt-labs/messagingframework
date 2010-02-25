@@ -830,6 +830,19 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     Q_UNUSED(sort)
 }
 
+/*
+    Invoked by the message server to initiate a request to stop remote searching.
+
+    Searches in progress will be stopped, and no further results returned.
+
+    \sa searchMessages(), matchingMessageIds()
+*/
+bool QMailMessageSource::cancelSearch()
+{
+    notImplemented();
+    return false;
+}
+
 /*!
     Invoked by the message server to initiate a message preparation operation.
 

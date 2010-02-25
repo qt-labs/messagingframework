@@ -5054,6 +5054,7 @@ static quint64 outboxFlag = 0;
 static quint64 junkFlag = 0;
 static quint64 transmitFromExternalFlag = 0;
 static quint64 localOnlyFlag = 0;
+static quint64 temporaryFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5100,6 +5101,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         junkFlag = registerFlag("Junk");
         transmitFromExternalFlag = registerFlag("TransmitFromExternal");
         localOnlyFlag = registerFlag("LocalOnly");
+        temporaryFlag = registerFlag("TemporaryFlag");
     }
 }
 #endif
@@ -5584,6 +5586,15 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message exists only on the local device, and has no representation on any external server.
 */
 
+/*!
+    \variable QMailMessageMetaData::Temporary
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "Temporary" against the result of QMailMessage::status().
+
+    This flag indicates that the message will not exist permanently and should be removed at a later time.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -5607,6 +5618,7 @@ const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
 const quint64 &QMailMessageMetaData::Junk = junkFlag;
 const quint64 &QMailMessageMetaData::TransmitFromExternal = transmitFromExternalFlag;
 const quint64 &QMailMessageMetaData::LocalOnly = localOnlyFlag;
+const quint64 &QMailMessageMetaData::Temporary = temporaryFlag;
 
 /*!
     Constructs an empty message meta data object.

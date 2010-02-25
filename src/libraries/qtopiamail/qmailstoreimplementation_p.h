@@ -210,6 +210,8 @@ public:
     virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
                                 QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
+    virtual bool removeTemporaryMessages() = 0;
+
     virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                                QMailAccountIdList *updatedAccountIds) = 0;
 
@@ -296,6 +298,8 @@ public:
 
     virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
                                 QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessages, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool removeTemporaryMessages();
 
     virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                                QMailAccountIdList *updatedAccountIds);

@@ -127,11 +127,10 @@ QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
     QMailMessageIdList normalMessages; // messages that aren't temporary
 
     foreach(QMailMessageId id, ids) {
-        if(id.isTemporaryMessage()) {
-            accountIds.insert(QMailMessage(id).parentAccountId());
-        } else {
+        if((id.toULongLong() & Q_UINT64_C(9223372036854775808)) == 0)
             normalMessages.append(id);
-        }
+        else
+            accountIds.insert(QMailMessage(id).parentAccountId()); 
     }
 
     if (!normalMessages.isEmpty()) {
@@ -179,11 +178,10 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     QMailMessageIdList normalMessages; //messages that aren't temporary
 
     foreach(QMailMessageId id, ids) {
-        if(id.isTemporaryMessage()) {
-            map[QMailMessage(id).parentAccountId()].append(id);
-        } else {
+        if((id.toULongLong() & Q_UINT64_C(9223372036854775808)) == 0)
             normalMessages.append(id);
-        }
+        else
+            map[QMailMessage(id).parentAccountId()].append(id);
     }
 
     if (!normalMessages.isEmpty()) {
@@ -1771,6 +1769,14 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
 
 void ServiceHandler::cancelSearch(quint64 action)
 {
+    QSet<QMailAccountId> accounts(sourceMap.keys().toSet());
+
+    QSet<QMailMessageService*> sources(sourceServiceSet(accounts));
+    if (!sources.isEmpty()) {
+        enqueueRequest(action, serialize(accounts), sources, &ServiceHandler::dispatchCancelSearch, &ServiceHandler::searchCompleted);
+    }
+
+
     QList<MessageSearch>::iterator it = mSearches.begin(), end = mSearches.end();
     for ( ; it != end; ++it) {
         if ((*it).action() == action) {
@@ -1790,6 +1796,24 @@ void ServiceHandler::cancelSearch(quint64 action)
             return;
         }
     }
+}
+
+bool ServiceHandler::dispatchCancelSearch(quint64 action, const QByteArray &data)
+{
+    QSet<QMailAccountId> accounts;
+
+    deserialize(data, accounts);
+
+    foreach (const QMailAccountId &accountId, accounts) {
+        if (QMailMessageSource *source = accountSource(accountId)) {
+            source->cancelSearch();
+        } else {
+            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void ServiceHandler::shutdown()

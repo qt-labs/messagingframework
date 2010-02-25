@@ -150,6 +150,7 @@ public slots:
     virtual bool deleteFolder(const QMailFolderId &folderId);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
+    virtual bool cancelSearch();
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 

@@ -3533,6 +3533,11 @@ bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::M
                                    "removeMessages");
 }
 
+bool QMailStorePrivate::removeTemporaryMessages()
+{
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveTemporaryMessages, this), "removeTemporaryMessages");
+}
+
 bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                       QMailAccountIdList *updatedAccountIds)
 {
@@ -4735,6 +4740,20 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const 
         if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent);
+            return Success;
+        }
+    }
+
+    return DatabaseFailure;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveTemporaryMessages(Transaction &t, bool commitOnSuccess)
+{
+    QMailMessageIdList deletedMessageIds;
+    QStringList expiredContent;
+    if(deleteTemporaryMessages(&deletedMessageIds, &expiredContent)) {
+        if(commitOnSuccess && t.commit()) {
+            removeExpiredData(deletedMessageIds, expiredContent);
             return Success;
         }
     }
@@ -6014,7 +6033,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
                                                                    QMailMessage *result, 
                                                                    ReadLock &)
 {
-    bool temporaryMessage = id.isTemporaryMessage();
+    bool temporaryMessage = ((Q_UINT64_C(9223372036854775808) & id.toULongLong()) != 0);
     QString tableName = temporaryMessage ? "temporarymailmessages" : "mailmessages";
     quint64 databaseId = temporaryMessage? id.toULongLong() & Q_UINT64_C(9223372036854775807) : id.toULongLong(); //drop msb
 
@@ -6065,7 +6084,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
                                                                            QMailMessageMetaData *result, 
                                                                            ReadLock &)
 {
-    bool temporaryMessage = id.isTemporaryMessage();
+    bool temporaryMessage = ((Q_UINT64_C(9223372036854775808) & id.toULongLong()) != 0);
     QString tableName = temporaryMessage ? "temporarymailmessages" : "mailmessages";
     quint64 databaseId = temporaryMessage? id.toULongLong() & Q_UINT64_C(9223372036854775807) : id.toULongLong(); //drop msb
 
@@ -7151,6 +7170,35 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             ++mit;
         }
     }
+
+    return true;
+}
+
+bool QMailStorePrivate::deleteTemporaryMessages(QMailMessageIdList *deletedMessageIds, QStringList *expiredContent)
+{
+    if(!database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    // Get the information we need to delete these messages
+    QSqlQuery query(simpleQuery(QString("SELECT id,mailfile FROM temporarymailmessages"),
+                                "deleteTemporaryMessages info query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return false;
+
+    while (query.next()) {
+        QMailMessageId messageId(extractValue<quint64>(query.value(0)) | Q_UINT64_C(9223372036854775808)); //set msb to 1 to denote temporaryness
+        deletedMessageIds->append(messageId);
+
+        QString contentUri(extractValue<QString>(query.value(1)));
+        if (!contentUri.isEmpty())
+            expiredContent->append(contentUri);
+    }
+
+    QSqlQuery dropQuery(simpleQuery("DROP TABLE temporarymailmessages)",
+                                "deleteTemporaryMessages drop query"));
+    if (dropQuery.lastError().type() != QSqlError::NoError)
+        return false;
 
     return true;
 }

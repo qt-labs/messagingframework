@@ -132,6 +132,7 @@ public slots:
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
 
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
+    virtual bool cancelSearch();
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
 
@@ -670,6 +671,12 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
     }
 
     _service->_client.strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, sort);
+    return setStrategy(&_service->_client.strategyContext()->searchMessageStrategy);
+}
+
+bool ImapService::Source::cancelSearch()
+{
+    _service->_client.strategyContext()->searchMessageStrategy.cancelSearch();
     return setStrategy(&_service->_client.strategyContext()->searchMessageStrategy);
 }
 

@@ -550,6 +550,7 @@ public:
     static const quint64 &Junk;
     static const quint64 &TransmitFromExternal;
     static const quint64 &LocalOnly;
+    static const quint64 &Temporary;
 
     QMailMessageMetaData();
 #ifndef QTOPIAMAIL_PARSING_ONLY

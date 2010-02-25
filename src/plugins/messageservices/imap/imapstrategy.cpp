@@ -1307,6 +1307,13 @@ void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCri
    search.sort = sort;
 
     _searches.append(search);
+    _canceled = false;
+}
+
+void ImapSearchMessageStrategy::cancelSearch()
+{
+    _searches.clear();
+    _canceled = true;
 }
 
 void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapCommand cmd, OperationStatus status)
@@ -1322,6 +1329,9 @@ void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapComma
 
 void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
+    if(_canceled)
+        return; //stop it searching
+
     //if there are messages, lets search it
     const ImapMailboxProperties &properties(context->mailbox());
     if(properties.exists > 0) {
@@ -1332,24 +1342,17 @@ void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *
     }
 }
 
-void ImapSearchMessageStrategy::previewDiscoveredMessages(ImapStrategyContextBase *context)
-{
-    ImapSynchronizeBaseStrategy::previewDiscoveredMessages(context);
-}
-
-bool ImapSearchMessageStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)
-{
-    return ImapSynchronizeBaseStrategy::selectNextPreviewFolder(context);
-}
-
 void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 {
+    if(_canceled)
+        return;
+
     if(message.id().isValid()) {
         qMailLog(IMAP) << "Fetched a valid message (which it shouldn't)";
         return;
     }
-
-    bool stored = QMailStore::instance()->addTemporaryMessage(&message);
+    message.setStatus(QMailMessage::Temporary, true);
+    bool stored = QMailStore::instance()->addMessage(&message);
 
     if (!stored) {
         _error = true;
@@ -1363,6 +1366,9 @@ void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context,
 
 void ImapSearchMessageStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
+    if(_canceled)
+        return;
+
     context->matchingMessageIds(_fetchedList);
     _fetchedList.clear();
 
@@ -1371,6 +1377,9 @@ void ImapSearchMessageStrategy::handleUidFetch(ImapStrategyContextBase *context)
 
 void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *context)
 {
+    if(_canceled)
+        return;
+
     const ImapMailboxProperties &properties(context->mailbox());
     QList<QMailMessageId> searchResults;
     IntegerRegion uidsToFetch;
@@ -1409,6 +1418,8 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
 
 void ImapSearchMessageStrategy::messageListCompleted(ImapStrategyContextBase *context)
  {
+    if(_canceled)
+        return;
      _searches.removeFirst();
      context->operationCompleted();
  }

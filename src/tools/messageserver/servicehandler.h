@@ -210,6 +210,7 @@ private:
     bool dispatchDeleteFolder(quint64 action, const QByteArray &data);
     bool dispatchRenameFolder(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
+    bool dispatchCancelSearch(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 
     void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(), const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(), const QMailMessageId& = QMailMessageId());

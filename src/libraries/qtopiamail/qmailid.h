@@ -71,7 +71,6 @@ public:
     MailId& operator=(const MailId& other);
 
     bool isValid() const;
-    bool isTemporaryMessage() const;
     quint64 toULongLong() const;
 
     bool operator!=(const MailId& other) const;
@@ -149,7 +148,6 @@ public:
     QMailMessageId& operator=(const QMailMessageId& other);
 
     bool isValid() const;
-    bool isTemporaryMessage() const;
     quint64 toULongLong() const;
 
     operator QVariant() const;

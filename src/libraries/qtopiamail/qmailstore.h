@@ -117,7 +117,6 @@ public:
     bool addFolder(QMailFolder* f);
     bool addMessage(QMailMessage* m);
     bool addMessage(QMailMessageMetaData* m);
-    bool addTemporaryMessage(QMailMessage *m);
     bool addMessages(const QList<QMailMessage*>& m);
     bool addMessages(const QList<QMailMessageMetaData*>& m);
 

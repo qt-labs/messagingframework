@@ -762,6 +762,11 @@ bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMail
     return false;
 }
 
+bool QMailStoreNullImplementation::removeTemporaryMessages()
+{
+    return false;
+}
+
 bool QMailStoreNullImplementation::updateAccount(QMailAccount *, QMailAccountConfiguration *, QMailAccountIdList *)
 {
     return false;

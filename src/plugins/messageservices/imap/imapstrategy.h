@@ -559,17 +559,16 @@ public:
 class ImapSearchMessageStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
-    ImapSearchMessageStrategy() { setBase(QMailFolderId()); setDescending(true); }
+    ImapSearchMessageStrategy() : _canceled(false) { setBase(QMailFolderId()); setDescending(true); }
     virtual ~ImapSearchMessageStrategy() {}
 
+    virtual void cancelSearch();
     virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
     virtual void transition(ImapStrategyContextBase *, ImapCommand, OperationStatus);
 protected:
     virtual void handleSearchMessage(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
-    virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
-    virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
 
     virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
@@ -581,6 +580,7 @@ protected:
     };
     QList<SearchData> _searches;
     QList<QMailMessageId> _fetchedList;
+    bool _canceled;
 };
 
 class ImapExportUpdatesStrategy : public ImapSynchronizeAllStrategy
