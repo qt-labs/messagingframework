@@ -24,7 +24,7 @@ HEADERS += $$QTMAIL_EXAMPLE\accountsettings.h \
 
 
 SOURCES += $$QTMAIL_EXAMPLE\accountsettings.cpp \
-           main.cpp \
+           main_messagingaccounts.cpp \
            $$QTMAIL_EXAMPLE\mmseditaccount.cpp \
            $$QTMAIL_EXAMPLE\statusdisplay.cpp
 
