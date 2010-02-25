@@ -39,74 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef ACCOUNTSETTINGS_H
-#define ACCOUNTSETTINGS_H
+#ifndef EDITACCOUNT_H
+#define EDITACCOUNT_H
 
-#include <qmailid.h>
-#include <qmailserviceaction.h>
-#include <QMap>
-#include <QModelIndex>
 #include <QDialog>
-
-class StatusDisplay;
-class QMailAccount;
-class QMailAccountListModel;
+#include <qmailmessageservice.h>
 
 QT_BEGIN_NAMESPACE
 
-class QMenu;
-class QAction;
-class QSmoothList;
-class QListView;
+class QComboBox;
+class QLineEdit;
+class QCheckBox;
+class QVBoxLayout;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
-class AccountSettings : public QDialog
+class QMailAccountConfiguration;
+class QMailAccount;
+
+class EditAccount : public QDialog
 {
     Q_OBJECT
+
 public:
-    AccountSettings(QWidget *parent = 0, Qt::WFlags flags = 0);
+    EditAccount(QWidget* parent = 0, const char* name = 0, Qt::WFlags fl = 0);
 
-signals:
-    void deleteAccount(const QMailAccountId &id);
+    void setAccount(QMailAccount *in, QMailAccountConfiguration* config);
 
-public slots:
-    void addAccount();
-
-protected:
-    void showEvent(QShowEvent* e);
-    void hideEvent(QHideEvent* e);
-
-private slots:
-    void removeAccount();
-    void resetAccount();
-    void accountSelected(QModelIndex index);
-    void updateActions();
-    void displayProgress(uint, uint);
-    void activityChanged(QMailServiceAction::Activity activity);
-    void testConfiguration();
-    void deleteMessages();
+protected slots:
+    void accept();
+    void tabChanged(int index);
+    void selectionChanged(int index);
 
 private:
-    void editAccount(QMailAccount *account);
+    static QMailMessageServiceFactory::ServiceType serviceType(int type);
 
-private:
-    QMap<int,int> listToAccountIdx;
-    QMailAccountListModel *accountModel;
-    QListView* accountView;
-    QMenu *context;
-    QAction *addAccountAction;
-    QAction *removeAccountAction;
-    QAction *resetAccountAction;
-    StatusDisplay *statusDisplay;
-    QPoint cPos;
-    bool preExisting;
-    QMailRetrievalAction *retrievalAction;
-    QMailTransmitAction *transmitAction;
-    QMailAccountId deleteAccountId;
-    QMailMessageIdList deleteMessageIds;
-    int deleteBatchSize;
-    int deleteProgress;
+    void selectService(int type, int index);
+    void setServices(int type, const QStringList &services);
+
+    QMailAccount *account;
+    QMailAccountConfiguration *config;
+
+    QLineEdit* accountNameInput;
+    QCheckBox* enabledCheckbox;
+
+    enum { Incoming = 0, Outgoing = 1, Storage = 2, ServiceTypesCount = 3 };
+
+    QVBoxLayout* context[ServiceTypesCount];
+    QComboBox* selector[ServiceTypesCount];
+    QMailMessageServiceEditor* editor[ServiceTypesCount];
+    QStringList extantKeys[ServiceTypesCount];
+    QStringList availableKeys[ServiceTypesCount];
+
+    bool effectingConstraints;
+
+    QMap<QString, QMailMessageServiceConfigurator*> serviceMap;
 };
 
 #endif

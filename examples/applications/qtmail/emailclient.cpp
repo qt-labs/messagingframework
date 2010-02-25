@@ -43,8 +43,19 @@
 #include "selectfolder.h"
 #include "emailfoldermodel.h"
 #include "emailfolderview.h"
+#include "settings/accountsettings.h"
+#include "searchview.h"
+#include "readmail.h"
+#include "writemail.h"
+#include "statusdisplay.h"
 #include <longstream_p.h>
 #include <qmaillog.h>
+#include <qmailnamespace.h>
+#include <qmailaccount.h>
+#include <qmailaddress.h>
+#include <qmailcomposer.h>
+#include <qmailstore.h>
+#include <qmailtimestamp.h>
 #include <QApplication>
 #include <QDebug>
 #include <QDesktopWidget>
@@ -54,11 +65,6 @@
 #include <QHeaderView>
 #include <QInputDialog>
 #include <QLabel>
-#include <qmailaccount.h>
-#include <qmailaddress.h>
-#include <qmailcomposer.h>
-#include <qmailstore.h>
-#include <qmailtimestamp.h>
 #include <QMessageBox>
 #include <QStack>
 #include <QStackedWidget>
@@ -66,18 +72,12 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSettings>
-#include "searchview.h"
-#include "readmail.h"
-#include "writemail.h"
 #include <QMenuBar>
-#include <qmailnamespace.h>
 #include <QSplitter>
 #include <QListView>
 #include <QToolBar>
 #include <QMovie>
 #include <QStatusBar>
-#include <statusdisplay.h>
-#include "accountsettings.h"
 
 #ifdef LOAD_DEBUG_VERSION
 static const QString debugSuffix("d");
