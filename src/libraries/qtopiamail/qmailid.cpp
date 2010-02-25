@@ -183,8 +183,7 @@ QMailAccountId& QMailAccountId::operator=(const QMailAccountId& other)
 }
 
 /*!
-    Returns true if this object has been initialized with the identifier of an
-    existing message contained by QMailStore.
+    Returns true if this object has been initialized with an identifier.
 */
 bool QMailAccountId::isValid() const
 {
@@ -329,8 +328,7 @@ QMailFolderId& QMailFolderId::operator=(const QMailFolderId& other)
 }
 
 /*!
-    Returns true if this object has been initialized with the identifier of an
-    existing message contained by QMailStore.
+    Returns true if this object has been initialized with an identifier.
 */
 bool QMailFolderId::isValid() const
 {
@@ -467,8 +465,7 @@ QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other)
 }
 
 /*!
-    Returns true if this object has been initialized with the identifier of an
-    existing message contained by QMailStore.
+    Returns true if this object has been initialized with an identifier.
 */
 bool QMailMessageId::isValid() const
 {
