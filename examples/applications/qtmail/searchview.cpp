@@ -980,7 +980,7 @@ void SearchView::searchActivityChanged(QMailServiceAction::Activity a)
 void SearchView::searchProgressChanged(uint value, uint total)
 {
     if(total > 0)
-        m_statusBar->showMessage(QString("Searching %1\%").arg(value/total*100));
+        m_statusBar->showMessage(QString("Searching %1\%").arg((value*100)/total));
 }
 
 #include <searchview.moc>
