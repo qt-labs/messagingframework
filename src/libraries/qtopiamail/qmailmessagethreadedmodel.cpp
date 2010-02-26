@@ -565,6 +565,8 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
     // Find the locations for removals
     removeMessages(removalIds, 0);
 
+    // TODO To prevent children being orphaned all messages in all conversations involving messages in 
+    // TODO temporaryRemovalIds should be removed and then added.
     // Find the locations for those to be removed and any children IDs that need to be reinserted after removal
     QMailMessageIdList readditionIds;
     removeMessages(temporaryRemovalIds, &readditionIds);
@@ -782,6 +784,7 @@ void QMailMessageThreadedModelPrivate::init() const
             }
 
             do {
+                int itemSortValue = idIndexMap[messageId];
                 QMailMessageThreadedModelItem *insertParent = 0;
 
                 if (!predecessorId.isValid()) {
@@ -807,7 +810,7 @@ void QMailMessageThreadedModelPrivate::init() const
                             qWarning() << "Warning: Threading hash failure" << __FUNCTION__;
                             idIndexMap[container.at(index - 1)._id] = ids.indexOf(container.at(index - 1)._id);
                         }
-                        if (idIndexMap[container.at(index - 1)._id] < i) {
+                        if (idIndexMap[container.at(index - 1)._id] < itemSortValue) {
                             break;
                         }
                     }
