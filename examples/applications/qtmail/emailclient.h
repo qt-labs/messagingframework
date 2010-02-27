@@ -239,6 +239,7 @@ protected slots:
     void previousUnreadMessage();
     void scrollReaderDown();
     void scrollReaderUp();
+    void readerMarkMessageAsUnread();
 
     void respond(const QMailMessage& message, QMailMessage::ResponseType type);
     void respond(const QMailMessagePart::Location& partLocation, QMailMessage::ResponseType type);
@@ -387,6 +388,7 @@ private:
     QAction *previousUnreadMessageAction;
     QAction *scrollReaderDownAction;
     QAction *scrollReaderUpAction;
+    QAction *readerMarkMessageAsUnreadAction;
 
     bool closeAfterTransmissions;
     bool closeAfterWrite;

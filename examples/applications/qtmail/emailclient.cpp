@@ -858,13 +858,16 @@ void EmailClient::initActions()
         previousUnreadMessageAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Minus));
         connect(previousUnreadMessageAction, SIGNAL(triggered()), this, SLOT(previousUnreadMessage()));
 
-        scrollReaderDownAction = new QAction( tr("Scroll Reader Down"), this );
+        scrollReaderDownAction = new QAction( tr("Scroll Down"), this );
         scrollReaderDownAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Down));
         connect(scrollReaderDownAction, SIGNAL(triggered()), this, SLOT(scrollReaderDown()));
 
-        scrollReaderUpAction = new QAction( tr("Scroll Reader Up"), this );
+        scrollReaderUpAction = new QAction( tr("Scroll Up"), this );
         scrollReaderUpAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Up));
         connect(scrollReaderUpAction, SIGNAL(triggered()), this, SLOT(scrollReaderUp()));
+
+        readerMarkMessageAsUnreadAction = new QAction( tr("Mark As Unread"), this );
+        connect(readerMarkMessageAsUnreadAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsUnread()));
         
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
@@ -933,6 +936,7 @@ void EmailClient::initActions()
         readMailWidget()->addAction(createSeparator());
         readMailWidget()->addAction(scrollReaderDownAction);
         readMailWidget()->addAction(scrollReaderUpAction);
+        readMailWidget()->addAction(readerMarkMessageAsUnreadAction);
     }
 }
 
@@ -2663,6 +2667,15 @@ void EmailClient::scrollReaderUp()
         QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
     }
 }
+
+void EmailClient::readerMarkMessageAsUnread() 
+{
+    quint64 setMask(0);
+    quint64 unsetMask(QMailMessage::Read);
+    QMailMessageId id(readMailWidget()->displayedMessage());
+    flagMessage(id, setMask, unsetMask);
+}
+
 
 #include <emailclient.moc>
 
