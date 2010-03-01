@@ -53,6 +53,7 @@
 #include <QSet>
 #include <QString>
 #include <QStringList>
+#include <QPointer>
 
 class QMailServiceConfiguration;
 
@@ -221,11 +222,11 @@ private:
     void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);
     void setTransmissionInProgress(const QMailAccountId &id, bool inProgress);
 
-    QMap<QPair<QMailAccountId, QString>, QMailMessageService*> serviceMap;
+    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> > serviceMap;
     QMap<QMailAccountId, QMailMessageSource*> sourceMap;
     QMap<QMailAccountId, QMailMessageSink*> sinkMap;
-    QMap<QMailMessageSource*, QMailMessageService*> sourceService;
-    QMap<QMailMessageSink*, QMailMessageService*> sinkService;
+    QMap<QMailMessageSource*, QPointer<QMailMessageService> > sourceService;
+    QMap<QMailMessageSink*, QPointer<QMailMessageService> > sinkService;
     QMap<QMailAccountId, QMailAccountId> masterAccount;
 
     QSet<QMailMessageService*> mUnavailableServices;
@@ -233,7 +234,7 @@ private:
     class ActionData
     {
     public:
-        QSet<QMailMessageService*> services;
+        QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
         QTime expiry;
         bool reported;
@@ -242,7 +243,7 @@ private:
     QMap<quint64, ActionData> mActiveActions;
     QLinkedList<quint64> mActionExpiry;
 
-    QMap<QMailMessageService*, quint64> mServiceAction;
+    QMap<QPointer<QMailMessageService>, quint64> mServiceAction;
 
     enum { ExpiryPeriod = 30 * 1000 };
 
@@ -250,8 +251,8 @@ private:
     {
         quint64 action;
         QByteArray data;
-        QSet<QMailMessageService*> services;
-        QSet<QMailMessageService*> preconditions;
+        QSet<QPointer<QMailMessageService> > services;
+        QSet<QPointer<QMailMessageService> > preconditions;
         RequestServicer servicer;
         CompletionSignal completion;
     };

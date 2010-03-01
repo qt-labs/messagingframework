@@ -534,7 +534,7 @@ void ServiceHandler::removeServiceFromActiveActions(QMailMessageService *removeS
 
 void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
 {
-    QMap<QPair<QMailAccountId, QString>, QMailMessageService*>::iterator it = serviceMap.begin(), end = serviceMap.end();
+    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::iterator it = serviceMap.begin(), end = serviceMap.end();
     while (it != end) {
         if (ids.contains(it.key().first)) {
             // Remove any services associated with this account
@@ -570,7 +570,7 @@ void ServiceHandler::reregisterAccountServices(const QMailAccountIdList &ids)
 {
     // Remove and re-create these accounts' services
     QMailAccountIdList reregisterIds;
-    QMap<QPair<QMailAccountId, QString>,  QMailMessageService*>::iterator it = serviceMap.begin();
+    QMap<QPair<QMailAccountId, QString>,  QPointer<QMailMessageService> >::iterator it = serviceMap.begin();
     while (it != serviceMap.end()) {
         if (ids.contains(it.key().first)) {
            QMailMessageService *service = it.value();
@@ -670,7 +670,7 @@ QMailMessageService *ServiceHandler::createService(const QString &name, const QM
 
 void ServiceHandler::registerAccountService(const QMailAccountId &accountId, const QMailServiceConfiguration &svcCfg)
 {
-    QMap<QPair<QMailAccountId, QString>, QMailMessageService*>::const_iterator it = serviceMap.find(qMakePair(accountId, svcCfg.service()));
+    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::const_iterator it = serviceMap.find(qMakePair(accountId, svcCfg.service()));
     if (it == serviceMap.end()) {
         // We need to create a new service for this account
         if (QMailMessageService *service = createService(svcCfg.service(), accountId)) {
@@ -779,7 +779,7 @@ quint64 ServiceHandler::sinkAction(QMailMessageSink *sink) const
 
 quint64 ServiceHandler::serviceAction(QMailMessageService *service) const
 {
-    QMap<QMailMessageService*, quint64>::const_iterator it = mServiceAction.find(service);
+    QMap<QPointer<QMailMessageService>, quint64>::const_iterator it = mServiceAction.find(service);
     if (it != mServiceAction.end())
         return it.value();
 
@@ -788,11 +788,17 @@ quint64 ServiceHandler::serviceAction(QMailMessageService *service) const
 
 void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QSet<QMailMessageService*> &preconditions)
 {
+    QSet<QPointer<QMailMessageService> > safeServices;
+    QSet<QPointer<QMailMessageService> > safePreconditions;
     Request req;
+    foreach(QMailMessageService *service, services)
+        safeServices.insert(service);
+    foreach(QMailMessageService *precondition, preconditions)
+        safePreconditions.insert(precondition);
     req.action = action;
     req.data = data;
-    req.services = services;
-    req.preconditions = preconditions;
+    req.services = safeServices;
+    req.preconditions = safePreconditions;
     req.servicer = servicer;
     req.completion = completion;
 
@@ -892,35 +898,43 @@ void ServiceHandler::expireAction()
                 bool retrievalSetModified(false);
                 bool transmissionSetModified(false);
 
-                // Remove this action
-                foreach (QMailMessageService *service, data.services) {
-                    serviceAccounts.insert(service->accountId());
-                    mServiceAction.remove(service);
+                // Defend against action being removed from mActiveActions when activityChanged signal is emitted
+                it = mActiveActions.find(action);
+                if (it != mActiveActions.end()) {
+                    ActionData &data(it.value());
+                    // Remove this action
+                    foreach (QMailMessageService *service, data.services) {
+                        if (!service)
+                            continue;
+                        serviceAccounts.insert(service->accountId());
+                        mServiceAction.remove(service);
 
-                    QMailAccountId accountId(service->accountId());
-                    if (accountId.isValid()) {
-                        if (data.completion == &ServiceHandler::retrievalCompleted) {
-                            if (_retrievalAccountIds.contains(accountId)) {
-                                _retrievalAccountIds.remove(accountId);
-                                retrievalSetModified = true;
-                            }
-                        } else if (data.completion == &ServiceHandler::transmissionCompleted) {
-                            if (_transmissionAccountIds.contains(accountId)) {
-                                _transmissionAccountIds.remove(accountId);
-                                transmissionSetModified = true;
+                        QMailAccountId accountId(service->accountId());
+                        if (accountId.isValid()) {
+                            if (data.completion == &ServiceHandler::retrievalCompleted) {
+                                if (_retrievalAccountIds.contains(accountId)) {
+                                    _retrievalAccountIds.remove(accountId);
+                                    retrievalSetModified = true;
+                                }
+                            } else if (data.completion == &ServiceHandler::transmissionCompleted) {
+                                if (_transmissionAccountIds.contains(accountId)) {
+                                    _transmissionAccountIds.remove(accountId);
+                                    transmissionSetModified = true;
+                                }
                             }
                         }
                     }
-                }
 
-                if (retrievalSetModified) {
-                    QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
-                }
-                if (transmissionSetModified) {
-                    QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
-                }
+                    if (retrievalSetModified) {
+                        QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+                    }
+                    if (transmissionSetModified) {
+                        QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
+                    }
 
-                mActiveActions.erase(it);
+                    mActiveActions.erase(it);
+                }
+                
                 mActionExpiry.removeFirst();
 
                 // Restart the service(s) for each of these accounts
@@ -1979,7 +1993,7 @@ void ServiceHandler::actionCompleted(bool success)
                     return;
                 }
 
-                QSet<QMailMessageService*>::iterator sit = data.services.find(service);
+                QSet<QPointer<QMailMessageService> >::iterator sit = data.services.find(service);
                 if (sit != data.services.end()) {
                     // Remove this service from the set for the action
                     data.services.erase(sit);
@@ -2156,5 +2170,10 @@ void ServiceHandler::setTransmissionInProgress(const QMailAccountId &accountId, 
     if (modified) {
         QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
     }
+}
+
+uint qHash(QPointer<QMailMessageService> service)
+{
+    return qHash(service.data());
 }
 
