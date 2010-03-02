@@ -99,7 +99,7 @@ PopSettings::PopSettings()
     // These fields should not be autocapitalised
 
     mailPortInput->setValidator(new PortValidator(this));
-    mailPasswInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    mailPasswInput->setEchoMode(QLineEdit::Password);
 
 #ifdef QT_NO_OPENSSL
     encryptionIncoming->hide();

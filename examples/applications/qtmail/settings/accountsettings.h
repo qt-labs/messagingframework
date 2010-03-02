@@ -80,12 +80,12 @@ protected:
 private slots:
     void removeAccount();
     void resetAccount();
-    void accountSelected(QModelIndex index);
     void updateActions();
     void displayProgress(uint, uint);
     void activityChanged(QMailServiceAction::Activity activity);
     void testConfiguration();
     void deleteMessages();
+    void editCurrentAccount();
 
 private:
     void editAccount(QMailAccount *account);
@@ -98,6 +98,7 @@ private:
     QAction *addAccountAction;
     QAction *removeAccountAction;
     QAction *resetAccountAction;
+    QAction *editAccountAction;
     StatusDisplay *statusDisplay;
     QPoint cPos;
     bool preExisting;

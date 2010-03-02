@@ -50,6 +50,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QRegExp>
+#include <QToolButton>
 
 AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     : QDialog(parent, flags),
@@ -57,7 +58,7 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
       deleteBatchSize(0),
       deleteProgress(0)
 {
-    setWindowTitle(tr("Messaging Accounts"));
+    setWindowTitle(tr("Accounts"));
     QVBoxLayout *vb = new QVBoxLayout(this);
     vb->setContentsMargins(0, 0, 0, 0);
 
@@ -68,6 +69,8 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     accountModel = new QMailAccountListModel();
     accountModel->setKey(QMailAccountKey::status(QMailAccount::UserEditable, QMailDataComparator::Includes));
     accountModel->setSortKey(QMailAccountSortKey::id(Qt::AscendingOrder));
+    connect(accountModel,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(updateActions()));
+    connect(accountModel,SIGNAL(rowsRemoved(QModelIndex,int,int)),this,SLOT(updateActions()));
     accountView = new QListView(this);
 
     accountView->setModel(accountModel);
@@ -78,13 +81,19 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
         QTimer::singleShot(0,this,SLOT(addAccount()));
     vb->addWidget(accountView);
 
-    addAccountAction = new QAction( QIcon(":icon/new"), tr("Add account..."), this );
+    addAccountAction = new QAction( QIcon(":icon/add"), tr("Add"), this );
     connect(addAccountAction, SIGNAL(triggered()), this, SLOT(addAccount()));
     context->addAction( addAccountAction );
-    removeAccountAction = new QAction( QIcon(":icon/trash"), tr("Remove account"), this );
+
+    editAccountAction = new QAction(QIcon(":icon/settings"),tr("Edit"), this);
+    connect(editAccountAction,SIGNAL(triggered()),this,SLOT(editCurrentAccount()));
+    context->addAction( editAccountAction );
+
+    removeAccountAction = new QAction( QIcon(":icon/erase"), tr("Remove"), this );
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
     context->addAction(removeAccountAction);
-    resetAccountAction = new QAction( tr("Reset account"), this );
+
+    resetAccountAction = new QAction( tr("Reset"), this );
     connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
     context->addAction( resetAccountAction );
 
@@ -94,22 +103,41 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
 
     statusDisplay = new StatusDisplay(this);
     statusDisplay->setVisible(false);
+
+    QHBoxLayout* buttonsLayout = new QHBoxLayout(this);
+
+    QToolButton* addButton = new QToolButton(this);
+    addButton->setDefaultAction(addAccountAction);
+    buttonsLayout->addWidget(addButton);
+
+    QToolButton* editButton = new QToolButton(this);
+    editButton->setDefaultAction(editAccountAction);
+    buttonsLayout->addWidget(editButton);
+
+    QToolButton* removeButton = new QToolButton(this);
+    removeButton->setDefaultAction(removeAccountAction);
+    buttonsLayout->addWidget(removeButton);
+
+    buttonsLayout->addStretch();
+
+    vb->addLayout(buttonsLayout);
+
     vb->addWidget(statusDisplay);
     connect(accountView, SIGNAL(activated(QModelIndex)),
-	    this, SLOT(accountSelected(QModelIndex)) );
-    connect(context, SIGNAL(aboutToShow()), 
+	    this, SLOT(editCurrentAccount()));
+    connect(context, SIGNAL(aboutToShow()),
 	    this, SLOT(updateActions()) );
 
     retrievalAction = new QMailRetrievalAction(this);
-    connect(retrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+    connect(retrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
             this, SLOT(activityChanged(QMailServiceAction::Activity)));
-    connect(retrievalAction, SIGNAL(progressChanged(uint, uint)), 
+    connect(retrievalAction, SIGNAL(progressChanged(uint, uint)),
             this, SLOT(displayProgress(uint, uint)));
 
     transmitAction = new QMailTransmitAction(this);
-    connect(transmitAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+    connect(transmitAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
             this, SLOT(activityChanged(QMailServiceAction::Activity)));
-    connect(transmitAction, SIGNAL(progressChanged(uint, uint)), 
+    connect(transmitAction, SIGNAL(progressChanged(uint, uint)),
             this, SLOT(displayProgress(uint, uint)));
 }
 
@@ -139,8 +167,8 @@ void AccountSettings::removeAccount()
 
     QMailAccount account(accountModel->idFromIndex(index));
 
-    QString message = tr("Delete account:\n%1").arg(QRegExp::escape(account.name()));
-    if (QMessageBox::question( this, tr("Email"), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
+    QString message = tr("Remove %1?").arg(account.name());
+    if (QMessageBox::question( this, tr("Remove account"), message, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes) {
         // We could simply delete the account since QMailStore::deleteAccount
         // will remove all folders and messages, but for now we will remove the
         // messages manually so we can give progress indication (eventually, we
@@ -168,7 +196,7 @@ void AccountSettings::removeAccount()
             }
 
             statusDisplay->displayProgress(0, count);
-            statusDisplay->displayStatus(tr("Deleting messages"));
+            statusDisplay->displayStatus(tr("Removing messages"));
         } else {
             // No progress indication is required - allow the messages to be removed in account deletion
             deleteMessageIds = QMailMessageIdList();
@@ -187,8 +215,8 @@ void AccountSettings::resetAccount()
 
     QMailAccount account(accountModel->idFromIndex(index));
 
-    QString message = tr("Reset account:\n%1").arg(QRegExp::escape(account.name()));
-    if (QMessageBox::question( this, tr("Email"), message, QMessageBox::Yes | QMessageBox::No,QMessageBox::No) == QMessageBox::Yes) {
+    QString message = tr("Reset %1?").arg(account.name());
+    if (QMessageBox::question( this, tr("Reset account"), message, QMessageBox::Yes | QMessageBox::No,QMessageBox::No) == QMessageBox::Yes) {
         // Load the existing configuration
         QMailAccountConfiguration config(account.id());
 
@@ -212,7 +240,7 @@ void AccountSettings::deleteMessages()
 
         QMailStore::instance()->removeMessages(QMailMessageKey::id(batch), QMailStore::CreateRemovalRecord);
         deleteProgress += batch.count();
-        
+
         statusDisplay->displayProgress(deleteProgress, deleteProgress + deleteMessageIds.count());
         QTimer::singleShot(0, this, SLOT(deleteMessages()));
     } else {
@@ -223,25 +251,37 @@ void AccountSettings::deleteMessages()
     }
 }
 
-void AccountSettings::accountSelected(QModelIndex index)
-{
-    if (!index.isValid())
-      return;
-
-    QMailAccount account(accountModel->idFromIndex(index));
-
-    if (account.messageType() != QMailMessage::Sms)
-        editAccount(&account);
-}
-
 void AccountSettings::updateActions()
 {
+    bool haveAccounts(accountModel->rowCount() > 0);
+    bool removable(true);
+    bool editable(true);
+
+    QModelIndex index = accountView->currentIndex();
+    if (index.isValid())
+    {
+        QMailAccount account(accountModel->idFromIndex(index));
+        removable = account.status() & QMailAccount::UserRemovable;
+        editable = account.status() & QMailAccount::UserEditable;
+    }
+
+    removeAccountAction->setEnabled( removable && haveAccounts);
+    editAccountAction->setEnabled( editable && haveAccounts);
+    resetAccountAction->setEnabled( editable && haveAccounts);
+}
+
+void AccountSettings::editCurrentAccount()
+{
+    if(!accountModel->rowCount())
+        return;
+
     QModelIndex index = accountView->currentIndex();
     if (!index.isValid())
         return;
 
     QMailAccount account(accountModel->idFromIndex(index));
-    removeAccountAction->setVisible(account.status() & QMailAccount::UserRemovable);
+    //if (account.messageType() != QMailMessage::Sms)
+    editAccount(&account);
 }
 
 void AccountSettings::editAccount(QMailAccount *account)
@@ -308,7 +348,7 @@ void AccountSettings::testConfiguration()
     QModelIndex index(accountView->currentIndex());
     if (index.isValid()) {
         QMailAccountId id(accountModel->idFromIndex(index));
-        
+
         QMailAccount account(id);
         if (account.status() & (QMailAccount::MessageSource | QMailAccount::MessageSink)) {
             // See if the user wants to test the configuration for this account

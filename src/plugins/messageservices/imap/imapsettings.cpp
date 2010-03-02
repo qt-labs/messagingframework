@@ -260,7 +260,7 @@ ImapSettings::ImapSettings()
     // These fields should not be autocapitalised
     mailPortInput->setValidator(new PortValidator(this));
 
-    mailPasswInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    mailPasswInput->setEchoMode(QLineEdit::Password);
 
     // This functionality is not currently used:
     mailboxButton->hide();

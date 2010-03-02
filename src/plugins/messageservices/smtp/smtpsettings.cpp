@@ -172,7 +172,7 @@ SmtpSettings::SmtpSettings()
 
     smtpPortInput->setValidator(new PortValidator(this));
 
-    smtpPasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    smtpPasswordInput->setEchoMode(QLineEdit::Password);
 
 #ifdef QT_NO_OPENSSL
     encryption->hide();
@@ -183,8 +183,6 @@ SmtpSettings::SmtpSettings()
     lblSmtpUsername->hide();
     smtpPasswordInput->hide();
     lblSmtpPassword->hide();
-#else
-    smtpPasswordInput->setEchoMode(QLineEdit::PasswordEchoOnEdit);
 #endif
 }
 

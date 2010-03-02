@@ -57,6 +57,7 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
       effectingConstraints(false)
 {
     setObjectName(name);
+    setWindowTitle("Edit account");
 
     QTabWidget* tabWidget = new QTabWidget;
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
