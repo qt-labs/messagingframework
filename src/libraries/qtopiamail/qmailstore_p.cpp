@@ -7139,7 +7139,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Remove any threads that are empty after this deletion
-        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id IN (SELECT id FROM mailthreads mt WHERE 0 = (SELECT COUNT(*) FROM mailthreadmessages WHERE threadid=mt.id) )",
+        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id NOT IN (SELECT threadid FROM mailthreadmessages)",
                                     "deleteMessages mailthreads delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
