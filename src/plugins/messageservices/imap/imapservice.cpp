@@ -91,7 +91,7 @@ public:
         connect(&_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
         connect(&_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
         connect(&_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
-        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheckAll()));
+        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(intervalCheck()));
     }
     
     void setIntervalTimer(int interval)
@@ -140,7 +140,7 @@ public slots:
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
     void retrievalTerminated();
-    void queueMailCheckAll();
+    void intervalCheck();
     void queueMailCheck(QMailFolderId folderId);
     void queueFlagsChangedCheck();
 
@@ -336,8 +336,32 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
     return setStrategy(&_service->_client.strategyContext()->synchronizeAccountStrategy);
 }
 
-bool ImapService::Source::deleteMessages(const QMailMessageIdList &messageIds)
+bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
 {
+    QMailMessageIdList messageIds;
+
+    // If a server crash has occurred duplicate messages may exist in the store.
+    // A duplicate message is one that refers to the same serverUid as another message in the same account & folder.
+    // Ensure that when a duplicate message is deleted no message is deleted from the server.
+    QMailMessageIdList duplicateIds;
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ServerUid);
+    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
+        QMailMessageMetaData metaDataReverseLookup(metaData.serverUid(), _service->accountId());
+        if (metaDataReverseLookup.id() != metaData.id()) {
+            duplicateIds.append(metaData.id());
+        } else {
+            messageIds.append(metaData.id());
+        }
+    }
+    if (!duplicateIds.isEmpty()) {
+        if (!QMailMessageSource::deleteMessages(duplicateIds)) {
+            _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Could not delete messages"));
+            return false;
+        }
+        if (messageIds.isEmpty()) {
+            return true;
+        }
+    }
     if (messageIds.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to delete"));
         return false;
@@ -840,9 +864,11 @@ void ImapService::Source::retrievalCompleted()
     }
 }
 
-void ImapService::Source::queueMailCheckAll()
+// Interval mail checking timer has expired, perform mail check on all folders
+void ImapService::Source::intervalCheck()
 {
-    _flagsCheckQueued = true; //Also check for flag changes
+    _flagsCheckQueued = true; // Convenient for user to check for flag changes on server also
+    exportUpdates(_service->accountId()); // Convenient for user to export pending changes also
     queueMailCheck(QMailFolderId());
 }
 
