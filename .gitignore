@@ -21,11 +21,6 @@ config.log
 
 doc/src/html/
 
-#binaries
-qtmail
-messagingaccounts
-messageserver
-
 #tests
 tst_messageserver
 tst_longstring
