@@ -486,7 +486,7 @@ private:
 
     static const int messageCacheSize = 100;
     static const int uidCacheSize = 500;
-    static const int folderCacheSize = 10;
+    static const int folderCacheSize = 100;
     static const int accountCacheSize = 10;
     static const int lookAhead = 5;
 
