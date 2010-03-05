@@ -346,8 +346,9 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
     QMailMessageIdList duplicateIds;
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        QMailMessageMetaData metaDataReverseLookup(metaData.serverUid(), _service->accountId());
-        if (metaDataReverseLookup.id() != metaData.id()) {
+        QMailMessageKey uidKey(QMailMessageKey::serverUid(metaData.serverUid()));
+        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(_service->accountId()));
+        if (QMailStore::instance()->countMessages(accountKey & uidKey) != 1) {
             duplicateIds.append(metaData.id());
         } else {
             messageIds.append(metaData.id());
@@ -362,6 +363,8 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
             return true;
         }
     }
+    
+    // Proceed with normal deletion for non-duplicate messages
     if (messageIds.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to delete"));
         return false;
