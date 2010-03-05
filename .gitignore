@@ -63,3 +63,6 @@ plugin_commonU.def
 
 #QtCreator project files
 *.pro.user
+
+#vim tag files
+tags
