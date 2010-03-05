@@ -1028,6 +1028,16 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
                 // Find where we should continue fetching from
                 QMailMessage message(_messageUids.first(), context->config().id());
                 valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
+                
+                // Try to avoid sending bad IMAP commands even when the server gives bogus values
+                if (_sectionStart >= _sectionEnd) {
+                    qWarning() << "Invalid message section range" 
+                               << "account:" << message.parentAccountId() 
+                               << "UID:" << message.serverUid() 
+                               << "start:" << _sectionStart 
+                               << "end:" << _sectionEnd;
+                    valid = false;
+                }
             }
 
             if (!valid) {
