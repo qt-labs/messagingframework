@@ -1173,6 +1173,9 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
             size = part.indicativeSize();
             bytes = part.contentDisposition().size();
         }
+        // Required to show progress when downloading attachments
+        if (size < 1)
+            size = bytes/1024;
 
         _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
         _totalRetrievalSize += size;
