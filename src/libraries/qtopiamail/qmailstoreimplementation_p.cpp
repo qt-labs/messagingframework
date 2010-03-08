@@ -664,23 +664,26 @@ bool QMailStoreImplementationBase::emitIpcNotification()
     if ((ait = accountUpdateSignals.find(message)) != accountUpdateSignals.end()) {
         QMailAccountIdList ids;
         ds >> ids;
+        messageQueue.removeFirst(); // messageQueue may be modified by the emitIpcNotification below
 
         emitIpcNotification(ait.value(), ids);
     } else if ((fit = folderUpdateSignals.find(message)) != folderUpdateSignals.end()) {
         QMailFolderIdList ids;
         ds >> ids;
+        messageQueue.removeFirst();
 
         emitIpcNotification(fit.value(), ids);
     } else if ((mit = messageUpdateSignals.find(message)) != messageUpdateSignals.end()) {
         QMailMessageIdList ids;
         ds >> ids;
+        messageQueue.removeFirst();
 
         emitIpcNotification(mit.value(), ids);
     } else {
         qWarning() << "No update signal for message:" << message;
+        messageQueue.removeFirst();
     }
     
-    messageQueue.removeFirst();
     return !messageQueue.isEmpty();
 }
 
