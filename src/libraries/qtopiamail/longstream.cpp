@@ -248,7 +248,7 @@ bool LongStream::freeSpace( const QString &path, int min)
     DWORD freeClusters(0);
     DWORD totalClusters(0);
 
-    if (::GetDiskFreeSpace(partitionPath.utf16(), &bytesPerSector, &sectorsPerCluster, &freeClusters, &totalClusters) == FALSE) {
+    if (::GetDiskFreeSpace(reinterpret_cast<const wchar_t*>(partitionPath.utf16()), &bytesPerSector, &sectorsPerCluster, &freeClusters, &totalClusters) == FALSE) {
         qWarning() << "Unable to get free disk space:" << partitionPath;
     }
 

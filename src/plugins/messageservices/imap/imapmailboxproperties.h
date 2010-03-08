@@ -55,7 +55,6 @@ struct ImapMailboxProperties
           recent(0),
           unseen(0),
           uidNext(0),
-          highestModSeq(0),
           noModSeq(true)
     {
     }
