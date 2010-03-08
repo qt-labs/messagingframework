@@ -104,7 +104,8 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     statusDisplay = new StatusDisplay(this);
     statusDisplay->setVisible(false);
 
-    QHBoxLayout* buttonsLayout = new QHBoxLayout(this);
+    QWidget *buttonHolder = new QWidget(this);
+    QHBoxLayout* buttonsLayout = new QHBoxLayout(buttonHolder);
 
     QToolButton* addButton = new QToolButton(this);
     addButton->setDefaultAction(addAccountAction);
@@ -120,7 +121,7 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
 
     buttonsLayout->addStretch();
 
-    vb->addLayout(buttonsLayout);
+    vb->addWidget(buttonHolder);
 
     vb->addWidget(statusDisplay);
     connect(accountView, SIGNAL(activated(QModelIndex)),
