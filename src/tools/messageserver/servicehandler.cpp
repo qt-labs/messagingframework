@@ -552,7 +552,7 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
     }
 
     foreach (const QMailAccountId &id, ids) {
-        // Remove trailing references to this account's serviecs
+        // Remove trailing references to this account's services
         QMap<QMailAccountId, QMailAccountId>::iterator it = masterAccount.find(id);
         if (it != masterAccount.end()) {
             masterAccount.erase(it);
@@ -562,6 +562,9 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids)
 
             if (QMailMessageSink *sink = accountSink(id))
                 sinkService.remove(sink);
+
+            sourceMap.remove(id);
+            sinkMap.remove(id);
         }
     }
 }
@@ -705,7 +708,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QMailAccountId
 
     // See if this account's service has a source
     if (QMailMessageSource *source = accountSource(id)) {
-        services.insert(sourceService[source]);
+        services.insert(sourceService.value(source));
     } else {
         qMailLog(Messaging) << "Unable to find message source for account:" << id;
     }
@@ -720,7 +723,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QSet<QMailAcco
     foreach (const QMailAccountId &id, ids) {
         // See if this account's service has a source
         if (QMailMessageSource *source = accountSource(id)) {
-            services.insert(sourceService[source]);
+            services.insert(sourceService.value(source));
         } else {
             qMailLog(Messaging) << "Unable to find message source for account:" << id;
             return QSet<QMailMessageService*>();
