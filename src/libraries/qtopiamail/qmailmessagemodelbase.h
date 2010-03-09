@@ -126,7 +126,7 @@ public:
 
     virtual QModelIndex generateIndex(int row, int column, void *ptr) = 0;
 
-    void emitDataChanged(const QModelIndex &idx);
+    void emitDataChanged(const QModelIndex &idx, const QModelIndex &jdx);
 
     void emitBeginInsertRows(const QModelIndex &idx, int start, int end);
     void emitEndInsertRows();

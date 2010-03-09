@@ -558,7 +558,7 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
             temporaryRemovalIds.append(messageId);
         } else {
             // Find the location for this updated item (not its parent)
-            _model.emitDataChanged(index(item, 0));
+            _model.emitDataChanged(index(item, 0), index(item, _model.columnCount() - 1));
         }
     }
 

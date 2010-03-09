@@ -116,7 +116,7 @@ QWidget(parent)
     m_statusCombo = new QComboBox(this);
     QMailMessageKey removed(QMailMessageKey::status(QMailMessage::Removed));
     m_statusCombo->addItem(QIcon(":icon/exec"),tr("Any Status"),~removed);
-    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes)&QMailMessageKey::status(QMailMessage::ReadElsewhere,QMailDataComparator::Excludes)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes)&~removed);
     m_statusCombo->addItem(QIcon(":icon/new"),tr("New"),QMailMessageKey::status(QMailMessage::New)&~removed);
     m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied)&~removed);
     m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded)&~removed);
@@ -276,7 +276,7 @@ QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) 
             QMailMessageMetaData message(SuperType::idFromIndex(index));
             if (message.id().isValid()) {
                 quint64 status = message.status();
-                bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
+                bool unread = !(status & QMailMessage::Read);
                 if (status & QMailMessage::PartialContentAvailable && unread)
                     return newMessageColor;
             }
@@ -365,7 +365,7 @@ void MessageList::keyPressEvent(QKeyEvent* e)
                     break;
                 QMailMessageMetaData message(id);
                 quint64 status = message.status();
-                bool unread = !(status & QMailMessage::Read || status & QMailMessage::ReadElsewhere);
+                bool unread = !(status & QMailMessage::Read);
                 if (unread) {
                     setCurrentIndex(index);
                     scrollTo(index);

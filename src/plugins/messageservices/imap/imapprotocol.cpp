@@ -3188,6 +3188,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
     if (flags & MFlag_Seen) {
         mail.setStatus( QMailMessage::ReadElsewhere, true );
+        mail.setStatus( QMailMessage::Read, true );
     }
     if (flags & MFlag_Answered) {
         mail.setStatus( QMailMessage::Replied, true );

@@ -417,7 +417,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
 
     qSort(updateIndices);
     foreach (int index, updateIndices) {
-        _model.emitDataChanged(_model.index(index, 0, QModelIndex()));
+        _model.emitDataChanged(_model.index(index, 0, QModelIndex()), _model.index(index, _model.columnCount() - 1, QModelIndex()));
     }
 
     return true;

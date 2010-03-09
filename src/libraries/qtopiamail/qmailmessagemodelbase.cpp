@@ -421,9 +421,9 @@ void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey)
 */
 
 /*! \internal */
-void QMailMessageModelBase::emitDataChanged(const QModelIndex& idx)
+void QMailMessageModelBase::emitDataChanged(const QModelIndex& idx, const QModelIndex& jdx)
 {
-    emit dataChanged(idx, idx);
+    emit dataChanged(idx, jdx);
 }
 
 /*! \internal */

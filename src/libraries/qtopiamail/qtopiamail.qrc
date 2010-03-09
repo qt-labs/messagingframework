@@ -21,6 +21,7 @@
 <file alias="mailmessages-102-103">resources/mailmessages-102-103.sqlite.sql</file>
 <file alias="mailmessages-103-104">resources/mailmessages-103-104.sqlite.sql</file>
 <file alias="mailmessages-104-105">resources/mailmessages-104-105.sqlite.sql</file>
+<file alias="mailmessages-105-106">resources/mailmessages-105-106.sqlite.sql</file>
 <file alias="temporarymailmessages">resources/temporarymailmessages.sqlite.sql</file>
 <file alias="mailmessagecustom">resources/mailmessagecustom.sqlite.sql</file>
 <file alias="deletedmessages">resources/deletedmessages.sqlite.sql</file>
