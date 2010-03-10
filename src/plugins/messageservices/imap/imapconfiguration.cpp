@@ -79,7 +79,7 @@ int ImapConfiguration::mailEncryption() const
 
 bool ImapConfiguration::canDeleteMail() const
 {
-    return (value("canDelete", "0").toInt() != 0);
+    return (value("canDelete", "1").toInt() != 0);
 }
 
 bool ImapConfiguration::isAutoDownload() const
