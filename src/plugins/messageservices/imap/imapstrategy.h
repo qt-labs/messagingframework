@@ -530,13 +530,18 @@ protected:
     virtual void folderListCompleted(ImapStrategyContextBase *context);
 
     virtual bool setNextSeen(ImapStrategyContextBase *context);
+    virtual bool setNextNotSeen(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
 
     virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
 
 protected:
     QStringList _readUids;
+    QStringList _unreadUids;
     QStringList _removedUids;
+    QStringList _storedReadUids;
+    QStringList _storedUnreadUids;
+    QStringList _storedRemovedUids;
     bool _expungeRequired;
 
 private:
@@ -601,8 +606,9 @@ protected:
     QStringList _serverReportedUids;
     QStringList _clientDeletedUids;
     QStringList _clientReadUids;
+    QStringList _clientUnreadUids;
 
-    QMap<QMailFolderId, QPair<QStringList, QStringList> > _folderMessageUids;
+    QMap<QMailFolderId, QList<QStringList> > _folderMessageUids;
 };
 
 class ImapCopyMessagesStrategy : public ImapFetchSelectedMessagesStrategy
