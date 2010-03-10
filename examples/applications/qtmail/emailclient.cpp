@@ -866,7 +866,7 @@ void EmailClient::initActions()
         scrollReaderUpAction->setShortcut(QKeySequence(Qt::ALT|Qt::Key_Up));
         connect(scrollReaderUpAction, SIGNAL(triggered()), this, SLOT(scrollReaderUp()));
 
-        readerMarkMessageAsUnreadAction = new QAction( tr("Mark As Unread"), this );
+        readerMarkMessageAsUnreadAction = new QAction( tr("Mark as Unread"), this );
         connect(readerMarkMessageAsUnreadAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsUnread()));
         
         QMenu* fileMenu = m_contextMenu;
