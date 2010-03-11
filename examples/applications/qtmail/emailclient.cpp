@@ -963,11 +963,11 @@ void EmailClient::updateActions()
     // Only enable empty trash action if the trash has messages in it
     QMailMessageKey typeFilter(QMailMessageKey::messageType(QMailMessage::Email));
     QMailMessageKey trashFilter(QMailMessageKey::status(QMailMessage::Trash));
-
+    setActionVisible(threadAction, (messageCount > 0) && !markingMode);
+    
     messageCount = QMailStore::instance()->countMessages(typeFilter & trashFilter);
 
     setActionVisible(emptyTrashAction, (messageCount > 0) && !markingMode);
-    setActionVisible(threadAction, (messageCount > 0) && !markingMode);
 
     // Set the visibility for each action to whatever was last configured
     QMap<QAction*, bool>::iterator it = actionVisibility.begin(), end = actionVisibility.end();
