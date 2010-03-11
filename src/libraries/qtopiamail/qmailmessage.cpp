@@ -5055,6 +5055,8 @@ static quint64 junkFlag = 0;
 static quint64 transmitFromExternalFlag = 0;
 static quint64 localOnlyFlag = 0;
 static quint64 temporaryFlag = 0;
+static quint64 importantElsewhereFlag = 0;
+static quint64 importantFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5102,6 +5104,8 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         transmitFromExternalFlag = registerFlag("TransmitFromExternal");
         localOnlyFlag = registerFlag("LocalOnly");
         temporaryFlag = registerFlag("TemporaryFlag");
+        importantElsewhereFlag = registerFlag("ImportantElsewhere");
+        importantFlag = registerFlag("Important");
     }
 }
 #endif
@@ -5595,6 +5599,26 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message will not exist permanently and should be removed at a later time.
 */
 
+/*!
+    \variable QMailMessageMetaData::ImportantElsewhere
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "ImportantElsewhere" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been reported as having been marked as 
+    important by some other client.
+*/
+
+/*!
+    \variable QMailMessageMetaData::Important
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Important" against the result of QMailMessage::status().
+
+    This flag indicates that the message is marked as important.
+*/
+
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -5619,6 +5643,8 @@ const quint64 &QMailMessageMetaData::Junk = junkFlag;
 const quint64 &QMailMessageMetaData::TransmitFromExternal = transmitFromExternalFlag;
 const quint64 &QMailMessageMetaData::LocalOnly = localOnlyFlag;
 const quint64 &QMailMessageMetaData::Temporary = temporaryFlag;
+const quint64 &QMailMessageMetaData::ImportantElsewhere = importantElsewhereFlag;
+const quint64 &QMailMessageMetaData::Important = importantFlag;
 
 /*!
     Constructs an empty message meta data object.

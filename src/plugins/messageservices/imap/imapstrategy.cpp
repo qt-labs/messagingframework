@@ -132,11 +132,14 @@ static bool updateMessagesMetaData(ImapStrategyContextBase *context,
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
                                    const QMailMessageKey &seenKey,
+                                   const QMailMessageKey &flaggedKey,
                                    const QMailMessageKey &unreadElsewhereKey,
+                                   const QMailMessageKey &importantElsewhereKey,
                                    const QMailMessageKey &unavailableKey)
 {
     bool result = true;
     QMailMessageKey reportedKey(seenKey | unseenKey);
+    QMailMessageKey unflaggedKey(reportedKey & ~flaggedKey);
 
     // Mark as deleted any messages that the server does not report
     QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
@@ -162,18 +165,32 @@ static bool updateMessagesMetaData(ImapStrategyContextBase *context,
         context->completedMessageAction(uid);
     }
 
-    // Update any messages that are reported as read elsewhere, that previously were not
+    // Update any messages that are reported as read elsewhere, that previously were not read elsewhere
     if (!QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::Read, true)
         || !QMailStore::instance()->updateMessagesMetaData(seenKey & unreadElsewhereKey, QMailMessage::ReadElsewhere, true)) {
         result = false;
         qWarning() << "Unable to update read message metadata for account:" << context->config().id();
     }
 
-    // Update any messages that are reported as unread elsewhere, that previously were not
+    // Update any messages that are reported as unread elsewhere, that previously were read elsewhere
     if (!QMailStore::instance()->updateMessagesMetaData(unseenKey & ~unreadElsewhereKey, QMailMessage::Read, false)
         || !QMailStore::instance()->updateMessagesMetaData(unseenKey & ~unreadElsewhereKey, QMailMessage::ReadElsewhere, false)) {
         result = false;
         qWarning() << "Unable to update unread message metadata for account:" << context->config().id();
+    }
+    
+    // Update any messages that are reported as important elsewhere, that previously were not important elsewhere
+    if (!QMailStore::instance()->updateMessagesMetaData(flaggedKey & ~importantElsewhereKey, QMailMessage::Important, true)
+        || !QMailStore::instance()->updateMessagesMetaData(flaggedKey & ~importantElsewhereKey, QMailMessage::ImportantElsewhere, true)) {
+        result = false;
+        qWarning() << "Unable to update important status flag message metadata for account:" << context->config().id();
+    }
+
+    // Update any messages that are reported as not important elsewhere, that previously were important elsewhere
+    if (!QMailStore::instance()->updateMessagesMetaData(unflaggedKey & importantElsewhereKey, QMailMessage::Important, false)
+        || !QMailStore::instance()->updateMessagesMetaData(unflaggedKey & importantElsewhereKey, QMailMessage::ImportantElsewhere, false)) {
+        result = false;
+        qWarning() << "Unable to update not important status flag message metadata for account:" << context->config().id();
     }
     
     return result;
@@ -2134,6 +2151,14 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
     case Unseen:
     {
         _unseenUids = properties.uidList;
+
+        // The Flagged search command was pipelined
+        _searchState = Flagged;
+        break;
+    }
+    case Flagged:
+    {
+        _flaggedUids = properties.uidList;
         if (static_cast<quint32>((_unseenUids.count() + _seenUids.count())) == properties.exists) {
             // We have a consistent set of search results
             processUidSearchResults(context);
@@ -2143,6 +2168,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
             // Try doing a search for ALL messages
             _unseenUids.clear();
             _seenUids.clear();
+            _flaggedUids.clear();
             _searchState = All;
             context->protocol().sendUidSearch(MFlag_All);
         }
@@ -2193,8 +2219,28 @@ void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context
             qWarning() << "Unable to update marked as unread message metadata for account:" << context->config().id() << "folder" << _currentMailbox.id();
         }
     }
+    if (!_storedImportantUids.isEmpty()) {
+        // Mark messages as important locally that have been marked as important on the server
+        QMailMessageKey importantKey(context->client()->messagesKey(_currentMailbox.id()) & QMailMessageKey::serverUid(_storedImportantUids));
+        if (QMailStore::instance()->updateMessagesMetaData(importantKey, QMailMessage::ImportantElsewhere, true)) {
+            _storedImportantUids.clear();
+        } else {
+            _error = true;
+            qWarning() << "Unable to update marked as important message metadata for account:" << context->config().id() << "folder" << _currentMailbox.id();
+        }
+    }
+    if (!_storedUnimportantUids.isEmpty()) {
+        // Mark messages as unimportant locally that have been marked as unimportant on the server
+        QMailMessageKey unimportantKey(context->client()->messagesKey(_currentMailbox.id()) & QMailMessageKey::serverUid(_storedUnimportantUids));
+        if (QMailStore::instance()->updateMessagesMetaData(unimportantKey, QMailMessage::ImportantElsewhere, false)) {
+            _storedUnimportantUids.clear();
+        } else {
+            _error = true;
+            qWarning() << "Unable to update marked as unimportant message metadata for account:" << context->config().id() << "folder" << _currentMailbox.id();
+        }
+    }
     
-    if (!setNextSeen(context) && !setNextNotSeen(context) && !setNextDeleted(context)) {
+    if (!setNextSeen(context) && !setNextNotSeen(context) && !setNextImportant(context) && !setNextNotImportant(context) && !setNextDeleted(context)) {
         if (!_storedRemovedUids.isEmpty()) {
             // Remove records of deleted messages, after EXPUNGE
             if (QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), _storedRemovedUids)) {
@@ -2218,8 +2264,12 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
 {
     _seenUids = QStringList();
     _unseenUids = QStringList();
+    _flaggedUids = QStringList();
     _readUids = QStringList();
     _unreadUids = QStringList();
+    _importantUids = QStringList();
+    _unimportantUids = QStringList();
+
     _removedUids = QStringList();
     _expungeRequired = false;
     
@@ -2230,6 +2280,7 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
         // Start by looking for previously-seen and unseen messages
         context->protocol().sendUidSearch(MFlag_Seen);
         context->protocol().sendUidSearch(MFlag_Unseen);
+        context->protocol().sendUidSearch(MFlag_Flagged);
     } else {
         // No messages, so no need to perform search
         processUidSearchResults(context);
@@ -2287,24 +2338,26 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
         QMailMessageKey unseenKey(QMailMessageKey::serverUid(_unseenUids));
         QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
-    
+        QMailMessageKey flaggedKey(QMailMessageKey::serverUid(_flaggedUids));
+        QMailMessageKey importantElsewhereKey(QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes));
+        
         // Only delete messages the server still has
         _removedUids = inFirstAndSecond(deletedUids, reportedOnServerUids);
         _expungeRequired = !_removedUids.isEmpty();
 
         if (_options & ImportChanges) {
-            if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey)) {
+            if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey)) {
                 _error = true;
             }
         }
-
+        
         // Update messages on the server that are still flagged as unseen but have been read locally
         QMailMessageKey readHereKey(folderKey 
                                     & accountKey
                                     & QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes)
                                     & QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes)
                                     & QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes)
-                                    & QMailMessageKey::serverUid(_unseenUids));
+                                    & unseenKey);
         _readUids = context->client()->serverUids(readHereKey);
 
         // Update messages on the server that are flagged as seen but have been explicitly marked as unread locally
@@ -2313,8 +2366,28 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
                                     & QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes)
                                     & QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes)
                                     & QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes)
-                                    & QMailMessageKey::serverUid(_seenUids));
+                                    & seenKey);
         _unreadUids = context->client()->serverUids(markedAsUnreadHereKey);
+
+        // Update messages on the server that are still not flagged as important but have been flagged as important locally
+        QMailMessageKey reportedKey(seenKey | unseenKey);
+        QMailMessageKey unflaggedKey(reportedKey & ~flaggedKey);
+        QMailMessageKey markedAsImportantHereKey(folderKey 
+                                                 & accountKey
+                                                 & QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes)
+                                                 & QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes)
+                                                 & QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes)
+                                                 & unflaggedKey);
+        _importantUids = context->client()->serverUids(markedAsImportantHereKey);
+
+        // Update messages on the server that are still flagged as important but have been flagged as not important locally
+        QMailMessageKey markedAsNotImportantHereKey(folderKey 
+                                                    & accountKey
+                                                    & QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes)
+                                                    & QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes)
+                                                    & QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes)
+                                                    & flaggedKey);
+        _unimportantUids = context->client()->serverUids(markedAsNotImportantHereKey);
 
         // Mark any messages that we have read that the server thinks are unread
         handleUidStore(context);
@@ -2357,6 +2430,44 @@ bool ImapSynchronizeAllStrategy::setNextNotSeen(ImapStrategyContextBase *context
 
         context->updateStatus(msg);
         context->protocol().sendUidStore(MFlag_Seen, false, numericUidSequence(msgUidl));
+        
+        return true;
+    }
+
+    return false;
+}
+
+bool ImapSynchronizeAllStrategy::setNextImportant(ImapStrategyContextBase *context)
+{
+    if (!_importantUids.isEmpty()) {
+        QStringList msgUidl = _importantUids.mid(0, batchSize);
+        QString msg = QObject::tr("Marking message %1 important").arg(msgUidl.first());
+        foreach(QString uid, msgUidl) {
+            _importantUids.removeAll(uid);
+            _storedImportantUids.append(uid);
+        }
+
+        context->updateStatus(msg);
+        context->protocol().sendUidStore(MFlag_Flagged, true, numericUidSequence(msgUidl));
+        
+        return true;
+    }
+
+    return false;
+}
+
+bool ImapSynchronizeAllStrategy::setNextNotImportant(ImapStrategyContextBase *context)
+{
+    if (!_unimportantUids.isEmpty()) {
+        QStringList msgUidl = _unimportantUids.mid(0, batchSize);
+        QString msg = QObject::tr("Marking message %1 unimportant").arg(msgUidl.first());
+        foreach(QString uid, msgUidl) {
+            _unimportantUids.removeAll(uid);
+            _storedUnimportantUids.append(uid);
+        }
+
+        context->updateStatus(msg);
+        context->protocol().sendUidStore(MFlag_Flagged, false, numericUidSequence(msgUidl));
         
         return true;
     }
@@ -2444,6 +2555,12 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     QMailMessageKey unreadStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes));
     unreadStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
     unreadStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    QMailMessageKey importantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes));
+    importantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes);
+    importantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    QMailMessageKey unimportantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes));
+    unimportantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes);
+    unimportantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
 
     _folderMessageUids.clear();
 
@@ -2455,15 +2572,17 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
         QStringList deletedUids;
         QStringList readUids = c->serverUids(folderKey & readStatusKey);
         QStringList unreadUids = c->serverUids(folderKey & unreadStatusKey);
+        QStringList importantUids = c->serverUids(folderKey & importantStatusKey);
+        QStringList unimportantUids = c->serverUids(folderKey & unimportantStatusKey);        
 
         if (imapCfg.canDeleteMail()) {
             // Also find messages deleted locally
             deletedUids = context->client()->deletedMessages(folderId);
         }
 
-        if (!readUids.isEmpty() || !unreadUids.isEmpty() || !deletedUids.isEmpty()) {
+        if (!readUids.isEmpty() || !unreadUids.isEmpty() || !importantUids.isEmpty() || !unimportantUids.isEmpty() || !deletedUids.isEmpty()) {
             QList<QStringList> entry;
-            entry << readUids << unreadUids << deletedUids;
+            entry << readUids << unreadUids << importantUids << unimportantUids << deletedUids;
             _folderMessageUids.insert(folderId, entry);
         }
     }
@@ -2485,7 +2604,7 @@ void ImapExportUpdatesStrategy::folderListFolderAction(ImapStrategyContextBase *
     // We have selected the current mailbox
     if (context->mailbox().exists > 0) {
         // Find which of our messages-of-interest are still on the server
-        IntegerRegion clientRegion(stripFolderPrefix(_clientReadUids + _clientUnreadUids + _clientDeletedUids));
+        IntegerRegion clientRegion(stripFolderPrefix(_clientReadUids + _clientUnreadUids + _clientImportantUids + _clientUnimportantUids + _clientDeletedUids));
         context->protocol().sendUidSearch(MFlag_All, "UID " + clientRegion.toString());
     } else {
         // No messages, so no need to perform search
@@ -2501,8 +2620,8 @@ bool ImapExportUpdatesStrategy::nextFolder()
 
     QMap<QMailFolderId, QList<QStringList> >::iterator it = _folderMessageUids.begin();
 
-    if (it.value().count() != 3) {
-        qWarning() << "Read, unread, deleted triplet mismatch in export updates nextFolder, folder" << it.key() << "count" << it.value().count();
+    if (it.value().count() != 5) {
+        qWarning() << "quintuple mismatch in export updates nextFolder, folder" << it.key() << "count" << it.value().count();
         _folderMessageUids.erase(it);
         return nextFolder();
     }
@@ -2510,7 +2629,9 @@ bool ImapExportUpdatesStrategy::nextFolder()
     setCurrentMailbox(it.key());
     _clientReadUids = it.value()[0];
     _clientUnreadUids = it.value()[1];
-    _clientDeletedUids = it.value()[2];
+    _clientImportantUids = it.value()[2];
+    _clientUnimportantUids = it.value()[3];
+    _clientDeletedUids = it.value()[4];
 
     _folderMessageUids.erase(it);
     return true;
@@ -2527,6 +2648,12 @@ void ImapExportUpdatesStrategy::processUidSearchResults(ImapStrategyContextBase 
 
     // Messages marked unread locally that the server reports exists
     _unreadUids = inFirstAndSecond(_clientUnreadUids, _serverReportedUids);
+
+    // Messages marked important locally that the server reports are unimportant
+    _importantUids = inFirstAndSecond(_clientImportantUids, _serverReportedUids);
+
+    // Messages marked unimportant locally that the server reports are important
+    _unimportantUids = inFirstAndSecond(_clientUnimportantUids, _serverReportedUids);
 
     handleUidStore(context);
 }
@@ -2604,6 +2731,14 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     case Seen:
     {
         _seenUids = properties.uidList;
+
+        // The Flagged search command was pipelined
+        _searchState = Flagged;
+        break;
+    }
+    case Flagged:
+    {
+        _flaggedUids = properties.uidList;
         processUidSearchResults(context);
         break;
     }
@@ -2637,6 +2772,7 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
         // then we would miss the message altogether and mark it as deleted...
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
         context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
+        context->protocol().sendUidSearch(MFlag_Flagged, "UID " + _filter);
     } else {
         processUidSearchResults(context);
     }
@@ -2691,8 +2827,10 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey folderKey(context->client()->messagesKey(folderId) | context->client()->trashKey(folderId));
     QMailMessageKey unreadElsewhereKey(folderKey & accountKey & ~readStatusKey);
     QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
-    
-    if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, unreadElsewhereKey, unavailableKey))
+    QMailMessageKey flaggedKey(QMailMessageKey::serverUid(_flaggedUids));
+    QMailMessageKey importantElsewhereKey(QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes));
+
+    if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey))
         _error = true;
 
     processNextFolder(context);

@@ -551,6 +551,8 @@ public:
     static const quint64 &TransmitFromExternal;
     static const quint64 &LocalOnly;
     static const quint64 &Temporary;
+    static const quint64 &ImportantElsewhere;
+    static const quint64 &Important;
 
     QMailMessageMetaData();
 #ifndef QTOPIAMAIL_PARSING_ONLY

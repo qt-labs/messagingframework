@@ -861,8 +861,12 @@ void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 }
 
 /*!
-    Requests that the message server update the external server with any changes to message
-    status that have been effected on the local device for account \a accountId.
+    Requests that the message server update the external server with changes that have 
+    been effected on the local device for account \a accountId.
+    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    flags should be exported to the external server, and messages that have been removed
+    using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    external server.
 
     \sa synchronize()
 */
@@ -874,15 +878,20 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 /*!
     Requests that the message server synchronize the set of known folder and message 
     identifiers with those currently available for the account identified by \a accountId.
-    Newly discovered messages should have their meta data retrieved
-    and local changes to message status should be exported to the external server.
+    Newly discovered messages should have their meta data retrieved, messages that have been 
+    removed locally using the \l QMailStore::CreateRemovalRecord option should be removed 
+    from the external server.
+    
+    Changes to the \l QMailMessage::Read, and \l QMailMessage::Important status flags of a 
+    message should be exported to the external server, and the status flags of the message
+    should be updated to reflect any changes to the message on the external server.
 
     New messages will be added to the mail store as they are discovered, and 
     marked with the \l QMailMessage::New status flag.  Messages that are no longer 
     available will be marked with the \l QMailMessage::Removed status flag.  
 
     The folder structure of the account will be synchronized with that available from 
-    the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
     QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
 
     \sa retrieveAll(), exportUpdates()

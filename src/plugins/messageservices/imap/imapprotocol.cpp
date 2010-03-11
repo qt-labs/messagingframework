@@ -288,6 +288,9 @@ static MessageFlags flagsForMessage(const QMailMessageMetaData &metaData)
     if (metaData.status() & (QMailMessage::Read | QMailMessage::ReadElsewhere | QMailMessage::Outgoing)) {
         result |= MFlag_Seen;
     }
+    if (metaData.status() & QMailMessage::Important) {
+        result |= MFlag_Flagged;
+    }
     if (metaData.status() & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
         result |= MFlag_Answered;
     }
@@ -3189,6 +3192,10 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     if (flags & MFlag_Seen) {
         mail.setStatus( QMailMessage::ReadElsewhere, true );
         mail.setStatus( QMailMessage::Read, true );
+    }
+    if (flags & MFlag_Flagged) {
+        mail.setStatus( QMailMessage::ImportantElsewhere, true );
+        mail.setStatus( QMailMessage::Important, true );
     }
     if (flags & MFlag_Answered) {
         mail.setStatus( QMailMessage::Replied, true );

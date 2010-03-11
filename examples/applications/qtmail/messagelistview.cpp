@@ -117,6 +117,7 @@ QWidget(parent)
     QMailMessageKey removed(QMailMessageKey::status(QMailMessage::Removed));
     m_statusCombo->addItem(QIcon(":icon/exec"),tr("Any Status"),~removed);
     m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Unread"),QMailMessageKey::status(QMailMessage::Read,QMailDataComparator::Excludes)&~removed);
+    m_statusCombo->addItem(QIcon(":icon/mail_generic"),tr("Important"),QMailMessageKey::status(QMailMessage::Important)&~removed);
     m_statusCombo->addItem(QIcon(":icon/new"),tr("New"),QMailMessageKey::status(QMailMessage::New)&~removed);
     m_statusCombo->addItem(QIcon(":icon/mail_reply"),tr("Replied"),QMailMessageKey::status(QMailMessage::Replied)&~removed);
     m_statusCombo->addItem(QIcon(":icon/mail_forward"),tr("Forwarded"),QMailMessageKey::status(QMailMessage::Forwarded)&~removed);

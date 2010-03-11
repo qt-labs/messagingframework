@@ -869,6 +869,12 @@ void EmailClient::initActions()
         readerMarkMessageAsUnreadAction = new QAction( tr("Mark as Unread"), this );
         connect(readerMarkMessageAsUnreadAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsUnread()));
         
+        readerMarkMessageAsImportantAction = new QAction( tr("Mark as Important"), this );
+        connect(readerMarkMessageAsImportantAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsImportant()));
+        
+        readerMarkMessageAsNotImportantAction = new QAction( tr("Mark as Not Important"), this );
+        connect(readerMarkMessageAsNotImportantAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsNotImportant()));
+        
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
@@ -937,6 +943,8 @@ void EmailClient::initActions()
         readMailWidget()->addAction(scrollReaderDownAction);
         readMailWidget()->addAction(scrollReaderUpAction);
         readMailWidget()->addAction(readerMarkMessageAsUnreadAction);
+        readMailWidget()->addAction(readerMarkMessageAsImportantAction);
+        readMailWidget()->addAction(readerMarkMessageAsNotImportantAction);
     }
 }
 
@@ -2675,6 +2683,22 @@ void EmailClient::readerMarkMessageAsUnread()
 {
     quint64 setMask(0);
     quint64 unsetMask(QMailMessage::Read);
+    QMailMessageId id(readMailWidget()->displayedMessage());
+    flagMessage(id, setMask, unsetMask);
+}
+
+void EmailClient::readerMarkMessageAsImportant() 
+{
+    quint64 setMask(QMailMessage::Important);
+    quint64 unsetMask(0);
+    QMailMessageId id(readMailWidget()->displayedMessage());
+    flagMessage(id, setMask, unsetMask);
+}
+
+void EmailClient::readerMarkMessageAsNotImportant() 
+{
+    quint64 setMask(0);
+    quint64 unsetMask(QMailMessage::Important);
     QMailMessageId id(readMailWidget()->displayedMessage());
     flagMessage(id, setMask, unsetMask);
 }

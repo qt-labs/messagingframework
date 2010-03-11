@@ -489,9 +489,10 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
     Requests that the message server retrieve data regarding the messages identified by \a messageIds.  
 
     If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if 
-    the messages identified by \a messageIds have been marked as read or have been removed.
-    Messages that have been read will be marked with the \l QMailMessage::ReadElsewhere flag, and
-    messages that have been removed will be marked with the \l QMailMessage::Removed status flag.
+    the read or important status of messages identified by \a messageIds has changed on the server 
+    or if the messages have been removed on the server.
+    The \l QMailMessage::ReadElsewhere, \l QMailMessage::ImportantElsewhere and \l QMailMessage::Removed 
+    status flags of messages will be updated to reflect the status of the message on the server.
 
     If \a spec is \l QMailRetrievalAction::MetaData, then the message server should 
     retrieve the meta data of the each message listed in \a messageIds.
@@ -558,8 +559,12 @@ void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accou
 }
 
 /*!
-    Requests that the message server update the external server with any changes to message
-    status that have been effected on the local device for account \a accountId.
+    Requests that the message server update the external server with changes that have 
+    been effected on the local device for account \a accountId.
+    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    flags should be exported to the external server, and messages that have been removed
+    using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    external server.
     The request has the identifier \a action.
 
     \sa retrievalCompleted()
@@ -570,10 +575,13 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
 }
 
 /*!
-    Requests that the message server synchronize the set of known message identifiers 
-    with those currently available for the account identified by \a accountId.
-    Newly discovered messages should have their meta data retrieved
-    and local changes to message status should be exported to the external server.
+    Requests that the message server synchronize the messages and folders in the account 
+    identified by \a accountId.
+    Newly discovered messages should have their meta data retrieved,
+    local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    flags should be exported to the external server, and messages that have been removed
+    locally using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    external server.
     The request has the identifier \a action.
 
     \sa retrievalCompleted()

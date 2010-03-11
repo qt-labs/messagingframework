@@ -400,11 +400,12 @@ private:
     QMap<QMailFolderId, QStringList> _folderMessageUids;
     QStringList _serverUids;
     QString _filter;
-    enum SearchState { Seen, Unseen };
+    enum SearchState { Seen, Unseen, Flagged };
     SearchState _searchState;
 
     QStringList _seenUids;
     QStringList _unseenUids;
+    QStringList _flaggedUids;
 };
 
 class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy 
@@ -531,6 +532,8 @@ protected:
 
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextNotSeen(ImapStrategyContextBase *context);
+    virtual bool setNextImportant(ImapStrategyContextBase *context);
+    virtual bool setNextNotImportant(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
 
     virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
@@ -538,9 +541,13 @@ protected:
 protected:
     QStringList _readUids;
     QStringList _unreadUids;
+    QStringList _importantUids;
+    QStringList _unimportantUids;
     QStringList _removedUids;
     QStringList _storedReadUids;
     QStringList _storedUnreadUids;
+    QStringList _storedImportantUids;
+    QStringList _storedUnimportantUids;
     QStringList _storedRemovedUids;
     bool _expungeRequired;
     static const int batchSize = 1000;
@@ -548,11 +555,12 @@ protected:
 private:
     Options _options;
 
-    enum SearchState { All, Seen, Unseen, Inconclusive };
+    enum SearchState { All, Seen, Unseen, Flagged, Inconclusive };
     SearchState _searchState;
 
     QStringList _seenUids;
     QStringList _unseenUids;
+    QStringList _flaggedUids;
 };
 
 class ImapRetrieveAllStrategy : public ImapSynchronizeAllStrategy
@@ -608,6 +616,8 @@ protected:
     QStringList _clientDeletedUids;
     QStringList _clientReadUids;
     QStringList _clientUnreadUids;
+    QStringList _clientImportantUids;
+    QStringList _clientUnimportantUids;
 
     QMap<QMailFolderId, QList<QStringList> > _folderMessageUids;
 };
