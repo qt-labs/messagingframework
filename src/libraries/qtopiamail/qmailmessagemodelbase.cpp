@@ -308,7 +308,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
                 if ( status & QMailMessage::Removed ) {
                     return removedIcon;
                 } else if ( status & QMailMessage::PartialContentAvailable ) {
-                    if ( status & QMailMessage::Read || status & QMailMessage::ReadElsewhere ) {
+                    if ( status & QMailMessage::Read ) {
                         return readIcon;
                     } else {
                         return unreadIcon;
