@@ -2133,7 +2133,10 @@ void EmailClient::retrieveMoreMessages()
         QMailFolder folder(folderId);
 
         // Find how many messages we have requested for this folder
-        int retrievedMinimum = QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(folderId));
+        QMailMessageKey countKey(QMailMessageKey::parentFolderId(folderId));
+        countKey &= ~QMailMessageKey::status(QMailMessage::Removed);
+        countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+        int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
         
         // Request more messages
         retrievedMinimum += MoreMessagesIncrement;

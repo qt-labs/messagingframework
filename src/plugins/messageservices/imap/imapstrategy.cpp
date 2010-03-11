@@ -2876,9 +2876,10 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     //   Also potentially messages may be deleted by an external client, this is even a problem 
     //   in the above robust case, as it may cause too many messages to be retrieved.
     
-    QMailMessageKey folderKey(context->client()->messagesKey(properties.id));
-    QMailMessageKey folderTrashKey(context->client()->trashKey(properties.id));
-    uint onClient(QMailStore::instance()->countMessages(folderKey | folderTrashKey));
+    QMailMessageKey countKey(context->client()->messagesKey(properties.id));
+    countKey &= ~QMailMessageKey::status(QMailMessage::Removed);
+    countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+    uint onClient(QMailStore::instance()->countMessages(countKey));
     if ((onClient >= _minimum) || (onClient >= properties.exists)) {
         // We already have _minimum mails
         processUidSearchResults(context);
