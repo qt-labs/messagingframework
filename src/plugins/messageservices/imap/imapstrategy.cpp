@@ -2329,13 +2329,16 @@ void ImapSynchronizeAllStrategy::searchInconclusive(ImapStrategyContextBase *con
 bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
 {
     if (!_readUids.isEmpty()) {
-        QString msgUidl = _readUids.first();
-        QString msg = QObject::tr("Marking message %1 read").arg(msgUidl);
-        _readUids.removeAll( msgUidl );
-        _storedReadUids.append(msgUidl);
+        QStringList msgUidl = _readUids.mid(0, batchSize);
+        QString msg = QObject::tr("Marking message %1 read").arg(msgUidl.first());
+        foreach(QString uid, msgUidl) {
+            _readUids.removeAll(uid);
+            _storedReadUids.append(uid);
+        }
 
-        context->updateStatus( msg );
-        context->protocol().sendUidStore(MFlag_Seen, true, ImapProtocol::uid(msgUidl));
+        context->updateStatus(msg);
+        context->protocol().sendUidStore(MFlag_Seen, true, numericUidSequence(msgUidl));
+        
         return true;
     }
 
@@ -2345,13 +2348,16 @@ bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
 bool ImapSynchronizeAllStrategy::setNextNotSeen(ImapStrategyContextBase *context)
 {
     if (!_unreadUids.isEmpty()) {
-        QString msgUidl = _unreadUids.first();
-        QString msg = QObject::tr("Marking message %1 unread").arg(msgUidl);
-        _unreadUids.removeAll(msgUidl);
-        _storedUnreadUids.append(msgUidl);
+        QStringList msgUidl = _unreadUids.mid(0, batchSize);
+        QString msg = QObject::tr("Marking message %1 unread").arg(msgUidl.first());
+        foreach(QString uid, msgUidl) {
+            _unreadUids.removeAll(uid);
+            _storedUnreadUids.append(uid);
+        }
 
         context->updateStatus(msg);
-        context->protocol().sendUidStore(MFlag_Seen, false, ImapProtocol::uid(msgUidl));
+        context->protocol().sendUidStore(MFlag_Seen, false, numericUidSequence(msgUidl));
+        
         return true;
     }
 
@@ -2363,14 +2369,15 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     ImapConfiguration imapCfg(context->config());
     if (imapCfg.canDeleteMail()) {
         if (!_removedUids.isEmpty()) {
-            QString msgUidl = _removedUids.first();
-            QString msg = QObject::tr("Deleting message %1").arg(msgUidl);
-            _removedUids.removeAll(msgUidl);
-            _storedRemovedUids.append(msgUidl);
-            context->updateStatus(msg);
+            QStringList msgUidl = _removedUids.mid(0, batchSize);
+            QString msg = QObject::tr("Deleting message %1").arg(msgUidl.first());
+            foreach(QString uid, msgUidl) {
+                _removedUids.removeAll(uid);
+                _storedRemovedUids.append(uid);
+            }
 
-            context->protocol().sendUidStore(MFlag_Deleted, true, ImapProtocol::uid(msgUidl));
-            return true;
+            context->updateStatus(msg);
+            context->protocol().sendUidStore(MFlag_Deleted, true, numericUidSequence(msgUidl));
         } else if (_expungeRequired) {
             // All messages flagged as deleted, expunge them
             context->protocol().sendExpunge();
@@ -3507,7 +3514,8 @@ void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 
 void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (selectNextMessageSequence(context, 1000)) {
+    const int batchSize = 1000;
+    if (selectNextMessageSequence(context, batchSize)) {
         QString uidSequence(numericUidSequence(_messageUids));
         if (_setMask) {
             context->protocol().sendUidStore(_setMask, true, uidSequence);

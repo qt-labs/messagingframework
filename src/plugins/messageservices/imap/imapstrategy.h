@@ -543,6 +543,7 @@ protected:
     QStringList _storedUnreadUids;
     QStringList _storedRemovedUids;
     bool _expungeRequired;
+    static const int batchSize = 1000;
 
 private:
     Options _options;
