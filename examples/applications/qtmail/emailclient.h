@@ -59,7 +59,6 @@ class SearchView;
 class UILocation;
 class ReadMail;
 class WriteMail;
-class SearchProgressDialog;
 class QuickSearchWidget;
 
 class QMailAccount;
