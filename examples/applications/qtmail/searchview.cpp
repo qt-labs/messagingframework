@@ -191,7 +191,7 @@ private:
 
 private slots:
     void selectFolder();
-    void specificFolderRadioClicked();
+    void specificFolderCheckChanged(int state);
 
 private:
     void updateDisplay();
@@ -199,8 +199,7 @@ private:
 
 private:
     QComboBox *m_searchSpecification;
-    QRadioButton* m_localFolderRadio;
-    QRadioButton* m_specificFolderRadio;
+    QCheckBox* m_specificFolderCheck;
     QLineEdit* m_specificFolderDisplay;
     QToolButton* m_selectFolderButton;
     QCheckBox* m_includeSubFoldersCheckBox;
@@ -249,20 +248,14 @@ void FolderSelectorWidget::setupUi()
     m_searchSpecification = new QComboBox(this);
     m_searchSpecification->insertItem(0, QIcon(":/icon/folder"), tr("Local Search"), static_cast<int>(QMailSearchAction::Local));
     m_searchSpecification->insertItem(1, QIcon(":/icon/folder-remote"), tr("Remote Search"), static_cast<int>(QMailSearchAction::Remote));
-
     vlayout->addWidget(m_searchSpecification);
-
-
-    m_localFolderRadio = new QRadioButton("Search in all local folders:",this);
-    connect(m_localFolderRadio,SIGNAL(clicked()),this,SLOT(reset()));
-    vlayout->addWidget(m_localFolderRadio);
 
     QHBoxLayout* layout = new QHBoxLayout;
     layout->setContentsMargins(0,0,0,0);
 
-    m_specificFolderRadio = new QRadioButton("Search only in:",this);
-    connect(m_specificFolderRadio,SIGNAL(clicked()),this,SLOT(specificFolderRadioClicked()));
-    layout->addWidget(m_specificFolderRadio);
+    m_specificFolderCheck = new QCheckBox(tr("Search only in:"),this);
+    connect(m_specificFolderCheck,SIGNAL(stateChanged(int)),this,SLOT(specificFolderCheckChanged(int)));
+    layout->addWidget(m_specificFolderCheck);
 
     m_specificFolderDisplay = new QLineEdit(this);
     m_specificFolderDisplay->setEnabled(false);
@@ -273,7 +266,7 @@ void FolderSelectorWidget::setupUi()
     layout->addWidget(m_selectFolderButton);
     connect(m_selectFolderButton,SIGNAL(clicked()),this,SLOT(selectFolder()));
 
-    m_includeSubFoldersCheckBox = new QCheckBox("Include sub folders",this);
+    m_includeSubFoldersCheckBox = new QCheckBox(tr("Include sub folders"),this);
     layout->addWidget(m_includeSubFoldersCheckBox);
 
     vlayout->addLayout(layout);
@@ -285,7 +278,7 @@ void FolderSelectorWidget::selectFolder()
     if (sfd.exec() == QDialog::Accepted) {
         m_selectedItem = sfd.selectedItem();
 
-        m_specificFolderRadio->setChecked(true);
+        m_specificFolderCheck->setChecked(true);
     } else if (!haveSelection()) {
         reset();
     }
@@ -296,14 +289,16 @@ void FolderSelectorWidget::selectFolder()
 void FolderSelectorWidget::reset()
 {
     m_selectedItem = 0;
-    m_localFolderRadio->setChecked(true);
+    m_specificFolderCheck->setChecked(false);
     m_includeSubFoldersCheckBox->setChecked(false);
     updateDisplay();
 }
 
-void FolderSelectorWidget::specificFolderRadioClicked()
+void FolderSelectorWidget::specificFolderCheckChanged(int state)
 {
-    if (!haveSelection())
+    if (state == Qt::Unchecked)
+        reset();
+    else if (!haveSelection())
         selectFolder();
 }
 
