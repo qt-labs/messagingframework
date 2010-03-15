@@ -172,40 +172,6 @@ static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::
                                                                                              QMailMessage::Sms |
                                                                                              QMailMessage::Instant |
                                                                                              QMailMessage::System);
-class SearchProgressDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    SearchProgressDialog(QMailSearchAction* action);
-
-public slots:
-    void progressChanged(uint progress, uint max);
-};
-
-SearchProgressDialog::SearchProgressDialog(QMailSearchAction* action)
-:
-    QDialog()
-{
-    setWindowTitle(tr("Searching"));
-    connect(action,SIGNAL(progressChanged(uint,uint)),this,SLOT(progressChanged(uint,uint)));
-    connect(this,SIGNAL(cancelled()),action,SLOT(cancelOperation()));
-}
-
-void SearchProgressDialog::progressChanged(uint value, uint max)
-{
-    QString percentageText;
-
-    if((value + max) > 0)
-    {
-        float percentage = (max == 0) ? 0 : static_cast<float>(value)/max*100;
-        percentageText = QString::number(percentage,'f',0) + "%";
-    }
-
-    QString text = tr("Searching") + "\n" + percentageText;
-    setWindowTitle(text);
-}
-
 class AcknowledgmentBox : public QMessageBox
 {
     Q_OBJECT

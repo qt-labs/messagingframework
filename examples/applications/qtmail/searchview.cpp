@@ -181,6 +181,7 @@ class FolderSelectorWidget : public QWidget
 public:
     FolderSelectorWidget(QWidget* parent = 0);
     QMailMessageKey searchKey() const;
+    QMailSearchAction::SearchSpecification searchSpecification() const;
 
 public slots:
     void reset();
@@ -190,15 +191,15 @@ private:
 
 private slots:
     void selectFolder();
-    void specificFolderRadioClicked();
+    void specificFolderCheckChanged(int state);
 
 private:
     void updateDisplay();
     bool haveSelection() const;
 
 private:
-    QRadioButton* m_localFolderRadio;
-    QRadioButton* m_specificFolderRadio;
+    QComboBox *m_searchSpecification;
+    QCheckBox* m_specificFolderCheck;
     QLineEdit* m_specificFolderDisplay;
     QToolButton* m_selectFolderButton;
     QCheckBox* m_includeSubFoldersCheckBox;
@@ -232,21 +233,29 @@ QMailMessageKey FolderSelectorWidget::searchKey() const
     return k;
 }
 
+QMailSearchAction::SearchSpecification FolderSelectorWidget::searchSpecification() const
+{
+    QVariant itemData = m_searchSpecification->itemData(m_searchSpecification->currentIndex());
+    Q_ASSERT(itemData != QVariant::Invalid);
+    return static_cast<QMailSearchAction::SearchSpecification>(itemData.value<int>());
+}
+
 void FolderSelectorWidget::setupUi()
 {
     QVBoxLayout* vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0,0,0,0);
 
-    m_localFolderRadio = new QRadioButton("Search in all local folders:",this);
-    connect(m_localFolderRadio,SIGNAL(clicked()),this,SLOT(reset()));
-    vlayout->addWidget(m_localFolderRadio);
+    m_searchSpecification = new QComboBox(this);
+    m_searchSpecification->insertItem(0, QIcon(":/icon/folder"), tr("Local Search"), static_cast<int>(QMailSearchAction::Local));
+    m_searchSpecification->insertItem(1, QIcon(":/icon/folder-remote"), tr("Remote Search"), static_cast<int>(QMailSearchAction::Remote));
+    vlayout->addWidget(m_searchSpecification);
 
     QHBoxLayout* layout = new QHBoxLayout;
     layout->setContentsMargins(0,0,0,0);
 
-    m_specificFolderRadio = new QRadioButton("Search only in:",this);
-    connect(m_specificFolderRadio,SIGNAL(clicked()),this,SLOT(specificFolderRadioClicked()));
-    layout->addWidget(m_specificFolderRadio);
+    m_specificFolderCheck = new QCheckBox(tr("Search only in:"),this);
+    connect(m_specificFolderCheck,SIGNAL(stateChanged(int)),this,SLOT(specificFolderCheckChanged(int)));
+    layout->addWidget(m_specificFolderCheck);
 
     m_specificFolderDisplay = new QLineEdit(this);
     m_specificFolderDisplay->setEnabled(false);
@@ -257,7 +266,7 @@ void FolderSelectorWidget::setupUi()
     layout->addWidget(m_selectFolderButton);
     connect(m_selectFolderButton,SIGNAL(clicked()),this,SLOT(selectFolder()));
 
-    m_includeSubFoldersCheckBox = new QCheckBox("Include sub folders",this);
+    m_includeSubFoldersCheckBox = new QCheckBox(tr("Include sub folders"),this);
     layout->addWidget(m_includeSubFoldersCheckBox);
 
     vlayout->addLayout(layout);
@@ -269,7 +278,7 @@ void FolderSelectorWidget::selectFolder()
     if (sfd.exec() == QDialog::Accepted) {
         m_selectedItem = sfd.selectedItem();
 
-        m_specificFolderRadio->setChecked(true);
+        m_specificFolderCheck->setChecked(true);
     } else if (!haveSelection()) {
         reset();
     }
@@ -280,14 +289,16 @@ void FolderSelectorWidget::selectFolder()
 void FolderSelectorWidget::reset()
 {
     m_selectedItem = 0;
-    m_localFolderRadio->setChecked(true);
+    m_specificFolderCheck->setChecked(false);
     m_includeSubFoldersCheckBox->setChecked(false);
     updateDisplay();
 }
 
-void FolderSelectorWidget::specificFolderRadioClicked()
+void FolderSelectorWidget::specificFolderCheckChanged(int state)
 {
-    if (!haveSelection())
+    if (state == Qt::Unchecked)
+        reset();
+    else if (!haveSelection())
         selectFolder();
 }
 
@@ -872,7 +883,7 @@ void SearchView::reset()
 {
     m_folderSelectorWidget->reset();
     m_searchTermsComposer->reset();
-    m_searchResults->setKey(QMailMessageKey());
+    m_searchResults->setKey(QMailMessageKey::nonMatchingKey());
     m_searchResults->reset();
     m_bodySearchWidget->reset();
 }
@@ -950,12 +961,14 @@ QMailMessageKey SearchView::searchKey() const
 
 void SearchView::startSearch()
 {
+    m_searchResults->setKey(QMailMessageKey::nonMatchingKey()); //remove previous results
+
     QMailMessageKey key = searchKey();
     if(key.isEmpty() && m_bodySearchWidget->term().isEmpty())
         return;
 
     if(m_searchAction->activity() != QMailServiceAction::InProgress)
-        m_searchAction->searchMessages(key,m_bodySearchWidget->term(),QMailSearchAction::Local);
+        m_searchAction->searchMessages(key,m_bodySearchWidget->term(), m_folderSelectorWidget->searchSpecification());
 }
 
 void SearchView::stopSearch()
@@ -965,14 +978,11 @@ void SearchView::stopSearch()
 
 void SearchView::messageIdsMatched(const QMailMessageIdList& ids)
 {
-    m_searchResults->setKey(QMailMessageKey::id(ids));
+    m_searchResults->setKey(m_searchResults->key() | QMailMessageKey::id(ids));
 }
 
 void SearchView::searchActivityChanged(QMailServiceAction::Activity a)
 {
-    bool searching = (a == QMailServiceAction::InProgress);
-    m_resetButton->setEnabled(!searching);
-    m_searchResults->setEnabled(!searching);
     if(a == QMailServiceAction::Successful)
         m_statusBar->showMessage("Done.");
 }
