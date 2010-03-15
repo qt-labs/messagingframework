@@ -109,7 +109,7 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
     QString path;
     do {
         if (temporary)
-            path = QDir::tempPath() + "/" + filename + randomString(5);
+            path = QMail::tempPath() + "/" + filename + randomString(5);
         else
             path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
     } while (QFile::exists(path));

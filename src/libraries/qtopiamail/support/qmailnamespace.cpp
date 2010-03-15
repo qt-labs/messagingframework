@@ -216,7 +216,7 @@ QString QMail::dataPath()
 */
 QString QMail::tempPath()
 {
-    return QDir::tempPath();
+    return (dataPath() + "/tmp/");
 }
 
 /*!
@@ -280,8 +280,13 @@ QSqlDatabase QMail::createDatabase()
         db.setDatabaseName(dataPath() + "qmailstore.db");
         if(!db.open())
             qCritical() << "Cannot open database";
-        else
-            init = true;
+        
+        QDir tp(tempPath());
+        if(!tp.exists())
+            if(!tp.mkpath(tempPath()))
+                qCritical() << "Cannot create temp path";
+        
+        init = true;
     }
     return db;
 }
