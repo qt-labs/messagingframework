@@ -1230,6 +1230,15 @@ QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     init();
 }
 
+QMailSearchActionPrivate::~QMailSearchActionPrivate()
+{
+    qDebug() << "RAWR IM A DESTRRRRRRRRRRRRRRRUCTOR!!! EATIN' ALL UR MESSUGES";
+    QMailMessageKey temporaryMessages = QMailMessageKey::status(QMailMessage::Temporary) & QMailMessageKey::id(_matchingIds);
+    QMailStore::instance()->removeMessages(temporaryMessages, QMailStore::NoRemovalRecord);
+}
+
+
+
 void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     if ((spec == QMailSearchAction::Remote) || !bodyText.isEmpty()) {

@@ -2440,11 +2440,6 @@ void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType
     requiredTableKeys.append(qMakePair(&arg, dataType));
 }
 
-bool QMailStorePrivate::createTemporaryMessagesTable()
-{
-    return createTable("temporarymailmessages");
-}
-
 void QMailStorePrivate::destroyTemporaryTables()
 {
     while (!expiredTableKeys.isEmpty()) {
@@ -3428,55 +3423,6 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
     return true;
 }
 
-bool QMailStorePrivate::addTemporaryMessage(QMailMessage *message)
-{
-    //ensure we have a temporary table
-    if(!database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
-        if(!createTemporaryMessagesTable()) {
-            qMailLog(Messaging) << "Unable to create a temporary table for temporrary messages.";
-            return false;
-        }
-    }
-
-    message->setCustomField("qtopiamail-temporary-message", "true");
-
-    AttemptResult (QMailStorePrivate::*func)(QMailMessage *, const QString &, QMailStorePrivate::Transaction &, bool) = &QMailStorePrivate::attemptAddTemporaryMessage;
-
-    Transaction t(this);
-
-    // Find the message identifier and references from the header
-    QString identifier(identifierValue(message->headerFieldText("Message-ID")));
-    QStringList references(identifierValues(message->headerFieldText("References")));
-    QString predecessor(identifierValue(message->headerFieldText("In-Reply-To")));
-    if (!predecessor.isEmpty()) {
-        if (references.isEmpty() || (references.last() != predecessor)) {
-            references.append(predecessor);
-        }
-    }
-
-    if (!repeatedly<WriteAccess>(bind(func, this, message, identifier), "addTemporaryMessages", &t)) {
-        return false;
-    }
-
-    if(QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
-        if(contentManager->ensureDurability() != QMailStore::NoError) {
-            qMailLog(Messaging) << "Unable to ensure content durability for temporary scheme:" << message->contentScheme();
-            return false;
-        }
-    } else {
-        setLastError(QMailStore::FrameworkFault);
-        qMailLog(Messaging) << "Unable to create content manger for temporary scheme" << message->contentScheme();
-        return false;
-    }
-
-    if (!t.commit()) {
-        qMailLog(Messaging) << "Unable to commit successful addMessages!";
-        return false;
-    }
-
-    return true;
-}
-
 bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &messages,
                                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
@@ -3531,11 +3477,6 @@ bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::M
                                         cref(key), option, 
                                         deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
                                    "removeMessages");
-}
-
-bool QMailStorePrivate::removeTemporaryMessages()
-{
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveTemporaryMessages, this), "removeTemporaryMessages");
 }
 
 bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfiguration *config,
@@ -4421,105 +4362,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddTemporaryMessage(QMailMessage *message, const QString &identifier, Transaction &t, bool commitOnSuccess)
-{
-    if (!message->parentFolderId().isValid()) {
-        qMailLog(Messaging) << "Unable to add temporary message. Invalid parent folder id";
-        return Failure;
-    }
-
-    if (message->id().isValid()) {
-        qMailLog(Messaging) << "Message ID" << message->id() << "already exists in database, use update instead";
-        return Failure;
-    }
-
-    if (message->contentScheme().isEmpty()) {
-        // Use the default storage scheme
-        message->setContentScheme(defaultContentScheme());
-    }
-
-    MutexGuard lock(contentManagerMutex());
-    if (!lock.lock(1000)) {
-        qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
-        return Failure;
-    }
-
-    ReferenceStorer refStorer(message);
-    const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
-
-    if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
-        QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
-        if (code != QMailStore::NoError) {
-            setLastError(code);
-            qMailLog(Messaging) << "Unable to add temporary message content to URI:" << ::contentUri(*message);
-            return Failure;
-        }
-    }
-
-    bool replyOrForward(false);
-    QString baseSubject(QMail::baseSubject(message->subject(), &replyOrForward));
-
-    // Ensure that any phone numbers are added in minimal form
-    QMailAddress from(message->from());
-    QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
-
-    QStringList recipients;
-    foreach (const QMailAddress& address, message->to())
-        recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
-
-    QMap<QString, QVariant> values;
-
-    values.insert("type", static_cast<int>(message->messageType()));
-    values.insert("parentfolderid", message->parentFolderId().toULongLong());
-    values.insert("sender", fromText);
-    values.insert("recipients", recipients.join(","));
-    values.insert("subject", message->subject());
-    values.insert("stamp", QMailTimeStamp(message->date()).toLocalTime());
-    values.insert("status", static_cast<int>(message->status()));
-    values.insert("parentaccountid", message->parentAccountId().toULongLong());
-    values.insert("mailfile", ::contentUri(*message));
-    values.insert("serveruid", message->serverUid());
-    values.insert("size", message->size());
-    values.insert("contenttype", static_cast<int>(message->content()));
-    values.insert("responseid", message->inResponseTo().toULongLong());
-    values.insert("responsetype", message->responseType());
-    values.insert("receivedstamp", QMailTimeStamp(message->receivedDate()).toLocalTime());
-    if (message->previousParentFolderId().isValid()) {
-        values.insert("previousparentfolderid", message->previousParentFolderId().toULongLong());
-    }
-    values.insert("identifier", identifier);
-
-    const QStringList &list(values.keys());
-    QString columns = list.join(",");
-
-    // Add the record to the mailmessages table
-    QSqlQuery query(simpleQuery(QString("INSERT INTO temporarymailmessages (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
-                                values.values(),
-                                "addMessage mailmessages query"));
-    if (query.lastError().type() != QSqlError::NoError)
-        return DatabaseFailure;
-
-    //retrieve the insert id
-    quint64 insertId = extractValue<quint64>(query.lastInsertId());
-
-    // TODO: custom fields
-    QMap<QString, QString>::const_iterator i = message->customFields().constBegin();
-    while(i != message->customFields().constEnd()) {
-        qDebug() << "Custom field key:" << i.key() << " and value" << i.value();
-        ++i;
-    }
-
-    if (commitOnSuccess && !t.commit()) {
-        qMailLog(Messaging) << "Could not commit message changes to database";
-        return DatabaseFailure;
-    }
-
-    message->setId(QMailMessageId(insertId | Q_UINT64_C(9223372036854775808))); //set the msb to 1, to denote its temporary
-    message->setUnmodified();
-    return Success;
-}
-
-
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
                                                                       QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                                                       Transaction &t, bool commitOnSuccess)
@@ -4740,20 +4582,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const 
         if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent);
-            return Success;
-        }
-    }
-
-    return DatabaseFailure;
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveTemporaryMessages(Transaction &t, bool commitOnSuccess)
-{
-    QMailMessageIdList deletedMessageIds;
-    QStringList expiredContent;
-    if(deleteTemporaryMessages(&deletedMessageIds, &expiredContent)) {
-        if(commitOnSuccess && t.commit()) {
-            removeExpiredData(deletedMessageIds, expiredContent);
             return Success;
         }
     }
@@ -6033,20 +5861,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
                                                                    QMailMessage *result, 
                                                                    ReadLock &)
 {
-    bool temporaryMessage = ((Q_UINT64_C(9223372036854775808) & id.toULongLong()) != 0);
-    QString tableName = temporaryMessage ? "temporarymailmessages" : "mailmessages";
-    quint64 databaseId = temporaryMessage? id.toULongLong() & Q_UINT64_C(9223372036854775807) : id.toULongLong(); //drop msb
-
     QMap<QString, QString> fields;
-    if(!temporaryMessage) {
-        // Find any custom fields for this message
-        AttemptResult attemptResult = customFields(id.toULongLong(), &fields, "mailmessagecustom");
-        if (attemptResult != Success)
-            return attemptResult;
-    }
 
-    QSqlQuery query(simpleQuery("SELECT * FROM " + tableName + " WHERE id=?",
-                                QVariantList() << databaseId,
+    // Find any custom fields for this message
+    AttemptResult attemptResult = customFields(id.toULongLong(), &fields, "mailmessagecustom");
+    if (attemptResult != Success)
+        return attemptResult;
+
+    QSqlQuery query(simpleQuery("SELECT * FROM mailmessages WHERE id=?",
+                                QVariantList() << id.toULongLong(),
                                 "message mailmessages id query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -6054,8 +5877,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
     if (query.first()) {
         *result = extractMessage(query.record(), fields);
         if (result->id().isValid()) {
-            if(temporaryMessage)
-                result->setId(id);
+            result->setId(id);
             return Success;
         }
     }
@@ -6084,21 +5906,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
                                                                            QMailMessageMetaData *result, 
                                                                            ReadLock &)
 {
-    bool temporaryMessage = ((Q_UINT64_C(9223372036854775808) & id.toULongLong()) != 0);
-    QString tableName = temporaryMessage ? "temporarymailmessages" : "mailmessages";
-    quint64 databaseId = temporaryMessage? id.toULongLong() & Q_UINT64_C(9223372036854775807) : id.toULongLong(); //drop msb
-
-
     QMap<QString, QString> fields;
-    if(!temporaryMessage) {
-        // Find any custom fields for this message
-        AttemptResult attemptResult = customFields(id.toULongLong(), &fields, "mailmessagecustom");
-        if (attemptResult != Success)
-            return attemptResult;
-    }
 
-    QSqlQuery query(simpleQuery("SELECT * FROM " + tableName + " WHERE id=?",
-                                QVariantList() << databaseId,
+    // Find any custom fields for this message
+    AttemptResult attemptResult = customFields(id.toULongLong(), &fields, "mailmessagecustom");
+    if (attemptResult != Success)
+        return attemptResult;
+
+    QSqlQuery query(simpleQuery("SELECT * FROM mailmessages WHERE id=?",
+                                QVariantList() << id.toULongLong(),
                                 "message mailmessages id query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -6427,18 +6243,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageId(const QStri
     if (query.first()) {
         *result = extractValue<quint64>(query.value(0));
         return Success;
-    } else if (database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
-        //attempt look in the temporary version
-        QSqlQuery query(simpleQuery("SELECT id FROM temporarymailmessages WHERE serveruid=? AND parentaccountid=?",
-                                    QVariantList() << uid << accountId.toULongLong(),
-                                    "message mailmessages uid/parentaccountid query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
-        if (query.first()) {
-            *result = extractValue<quint64>(query.value(0));
-            return Success;
-        }
     }
+
     return Failure;
 }
 
@@ -7170,35 +6976,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             ++mit;
         }
     }
-
-    return true;
-}
-
-bool QMailStorePrivate::deleteTemporaryMessages(QMailMessageIdList *deletedMessageIds, QStringList *expiredContent)
-{
-    if(!database.tables().contains("temporarymailmessages", Qt::CaseInsensitive)) {
-        return true;
-    }
-
-    // Get the information we need to delete these messages
-    QSqlQuery query(simpleQuery(QString("SELECT id,mailfile FROM temporarymailmessages"),
-                                "deleteTemporaryMessages info query"));
-    if (query.lastError().type() != QSqlError::NoError)
-        return false;
-
-    while (query.next()) {
-        QMailMessageId messageId(extractValue<quint64>(query.value(0)) | Q_UINT64_C(9223372036854775808)); //set msb to 1 to denote temporaryness
-        deletedMessageIds->append(messageId);
-
-        QString contentUri(extractValue<QString>(query.value(1)));
-        if (!contentUri.isEmpty())
-            expiredContent->append(contentUri);
-    }
-
-    QSqlQuery dropQuery(simpleQuery("DROP TABLE temporarymailmessages)",
-                                "deleteTemporaryMessages drop query"));
-    if (dropQuery.lastError().type() != QSqlError::NoError)
-        return false;
 
     return true;
 }

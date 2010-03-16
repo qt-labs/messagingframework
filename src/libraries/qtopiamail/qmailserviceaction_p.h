@@ -67,7 +67,7 @@ public:
     template<typename Subclass>
     QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i);
 
-    ~QMailServiceActionPrivate();
+    virtual ~QMailServiceActionPrivate();
 
     void cancelOperation();
 
@@ -205,6 +205,7 @@ class QMailSearchActionPrivate : public QMailServiceActionPrivate
 
 public:
     QMailSearchActionPrivate(QMailSearchAction *i);
+    virtual ~QMailSearchActionPrivate();
 
     void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void cancelOperation();

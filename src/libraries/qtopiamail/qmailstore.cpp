@@ -231,9 +231,6 @@ bool QMailStore::addFolder(QMailFolder* folder)
 */
 bool QMailStore::addMessage(QMailMessage* msg)
 {
-    if(msg->status() & QMailMessage::Temporary)
-        return d->addTemporaryMessage(msg);
-
     return addMessages(QList<QMailMessage*>() << msg);
 }
 

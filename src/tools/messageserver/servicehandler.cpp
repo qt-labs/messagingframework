@@ -175,23 +175,13 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     // Allocate each message to the relevant account
     QMap<QMailAccountId, QMailMessageIdList> map;
 
-    QMailMessageIdList normalMessages; //messages that aren't temporary
-
-    foreach(QMailMessageId id, ids) {
-        if((id.toULongLong() & Q_UINT64_C(9223372036854775808)) == 0)
-            normalMessages.append(id);
-        else
-            map[QMailMessage(id).parentAccountId()].append(id);
-    }
-
-    if (!normalMessages.isEmpty()) {
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(normalMessages),
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids),
                                                                                                 QMailMessageKey::Id | QMailMessageKey::ParentAccountId, 
                                                                                                 QMailStore::ReturnAll)) {
             if (metaData.id().isValid() && metaData.parentAccountId().isValid())
                 map[metaData.parentAccountId()].append(metaData.id());
         }
-    }
+
 
     return map;
 }

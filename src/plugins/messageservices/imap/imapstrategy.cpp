@@ -1423,31 +1423,16 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
     QList<QMailMessageId> searchResults;
     IntegerRegion uidsToFetch;
 
-    if(properties.uidList.count() > 0) { // we've found some stuff
-        QMailFolder folder(properties.id);
-
-        int clientMin(folder.customField("qmf-min-serveruid").toInt());
-        int clientMax(folder.customField("qmf-max-serveruid").toInt());
-
-        foreach(const QString &uidString, properties.uidList) {
-            int uid = stripFolderPrefix(uidString).toInt();
-            Q_ASSERT(uid > 0);
-            if(clientMin > 0 && clientMax > 0 && uid >= clientMin && uid <= clientMax) {
-                //it's in the range, therefor we should have it
-
-                QMailMessage msg = QMailStore::instance()->message(uidString, context->config().id());
-                if(QMailStore::instance()->lastError() == QMailStore::NoError)
-                    searchResults.append(msg.id());
-                else
-                    qDebug() << "Unable to find message, that should supposedly exist.";
-            } else {
-                uidsToFetch.add(uid);
-            }
-        }
-
-        if(!searchResults.isEmpty())
-            context->matchingMessageIds(searchResults);
+    foreach(const QString &uidString, properties.uidList) {
+        int uid(stripFolderPrefix(uidString).toInt());
+        if(QMailStore::instance()->countMessages(QMailMessageKey::serverUid(uidString) & QMailMessageKey::parentAccountId(context->config().id())) == 1)
+            searchResults.append(QMailMessageId(uid));
+        else
+            uidsToFetch.add(uid);
     }
+
+    if(!searchResults.isEmpty())
+        context->matchingMessageIds(searchResults);
 
     if(uidsToFetch.isEmpty())
         processNextFolder(context);
