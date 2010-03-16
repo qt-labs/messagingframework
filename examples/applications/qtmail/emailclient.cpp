@@ -1475,11 +1475,6 @@ void EmailClient::messageActivated()
     }
 }
 
-void EmailClient::searchResultSelected(const QMailMessageId& id)
-{
-    readMailWidget()->displayMessage(id,QMailViewerFactory::AnyPresentation,false,false);
-}
-
 void EmailClient::accessError(const QString &folderName)
 {
     QString msg = tr("Cannot access %1. Either there is insufficient space, or another program is accessing the mailbox.").arg(folderName);
@@ -1951,12 +1946,6 @@ void EmailClient::renameFolder()
 
 void EmailClient::search()
 {
-    static bool init = false;
-    if(!init)
-    {
-        connect(searchView(),SIGNAL(searchResultSelected(const QMailMessageId&)),this,SLOT(searchResultSelected(const QMailMessageId&)));
-        init = true;
-    }
     searchView()->raise();
     searchView()->activateWindow();
     searchView()->reset();

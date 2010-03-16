@@ -140,7 +140,6 @@ ReadMail::ReadMail( QWidget* parent, Qt::WFlags fl )
       firstRead(false),
       hasNext(false),
       hasPrevious(false),
-      initialized(false),
       modelUpdatePending(false)
 {
     init();
@@ -467,6 +466,7 @@ void ReadMail::setRetrievalInProgress(bool on)
 
 void ReadMail::initImages(QMailViewerInterface* view)
 {
+    static bool initialized = false;
     static QMap<QUrl, QVariant> resourceMap;
 
     if (!initialized) {

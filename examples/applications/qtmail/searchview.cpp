@@ -39,26 +39,29 @@
 **
 ****************************************************************************/
 
-#include "searchview.h"
-#include <QPushButton>
-#include <QCheckBox>
-#include <QRadioButton>
-#include <QLineEdit>
-#include "messagelistview.h"
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QFlags>
-#include <QSpinBox>
-#include <QDialog>
 #include "emailfolderview.h"
+#include "messagelistview.h"
+#include "readmail.h"
+#include "searchview.h"
 #include "selectfolder.h"
+
 #include <qmailaccount.h>
 #include <qmailserviceaction.h>
-#include <QStatusBar>
+
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialog>
 #include <QDateEdit>
+#include <QFlags>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QStatusBar>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 static const int maxMessageBytes = 100000000;
 static const int maxSearchTerms = 10;
@@ -849,10 +852,11 @@ void SearchTermsComposer::removeSearchTerm()
 SearchView::SearchView(QWidget* parent, Qt::WindowFlags f)
 :
 QMainWindow(parent,f),
-m_searchAction(new QMailSearchAction())
+m_searchAction(new QMailSearchAction(this))
 {
     setupUi();
     setGeometry(0,0,600,400);
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 SearchView::~SearchView()
@@ -934,7 +938,7 @@ void SearchView::setupUi()
 
     m_searchResults = new MessageListView(this);
     m_searchResults->showQuickSearch(false);
-    connect(m_searchResults,SIGNAL(activated(const QMailMessageId&)),this,SIGNAL(searchResultSelected(const QMailMessageId&)));
+    connect(m_searchResults,SIGNAL(activated(const QMailMessageId&)),this,SLOT(searchResultSelected(const QMailMessageId&)));
     searchSettingsLayout->addWidget(m_searchResults);
 
     connect(m_searchAction,SIGNAL(messageIdsMatched(const QMailMessageIdList&)),this,SLOT(messageIdsMatched(const QMailMessageIdList&)));
@@ -985,6 +989,14 @@ void SearchView::searchActivityChanged(QMailServiceAction::Activity a)
 {
     if(a == QMailServiceAction::Successful)
         m_statusBar->showMessage("Done.");
+}
+
+void SearchView::searchResultSelected(const QMailMessageId& id)
+{
+    ReadMail *msg = new ReadMail;
+    msg->setAttribute(Qt::WA_DeleteOnClose);
+    msg->show();
+    msg->displayMessage(id,QMailViewerFactory::AnyPresentation,false,false);
 }
 
 void SearchView::searchProgressChanged(uint value, uint total)

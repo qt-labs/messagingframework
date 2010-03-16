@@ -73,9 +73,6 @@ public:
     ~SearchView();
     void setVisible(bool visible);
 
-signals:
-    void searchResultSelected(const QMailMessageId& id);
-
 public slots:
     void reset();
     void close();
@@ -90,6 +87,7 @@ private slots:
     void messageIdsMatched(const QMailMessageIdList& ids);
     void searchProgressChanged(uint value, uint total);
     void searchActivityChanged(QMailServiceAction::Activity a);
+    void searchResultSelected(const QMailMessageId& id);
 
 private:
     SearchButton* m_searchButton;
