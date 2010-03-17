@@ -2789,7 +2789,7 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
     QMailFolderId folderId(_currentMailbox.id());
     
     //not not try select an unselectable mailbox
-    if(!_folderStatus.contains(folderId) || !_folderStatus[folderId] & NoSelect)
+    if(!_folderStatus.contains(folderId) || !(_folderStatus.value(folderId) & NoSelect))
         context->protocol().sendSelect(_currentMailbox);
 }
 

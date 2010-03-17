@@ -578,7 +578,7 @@ public:
 
     virtual void cancelSearch();
     virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
-    virtual void transition(ImapStrategyContextBase *, ImapCommand, OperationStatus);
+    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
 protected:
     virtual void handleSearchMessage(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
