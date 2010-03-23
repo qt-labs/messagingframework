@@ -426,6 +426,7 @@ ImapClient::~ImapClient()
             protocol->close();
         delete protocol;
     }
+    delete _strategyContext;
 }
 
 void ImapClient::newConnection()

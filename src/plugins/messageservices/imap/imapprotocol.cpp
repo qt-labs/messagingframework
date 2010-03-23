@@ -2477,6 +2477,7 @@ ImapProtocol::ImapProtocol()
 ImapProtocol::~ImapProtocol()
 {
     delete _transport;
+    delete _fsm;
 }
 
 bool ImapProtocol::open( const ImapConfiguration& config )
