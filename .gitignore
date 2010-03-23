@@ -19,8 +19,6 @@ config.in
 config.log
 .qmake.cache
 
-doc/src/html/
-
 #tests
 tst_messageserver
 tst_longstring
