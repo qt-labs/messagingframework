@@ -128,7 +128,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 {
     Q_ASSERT(q);
 
-    QCopChannel* ipcChannel = new QCopChannel("QPE/Qtopiamail");
+    QCopChannel* ipcChannel = new QCopChannel("QPE/Qtopiamail", this);
 
     connect(ipcChannel,
             SIGNAL(received(QString,QByteArray)),

@@ -93,7 +93,7 @@ QString randomString(int length)
     return str;
 }
 
-QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString(), bool temporary = false)
+QString generateUniqueFileName(const QMailAccountId &accountId, const QString &name = QString())
 {
     static const quint64 pid = QCoreApplication::applicationPid();
 
@@ -108,10 +108,7 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
 
     QString path;
     do {
-        if (temporary)
-            path = QMail::tempPath() + "/" + filename + randomString(5);
-        else
-            path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
+        path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
     } while (QFile::exists(path));
 
     return path;
@@ -241,15 +238,10 @@ QMailStore::ErrorCode QtopiamailfileManager::add(QMailMessage *message, QMailCon
 
 QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
 {
-    bool temp = !message->customField("qtopiamail-temporary-message").isEmpty();
-
     // Use the supplied identifier as a filename
-    QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier(), temp);
-
+    QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier());
 
     message->setContentIdentifier(filePath);
-
-    QFile *file = new QFile(filePath);
 
     QString detachedFile = message->customField("qtopiamail-detached-filename");
     if (!detachedFile.isEmpty() && (message->multipartType() == QMailMessagePartContainer::MultipartNone)) {
@@ -259,6 +251,8 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
             return QMailStore::NoError;
         }
     }
+    
+    QSharedPointer<QFile> file(new QFile(filePath));
 
     if (!file->open(QIODevice::WriteOnly)) {
         qMailLog(Messaging) << "Unable to open new message content file:" << filePath;
@@ -266,7 +260,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     }
 
     // Write the message to file (not including sub-part contents)
-    QDataStream out(file);
+    QDataStream out(file.data());
     message->toRfc2822(out, QMailMessage::StorageFormat);
     if ((out.status() != QDataStream::Ok) ||
         // Write each part to file
@@ -286,8 +280,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     }
 
     if (durable) {
-        sync(file);
-        delete file;
+        sync(file.data());
     } else {
         _openFiles.append(file);
     }
@@ -322,9 +315,8 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMail
 
 QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
 {
-    foreach (QFile *file, _openFiles) {
-        sync(file);
-        delete file;
+    foreach (QSharedPointer<QFile> file, _openFiles) {
+        sync(file.data());
     }
 
     _openFiles.clear();
@@ -597,9 +589,9 @@ struct PartStorer
     QMailMessage *message;
     QString fileName;
     QString existing;
-    QList<QFile*> *openFiles;
+    QList< QSharedPointer<QFile> > *openFiles;
 
-    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList<QFile*> *o) : message(m), fileName(f), existing(e), openFiles(o) {}
+    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o) : message(m), fileName(f), existing(e), openFiles(o) {}
 
     bool operator()(const QMailMessagePart &part)
     {
@@ -636,14 +628,14 @@ struct PartStorer
             }
 
             // We need to write the content to a new file
-            QFile *file = new QFile(partFilePath);
+            QSharedPointer<QFile> file(new QFile(partFilePath));
             if (!file->open(QIODevice::WriteOnly)) {
                 qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
                 return false;
             }
 
             // Write the part content to file
-            QDataStream out(file);
+            QDataStream out(file.data());
             if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
                 qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
@@ -653,12 +645,10 @@ struct PartStorer
                 return false;
             }
 
-            if (openFiles) {
+            if (openFiles)
                 openFiles->append(file);
-            } else {
-                sync(file);
-                delete file;
-            }
+            else
+                sync(file.data());
         }
 
         return true;

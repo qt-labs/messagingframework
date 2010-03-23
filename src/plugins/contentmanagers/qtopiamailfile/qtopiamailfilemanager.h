@@ -90,7 +90,7 @@ private:
     bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable);
     bool removeParts(const QString &fileName);
 
-    QList<QFile*> _openFiles;
+    QList< QSharedPointer<QFile> > _openFiles;
 };
 
 
