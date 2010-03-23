@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailaccount.cpp -->
+<head>
+  <title>QMailAccount Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailAccount Class Reference</h1>
+<p>The QMailAccount class represents a messaging account in the mail store. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailAccount&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailaccount-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#QMailAccount">QMailAccount</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#QMailAccount-2">QMailAccount</a></b> ( const QMailAccountId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#QMailAccount-3">QMailAccount</a></b> ( const QMailAccount &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#dtor.QMailAccount">~QMailAccount</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#customField">customField</a></b> ( const QString &amp; <i>name</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMap&lt;QString, QString&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#customFields">customFields</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAddress </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#fromAddress">fromAddress</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#id">id</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageSinks">messageSinks</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageSources">messageSources</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageMetaDataFwd::MessageType </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageType">messageType</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#name">name</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#removeCustomField">removeCustomField</a></b> ( const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setCustomField">setCustomField</a></b> ( const QString &amp; <i>name</i>, const QString &amp; <i>value</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setCustomFields">setCustomFields</a></b> ( const QMap&lt;QString, QString&gt; &amp; <i>fields</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setFromAddress">setFromAddress</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setId">setId</a></b> ( const QMailAccountId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setMessageType">setMessageType</a></b> ( QMailMessageMetaDataFwd::MessageType <i>type</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setName">setName</a></b> ( const QString &amp; <i>str</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setSignature">setSignature</a></b> ( const QString &amp; <i>str</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setStandardFolder">setStandardFolder</a></b> ( QMailFolder::StandardFolder <i>folder</i>, const QMailFolderId &amp; <i>folderId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setStatus">setStatus</a></b> ( quint64 <i>newStatus</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setStatus-2">setStatus</a></b> ( quint64 <i>mask</i>, bool <i>set</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#signature">signature</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#standardFolder">standardFolder</a></b> ( QMailFolder::StandardFolder <i>folder</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMap&lt;QMailFolder::StandardFolder, QMailFolderId&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#standardFolders">standardFolders</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#status">status</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAccount &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#operator-eq">operator=</a></b> ( const QMailAccount &amp; <i>other</i> )</td></tr>
+</table>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#AppendSignature-var">AppendSignature</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanRetrieve-var">CanRetrieve</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanTransmit-var">CanTransmit</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#Enabled-var">Enabled</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#MessageSink-var">MessageSink</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#MessageSource-var">MessageSource</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#PreferredSender-var">PreferredSender</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#SynchronizationEnabled-var">SynchronizationEnabled</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#Synchronized-var">Synchronized</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#UserEditable-var">UserEditable</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#UserRemovable-var">UserRemovable</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#statusMask">statusMask</a></b> ( const QString &amp; <i>flagName</i> )</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailAccount class represents a messaging account in the mail store.</p>
+<p>A QMailAccount is a logical entity that groups messages according to the method by which they are sent and received. An account can be configured to support one more message sources, from which messages are imported into the mail store, and one or more message sinks by which messages are transmitted to external messaging services. Although an account can support multiple sources or sinks, this facility is for grouping those that are logically equivalent; for example, using one of multiple connectivity options to retrieve messages from the same external server.</p>
+<p>The QMailAccount class is used for accessing properties of the account related to dealing with the account's folders and messages, rather than for modifying the account itself. The <a href="qmailaccountconfiguration.html">QMailAccountConfiguration</a> class allows for the configuration details of the account itself to be modified. A newly created account must also have a <a href="qmailaccountconfiguration.html">QMailAccountConfiguration</a> defined, in order to be used for the transfer of messages.</p>
+<p>QMailAccount allows the communications properties of the account to be tested. The <a href="qmailaccount.html#MessageSource-var">MessageSource</a> status flag indicates that the account acts a source of incoming messages, and the <a href="qmailaccount.html#MessageSink-var">MessageSink</a> status flag indicates that the account provides a mechanism for transmitting outgoing messages. The <a href="qmailaccount.html#messageSources">messageSources</a>() and <a href="qmailaccount.html#messageSinks">messageSinks</a>() functions return the protocol tags for each message source or message sink implementation configured for the account. These tags can be used to identify the implementation details of the account if necessary:</p>
+<pre>    void someFunction(const QMailMessage &amp;message)
+    {
+        QMailAccount msgAccount(message.parentAccountId());
+        if (msgAccount.messageSources().contains(&quot;imap4&quot;, Qt::CaseInsensitive)) {
+            <span class="comment">// This account uses IMAP</span>
+            ...
+        }
+    }</pre>
+<p>The QMailAccount class also provides functions which help clients to access the resources of the account. The mailboxes() function returns a list of each folder associated with the account, while the mailbox() function allows a mailbox to be located by name. The deletedMessages() and serverUids() functions are primarily used in synchronizing the account's contents with those present on an external server.</p>
+<p>See also <a href="qmailaccountconfiguration.html">QMailAccountConfiguration</a> and <a href="qmailstore.html#account">QMailStore::account</a>().</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailAccount"></a>QMailAccount::QMailAccount ()</h3>
+<p>Creates an uninitialised account object.</p>
+<h3 class="fn"><a name="QMailAccount-2"></a>QMailAccount::QMailAccount ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i> )</h3>
+<p>Convenience constructor that creates a <tt>QMailAccount</tt> by loading the data from the store as specified by the <a href="qmailaccountid.html">QMailAccountId</a> <i>id</i>. If the account does not exist in the store, then this constructor will create an empty and invalid <a href="qmailaccount.html">QMailAccount</a>.</p>
+<h3 class="fn"><a name="QMailAccount-3"></a>QMailAccount::QMailAccount ( const QMailAccount &amp; <i>other</i> )</h3>
+<p>Creates a copy of the <a href="qmailaccount.html">QMailAccount</a> <i>other</i>.</p>
+<h3 class="fn"><a name="dtor.QMailAccount"></a>QMailAccount::~QMailAccount ()</h3>
+<p>Destroys the account object.</p>
+<h3 class="fn"><a name="customField"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailAccount::customField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> ) const</h3>
+<p>Returns the value recorded in the custom field named <i>name</i>.</p>
+<p>See also <a href="qmailaccount.html#setCustomField">setCustomField</a>() and <a href="qmailaccount.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="customFields"></a>const <a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>, <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>&gt; &amp; QMailAccount::customFields () const</h3>
+<p>Returns the map of custom fields stored in the account.</p>
+<p>See also <a href="qmailaccount.html#setCustomFields">setCustomFields</a>(), <a href="qmailaccount.html#customField">customField</a>(), and <a href="qmailaccount.html#setCustomField">setCustomField</a>().</p>
+<h3 class="fn"><a name="fromAddress"></a><a href="qmailaddress.html">QMailAddress</a> QMailAccount::fromAddress () const</h3>
+<p>Returns the address from which the account's outgoing messages should be reported as originating.</p>
+<p>See also <a href="qmailaccount.html#setFromAddress">setFromAddress</a>().</p>
+<h3 class="fn"><a name="id"></a><a href="qmailaccountid.html">QMailAccountId</a> QMailAccount::id () const</h3>
+<p>Returns the storage id for this account.</p>
+<p>See also <a href="qmailaccount.html#setId">setId</a>().</p>
+<h3 class="fn"><a name="messageSinks"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSinks () const</h3>
+<p>Returns the list of protocol tags identifying the message sink implementations that can transmit messages for this account.</p>
+<h3 class="fn"><a name="messageSources"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSources () const</h3>
+<p>Returns the list of protocol tags identifying the message source implementations that provide the messages for this account.</p>
+<h3 class="fn"><a name="messageType"></a><a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::MessageType</a> QMailAccount::messageType () const</h3>
+<p>Returns the types of messages this account deals with.</p>
+<p>See also <a href="qmailaccount.html#setMessageType">setMessageType</a>().</p>
+<h3 class="fn"><a name="name"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailAccount::name () const</h3>
+<p>Returns the name of the account for display purposes.</p>
+<p>See also <a href="qmailaccount.html#setName">setName</a>().</p>
+<h3 class="fn"><a name="removeCustomField"></a>void QMailAccount::removeCustomField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
+<p>Removes the custom field named <i>name</i>.</p>
+<p>See also <a href="qmailaccount.html#customField">customField</a>() and <a href="qmailaccount.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="setCustomField"></a>void QMailAccount::setCustomField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i> )</h3>
+<p>Sets the value of the custom field named <i>name</i> to <i>value</i>.</p>
+<p>See also <a href="qmailaccount.html#customField">customField</a>() and <a href="qmailaccount.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="setCustomFields"></a>void QMailAccount::setCustomFields ( const <a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>, <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>&gt; &amp; <i>fields</i> )</h3>
+<p>Sets the account to contain the custom fields in <i>fields</i>.</p>
+<p>See also <a href="qmailaccount.html#setCustomField">setCustomField</a>() and <a href="qmailaccount.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="setFromAddress"></a>void QMailAccount::setFromAddress ( const <a href="qmailaddress.html">QMailAddress</a> &amp; <i>address</i> )</h3>
+<p>Sets the address from which the account's outgoing messages should be reported as originating to <i>address</i>.</p>
+<p>See also <a href="qmailaccount.html#fromAddress">fromAddress</a>().</p>
+<h3 class="fn"><a name="setId"></a>void QMailAccount::setId ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i> )</h3>
+<p>Sets the storage id for this account to <i>id</i>.</p>
+<p>See also <a href="qmailaccount.html#id">id</a>().</p>
+<h3 class="fn"><a name="setMessageType"></a>void QMailAccount::setMessageType ( <a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::MessageType</a> <i>type</i> )</h3>
+<p>Sets the types of messages this account deals with to <i>type</i>.</p>
+<p>See also <a href="qmailaccount.html#messageType">messageType</a>().</p>
+<h3 class="fn"><a name="setName"></a>void QMailAccount::setName ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>str</i> )</h3>
+<p>Sets the name of the account for display purposes to <i>str</i>.</p>
+<p>See also <a href="qmailaccount.html#name">name</a>().</p>
+<h3 class="fn"><a name="setSignature"></a>void QMailAccount::setSignature ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>str</i> )</h3>
+<p>Sets the signature text configured for the account to <i>str</i>.</p>
+<p>See also <a href="qmailaccount.html#signature">signature</a>().</p>
+<h3 class="fn"><a name="setStandardFolder"></a>void QMailAccount::setStandardFolder ( <a href="qmailfolder.html#StandardFolder-enum">QMailFolder::StandardFolder</a> <i>folder</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )</h3>
+<p>Sets the folder configured for the standard folder role <i>folder</i> for this account to <i>folderId</i>.</p>
+<p>See also <a href="qmailaccount.html#standardFolder">standardFolder</a>().</p>
+<h3 class="fn"><a name="setStatus"></a>void QMailAccount::setStatus ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>newStatus</i> )</h3>
+<p>Sets the status value for the account to <i>newStatus</i>.</p>
+<p>See also <a href="qmailaccount.html#status">status</a>() and <a href="qmailaccount.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="setStatus-2"></a>void QMailAccount::setStatus ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>mask</i>, bool <i>set</i> )</h3>
+<p>Sets the status flags indicated in <i>mask</i> to <i>set</i>.</p>
+<p>See also <a href="qmailaccount.html#status">status</a>() and <a href="qmailaccount.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="signature"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailAccount::signature () const</h3>
+<p>Returns the signature text configured for the account.</p>
+<p>See also <a href="qmailaccount.html#setSignature">setSignature</a>().</p>
+<h3 class="fn"><a name="standardFolder"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailAccount::standardFolder ( <a href="qmailfolder.html#StandardFolder-enum">QMailFolder::StandardFolder</a> <i>folder</i> ) const</h3>
+<p>Returns the folder configured for the standard folder role <i>folder</i> for this account, if there is one.</p>
+<p>See also <a href="qmailaccount.html#setStandardFolder">setStandardFolder</a>().</p>
+<h3 class="fn"><a name="standardFolders"></a>const <a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="qmailfolder.html#StandardFolder-enum">QMailFolder::StandardFolder</a>, <a href="qmailfolderid.html">QMailFolderId</a>&gt; &amp; QMailAccount::standardFolders () const</h3>
+<p>Returns the map of standard folders configured for this account.</p>
+<p>See also <a href="qmailaccount.html#standardFolder">standardFolder</a>() and <a href="qmailaccount.html#setStandardFolder">setStandardFolder</a>().</p>
+<h3 class="fn"><a name="status"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> QMailAccount::status () const</h3>
+<p>Returns the status value for the account.</p>
+<p>See also <a href="qmailaccount.html#setStatus">setStatus</a>() and <a href="qmailaccount.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="statusMask"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> QMailAccount::statusMask ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>flagName</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the status bitmask needed to test the result of <a href="qmailaccount.html#status">QMailAccount::status</a>() against the <a href="qmailaccount.html">QMailAccount</a> status flag registered with the identifier <i>flagName</i>.</p>
+<p>See also <a href="qmailaccount.html#status">status</a>() and <a href="qmailstore.html#accountStatusMask">QMailStore::accountStatusMask</a>().</p>
+<h3 class="fn"><a name="operator-eq"></a>QMailAccount &amp; QMailAccount::operator= ( const QMailAccount &amp; <i>other</i> )</h3>
+<p>Assigns the value of this account to the account <i>other</i></p>
+<hr />
+<h2>Member Variable Documentation</h2>
+<h3 class="fn"><a name="AppendSignature-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::AppendSignature</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;AppendSignature&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that an account has been configured to append a signature block to outgoing messages.</p>
+<h3 class="fn"><a name="CanRetrieve-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanRetrieve</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;CanRetrieve&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account has been sufficiently configured that an attempt to retrieve messages may be performed.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="CanTransmit-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanTransmit</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;CanTransmit&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account has been sufficiently configured that an attempt to transmit messages may be performed.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="Enabled-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::Enabled</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Enabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account has been marked as suitable for use by the messaging server.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="MessageSink-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::MessageSink</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;MessageSink&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account has been configured to act as a transmitter of outgoing messages.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="MessageSource-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::MessageSource</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;MessageSink&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account has been configured to act as a source of incoming messages.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="PreferredSender-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::PreferredSender</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;PreferredSender&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account is the user's preferred account for sending the type of message that the account creates.</p>
+<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="SynchronizationEnabled-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::SynchronizationEnabled</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;SynchronizationEnabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that an account should be synchronized against an external message source.</p>
+<h3 class="fn"><a name="Synchronized-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::Synchronized</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Synchronized&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that an account has been synchronized by a synchronization operation.</p>
+<h3 class="fn"><a name="UserEditable-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::UserEditable</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;UserEditable&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account's configuration may be modified by the user.</p>
+<h3 class="fn"><a name="UserRemovable-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::UserRemovable</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;UserRemovable&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account may be removed by the user.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

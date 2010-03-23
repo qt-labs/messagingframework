@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageservice.cpp -->
+<head>
+  <title>QMailMessageService Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageService Class Reference</h1>
+<p>The QMailMessageService class provides the interface between the message server and components loaded from plugin libraries. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageService&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<p>Inherits <a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a>.</p>
+<ul>
+<li><a href="qmailmessageservice-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#QMailMessageService">QMailMessageService</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#accountId">accountId</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#available">available</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#hasSink">hasSink</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#hasSource">hasSource</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#requiresReregistration">requiresReregistration</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#service">service</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageSink &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#sink">sink</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageSource &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#source">source</a></b> () const</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
+</ul>
+<hr />
+<a name="public-slots"></a>
+<h2>Public Slots</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#cancelOperation">cancelOperation</a></b> () = 0</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 public slot inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-slots">QObject</a></li>
+</ul>
+<hr />
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#actionCompleted">actionCompleted</a></b> ( bool <i>success</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#activityChanged">activityChanged</a></b> ( QMailServiceAction::Activity <i>activity</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#availabilityChanged">availabilityChanged</a></b> ( bool <i>available</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#connectivityChanged">connectivityChanged</a></b> ( QMailServiceAction::Connectivity <i>connectivity</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#progressChanged">progressChanged</a></b> ( uint <i>progress</i>, uint <i>total</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#statusChanged">statusChanged</a></b> ( const QMailServiceAction::Status <i>status</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 signal inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#signals">QObject</a></li>
+</ul>
+<hr />
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#updateStatus">updateStatus</a></b> ( QMailServiceAction::Status::ErrorCode <i>code</i>, const QString &amp; <i>text</i> = QString(), const QMailAccountId &amp; <i>accountId</i> = QMailAccountId(), const QMailFolderId &amp; <i>folderId</i> = QMailFolderId(), const QMailMessageId &amp; <i>messageId</i> = QMailMessageId() )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#updateStatus-2">updateStatus</a></b> ( int <i>code</i>, const QString &amp; <i>text</i> = QString(), const QMailAccountId &amp; <i>accountId</i> = QMailAccountId(), const QMailFolderId &amp; <i>folderId</i> = QMailFolderId(), const QMailMessageId &amp; <i>messageId</i> = QMailMessageId() )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>7 protected functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>1 property inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#properties">QObject</a></li>
+<li><div class="fn"></div>1 public type inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"></div>4 static public members inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"></div>2 protected variables inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageService class provides the interface between the message server and components loaded from plugin libraries.</p>
+<p>QMailMessageService provides the interface through which the message server daemon communicates with components that provide message access and transmission services. The components are loaded from plugin libraries; the message server process remains ignorant of the messages types they deal with, and the protocols they use to perform their tasks.</p>
+<p>The QMailMessageService class provides the signals and functions that message server uses to receive information about the actions of messaging service components. It also provides the <a href="qmailmessageservice.html#source">source</a> and <a href="qmailmessageservice.html#sink">sink</a> functions that the message server uses to acquire access to the functionality that the service may implement.</p>
+<p>Subclasses of QMailMessageService are instantiated by the message server process, one for each enabled account that is configured to use that service. The QMailMessageService interface does not cater for concurrent actions; each instance may only service a single request at any given time. The message server process provides request queueing so that QMailMessageService objects see only a sequential series of requests.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailMessageService"></a>QMailMessageService::QMailMessageService ()</h3>
+<p>Constructs a messaging service object.</p>
+<h3 class="fn"><a name="accountId"></a><a href="qmailaccountid.html">QMailAccountId</a> QMailMessageService::accountId () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns the identifier of the account for which this service is configured.</p>
+<h3 class="fn"><a name="actionCompleted"></a>void QMailMessageService::actionCompleted ( bool <i>success</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report the completion of an operation, with result <i>success</i>.</p>
+<h3 class="fn"><a name="activityChanged"></a>void QMailMessageService::activityChanged ( <a href="qmailserviceaction.html#Activity-enum">QMailServiceAction::Activity</a> <i>activity</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report a change in the activity of the service's current operation. The new activity status is described by <i>activity</i>.</p>
+<p>Emitting this signal will reset the expiry timer for a service operation in progress.</p>
+<h3 class="fn"><a name="availabilityChanged"></a>void QMailMessageService::availabilityChanged ( bool <i>available</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report a change in the availability of the service to <i>available</i>.</p>
+<p>See also <a href="qmailmessageservice.html#available">available</a>().</p>
+<h3 class="fn"><a name="available"></a>bool QMailMessageService::available () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns true if the service is currently available to process client requests.</p>
+<h3 class="fn"><a name="cancelOperation"></a>bool QMailMessageService::cancelOperation ()&nbsp;&nbsp;<tt> [pure virtual slot]</tt></h3>
+<p>Invoked by the message server to attempt cancellation of any request currently in progress. Return true to indicate cancellation of the request attempt.</p>
+<h3 class="fn"><a name="connectivityChanged"></a>void QMailMessageService::connectivityChanged ( <a href="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Connectivity</a> <i>connectivity</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report a change in the connectivity of the service. The new connectivity status is described by <i>connectivity</i>.</p>
+<p>Emitting this signal will reset the expiry timer for a service operation in progress.</p>
+<h3 class="fn"><a name="hasSink"></a>bool QMailMessageService::hasSink () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns true if this service exports a <a href="qmailmessagesink.html">QMailMessageSink</a> interface.</p>
+<h3 class="fn"><a name="hasSource"></a>bool QMailMessageService::hasSource () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns true if this service exports a <a href="qmailmessagesource.html">QMailMessageSource</a> interface.</p>
+<h3 class="fn"><a name="progressChanged"></a>void QMailMessageService::progressChanged ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>progress</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>total</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report a change in the progress of the service's current operation; <i>total</i> indicates the extent of the operation to be performed, <i>progress</i> indicates the current degree of completion.</p>
+<p>Emitting this signal will reset the expiry timer for a service operation in progress.</p>
+<h3 class="fn"><a name="requiresReregistration"></a>bool QMailMessageService::requiresReregistration () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns true if requests to reregister the service should be honored; otherwise returns false.</p>
+<p>An attempt to reregister the service is made when the account for which this service is configured is modified, or when an action associated with the service expires.</p>
+<h3 class="fn"><a name="service"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageService::service () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns the identifier of this service.</p>
+<h3 class="fn"><a name="sink"></a><a href="qmailmessagesink.html">QMailMessageSink</a> &amp; QMailMessageService::sink () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the <a href="qmailmessagesink.html">QMailMessageSink</a> interface exported by the service, if there is one.</p>
+<p>See also <a href="qmailmessageservice.html#hasSink">hasSink</a>().</p>
+<h3 class="fn"><a name="source"></a><a href="qmailmessagesource.html">QMailMessageSource</a> &amp; QMailMessageService::source () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the <a href="qmailmessagesource.html">QMailMessageSource</a> interface exported by the service, if there is one.</p>
+<p>See also <a href="qmailmessageservice.html#hasSource">hasSource</a>().</p>
+<h3 class="fn"><a name="statusChanged"></a>void QMailMessageService::statusChanged ( const <a href="qmailserviceaction-status.html">QMailServiceAction::Status</a> <i>status</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the service to report a change in the status of the service's current operation. The new status is described by <i>status</i>.</p>
+<p>Emitting this signal will reset the expiry timer for a service operation in progress.</p>
+<h3 class="fn"><a name="updateStatus"></a>void QMailMessageService::updateStatus ( <a href="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCode</a> <i>code</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>text</i> = QString(), const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> = QMailAccountId(), const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> = QMailFolderId(), const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i> = QMailMessageId() )&nbsp;&nbsp;<tt> [protected]</tt></h3>
+<p>Emits the <a href="qmailmessageservice.html#statusChanged">statusChanged</a>() signal with the Status object constructed from <i>code</i>, <i>text</i>, <i>accountId</i>, <i>folderId</i> and <i>messageId</i>.</p>
+<p>If possible, a standardized error message is determined from <i>code</i>, and prepended to the error message.</p>
+<h3 class="fn"><a name="updateStatus-2"></a>void QMailMessageService::updateStatus ( int <i>code</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>text</i> = QString(), const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> = QMailAccountId(), const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> = QMailFolderId(), const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i> = QMailMessageId() )&nbsp;&nbsp;<tt> [protected]</tt></h3>
+<p>Emits the <a href="qmailmessageservice.html#statusChanged">statusChanged</a>() signal with the Status object constructed from <i>code</i>, <i>text</i>, <i>accountId</i>, <i>folderId</i> and <i>messageId</i>.</p>
+<p>If possible, a standardized error message is determined from <i>code</i>, and prepended to the error message.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

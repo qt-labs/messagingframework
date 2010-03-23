@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailfolder.cpp -->
+<head>
+  <title>QMailFolder Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailFolder Class Reference</h1>
+<p>The QMailFolder class represents a folder for mail messages in the mail store. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailFolder&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailfolder-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#StandardFolder-enum">StandardFolder</a></b> { InboxFolder, OutboxFolder, DraftsFolder, SentFolder, TrashFolder, JunkFolder }</td></tr>
+</table>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#QMailFolder">QMailFolder</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#QMailFolder-2">QMailFolder</a></b> ( const QString &amp; <i>path</i>, const QMailFolderId &amp; <i>parentFolderId</i> = QMailFolderId(), const QMailAccountId &amp; <i>parentAccountId</i> = QMailAccountId() )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#QMailFolder-3">QMailFolder</a></b> ( const QMailFolderId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#QMailFolder-4">QMailFolder</a></b> ( const QMailFolder &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#dtor.QMailFolder">~QMailFolder</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#customField">customField</a></b> ( const QString &amp; <i>name</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMap&lt;QString, QString&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#customFields">customFields</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#displayName">displayName</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#id">id</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#parentAccountId">parentAccountId</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#parentFolderId">parentFolderId</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#path">path</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#removeCustomField">removeCustomField</a></b> ( const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#serverCount">serverCount</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#serverUndiscoveredCount">serverUndiscoveredCount</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#serverUnreadCount">serverUnreadCount</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setCustomField">setCustomField</a></b> ( const QString &amp; <i>name</i>, const QString &amp; <i>value</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setCustomFields">setCustomFields</a></b> ( const QMap&lt;QString, QString&gt; &amp; <i>fields</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setDisplayName">setDisplayName</a></b> ( const QString &amp; <i>displayName</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setId">setId</a></b> ( const QMailFolderId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setParentAccountId">setParentAccountId</a></b> ( const QMailAccountId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setParentFolderId">setParentFolderId</a></b> ( const QMailFolderId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setPath">setPath</a></b> ( const QString &amp; <i>path</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setServerCount">setServerCount</a></b> ( uint <i>count</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setServerUndiscoveredCount">setServerUndiscoveredCount</a></b> ( uint <i>count</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setServerUnreadCount">setServerUnreadCount</a></b> ( uint <i>count</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setStatus">setStatus</a></b> ( quint64 <i>newStatus</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#setStatus-2">setStatus</a></b> ( quint64 <i>mask</i>, bool <i>set</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#status">status</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailFolder &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#operator-eq">operator=</a></b> ( const QMailFolder &amp; <i>other</i> )</td></tr>
+</table>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Drafts-var">Drafts</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Incoming-var">Incoming</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Junk-var">Junk</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Outgoing-var">Outgoing</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#PartialContent-var">PartialContent</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Removed-var">Removed</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Sent-var">Sent</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#SynchronizationEnabled-var">SynchronizationEnabled</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Synchronized-var">Synchronized</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Trash-var">Trash</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#statusMask">statusMask</a></b> ( const QString &amp; <i>flagName</i> )</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailFolder class represents a folder for mail messages in the mail store.</p>
+<p>QMailFolder represents a folder of mail messages, either defined internally for application use, or to represent a folder object held by an external message service, such as an IMAP account.</p>
+<p>A QMailFolder object has an optional parent of the same type, allowing folders to be arranged in tree structures. Messages may be associated with folders, allowing for simple classification and access by their <a href="qmailmessagemetadata.html#parentFolderId">parentFolderId</a> property.</p>
+<p>See also <a href="qmailmessage.html">QMailMessage</a> and <a href="qmailstore.html#folder">QMailStore::folder</a>().</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="StandardFolder-enum"></a>enum QMailFolder::StandardFolder</h3>
+<p>This enum type describes the standard folders pertinent to many account types.</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMailFolder::InboxFolder</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">Represents the standard inbox folder.</td></tr>
+<tr><td valign="top"><tt>QMailFolder::OutboxFolder</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">Represents the standard outbox folder.</td></tr>
+<tr><td valign="top"><tt>QMailFolder::DraftsFolder</tt></td><td align="center" valign="top"><tt>3</tt></td><td valign="top">Represents the standard drafts folder.</td></tr>
+<tr><td valign="top"><tt>QMailFolder::SentFolder</tt></td><td align="center" valign="top"><tt>4</tt></td><td valign="top">Represents the standard sent folder.</td></tr>
+<tr><td valign="top"><tt>QMailFolder::TrashFolder</tt></td><td align="center" valign="top"><tt>5</tt></td><td valign="top">Represents the standard trash folder.</td></tr>
+<tr><td valign="top"><tt>QMailFolder::JunkFolder</tt></td><td align="center" valign="top"><tt>6</tt></td><td valign="top">Represents the standard junk folder.</td></tr>
+</table></p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailFolder"></a>QMailFolder::QMailFolder ()</h3>
+<p>Constructor that creates an empty and invalid <tt>QMailFolder</tt>. An empty folder is one which has no path, no parent folder and no parent account. An invalid folder does not exist in the database and has an invalid id.</p>
+<h3 class="fn"><a name="QMailFolder-2"></a>QMailFolder::QMailFolder ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>path</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>parentFolderId</i> = QMailFolderId(), const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>parentAccountId</i> = QMailAccountId() )</h3>
+<p>Creates a <a href="qmailfolder.html">QMailFolder</a> object with path <i>path</i> and parent folder ID <i>parentFolderId</i>, that is linked to a parent account <i>parentAccountId</i>.</p>
+<h3 class="fn"><a name="QMailFolder-3"></a>QMailFolder::QMailFolder ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> )</h3>
+<p>Constructor that creates a <a href="qmailfolder.html">QMailFolder</a> by loading the data from the message store as specified by the <a href="qmailfolderid.html">QMailFolderId</a> <i>id</i>. If the folder does not exist in the message store, then this constructor will create an empty and invalid <a href="qmailfolder.html">QMailFolder</a>.</p>
+<h3 class="fn"><a name="QMailFolder-4"></a>QMailFolder::QMailFolder ( const QMailFolder &amp; <i>other</i> )</h3>
+<p>Creates a copy of the <tt>QMailFolder</tt> object <i>other</i>.</p>
+<h3 class="fn"><a name="dtor.QMailFolder"></a>QMailFolder::~QMailFolder ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Destroys the <tt>QMailFolder</tt> object.</p>
+<h3 class="fn"><a name="customField"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailFolder::customField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> ) const</h3>
+<p>Returns the value recorded in the custom field named <i>name</i>.</p>
+<p>See also <a href="qmailfolder.html#setCustomField">setCustomField</a>() and <a href="qmailfolder.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="customFields"></a>const <a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>, <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>&gt; &amp; QMailFolder::customFields () const</h3>
+<p>Returns the map of custom fields stored in the folder.</p>
+<p>See also <a href="qmailfolder.html#setCustomFields">setCustomFields</a>(), <a href="qmailfolder.html#customField">customField</a>(), and <a href="qmailfolder.html#setCustomField">setCustomField</a>().</p>
+<h3 class="fn"><a name="displayName"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailFolder::displayName () const</h3>
+<p>Returns the display name of the folder.</p>
+<p>See also <a href="qmailfolder.html#setDisplayName">setDisplayName</a>().</p>
+<h3 class="fn"><a name="id"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailFolder::id () const</h3>
+<p>Returns the <tt>ID</tt> of the <tt>QMailFolder</tt> object. A <tt>QMailFolder</tt> with an invalid ID is one which does not yet exist on the message store.</p>
+<p>See also <a href="qmailfolder.html#setId">setId</a>().</p>
+<h3 class="fn"><a name="parentAccountId"></a><a href="qmailaccountid.html">QMailAccountId</a> QMailFolder::parentAccountId () const</h3>
+<p>Returns the id of the account which owns the folder. If the folder is not linked to an account an invalid id is returned.</p>
+<p>See also <a href="qmailfolder.html#setParentAccountId">setParentAccountId</a>().</p>
+<h3 class="fn"><a name="parentFolderId"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailFolder::parentFolderId () const</h3>
+<p>Returns the ID of the parent folder. This folder is a root folder if the parent ID is invalid.</p>
+<p>See also <a href="qmailfolder.html#setParentFolderId">setParentFolderId</a>().</p>
+<h3 class="fn"><a name="path"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailFolder::path () const</h3>
+<p>Returns the path of the folder.</p>
+<p>See also <a href="qmailfolder.html#setPath">setPath</a>().</p>
+<h3 class="fn"><a name="removeCustomField"></a>void QMailFolder::removeCustomField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
+<p>Removes the custom field named <i>name</i>.</p>
+<p>See also <a href="qmailfolder.html#customField">customField</a>() and <a href="qmailfolder.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="serverCount"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailFolder::serverCount () const</h3>
+<p>Returns the count of messages on the server for the folder.</p>
+<p>The count is updated when an operation involving the folder is performed on the server, such as that requested by <a href="qmailretrievalaction.html#retrieveFolderList">QMailRetrievalAction::retrieveFolderList</a>().</p>
+<p>See also <a href="qmailfolder.html#setServerCount">setServerCount</a>(), <a href="qmailfolder.html#serverUnreadCount">serverUnreadCount</a>(), and <a href="qmailfolder.html#serverUndiscoveredCount">serverUndiscoveredCount</a>().</p>
+<h3 class="fn"><a name="serverUndiscoveredCount"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailFolder::serverUndiscoveredCount () const</h3>
+<p>Returns the count of undiscovered messages on the server for the folder. Undiscovered messages are available at the server, but their meta data is not yet available on this client.</p>
+<p>The count is updated when an operation involving the folder is performed on the server, such as that requested by <a href="qmailretrievalaction.html#retrieveFolderList">QMailRetrievalAction::retrieveFolderList</a>().</p>
+<p>See also <a href="qmailfolder.html#setServerUndiscoveredCount">setServerUndiscoveredCount</a>(), <a href="qmailfolder.html#serverCount">serverCount</a>(), and <a href="qmailfolder.html#serverUnreadCount">serverUnreadCount</a>().</p>
+<h3 class="fn"><a name="serverUnreadCount"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailFolder::serverUnreadCount () const</h3>
+<p>Returns the count of unread messages on the server for the folder. Unread messages have not had their content displayed by any client.</p>
+<p>The count is updated when an operation involving the folder is performed on the server, such as that requested by <a href="qmailretrievalaction.html#retrieveFolderList">QMailRetrievalAction::retrieveFolderList</a>().</p>
+<p>See also <a href="qmailfolder.html#setServerUnreadCount">setServerUnreadCount</a>(), <a href="qmailfolder.html#serverCount">serverCount</a>(), and <a href="qmailfolder.html#serverUndiscoveredCount">serverUndiscoveredCount</a>().</p>
+<h3 class="fn"><a name="setCustomField"></a>void QMailFolder::setCustomField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i> )</h3>
+<p>Sets the value of the custom field named <i>name</i> to <i>value</i>.</p>
+<p>See also <a href="qmailfolder.html#customField">customField</a>() and <a href="qmailfolder.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="setCustomFields"></a>void QMailFolder::setCustomFields ( const <a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>, <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>&gt; &amp; <i>fields</i> )</h3>
+<p>Sets the folder to contain the custom fields in <i>fields</i>.</p>
+<p>See also <a href="qmailfolder.html#setCustomField">setCustomField</a>() and <a href="qmailfolder.html#customFields">customFields</a>().</p>
+<h3 class="fn"><a name="setDisplayName"></a>void QMailFolder::setDisplayName ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>displayName</i> )</h3>
+<p>Sets the display name of this folder to <i>displayName</i>.</p>
+<p>See also <a href="qmailfolder.html#displayName">displayName</a>().</p>
+<h3 class="fn"><a name="setId"></a>void QMailFolder::setId ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> )</h3>
+<p>Sets the ID of this folder to <i>id</i></p>
+<p>See also <a href="qmailfolder.html#id">id</a>().</p>
+<h3 class="fn"><a name="setParentAccountId"></a>void QMailFolder::setParentAccountId ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i> )</h3>
+<p>Sets the id of the account which owns the folder to <i>id</i>.</p>
+<p>See also <a href="qmailfolder.html#parentAccountId">parentAccountId</a>().</p>
+<h3 class="fn"><a name="setParentFolderId"></a>void QMailFolder::setParentFolderId ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> )</h3>
+<p>Sets the parent folder ID to <i>id</i>. <b>Warning</b>: it is the responsibility of the application to make sure that no circular folder refernces are created.</p>
+<p>See also <a href="qmailfolder.html#parentFolderId">parentFolderId</a>().</p>
+<h3 class="fn"><a name="setPath"></a>void QMailFolder::setPath ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>path</i> )</h3>
+<p>Sets the path of this folder within the parent account to <i>path</i>.</p>
+<p>See also <a href="qmailfolder.html#path">path</a>().</p>
+<h3 class="fn"><a name="setServerCount"></a>void QMailFolder::setServerCount ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>count</i> )</h3>
+<p>Sets the count of messages on the server for the folder to <i>count</i>.</p>
+<p>See also <a href="qmailfolder.html#serverCount">serverCount</a>(), <a href="qmailfolder.html#setServerUnreadCount">setServerUnreadCount</a>(), and <a href="qmailfolder.html#setServerUndiscoveredCount">setServerUndiscoveredCount</a>().</p>
+<h3 class="fn"><a name="setServerUndiscoveredCount"></a>void QMailFolder::setServerUndiscoveredCount ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>count</i> )</h3>
+<p>Sets the count of undiscovered messages on the server for the folder to <i>count</i>. Undiscovered messages are available at the server, but their meta data is not yet available on this client.</p>
+<p>See also <a href="qmailfolder.html#serverUndiscoveredCount">serverUndiscoveredCount</a>(), <a href="qmailfolder.html#setServerCount">setServerCount</a>(), and <a href="qmailfolder.html#setServerUnreadCount">setServerUnreadCount</a>().</p>
+<h3 class="fn"><a name="setServerUnreadCount"></a>void QMailFolder::setServerUnreadCount ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>count</i> )</h3>
+<p>Sets the count of unread messages on the server for the folder to <i>count</i>. Unread messages have not had their content displayed by any client.</p>
+<p>See also <a href="qmailfolder.html#serverUnreadCount">serverUnreadCount</a>(), <a href="qmailfolder.html#setServerCount">setServerCount</a>(), and <a href="qmailfolder.html#setServerUndiscoveredCount">setServerUndiscoveredCount</a>().</p>
+<h3 class="fn"><a name="setStatus"></a>void QMailFolder::setStatus ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>newStatus</i> )</h3>
+<p>Sets the status value for the folder to <i>newStatus</i>.</p>
+<p>See also <a href="qmailfolder.html#status">status</a>() and <a href="qmailfolder.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="setStatus-2"></a>void QMailFolder::setStatus ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>mask</i>, bool <i>set</i> )</h3>
+<p>Sets the status flags indicated in <i>mask</i> to <i>set</i>.</p>
+<p>See also <a href="qmailfolder.html#status">status</a>() and <a href="qmailfolder.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="status"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> QMailFolder::status () const</h3>
+<p>Returns the status value for the folder.</p>
+<p>See also <a href="qmailfolder.html#setStatus">setStatus</a>() and <a href="qmailfolder.html#statusMask">statusMask</a>().</p>
+<h3 class="fn"><a name="statusMask"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> QMailFolder::statusMask ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>flagName</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the status bitmask needed to test the result of <a href="qmailfolder.html#status">QMailFolder::status</a>() against the <a href="qmailfolder.html">QMailFolder</a> status flag registered with the identifier <i>flagName</i>.</p>
+<p>See also <a href="qmailfolder.html#status">status</a>() and <a href="qmailstore.html#folderStatusMask">QMailStore::folderStatusMask</a>().</p>
+<h3 class="fn"><a name="operator-eq"></a>QMailFolder &amp; QMailFolder::operator= ( const QMailFolder &amp; <i>other</i> )</h3>
+<p>Assigns the value of the <tt>QMailFolder</tt> object <i>other</i> to this.</p>
+<hr />
+<h2>Member Variable Documentation</h2>
+<h3 class="fn"><a name="Drafts-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Drafts</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Drafts&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that are drafts for potential transmission.</p>
+<h3 class="fn"><a name="Incoming-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Incoming</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Incoming&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that are incoming from the point of view of the account owner.</p>
+<h3 class="fn"><a name="Junk-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Junk</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Junk&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that have been marked as junk.</p>
+<h3 class="fn"><a name="Outgoing-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Outgoing</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Outgoing&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that are outgoing from the point of view of the account owner.</p>
+<h3 class="fn"><a name="PartialContent-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::PartialContent</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;PartialContent&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains a metadata record for only some of the messages known to exist at the external server.</p>
+<h3 class="fn"><a name="Removed-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Removed</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Removed&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder has been removed from the external server.</p>
+<h3 class="fn"><a name="Sent-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Sent</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Sent&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that were sent by the account owner.</p>
+<h3 class="fn"><a name="SynchronizationEnabled-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::SynchronizationEnabled</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;SynchronizationEnabled&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder should be included during account synchronization.</p>
+<h3 class="fn"><a name="Synchronized-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Synchronized</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Synchronized&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder has been synchronized during account synchronization.</p>
+<h3 class="fn"><a name="Trash-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Trash</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Trash&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that a folder contains messages that have been marked as trash.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

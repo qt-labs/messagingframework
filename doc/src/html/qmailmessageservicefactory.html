@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageservice.cpp -->
+<head>
+  <title>QMailMessageServiceFactory Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageServiceFactory Class Reference</h1>
+<p>The QMailMessageServiceFactory class creates objects implementing the <a href="qmailmessageservice.html">QMailMessageService</a> interface. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageServiceFactory&gt;</pre><ul>
+<li><a href="qmailmessageservicefactory-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#ServiceType-enum">ServiceType</a></b> { Any, Source, Sink, Storage }</td></tr>
+</table>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageService * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#createService">createService</a></b> ( const QString &amp; <i>key</i>, const QMailAccountId &amp; <i>accountId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageServiceConfigurator * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#createServiceConfigurator">createServiceConfigurator</a></b> ( const QString &amp; <i>key</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#keys">keys</a></b> ( ServiceType <i>type</i> = Any )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#supports">supports</a></b> ( const QString &amp; <i>key</i>, ServiceType <i>type</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservicefactory.html#supports-2">supports</a></b> ( const QString &amp; <i>key</i>, QMailMessage::MessageType <i>messageType</i> )</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageServiceFactory class creates objects implementing the <a href="qmailmessageservice.html">QMailMessageService</a> interface.</p>
+<p>The QMailMessageServiceFactory class creates objects that provide messaging services to the messageserver daemon. The factory allows implementations to be loaded from plugin libraries, and to be retrieved and instantiated by name.</p>
+<p>To create a new service that can be created via the QMailMessageServiceFactory, derive from the <a href="qmailmessageservice.html">QMailMessageService</a> base class, and optionally implement the <a href="qmailmessagesource.html">QMailMessageSource</a> and <a href="qmailmessagesink.html">QMailMessageSink</a> interfaces. Export your service via a subclass of the <a href="qmailmessageserviceplugin.html">QMailMessageServicePlugin</a> class.</p>
+<p>See also <a href="qmailmessageservice.html">QMailMessageService</a> and <a href="qmailmessageserviceplugin.html">QMailMessageServicePlugin</a>.</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="ServiceType-enum"></a>enum QMailMessageServiceFactory::ServiceType</h3>
+<p>This enum type is used to differentiate between the types of services that <a href="qmailmessageservicefactory.html">QMailMessageServiceFactory</a> can manage.</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMailMessageServiceFactory::Any</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">Any type of service.</td></tr>
+<tr><td valign="top"><tt>QMailMessageServiceFactory::Source</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">A message provision service.</td></tr>
+<tr><td valign="top"><tt>QMailMessageServiceFactory::Sink</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">A message transmission service.</td></tr>
+<tr><td valign="top"><tt>QMailMessageServiceFactory::Storage</tt></td><td align="center" valign="top"><tt>3</tt></td><td valign="top">A message content storage service.</td></tr>
+</table></p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="createService"></a><a href="qmailmessageservice.html">QMailMessageService</a> * QMailMessageServiceFactory::createService ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>key</i>, const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a new instance of the service identified by <i>key</i>, associating it with the account identified by <i>accountId</i>.</p>
+<h3 class="fn"><a name="createServiceConfigurator"></a><a href="qmailmessageserviceconfigurator.html">QMailMessageServiceConfigurator</a> * QMailMessageServiceFactory::createServiceConfigurator ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>key</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a new instance of the configurator class for the service identified by <i>key</i>.</p>
+<h3 class="fn"><a name="keys"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailMessageServiceFactory::keys ( <a href="qmailmessageservicefactory.html#ServiceType-enum">ServiceType</a> <i>type</i> = Any )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a list of all message services of type <i>type</i> that can be instantiated by the factory.</p>
+<h3 class="fn"><a name="supports"></a>bool QMailMessageServiceFactory::supports ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>key</i>, <a href="qmailmessageservicefactory.html#ServiceType-enum">ServiceType</a> <i>type</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns true if the service identified by <i>key</i> supports the service type <i>type</i>.</p>
+<h3 class="fn"><a name="supports-2"></a>bool QMailMessageServiceFactory::supports ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>key</i>, <a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessage::MessageType</a> <i>messageType</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns true if the service identified by <i>key</i> supports the message type <i>messageType</i>.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

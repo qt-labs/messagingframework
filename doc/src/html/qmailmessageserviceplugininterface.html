@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageservice.cpp -->
+<head>
+  <title>QMailMessageServicePluginInterface Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageServicePluginInterface Class Reference</h1>
+<p>The QMailMessageServicePluginInterface class defines the interface to plugins that provide messaging services. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageServicePluginInterface&gt;</pre><p>Inherited by <a href="qmailmessageserviceplugin.html">QMailMessageServicePlugin</a>.</p>
+<ul>
+<li><a href="qmailmessageserviceplugininterface-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageService * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceplugininterface.html#createService">createService</a></b> ( const QMailAccountId &amp; <i>accountId</i> ) = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageServiceConfigurator * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceplugininterface.html#createServiceConfigurator">createServiceConfigurator</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceplugininterface.html#key">key</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceplugininterface.html#supports">supports</a></b> ( QMailMessageServiceFactory::ServiceType <i>type</i> ) const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceplugininterface.html#supports-2">supports</a></b> ( QMailMessage::MessageType <i>messageType</i> ) const = 0</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageServicePluginInterface class defines the interface to plugins that provide messaging services.</p>
+<p>The QMailMessageServicePluginInterface class defines the interface to message service plugins. Plugins will typically inherit from <a href="qmailmessageserviceplugin.html">QMailMessageServicePlugin</a> rather than this class.</p>
+<p>See also <a href="qmailmessageserviceplugin.html">QMailMessageServicePlugin</a>, <a href="qmailmessageservice.html">QMailMessageService</a>, and <a href="qmailmessageservicefactory.html">QMailMessageServiceFactory</a>.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="createService"></a><a href="qmailmessageservice.html">QMailMessageService</a> * QMailMessageServicePluginInterface::createService ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Creates an instance of the <a href="qmailmessageservice.html">QMailMessageService</a> class provided by the plugin, associated with the account <i>accountId</i>.</p>
+<h3 class="fn"><a name="createServiceConfigurator"></a><a href="qmailmessageserviceconfigurator.html">QMailMessageServiceConfigurator</a> * QMailMessageServicePluginInterface::createServiceConfigurator ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Creates an instance of the configurator for the <a href="qmailmessageservice.html">QMailMessageService</a> class provided by the plugin.</p>
+<h3 class="fn"><a name="key"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageServicePluginInterface::key () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns a string identifying the messaging service implemented by the plugin.</p>
+<h3 class="fn"><a name="supports"></a>bool QMailMessageServicePluginInterface::supports ( <a href="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::ServiceType</a> <i>type</i> ) const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns true if the service provided by the plugin supports the service type <i>type</i>.</p>
+<h3 class="fn"><a name="supports-2"></a>bool QMailMessageServicePluginInterface::supports ( <a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessage::MessageType</a> <i>messageType</i> ) const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns true if the service provided by the plugin supports the message type <i>messageType</i>.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

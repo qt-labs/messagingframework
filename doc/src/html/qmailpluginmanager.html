@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailpluginmanager.cpp -->
+<head>
+  <title>QMailPluginManager Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailPluginManager Class Reference</h1>
+<p>The QMailPluginManager class is a helper class that simplifies plug-in loading for the Messaging framework. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailPluginManager&gt;</pre><p>Inherits <a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a>.</p>
+<ul>
+<li><a href="qmailpluginmanager-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailpluginmanager.html#QMailPluginManager">QMailPluginManager</a></b> ( const QString &amp; <i>dir</i>, QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailpluginmanager.html#dtor.QMailPluginManager">~QMailPluginManager</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QObject * </td><td class="memItemRight" valign="bottom"><b><a href="qmailpluginmanager.html#instance">instance</a></b> ( const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailpluginmanager.html#list">list</a></b> () const</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>1 property inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#properties">QObject</a></li>
+<li><div class="fn"></div>1 public slot inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-slots">QObject</a></li>
+<li><div class="fn"></div>1 signal inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#signals">QObject</a></li>
+<li><div class="fn"></div>1 public type inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"></div>4 static public members inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"></div>7 protected functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-functions">QObject</a></li>
+<li><div class="fn"></div>2 protected variables inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailPluginManager class is a helper class that simplifies plug-in loading for the Messaging framework.</p>
+<p>The <a href="qmailpluginmanager.html#list">list</a>() function returns a list of available plugins in the subdirectory specified in the constructor.</p>
+<p>Plugin subdirectories are searched for from the directory specified by QMail::pluginPath().</p>
+<p>In order to load a plugin, call the <a href="qmailpluginmanager.html#instance">instance</a>() function with the name of the plugin to load. <a href="http://doc.trolltech.com/4.5/qobject.html#qobject_cast">qobject_cast</a>() may then be used to query for the desired interface.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailPluginManager"></a>QMailPluginManager::QMailPluginManager ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>dir</i>, <a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a> * <i>parent</i> = 0 )</h3>
+<p>Creates a <a href="qmailpluginmanager.html">QMailPluginManager</a> for plugins located in the plugin subdirectory <i>dir</i> with the given <i>parent</i>.</p>
+<p>The plugins must be installed in the QMail::pluginPath()/<i>dir</i> directory.</p>
+<h3 class="fn"><a name="dtor.QMailPluginManager"></a>QMailPluginManager::~QMailPluginManager ()</h3>
+<p>Destroys the <a href="qmailpluginmanager.html">QMailPluginManager</a> and releases any resources allocated by the PluginManager.</p>
+<h3 class="fn"><a name="instance"></a><a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a> * QMailPluginManager::instance ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
+<p>Load the plug-in specified by <i>name</i>.</p>
+<p>Returns the plugin interface if found, otherwise 0.</p>
+<pre>    QObject *instance = pluginManager-&gt;instance(&quot;name&quot;);
+    if (instance) {
+        EffectsInterface *iface = 0;
+        iface = qobject_cast&lt;EffectsInterface*&gt;(instance);
+        if (iface) {
+            <span class="comment">// We have an instance of the desired type.</span>
+        }
+    }</pre>
+<h3 class="fn"><a name="list"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailPluginManager::list () const</h3>
+<p>Returns the list of plugins that are available in the plugin subdirectory.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

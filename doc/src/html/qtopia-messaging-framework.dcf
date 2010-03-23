@@ -1,0 +1,1645 @@
+<!DOCTYPE DCF>
+<DCF ref="index.html" icon="qtopia-messaging-framework.png" imagedir="../../gif" title="QMF Reference Documentation">
+<section ref="classes.html" title="Classes">
+    <section ref="qmailmessagepart-location.html" title="Location Class Reference">
+        <keyword ref="qmailmessagepart-location.html">Location</keyword>
+        <keyword ref="qmailmessagepart-location.html#containingMessageId">containingMessageId</keyword>
+        <keyword ref="qmailmessagepart-location.html#isValid">isValid</keyword>
+        <keyword ref="qmailmessagepart-location.html#setContainingMessageId">setContainingMessageId</keyword>
+        <keyword ref="qmailmessagepart-location.html#toString">toString</keyword>
+        <section ref="qmailmessagepart-location-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmail.html" title="QMail Namespace Reference">
+        <keyword ref="qmail.html">QMail</keyword>
+        <keyword ref="qmail.html#baseSubject">baseSubject</keyword>
+        <keyword ref="qmail.html#createDatabase">createDatabase</keyword>
+        <keyword ref="qmail.html#dataPath">dataPath</keyword>
+        <keyword ref="qmail.html#extensionsForMimeType">extensionsForMimeType</keyword>
+        <keyword ref="qmail.html#fileLock">fileLock</keyword>
+        <keyword ref="qmail.html#fileUnlock">fileUnlock</keyword>
+        <keyword ref="qmail.html#lastSystemErrorMessage">lastSystemErrorMessage</keyword>
+        <keyword ref="qmail.html#messageIdentifiers">messageIdentifiers</keyword>
+        <keyword ref="qmail.html#messageServerPath">messageServerPath</keyword>
+        <keyword ref="qmail.html#messageSettingsPath">messageSettingsPath</keyword>
+        <keyword ref="qmail.html#mimeTypeFromFileName">mimeTypeFromFileName</keyword>
+        <keyword ref="qmail.html#pluginsPath">pluginsPath</keyword>
+        <keyword ref="qmail.html#quoteString">quoteString</keyword>
+        <keyword ref="qmail.html#sslCertsPath">sslCertsPath</keyword>
+        <keyword ref="qmail.html#tempPath">tempPath</keyword>
+        <keyword ref="qmail.html#unquoteString">unquoteString</keyword>
+        <keyword ref="qmail.html#usleep">usleep</keyword>
+    </section>
+    <section ref="qmailaccount.html" title="QMailAccount Class Reference">
+        <keyword ref="qmailaccount.html">QMailAccount</keyword>
+        <keyword ref="qmailaccount.html#customField">customField</keyword>
+        <keyword ref="qmailaccount.html#customFields">customFields</keyword>
+        <keyword ref="qmailaccount.html#fromAddress">fromAddress</keyword>
+        <keyword ref="qmailaccount.html#id">id</keyword>
+        <keyword ref="qmailaccount.html#messageSinks">messageSinks</keyword>
+        <keyword ref="qmailaccount.html#messageSources">messageSources</keyword>
+        <keyword ref="qmailaccount.html#messageType">messageType</keyword>
+        <keyword ref="qmailaccount.html#name">name</keyword>
+        <keyword ref="qmailaccount.html#removeCustomField">removeCustomField</keyword>
+        <keyword ref="qmailaccount.html#setCustomField">setCustomField</keyword>
+        <keyword ref="qmailaccount.html#setCustomFields">setCustomFields</keyword>
+        <keyword ref="qmailaccount.html#setFromAddress">setFromAddress</keyword>
+        <keyword ref="qmailaccount.html#setId">setId</keyword>
+        <keyword ref="qmailaccount.html#setMessageType">setMessageType</keyword>
+        <keyword ref="qmailaccount.html#setName">setName</keyword>
+        <keyword ref="qmailaccount.html#setSignature">setSignature</keyword>
+        <keyword ref="qmailaccount.html#setStandardFolder">setStandardFolder</keyword>
+        <keyword ref="qmailaccount.html#setStatus">setStatus</keyword>
+        <keyword ref="qmailaccount.html#signature">signature</keyword>
+        <keyword ref="qmailaccount.html#standardFolder">standardFolder</keyword>
+        <keyword ref="qmailaccount.html#standardFolders">standardFolders</keyword>
+        <keyword ref="qmailaccount.html#status">status</keyword>
+        <keyword ref="qmailaccount.html#statusMask">statusMask</keyword>
+        <keyword ref="qmailaccount.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailaccount.html#AppendSignature-var">AppendSignature</keyword>
+        <keyword ref="qmailaccount.html#CanRetrieve-var">CanRetrieve</keyword>
+        <keyword ref="qmailaccount.html#CanTransmit-var">CanTransmit</keyword>
+        <keyword ref="qmailaccount.html#Enabled-var">Enabled</keyword>
+        <keyword ref="qmailaccount.html#MessageSink-var">MessageSink</keyword>
+        <keyword ref="qmailaccount.html#MessageSource-var">MessageSource</keyword>
+        <keyword ref="qmailaccount.html#PreferredSender-var">PreferredSender</keyword>
+        <keyword ref="qmailaccount.html#SynchronizationEnabled-var">SynchronizationEnabled</keyword>
+        <keyword ref="qmailaccount.html#Synchronized-var">Synchronized</keyword>
+        <keyword ref="qmailaccount.html#UserEditable-var">UserEditable</keyword>
+        <keyword ref="qmailaccount.html#UserRemovable-var">UserRemovable</keyword>
+        <section ref="qmailaccount-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountconfiguration.html" title="QMailAccountConfiguration Class Reference">
+        <keyword ref="qmailaccountconfiguration.html">QMailAccountConfiguration</keyword>
+        <keyword ref="qmailaccountconfiguration.html#addServiceConfiguration">addServiceConfiguration</keyword>
+        <keyword ref="qmailaccountconfiguration.html#id">id</keyword>
+        <keyword ref="qmailaccountconfiguration.html#removeServiceConfiguration">removeServiceConfiguration</keyword>
+        <keyword ref="qmailaccountconfiguration.html#serviceConfiguration">serviceConfiguration</keyword>
+        <keyword ref="qmailaccountconfiguration.html#services">services</keyword>
+        <keyword ref="qmailaccountconfiguration.html#setId">setId</keyword>
+        <section ref="qmailaccountconfiguration-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountid.html" title="QMailAccountId Class Reference">
+        <keyword ref="qmailaccountid.html">QMailAccountId</keyword>
+        <keyword ref="qmailaccountid.html#isValid">isValid</keyword>
+        <keyword ref="qmailaccountid.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailaccountid.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailaccountid.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailaccountid.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailaccountid.html#QMailAccountIdList-typedef">QMailAccountIdList</keyword>
+        <section ref="qmailaccountid-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountkey.html" title="QMailAccountKey Class Reference">
+        <keyword ref="qmailaccountkey.html">QMailAccountKey</keyword>
+        <keyword ref="qmailaccountkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::FromAddress</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Id</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Name</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::MessageType</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Custom</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Status</keyword>
+        <keyword ref="qmailaccountkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailaccountkey.html#combiner">combiner</keyword>
+        <keyword ref="qmailaccountkey.html#customField">customField</keyword>
+        <keyword ref="qmailaccountkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailaccountkey.html#fromAddress">fromAddress</keyword>
+        <keyword ref="qmailaccountkey.html#id">id</keyword>
+        <keyword ref="qmailaccountkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailaccountkey.html#isNegated">isNegated</keyword>
+        <keyword ref="qmailaccountkey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailaccountkey.html#messageType">messageType</keyword>
+        <keyword ref="qmailaccountkey.html#name">name</keyword>
+        <keyword ref="qmailaccountkey.html#nonMatchingKey">nonMatchingKey</keyword>
+        <keyword ref="qmailaccountkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailaccountkey.html#status">status</keyword>
+        <keyword ref="qmailaccountkey.html#subKeys">subKeys</keyword>
+        <keyword ref="qmailaccountkey.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailaccountkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailaccountkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailaccountkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailaccountkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailaccountkey.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailaccountkey.html#operator-7c">operator|</keyword>
+        <keyword ref="qmailaccountkey.html#operator-7c-eq">operator|=</keyword>
+        <keyword ref="qmailaccountkey.html#operator-7e">operator~</keyword>
+        <section ref="qmailaccountkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountlistmodel.html" title="QMailAccountListModel Class Reference">
+        <keyword ref="qmailaccountlistmodel.html">QMailAccountListModel</keyword>
+        <keyword ref="qmailaccountlistmodel.html#Roles-enum">Roles</keyword>
+        <keyword ref="qmailaccountlistmodel.html#Roles-enum">QMailAccountListModel::MessageSourcesRole</keyword>
+        <keyword ref="qmailaccountlistmodel.html#Roles-enum">QMailAccountListModel::MessageSinksRole</keyword>
+        <keyword ref="qmailaccountlistmodel.html#Roles-enum">QMailAccountListModel::MessageTypeRole</keyword>
+        <keyword ref="qmailaccountlistmodel.html#Roles-enum">QMailAccountListModel::NameTextRole</keyword>
+        <keyword ref="qmailaccountlistmodel.html#data">data</keyword>
+        <keyword ref="qmailaccountlistmodel.html#idFromIndex">idFromIndex</keyword>
+        <keyword ref="qmailaccountlistmodel.html#indexFromId">indexFromId</keyword>
+        <keyword ref="qmailaccountlistmodel.html#key">key</keyword>
+        <keyword ref="qmailaccountlistmodel.html#rowCount">rowCount</keyword>
+        <keyword ref="qmailaccountlistmodel.html#setKey">setKey</keyword>
+        <keyword ref="qmailaccountlistmodel.html#setSortKey">setSortKey</keyword>
+        <keyword ref="qmailaccountlistmodel.html#setSynchronizeEnabled">setSynchronizeEnabled</keyword>
+        <keyword ref="qmailaccountlistmodel.html#sortKey">sortKey</keyword>
+        <keyword ref="qmailaccountlistmodel.html#synchronizeEnabled">synchronizeEnabled</keyword>
+        <section ref="qmailaccountlistmodel-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountmessageset.html" title="QMailAccountMessageSet Class Reference">
+        <keyword ref="qmailaccountmessageset.html">QMailAccountMessageSet</keyword>
+        <keyword ref="qmailaccountmessageset.html#accountId">accountId</keyword>
+        <keyword ref="qmailaccountmessageset.html#contentKey">contentKey</keyword>
+        <keyword ref="qmailaccountmessageset.html#createChild">createChild</keyword>
+        <keyword ref="qmailaccountmessageset.html#descendantsMessageKey">descendantsMessageKey</keyword>
+        <keyword ref="qmailaccountmessageset.html#displayName">displayName</keyword>
+        <keyword ref="qmailaccountmessageset.html#hierarchical">hierarchical</keyword>
+        <keyword ref="qmailaccountmessageset.html#messageKey">messageKey</keyword>
+        <section ref="qmailaccountmessageset-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountsortkey.html" title="QMailAccountSortKey Class Reference">
+        <keyword ref="qmailaccountsortkey.html">QMailAccountSortKey</keyword>
+        <keyword ref="qmailaccountsortkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::Id</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::Name</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::MessageType</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::Status</keyword>
+        <keyword ref="qmailaccountsortkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailaccountsortkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailaccountsortkey.html#id">id</keyword>
+        <keyword ref="qmailaccountsortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailaccountsortkey.html#messageType">messageType</keyword>
+        <keyword ref="qmailaccountsortkey.html#name">name</keyword>
+        <keyword ref="qmailaccountsortkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailaccountsortkey.html#status">status</keyword>
+        <keyword ref="qmailaccountsortkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailaccountsortkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailaccountsortkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailaccountsortkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailaccountsortkey.html#operator-eq-eq">operator==</keyword>
+        <section ref="qmailaccountsortkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaddress.html" title="QMailAddress Class Reference">
+        <keyword ref="qmailaddress.html">QMailAddress</keyword>
+        <keyword ref="qmailaddress.html#address">address</keyword>
+        <keyword ref="qmailaddress.html#fromStringList">fromStringList</keyword>
+        <keyword ref="qmailaddress.html#groupMembers">groupMembers</keyword>
+        <keyword ref="qmailaddress.html#isEmailAddress">isEmailAddress</keyword>
+        <keyword ref="qmailaddress.html#isGroup">isGroup</keyword>
+        <keyword ref="qmailaddress.html#isNull">isNull</keyword>
+        <keyword ref="qmailaddress.html#isPhoneNumber">isPhoneNumber</keyword>
+        <keyword ref="qmailaddress.html#name">name</keyword>
+        <keyword ref="qmailaddress.html#removeComments">removeComments</keyword>
+        <keyword ref="qmailaddress.html#removeWhitespace">removeWhitespace</keyword>
+        <keyword ref="qmailaddress.html#toString">toString</keyword>
+        <keyword ref="qmailaddress.html#toStringList">toStringList</keyword>
+        <section ref="qmailaddress-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailauthenticator.html" title="QMailAuthenticator Class Reference">
+        <keyword ref="qmailauthenticator.html">QMailAuthenticator</keyword>
+        <keyword ref="qmailauthenticator.html#getAuthentication">getAuthentication</keyword>
+        <keyword ref="qmailauthenticator.html#getResponse">getResponse</keyword>
+        <keyword ref="qmailauthenticator.html#useEncryption">useEncryption</keyword>
+        <section ref="qmailauthenticator-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailbase64codec.html" title="QMailBase64Codec Class Reference">
+        <keyword ref="qmailbase64codec.html">QMailBase64Codec</keyword>
+        <keyword ref="qmailbase64codec.html#ContentType-enum">ContentType</keyword>
+        <keyword ref="qmailbase64codec.html#ContentType-enum">QMailBase64Codec::Text</keyword>
+        <keyword ref="qmailbase64codec.html#ContentType-enum">QMailBase64Codec::Binary</keyword>
+        <keyword ref="qmailbase64codec.html#name">name</keyword>
+        <section ref="qmailbase64codec-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcodec.html" title="QMailCodec Class Reference">
+        <keyword ref="qmailcodec.html">QMailCodec</keyword>
+        <keyword ref="qmailcodec.html#copy">copy</keyword>
+        <keyword ref="qmailcodec.html#decode">decode</keyword>
+        <keyword ref="qmailcodec.html#decodeChunk">decodeChunk</keyword>
+        <keyword ref="qmailcodec.html#encode">encode</keyword>
+        <keyword ref="qmailcodec.html#encodeChunk">encodeChunk</keyword>
+        <keyword ref="qmailcodec.html#name">name</keyword>
+        <section ref="qmailcodec-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcomposerfactory.html" title="QMailComposerFactory Class Reference">
+        <keyword ref="qmailcomposerfactory.html">QMailComposerFactory</keyword>
+        <keyword ref="qmailcomposerfactory.html#create">create</keyword>
+        <keyword ref="qmailcomposerfactory.html#defaultKey">defaultKey</keyword>
+        <keyword ref="qmailcomposerfactory.html#displayIcon">displayIcon</keyword>
+        <keyword ref="qmailcomposerfactory.html#displayName">displayName</keyword>
+        <keyword ref="qmailcomposerfactory.html#keys">keys</keyword>
+        <keyword ref="qmailcomposerfactory.html#messageTypes">messageTypes</keyword>
+        <keyword ref="qmailcomposerfactory.html#name">name</keyword>
+        <section ref="qmailcomposerfactory-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcomposerinterface.html" title="QMailComposerInterface Class Reference">
+        <keyword ref="qmailcomposerinterface.html">QMailComposerInterface</keyword>
+        <keyword ref="qmailcomposerinterface.html#actions">actions</keyword>
+        <keyword ref="qmailcomposerinterface.html#cancel">cancel</keyword>
+        <keyword ref="qmailcomposerinterface.html#changed">changed</keyword>
+        <keyword ref="qmailcomposerinterface.html#clear">clear</keyword>
+        <keyword ref="qmailcomposerinterface.html#compose">compose</keyword>
+        <keyword ref="qmailcomposerinterface.html#contentTypes">contentTypes</keyword>
+        <keyword ref="qmailcomposerinterface.html#displayIcon">displayIcon</keyword>
+        <keyword ref="qmailcomposerinterface.html#displayName">displayName</keyword>
+        <keyword ref="qmailcomposerinterface.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailcomposerinterface.html#isReadyToSend">isReadyToSend</keyword>
+        <keyword ref="qmailcomposerinterface.html#isSupported">isSupported</keyword>
+        <keyword ref="qmailcomposerinterface.html#key">key</keyword>
+        <keyword ref="qmailcomposerinterface.html#message">message</keyword>
+        <keyword ref="qmailcomposerinterface.html#messageTypes">messageTypes</keyword>
+        <keyword ref="qmailcomposerinterface.html#name">name</keyword>
+        <keyword ref="qmailcomposerinterface.html#sendMessage">sendMessage</keyword>
+        <keyword ref="qmailcomposerinterface.html#setSendingAccountId">setSendingAccountId</keyword>
+        <keyword ref="qmailcomposerinterface.html#setSignature">setSignature</keyword>
+        <keyword ref="qmailcomposerinterface.html#status">status</keyword>
+        <keyword ref="qmailcomposerinterface.html#statusChanged">statusChanged</keyword>
+        <keyword ref="qmailcomposerinterface.html#title">title</keyword>
+        <section ref="qmailcomposerinterface-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcontentmanager.html" title="QMailContentManager Class Reference">
+        <keyword ref="qmailcontentmanager.html">QMailContentManager</keyword>
+        <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</keyword>
+        <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::DeferDurability</keyword>
+        <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::EnsureDurability</keyword>
+        <keyword ref="qmailcontentmanager.html#add">add</keyword>
+        <keyword ref="qmailcontentmanager.html#clearContent">clearContent</keyword>
+        <keyword ref="qmailcontentmanager.html#ensureDurability">ensureDurability</keyword>
+        <keyword ref="qmailcontentmanager.html#init">init</keyword>
+        <keyword ref="qmailcontentmanager.html#load">load</keyword>
+        <keyword ref="qmailcontentmanager.html#remove">remove</keyword>
+        <keyword ref="qmailcontentmanager.html#update">update</keyword>
+        <section ref="qmailcontentmanager-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcontentmanagerfactory.html" title="QMailContentManagerFactory Class Reference">
+        <keyword ref="qmailcontentmanagerfactory.html">QMailContentManagerFactory</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#clearContent">clearContent</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#create">create</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#defaultScheme">defaultScheme</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#init">init</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#schemes">schemes</keyword>
+        <section ref="qmailcontentmanagerfactory-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcontentmanagerplugin.html" title="QMailContentManagerPlugin Class Reference">
+        <keyword ref="qmailcontentmanagerplugin.html">QMailContentManagerPlugin</keyword>
+        <keyword ref="qmailcontentmanagerplugin.html#keys">keys</keyword>
+        <section ref="qmailcontentmanagerplugin-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailcontentmanagerplugininterface.html" title="QMailContentManagerPluginInterface Class Reference">
+        <keyword ref="qmailcontentmanagerplugininterface.html">QMailContentManagerPluginInterface</keyword>
+        <keyword ref="qmailcontentmanagerplugininterface.html#create">create</keyword>
+        <keyword ref="qmailcontentmanagerplugininterface.html#key">key</keyword>
+        <section ref="qmailcontentmanagerplugininterface-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmaildatacomparator.html" title="QMailDataComparator Namespace Reference">
+        <keyword ref="qmaildatacomparator.html">QMailDataComparator</keyword>
+        <keyword ref="qmaildatacomparator.html#EqualityComparator-enum">EqualityComparator</keyword>
+        <keyword ref="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::NotEqual</keyword>
+        <keyword ref="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::Equal</keyword>
+        <keyword ref="qmaildatacomparator.html#InclusionComparator-enum">InclusionComparator</keyword>
+        <keyword ref="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::Includes</keyword>
+        <keyword ref="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::Excludes</keyword>
+        <keyword ref="qmaildatacomparator.html#PresenceComparator-enum">PresenceComparator</keyword>
+        <keyword ref="qmaildatacomparator.html#PresenceComparator-enum">QMailDataComparator::Present</keyword>
+        <keyword ref="qmaildatacomparator.html#PresenceComparator-enum">QMailDataComparator::Absent</keyword>
+        <keyword ref="qmaildatacomparator.html#RelationComparator-enum">RelationComparator</keyword>
+        <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::GreaterThan</keyword>
+        <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::LessThanEqual</keyword>
+        <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::LessThan</keyword>
+        <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::GreaterThanEqual</keyword>
+    </section>
+    <section ref="qmailfiltermessageset.html" title="QMailFilterMessageSet Class Reference">
+        <keyword ref="qmailfiltermessageset.html">QMailFilterMessageSet</keyword>
+        <keyword ref="qmailfiltermessageset.html#displayName">displayName</keyword>
+        <keyword ref="qmailfiltermessageset.html#messageKey">messageKey</keyword>
+        <keyword ref="qmailfiltermessageset.html#setDisplayName">setDisplayName</keyword>
+        <keyword ref="qmailfiltermessageset.html#setMessageKey">setMessageKey</keyword>
+        <keyword ref="qmailfiltermessageset.html#setUpdatesMinimized">setUpdatesMinimized</keyword>
+        <keyword ref="qmailfiltermessageset.html#updatesMinimized">updatesMinimized</keyword>
+        <section ref="qmailfiltermessageset-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailfolder.html" title="QMailFolder Class Reference">
+        <keyword ref="qmailfolder.html">QMailFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">StandardFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::JunkFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::OutboxFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::DraftsFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::TrashFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::SentFolder</keyword>
+        <keyword ref="qmailfolder.html#StandardFolder-enum">QMailFolder::InboxFolder</keyword>
+        <keyword ref="qmailfolder.html#customField">customField</keyword>
+        <keyword ref="qmailfolder.html#customFields">customFields</keyword>
+        <keyword ref="qmailfolder.html#displayName">displayName</keyword>
+        <keyword ref="qmailfolder.html#id">id</keyword>
+        <keyword ref="qmailfolder.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailfolder.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailfolder.html#path">path</keyword>
+        <keyword ref="qmailfolder.html#removeCustomField">removeCustomField</keyword>
+        <keyword ref="qmailfolder.html#serverCount">serverCount</keyword>
+        <keyword ref="qmailfolder.html#serverUndiscoveredCount">serverUndiscoveredCount</keyword>
+        <keyword ref="qmailfolder.html#serverUnreadCount">serverUnreadCount</keyword>
+        <keyword ref="qmailfolder.html#setCustomField">setCustomField</keyword>
+        <keyword ref="qmailfolder.html#setCustomFields">setCustomFields</keyword>
+        <keyword ref="qmailfolder.html#setDisplayName">setDisplayName</keyword>
+        <keyword ref="qmailfolder.html#setId">setId</keyword>
+        <keyword ref="qmailfolder.html#setParentAccountId">setParentAccountId</keyword>
+        <keyword ref="qmailfolder.html#setParentFolderId">setParentFolderId</keyword>
+        <keyword ref="qmailfolder.html#setPath">setPath</keyword>
+        <keyword ref="qmailfolder.html#setServerCount">setServerCount</keyword>
+        <keyword ref="qmailfolder.html#setServerUndiscoveredCount">setServerUndiscoveredCount</keyword>
+        <keyword ref="qmailfolder.html#setServerUnreadCount">setServerUnreadCount</keyword>
+        <keyword ref="qmailfolder.html#setStatus">setStatus</keyword>
+        <keyword ref="qmailfolder.html#status">status</keyword>
+        <keyword ref="qmailfolder.html#statusMask">statusMask</keyword>
+        <keyword ref="qmailfolder.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailfolder.html#Drafts-var">Drafts</keyword>
+        <keyword ref="qmailfolder.html#Incoming-var">Incoming</keyword>
+        <keyword ref="qmailfolder.html#Junk-var">Junk</keyword>
+        <keyword ref="qmailfolder.html#Outgoing-var">Outgoing</keyword>
+        <keyword ref="qmailfolder.html#PartialContent-var">PartialContent</keyword>
+        <keyword ref="qmailfolder.html#Removed-var">Removed</keyword>
+        <keyword ref="qmailfolder.html#Sent-var">Sent</keyword>
+        <keyword ref="qmailfolder.html#SynchronizationEnabled-var">SynchronizationEnabled</keyword>
+        <keyword ref="qmailfolder.html#Synchronized-var">Synchronized</keyword>
+        <keyword ref="qmailfolder.html#Trash-var">Trash</keyword>
+        <section ref="qmailfolder-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailfolderid.html" title="QMailFolderId Class Reference">
+        <keyword ref="qmailfolderid.html">QMailFolderId</keyword>
+        <keyword ref="qmailfolderid.html#isValid">isValid</keyword>
+        <keyword ref="qmailfolderid.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailfolderid.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailfolderid.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailfolderid.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailfolderid.html#QMailFolderIdList-typedef">QMailFolderIdList</keyword>
+        <section ref="qmailfolderid-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailfolderkey.html" title="QMailFolderKey Class Reference">
+        <keyword ref="qmailfolderkey.html">QMailFolderKey</keyword>
+        <keyword ref="qmailfolderkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::ParentAccountId</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::AncestorFolderIds</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::DisplayName</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::Path</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::ServerUndiscoveredCount</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::ParentFolderId</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::Id</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::ServerUnreadCount</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::Custom</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::Status</keyword>
+        <keyword ref="qmailfolderkey.html#Property-enum">QMailFolderKey::ServerCount</keyword>
+        <keyword ref="qmailfolderkey.html#ancestorFolderIds">ancestorFolderIds</keyword>
+        <keyword ref="qmailfolderkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailfolderkey.html#combiner">combiner</keyword>
+        <keyword ref="qmailfolderkey.html#customField">customField</keyword>
+        <keyword ref="qmailfolderkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailfolderkey.html#displayName">displayName</keyword>
+        <keyword ref="qmailfolderkey.html#id">id</keyword>
+        <keyword ref="qmailfolderkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailfolderkey.html#isNegated">isNegated</keyword>
+        <keyword ref="qmailfolderkey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailfolderkey.html#nonMatchingKey">nonMatchingKey</keyword>
+        <keyword ref="qmailfolderkey.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailfolderkey.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailfolderkey.html#path">path</keyword>
+        <keyword ref="qmailfolderkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailfolderkey.html#serverCount">serverCount</keyword>
+        <keyword ref="qmailfolderkey.html#serverUndiscoveredCount">serverUndiscoveredCount</keyword>
+        <keyword ref="qmailfolderkey.html#serverUnreadCount">serverUnreadCount</keyword>
+        <keyword ref="qmailfolderkey.html#status">status</keyword>
+        <keyword ref="qmailfolderkey.html#subKeys">subKeys</keyword>
+        <keyword ref="qmailfolderkey.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailfolderkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailfolderkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailfolderkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailfolderkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailfolderkey.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailfolderkey.html#operator-7c">operator|</keyword>
+        <keyword ref="qmailfolderkey.html#operator-7c-eq">operator|=</keyword>
+        <keyword ref="qmailfolderkey.html#operator-7e">operator~</keyword>
+        <section ref="qmailfolderkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailfoldermessageset.html" title="QMailFolderMessageSet Class Reference">
+        <keyword ref="qmailfoldermessageset.html">QMailFolderMessageSet</keyword>
+        <keyword ref="qmailfoldermessageset.html#contentKey">contentKey</keyword>
+        <keyword ref="qmailfoldermessageset.html#createChild">createChild</keyword>
+        <keyword ref="qmailfoldermessageset.html#descendantsMessageKey">descendantsMessageKey</keyword>
+        <keyword ref="qmailfoldermessageset.html#displayName">displayName</keyword>
+        <keyword ref="qmailfoldermessageset.html#folderId">folderId</keyword>
+        <keyword ref="qmailfoldermessageset.html#hierarchical">hierarchical</keyword>
+        <keyword ref="qmailfoldermessageset.html#messageKey">messageKey</keyword>
+        <section ref="qmailfoldermessageset-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailfoldersortkey.html" title="QMailFolderSortKey Class Reference">
+        <keyword ref="qmailfoldersortkey.html">QMailFolderSortKey</keyword>
+        <keyword ref="qmailfoldersortkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::ParentAccountId</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::DisplayName</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::Path</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::ServerUndiscoveredCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::ParentFolderId</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::Id</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::ServerUnreadCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::Status</keyword>
+        <keyword ref="qmailfoldersortkey.html#Property-enum">QMailFolderSortKey::ServerCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailfoldersortkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailfoldersortkey.html#displayName">displayName</keyword>
+        <keyword ref="qmailfoldersortkey.html#id">id</keyword>
+        <keyword ref="qmailfoldersortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailfoldersortkey.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailfoldersortkey.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailfoldersortkey.html#path">path</keyword>
+        <keyword ref="qmailfoldersortkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailfoldersortkey.html#serverCount">serverCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#serverUndiscoveredCount">serverUndiscoveredCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#serverUnreadCount">serverUnreadCount</keyword>
+        <keyword ref="qmailfoldersortkey.html#status">status</keyword>
+        <keyword ref="qmailfoldersortkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailfoldersortkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailfoldersortkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailfoldersortkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailfoldersortkey.html#operator-eq-eq">operator==</keyword>
+        <section ref="qmailfoldersortkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailkeyargument.html" title="QMailKeyArgument Class Reference">
+        <keyword ref="qmailkeyargument.html">QMailKeyArgument</keyword>
+        <keyword ref="qmailkeyargument.html#Comparator-typedef">Comparator</keyword>
+        <keyword ref="qmailkeyargument.html#Property-typedef">Property</keyword>
+        <keyword ref="qmailkeyargument.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailkeyargument.html#serialize">serialize</keyword>
+        <keyword ref="qmailkeyargument.html#op-var">op</keyword>
+        <keyword ref="qmailkeyargument.html#property-var">property</keyword>
+        <keyword ref="qmailkeyargument.html#valueList-var">valueList</keyword>
+        <section ref="qmailkeyargument-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmaillineendingcodec.html" title="QMailLineEndingCodec Class Reference">
+        <keyword ref="qmaillineendingcodec.html">QMailLineEndingCodec</keyword>
+        <section ref="qmaillineendingcodec-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessage.html" title="QMailMessage Class Reference">
+        <keyword ref="qmailmessage.html">QMailMessage</keyword>
+        <keyword ref="qmailmessage.html#appendHeaderField">appendHeaderField</keyword>
+        <keyword ref="qmailmessage.html#bcc">bcc</keyword>
+        <keyword ref="qmailmessage.html#cc">cc</keyword>
+        <keyword ref="qmailmessage.html#contains">contains</keyword>
+        <keyword ref="qmailmessage.html#contentAvailable">contentAvailable</keyword>
+        <keyword ref="qmailmessage.html#contentSize">contentSize</keyword>
+        <keyword ref="qmailmessage.html#externalLocationReference">externalLocationReference</keyword>
+        <keyword ref="qmailmessage.html#fromRfc2822">fromRfc2822</keyword>
+        <keyword ref="qmailmessage.html#fromRfc2822File">fromRfc2822File</keyword>
+        <keyword ref="qmailmessage.html#hasRecipients">hasRecipients</keyword>
+        <keyword ref="qmailmessage.html#inReplyTo">inReplyTo</keyword>
+        <keyword ref="qmailmessage.html#indicativeSize">indicativeSize</keyword>
+        <keyword ref="qmailmessage.html#partAt">partAt</keyword>
+        <keyword ref="qmailmessage.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessage.html#recipients">recipients</keyword>
+        <keyword ref="qmailmessage.html#removeHeaderField">removeHeaderField</keyword>
+        <keyword ref="qmailmessage.html#replyTo">replyTo</keyword>
+        <keyword ref="qmailmessage.html#setBcc">setBcc</keyword>
+        <keyword ref="qmailmessage.html#setCc">setCc</keyword>
+        <keyword ref="qmailmessage.html#setContentSize">setContentSize</keyword>
+        <keyword ref="qmailmessage.html#setDate">setDate</keyword>
+        <keyword ref="qmailmessage.html#setExternalLocationReference">setExternalLocationReference</keyword>
+        <keyword ref="qmailmessage.html#setFrom">setFrom</keyword>
+        <keyword ref="qmailmessage.html#setHeaderField">setHeaderField</keyword>
+        <keyword ref="qmailmessage.html#setId">setId</keyword>
+        <keyword ref="qmailmessage.html#setInReplyTo">setInReplyTo</keyword>
+        <keyword ref="qmailmessage.html#setReplyTo">setReplyTo</keyword>
+        <keyword ref="qmailmessage.html#setSubject">setSubject</keyword>
+        <keyword ref="qmailmessage.html#setTo">setTo</keyword>
+        <keyword ref="qmailmessage.html#toRfc2822">toRfc2822</keyword>
+        <keyword ref="qmailmessage.html#toRfc2822Chunks">toRfc2822Chunks</keyword>
+        <section ref="qmailmessage-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagebody.html" title="QMailMessageBody Class Reference">
+        <keyword ref="qmailmessagebody.html">QMailMessageBody</keyword>
+        <keyword ref="qmailmessagebody.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagebody.html#data">data</keyword>
+        <keyword ref="qmailmessagebody.html#fromData">fromData</keyword>
+        <keyword ref="qmailmessagebody.html#fromFile">fromFile</keyword>
+        <keyword ref="qmailmessagebody.html#fromStream">fromStream</keyword>
+        <keyword ref="qmailmessagebody.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagebody.html#length">length</keyword>
+        <keyword ref="qmailmessagebody.html#toFile">toFile</keyword>
+        <keyword ref="qmailmessagebody.html#toStream">toStream</keyword>
+        <keyword ref="qmailmessagebody.html#transferEncoding">transferEncoding</keyword>
+        <section ref="qmailmessagebody-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagebodyfwd.html" title="QMailMessageBodyFwd Class Reference">
+        <keyword ref="qmailmessagebodyfwd.html">QMailMessageBodyFwd</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingFormat-enum">EncodingFormat</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingFormat-enum">QMailMessageBodyFwd::Encoded</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingFormat-enum">QMailMessageBodyFwd::Decoded</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingStatus-enum">EncodingStatus</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingStatus-enum">QMailMessageBodyFwd::RequiresEncoding</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#EncodingStatus-enum">QMailMessageBodyFwd::AlreadyEncoded</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">TransferEncoding</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::QuotedPrintable</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::EightBit</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::SevenBit</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::NoEncoding</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::Base64</keyword>
+        <keyword ref="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBodyFwd::Binary</keyword>
+        <section ref="qmailmessagebodyfwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageclassifier.html" title="QMailMessageClassifier Class Reference">
+        <keyword ref="qmailmessageclassifier.html">QMailMessageClassifier</keyword>
+        <keyword ref="qmailmessageclassifier.html#classifyMessage">classifyMessage</keyword>
+        <section ref="qmailmessageclassifier-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagecontentdisposition.html" title="QMailMessageContentDisposition Class Reference">
+        <keyword ref="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#creationDate">creationDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#filename">filename</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#modificationDate">modificationDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#readDate">readDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setCreationDate">setCreationDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setFilename">setFilename</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setModificationDate">setModificationDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setReadDate">setReadDate</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setSize">setSize</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#setType">setType</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#size">size</keyword>
+        <keyword ref="qmailmessagecontentdisposition.html#type">type</keyword>
+        <section ref="qmailmessagecontentdisposition-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagecontentdispositionfwd.html" title="QMailMessageContentDispositionFwd Class Reference">
+        <keyword ref="qmailmessagecontentdispositionfwd.html">QMailMessageContentDispositionFwd</keyword>
+        <keyword ref="qmailmessagecontentdispositionfwd.html#DispositionType-enum">DispositionType</keyword>
+        <keyword ref="qmailmessagecontentdispositionfwd.html#DispositionType-enum">QMailMessageContentDispositionFwd::Attachment</keyword>
+        <keyword ref="qmailmessagecontentdispositionfwd.html#DispositionType-enum">QMailMessageContentDispositionFwd::None</keyword>
+        <keyword ref="qmailmessagecontentdispositionfwd.html#DispositionType-enum">QMailMessageContentDispositionFwd::Inline</keyword>
+        <section ref="qmailmessagecontentdispositionfwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagecontenttype.html" title="QMailMessageContentType Class Reference">
+        <keyword ref="qmailmessagecontenttype.html">QMailMessageContentType</keyword>
+        <keyword ref="qmailmessagecontenttype.html#boundary">boundary</keyword>
+        <keyword ref="qmailmessagecontenttype.html#charset">charset</keyword>
+        <keyword ref="qmailmessagecontenttype.html#name">name</keyword>
+        <keyword ref="qmailmessagecontenttype.html#setBoundary">setBoundary</keyword>
+        <keyword ref="qmailmessagecontenttype.html#setCharset">setCharset</keyword>
+        <keyword ref="qmailmessagecontenttype.html#setName">setName</keyword>
+        <keyword ref="qmailmessagecontenttype.html#setSubType">setSubType</keyword>
+        <keyword ref="qmailmessagecontenttype.html#setType">setType</keyword>
+        <keyword ref="qmailmessagecontenttype.html#subType">subType</keyword>
+        <keyword ref="qmailmessagecontenttype.html#type">type</keyword>
+        <section ref="qmailmessagecontenttype-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagedelegate.html" title="QMailMessageDelegate Class Reference">
+        <keyword ref="qmailmessagedelegate.html">QMailMessageDelegate</keyword>
+        <keyword ref="qmailmessagedelegate.html#DisplayMode-enum">DisplayMode</keyword>
+        <keyword ref="qmailmessagedelegate.html#DisplayMode-enum">QMailMessageDelegate::QtmailMode</keyword>
+        <keyword ref="qmailmessagedelegate.html#DisplayMode-enum">QMailMessageDelegate::AddressbookMode</keyword>
+        <keyword ref="qmailmessagedelegate.html#displayMode">displayMode</keyword>
+        <keyword ref="qmailmessagedelegate.html#displaySelectionState">displaySelectionState</keyword>
+        <keyword ref="qmailmessagedelegate.html#setDisplayMode">setDisplayMode</keyword>
+        <keyword ref="qmailmessagedelegate.html#setDisplaySelectionState">setDisplaySelectionState</keyword>
+        <section ref="qmailmessagedelegate-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagefwd.html" title="QMailMessageFwd Class Reference">
+        <keyword ref="qmailmessagefwd.html">QMailMessageFwd</keyword>
+        <keyword ref="qmailmessagefwd.html#AttachmentsAction-enum">AttachmentsAction</keyword>
+        <keyword ref="qmailmessagefwd.html#AttachmentsAction-enum">QMailMessageFwd::LinkToAttachments</keyword>
+        <keyword ref="qmailmessagefwd.html#AttachmentsAction-enum">QMailMessageFwd::CopyAttachments</keyword>
+        <keyword ref="qmailmessagefwd.html#AttachmentsAction-enum">QMailMessageFwd::CopyAndDeleteAttachments</keyword>
+        <keyword ref="qmailmessagefwd.html#ChunkType-enum">ChunkType</keyword>
+        <keyword ref="qmailmessagefwd.html#ChunkType-enum">QMailMessageFwd::Reference</keyword>
+        <keyword ref="qmailmessagefwd.html#ChunkType-enum">QMailMessageFwd::Text</keyword>
+        <keyword ref="qmailmessagefwd.html#EncodingFormat-enum">EncodingFormat</keyword>
+        <keyword ref="qmailmessagefwd.html#EncodingFormat-enum">QMailMessageFwd::IdentityFormat</keyword>
+        <keyword ref="qmailmessagefwd.html#EncodingFormat-enum">QMailMessageFwd::HeaderOnlyFormat</keyword>
+        <keyword ref="qmailmessagefwd.html#EncodingFormat-enum">QMailMessageFwd::TransmissionFormat</keyword>
+        <keyword ref="qmailmessagefwd.html#EncodingFormat-enum">QMailMessageFwd::StorageFormat</keyword>
+        <keyword ref="qmailmessagefwd.html#MessageChunk-typedef">MessageChunk</keyword>
+        <section ref="qmailmessagefwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageheaderfield.html" title="QMailMessageHeaderField Class Reference">
+        <keyword ref="qmailmessageheaderfield.html">QMailMessageHeaderField</keyword>
+        <keyword ref="qmailmessageheaderfield.html#content">content</keyword>
+        <keyword ref="qmailmessageheaderfield.html#decodeContent">decodeContent</keyword>
+        <keyword ref="qmailmessageheaderfield.html#decodeParameter">decodeParameter</keyword>
+        <keyword ref="qmailmessageheaderfield.html#decodeWord">decodeWord</keyword>
+        <keyword ref="qmailmessageheaderfield.html#decodedContent">decodedContent</keyword>
+        <keyword ref="qmailmessageheaderfield.html#encodeContent">encodeContent</keyword>
+        <keyword ref="qmailmessageheaderfield.html#encodeParameter">encodeParameter</keyword>
+        <keyword ref="qmailmessageheaderfield.html#encodeWord">encodeWord</keyword>
+        <keyword ref="qmailmessageheaderfield.html#id">id</keyword>
+        <keyword ref="qmailmessageheaderfield.html#isNull">isNull</keyword>
+        <keyword ref="qmailmessageheaderfield.html#isParameterEncoded">isParameterEncoded</keyword>
+        <keyword ref="qmailmessageheaderfield.html#parameter">parameter</keyword>
+        <keyword ref="qmailmessageheaderfield.html#parameters">parameters</keyword>
+        <keyword ref="qmailmessageheaderfield.html#removeComments">removeComments</keyword>
+        <keyword ref="qmailmessageheaderfield.html#removeWhitespace">removeWhitespace</keyword>
+        <keyword ref="qmailmessageheaderfield.html#setContent">setContent</keyword>
+        <keyword ref="qmailmessageheaderfield.html#setId">setId</keyword>
+        <keyword ref="qmailmessageheaderfield.html#setParameter">setParameter</keyword>
+        <keyword ref="qmailmessageheaderfield.html#setParameterEncoded">setParameterEncoded</keyword>
+        <keyword ref="qmailmessageheaderfield.html#toString">toString</keyword>
+        <section ref="qmailmessageheaderfield-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageheaderfieldfwd.html" title="QMailMessageHeaderFieldFwd Class Reference">
+        <keyword ref="qmailmessageheaderfieldfwd.html">QMailMessageHeaderFieldFwd</keyword>
+        <keyword ref="qmailmessageheaderfieldfwd.html#FieldType-enum">FieldType</keyword>
+        <keyword ref="qmailmessageheaderfieldfwd.html#FieldType-enum">QMailMessageHeaderFieldFwd::StructuredField</keyword>
+        <keyword ref="qmailmessageheaderfieldfwd.html#FieldType-enum">QMailMessageHeaderFieldFwd::UnstructuredField</keyword>
+        <section ref="qmailmessageheaderfieldfwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageid.html" title="QMailMessageId Class Reference">
+        <keyword ref="qmailmessageid.html">QMailMessageId</keyword>
+        <keyword ref="qmailmessageid.html#isValid">isValid</keyword>
+        <keyword ref="qmailmessageid.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailmessageid.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailmessageid.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailmessageid.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</keyword>
+        <section ref="qmailmessageid-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagekey.html" title="QMailMessageKey Class Reference">
+        <keyword ref="qmailmessagekey.html">QMailMessageKey</keyword>
+        <keyword ref="qmailmessagekey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">Properties</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::InResponseTo</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ResponseType</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Id</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Size</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Type</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::TimeStamp</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ParentAccountId</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Sender</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Conversation</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Custom</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::PreviousParentFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentScheme</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ParentFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Status</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ReceptionTimeStamp</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::AncestorFolderIds</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentType</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Recipients</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentIdentifier</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Subject</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ServerUid</keyword>
+        <keyword ref="qmailmessagekey.html#ancestorFolderIds">ancestorFolderIds</keyword>
+        <keyword ref="qmailmessagekey.html#arguments">arguments</keyword>
+        <keyword ref="qmailmessagekey.html#combiner">combiner</keyword>
+        <keyword ref="qmailmessagekey.html#contentIdentifier">contentIdentifier</keyword>
+        <keyword ref="qmailmessagekey.html#contentScheme">contentScheme</keyword>
+        <keyword ref="qmailmessagekey.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagekey.html#conversation">conversation</keyword>
+        <keyword ref="qmailmessagekey.html#customField">customField</keyword>
+        <keyword ref="qmailmessagekey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailmessagekey.html#id">id</keyword>
+        <keyword ref="qmailmessagekey.html#inResponseTo">inResponseTo</keyword>
+        <keyword ref="qmailmessagekey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagekey.html#isNegated">isNegated</keyword>
+        <keyword ref="qmailmessagekey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailmessagekey.html#messageType">messageType</keyword>
+        <keyword ref="qmailmessagekey.html#nonMatchingKey">nonMatchingKey</keyword>
+        <keyword ref="qmailmessagekey.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailmessagekey.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#previousParentFolderId">previousParentFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#receptionTimeStamp">receptionTimeStamp</keyword>
+        <keyword ref="qmailmessagekey.html#recipients">recipients</keyword>
+        <keyword ref="qmailmessagekey.html#responseType">responseType</keyword>
+        <keyword ref="qmailmessagekey.html#sender">sender</keyword>
+        <keyword ref="qmailmessagekey.html#serialize">serialize</keyword>
+        <keyword ref="qmailmessagekey.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailmessagekey.html#size">size</keyword>
+        <keyword ref="qmailmessagekey.html#status">status</keyword>
+        <keyword ref="qmailmessagekey.html#subKeys">subKeys</keyword>
+        <keyword ref="qmailmessagekey.html#subject">subject</keyword>
+        <keyword ref="qmailmessagekey.html#timeStamp">timeStamp</keyword>
+        <keyword ref="qmailmessagekey.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailmessagekey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailmessagekey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailmessagekey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailmessagekey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailmessagekey.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailmessagekey.html#operator-7c">operator|</keyword>
+        <keyword ref="qmailmessagekey.html#operator-7c-eq">operator|=</keyword>
+        <keyword ref="qmailmessagekey.html#operator-7e">operator~</keyword>
+        <section ref="qmailmessagekey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagelistmodel.html" title="QMailMessageListModel Class Reference">
+        <keyword ref="qmailmessagelistmodel.html">QMailMessageListModel</keyword>
+        <keyword ref="qmailmessagelistmodel.html#generateIndex">generateIndex</keyword>
+        <keyword ref="qmailmessagelistmodel.html#impl">impl</keyword>
+        <keyword ref="qmailmessagelistmodel.html#index">index</keyword>
+        <keyword ref="qmailmessagelistmodel.html#parent">parent</keyword>
+        <section ref="qmailmessagelistmodel-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagemetadata.html" title="QMailMessageMetaData Class Reference">
+        <keyword ref="qmailmessagemetadata.html">QMailMessageMetaData</keyword>
+        <keyword ref="qmailmessagemetadata.html#content">content</keyword>
+        <keyword ref="qmailmessagemetadata.html#contentAvailable">contentAvailable</keyword>
+        <keyword ref="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</keyword>
+        <keyword ref="qmailmessagemetadata.html#contentScheme">contentScheme</keyword>
+        <keyword ref="qmailmessagemetadata.html#customField">customField</keyword>
+        <keyword ref="qmailmessagemetadata.html#customFields">customFields</keyword>
+        <keyword ref="qmailmessagemetadata.html#date">date</keyword>
+        <keyword ref="qmailmessagemetadata.html#from">from</keyword>
+        <keyword ref="qmailmessagemetadata.html#id">id</keyword>
+        <keyword ref="qmailmessagemetadata.html#inResponseTo">inResponseTo</keyword>
+        <keyword ref="qmailmessagemetadata.html#indicativeSize">indicativeSize</keyword>
+        <keyword ref="qmailmessagemetadata.html#messageType">messageType</keyword>
+        <keyword ref="qmailmessagemetadata.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailmessagemetadata.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#receivedDate">receivedDate</keyword>
+        <keyword ref="qmailmessagemetadata.html#removeCustomField">removeCustomField</keyword>
+        <keyword ref="qmailmessagemetadata.html#responseType">responseType</keyword>
+        <keyword ref="qmailmessagemetadata.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailmessagemetadata.html#setContent">setContent</keyword>
+        <keyword ref="qmailmessagemetadata.html#setContentIdentifier">setContentIdentifier</keyword>
+        <keyword ref="qmailmessagemetadata.html#setContentScheme">setContentScheme</keyword>
+        <keyword ref="qmailmessagemetadata.html#setCustomField">setCustomField</keyword>
+        <keyword ref="qmailmessagemetadata.html#setDate">setDate</keyword>
+        <keyword ref="qmailmessagemetadata.html#setFrom">setFrom</keyword>
+        <keyword ref="qmailmessagemetadata.html#setId">setId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setInResponseTo">setInResponseTo</keyword>
+        <keyword ref="qmailmessagemetadata.html#setMessageType">setMessageType</keyword>
+        <keyword ref="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</keyword>
+        <keyword ref="qmailmessagemetadata.html#setResponseType">setResponseType</keyword>
+        <keyword ref="qmailmessagemetadata.html#setServerUid">setServerUid</keyword>
+        <keyword ref="qmailmessagemetadata.html#setSize">setSize</keyword>
+        <keyword ref="qmailmessagemetadata.html#setStatus">setStatus</keyword>
+        <keyword ref="qmailmessagemetadata.html#setSubject">setSubject</keyword>
+        <keyword ref="qmailmessagemetadata.html#setTo">setTo</keyword>
+        <keyword ref="qmailmessagemetadata.html#size">size</keyword>
+        <keyword ref="qmailmessagemetadata.html#status">status</keyword>
+        <keyword ref="qmailmessagemetadata.html#statusMask">statusMask</keyword>
+        <keyword ref="qmailmessagemetadata.html#subject">subject</keyword>
+        <keyword ref="qmailmessagemetadata.html#to">to</keyword>
+        <keyword ref="qmailmessagemetadata.html#ContentAvailable-var">ContentAvailable</keyword>
+        <keyword ref="qmailmessagemetadata.html#Draft-var">Draft</keyword>
+        <keyword ref="qmailmessagemetadata.html#Forwarded-var">Forwarded</keyword>
+        <keyword ref="qmailmessagemetadata.html#HasAttachments-var">HasAttachments</keyword>
+        <keyword ref="qmailmessagemetadata.html#HasReferences-var">HasReferences</keyword>
+        <keyword ref="qmailmessagemetadata.html#HasUnresolvedReferences-var">HasUnresolvedReferences</keyword>
+        <keyword ref="qmailmessagemetadata.html#Important-var">Important</keyword>
+        <keyword ref="qmailmessagemetadata.html#ImportantElsewhere-var">ImportantElsewhere</keyword>
+        <keyword ref="qmailmessagemetadata.html#Incoming-var">Incoming</keyword>
+        <keyword ref="qmailmessagemetadata.html#Junk-var">Junk</keyword>
+        <keyword ref="qmailmessagemetadata.html#LocalOnly-var">LocalOnly</keyword>
+        <keyword ref="qmailmessagemetadata.html#New-var">New</keyword>
+        <keyword ref="qmailmessagemetadata.html#Outbox-var">Outbox</keyword>
+        <keyword ref="qmailmessagemetadata.html#Outgoing-var">Outgoing</keyword>
+        <keyword ref="qmailmessagemetadata.html#PartialContentAvailable-var">PartialContentAvailable</keyword>
+        <keyword ref="qmailmessagemetadata.html#Read-var">Read</keyword>
+        <keyword ref="qmailmessagemetadata.html#ReadElsewhere-var">ReadElsewhere</keyword>
+        <keyword ref="qmailmessagemetadata.html#ReadReplyRequested-var">ReadReplyRequested</keyword>
+        <keyword ref="qmailmessagemetadata.html#Removed-var">Removed</keyword>
+        <keyword ref="qmailmessagemetadata.html#Replied-var">Replied</keyword>
+        <keyword ref="qmailmessagemetadata.html#RepliedAll-var">RepliedAll</keyword>
+        <keyword ref="qmailmessagemetadata.html#Sent-var">Sent</keyword>
+        <keyword ref="qmailmessagemetadata.html#Temporary-var">Temporary</keyword>
+        <keyword ref="qmailmessagemetadata.html#TransmitFromExternal-var">TransmitFromExternal</keyword>
+        <keyword ref="qmailmessagemetadata.html#Trash-var">Trash</keyword>
+        <keyword ref="qmailmessagemetadata.html#UnloadedData-var">UnloadedData</keyword>
+        <section ref="qmailmessagemetadata-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagemetadatafwd.html" title="QMailMessageMetaDataFwd Class Reference">
+        <keyword ref="qmailmessagemetadatafwd.html">QMailMessageMetaDataFwd</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">ContentType</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::VoicemailContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::SmilContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::UnknownContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::VideoContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::VideomailContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::VCardContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::RichTextContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::NoContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::PlainTextContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::UserContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::HtmlContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::ImageContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::MultipartContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::VCalendarContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::ICalendarContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::AudioContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaDataFwd::DeliveryReportContent</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">MessageType</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::Sms</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::None</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::Email</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::Instant</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::System</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::AnyType</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::Mms</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">ResponseType</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::ReplyToAll</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::Redirect</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::Reply</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::NoResponse</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::ForwardPart</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::Forward</keyword>
+        <section ref="qmailmessagemetadatafwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagemodelbase.html" title="QMailMessageModelBase Class Reference">
+        <keyword ref="qmailmessagemodelbase.html">QMailMessageModelBase</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">Roles</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageBodyTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageSubjectTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageStatusIconRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageFilterTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessagePresenceIconRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageTimeStampTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageTypeIconRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageSizeTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageIdRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageAddressTextRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#Roles-enum">QMailMessageModelBase::MessageDirectionIconRole</keyword>
+        <keyword ref="qmailmessagemodelbase.html#columnCount">columnCount</keyword>
+        <keyword ref="qmailmessagemodelbase.html#data">data</keyword>
+        <keyword ref="qmailmessagemodelbase.html#idFromIndex">idFromIndex</keyword>
+        <keyword ref="qmailmessagemodelbase.html#ignoreMailStoreUpdates">ignoreMailStoreUpdates</keyword>
+        <keyword ref="qmailmessagemodelbase.html#indexFromId">indexFromId</keyword>
+        <keyword ref="qmailmessagemodelbase.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagemodelbase.html#key">key</keyword>
+        <keyword ref="qmailmessagemodelbase.html#modelChanged">modelChanged</keyword>
+        <keyword ref="qmailmessagemodelbase.html#rowCount">rowCount</keyword>
+        <keyword ref="qmailmessagemodelbase.html#setData">setData</keyword>
+        <keyword ref="qmailmessagemodelbase.html#setIgnoreMailStoreUpdates">setIgnoreMailStoreUpdates</keyword>
+        <keyword ref="qmailmessagemodelbase.html#setKey">setKey</keyword>
+        <keyword ref="qmailmessagemodelbase.html#setSortKey">setSortKey</keyword>
+        <keyword ref="qmailmessagemodelbase.html#sortKey">sortKey</keyword>
+        <section ref="qmailmessagemodelbase-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagepart.html" title="QMailMessagePart Class Reference">
+        <keyword ref="qmailmessagepart.html">QMailMessagePart</keyword>
+        <keyword ref="qmailmessagepart.html#contentAvailable">contentAvailable</keyword>
+        <keyword ref="qmailmessagepart.html#contentDescription">contentDescription</keyword>
+        <keyword ref="qmailmessagepart.html#contentDisposition">contentDisposition</keyword>
+        <keyword ref="qmailmessagepart.html#contentID">contentID</keyword>
+        <keyword ref="qmailmessagepart.html#contentLanguage">contentLanguage</keyword>
+        <keyword ref="qmailmessagepart.html#contentLocation">contentLocation</keyword>
+        <keyword ref="qmailmessagepart.html#displayName">displayName</keyword>
+        <keyword ref="qmailmessagepart.html#fromData">fromData</keyword>
+        <keyword ref="qmailmessagepart.html#fromFile">fromFile</keyword>
+        <keyword ref="qmailmessagepart.html#fromMessageReference">fromMessageReference</keyword>
+        <keyword ref="qmailmessagepart.html#fromPartReference">fromPartReference</keyword>
+        <keyword ref="qmailmessagepart.html#fromStream">fromStream</keyword>
+        <keyword ref="qmailmessagepart.html#identifier">identifier</keyword>
+        <keyword ref="qmailmessagepart.html#indicativeSize">indicativeSize</keyword>
+        <keyword ref="qmailmessagepart.html#location">location</keyword>
+        <keyword ref="qmailmessagepart.html#messageReference">messageReference</keyword>
+        <keyword ref="qmailmessagepart.html#partNumber">partNumber</keyword>
+        <keyword ref="qmailmessagepart.html#partReference">partReference</keyword>
+        <keyword ref="qmailmessagepart.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessagepart.html#referenceResolution">referenceResolution</keyword>
+        <keyword ref="qmailmessagepart.html#referenceType">referenceType</keyword>
+        <keyword ref="qmailmessagepart.html#setContentDescription">setContentDescription</keyword>
+        <keyword ref="qmailmessagepart.html#setContentDisposition">setContentDisposition</keyword>
+        <keyword ref="qmailmessagepart.html#setContentID">setContentID</keyword>
+        <keyword ref="qmailmessagepart.html#setContentLanguage">setContentLanguage</keyword>
+        <keyword ref="qmailmessagepart.html#setContentLocation">setContentLocation</keyword>
+        <keyword ref="qmailmessagepart.html#setReference">setReference</keyword>
+        <keyword ref="qmailmessagepart.html#setReferenceResolution">setReferenceResolution</keyword>
+        <keyword ref="qmailmessagepart.html#writeBodyTo">writeBodyTo</keyword>
+        <section ref="qmailmessagepart-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagepartcontainer.html" title="QMailMessagePartContainer Class Reference">
+        <keyword ref="qmailmessagepartcontainer.html">QMailMessagePartContainer</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#appendHeaderField">appendHeaderField</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#appendPart">appendPart</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#body">body</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#boundary">boundary</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#clearParts">clearParts</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#contentAvailable">contentAvailable</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#foreachPart">foreachPart</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#hasBody">hasBody</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#headerField">headerField</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#headerFieldText">headerFieldText</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#headerFields">headerFields</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#headerFieldsText">headerFieldsText</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#multipartType">multipartType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#multipartTypeForName">multipartTypeForName</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#nameForMultipartType">nameForMultipartType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#partAt">partAt</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#partCount">partCount</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#prependPart">prependPart</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#removeHeaderField">removeHeaderField</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#removePartAt">removePartAt</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setBody">setBody</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setBoundary">setBoundary</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#transferEncoding">transferEncoding</keyword>
+        <section ref="qmailmessagepartcontainer-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagepartcontainerfwd.html" title="QMailMessagePartContainerFwd Class Reference">
+        <keyword ref="qmailmessagepartcontainerfwd.html">QMailMessagePartContainerFwd</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">MultipartType</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartDigest</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartAlternative</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartRelated</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartSigned</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartMixed</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartNone</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartEncrypted</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartReport</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartParallel</keyword>
+        <keyword ref="qmailmessagepartcontainerfwd.html#MultipartType-enum">QMailMessagePartContainerFwd::MultipartFormData</keyword>
+        <section ref="qmailmessagepartcontainerfwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagepartfwd.html" title="QMailMessagePartFwd Class Reference">
+        <keyword ref="qmailmessagepartfwd.html">QMailMessagePartFwd</keyword>
+        <keyword ref="qmailmessagepartfwd.html#ReferenceType-enum">ReferenceType</keyword>
+        <keyword ref="qmailmessagepartfwd.html#ReferenceType-enum">QMailMessagePartFwd::PartReference</keyword>
+        <keyword ref="qmailmessagepartfwd.html#ReferenceType-enum">QMailMessagePartFwd::None</keyword>
+        <keyword ref="qmailmessagepartfwd.html#ReferenceType-enum">QMailMessagePartFwd::MessageReference</keyword>
+        <section ref="qmailmessagepartfwd-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageremovalrecord.html" title="QMailMessageRemovalRecord Class Reference">
+        <keyword ref="qmailmessageremovalrecord.html">QMailMessageRemovalRecord</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#setParentAccountId">setParentAccountId</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#setParentFolderId">setParentFolderId</keyword>
+        <keyword ref="qmailmessageremovalrecord.html#setServerUid">setServerUid</keyword>
+        <section ref="qmailmessageremovalrecord-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageserver.html" title="QMailMessageServer Class Reference">
+        <keyword ref="qmailmessageserver.html">QMailMessageServer</keyword>
+        <keyword ref="qmailmessageserver.html#acknowledgeNewMessages">acknowledgeNewMessages</keyword>
+        <keyword ref="qmailmessageserver.html#activityChanged">activityChanged</keyword>
+        <keyword ref="qmailmessageserver.html#cancelSearch">cancelSearch</keyword>
+        <keyword ref="qmailmessageserver.html#cancelTransfer">cancelTransfer</keyword>
+        <keyword ref="qmailmessageserver.html#connectivityChanged">connectivityChanged</keyword>
+        <keyword ref="qmailmessageserver.html#copyMessages">copyMessages</keyword>
+        <keyword ref="qmailmessageserver.html#createFolder">createFolder</keyword>
+        <keyword ref="qmailmessageserver.html#deleteFolder">deleteFolder</keyword>
+        <keyword ref="qmailmessageserver.html#deleteMessages">deleteMessages</keyword>
+        <keyword ref="qmailmessageserver.html#exportUpdates">exportUpdates</keyword>
+        <keyword ref="qmailmessageserver.html#flagMessages">flagMessages</keyword>
+        <keyword ref="qmailmessageserver.html#folderCreated">folderCreated</keyword>
+        <keyword ref="qmailmessageserver.html#folderDeleted">folderDeleted</keyword>
+        <keyword ref="qmailmessageserver.html#folderRenamed">folderRenamed</keyword>
+        <keyword ref="qmailmessageserver.html#matchingMessageIds">matchingMessageIds</keyword>
+        <keyword ref="qmailmessageserver.html#messagesCopied">messagesCopied</keyword>
+        <keyword ref="qmailmessageserver.html#messagesDeleted">messagesDeleted</keyword>
+        <keyword ref="qmailmessageserver.html#messagesFlagged">messagesFlagged</keyword>
+        <keyword ref="qmailmessageserver.html#messagesMoved">messagesMoved</keyword>
+        <keyword ref="qmailmessageserver.html#messagesTransmitted">messagesTransmitted</keyword>
+        <keyword ref="qmailmessageserver.html#moveMessages">moveMessages</keyword>
+        <keyword ref="qmailmessageserver.html#newCountChanged">newCountChanged</keyword>
+        <keyword ref="qmailmessageserver.html#progressChanged">progressChanged</keyword>
+        <keyword ref="qmailmessageserver.html#protocolRequest">protocolRequest</keyword>
+        <keyword ref="qmailmessageserver.html#protocolRequestCompleted">protocolRequestCompleted</keyword>
+        <keyword ref="qmailmessageserver.html#protocolResponse">protocolResponse</keyword>
+        <keyword ref="qmailmessageserver.html#renameFolder">renameFolder</keyword>
+        <keyword ref="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveAll">retrieveAll</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveFolderList">retrieveFolderList</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessagePart">retrieveMessagePart</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessageRange">retrieveMessageRange</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessages">retrieveMessages</keyword>
+        <keyword ref="qmailmessageserver.html#searchCompleted">searchCompleted</keyword>
+        <keyword ref="qmailmessageserver.html#searchMessages">searchMessages</keyword>
+        <keyword ref="qmailmessageserver.html#shutdown">shutdown</keyword>
+        <keyword ref="qmailmessageserver.html#statusChanged">statusChanged</keyword>
+        <keyword ref="qmailmessageserver.html#storageActionCompleted">storageActionCompleted</keyword>
+        <keyword ref="qmailmessageserver.html#synchronize">synchronize</keyword>
+        <keyword ref="qmailmessageserver.html#transmissionCompleted">transmissionCompleted</keyword>
+        <keyword ref="qmailmessageserver.html#transmitMessages">transmitMessages</keyword>
+        <section ref="qmailmessageserver-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageservice.html" title="QMailMessageService Class Reference">
+        <keyword ref="qmailmessageservice.html">QMailMessageService</keyword>
+        <keyword ref="qmailmessageservice.html#accountId">accountId</keyword>
+        <keyword ref="qmailmessageservice.html#actionCompleted">actionCompleted</keyword>
+        <keyword ref="qmailmessageservice.html#activityChanged">activityChanged</keyword>
+        <keyword ref="qmailmessageservice.html#availabilityChanged">availabilityChanged</keyword>
+        <keyword ref="qmailmessageservice.html#available">available</keyword>
+        <keyword ref="qmailmessageservice.html#cancelOperation">cancelOperation</keyword>
+        <keyword ref="qmailmessageservice.html#connectivityChanged">connectivityChanged</keyword>
+        <keyword ref="qmailmessageservice.html#hasSink">hasSink</keyword>
+        <keyword ref="qmailmessageservice.html#hasSource">hasSource</keyword>
+        <keyword ref="qmailmessageservice.html#progressChanged">progressChanged</keyword>
+        <keyword ref="qmailmessageservice.html#requiresReregistration">requiresReregistration</keyword>
+        <keyword ref="qmailmessageservice.html#service">service</keyword>
+        <keyword ref="qmailmessageservice.html#sink">sink</keyword>
+        <keyword ref="qmailmessageservice.html#source">source</keyword>
+        <keyword ref="qmailmessageservice.html#statusChanged">statusChanged</keyword>
+        <keyword ref="qmailmessageservice.html#updateStatus">updateStatus</keyword>
+        <section ref="qmailmessageservice-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageserviceconfigurator.html" title="QMailMessageServiceConfigurator Class Reference">
+        <keyword ref="qmailmessageserviceconfigurator.html">QMailMessageServiceConfigurator</keyword>
+        <keyword ref="qmailmessageserviceconfigurator.html#createEditor">createEditor</keyword>
+        <keyword ref="qmailmessageserviceconfigurator.html#displayName">displayName</keyword>
+        <keyword ref="qmailmessageserviceconfigurator.html#service">service</keyword>
+        <keyword ref="qmailmessageserviceconfigurator.html#serviceConstraints">serviceConstraints</keyword>
+        <section ref="qmailmessageserviceconfigurator-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageserviceeditor.html" title="QMailMessageServiceEditor Class Reference">
+        <keyword ref="qmailmessageserviceeditor.html">QMailMessageServiceEditor</keyword>
+        <keyword ref="qmailmessageserviceeditor.html#displayConfiguration">displayConfiguration</keyword>
+        <keyword ref="qmailmessageserviceeditor.html#updateAccount">updateAccount</keyword>
+        <section ref="qmailmessageserviceeditor-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageservicefactory.html" title="QMailMessageServiceFactory Class Reference">
+        <keyword ref="qmailmessageservicefactory.html">QMailMessageServiceFactory</keyword>
+        <keyword ref="qmailmessageservicefactory.html#ServiceType-enum">ServiceType</keyword>
+        <keyword ref="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::Sink</keyword>
+        <keyword ref="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::Storage</keyword>
+        <keyword ref="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::Any</keyword>
+        <keyword ref="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::Source</keyword>
+        <keyword ref="qmailmessageservicefactory.html#createService">createService</keyword>
+        <keyword ref="qmailmessageservicefactory.html#createServiceConfigurator">createServiceConfigurator</keyword>
+        <keyword ref="qmailmessageservicefactory.html#keys">keys</keyword>
+        <keyword ref="qmailmessageservicefactory.html#supports">supports</keyword>
+        <section ref="qmailmessageservicefactory-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageserviceplugin.html" title="QMailMessageServicePlugin Class Reference">
+        <keyword ref="qmailmessageserviceplugin.html">QMailMessageServicePlugin</keyword>
+        <keyword ref="qmailmessageserviceplugin.html#keys">keys</keyword>
+        <section ref="qmailmessageserviceplugin-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageserviceplugininterface.html" title="QMailMessageServicePluginInterface Class Reference">
+        <keyword ref="qmailmessageserviceplugininterface.html">QMailMessageServicePluginInterface</keyword>
+        <keyword ref="qmailmessageserviceplugininterface.html#createService">createService</keyword>
+        <keyword ref="qmailmessageserviceplugininterface.html#createServiceConfigurator">createServiceConfigurator</keyword>
+        <keyword ref="qmailmessageserviceplugininterface.html#key">key</keyword>
+        <keyword ref="qmailmessageserviceplugininterface.html#supports">supports</keyword>
+        <section ref="qmailmessageserviceplugininterface-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessageset.html" title="QMailMessageSet Class Reference">
+        <keyword ref="qmailmessageset.html">QMailMessageSet</keyword>
+        <keyword ref="qmailmessageset.html#data">data</keyword>
+        <keyword ref="qmailmessageset.html#descendantsMessageKey">descendantsMessageKey</keyword>
+        <keyword ref="qmailmessageset.html#displayName">displayName</keyword>
+        <keyword ref="qmailmessageset.html#init">init</keyword>
+        <keyword ref="qmailmessageset.html#messageKey">messageKey</keyword>
+        <keyword ref="qmailmessageset.html#modelIndex">modelIndex</keyword>
+        <section ref="qmailmessageset-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagesetcontainer.html" title="QMailMessageSetContainer Class Reference">
+        <keyword ref="qmailmessagesetcontainer.html">QMailMessageSetContainer</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#append">append</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#at">at</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#count">count</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#indexOf">indexOf</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#model">model</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#parentContainer">parentContainer</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#remove">remove</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#removeDescendants">removeDescendants</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#resyncState">resyncState</keyword>
+        <keyword ref="qmailmessagesetcontainer.html#update">update</keyword>
+        <section ref="qmailmessagesetcontainer-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagesetmodel.html" title="QMailMessageSetModel Class Reference">
+        <keyword ref="qmailmessagesetmodel.html">QMailMessageSetModel</keyword>
+        <keyword ref="qmailmessagesetmodel.html#Roles-enum">Roles</keyword>
+        <keyword ref="qmailmessagesetmodel.html#Roles-enum">QMailMessageSetModel::DisplayNameRole</keyword>
+        <keyword ref="qmailmessagesetmodel.html#Roles-enum">QMailMessageSetModel::SubclassUserRole</keyword>
+        <keyword ref="qmailmessagesetmodel.html#Roles-enum">QMailMessageSetModel::MessageKeyRole</keyword>
+        <keyword ref="qmailmessagesetmodel.html#accountContentsModified">accountContentsModified</keyword>
+        <keyword ref="qmailmessagesetmodel.html#accountIdFromIndex">accountIdFromIndex</keyword>
+        <keyword ref="qmailmessagesetmodel.html#accountsAdded">accountsAdded</keyword>
+        <keyword ref="qmailmessagesetmodel.html#accountsRemoved">accountsRemoved</keyword>
+        <keyword ref="qmailmessagesetmodel.html#accountsUpdated">accountsUpdated</keyword>
+        <keyword ref="qmailmessagesetmodel.html#appended">appended</keyword>
+        <keyword ref="qmailmessagesetmodel.html#data">data</keyword>
+        <keyword ref="qmailmessagesetmodel.html#folderContentsModified">folderContentsModified</keyword>
+        <keyword ref="qmailmessagesetmodel.html#folderIdFromIndex">folderIdFromIndex</keyword>
+        <keyword ref="qmailmessagesetmodel.html#foldersAdded">foldersAdded</keyword>
+        <keyword ref="qmailmessagesetmodel.html#foldersRemoved">foldersRemoved</keyword>
+        <keyword ref="qmailmessagesetmodel.html#foldersUpdated">foldersUpdated</keyword>
+        <keyword ref="qmailmessagesetmodel.html#ignoreMailStoreUpdates">ignoreMailStoreUpdates</keyword>
+        <keyword ref="qmailmessagesetmodel.html#index">index</keyword>
+        <keyword ref="qmailmessagesetmodel.html#indexFromAccountId">indexFromAccountId</keyword>
+        <keyword ref="qmailmessagesetmodel.html#indexFromFolderId">indexFromFolderId</keyword>
+        <keyword ref="qmailmessagesetmodel.html#indexFromItem">indexFromItem</keyword>
+        <keyword ref="qmailmessagesetmodel.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagesetmodel.html#itemFromIndex">itemFromIndex</keyword>
+        <keyword ref="qmailmessagesetmodel.html#messagesAdded">messagesAdded</keyword>
+        <keyword ref="qmailmessagesetmodel.html#messagesRemoved">messagesRemoved</keyword>
+        <keyword ref="qmailmessagesetmodel.html#messagesUpdated">messagesUpdated</keyword>
+        <keyword ref="qmailmessagesetmodel.html#parent">parent</keyword>
+        <keyword ref="qmailmessagesetmodel.html#removed">removed</keyword>
+        <keyword ref="qmailmessagesetmodel.html#setIgnoreMailStoreUpdates">setIgnoreMailStoreUpdates</keyword>
+        <keyword ref="qmailmessagesetmodel.html#updated">updated</keyword>
+        <section ref="qmailmessagesetmodel-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagesink.html" title="QMailMessageSink Class Reference">
+        <keyword ref="qmailmessagesink.html">QMailMessageSink</keyword>
+        <keyword ref="qmailmessagesink.html#messagesTransmitted">messagesTransmitted</keyword>
+        <keyword ref="qmailmessagesink.html#transmitMessages">transmitMessages</keyword>
+        <section ref="qmailmessagesink-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagesortkey.html" title="QMailMessageSortKey Class Reference">
+        <keyword ref="qmailmessagesortkey.html">QMailMessageSortKey</keyword>
+        <keyword ref="qmailmessagesortkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::TimeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentAccountId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Size</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ServerUid</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ContentType</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Sender</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Subject</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::PreviousParentFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Type</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Recipients</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Id</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ReceptionTimeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Status</keyword>
+        <keyword ref="qmailmessagesortkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailmessagesortkey.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagesortkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailmessagesortkey.html#id">id</keyword>
+        <keyword ref="qmailmessagesortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagesortkey.html#messageType">messageType</keyword>
+        <keyword ref="qmailmessagesortkey.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailmessagesortkey.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#previousParentFolderId">previousParentFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#receptionTimeStamp">receptionTimeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#recipients">recipients</keyword>
+        <keyword ref="qmailmessagesortkey.html#sender">sender</keyword>
+        <keyword ref="qmailmessagesortkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailmessagesortkey.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailmessagesortkey.html#size">size</keyword>
+        <keyword ref="qmailmessagesortkey.html#status">status</keyword>
+        <keyword ref="qmailmessagesortkey.html#subject">subject</keyword>
+        <keyword ref="qmailmessagesortkey.html#timeStamp">timeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailmessagesortkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailmessagesortkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailmessagesortkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailmessagesortkey.html#operator-eq-eq">operator==</keyword>
+        <section ref="qmailmessagesortkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagesource.html" title="QMailMessageSource Class Reference">
+        <keyword ref="qmailmessagesource.html">QMailMessageSource</keyword>
+        <keyword ref="qmailmessagesource.html#cancelSearch">cancelSearch</keyword>
+        <keyword ref="qmailmessagesource.html#copyMessages">copyMessages</keyword>
+        <keyword ref="qmailmessagesource.html#createFolder">createFolder</keyword>
+        <keyword ref="qmailmessagesource.html#deleteFolder">deleteFolder</keyword>
+        <keyword ref="qmailmessagesource.html#deleteMessages">deleteMessages</keyword>
+        <keyword ref="qmailmessagesource.html#exportUpdates">exportUpdates</keyword>
+        <keyword ref="qmailmessagesource.html#flagMessages">flagMessages</keyword>
+        <keyword ref="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</keyword>
+        <keyword ref="qmailmessagesource.html#messageRemovalOption">messageRemovalOption</keyword>
+        <keyword ref="qmailmessagesource.html#messagesCopied">messagesCopied</keyword>
+        <keyword ref="qmailmessagesource.html#messagesDeleted">messagesDeleted</keyword>
+        <keyword ref="qmailmessagesource.html#messagesFlagged">messagesFlagged</keyword>
+        <keyword ref="qmailmessagesource.html#messagesMoved">messagesMoved</keyword>
+        <keyword ref="qmailmessagesource.html#messagesPrepared">messagesPrepared</keyword>
+        <keyword ref="qmailmessagesource.html#moveMessages">moveMessages</keyword>
+        <keyword ref="qmailmessagesource.html#newMessagesAvailable">newMessagesAvailable</keyword>
+        <keyword ref="qmailmessagesource.html#prepareMessages">prepareMessages</keyword>
+        <keyword ref="qmailmessagesource.html#protocolRequest">protocolRequest</keyword>
+        <keyword ref="qmailmessagesource.html#protocolResponse">protocolResponse</keyword>
+        <keyword ref="qmailmessagesource.html#renameFolder">renameFolder</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveAll">retrieveAll</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveFolderList">retrieveFolderList</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessagePart">retrieveMessagePart</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessageRange">retrieveMessageRange</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessages">retrieveMessages</keyword>
+        <keyword ref="qmailmessagesource.html#searchMessages">searchMessages</keyword>
+        <keyword ref="qmailmessagesource.html#synchronize">synchronize</keyword>
+        <section ref="qmailmessagesource-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailmessagethreadedmodel.html" title="QMailMessageThreadedModel Class Reference">
+        <keyword ref="qmailmessagethreadedmodel.html">QMailMessageThreadedModel</keyword>
+        <keyword ref="qmailmessagethreadedmodel.html#generateIndex">generateIndex</keyword>
+        <keyword ref="qmailmessagethreadedmodel.html#impl">impl</keyword>
+        <keyword ref="qmailmessagethreadedmodel.html#index">index</keyword>
+        <keyword ref="qmailmessagethreadedmodel.html#parent">parent</keyword>
+        <section ref="qmailmessagethreadedmodel-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailpassthroughcodec.html" title="QMailPassThroughCodec Class Reference">
+        <keyword ref="qmailpassthroughcodec.html">QMailPassThroughCodec</keyword>
+        <section ref="qmailpassthroughcodec-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailpluginmanager.html" title="QMailPluginManager Class Reference">
+        <keyword ref="qmailpluginmanager.html">QMailPluginManager</keyword>
+        <keyword ref="qmailpluginmanager.html#instance">instance</keyword>
+        <keyword ref="qmailpluginmanager.html#list">list</keyword>
+        <section ref="qmailpluginmanager-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailprotocolaction.html" title="QMailProtocolAction Class Reference">
+        <keyword ref="qmailprotocolaction.html">QMailProtocolAction</keyword>
+        <keyword ref="qmailprotocolaction.html#protocolRequest">protocolRequest</keyword>
+        <keyword ref="qmailprotocolaction.html#protocolResponse">protocolResponse</keyword>
+        <section ref="qmailprotocolaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailquotedprintablecodec.html" title="QMailQuotedPrintableCodec Class Reference">
+        <keyword ref="qmailquotedprintablecodec.html">QMailQuotedPrintableCodec</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ConformanceType-enum">ConformanceType</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ConformanceType-enum">QMailQuotedPrintableCodec::Rfc2045</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ConformanceType-enum">QMailQuotedPrintableCodec::Rfc2047</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ContentType-enum">ContentType</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ContentType-enum">QMailQuotedPrintableCodec::Text</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#ContentType-enum">QMailQuotedPrintableCodec::Binary</keyword>
+        <keyword ref="qmailquotedprintablecodec.html#name">name</keyword>
+        <section ref="qmailquotedprintablecodec-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailretrievalaction.html" title="QMailRetrievalAction Class Reference">
+        <keyword ref="qmailretrievalaction.html">QMailRetrievalAction</keyword>
+        <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">RetrievalSpecification</keyword>
+        <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Content</keyword>
+        <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Flags</keyword>
+        <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::MetaData</keyword>
+        <keyword ref="qmailretrievalaction.html#exportUpdates">exportUpdates</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveAll">retrieveAll</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveFolderList">retrieveFolderList</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessagePart">retrieveMessagePart</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessageRange">retrieveMessageRange</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessages">retrieveMessages</keyword>
+        <keyword ref="qmailretrievalaction.html#synchronize">synchronize</keyword>
+        <section ref="qmailretrievalaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailsearchaction.html" title="QMailSearchAction Class Reference">
+        <keyword ref="qmailsearchaction.html">QMailSearchAction</keyword>
+        <keyword ref="qmailsearchaction.html#SearchSpecification-enum">SearchSpecification</keyword>
+        <keyword ref="qmailsearchaction.html#SearchSpecification-enum">QMailSearchAction::Remote</keyword>
+        <keyword ref="qmailsearchaction.html#SearchSpecification-enum">QMailSearchAction::Local</keyword>
+        <keyword ref="qmailsearchaction.html#cancelOperation">cancelOperation</keyword>
+        <keyword ref="qmailsearchaction.html#matchingMessageIds">matchingMessageIds</keyword>
+        <keyword ref="qmailsearchaction.html#messageIdsMatched">messageIdsMatched</keyword>
+        <keyword ref="qmailsearchaction.html#searchMessages">searchMessages</keyword>
+        <section ref="qmailsearchaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailserviceaction.html" title="QMailServiceAction Class Reference">
+        <keyword ref="qmailserviceaction.html">QMailServiceAction</keyword>
+        <keyword ref="qmailserviceaction.html#Activity-enum">Activity</keyword>
+        <keyword ref="qmailserviceaction.html#Activity-enum">QMailServiceAction::InProgress</keyword>
+        <keyword ref="qmailserviceaction.html#Activity-enum">QMailServiceAction::Failed</keyword>
+        <keyword ref="qmailserviceaction.html#Activity-enum">QMailServiceAction::Pending</keyword>
+        <keyword ref="qmailserviceaction.html#Activity-enum">QMailServiceAction::Successful</keyword>
+        <keyword ref="qmailserviceaction.html#Connectivity-enum">Connectivity</keyword>
+        <keyword ref="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Connected</keyword>
+        <keyword ref="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Disconnected</keyword>
+        <keyword ref="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Offline</keyword>
+        <keyword ref="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Connecting</keyword>
+        <keyword ref="qmailserviceaction.html#activity">activity</keyword>
+        <keyword ref="qmailserviceaction.html#activityChanged">activityChanged</keyword>
+        <keyword ref="qmailserviceaction.html#cancelOperation">cancelOperation</keyword>
+        <keyword ref="qmailserviceaction.html#connectivity">connectivity</keyword>
+        <keyword ref="qmailserviceaction.html#connectivityChanged">connectivityChanged</keyword>
+        <keyword ref="qmailserviceaction.html#progress">progress</keyword>
+        <keyword ref="qmailserviceaction.html#progressChanged">progressChanged</keyword>
+        <keyword ref="qmailserviceaction.html#setStatus">setStatus</keyword>
+        <keyword ref="qmailserviceaction.html#status">status</keyword>
+        <keyword ref="qmailserviceaction.html#statusChanged">statusChanged</keyword>
+        <section ref="qmailserviceaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailserviceconfiguration.html" title="QMailServiceConfiguration Class Reference">
+        <keyword ref="qmailserviceconfiguration.html">QMailServiceConfiguration</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">ServiceType</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">QMailServiceConfiguration::Unknown</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">QMailServiceConfiguration::Sink</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">QMailServiceConfiguration::Storage</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">QMailServiceConfiguration::Source</keyword>
+        <keyword ref="qmailserviceconfiguration.html#ServiceType-enum">QMailServiceConfiguration::SourceAndSink</keyword>
+        <keyword ref="qmailserviceconfiguration.html#decodeValue">decodeValue</keyword>
+        <keyword ref="qmailserviceconfiguration.html#encodeValue">encodeValue</keyword>
+        <keyword ref="qmailserviceconfiguration.html#id">id</keyword>
+        <keyword ref="qmailserviceconfiguration.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailserviceconfiguration.html#isValid">isValid</keyword>
+        <keyword ref="qmailserviceconfiguration.html#service">service</keyword>
+        <keyword ref="qmailserviceconfiguration.html#setType">setType</keyword>
+        <keyword ref="qmailserviceconfiguration.html#setValue">setValue</keyword>
+        <keyword ref="qmailserviceconfiguration.html#setVersion">setVersion</keyword>
+        <keyword ref="qmailserviceconfiguration.html#type">type</keyword>
+        <keyword ref="qmailserviceconfiguration.html#value">value</keyword>
+        <keyword ref="qmailserviceconfiguration.html#version">version</keyword>
+        <section ref="qmailserviceconfiguration-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailstorageaction.html" title="QMailStorageAction Class Reference">
+        <keyword ref="qmailstorageaction.html">QMailStorageAction</keyword>
+        <keyword ref="qmailstorageaction.html#copyMessages">copyMessages</keyword>
+        <keyword ref="qmailstorageaction.html#createFolder">createFolder</keyword>
+        <keyword ref="qmailstorageaction.html#deleteFolder">deleteFolder</keyword>
+        <keyword ref="qmailstorageaction.html#deleteMessages">deleteMessages</keyword>
+        <keyword ref="qmailstorageaction.html#discardMessages">discardMessages</keyword>
+        <keyword ref="qmailstorageaction.html#flagMessages">flagMessages</keyword>
+        <keyword ref="qmailstorageaction.html#moveMessages">moveMessages</keyword>
+        <keyword ref="qmailstorageaction.html#renameFolder">renameFolder</keyword>
+        <section ref="qmailstorageaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailstore.html" title="QMailStore Class Reference">
+        <keyword ref="qmailstore.html">QMailStore</keyword>
+        <keyword ref="qmailstore.html#ChangeType-enum">ChangeType</keyword>
+        <keyword ref="qmailstore.html#ChangeType-enum">QMailStore::Updated</keyword>
+        <keyword ref="qmailstore.html#ChangeType-enum">QMailStore::Removed</keyword>
+        <keyword ref="qmailstore.html#ChangeType-enum">QMailStore::Added</keyword>
+        <keyword ref="qmailstore.html#ChangeType-enum">QMailStore::ContentsModified</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">ErrorCode</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::StorageInaccessible</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::NoError</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::NotYetImplemented</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::FrameworkFault</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::InvalidId</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::ConstraintFailure</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::ContentInaccessible</keyword>
+        <keyword ref="qmailstore.html#ErrorCode-enum">QMailStore::ContentNotRemoved</keyword>
+        <keyword ref="qmailstore.html#InitializationState-enum">InitializationState</keyword>
+        <keyword ref="qmailstore.html#InitializationState-enum">QMailStore::Initialized</keyword>
+        <keyword ref="qmailstore.html#InitializationState-enum">QMailStore::InitializationFailed</keyword>
+        <keyword ref="qmailstore.html#InitializationState-enum">QMailStore::Uninitialized</keyword>
+        <keyword ref="qmailstore.html#MessageRemovalOption-enum">MessageRemovalOption</keyword>
+        <keyword ref="qmailstore.html#MessageRemovalOption-enum">QMailStore::CreateRemovalRecord</keyword>
+        <keyword ref="qmailstore.html#MessageRemovalOption-enum">QMailStore::NoRemovalRecord</keyword>
+        <keyword ref="qmailstore.html#ReturnOption-enum">ReturnOption</keyword>
+        <keyword ref="qmailstore.html#ReturnOption-enum">QMailStore::ReturnAll</keyword>
+        <keyword ref="qmailstore.html#ReturnOption-enum">QMailStore::ReturnDistinct</keyword>
+        <keyword ref="qmailstore.html#account">account</keyword>
+        <keyword ref="qmailstore.html#accountConfiguration">accountConfiguration</keyword>
+        <keyword ref="qmailstore.html#accountContentsModified">accountContentsModified</keyword>
+        <keyword ref="qmailstore.html#accountStatusMask">accountStatusMask</keyword>
+        <keyword ref="qmailstore.html#accountsAdded">accountsAdded</keyword>
+        <keyword ref="qmailstore.html#accountsRemoved">accountsRemoved</keyword>
+        <keyword ref="qmailstore.html#accountsUpdated">accountsUpdated</keyword>
+        <keyword ref="qmailstore.html#addAccount">addAccount</keyword>
+        <keyword ref="qmailstore.html#addFolder">addFolder</keyword>
+        <keyword ref="qmailstore.html#addMessage">addMessage</keyword>
+        <keyword ref="qmailstore.html#addMessages">addMessages</keyword>
+        <keyword ref="qmailstore.html#asynchronousEmission">asynchronousEmission</keyword>
+        <keyword ref="qmailstore.html#countAccounts">countAccounts</keyword>
+        <keyword ref="qmailstore.html#countFolders">countFolders</keyword>
+        <keyword ref="qmailstore.html#countMessages">countMessages</keyword>
+        <keyword ref="qmailstore.html#errorOccurred">errorOccurred</keyword>
+        <keyword ref="qmailstore.html#flushIpcNotifications">flushIpcNotifications</keyword>
+        <keyword ref="qmailstore.html#folder">folder</keyword>
+        <keyword ref="qmailstore.html#folderContentsModified">folderContentsModified</keyword>
+        <keyword ref="qmailstore.html#folderStatusMask">folderStatusMask</keyword>
+        <keyword ref="qmailstore.html#foldersAdded">foldersAdded</keyword>
+        <keyword ref="qmailstore.html#foldersRemoved">foldersRemoved</keyword>
+        <keyword ref="qmailstore.html#foldersUpdated">foldersUpdated</keyword>
+        <keyword ref="qmailstore.html#initializationState">initializationState</keyword>
+        <keyword ref="qmailstore.html#instance">instance</keyword>
+        <keyword ref="qmailstore.html#lastError">lastError</keyword>
+        <keyword ref="qmailstore.html#message">message</keyword>
+        <keyword ref="qmailstore.html#messageContentsModified">messageContentsModified</keyword>
+        <keyword ref="qmailstore.html#messageMetaData">messageMetaData</keyword>
+        <keyword ref="qmailstore.html#messageRemovalRecords">messageRemovalRecords</keyword>
+        <keyword ref="qmailstore.html#messageRemovalRecordsAdded">messageRemovalRecordsAdded</keyword>
+        <keyword ref="qmailstore.html#messageRemovalRecordsRemoved">messageRemovalRecordsRemoved</keyword>
+        <keyword ref="qmailstore.html#messageStatusMask">messageStatusMask</keyword>
+        <keyword ref="qmailstore.html#messagesAdded">messagesAdded</keyword>
+        <keyword ref="qmailstore.html#messagesMetaData">messagesMetaData</keyword>
+        <keyword ref="qmailstore.html#messagesRemoved">messagesRemoved</keyword>
+        <keyword ref="qmailstore.html#messagesUpdated">messagesUpdated</keyword>
+        <keyword ref="qmailstore.html#purgeMessageRemovalRecords">purgeMessageRemovalRecords</keyword>
+        <keyword ref="qmailstore.html#queryAccounts">queryAccounts</keyword>
+        <keyword ref="qmailstore.html#queryFolders">queryFolders</keyword>
+        <keyword ref="qmailstore.html#queryMessages">queryMessages</keyword>
+        <keyword ref="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</keyword>
+        <keyword ref="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</keyword>
+        <keyword ref="qmailstore.html#registerMessageStatusFlag">registerMessageStatusFlag</keyword>
+        <keyword ref="qmailstore.html#removeAccount">removeAccount</keyword>
+        <keyword ref="qmailstore.html#removeAccounts">removeAccounts</keyword>
+        <keyword ref="qmailstore.html#removeFolder">removeFolder</keyword>
+        <keyword ref="qmailstore.html#removeFolders">removeFolders</keyword>
+        <keyword ref="qmailstore.html#removeMessage">removeMessage</keyword>
+        <keyword ref="qmailstore.html#removeMessages">removeMessages</keyword>
+        <keyword ref="qmailstore.html#restoreToPreviousFolder">restoreToPreviousFolder</keyword>
+        <keyword ref="qmailstore.html#retrievalInProgress">retrievalInProgress</keyword>
+        <keyword ref="qmailstore.html#setRetrievalInProgress">setRetrievalInProgress</keyword>
+        <keyword ref="qmailstore.html#setTransmissionInProgress">setTransmissionInProgress</keyword>
+        <keyword ref="qmailstore.html#sizeOfMessages">sizeOfMessages</keyword>
+        <keyword ref="qmailstore.html#transmissionInProgress">transmissionInProgress</keyword>
+        <keyword ref="qmailstore.html#updateAccount">updateAccount</keyword>
+        <keyword ref="qmailstore.html#updateAccountConfiguration">updateAccountConfiguration</keyword>
+        <keyword ref="qmailstore.html#updateFolder">updateFolder</keyword>
+        <keyword ref="qmailstore.html#updateMessage">updateMessage</keyword>
+        <keyword ref="qmailstore.html#updateMessages">updateMessages</keyword>
+        <keyword ref="qmailstore.html#updateMessagesMetaData">updateMessagesMetaData</keyword>
+        <section ref="qmailstore-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailstoreaccountfilter.html" title="QMailStoreAccountFilter Class Reference">
+        <keyword ref="qmailstoreaccountfilter.html">QMailStoreAccountFilter</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#accountContentsModified">accountContentsModified</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#accountUpdated">accountUpdated</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#folderContentsModified">folderContentsModified</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#foldersAdded">foldersAdded</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#foldersRemoved">foldersRemoved</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#foldersUpdated">foldersUpdated</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messageContentsModified">messageContentsModified</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messageRemovalRecordsAdded">messageRemovalRecordsAdded</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messageRemovalRecordsRemoved">messageRemovalRecordsRemoved</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messagesAdded">messagesAdded</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messagesRemoved">messagesRemoved</keyword>
+        <keyword ref="qmailstoreaccountfilter.html#messagesUpdated">messagesUpdated</keyword>
+        <section ref="qmailstoreaccountfilter-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailtimestamp.html" title="QMailTimeStamp Class Reference">
+        <keyword ref="qmailtimestamp.html">QMailTimeStamp</keyword>
+        <keyword ref="qmailtimestamp.html#OutputFormat-enum">OutputFormat</keyword>
+        <keyword ref="qmailtimestamp.html#OutputFormat-enum">QMailTimeStamp::Rfc2822</keyword>
+        <keyword ref="qmailtimestamp.html#OutputFormat-enum">QMailTimeStamp::Rfc3501</keyword>
+        <keyword ref="qmailtimestamp.html#OutputFormat-enum">QMailTimeStamp::Rfc3339</keyword>
+        <keyword ref="qmailtimestamp.html#currentDateTime">currentDateTime</keyword>
+        <keyword ref="qmailtimestamp.html#isNull">isNull</keyword>
+        <keyword ref="qmailtimestamp.html#isValid">isValid</keyword>
+        <keyword ref="qmailtimestamp.html#toLocalTime">toLocalTime</keyword>
+        <keyword ref="qmailtimestamp.html#toString">toString</keyword>
+        <keyword ref="qmailtimestamp.html#toUTC">toUTC</keyword>
+        <keyword ref="qmailtimestamp.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailtimestamp.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailtimestamp.html#operator-lt-eq">operator&lt;=</keyword>
+        <keyword ref="qmailtimestamp.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailtimestamp.html#operator-gt">operator&gt;</keyword>
+        <keyword ref="qmailtimestamp.html#operator-gt-eq">operator&gt;=</keyword>
+        <section ref="qmailtimestamp-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailtransmitaction.html" title="QMailTransmitAction Class Reference">
+        <keyword ref="qmailtransmitaction.html">QMailTransmitAction</keyword>
+        <keyword ref="qmailtransmitaction.html#transmitMessages">transmitMessages</keyword>
+        <section ref="qmailtransmitaction-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailtransport.html" title="QMailTransport Class Reference">
+        <keyword ref="qmailtransport.html">QMailTransport</keyword>
+        <keyword ref="qmailtransport.html#EncryptType-enum">EncryptType</keyword>
+        <keyword ref="qmailtransport.html#EncryptType-enum">QMailTransport::Encrypt_TLS</keyword>
+        <keyword ref="qmailtransport.html#EncryptType-enum">QMailTransport::Encrypt_NONE</keyword>
+        <keyword ref="qmailtransport.html#EncryptType-enum">QMailTransport::Encrypt_SSL</keyword>
+        <keyword ref="qmailtransport.html#bytesSinceMark">bytesSinceMark</keyword>
+        <keyword ref="qmailtransport.html#bytesWritten">bytesWritten</keyword>
+        <keyword ref="qmailtransport.html#canReadLine">canReadLine</keyword>
+        <keyword ref="qmailtransport.html#close">close</keyword>
+        <keyword ref="qmailtransport.html#connected">connected</keyword>
+        <keyword ref="qmailtransport.html#errorOccurred">errorOccurred</keyword>
+        <keyword ref="qmailtransport.html#inUse">inUse</keyword>
+        <keyword ref="qmailtransport.html#isEncrypted">isEncrypted</keyword>
+        <keyword ref="qmailtransport.html#mark">mark</keyword>
+        <keyword ref="qmailtransport.html#open">open</keyword>
+        <keyword ref="qmailtransport.html#readLine">readLine</keyword>
+        <keyword ref="qmailtransport.html#readyRead">readyRead</keyword>
+        <keyword ref="qmailtransport.html#socket">socket</keyword>
+        <keyword ref="qmailtransport.html#stream">stream</keyword>
+        <keyword ref="qmailtransport.html#switchToEncrypted">switchToEncrypted</keyword>
+        <keyword ref="qmailtransport.html#updateStatus">updateStatus</keyword>
+        <section ref="qmailtransport-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailviewerfactory.html" title="QMailViewerFactory Class Reference">
+        <keyword ref="qmailviewerfactory.html">QMailViewerFactory</keyword>
+        <keyword ref="qmailviewerfactory.html#PresentationType-enum">PresentationType</keyword>
+        <keyword ref="qmailviewerfactory.html#PresentationType-enum">QMailViewerFactory::AnyPresentation</keyword>
+        <keyword ref="qmailviewerfactory.html#PresentationType-enum">QMailViewerFactory::StandardPresentation</keyword>
+        <keyword ref="qmailviewerfactory.html#PresentationType-enum">QMailViewerFactory::ConversationPresentation</keyword>
+        <keyword ref="qmailviewerfactory.html#PresentationType-enum">QMailViewerFactory::UserPresentation</keyword>
+        <keyword ref="qmailviewerfactory.html#create">create</keyword>
+        <keyword ref="qmailviewerfactory.html#defaultKey">defaultKey</keyword>
+        <keyword ref="qmailviewerfactory.html#keys">keys</keyword>
+        <section ref="qmailviewerfactory-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailviewerinterface.html" title="QMailViewerInterface Class Reference">
+        <keyword ref="qmailviewerinterface.html">QMailViewerInterface</keyword>
+        <keyword ref="qmailviewerinterface.html#addActions">addActions</keyword>
+        <keyword ref="qmailviewerinterface.html#anchorClicked">anchorClicked</keyword>
+        <keyword ref="qmailviewerinterface.html#clear">clear</keyword>
+        <keyword ref="qmailviewerinterface.html#contactDetails">contactDetails</keyword>
+        <keyword ref="qmailviewerinterface.html#finished">finished</keyword>
+        <keyword ref="qmailviewerinterface.html#handleIncomingMessages">handleIncomingMessages</keyword>
+        <keyword ref="qmailviewerinterface.html#handleOutgoingMessages">handleOutgoingMessages</keyword>
+        <keyword ref="qmailviewerinterface.html#isSupported">isSupported</keyword>
+        <keyword ref="qmailviewerinterface.html#key">key</keyword>
+        <keyword ref="qmailviewerinterface.html#messageChanged">messageChanged</keyword>
+        <keyword ref="qmailviewerinterface.html#presentation">presentation</keyword>
+        <keyword ref="qmailviewerinterface.html#removeAction">removeAction</keyword>
+        <keyword ref="qmailviewerinterface.html#respondToMessage">respondToMessage</keyword>
+        <keyword ref="qmailviewerinterface.html#respondToMessagePart">respondToMessagePart</keyword>
+        <keyword ref="qmailviewerinterface.html#retrieveMessage">retrieveMessage</keyword>
+        <keyword ref="qmailviewerinterface.html#retrieveMessagePart">retrieveMessagePart</keyword>
+        <keyword ref="qmailviewerinterface.html#retrieveMessagePartPortion">retrieveMessagePartPortion</keyword>
+        <keyword ref="qmailviewerinterface.html#retrieveMessagePortion">retrieveMessagePortion</keyword>
+        <keyword ref="qmailviewerinterface.html#scrollToAnchor">scrollToAnchor</keyword>
+        <keyword ref="qmailviewerinterface.html#sendMessage">sendMessage</keyword>
+        <keyword ref="qmailviewerinterface.html#setMessage">setMessage</keyword>
+        <keyword ref="qmailviewerinterface.html#setResource">setResource</keyword>
+        <keyword ref="qmailviewerinterface.html#types">types</keyword>
+        <keyword ref="qmailviewerinterface.html#viewMessage">viewMessage</keyword>
+        <keyword ref="qmailviewerinterface.html#widget">widget</keyword>
+        <section ref="qmailviewerinterface-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailaccountconfiguration-serviceconfiguration.html" title="ServiceConfiguration Class Reference">
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html">ServiceConfiguration</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#id">id</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#removeValue">removeValue</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#service">service</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#setValue">setValue</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#value">value</keyword>
+        <keyword ref="qmailaccountconfiguration-serviceconfiguration.html#values">values</keyword>
+        <section ref="qmailaccountconfiguration-serviceconfiguration-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailserviceaction-status.html" title="Status Class Reference">
+        <keyword ref="qmailserviceaction-status.html">Status</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">ErrorCode</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrConfiguration</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrInvalidData</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrFrameworkFault</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCodeMaximum</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrConnectionNotReady</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNonexistentMessage</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNotImplemented</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrConnectionInUse</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrLoginFailed</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrTimeout</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNoConnection</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrUnknownResponse</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCodeMinimum</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrSystemError</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrFileSystemFull</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNoError</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrInvalidAddress</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrCancel</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrEnqueueFailed</keyword>
+        <keyword ref="qmailserviceaction-status.html#accountId-var">accountId</keyword>
+        <keyword ref="qmailserviceaction-status.html#errorCode-var">errorCode</keyword>
+        <keyword ref="qmailserviceaction-status.html#folderId-var">folderId</keyword>
+        <keyword ref="qmailserviceaction-status.html#messageId-var">messageId</keyword>
+        <keyword ref="qmailserviceaction-status.html#text-var">text</keyword>
+        <section ref="qmailserviceaction-status-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailkeyargument-valuelist.html" title="ValueList Class Reference">
+        <keyword ref="qmailkeyargument-valuelist.html">ValueList</keyword>
+        <keyword ref="qmailkeyargument-valuelist.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailkeyargument-valuelist.html#serialize">serialize</keyword>
+        <keyword ref="qmailkeyargument-valuelist.html#operator-eq-eq">operator==</keyword>
+        <section ref="qmailkeyargument-valuelist-members.html" title="List of all members"/>
+    </section>
+</section>
+<section ref="overviews.html" title="Overviews">
+    <section ref="changes-messageserver.html" title="">
+        <keyword ref="changes-messageserver.html"></keyword>
+    </section>
+    <section ref="changes-qtopiamail.html" title="">
+        <keyword ref="changes-qtopiamail.html"></keyword>
+    </section>
+    <section ref="annotated.html" title="Annotated Class List">
+        <keyword ref="annotated.html">Annotated Class List</keyword>
+    </section>
+    <section ref="classes.html" title="Class Index">
+        <keyword ref="classes.html">Class Index</keyword>
+    </section>
+    <section ref="groups.html" title="Grouped Classes">
+        <keyword ref="groups.html">Grouped Classes</keyword>
+    </section>
+    <section ref="libmessageserver.html" title="Message Server Support Classes">
+        <keyword ref="libmessageserver.html">Message Server Support Classes</keyword>
+    </section>
+    <section ref="qtextendedmail-messageserver.html" title="Message Server Support Library">
+        <keyword ref="qtextendedmail-messageserver.html">Message Server Support Library</keyword>
+    </section>
+    <section ref="messaging.html" title="Messages Client">
+        <keyword ref="messaging.html">Messages Client</keyword>
+    </section>
+    <section ref="messageserver.html" title="MessageServer Daemon">
+        <keyword ref="messageserver.html">MessageServer Daemon</keyword>
+    </section>
+    <section ref="qtextended-messaging.html" title="Messaging">
+        <keyword ref="qtextended-messaging.html">Messaging</keyword>
+    </section>
+    <section ref="messaginglibrary.html" title="Messaging Classes">
+        <keyword ref="messaginglibrary.html">Messaging Classes</keyword>
+    </section>
+    <section ref="qmfutil.html" title="Messaging Client Utility Classes">
+        <keyword ref="qmfutil.html">Messaging Client Utility Classes</keyword>
+    </section>
+    <section ref="qtextendedmail-qmfutil.html" title="Messaging Client Utility Library">
+        <keyword ref="qtextendedmail-qmfutil.html">Messaging Client Utility Library</keyword>
+    </section>
+    <section ref="classeshierarchy.html" title="Messaging Framework Class Inheritance Hierarchy">
+        <keyword ref="classeshierarchy.html">Messaging Framework Class Inheritance Hierarchy</keyword>
+    </section>
+    <section ref="messaging-classes.html" title="Messaging Framework Class List">
+        <keyword ref="messaging-classes.html">Messaging Framework Class List</keyword>
+    </section>
+    <section ref="qtextendedmail.html" title="Messaging Framework Client Library">
+        <keyword ref="qtextendedmail.html">Messaging Framework Client Library</keyword>
+    </section>
+    <section ref="index.html" title="Messaging Framework Developer Resources">
+        <keyword ref="index.html">Messaging Framework Developer Resources</keyword>
+    </section>
+    <section ref="namespaces.html" title="Messaging Framework Namespaces">
+        <keyword ref="namespaces.html">Messaging Framework Namespaces</keyword>
+    </section>
+</section>
+<section ref="examples.html" title="Tutorial &amp; Examples">
+    <section ref="messagenavigator.html" title="MessageNavigator Example">
+        <keyword ref="messagenavigator.html">MessageNavigator Example</keyword>
+    </section>
+    <section ref="messageviewer.html" title="MessageViewer Example">
+        <keyword ref="messageviewer.html">MessageViewer Example</keyword>
+    </section>
+</section>
+</DCF>

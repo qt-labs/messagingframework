@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailtransport.cpp -->
+<head>
+  <title>QMailTransport Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailTransport Class Reference</h1>
+<p>The QMailTransport class provides a line-oriented socket for messaging communications. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailTransport&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<p>Inherits <a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a>.</p>
+<ul>
+<li><a href="qmailtransport-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#EncryptType-enum">EncryptType</a></b> { Encrypt_NONE, Encrypt_SSL, Encrypt_TLS }</td></tr>
+</table>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#QMailTransport">QMailTransport</a></b> ( const char * <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">qint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#bytesSinceMark">bytesSinceMark</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#canReadLine">canReadLine</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#close">close</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#connected">connected</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#inUse">inUse</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#isEncrypted">isEncrypted</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#mark">mark</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#open">open</a></b> ( const QString &amp; <i>url</i>, int <i>port</i>, EncryptType <i>encryptionType</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QByteArray </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#readLine">readLine</a></b> ( qint64 <i>maxSize</i> = 0 )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QAbstractSocket &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#socket">socket</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QDataStream &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#stream">stream</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#switchToEncrypted">switchToEncrypted</a></b> ()</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
+</ul>
+<hr />
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#bytesWritten">bytesWritten</a></b> ( qint64 <i>transmitted</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#connected-2">connected</a></b> ( QMailTransport::EncryptType <i>encryptType</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#errorOccurred">errorOccurred</a></b> ( int <i>status</i>, QString <i>text</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#readyRead">readyRead</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailtransport.html#updateStatus">updateStatus</a></b> ( const QString &amp; <i>status</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 signal inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#signals">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>1 property inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#properties">QObject</a></li>
+<li><div class="fn"></div>1 public slot inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-slots">QObject</a></li>
+<li><div class="fn"></div>1 public type inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"></div>4 static public members inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"></div>7 protected functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-functions">QObject</a></li>
+<li><div class="fn"></div>2 protected variables inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailTransport class provides a line-oriented socket for messaging communications.</p>
+<p>QMailTransport implements a TLS and SSL enabled socket, whose incoming data can be processed one line of text at a time.</p>
+<p>QMailTransport provides the ability to count the bytes written via the socket, which is useful when data is inserted into a stream layered above the socket.</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="EncryptType-enum"></a>enum QMailTransport::EncryptType</h3>
+<p>This enum type is used to describe the encryption types supported by the transport.</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMailTransport::Encrypt_NONE</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">No encryption.</td></tr>
+<tr><td valign="top"><tt>QMailTransport::Encrypt_SSL</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">Transport Layer Security encryption negotiated before application protocol connection.</td></tr>
+<tr><td valign="top"><tt>QMailTransport::Encrypt_TLS</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">Transport Layer Security encryption negotiated after application protocol connection.</td></tr>
+</table></p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailTransport"></a>QMailTransport::QMailTransport ( const char * <i>name</i> )</h3>
+<p>Creates a transport object with the supplied object <i>name</i>.</p>
+<h3 class="fn"><a name="bytesSinceMark"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#qint64-typedef">qint64</a> QMailTransport::bytesSinceMark () const</h3>
+<p>Returns the number of bytes written since the counter as reset to zero.</p>
+<p>See also <a href="qmailtransport.html#mark">mark</a>().</p>
+<h3 class="fn"><a name="bytesWritten"></a>void QMailTransport::bytesWritten ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#qint64-typedef">qint64</a> <i>transmitted</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This signal is emitted every time a payload of data has been written to the device. The <i>transmitted</i> argument is set to the number of bytes that were written in this payload.</p>
+<h3 class="fn"><a name="canReadLine"></a>bool QMailTransport::canReadLine () const</h3>
+<p>Returns true if a line of data can be read from the transport; otherwise returns false.</p>
+<h3 class="fn"><a name="close"></a>void QMailTransport::close ()</h3>
+<p>Closes the socket, flushing any previously unwritten data.</p>
+<h3 class="fn"><a name="connected"></a>bool QMailTransport::connected () const</h3>
+<p>Returns true if a connection has been established.</p>
+<h3 class="fn"><a name="connected-2"></a>void QMailTransport::connected ( <a href="qmailtransport.html#EncryptType-enum">QMailTransport::EncryptType</a> <i>encryptType</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This signal is emitted when a connection is achieved, with the encryption type <i>encryptType</i>.</p>
+<h3 class="fn"><a name="errorOccurred"></a>void QMailTransport::errorOccurred ( int <i>status</i>, <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> <i>text</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This signal is emitted when an error is encountered. The value of <i>status</i> corresponds to a value of <a href="http://doc.trolltech.com/4.5/qabstractsocket.html#SocketError-enum">QSslSocket::SocketError</a>, and <i>text</i> contains a textual annotation where possible.</p>
+<h3 class="fn"><a name="inUse"></a>bool QMailTransport::inUse () const</h3>
+<p>Returns true if the socket is connected, or in the process of connecting.</p>
+<h3 class="fn"><a name="isEncrypted"></a>bool QMailTransport::isEncrypted () const</h3>
+<p>Returns true if the connection is established and using encryption.</p>
+<h3 class="fn"><a name="mark"></a>void QMailTransport::mark ()</h3>
+<p>Resets the byte counter to zero.</p>
+<p>See also <a href="qmailtransport.html#bytesSinceMark">bytesSinceMark</a>().</p>
+<h3 class="fn"><a name="open"></a>void QMailTransport::open ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>url</i>, int <i>port</i>, <a href="qmailtransport.html#EncryptType-enum">EncryptType</a> <i>encryptionType</i> )</h3>
+<p>Opens a connection to the supplied <i>url</i> and <i>port</i>, using the specified <i>encryptionType</i>.</p>
+<h3 class="fn"><a name="readLine"></a><a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> QMailTransport::readLine ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#qint64-typedef">qint64</a> <i>maxSize</i> = 0 )</h3>
+<p>Reads a line from the device, but no more than <i>maxSize</i> characters, and returns the result as a <a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a>.</p>
+<h3 class="fn"><a name="readyRead"></a>void QMailTransport::readyRead ()&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This signal is emitted once every time new data is available for reading from the device. It will only be emitted again once new data is available, such as when a new payload of network data has arrived on your network socket, or when a new block of data has been appended to your device.</p>
+<h3 class="fn"><a name="socket"></a><a href="http://doc.trolltech.com/4.5/qabstractsocket.html">QAbstractSocket</a> &amp; QMailTransport::socket ()</h3>
+<p>Returns the socket object allowing state to be accessed and manipulated.</p>
+<h3 class="fn"><a name="stream"></a><a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; QMailTransport::stream ()</h3>
+<p>Returns the stream object allowing data to be read or written across the transport connection.</p>
+<h3 class="fn"><a name="switchToEncrypted"></a>void QMailTransport::switchToEncrypted ()</h3>
+<p>Switches the socket from unencrypted to encrypted mode.</p>
+<h3 class="fn"><a name="updateStatus"></a>void QMailTransport::updateStatus ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>status</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This signal is emitted when a change in status is reported. The new status is described by <i>status</i>.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

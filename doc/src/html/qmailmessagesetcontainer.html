@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageset.cpp -->
+<head>
+  <title>QMailMessageSetContainer Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageSetContainer Class Reference</h1>
+<p>The QMailMessageSetContainer class specifies the interface implemented by container nodes in a <a href="qmailmessageset.html">QMailMessageSet</a> tree hierarchy. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageSetContainer&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<p>Inherited by <a href="qmailmessageset.html">QMailMessageSet</a> and <a href="qmailmessagesetmodel.html">QMailMessageSetModel</a>.</p>
+<ul>
+<li><a href="qmailmessagesetcontainer-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#append">append</a></b> ( QMailMessageSet * <i>child</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSet * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#at">at</a></b> ( int <i>i</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#count">count</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#indexOf">indexOf</a></b> ( QMailMessageSet * <i>child</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageSetModel * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#model">model</a></b> () = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSetContainer * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#parentContainer">parentContainer</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#remove">remove</a></b> ( QMailMessageSet * <i>child</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#remove-2">remove</a></b> ( const QList&lt;QMailMessageSet *&gt; &amp; <i>obsoleteChildren</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#removeDescendants">removeDescendants</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#update">update</a></b> ( QMailMessageSet * <i>child</i> )</td></tr>
+</table>
+<hr />
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesetcontainer.html#resyncState">resyncState</a></b> ()</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageSetContainer class specifies the interface implemented by container nodes in a <a href="qmailmessageset.html">QMailMessageSet</a> tree hierarchy.</p>
+<p>QMailMessageSetContainer provides the management for a collection of contained nodes in a <a href="qmailmessageset.html">QMailMessageSet</a> tree hierarchy. It also defines the interface available to contained nodes, which must inherit from <a href="qmailmessageset.html">QMailMessageSet</a>.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="append"></a>void QMailMessageSetContainer::append ( <a href="qmailmessageset.html">QMailMessageSet</a> * <i>child</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Appends <i>child</i> to the list of QMailMessageSets contained by this object.</p>
+<p>The container assumes responsibility for deleting the child object.</p>
+<h3 class="fn"><a name="at"></a><a href="qmailmessageset.html">QMailMessageSet</a> * QMailMessageSetContainer::at ( int <i>i</i> ) const</h3>
+<p>Returns the <a href="qmailmessageset.html">QMailMessageSet</a> object located at index <i>i</i> within this container object.</p>
+<p>See also <a href="qmailmessagesetcontainer.html#indexOf">indexOf</a>().</p>
+<h3 class="fn"><a name="count"></a>int QMailMessageSetContainer::count () const</h3>
+<p>Returns the number of QMailMessageSets contained by this container object.</p>
+<h3 class="fn"><a name="indexOf"></a>int QMailMessageSetContainer::indexOf ( <a href="qmailmessageset.html">QMailMessageSet</a> * <i>child</i> ) const</h3>
+<p>Returns the index within this container of the <a href="qmailmessageset.html">QMailMessageSet</a> <i>child</i>, or -1 if it is not contained by this container object.</p>
+<p>See also <a href="qmailmessagesetcontainer.html#at">at</a>().</p>
+<h3 class="fn"><a name="model"></a><a href="qmailmessagesetmodel.html">QMailMessageSetModel</a> * QMailMessageSetContainer::model ()&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns the model that owns this container.</p>
+<h3 class="fn"><a name="parentContainer"></a>QMailMessageSetContainer * QMailMessageSetContainer::parentContainer ()</h3>
+<p>Returns the parent container for this container object, or NULL if it has no parent container.</p>
+<h3 class="fn"><a name="remove"></a>void QMailMessageSetContainer::remove ( <a href="qmailmessageset.html">QMailMessageSet</a> * <i>child</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Removes <i>child</i> from the list of QMailMessageSets contained by the container object.</p>
+<h3 class="fn"><a name="remove-2"></a>void QMailMessageSetContainer::remove ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailmessageset.html">QMailMessageSet</a> *&gt; &amp; <i>obsoleteChildren</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Removes each member of <i>obsoleteChildren</i> from the container object.</p>
+<h3 class="fn"><a name="removeDescendants"></a>void QMailMessageSetContainer::removeDescendants ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Removes all descendants of the container from the model.</p>
+<h3 class="fn"><a name="resyncState"></a>void QMailMessageSetContainer::resyncState ()&nbsp;&nbsp;<tt> [virtual protected]</tt></h3>
+<p>Resets the state of each child within the container object.</p>
+<h3 class="fn"><a name="update"></a>void QMailMessageSetContainer::update ( <a href="qmailmessageset.html">QMailMessageSet</a> * <i>child</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Informs the container that <i>child</i> has been modified, and the container may need to be updated.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

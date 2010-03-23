@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageservice.cpp -->
+<head>
+  <title>QMailMessageServiceConfigurator Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageServiceConfigurator Class Reference</h1>
+<p>The QMailMessageServiceConfigurator class provides an interface that allows a service to be configured. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageServiceConfigurator&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailmessageserviceconfigurator-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageServiceEditor * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceconfigurator.html#createEditor">createEditor</a></b> ( QMailMessageServiceFactory::ServiceType <i>type</i> ) = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceconfigurator.html#displayName">displayName</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceconfigurator.html#service">service</a></b> () const = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageserviceconfigurator.html#serviceConstraints">serviceConstraints</a></b> ( QMailMessageServiceFactory::ServiceType <i>type</i> ) const</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageServiceConfigurator class provides an interface that allows a service to be configured.</p>
+<p>QMailMessageServiceConfigurator provides the interface that a messaging service must provide to allow its configuration to be editted by a generic GUI editor framework.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="createEditor"></a><a href="qmailmessageserviceeditor.html">QMailMessageServiceEditor</a> * QMailMessageServiceConfigurator::createEditor ( <a href="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::ServiceType</a> <i>type</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Creates an instance of the editor class for the service of type <i>type</i>.</p>
+<h3 class="fn"><a name="displayName"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageServiceConfigurator::displayName () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns the name of the service configured by this class, in a form suitable for display.</p>
+<h3 class="fn"><a name="service"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageServiceConfigurator::service () const&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Returns the identifier of the service configured by this class.</p>
+<h3 class="fn"><a name="serviceConstraints"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailMessageServiceConfigurator::serviceConstraints ( <a href="qmailmessageservicefactory.html#ServiceType-enum">QMailMessageServiceFactory::ServiceType</a> <i>type</i> ) const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns a list of services of the type <i>type</i> that are compatible with this service. If the service does not constrain the possible list of compatible services, an empty list should be returned.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

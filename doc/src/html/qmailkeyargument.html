@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailkeyargument.cpp -->
+<head>
+  <title>QMailKeyArgument Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailKeyArgument Class Reference</h1>
+<p>The QMailKeyArgument class template defines a class representing a single criterion to be applied when filtering the <a href="qmailstore.html">QMailStore</a> constent with a key object. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailKeyArgument&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailkeyargument-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">class </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument-valuelist.html">ValueList</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#Comparator-typedef">Comparator</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#Property-typedef">Property</a></b></td></tr>
+</table>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#QMailKeyArgument">QMailKeyArgument</a></b> ( Property <i>p</i>, Comparator <i>c</i>, const QVariant &amp; <i>v</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#QMailKeyArgument-3">QMailKeyArgument</a></b> ( const ListType &amp; <i>l</i>, Property <i>p</i>, Comparator <i>c</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#deserialize">deserialize</a></b> ( Stream &amp; <i>stream</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#serialize">serialize</a></b> ( Stream &amp; <i>stream</i> ) const</td></tr>
+</table>
+<hr />
+<a name="public-variables"></a>
+<h2>Public Variables</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">Comparator </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#op-var">op</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">Property </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#property-var">property</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">ValueList </td><td class="memItemRight" valign="bottom"><b><a href="qmailkeyargument.html#valueList-var">valueList</a></b></td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailKeyArgument class template defines a class representing a single criterion to be applied when filtering the <a href="qmailstore.html">QMailStore</a> constent with a key object.</p>
+<p>A QMailKeyArgument&lt;PropertyType, ComparatorType&gt; is composed of a property indicator, a comparison operator and a value or set of values to compare with. The type of the property indicator depends on the type that is to be filtered.</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="Comparator-typedef"></a>typedef QMailKeyArgument::Comparator</h3>
+<p>Defines the type used to represent the comparison operation that the criterion requires.</p>
+<p>A synomyn for the ComparatorType template parameter with which the template is instantiated; defaults to QMailDataComparator::Comparator.</p>
+<h3 class="fn"><a name="Property-typedef"></a>typedef QMailKeyArgument::Property</h3>
+<p>Defines the type used to represent the property that the criterion is applied to.</p>
+<p>A synomyn for the PropertyType template parameter with which the template is instantiated.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailKeyArgument"></a>QMailKeyArgument::QMailKeyArgument ( <a href="qmailkeyargument.html#Property-typedef">Property</a> <i>p</i>, <a href="qmailkeyargument.html#Comparator-typedef">Comparator</a> <i>c</i>, const <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> &amp; <i>v</i> )</h3>
+<p>Creates a criterion testing the property <i>p</i> against the value <i>v</i>, using the comparison operator <i>c</i>.</p>
+<h3 class="fn"><a name="QMailKeyArgument-3"></a>QMailKeyArgument::QMailKeyArgument ( const ListType &amp; <i>l</i>, <a href="qmailkeyargument.html#Property-typedef">Property</a> <i>p</i>, <a href="qmailkeyargument.html#Comparator-typedef">Comparator</a> <i>c</i> )</h3>
+<p>Creates a criterion testing the property <i>p</i> against the value list <i>l</i>, using the comparison operator <i>c</i>.</p>
+<h3 class="fn"><a name="deserialize"></a>void QMailKeyArgument::deserialize ( Stream &amp; <i>stream</i> )</h3>
+<p>Reads the contents of a <a href="qmailkeyargument.html">QMailKeyArgument</a> from <i>stream</i>.</p>
+<h3 class="fn"><a name="serialize"></a>void QMailKeyArgument::serialize ( Stream &amp; <i>stream</i> ) const</h3>
+<p>Writes the contents of a <a href="qmailkeyargument.html">QMailKeyArgument</a> to <i>stream</i>.</p>
+<hr />
+<h2>Member Variable Documentation</h2>
+<h3 class="fn"><a name="op-var"></a><a href="qmailkeyargument.html#Comparator-typedef">Comparator</a> QMailKeyArgument::op</h3>
+<p>Indicates the comparison operation to be used when filtering entities.</p>
+<h3 class="fn"><a name="property-var"></a><a href="qmailkeyargument.html#Property-typedef">Property</a> QMailKeyArgument::property</h3>
+<p>Indicates the property of the filtered entity to be compared.</p>
+<h3 class="fn"><a name="valueList-var"></a><a href="qmailkeyargument-valuelist.html">ValueList</a> QMailKeyArgument::valueList</h3>
+<p>Contains the values to be compared with when filtering entities.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

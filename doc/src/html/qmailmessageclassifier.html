@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageclassifier.cpp -->
+<head>
+  <title>QMailMessageClassifier Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageClassifier Class Reference</h1>
+<p>The QMailMessageClassifier class provides a simple mechanism for determining the type of content contained by a message. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageClassifier&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailmessageclassifier-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageclassifier.html#QMailMessageClassifier">QMailMessageClassifier</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageclassifier.html#classifyMessage">classifyMessage</a></b> ( QMailMessageMetaData &amp; <i>metaData</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageclassifier.html#classifyMessage-2">classifyMessage</a></b> ( QMailMessage &amp; <i>message</i> )</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageClassifier class provides a simple mechanism for determining the type of content contained by a message.</p>
+<p>QMailMessageClassifier inspects a message to determine what type of content it contains, according to the classification of <a href="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessage::ContentType</a>.</p>
+<p>Messages of type <a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessage::Email</a> may be classified as having <a href="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessage::VoicemailContent</a> or <a href="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessage::VideomailContent</a> content if their <a href="qmailmessagemetadata.html#from">QMailMessage::from</a>() address matches any of those configured in the <tt>Trolltech/messageserver.conf</tt> file.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailMessageClassifier"></a>QMailMessageClassifier::QMailMessageClassifier ()</h3>
+<p>Constructs a classifier object.</p>
+<h3 class="fn"><a name="classifyMessage"></a>bool QMailMessageClassifier::classifyMessage ( <a href="qmailmessagemetadata.html">QMailMessageMetaData</a> &amp; <i>metaData</i> )</h3>
+<p>Attempts to determine the type of content held within the message described by <i>metaData</i>, if it is currently set to <a href="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaData::UnknownContent</a>. If the content type is determined, the message metadata record is updated and true is returned.</p>
+<p>See also <a href="qmailmessagemetadata.html#setContent">QMailMessageMetaData::setContent</a>().</p>
+<h3 class="fn"><a name="classifyMessage-2"></a>bool QMailMessageClassifier::classifyMessage ( <a href="qmailmessage.html">QMailMessage</a> &amp; <i>message</i> )</h3>
+<p>Attempts to determine the type of content held within the message <i>message</i>, if it is currently set to <a href="qmailmessagemetadatafwd.html#ContentType-enum">QMailMessageMetaData::UnknownContent</a>. If the content type is determined, the message record is updated and true is returned.</p>
+<p>See also <a href="qmailmessagemetadata.html#setContent">QMailMessageMetaData::setContent</a>().</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

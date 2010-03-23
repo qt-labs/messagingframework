@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailcontentmanager.cpp -->
+<head>
+  <title>QMailContentManagerFactory Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailContentManagerFactory Class Reference</h1>
+<p>The QMailContentManagerFactory class creates objects implementing the <a href="qmailcontentmanager.html">QMailContentManager</a> interface. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailContentManagerFactory&gt;</pre><ul>
+<li><a href="qmailcontentmanagerfactory-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#clearContent">clearContent</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailContentManager * </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#create">create</a></b> ( const QString &amp; <i>scheme</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#defaultScheme">defaultScheme</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#init">init</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#schemes">schemes</a></b> ()</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailContentManagerFactory class creates objects implementing the <a href="qmailcontentmanager.html">QMailContentManager</a> interface.</p>
+<p>The QMailContentManagerFactory class creates objects that manage the storage and retrieval of message content via the QMailContentManger interface. The factory allows implementations to be loaded from plugin libraries, and to be retrieved by the name of the content management scheme they implement.</p>
+<p>To create a new class that can be created via the QMailContentManagerFactory, implement a plugin that derives from <a href="qmailcontentmanagerplugin.html">QMailContentManagerPlugin</a>.</p>
+<p>See also <a href="qmailcontentmanager.html">QMailContentManager</a> and <a href="qmailcontentmanagerplugin.html">QMailContentManagerPlugin</a>.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="clearContent"></a>void QMailContentManagerFactory::clearContent ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Clears the content managed by all content managers known to the factory.</p>
+<h3 class="fn"><a name="create"></a><a href="qmailcontentmanager.html">QMailContentManager</a> * QMailContentManagerFactory::create ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>scheme</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Creates a content manager object for the scheme identified by <i>scheme</i>.</p>
+<h3 class="fn"><a name="defaultScheme"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailContentManagerFactory::defaultScheme ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the default content management scheme supported by the factory.</p>
+<h3 class="fn"><a name="init"></a>bool QMailContentManagerFactory::init ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Performs any initialization tasks for content managers known to the factory. Returns false if any content managers are unable to perform initialiation tasks.</p>
+<h3 class="fn"><a name="schemes"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailContentManagerFactory::schemes ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a list of all content management schemes for which content manager objects can be instantiated by the factory.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

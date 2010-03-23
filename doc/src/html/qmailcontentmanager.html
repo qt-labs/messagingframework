@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailcontentmanager.cpp -->
+<head>
+  <title>QMailContentManager Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailContentManager Class Reference</h1>
+<p>The QMailContentManager class defines the interface to objects that provide a storage facility for message content. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailContentManager&gt;</pre><ul>
+<li><a href="qmailcontentmanager-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</a></b> { EnsureDurability, DeferDurability }</td></tr>
+</table>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#add">add</a></b> ( QMailMessage * <i>message</i>, DurabilityRequirement <i>durability</i> ) = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#clearContent">clearContent</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#ensureDurability">ensureDurability</a></b> () = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#init">init</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#load">load</a></b> ( const QString &amp; <i>identifier</i>, QMailMessage * <i>message</i> ) = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#remove">remove</a></b> ( const QString &amp; <i>identifier</i> ) = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#update">update</a></b> ( QMailMessage * <i>message</i>, DurabilityRequirement <i>durability</i> ) = 0</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailContentManager class defines the interface to objects that provide a storage facility for message content.</p>
+<p>Qt Extended uses the QMailContentManager interface to delegate the storage and retrieval of message content from the <a href="qmailstore.html">QMailStore</a> class to classes loaded from plugin libraries. A library may provide this service by exporting a class implementing the QMailContentManager interface, and an associated instance of <a href="qmailcontentmanagerplugin.html">QMailContentManagerPlugin</a>.</p>
+<p>The content manager used to store the content of a message is determined by the <a href="qmailmessagemetadata.html#contentScheme">contentScheme</a> function of a <a href="qmailmessage.html">QMailMessage</a> object. The identifier of the message content is provided by the corresponding <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a> function; this property is provided for the use of the content manager code, and is opaque to the remainder of the system. A <a href="qmailmessage.html">QMailMessage</a> object may be associated with a particular content manager by calling <a href="qmailmessagemetadata.html#setContentScheme">setContentScheme</a> to set the relevant scheme before adding the message to the mail store.</p>
+<p>If a content manager provides data to clients by creating references to file-backed memory mappings, then the content manager must ensure that those files remain valid. The existing content within the file must not be modified, and the file must not be truncated. If the content manager updates the content of a message which is already exported using memory mappings, then the updated content should be stored to a new content location, and the message object updated with the new <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a> information.</p>
+<p>If a stored message contains parts whose content is only partially available (as defined by <a href="qmailmessagepartcontainer.html#partialContentAvailable">QMailMessagePartContainer::partialContentAvailable</a>() and <a href="qmailmessagepartcontainer.html#contentAvailable">QMailMessagePartContainer::contentAvailable</a>()), the content manager must ensure that the partial data is returned to clients in the same transfer encoding that it was stored with.</p>
+<p>See also <a href="qmailstore.html">QMailStore</a> and <a href="qmailmessage.html">QMailMessage</a>.</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="DurabilityRequirement-enum"></a>enum QMailContentManager::DurabilityRequirement</h3>
+<p>This enum type is used to define the dequirement for durability in a content management request.</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMailContentManager::EnsureDurability</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">The content manager should make the requested changes durable before reporting success.</td></tr>
+<tr><td valign="top"><tt>QMailContentManager::DeferDurability</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">The content manager may defer ensuring that changes are durable until the next invocation of <a href="qmailcontentmanager.html#ensureDurability">ensureDurability</a>().</td></tr>
+</table></p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="add"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::add ( <a href="qmailmessage.html">QMailMessage</a> * <i>message</i>, <a href="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</a> <i>durability</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager add the content of <i>message</i> to its storage. The message should be updated such that its <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a> property contains the location at which the content is stored. Returns <a href="qmailstore.html#ErrorCode-enum">NoError</a> to indicate successful addition of the message content to permanent storage.</p>
+<p>If <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a> is already populated at invocation, the content manager should determine whether the supplied identifier can be used. If not, it should use an alternate location and update <i>message</i> with the new identifier.</p>
+<p>If <i>durability</i> is <a href="qmailcontentmanager.html#DurabilityRequirement-enum">EnsureDurability</a> then the content manager should ensure that the message addition has been recorded in a durable fashion before reporting success to the caller.</p>
+<h3 class="fn"><a name="clearContent"></a>void QMailContentManager::clearContent ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Directs the content manager to clear any message content that it is responsible for.</p>
+<p>This function is called by the mail store to remove all existing data, typically in test conditions.</p>
+<h3 class="fn"><a name="ensureDurability"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::ensureDurability ()&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager ensure that any previous actions that were performed with the <a href="qmailcontentmanager.html#DurabilityRequirement-enum">DeferDurability</a> option be made durable.</p>
+<h3 class="fn"><a name="init"></a>bool QMailContentManager::init ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Directs the content manager to perform any initialization tasks required. The content manager should return false if unable to perform initialization tasks; otherwise return true.</p>
+<p>This function is called by the mail store after it has been successfully initialized.</p>
+<h3 class="fn"><a name="load"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::load ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>identifier</i>, <a href="qmailmessage.html">QMailMessage</a> * <i>message</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager load the message content stored at the location indicated by <i>identifier</i> into the message record <i>message</i>. Returns <a href="qmailstore.html#ErrorCode-enum">NoError</a> to indicate that the message content has been successfully loaded.</p>
+<p>If the identified content does not already exist, the content manager should return <a href="qmailstore.html#ErrorCode-enum">InvalidId</a>.</p>
+<h3 class="fn"><a name="remove"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::remove ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>identifier</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager remove the message content stored at the location indicated by <i>identifier</i>. Returns <a href="qmailstore.html#ErrorCode-enum">NoError</a> to indicate that the message content has been successfully removed.</p>
+<p>If the content cannot be removed, the content manager should return <a href="qmailstore.html#ErrorCode-enum">ContentNotRemoved</a> to indicate that removal of the content should be retried at a later time.</p>
+<p>If the identified content does not already exist, the content manager should return <a href="qmailstore.html#ErrorCode-enum">InvalidId</a>.</p>
+<h3 class="fn"><a name="update"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::update ( <a href="qmailmessage.html">QMailMessage</a> * <i>message</i>, <a href="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</a> <i>durability</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager update the message content stored at the location indicated by <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a>, to contain the current content of <i>message</i>. Returns <a href="qmailstore.html#ErrorCode-enum">NoError</a> to indicate successful update of the message content.</p>
+<p>If the updated content is not stored to the existing location, the content manager should use an alternate location and update <i>message</i> with the new <a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a>.</p>
+<p>The existing content should be removed if the update causes a new content identifier to be allocated. If the previous content cannot be removed, but the update was otherwise successful, the content manager should return <a href="qmailstore.html#ErrorCode-enum">ContentNotRemoved</a> to indicate that removal of the content should be retried at a later time.</p>
+<p>If <i>durability</i> is <a href="qmailcontentmanager.html#DurabilityRequirement-enum">EnsureDurability</a> then the content manager should ensure that the message update has been recorded in a durable fashion before reporting success to the caller.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

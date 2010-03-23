@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageservice.cpp -->
+<head>
+  <title>QMailMessageSource Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailMessageSource Class Reference</h1>
+<p>The QMailMessageSource class defines the interface to objects that provide access to externally sourced messages to the messageserver. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailMessageSource&gt;</pre><p>Inherits <a href="http://doc.trolltech.com/4.5/qobject.html">QObject</a>.</p>
+<ul>
+<li><a href="qmailmessagesource-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::MessageRemovalOption </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messageRemovalOption">messageRemovalOption</a></b> () const</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
+</ul>
+<hr />
+<a name="public-slots"></a>
+<h2>Public Slots</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#cancelSearch">cancelSearch</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#copyMessages">copyMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, const QMailFolderId &amp; <i>destinationId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#createFolder">createFolder</a></b> ( const QString &amp; <i>name</i>, const QMailAccountId &amp; <i>accountId</i>, const QMailFolderId &amp; <i>parentId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#deleteFolder">deleteFolder</a></b> ( const QMailFolderId &amp; <i>folderId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#deleteMessages">deleteMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#exportUpdates">exportUpdates</a></b> ( const QMailAccountId &amp; <i>accountId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#flagMessages">flagMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, quint64 <i>setMask</i>, quint64 <i>unsetMask</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#moveMessages">moveMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, const QMailFolderId &amp; <i>destinationId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#prepareMessages">prepareMessages</a></b> ( const QList&lt;QPair&lt;QMailMessagePart::Location, QMailMessagePart::Location&gt; &gt; &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#protocolRequest">protocolRequest</a></b> ( const QMailAccountId &amp; <i>accountId</i>, const QString &amp; <i>request</i>, const QVariant &amp; <i>data</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#renameFolder">renameFolder</a></b> ( const QMailFolderId &amp; <i>folderId</i>, const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveAll">retrieveAll</a></b> ( const QMailAccountId &amp; <i>accountId</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveFolderList">retrieveFolderList</a></b> ( const QMailAccountId &amp; <i>accountId</i>, const QMailFolderId &amp; <i>folderId</i>, bool <i>descending</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveMessageList">retrieveMessageList</a></b> ( const QMailAccountId &amp; <i>accountId</i>, const QMailFolderId &amp; <i>folderId</i>, uint <i>minimum</i>, const QMailMessageSortKey &amp; <i>sort</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveMessagePart">retrieveMessagePart</a></b> ( const QMailMessagePart::Location &amp; <i>partLocation</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveMessagePartRange">retrieveMessagePartRange</a></b> ( const QMailMessagePart::Location &amp; <i>partLocation</i>, uint <i>minimum</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveMessageRange">retrieveMessageRange</a></b> ( const QMailMessageId &amp; <i>messageId</i>, uint <i>minimum</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#retrieveMessages">retrieveMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailRetrievalAction::RetrievalSpecification <i>spec</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#searchMessages">searchMessages</a></b> ( const QMailMessageKey &amp; <i>searchCriteria</i>, const QString &amp; <i>bodyText</i>, const QMailMessageSortKey &amp; <i>sort</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#synchronize">synchronize</a></b> ( const QMailAccountId &amp; <i>accountId</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 public slot inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-slots">QObject</a></li>
+</ul>
+<hr />
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messagesCopied">messagesCopied</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messagesDeleted">messagesDeleted</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messagesFlagged">messagesFlagged</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messagesMoved">messagesMoved</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#newMessagesAvailable">newMessagesAvailable</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#protocolResponse">protocolResponse</a></b> ( const QString &amp; <i>response</i>, const QVariant &amp; <i>data</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 signal inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#signals">QObject</a></li>
+</ul>
+<hr />
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#QMailMessageSource">QMailMessageSource</a></b> ( QMailMessageService * <i>service</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>7 protected functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>1 property inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#properties">QObject</a></li>
+<li><div class="fn"></div>1 public type inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"></div>4 static public members inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#static-public-members">QObject</a></li>
+<li><div class="fn"></div>2 protected variables inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailMessageSource class defines the interface to objects that provide access to externally sourced messages to the messageserver.</p>
+<p>The Qt Extended messageserver uses the QMailMessageSource interface to cooperate with components loaded from plugin libraries, that act as sources of messaging data for the messaging framework. Instances of QMailMessageSource are not created directly by the messageserver, but are exported by <a href="qmailmessageservice.html">QMailMessageService</a> objects via their <a href="qmailmessageservice.html#source">source</a> function.</p>
+<p>See also <a href="qmailmessageservice.html">QMailMessageService</a> and <a href="qmailstore.html">QMailStore</a>.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailMessageSource"></a>QMailMessageSource::QMailMessageSource ( <a href="qmailmessageservice.html">QMailMessageService</a> * <i>service</i> )&nbsp;&nbsp;<tt> [protected]</tt></h3>
+<p>Creates a message source object associated with the service <i>service</i>.</p>
+<h3 class="fn"><a name="cancelSearch"></a>bool QMailMessageSource::cancelSearch ()&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="copyMessages"></a>bool QMailMessageSource::copyMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>destinationId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message copy operation.</p>
+<p>For each message listed in <i>ids</i>, create a new copy in the folder identified by <i>destinationId</i>.</p>
+<p>Successfully copied messages should be progressively reported via <a href="qmailmessagesource.html#messagesCopied">messagesCopied</a>().</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#messagesCopied">messagesCopied</a>().</p>
+<h3 class="fn"><a name="createFolder"></a>bool QMailMessageSource::createFolder ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i>, const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>parentId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to create a new folder.</p>
+<p>Creates a new folder named <i>name</i>, created in the account identified by <i>accountId</i>. If <i>parentId</i> is a valid folder identifier the new folder will be a child of the parent; otherwise the folder will be have no parent and will be created at the highest level.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#deleteFolder">deleteFolder</a>().</p>
+<h3 class="fn"><a name="deleteFolder"></a>bool QMailMessageSource::deleteFolder ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to delete a folder.</p>
+<p>Deletes the folder identified by <i>folderId</i>. It is the responsibility of the message source to ensure all subfolders and messages are also deleted.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#createFolder">createFolder</a>().</p>
+<h3 class="fn"><a name="deleteMessages"></a>bool QMailMessageSource::deleteMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message deletion operation.</p>
+<p>Delete all messages listed in <i>ids</i> from the local mail store and the external server.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#messagesDeleted">messagesDeleted</a>().</p>
+<h3 class="fn"><a name="exportUpdates"></a>bool QMailMessageSource::exportUpdates ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate an export operation.</p>
+<p>Update the external server with any changes to message status that have been effected on the local device for account <i>accountId</i>.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#synchronize">synchronize</a>().</p>
+<h3 class="fn"><a name="flagMessages"></a>bool QMailMessageSource::flagMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>setMask</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>unsetMask</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message flag operation.</p>
+<p>Modify each message listed in <i>ids</i> such that the status flags set in <i>setMask</i> are set, and the status flags set in <i>unsetMask</i> are unset. If further changes are implied by modification of the flags (including message movement or deletion), thse actions should also be performed by the service.</p>
+<p>Successfully modified messages should be progressively reported via <a href="qmailmessagesource.html#messagesFlagged">messagesFlagged</a>().</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#messagesFlagged">messagesFlagged</a>().</p>
+<h3 class="fn"><a name="matchingMessageIds"></a>void QMailMessageSource::matchingMessageIds ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the messages listed in <i>ids</i> as matching the current search.</p>
+<h3 class="fn"><a name="messageRemovalOption"></a><a href="qmailstore.html#MessageRemovalOption-enum">QMailStore::MessageRemovalOption</a> QMailMessageSource::messageRemovalOption () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the removal option used when deleting messages via this message source.</p>
+<p>See also <a href="qmailstore.html#removeMessages">QMailStore::removeMessages</a>().</p>
+<h3 class="fn"><a name="messagesCopied"></a>void QMailMessageSource::messagesCopied ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the copying of the messages listed in <i>ids</i>.</p>
+<h3 class="fn"><a name="messagesDeleted"></a>void QMailMessageSource::messagesDeleted ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the deletion of the messages listed in <i>ids</i>.</p>
+<h3 class="fn"><a name="messagesFlagged"></a>void QMailMessageSource::messagesFlagged ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the modification of the messages listed in <i>ids</i>.</p>
+<h3 class="fn"><a name="messagesMoved"></a>void QMailMessageSource::messagesMoved ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the moving of the messages listed in <i>ids</i>.</p>
+<h3 class="fn"><a name="messagesPrepared"></a>void QMailMessageSource::messagesPrepared ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the successful preparation for transmission of the messages listed in <i>ids</i>.</p>
+<h3 class="fn"><a name="moveMessages"></a>bool QMailMessageSource::moveMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>destinationId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message move operation.</p>
+<p>Move each message listed in <i>ids</i> into the folder identified by <i>destinationId</i>.</p>
+<p>Successfully moved messages should be progressively reported via <a href="qmailmessagesource.html#messagesMoved">messagesMoved</a>().</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#messagesMoved">messagesMoved</a>().</p>
+<h3 class="fn"><a name="newMessagesAvailable"></a>void QMailMessageSource::newMessagesAvailable ()&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the availability of new messages.</p>
+<h3 class="fn"><a name="prepareMessages"></a>bool QMailMessageSource::prepareMessages ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>, <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>&gt; &gt; &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message preparation operation.</p>
+<p>Prepare each message listed in <i>ids</i> for transmission by resolving any external references into URLs, and updating the reference in the associated location.</p>
+<p>Messages successfully prepared for transmission should be progressively reported via <a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a>().</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a>().</p>
+<h3 class="fn"><a name="protocolRequest"></a>bool QMailMessageSource::protocolRequest ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>request</i>, const <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> &amp; <i>data</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a protocol-specific operation.</p>
+<p>If <i>request</i> corresponds to a protocol-specific action implemented by the source, initiate the requested operation for <i>accountId</i>, using any relevant information extracted from <i>data</i>.</p>
+<p>Any responses resulting from the action should be progressively reported via <a href="qmailmessagesource.html#protocolResponse">protocolResponse</a>().</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#protocolResponse">protocolResponse</a>().</p>
+<h3 class="fn"><a name="protocolResponse"></a>void QMailMessageSource::protocolResponse ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>response</i>, const <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> &amp; <i>data</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal emitted by the source to report the response <i>response</i> resulting from a protocol-specific request, with any associated <i>data</i>.</p>
+<h3 class="fn"><a name="renameFolder"></a>bool QMailMessageSource::renameFolder ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to rename a folder.</p>
+<p>Renames the folder identified by <i>folderId</i> to <i>name</i>. The location of the folder in the existing hierarchy should not change.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#deleteFolder">deleteFolder</a>() and <a href="qmailmessagesource.html#createFolder">createFolder</a>().</p>
+<h3 class="fn"><a name="retrieveAll"></a>bool QMailMessageSource::retrieveAll ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a retrieval operation.</p>
+<p>Retrieve all folders and meta data for all messages available for the account <i>accountId</i>.</p>
+<p>All folders within the account should be discovered and searched for child folders. The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for each folder in the account.</p>
+<p>New messages should be added to the mail store in meta data form as they are discovered, and marked with the <a href="qmailmessagemetadata.html#New-var">QMailMessage::New</a> status flag. Messages that are present in the mail store but found to be no longer available should be marked with the <a href="qmailmessagemetadata.html#Removed-var">QMailMessage::Removed</a> status flag.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#retrieveFolderList">retrieveFolderList</a>(), <a href="qmailmessagesource.html#retrieveMessageList">retrieveMessageList</a>(), and <a href="qmailmessagesource.html#synchronize">synchronize</a>().</p>
+<h3 class="fn"><a name="retrieveFolderList"></a>bool QMailMessageSource::retrieveFolderList ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i>, bool <i>descending</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a folder listing operation.</p>
+<p>Retrieve the set of folders available for the account <i>accountId</i>. If <i>folderId</i> is valid, only the identified folder is searched for child folders; otherwise the search begins at the root of the account. If <i>descending</i> is true, the search should also recursively search for child folders within folders discovered during the search.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for each folder that is searched for child folders; these properties need not be updated for folders that are merely discovered by searching.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#retrieveAll">retrieveAll</a>().</p>
+<h3 class="fn"><a name="retrieveMessageList"></a>bool QMailMessageSource::retrieveMessageList ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i>, const <a href="qmailmessagesortkey.html">QMailMessageSortKey</a> &amp; <i>sort</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message listing operation.</p>
+<p>Retrieve the list of messages available for the account <i>accountId</i>. If <i>folderId</i> is valid, then only messages within that folder should be retrieved; otherwise messages within all folders in the account should be retrieved. If <i>minimum</i> is non-zero, then that value will be used to restrict the number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.</p>
+<p>If <i>sort</i> is not empty, reported the discovered messages in the ordering indicated by the sort criterion, if possible. Message sources are not required to support this facility.</p>
+<p>If a folder messages are being retrieved from contains at least <i>minimum</i> messages then the messageserver should ensure that at least <i>minimum</i> messages are available from the mail store for that folder; otherwise if the folder contains less than <i>minimum</i> messages the messageserver should ensure all the messages for that folder are available from the mail store. If a folder has messages locally available, then all previously undiscovered messages should be retrieved for that folder, even if that number exceeds <i>minimum</i>.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for each folder from which messages are retrieved.</p>
+<p>New messages should be added to the mail store in meta data form as they are discovered, and marked with the <a href="qmailmessagemetadata.html#New-var">QMailMessage::New</a> status flag. Messages that are present in the mail store but found to be no longer available should be marked with the <a href="qmailmessagemetadata.html#Removed-var">QMailMessage::Removed</a> status flag.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#retrieveAll">retrieveAll</a>().</p>
+<h3 class="fn"><a name="retrieveMessagePart"></a>bool QMailMessageSource::retrieveMessagePart ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message part retrieval operation.</p>
+<p>Retrieve the content of the message part indicated by the location <i>partLocation</i>.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for the folder from which the part is retrieved.</p>
+<p>Return true if an operation is initiated.</p>
+<h3 class="fn"><a name="retrieveMessagePartRange"></a>bool QMailMessageSource::retrieveMessagePartRange ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message part range retrieval operation.</p>
+<p>Retrieve a portion of the content of the message part indicated by the location <i>partLocation</i>, ensuring that at least <i>minimum</i> bytes are available in the mail store.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for the folder from which the part is retrieved.</p>
+<p>Return true if an operation is initiated.</p>
+<h3 class="fn"><a name="retrieveMessageRange"></a>bool QMailMessageSource::retrieveMessageRange ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message range retrieval operation.</p>
+<p>Retrieve a portion of the content of the message identified by <i>messageId</i>, ensuring that at least <i>minimum</i> bytes are available in the mail store.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for the folder from which the message is retrieved.</p>
+<p>Return true if an operation is initiated.</p>
+<h3 class="fn"><a name="retrieveMessages"></a>bool QMailMessageSource::retrieveMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::RetrievalSpecification</a> <i>spec</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a message retrieval operation.</p>
+<p>Retrieve data regarding each of the messages listed in <i>ids</i>.</p>
+<p>If <i>spec</i> is <a href="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Flags</a>, then the message server should detect if the messages identified by <i>ids</i> have been marked as read or have been removed. Messages that have been read will be marked with the <a href="qmailmessagemetadata.html#ReadElsewhere-var">QMailMessage::ReadElsewhere</a> flag, and messages that have been removed will be marked with the <a href="qmailmessagemetadata.html#Removed-var">QMailMessage::Removed</a> status flag.</p>
+<p>If <i>spec</i> is <a href="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::MetaData</a>, then the message server should retrieve the meta data of the each message listed in <i>ids</i>.</p>
+<p>If <i>spec</i> is <a href="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Content</a>, then the message server should retrieve the entirety of each message listed in <i>ids</i>.</p>
+<p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for each folder from which messages are retrieved.</p>
+<p>Return true if an operation is initiated.</p>
+<h3 class="fn"><a name="searchMessages"></a>bool QMailMessageSource::searchMessages ( const <a href="qmailmessagekey.html">QMailMessageKey</a> &amp; <i>searchCriteria</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>bodyText</i>, const <a href="qmailmessagesortkey.html">QMailMessageSortKey</a> &amp; <i>sort</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a remote message search operation.</p>
+<p>Search the remote server for messages that match the search criteria encoded by <i>searchCriteria</i>. If <i>bodyText</i> is non-empty, matching messages must also contain the specified string. Messages whose content is already present on the local device should be excluded from the remote search.</p>
+<p>If <i>sort</i> is not empty, matched messages should be discovered by testing for matches in the ordering indicated by the sort criterion, if possible.</p>
+<p>Messages matching the search criteria should be added to the mail store in meta data form marked with the <a href="qmailmessagemetadata.html#New-var">QMailMessage::New</a> status flag, and progressively reported via <a href="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</a>().</p>
+<p>Return true if a search operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</a>() and <a href="qmailmessagesource.html#retrieveMessages">retrieveMessages</a>().</p>
+<h3 class="fn"><a name="synchronize"></a>bool QMailMessageSource::synchronize ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a synchronization operation.</p>
+<p>Synchronize the set of known folder and message identifiers with those currently available for the account identified by <i>accountId</i>. Newly discovered messages should have their meta data retrieved, and local changes to message status should be exported to the external server.</p>
+<p>New messages should be added to the mail store in meta data form as they are discovered, and marked with the <a href="qmailmessagemetadata.html#New-var">QMailMessage::New</a> status flag. Messages that are present in the mail store but found to be no longer available should be marked with the <a href="qmailmessagemetadata.html#Removed-var">QMailMessage::Removed</a> status flag.</p>
+<p>The folder structure of the account should be synchronized with that available from the external service. The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for each folder.</p>
+<p>Return true if an operation is initiated.</p>
+<p>See also <a href="qmailmessagesource.html#retrieveAll">retrieveAll</a>() and <a href="qmailmessagesource.html#exportUpdates">exportUpdates</a>().</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

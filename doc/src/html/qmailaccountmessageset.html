@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailmessageset.cpp -->
+<head>
+  <title>QMailAccountMessageSet Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailAccountMessageSet Class Reference</h1>
+<p>The QMailAccountMessageSet class represents a set of messages corresponding to the content of a <a href="qmailaccount.html">QMailAccount</a>. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailAccountMessageSet&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<p>Inherits <a href="qmailmessageset.html">QMailMessageSet</a>.</p>
+<ul>
+<li><a href="qmailaccountmessageset-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#QMailAccountMessageSet">QMailAccountMessageSet</a></b> ( QMailMessageSetContainer * <i>container</i>, const QMailAccountId &amp; <i>accountId</i>, bool <i>hierarchical</i> = true )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#accountId">accountId</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#hierarchical">hierarchical</a></b> () const</td></tr>
+</table>
+<hr />
+<a name="reimplemented-public-functions"></a>
+<h2>Reimplemented Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#descendantsMessageKey">descendantsMessageKey</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#displayName">displayName</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#messageKey">messageKey</a></b> () const</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>5 public functions inherited from <a href="qmailmessageset.html#public-functions">QMailMessageSet</a></li>
+<li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
+<li><div bar="2" class="fn"></div>10 public functions inherited from <a href="qmailmessagesetcontainer.html#public-functions">QMailMessageSetContainer</a></li>
+</ul>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#contentKey">contentKey</a></b> ( const QMailAccountId &amp; <i>id</i>, bool <i>descendants</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>4 static public members inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#static-public-members">QObject</a></li>
+</ul>
+<hr />
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountmessageset.html#createChild">createChild</a></b> ( const QMailFolderId &amp; <i>childId</i> )</td></tr>
+</table>
+<ul>
+<li><div bar="2" class="fn"></div>1 protected function inherited from <a href="qmailmessageset.html#protected-functions">QMailMessageSet</a></li>
+<li><div bar="2" class="fn"></div>7 protected functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-functions">QObject</a></li>
+<li><div bar="2" class="fn"></div>1 protected function inherited from <a href="qmailmessagesetcontainer.html#protected-functions">QMailMessageSetContainer</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>1 property inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#properties">QObject</a></li>
+<li><div class="fn"></div>1 public slot inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-slots">QObject</a></li>
+<li><div class="fn"></div>1 signal inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#signals">QObject</a></li>
+<li><div class="fn"></div>1 public type inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-variables">QObject</a></li>
+<li><div class="fn"></div>2 protected variables inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailAccountMessageSet class represents a set of messages corresponding to the content of a <a href="qmailaccount.html">QMailAccount</a>.</p>
+<p>QMailAccountMessageSet provides a representation for a named subset of messages, specified by their parent <a href="qmailaccount.html">QMailAccount</a>.</p>
+<p>If the QMailAccountMessageSet is <a href="qmailaccountmessageset.html#hierarchical">hierarchical</a>(), then any folders contained by the account will automatically be managed as child <a href="qmailfoldermessageset.html">QMailFolderMessageSet</a>s of the parent QMailAccountMessageSet.</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailAccountMessageSet"></a>QMailAccountMessageSet::QMailAccountMessageSet ( <a href="qmailmessagesetcontainer.html">QMailMessageSetContainer</a> * <i>container</i>, const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, bool <i>hierarchical</i> = true )</h3>
+<p>Constructs a <a href="qmailaccountmessageset.html">QMailAccountMessageSet</a> within the parent container <i>container</i>, whose message set is defined by the content of the <a href="qmailaccount.html">QMailAccount</a> identified by <i>accountId</i>. If <i>hierarchical</i> is true, the message set will automatically maintain a set of child QMailFolderMessageSets corresponding to <a href="qmailfolder.html">QMailFolder</a>s whose <a href="qmailfolder.html#parentAccountId">parentAccountId</a> is <i>accountId</i>, and whose <a href="qmailfolder.html#parentFolderId">parentFolderId</a> is empty.</p>
+<h3 class="fn"><a name="accountId"></a><a href="qmailaccountid.html">QMailAccountId</a> QMailAccountMessageSet::accountId () const</h3>
+<p>Returns the identifier of the <a href="qmailaccount.html">QMailAccount</a> associated with this message set.</p>
+<h3 class="fn"><a name="contentKey"></a><a href="qmailmessagekey.html">QMailMessageKey</a> QMailAccountMessageSet::contentKey ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i>, bool <i>descendants</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the message key that defines the content of a <a href="qmailaccountmessageset.html">QMailAccountMessageSet</a> for the account identified by <i>id</i>. If <i>descendants</i> is true, then the result is the key that defines the descendantMessageKey() content.</p>
+<h3 class="fn"><a name="createChild"></a>void QMailAccountMessageSet::createChild ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>childId</i> )&nbsp;&nbsp;<tt> [virtual protected]</tt></h3>
+<p>Creates a message set object for the folder identified by <i>childId</i>, and appends it to this object.</p>
+<p>Override this function to specialize the type created for child nodes.</p>
+<h3 class="fn"><a name="descendantsMessageKey"></a><a href="qmailmessagekey.html">QMailMessageKey</a> QMailAccountMessageSet::descendantsMessageKey () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="qmailmessageset.html#descendantsMessageKey">QMailMessageSet::descendantsMessageKey</a>().</p>
+<p>Returns the <a href="qmailmessagekey.html">QMailMessageKey</a> that selects the messages beneath the configured account in the hierarchy.</p>
+<h3 class="fn"><a name="displayName"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailAccountMessageSet::displayName () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="qmailmessageset.html#displayName">QMailMessageSet::displayName</a>().</p>
+<p>Returns the name of the account that this message set represents.</p>
+<p>See also <a href="qmailaccount.html#name">QMailAccount::name</a>().</p>
+<h3 class="fn"><a name="hierarchical"></a>bool QMailAccountMessageSet::hierarchical () const</h3>
+<p>Returns true if this message set automatically maintains a hierarchy of child folder message sets.</p>
+<h3 class="fn"><a name="messageKey"></a><a href="qmailmessagekey.html">QMailMessageKey</a> QMailAccountMessageSet::messageKey () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="qmailmessageset.html#messageKey">QMailMessageSet::messageKey</a>().</p>
+<p>Returns the <a href="qmailmessagekey.html">QMailMessageKey</a> that selects the messages contained by the configured account.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

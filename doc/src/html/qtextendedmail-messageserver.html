@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qtopiamail_messageserver.qdoc -->
+<head>
+  <title>Message Server Support Library</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">Message Server Support Library<br /><span class="subtitle"></span>
+</h1>
+<ul><li><a href="#overview">Overview</a></li>
+<li><a href="#message-accounts">Message Accounts</a></li>
+<li><a href="#message-services">Message Services</a></li>
+<li><a href="#utility-classes">Utility Classes</a></li>
+<li><a href="#changes-between-versions">Changes Between Versions</a></li>
+</ul>
+<a name="overview"></a>
+<h2>Overview</h2>
+<p>The Messaging Framework Message Server Support Library provides classes that assist with the development of components that operate as plugins within the <a href="messageserver.html">Message Server</a> daemon. The client utility library depends on the <a href="qtextendedmail.html">Messaging Framework Client Library</a> to provide data access and manipulation classes.</p>
+<p>For detailed class information refer to: <a href="libmessageserver.html">Message Server Support Classes</a>.</p>
+<a name="message-accounts"></a>
+<h2>Message Accounts</h2>
+<p>The Message Server Support Library provides classes for storing information about messaging accounts both outgoing and incoming.</p>
+<p><table class="generic" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Class</th><th>Description</th></tr></thead>
+<tr valign="top" class="odd"><td><a href="qmailserviceconfiguration.html">QMailServiceConfiguration</a></td><td>Provides an interface to the configuration details for a service within an account.</td></tr>
+<tr valign="top" class="even"><td><a href="qmailstoreaccountfilter.html">QMailStoreAccountFilter</a></td><td>Forward the signals of <a href="qmailstore.html">QMailStore</a>, filtering for those that affect a single account.</td></tr>
+</table></p>
+<a name="message-services"></a>
+<h2>Message Services</h2>
+<p>The library provides classes that assist with the development of services that can be loaded into the {MessageServer Daemon}{Message Server} daemon via plugins.</p>
+<p><table class="generic" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Class</th><th>Description</th></tr></thead>
+<tr valign="top" class="odd"><td><a href="qmailmessageservice.html">QMailMessageService</a></td><td>The interface between the message server and components loaded from plugin libraries.</td></tr>
+<tr valign="top" class="even"><td><a href="qmailmessagesink.html">QMailMessageSink</a></td><td>The interface to objects that provide message external transmission services to the messageserver.</td></tr>
+<tr valign="top" class="odd"><td><a href="qmailmessagesource.html">QMailMessageSource</a></td><td>The interface to objects that provide access to externally sourced messages to the messageserver.</td></tr>
+<tr valign="top" class="even"><td><a href="qmailmessageserviceeditor.html">QMailMessageServiceEditor</a></td><td>Interface that allows a service to be edited graphically.</td></tr>
+<tr valign="top" class="odd"><td><a href="qmailmessageserviceconfigurator.html">QMailMessageServiceConfigurator</a></td><td>Interface that allows a service to be configured.</td></tr>
+<tr valign="top" class="even"><td><a href="qmailmessageservicefactory.html">QMailMessageServiceFactory</a></td><td>Creates objects implementing the <a href="qmailmessageservice.html">QMailMessageService</a> interface.</td></tr>
+</table></p>
+<a name="utility-classes"></a>
+<h2>Utility Classes</h2>
+<p>The library also provides some utility classes that are used by service components within the Message Server daemon.</p>
+<p><table class="generic" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Class</th><th>Description</th></tr></thead>
+<tr valign="top" class="odd"><td><a href="qmailtransport.html">QMailTransport</a></td><td>A class that provides an encrypted line-oriented communications channel.</td></tr>
+<tr valign="top" class="even"><td><a href="qmailmessageclassifier.html">QMailMessageClassifier</a></td><td>A class that classifies message content by inspection.</td></tr>
+</table></p>
+<a name="changes-between-versions"></a>
+<h2>Changes Between Versions</h2>
+<p>Historical changes in the Message Server Support Library API are listed in <a href="changes-messageserver.html">CHANGES.qdoc</a>.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>
