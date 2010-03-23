@@ -603,7 +603,6 @@ struct PartStorer
 
     bool operator()(const QMailMessagePart &part)
     {
-        qDebug() << "Part referenceType:" << part.referenceType() << "multipart:" << part.multipartType() << "has body: " << part.hasBody();
         if ((part.referenceType() == QMailMessagePart::None) &&
             (part.multipartType() == QMailMessagePartContainer::MultipartNone) &&
             part.hasBody()) {

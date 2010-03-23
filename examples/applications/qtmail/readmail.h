@@ -135,7 +135,6 @@ private:
     bool firstRead;
     bool hasNext, hasPrevious;
     QMenu *context;
-    bool initialized;
     QAction *attachmentsButton;
     QAction *getThisMailButton;
     QAction *storeButton;

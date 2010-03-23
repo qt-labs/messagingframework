@@ -39,26 +39,29 @@
 **
 ****************************************************************************/
 
-#include "searchview.h"
-#include <QPushButton>
-#include <QCheckBox>
-#include <QRadioButton>
-#include <QLineEdit>
-#include "messagelistview.h"
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QFlags>
-#include <QSpinBox>
-#include <QDialog>
 #include "emailfolderview.h"
+#include "messagelistview.h"
+#include "readmail.h"
+#include "searchview.h"
 #include "selectfolder.h"
+
 #include <qmailaccount.h>
 #include <qmailserviceaction.h>
-#include <QStatusBar>
+
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDialog>
 #include <QDateEdit>
+#include <QFlags>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QSpinBox>
+#include <QStatusBar>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 static const int maxMessageBytes = 100000000;
 static const int maxSearchTerms = 10;
@@ -68,15 +71,17 @@ class SearchButton : public QPushButton
 {
     Q_OBJECT
 public:
-    SearchButton(const QMailSearchAction* searchAction, QWidget* parent = 0);
+    SearchButton(QWidget* parent = 0);
 
 signals:
     void startSearch();
     void stopSearch();
 
+public slots:
+    void searchActivityChanged(QMailServiceAction::Activity a);
+
 private slots:
     void thisClicked();
-    void searchActivityChanged(QMailServiceAction::Activity a);
 
 private:
     void updateView();
@@ -85,14 +90,11 @@ private:
     bool m_searching;
 };
 
-SearchButton::SearchButton(const QMailSearchAction* searchAction, QWidget* parent)
-:
-QPushButton("Search",parent),
-m_searching(false)
+SearchButton::SearchButton(QWidget* parent)
+    : QPushButton("Search",parent),
+      m_searching(false)
 {
     connect(this,SIGNAL(clicked(bool)),this,SLOT(thisClicked()));
-    connect(searchAction,SIGNAL(activityChanged(QMailServiceAction::Activity)),
-        this,SLOT(searchActivityChanged(QMailServiceAction::Activity)));
     updateView();
 }
 
@@ -847,17 +849,12 @@ void SearchTermsComposer::removeSearchTerm()
 }
 
 SearchView::SearchView(QWidget* parent, Qt::WindowFlags f)
-:
-QMainWindow(parent,f),
-m_searchAction(new QMailSearchAction())
+    : QMainWindow(parent,f),
+      m_searched(false)
 {
     setupUi();
     setGeometry(0,0,600,400);
-}
-
-SearchView::~SearchView()
-{
-    delete m_searchAction; m_searchAction = 0;
+    setupSearchAction();
 }
 
 void SearchView::setVisible(bool visible)
@@ -905,7 +902,7 @@ void SearchView::setupUi()
     QVBoxLayout* searchSettingsLayout = new QVBoxLayout;
     QVBoxLayout* controlButtonsLayout = new QVBoxLayout;
 
-    m_searchButton = new SearchButton(m_searchAction,this);
+    m_searchButton = new SearchButton(this);
     connect(m_searchButton,SIGNAL(startSearch()),this,SLOT(startSearch()));
     connect(m_searchButton,SIGNAL(stopSearch()),this,SLOT(stopSearch()));
     controlButtonsLayout->addWidget(m_searchButton);
@@ -937,10 +934,6 @@ void SearchView::setupUi()
     connect(m_searchResults,SIGNAL(activated(const QMailMessageId&)),this,SIGNAL(searchResultSelected(const QMailMessageId&)));
     searchSettingsLayout->addWidget(m_searchResults);
 
-    connect(m_searchAction,SIGNAL(messageIdsMatched(const QMailMessageIdList&)),this,SLOT(messageIdsMatched(const QMailMessageIdList&)));
-    connect(m_searchAction,SIGNAL(activityChanged(QMailServiceAction::Activity)),this,SLOT(searchActivityChanged(QMailServiceAction::Activity)));
-    connect(m_searchAction,SIGNAL(progressChanged(uint,uint)),this,SLOT(searchProgressChanged(uint,uint)));
-
     m_statusBar = new QStatusBar(this);
     setStatusBar(m_statusBar);
     m_statusBar->showMessage("Ready.");
@@ -961,7 +954,12 @@ QMailMessageKey SearchView::searchKey() const
 
 void SearchView::startSearch()
 {
-    m_searchResults->setKey(QMailMessageKey::nonMatchingKey()); //remove previous results
+    m_searchResults->setKey(QMailMessageKey::nonMatchingKey());
+
+    if(m_searched) { //lets "restart" the search action
+        delete m_searchAction;
+        setupSearchAction();
+    }
 
     QMailMessageKey key = searchKey();
     if(key.isEmpty() && m_bodySearchWidget->term().isEmpty())
@@ -969,11 +967,14 @@ void SearchView::startSearch()
 
     if(m_searchAction->activity() != QMailServiceAction::InProgress)
         m_searchAction->searchMessages(key,m_bodySearchWidget->term(), m_folderSelectorWidget->searchSpecification());
+
+    m_searched = true;
 }
 
 void SearchView::stopSearch()
 {
-    m_searchAction->cancelOperation();
+    if(m_searched)
+        m_searchAction->cancelOperation();
 }
 
 void SearchView::messageIdsMatched(const QMailMessageIdList& ids)
@@ -990,7 +991,16 @@ void SearchView::searchActivityChanged(QMailServiceAction::Activity a)
 void SearchView::searchProgressChanged(uint value, uint total)
 {
     if(total > 0)
-        m_statusBar->showMessage(QString("Searching %1\%").arg((value*100)/total));
+        m_statusBar->showMessage(QString("Searching %1%").arg((value*100)/total));
+}
+
+void SearchView::setupSearchAction()
+{
+    m_searchAction = new QMailSearchAction(this);
+    connect(m_searchAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), m_searchButton, SLOT(searchActivityChanged(QMailServiceAction::Activity)));
+    connect(m_searchAction, SIGNAL(messageIdsMatched(const QMailMessageIdList&)), this, SLOT(messageIdsMatched(const QMailMessageIdList&)));
+    connect(m_searchAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(searchActivityChanged(QMailServiceAction::Activity)));
+    connect(m_searchAction, SIGNAL(progressChanged(uint,uint)), this, SLOT(searchProgressChanged(uint,uint)));
 }
 
 #include <searchview.moc>

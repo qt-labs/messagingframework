@@ -70,7 +70,6 @@ class SearchView : public QMainWindow
 
 public:
     SearchView(QWidget * parent = 0, Qt::WindowFlags flags = 0);
-    ~SearchView();
     void setVisible(bool visible);
 
 signals:
@@ -92,6 +91,8 @@ private slots:
     void searchActivityChanged(QMailServiceAction::Activity a);
 
 private:
+    void setupSearchAction();
+
     SearchButton* m_searchButton;
     QPushButton* m_resetButton;
     QPushButton* m_closeButton;
@@ -101,6 +102,7 @@ private:
     MessageListView* m_searchResults;
     QMailSearchAction* m_searchAction;
     QStatusBar* m_statusBar;
+    bool m_searched;
 };
 
 #endif

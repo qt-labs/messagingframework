@@ -180,7 +180,7 @@ protected slots:
     void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask);
 
     void messageActivated();
-    void searchResultSelected(const QMailMessageId& id);
+    void showSearchResult(const QMailMessageId& id);
     void emptyTrashFolder();
 
     void moveSelectedMessages();

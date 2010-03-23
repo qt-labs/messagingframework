@@ -1475,9 +1475,9 @@ void EmailClient::messageActivated()
     }
 }
 
-void EmailClient::searchResultSelected(const QMailMessageId& id)
+void EmailClient::showSearchResult(const QMailMessageId &id)
 {
-    readMailWidget()->displayMessage(id,QMailViewerFactory::AnyPresentation,false,false);
+    readMailWidget()->displayMessage(id, QMailViewerFactory::AnyPresentation, false, false);
 }
 
 void EmailClient::accessError(const QString &folderName)
@@ -1556,7 +1556,12 @@ void EmailClient::updateAccounts()
 
 void EmailClient::deleteSelectedMessages()
 {
-    QMailMessageIdList deleteList = messageListView()->selected();
+    QMailMessageIdList deleteList;
+    if(!markingMode)
+        deleteList.append(readMailWidget()->displayedMessage());
+    else
+        deleteList = messageListView()->selected();
+
     int deleteCount = deleteList.count();
     if (deleteCount == 0)
         return;
@@ -1952,11 +1957,11 @@ void EmailClient::renameFolder()
 void EmailClient::search()
 {
     static bool init = false;
-    if(!init)
-    {
-        connect(searchView(),SIGNAL(searchResultSelected(const QMailMessageId&)),this,SLOT(searchResultSelected(const QMailMessageId&)));
+    if(!init) {
+        connect(searchView(), SIGNAL(searchResultSelected(QMailMessageId)), this, SLOT(showSearchResult(const QMailMessageId &)));
         init = true;
     }
+
     searchView()->raise();
     searchView()->activateWindow();
     searchView()->reset();
@@ -2017,21 +2022,21 @@ bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
 
 void EmailClient::replyClicked()
 {
-    QMailMessageId currentId = messageListView()->current();
+    QMailMessageId currentId = readMailWidget()->displayedMessage();
     if(currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::Reply);
 }
 
 void EmailClient::replyAllClicked()
 {
-    QMailMessageId currentId = messageListView()->current();
+    QMailMessageId currentId = readMailWidget()->displayedMessage();
     if(currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::ReplyToAll);
 }
 
 void EmailClient::forwardClicked()
 {
-    QMailMessageId currentId = messageListView()->current();
+    QMailMessageId currentId = readMailWidget()->displayedMessage();
     if(currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::Forward);
 }

@@ -78,10 +78,13 @@ private slots:
     void reportNewCounts();
     void acknowledgeNewMessages(const QMailMessageTypeList&);
 
+    void cleanupTemporaryMessages();
+
 private:
     int newMessageCount(QMailMessage::MessageType type) const;
 
     void updateNewMessageCounts();
+
 
     ServiceHandler *handler;
     MailMessageClient *client;

@@ -173,6 +173,9 @@ MessageServer::MessageServer(QObject *parent)
 
         QCopAdaptor::connect(this, SIGNAL(messageCountUpdated()),
              &messageCountUpdate, MESSAGE(changeValue()));
+
+        //clean up any temporary messages that were not cleaned up by clients
+        QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
     }
 }
 
@@ -410,3 +413,7 @@ void MessageServer::updateNewMessageCounts()
     }
 }
 
+void MessageServer::cleanupTemporaryMessages()
+{
+    QMailStore::instance()->removeMessages(QMailMessageKey::status(QMailMessage::Temporary), QMailStore::NoRemovalRecord);
+}
