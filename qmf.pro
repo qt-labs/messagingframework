@@ -23,7 +23,7 @@ CONFIG += ordered
 
 # Custom target 'doc' to generate documentation
 dox.target = doc
-dox.commands = THISYEAR=2010 qdoc3 $$_PRO_FILE_PWD_/doc/src/qmf.qdocconf
+dox.commands = qdoc3 $$_PRO_FILE_PWD_/doc/src/qmf.qdocconf
 dox.depends =
 
 QMAKE_EXTRA_TARGETS += dox
