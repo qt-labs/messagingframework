@@ -2660,7 +2660,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
         if (!lock.lock(1000)) {
             qMailLog(Messaging) << "Unable to acquire message body mutex in extractMessage!";
             return QMailMessage();
-        } 
+        }
 
         QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first);
         if (contentManager) {
@@ -3396,7 +3396,8 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
             return false;
         }
 
-        contentSchemes.insert(message->contentScheme());
+        if(!message->contentScheme().isEmpty())
+            contentSchemes.insert(message->contentScheme());
     }
 
     // Ensure that the content manager makes the changes durable before we return
@@ -3524,7 +3525,8 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
             return false;
         }
 
-        contentSchemes.insert(pair.first->contentScheme());
+        if(!pair.first->contentScheme().isEmpty())
+            contentSchemes.insert(pair.first->contentScheme());
     }
 
     // Ensure that the content manager makes the changes durable before we return
@@ -4323,43 +4325,46 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     if (!lock.lock(1000)) {
         qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
         return Failure;
-    } 
+    }
 
     ReferenceStorer refStorer(message);
     const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
 
-    if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
-        QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
-        if (code != QMailStore::NoError) {
-            setLastError(code);
-            qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*message);
+    QMailContentManager* contentManager = 0;
+
+    if(!message->contentScheme().isEmpty()) {
+        if (contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
+            QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
+            if (code != QMailStore::NoError) {
+                setLastError(code);
+                qMailLog(Messaging) << "Unable to add message content to URI:" << ::contentUri(*message);
+                return Failure;
+            }
+        }
+        else {
+            qMailLog(Messaging) << "Unable to create content manager for scheme:" << message->contentScheme();
             return Failure;
         }
-
-        AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds, t, commitOnSuccess);
-        if (result != Success) {
-            // Try to remove the content file we added
-            QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
-            if (code != QMailStore::NoError) {
-                qMailLog(Messaging) << "Could not remove extraneous message content:" << ::contentUri(*message);
-                if (code == QMailStore::ContentNotRemoved) {
-                    // The existing content could not be removed - try again later
-                    if (!obsoleteContent(message->contentIdentifier())) {
-                        setLastError(QMailStore::FrameworkFault);
-                    }
-                } else {
-                    setLastError(code);
-                }
-            }
-
-            return result;
-        }
-    } else {
-        qMailLog(Messaging) << "Unable to create content manager for scheme:" << message->contentScheme();
-        return Failure;
     }
 
-    return Success;
+    AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds, t, commitOnSuccess);
+    if (result != Success && contentManager) {
+        // Try to remove the content file we added
+        QMailStore::ErrorCode code = contentManager->remove(message->contentIdentifier());
+        if (code != QMailStore::NoError) {
+            qMailLog(Messaging) << "Could not remove extraneous message content:" << ::contentUri(*message);
+            if (code == QMailStore::ContentNotRemoved) {
+                // The existing content could not be removed - try again later
+                if (!obsoleteContent(message->contentIdentifier())) {
+                    setLastError(QMailStore::FrameworkFault);
+                }
+            } else {
+                setLastError(code);
+            }
+        }
+    }
+
+    return result;
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
@@ -4944,7 +4949,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     }
 
     // Do we actually have an update to perform?
+
     bool updateContent(message && message->contentModified());
+
     if (metaData->dataModified() || updateContent) {
         // Find the existing properties 
         {
@@ -4999,7 +5006,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 return result;
         }
 
-        if (updateContent) {
+        //a content scheme may not be supplied
+        updateProperties &= ~QMailMessageKey::ContentScheme;
+        updateProperties &= ~QMailMessageKey::ContentIdentifier;
+
+        if (updateContent && !metaData->contentScheme().isEmpty()) {
+
             updateProperties |= QMailMessageKey::ContentIdentifier;
 
             bool addContent(updateContent && contentUri.isEmpty());
@@ -5016,7 +5028,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             if (!lock.lock(1000)) {
                 qMailLog(Messaging) << "Unable to acquire message body mutex in updateMessage!";
                 return Failure;
-            } 
+            }
 
             if (QMailContentManager *contentManager = QMailContentManagerFactory::create(metaData->contentScheme())) {
                 QString contentUri(::contentUri(*metaData));
@@ -5161,9 +5173,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             updateProperties &= ~QMailMessageKey::PreviousParentFolderId;
 
         if (updateProperties != QMailMessageKey::Properties()) {
+
             extractedValues = messageValues(updateProperties, *metaData);
 
             QString sql("UPDATE mailmessages SET %1 WHERE id=?");
+
             QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateProperties, true)),
                                         extractedValues + (QVariantList() << updateId),
                                         "updateMessage mailmessages update"));
@@ -6775,6 +6789,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailFolderIdList& modifiedFolderIds,
                                        QMailAccountIdList& modifiedAccountIds)
 {
+
     QString elements("id,mailfile,parentaccountid,parentfolderId");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";

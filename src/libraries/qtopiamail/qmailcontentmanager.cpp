@@ -48,11 +48,11 @@
 
 namespace {
 
-typedef QMap<QString, QMailContentManager*> PluginMap;
+typedef QMap<QString, QMailContentManager*> ContentPluginMap;
 
-PluginMap initMap(QMailPluginManager& manager)
+ContentPluginMap init(QMailPluginManager& manager)
 {
-    PluginMap map;
+    ContentPluginMap map;
 
     foreach (const QString &item, manager.list()) {
         QObject *instance(manager.instance(item));
@@ -60,20 +60,23 @@ PluginMap initMap(QMailPluginManager& manager)
             map.insert(iface->key(), iface->create());
     }
 
+    if(map.isEmpty())
+        qMailLog(Messaging) << "No content manager plugins found. Message content will not be available.";
+
     return map;
 }
 
-PluginMap &pluginMap()
+ContentPluginMap &contentPlugins()
 {
     static QMailPluginManager manager(PLUGIN_KEY);
-    static PluginMap map(initMap(manager));
+    static ContentPluginMap map(init(manager));
     return map;
 }
 
 QMailContentManager *mapping(const QString &scheme)
 {
-    PluginMap::const_iterator it = pluginMap().find(scheme);
-    if (it != pluginMap().end())
+    ContentPluginMap::const_iterator it = contentPlugins().find(scheme);
+    if (it != contentPlugins().end())
         return it.value();
 
     qMailLog(Messaging) << "Unable to map content manager for scheme:" << scheme;
@@ -104,7 +107,7 @@ QMailContentManager *mapping(const QString &scheme)
 */
 QStringList QMailContentManagerFactory::schemes()
 {
-    return pluginMap().keys();
+    return contentPlugins().keys();
 }
 
 /*!
@@ -136,7 +139,7 @@ QMailContentManager *QMailContentManagerFactory::create(const QString &scheme)
 */
 bool QMailContentManagerFactory::init()
 {
-    foreach (QMailContentManager *manager, pluginMap().values())
+    foreach (QMailContentManager *manager, contentPlugins().values())
         if (!manager->init())
             return false;
 
@@ -148,7 +151,7 @@ bool QMailContentManagerFactory::init()
 */
 void QMailContentManagerFactory::clearContent()
 {
-    foreach (QMailContentManager *manager, pluginMap().values())
+    foreach (QMailContentManager *manager, contentPlugins().values())
         manager->clearContent();
 }
 
