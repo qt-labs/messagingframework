@@ -46,7 +46,7 @@
 #include <qmailcontentmanager.h>
 #include <QList>
 #include <QMap>
-
+#include <QSharedPointer>
 
 class QMailMessagePart;
 class QMailMessagePartContainer;
