@@ -220,13 +220,14 @@ QCopChannel::~QCopChannel()
     QCopThreadData *td = qcopThreadData();
 
     QCopClientMap::Iterator it = td->clientMap.find(d->channel);
-    Q_ASSERT(it != td->clientMap.end());
-    it.value().removeAll(QCopChannelPrivatePointer(d));
-    // still any clients connected locally ?
-    if (it.value().isEmpty()) {
-        if (td->hasClientConnection())
-            td->clientConnection()->detachChannel(d->channel);
-        td->clientMap.remove(d->channel);
+    if(it != td->clientMap.end()) {
+        it.value().removeAll(QCopChannelPrivatePointer(d));
+        // still any clients connected locally ?
+        if (it.value().isEmpty()) {
+            if (td->hasClientConnection())
+                td->clientConnection()->detachChannel(d->channel);
+            td->clientMap.remove(d->channel);
+        }
     }
 
     // Dereference the private data structure.  It may stay around

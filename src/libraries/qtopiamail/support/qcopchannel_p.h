@@ -377,7 +377,13 @@ public:
 
     ~QCopThreadData()
     {
-        delete conn;
+        if(hasClientConnection())
+        {
+            foreach(QString channel, clientMap.keys())
+                clientConnection()->detachChannel(channel);
+
+            delete conn;
+        }
     }
 
     static QCopThreadData *instance();
