@@ -514,7 +514,7 @@ void AttachmentOptions::viewAttachment()
                 _decodedData = _part->body().data(QMailMessageBody::Decoded);
 
             // Write the data to a temporary file
-            QString templateText(QMail::tempPath() + "/genericviewer-XXXXXX");
+            QString templateText(QMail::tempPath() + "genericviewer-XXXXXX");
             if (!mt.extensions().isEmpty()) {
                 templateText.append(".").append(mt.extensions().last());
             } else {

@@ -216,7 +216,7 @@ QString QMail::dataPath()
 */
 QString QMail::tempPath()
 {
-    return (dataPath() + "/tmp/");
+    return (dataPath() + "tmp/");
 }
 
 /*!

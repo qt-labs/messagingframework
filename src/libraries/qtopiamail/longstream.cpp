@@ -61,7 +61,7 @@
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
 {
-    QString tmpName( LongStream::tempDir() + QLatin1String( "/qtopiamail" ) );
+    QString tmpName( LongStream::tempDir() + QLatin1String( "qtopiamail" ) );
 
     len = 0;
     appendedBytes = minCheck;
@@ -110,7 +110,7 @@ QString LongStream::detach()
     tmpFile->close();
     delete tmpFile;
 
-    QString tmpName( LongStream::tempDir() + QLatin1String( "/qtopiamail" ) );
+    QString tmpName( LongStream::tempDir() + QLatin1String( "qtopiamail" ) );
 
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
     tmpFile->open();
@@ -196,7 +196,7 @@ bool LongStream::freeSpace( const QString &path, int min)
     if (min >= 0)
         boundary = min;
 
-    QString partitionPath = tempDir() + "/.";
+    QString partitionPath = tempDir();
     if (!path.isEmpty())
         partitionPath = path;
     
@@ -285,7 +285,7 @@ void LongStream::cleanupTempFiles()
     QDir dir( LongStream::tempDir(), "qtopiamail.*" );
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
-        QFile file( LongStream::tempDir() + "/" + list.at(i) );
+        QFile file( LongStream::tempDir() + list.at(i) );
         if (file.exists())
             file.remove();
     }
