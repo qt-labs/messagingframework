@@ -46,11 +46,18 @@
 
 #include <QHostAddress>
 #include <QTextCodec>
+#include <QTemporaryFile>
+#include <QCoreApplication>
+#include <QDir>
 #include <qmaillog.h>
 #include <qmailaddress.h>
 #include <qmailstore.h>
 #include <qmailtransport.h>
+#include <qmailnamespace.h>
 
+// The size of the buffer used when sending messages.
+// Only this many bytes is queued to be sent at a time.
+#define SENDING_BUFFER_SIZE 5000
 
 static bool initialiseRng()
 {
@@ -80,14 +87,18 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
 
 SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
+    , sending(false)
+    , transport(0)
+    , temporaryFile(0)
+    , waitingForBytes(0)
 {
-    sending = false;
-    transport = 0;
 }
 
 SmtpClient::~SmtpClient()
 {
     delete transport;
+    if (temporaryFile)
+        delete temporaryFile;
 }
 
 QMailMessage::MessageType SmtpClient::messageType() const
@@ -577,15 +588,37 @@ void SmtpClient::nextAction(const QString &response)
             // Set the message's message ID
             mailItr->mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
 
-            transport->mark();
-            mailItr->mail.toRfc2822(transport->stream(), QMailMessage::TransmissionFormat);
-            messageLength = transport->bytesSinceMark();
+            Q_ASSERT(temporaryFile == 0);
 
-            transport->stream().writeRawData("\r\n.\r\n", 5);
+            // Buffer the message to a temporary file.
+            QString tempPath = QMail::tempPath();
+            QDir dir;
+            if (!dir.exists(tempPath))
+                dir.mkpath(tempPath);
+            temporaryFile = new QTemporaryFile(tempPath + QLatin1String("/qtopiamail.XXXXXX"));
+            bool ok = temporaryFile->open();
+            Q_ASSERT(ok);
+            {
+                // Note that there is no progress update while the message is streamed to the file.
+                // This isn't optimal but it's how the original code worked and fixing it requires
+                // putting this call onto a separate thread because it blocks until done.
+                QDataStream dataStream(temporaryFile);
+                mailItr->mail.toRfc2822(dataStream, QMailMessage::TransmissionFormat);
+            }
+            messageLength = temporaryFile->size();
+            //qMailLog(SMTP) << "Body: queued" << messageLength << "bytes to" << temporaryFile->fileName();
 
-            qMailLog(SMTP) << "Body: sent:" << messageLength << "bytes";
+            // Now write the message to the transport in blocks, waiting for the bytes to be
+            // written each time so there is no need to allocate large buffers to hold everything.
+            temporaryFile->seek(0);
+            waitingForBytes = 0;
+            if (transport->isEncrypted())
+                connect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+            else
+                connect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
 
-            status = Sent;
+            // trigger the sending of the first block of data
+            sendMoreData(0);
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
@@ -752,5 +785,39 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
     msg.append(text);
 
     emit errorOccurred(code, msg);
+}
+
+void SmtpClient::sendMoreData(qint64 bytesWritten)
+{
+    Q_ASSERT(status == Body && temporaryFile);
+
+    waitingForBytes -= bytesWritten;
+
+    // If anyone else writes bytes we end up with a negative value... just reset to 0 when that happens.
+    if (waitingForBytes < 0) waitingForBytes = 0;
+
+    // Don't send more data until all bytes have been written.
+    if (waitingForBytes) return;
+
+    // No more data to send
+    if (temporaryFile->atEnd()) {
+        if (transport->isEncrypted())
+            disconnect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+        else
+            disconnect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+        delete temporaryFile;
+        temporaryFile = 0;
+        transport->stream().writeRawData("\r\n.\r\n", 5);
+        qMailLog(SMTP) << "Body: sent:" << messageLength << "bytes";
+        status = Sent;
+        return;
+    }
+
+    // Queue up to SENDING_BUFFER_SIZE bytes for transmission
+    char buffer[SENDING_BUFFER_SIZE];
+    qint64 bytes = temporaryFile->read(buffer, SENDING_BUFFER_SIZE);
+    waitingForBytes += bytes;
+    transport->stream().writeRawData(buffer, bytes);
+    //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
 }
 

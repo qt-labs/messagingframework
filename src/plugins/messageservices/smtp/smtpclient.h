@@ -51,6 +51,8 @@
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
 
+class QTemporaryFile;
+
 struct RawEmail
 {
     QString from;
@@ -90,6 +92,9 @@ protected slots:
     void transportError(int, QString msg);
     void readyRead();
     void sent(qint64);
+
+private slots:
+    void sendMoreData(qint64);
 
 private:
     void sendCommand(const char *data, int len = -1);
@@ -132,6 +137,9 @@ private:
     QStringList capabilities;
     quint32 addressComponent;
     QByteArray domainName;
+
+    QTemporaryFile *temporaryFile;
+    qint64 waitingForBytes;
 };
 
 #endif
