@@ -41,7 +41,7 @@
 
 #include "accountsettings.h"
 #include "editaccount.h"
-#include "../statusbar.h"
+#include "statusbar.h"
 #include <qmailaccountlistmodel.h>
 #include <qmaillog.h>
 #include <QVBoxLayout>

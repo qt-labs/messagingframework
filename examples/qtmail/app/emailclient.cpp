@@ -43,7 +43,7 @@
 #include "selectfolder.h"
 #include "emailfoldermodel.h"
 #include "emailfolderview.h"
-#include "settings/accountsettings.h"
+#include "accountsettings.h"
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
