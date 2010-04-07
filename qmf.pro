@@ -1,25 +1,26 @@
 TEMPLATE = subdirs
+CONFIG += ordered
+
 SUBDIRS = src/libraries/qtopiamail \
           src/libraries/messageserver \
-          src/libraries/qmfutil \
           src/plugins/messageservices/imap \
           src/plugins/messageservices/pop \
           src/plugins/messageservices/smtp \
           src/plugins/messageservices/qtopiamailfile \
           src/plugins/contentmanagers/qtopiamailfile \
-          src/plugins/viewers/generic \
-          src/plugins/composers/email \
           src/tools/messageserver \
-          examples/applications/qtmail \
-          examples/settings/messagingaccounts \
           tests \
-
+          examples/qtmail/libs/qmfutil \
+          examples/qtmail/app \
+          examples/qtmail/plugins/viewers/generic \
+          examples/qtmail/plugins/composers/email \
+          examples/settings/messagingaccounts \
+          
 # disable benchmark test on mac until ported
 !macx {
           SUBDIRS += benchmarks
 }
 
-CONFIG += ordered
 
 # Custom target 'doc' to generate documentation
 dox.target = doc

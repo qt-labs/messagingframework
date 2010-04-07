@@ -12,10 +12,10 @@ symbian: {
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
+INCLUDEPATH += . ../../../../src/libraries/qtopiamail ../../../../src/libraries/qtopiamail/support
 
-macx:LIBS += -F../qtopiamail/build
-LIBS += -L../qtopiamail/build
+macx:LIBS += -F../../../../libraries/qtopiamail/build
+LIBS += -L../../../../src/libraries/qtopiamail/build
 
 HEADERS += emailfoldermodel.h \
            emailfolderview.h \
@@ -53,5 +53,5 @@ TRANSLATIONS += libqmfutil-ar.ts \
 
 RESOURCES += qmfutil.qrc
 
-include(../../../common.pri)
+include(../../../../common.pri)
 

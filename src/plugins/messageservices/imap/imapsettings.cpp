@@ -51,7 +51,7 @@
 
 namespace {
 
-const QString serviceKey("imap4"); 
+const QString serviceKey("imap4");
 
 class PortValidator : public QValidator
 {

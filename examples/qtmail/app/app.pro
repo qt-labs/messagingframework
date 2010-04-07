@@ -7,20 +7,16 @@ DEPENDPATH += .
 
 INCLUDEPATH += . ../../../src/libraries/qtopiamail \
                  ../../../src/libraries/qtopiamail/support \
-                 ../../../src/libraries/qmfutil \
+                 ../libs/qmfutil \
                  ../../../src/libraries/messageserver
 
 LIBS += -L../../../src/libraries/qtopiamail/build \
-        -L../../../src/libraries/qmfutil/build \
+        -L../libs/qmfutil/build \
         -L../../../src/libraries/messageserver/build
 
 macx:LIBS += -F../../../src/libraries/qtopiamail/build \
-        -F../../../src/libraries/qmfutil/build \
+        -F../../libs/qmfutil/build \
         -F../../../src/libraries/messageserver/build
-
-
-
-
 
 HEADERS += emailclient.h \
            messagelistview.h \

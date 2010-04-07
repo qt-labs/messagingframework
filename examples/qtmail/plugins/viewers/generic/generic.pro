@@ -12,14 +12,15 @@ contains(QT_CONFIG,webkit){
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qmfutil \
-               ../../../libraries/qtopiamail \
-               ../../../libraries/qtopiamail/support
+INCLUDEPATH += . ../../../libs/qmfutil \
+               ../../../../../src/libraries/qtopiamail \
+               ../../../../../src/libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail/build \
-        -L../../../libraries/qmfutil/build
-LIBS += -F../../../libraries/qtopiamail/build \
-        -F../../../libraries/qmfutil/build
+LIBS += -L../../../../../src/libraries/qtopiamail/build \
+        -L../../../libs/qmfutil/build
+
+LIBS += -F../../../../../src/libraries/qtopiamail/build \
+        -F../../../libs/qmfutil/build
 
 HEADERS += attachmentoptions.h browserwidget.h genericviewer.h
 
@@ -39,4 +40,4 @@ TRANSLATIONS += libgenericviewer-ar.ts \
                 libgenericviewer-zh_CN.ts \
                 libgenericviewer-zh_TW.ts
 
-include(../../../../common.pri)
+include(../../../../../common.pri)

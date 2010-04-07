@@ -8,14 +8,15 @@ DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qmfutil \
-               ../../../libraries/qtopiamail \
-               ../../../libraries/qtopiamail/support
+INCLUDEPATH += . ../../../libs/qmfutil \
+               ../../../../../src/libraries/qtopiamail \
+               ../../../../../src/libraries/qtopiamail/support
 
-LIBS += -L../../../libraries/qtopiamail/build \
-        -L../../../libraries/qmfutil/build
-macx:LIBS += -F../../../libraries/qtopiamail/build \
-        -F../../../libraries/qmfutil/build
+LIBS += -L../../../../../src/libraries/qtopiamail/build \
+        -L../../../libs/qmfutil/build
+
+macx:LIBS += -F../../../../../libraries/qtopiamail/build \
+        -F../../../libs/qmfutil/build
 
 
 HEADERS += emailcomposer.h \
@@ -40,4 +41,4 @@ TRANSLATIONS += libemailcomposer-ar.ts \
 
 RESOURCES += email.qrc                
 
-include(../../../../common.pri)
+include(../../../../../common.pri)
