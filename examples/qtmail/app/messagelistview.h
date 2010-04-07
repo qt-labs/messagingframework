@@ -52,7 +52,6 @@
 
 class MessageList;
 class QMailMessageModelBase;
-class QMailMessageDelegate;
 class QtopiaHomeMailMessageDelegate;
 class QuickSearchWidget;
 

@@ -4350,7 +4350,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     QMailContentManager* contentManager = 0;
 
     if(!message->contentScheme().isEmpty()) {
-        if (contentManager = QMailContentManagerFactory::create(message->contentScheme())) {
+        if ((contentManager = QMailContentManagerFactory::create(message->contentScheme()))) {
             QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
             if (code != QMailStore::NoError) {
                 setLastError(code);

@@ -761,7 +761,7 @@ void EmailClient::initActions()
         getMailButton->setWhatsThis( tr("Get new mail from all your accounts.") );
         setActionVisible(getMailButton, false);
 
-        getAccountButton = new QAction( Qtmail::icon("account"), QString(), this );
+        getAccountButton = new QAction( Qtmail::icon("accountfolder"), QString(), this );
         connect(getAccountButton, SIGNAL(triggered()), this, SLOT(getAccountMail()) );
         getAccountButton->setWhatsThis( tr("Get new mail from current account.") );
         setActionVisible(getAccountButton, false);
@@ -804,7 +804,7 @@ void EmailClient::initActions()
         connect(settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
         settingsAction->setIconText(QString());
 
-        emptyTrashAction = new QAction( Qtmail::icon("emptytrash"), tr("Empty trash"), this );
+        emptyTrashAction = new QAction( Qtmail::icon("trashfolder"), tr("Empty trash"), this );
         connect(emptyTrashAction, SIGNAL(triggered()), this, SLOT(emptyTrashFolder()));
         setActionVisible(emptyTrashAction, false);
 

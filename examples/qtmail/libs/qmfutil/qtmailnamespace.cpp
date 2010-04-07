@@ -42,6 +42,7 @@ static IconMap init()
     m.insert("accountfolder",loadIcon("accountfolder",":icon/account"));
     m.insert("outboxfolder",loadIcon("outboxfolder",":icon/outbox"));
     m.insert("draftfolder",loadIcon("emblem-draft",":icon/drafts"));
+    m.insert("quit",loadIcon("exit",":icon/quit"));
     return m;
 }
 

@@ -91,7 +91,6 @@ private:
 private:
     QLineEdit* m_searchTerms;
     QComboBox* m_statusCombo;
-    QToolButton* m_fullSearchButton;
     QToolButton* m_clearButton;
     QMailMessageKey m_key;
 };
@@ -127,11 +126,6 @@ QWidget(parent)
     connect(m_statusCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(searchTermsChanged()));
     layout->addWidget(m_statusCombo);
 
-    m_fullSearchButton = new QToolButton(this);
-    m_fullSearchButton->setIcon(Qtmail::icon("search"));
-    connect(m_fullSearchButton,SIGNAL(clicked(bool)),this,SIGNAL(fullSearchRequested()));
-    layout->addWidget(m_fullSearchButton);
-    
     m_key = buildSearchKey();
 }
 
@@ -159,7 +153,7 @@ QMailMessageKey QuickSearchWidget::buildSearchKey() const
     QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
     if(m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
         return statusKey;
-    
+
     QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
     QMailMessageKey senderKey = QMailMessageKey::sender(m_searchTerms->text(),QMailDataComparator::Includes);
     return ((subjectKey | senderKey) & statusKey);
@@ -190,7 +184,7 @@ private:
 
 template <typename BaseModel>
 MessageListModel<BaseModel>::MessageListModel(MessageListView *parent)
-    : BaseModel(parent), 
+    : BaseModel(parent),
       m_parent(parent)
 {
 }
@@ -316,7 +310,7 @@ protected:
 
 protected slots:
     void rowsInserted(const QModelIndex &parent, int start, int end);
-    
+
 private:
     MessageListView *m_parent;
     QPoint pos;
@@ -443,7 +437,7 @@ bool MessageList::mouseOverMoreLink(QMouseEvent* e)
 
 void MessageList::drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    bool isMoreEntry = (!index.parent().isValid() && 
+    bool isMoreEntry = (!index.parent().isValid() &&
                         m_parent->moreButtonVisible() &&
                         (index.row() == (model()->rowCount(QModelIndex()) - 1)));
     if (isMoreEntry) {
@@ -514,7 +508,7 @@ void MessageListView::setKey(const QMailMessageKey& newKey)
     if (mPreviousCurrentCache[newKeyArray]) {
         mPreviousCurrent = *mPreviousCurrentCache[newKeyArray];
     }
-    
+
     mModel->setKey(newKey & mQuickSearchWidget->searchKey());
     mExpandAllTimer.start(0);
     mScrollTimer.stop();
@@ -547,7 +541,7 @@ void MessageListView::init()
     mPreviousCurrentCache.setMaxCost(10000); // Cache current item for 1,000 folders
     connect(&mExpandAllTimer, SIGNAL(timeout()),
             this, SLOT(expandAll()));
-    
+
     mQuickSearchWidget = new QuickSearchWidget(this);
     connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
     connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
@@ -1046,7 +1040,7 @@ void MessageListView::scrollTo(const QMailMessageId &id)
 {
     if (!id.isValid())
         return;
-    
+
     QModelIndex index(mModel->indexFromId(id));
     if (index.isValid()) {
         mMessageList->scrollTo(index);

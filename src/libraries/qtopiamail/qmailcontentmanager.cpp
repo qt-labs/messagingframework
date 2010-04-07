@@ -60,8 +60,9 @@ ContentPluginMap init(QMailPluginManager& manager)
             map.insert(iface->key(), iface->create());
     }
 
-    if(map.isEmpty())
+    if(map.isEmpty()) {
         qMailLog(Messaging) << "No content manager plugins found. Message content will not be available.";
+    }
 
     return map;
 }
