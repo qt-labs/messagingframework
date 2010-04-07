@@ -55,6 +55,7 @@
 #include <QSettings>
 #include <QStackedWidget>
 #include <QToolBar>
+#include "qtmailnamespace.h"
 
 static const int defaultWidth = 500;
 static const int defaultHeight = 400;
@@ -91,16 +92,16 @@ void WriteMail::init()
     addToolBar(m_toolbar);
     m_widgetStack = new QStackedWidget(this);
 
-    m_cancelAction = new QAction(QIcon(":icon/cancel"),tr("Close"),this);
+    m_cancelAction = new QAction(Qtmail::icon("cancel"),tr("Close"),this);
     connect( m_cancelAction, SIGNAL(triggered()), this, SLOT(discard()) );
     addAction(m_cancelAction);
 
-    m_draftAction = new QAction(QIcon(":icon/draft"),tr("Save in drafts"),this);
+    m_draftAction = new QAction(Qtmail::icon("saveToDraft"),tr("Save in drafts"),this);
     connect( m_draftAction, SIGNAL(triggered()), this, SLOT(draft()) );
     m_draftAction->setWhatsThis( tr("Save this message as a draft.") );
     addAction(m_draftAction);
 
-    m_sendAction = new QAction(QIcon(":icon/sendmail"),tr("Send"),this);
+    m_sendAction = new QAction(Qtmail::icon("sendmail"),tr("Send"),this);
     connect( m_sendAction, SIGNAL(triggered()), this, SLOT(sendStage()) );
     m_sendAction->setWhatsThis( tr("Send the message.") );
     addAction(m_sendAction);

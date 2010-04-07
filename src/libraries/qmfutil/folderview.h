@@ -47,7 +47,6 @@
 #include <QSet>
 #include <QTreeView>
 #include <QPointer>
-
 class QMFUTIL_EXPORT FolderView : public QTreeView
 {
     Q_OBJECT
@@ -75,6 +74,7 @@ public:
 signals:
     void selected(QMailMessageSet *);
     void activated(QMailMessageSet *);
+    void selectionUpdated();
     void backPressed();
 
 protected slots:
@@ -83,6 +83,7 @@ protected slots:
     virtual void itemExpanded(const QModelIndex &index);
     virtual void itemCollapsed(const QModelIndex &index);
     virtual void currentChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex);
+    virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
     virtual void modelReset();
 
 protected:

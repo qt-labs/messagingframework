@@ -48,6 +48,7 @@ EmailFolderView::EmailFolderView(QWidget *parent)
       mDelegate(new EmailFolderDelegate(this))
 {
     setItemDelegate(mDelegate);
+    setUniformRowHeights(true);
 }
 
 EmailFolderModel *EmailFolderView::model() const

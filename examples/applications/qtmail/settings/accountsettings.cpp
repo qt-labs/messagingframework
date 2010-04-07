@@ -41,7 +41,7 @@
 
 #include "accountsettings.h"
 #include "editaccount.h"
-#include "../statusdisplay.h"
+#include "../statusbar.h"
 #include <qmailaccountlistmodel.h>
 #include <qmaillog.h>
 #include <QVBoxLayout>
@@ -51,6 +51,7 @@
 #include <QMessageBox>
 #include <QRegExp>
 #include <QToolButton>
+#include <qtmailnamespace.h>
 
 AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     : QDialog(parent, flags),
@@ -81,15 +82,15 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
         QTimer::singleShot(0,this,SLOT(addAccount()));
     vb->addWidget(accountView);
 
-    addAccountAction = new QAction( QIcon(":icon/add"), tr("Add"), this );
+    addAccountAction = new QAction( Qtmail::icon("add"), tr("Add"), this );
     connect(addAccountAction, SIGNAL(triggered()), this, SLOT(addAccount()));
     context->addAction( addAccountAction );
 
-    editAccountAction = new QAction(QIcon(":icon/settings"),tr("Edit"), this);
+    editAccountAction = new QAction(Qtmail::icon("settings"),tr("Edit"), this);
     connect(editAccountAction,SIGNAL(triggered()),this,SLOT(editCurrentAccount()));
     context->addAction( editAccountAction );
 
-    removeAccountAction = new QAction( QIcon(":icon/erase"), tr("Remove"), this );
+    removeAccountAction = new QAction( Qtmail::icon("remove"), tr("Remove"), this );
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
     context->addAction(removeAccountAction);
 
@@ -101,7 +102,8 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
     context->addAction(exitAction);
 
-    statusDisplay = new StatusDisplay(this);
+    statusDisplay = new StatusBar(this);
+    statusDisplay->setDetailsButtonVisible(false);
     statusDisplay->setVisible(false);
 
     QWidget *buttonHolder = new QWidget(this);
@@ -196,8 +198,8 @@ void AccountSettings::removeAccount()
                 deleteBatchSize = ((count / batchCount) + (count % batchCount ? 1 : 0));
             }
 
-            statusDisplay->displayProgress(0, count);
-            statusDisplay->displayStatus(tr("Removing messages"));
+            statusDisplay->setProgress(0, count);
+            statusDisplay->setStatus(tr("Removing messages"));
         } else {
             // No progress indication is required - allow the messages to be removed in account deletion
             deleteMessageIds = QMailMessageIdList();
@@ -242,7 +244,7 @@ void AccountSettings::deleteMessages()
         QMailStore::instance()->removeMessages(QMailMessageKey::id(batch), QMailStore::CreateRemovalRecord);
         deleteProgress += batch.count();
 
-        statusDisplay->displayProgress(deleteProgress, deleteProgress + deleteMessageIds.count());
+        statusDisplay->setProgress(deleteProgress, deleteProgress + deleteMessageIds.count());
         QTimer::singleShot(0, this, SLOT(deleteMessages()));
     } else {
         // Remove the account now
@@ -358,7 +360,7 @@ void AccountSettings::testConfiguration()
                                       tr("Do you wish to test the configuration for this account?"),
                                       QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
                 statusDisplay->setVisible(true);
-                statusDisplay->displayStatus(tr("Testing configuration..."));
+                statusDisplay->setStatus(tr("Testing configuration..."));
 
                 if (account.status() & QMailAccount::MessageSource) {
                     retrievalAction->retrieveFolderList(id, QMailFolderId(), true);
@@ -381,7 +383,7 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
                 if (account.status() & QMailAccount::MessageSink) {
                     transmitAction->transmitMessages(account.id());
                 } else {
-                    statusDisplay->displayStatus(tr("Configuration tested."));
+                    statusDisplay->setStatus(tr("Configuration tested."));
                 }
             } else if (activity == QMailServiceAction::Failed) {
                 QString caption(tr("Retrieve Failure"));
@@ -396,7 +398,7 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
         }
     } else if (sender() == static_cast<QObject*>(transmitAction)) {
         if (activity == QMailServiceAction::Successful) {
-            statusDisplay->displayStatus(tr("Configuration tested."));
+            statusDisplay->setStatus(tr("Configuration tested."));
         } else if (activity == QMailServiceAction::Failed) {
             const QMailServiceAction::Status status(transmitAction->status());
             QMailAccount account(status.accountId);
@@ -416,7 +418,7 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
 void AccountSettings::displayProgress(uint value, uint range)
 {
     if (statusDisplay->isVisible()) {
-        statusDisplay->displayProgress(value, range);
+        statusDisplay->setProgress(value, range);
     }
 }
 

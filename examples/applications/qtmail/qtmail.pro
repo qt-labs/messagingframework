@@ -26,23 +26,26 @@ HEADERS += emailclient.h \
            messagelistview.h \
            searchview.h \
            selectcomposerwidget.h \
-           statusdisplay.h \
            readmail.h \
            writemail.h \
            settings/accountsettings.h \
-           settings/editaccount.h
-
+           settings/editaccount.h \
+           statusmonitorwidget.h \
+           statusbar.h \
+           statusmonitor.h
 
 SOURCES += emailclient.cpp \
            main.cpp \
            messagelistview.cpp \
            searchview.cpp \
            selectcomposerwidget.cpp \
-           statusdisplay.cpp \
            readmail.cpp \
            writemail.cpp \
            settings/accountsettings.cpp \
-           settings/editaccount.cpp
+           settings/editaccount.cpp \
+           statusmonitorwidget.cpp \
+           statusbar.cpp \
+           statusmonitor.cpp
 
 FORMS += searchviewbasephone.ui
 

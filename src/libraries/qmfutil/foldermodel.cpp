@@ -45,6 +45,7 @@
 #include <qmailstore.h>
 #include <QApplication>
 #include <QTimer>
+#include "qtmailnamespace.h"
 
 using QMailDataComparator::Includes;
 using QMailDataComparator::Excludes;
@@ -108,11 +109,11 @@ void FolderModel::removed(QMailMessageSet *item)
 QIcon FolderModel::itemIcon(QMailMessageSet *item) const
 {
     if (qobject_cast<QMailFolderMessageSet*>(item)) {
-        return QIcon(":icon/folder");
+        return Qtmail::icon("folder");
     } else if (qobject_cast<QMailAccountMessageSet*>(item)) {
-        return QIcon(":icon/account");
+        return Qtmail::icon("accountfolder");
     } else if (qobject_cast<QMailFilterMessageSet*>(item)) {
-        return QIcon(":icon/find");
+        return Qtmail::icon("search");
     }
 
     return QIcon();

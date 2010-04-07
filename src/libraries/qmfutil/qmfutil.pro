@@ -24,7 +24,8 @@ HEADERS += emailfoldermodel.h \
            folderview.h \
            qmailcomposer.h \
            qmailviewer.h \
-           selectfolder.h
+           selectfolder.h \
+           qtmailnamespace.h
 
 SOURCES += emailfoldermodel.cpp \
            emailfolderview.cpp \
@@ -33,7 +34,8 @@ SOURCES += emailfoldermodel.cpp \
            folderview.cpp \
            qmailcomposer.cpp \
            qmailviewer.cpp \
-           selectfolder.cpp
+           selectfolder.cpp \
+           qtmailnamespace.cpp
 
 TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-de.ts \

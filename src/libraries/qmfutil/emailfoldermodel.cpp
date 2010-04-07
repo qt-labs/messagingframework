@@ -43,6 +43,7 @@
 #include <qmailmessageset.h>
 #include <qmailaccount.h>
 #include <qmailstore.h>
+#include "qtmailnamespace.h"
 
 /* EmailStandardFolderMessageSet */
 
@@ -382,12 +383,12 @@ static QMap<QMailFolder::StandardFolder, QIcon> iconMapInit()
 {
     QMap<QMailFolder::StandardFolder, QIcon> map;
 
-    map[QMailFolder::InboxFolder] = QIcon(":icon/inbox");
-    map[QMailFolder::OutboxFolder] = QIcon(":icon/outbox");
-    map[QMailFolder::DraftsFolder] = QIcon(":icon/drafts");
-    map[QMailFolder::SentFolder] = QIcon(":icon/sent");
-    //map[QMailFolder::JunkFolder] = QIcon(":icon/junk");
-    map[QMailFolder::TrashFolder] = QIcon(":icon/trash");
+    map[QMailFolder::InboxFolder] = Qtmail::icon("inboxfolder");
+    map[QMailFolder::OutboxFolder] = Qtmail::icon("outboxfolder");
+    map[QMailFolder::DraftsFolder] = Qtmail::icon("draftfolder");
+    map[QMailFolder::SentFolder] = Qtmail::icon("sentfolder");
+    map[QMailFolder::JunkFolder] = Qtmail::icon("junkfolder");
+    map[QMailFolder::TrashFolder] = Qtmail::icon("trashfolder");
 
     return map;
 }
@@ -400,7 +401,7 @@ static QIcon folderIcon(QMailFolder::StandardFolder type)
     if (it != iconMap.end())
         return it.value();
 
-    return QIcon(":icon/folder");
+    return Qtmail::icon("folder");
 }
 
 QIcon EmailFolderModel::standardFolderIcon(EmailStandardFolderMessageSet *item) const
@@ -421,7 +422,7 @@ QIcon EmailFolderModel::emailFolderIcon(EmailFolderMessageSet *item) const
         return folderIcon(QMailFolder::JunkFolder);
     }
 
-    return QIcon(":icon/folder");
+    return Qtmail::icon("folder");
 }
 
 FolderModel::StatusText EmailFolderModel::standardFolderStatusText(EmailStandardFolderMessageSet *item) const

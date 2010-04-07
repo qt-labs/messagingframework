@@ -47,7 +47,6 @@
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
-#include "statusdisplay.h"
 #include <longstream_p.h>
 #include <qmaillog.h>
 #include <qmailnamespace.h>
@@ -78,7 +77,12 @@
 #include <QToolBar>
 #include <QMovie>
 #include <QStatusBar>
+#include "statusmonitorwidget.h"
+#include "statusbar.h"
+#include "statusmonitor.h"
+#include <qtmailnamespace.h>
 
+static const unsigned int StatusBarHeight = 20;
 #ifdef LOAD_DEBUG_VERSION
 static const QString debugSuffix("d");
 #else
@@ -114,7 +118,9 @@ m_inactiveIcon(":icon/activity_idle")
         connect(a,SIGNAL(activityChanged(QMailServiceAction::Activity)),
                 this,SLOT(activityChanged(QMailServiceAction::Activity)));
 
+
     setPixmap(m_inactiveIcon);
+    setPalette(parent->palette());
 }
 
 void ActivityIcon::activityChanged(QMailServiceAction::Activity a)
@@ -349,6 +355,38 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
     readMailWidget()->displayMessage(id, type, false, false);
 }
 
+void MessageUiBase::updateWindowTitle()
+{
+    QMailMessageSet* item = folderView()->currentItem();
+    if(!item) return;
+
+    QString folderName = item->data(Qt::DisplayRole).value<QString>();
+    QString folderStatus = item->data(EmailFolderModel::FolderStatusRole).value<QString>();
+    QString accountName;
+    QMailFolderId folderId = item->data(EmailFolderModel::FolderIdRole).value<QMailFolderId>();
+    QMailAccountId accountId = item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>();
+
+    if(!folderStatus.isEmpty())
+        folderStatus = " (" + folderStatus + ")";
+
+    //don't display account prefix for account root items
+    bool isFolderItem = accountId.isValid() && folderId.isValid();
+    if(isFolderItem)
+    {
+        QMailAccount account(accountId);
+        if(!account.name().isEmpty())
+            accountName = account.name() + "/";
+    }
+
+    setWindowTitle(accountName + folderName + folderStatus  + " - " + appTitle);
+}
+
+void MessageUiBase::checkUpdateWindowTitle(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    if(topLeft == folderView()->currentIndex() || bottomRight == folderView()->currentIndex())
+        updateWindowTitle();
+}
+
 WriteMail* MessageUiBase::createWriteMailWidget()
 {
     WriteMail* writeMail = new WriteMail(this);
@@ -394,6 +432,10 @@ EmailFolderView* MessageUiBase::createFolderView()
     view->setModel(emailFolderModel());
 
     connect(view, SIGNAL(selected(QMailMessageSet*)), this, SLOT(folderSelected(QMailMessageSet*)));
+    connect(view, SIGNAL(selected(QMailMessageSet*)), this, SLOT(updateWindowTitle()));
+    connect(emailFolderModel(),SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),this,
+            SLOT(checkUpdateWindowTitle(const QModelIndex&,const QModelIndex&)));
+//   connect(view, SIGNAL(selectionUpdated()), this, SLOT(updateWindowTitle()));
 
     return view;
 }
@@ -714,28 +756,29 @@ bool EmailClient::isRetrieving()
 void EmailClient::initActions()
 {
     if (!getMailButton) {
-        getMailButton = new QAction( QIcon(":icon/sync"), tr("Get all mail"), this );
+        getMailButton = new QAction( Qtmail::icon("sendandreceive"), tr("Get all mail"), this );
         connect(getMailButton, SIGNAL(triggered()), this, SLOT(getAllNewMail()) );
         getMailButton->setWhatsThis( tr("Get new mail from all your accounts.") );
         setActionVisible(getMailButton, false);
 
-        getAccountButton = new QAction( QIcon(":icon/account"), QString(), this );
+        getAccountButton = new QAction( Qtmail::icon("account"), QString(), this );
         connect(getAccountButton, SIGNAL(triggered()), this, SLOT(getAccountMail()) );
         getAccountButton->setWhatsThis( tr("Get new mail from current account.") );
         setActionVisible(getAccountButton, false);
 
-        cancelButton = new QAction( QIcon(":icon/reset"), tr("Cancel transfer"), this );
+        cancelButton = new QAction( Qtmail::icon("cancel"), tr("Cancel transfer"), this );
         connect(cancelButton, SIGNAL(triggered()), this, SLOT(cancelOperation()) );
         cancelButton->setWhatsThis( tr("Abort all transfer of mail.") );
         setActionVisible(cancelButton, false);
 
-        composeButton = new QAction( QIcon(":icon/new"), tr("New"), this );
+        composeButton = new QAction( Qtmail::icon("compose"), tr("New"), this );
         connect(composeButton, SIGNAL(triggered()), this, SLOT(composeActivated()) );
         composeButton->setWhatsThis( tr("Write a new message.") );
 
-        searchButton = new QAction( QIcon(":icon/find"), tr("Search"), this );
+        searchButton = new QAction( Qtmail::icon("search"), tr("Search"), this );
         connect(searchButton, SIGNAL(triggered()), this, SLOT(search()) );
         searchButton->setWhatsThis( tr("Search for messages in your folders.") );
+        searchButton->setIconText("");
 
         synchronizeAction = new QAction( this );
         connect(synchronizeAction, SIGNAL(triggered()), this, SLOT(synchronizeFolder()) );
@@ -757,10 +800,11 @@ void EmailClient::initActions()
         renameFolderAction->setWhatsThis( tr("Give the folder a different name") );
         setActionVisible(renameFolderAction, false);
 
-        settingsAction = new QAction( QIcon(":icon/settings"), tr("Account settings..."), this );
+        settingsAction = new QAction( Qtmail::icon("settings"), tr("Account settings..."), this );
         connect(settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
+        settingsAction->setIconText(QString());
 
-        emptyTrashAction = new QAction( QIcon(":icon/trash"), tr("Empty trash"), this );
+        emptyTrashAction = new QAction( Qtmail::icon("emptytrash"), tr("Empty trash"), this );
         connect(emptyTrashAction, SIGNAL(triggered()), this, SLOT(emptyTrashFolder()));
         setActionVisible(emptyTrashAction, false);
 
@@ -781,7 +825,7 @@ void EmailClient::initActions()
         setActionVisible(selectAllAction, false);
 
         deleteMailAction = new QAction( this );
-        deleteMailAction->setIcon( QIcon(":icon/trash") );
+        deleteMailAction->setIcon( Qtmail::icon("deletemail") );
         deleteMailAction->setShortcut(QKeySequence(Qt::Key_Delete));
         connect(deleteMailAction, SIGNAL(triggered()), this, SLOT(deleteSelectedMessages()));
         setActionVisible(deleteMailAction, false);
@@ -798,14 +842,14 @@ void EmailClient::initActions()
         connect(threadAction, SIGNAL(triggered()), this, SLOT(threadMessages()));
         setActionVisible(threadAction, true);
 
-        replyAction= new QAction( QIcon(":icon/reply"), tr("Reply"), this );
+        replyAction= new QAction( Qtmail::icon("reply"), tr("Reply"), this );
         connect(replyAction, SIGNAL(triggered()), this, SLOT(replyClicked()));
         replyAction->setWhatsThis( tr("Reply to sender only.  Select Reply all from the menu if you want to reply to all recipients.") );
 
-        replyAllAction = new QAction( QIcon(":icon/replyall"), tr("Reply all"), this );
+        replyAllAction = new QAction( Qtmail::icon("replyall"), tr("Reply all"), this );
         connect(replyAllAction, SIGNAL(triggered()), this, SLOT(replyAllClicked()));
 
-        forwardAction = new QAction(QIcon(":icon/forward"),tr("Forward"), this );
+        forwardAction = new QAction(Qtmail::icon("forward"),tr("Forward"), this );
         connect(forwardAction, SIGNAL(triggered()), this, SLOT(forwardClicked()));
 
         nextMessageAction = new QAction( tr("Next Message"), this );
@@ -851,13 +895,14 @@ void EmailClient::initActions()
         fileMenu->addAction( settingsAction );
         fileMenu->addSeparator();
 
-        QAction* quitAction = fileMenu->addAction(QIcon(":icon/quit"),"Quit");
+        QAction* quitAction = fileMenu->addAction(Qtmail::icon("quit"),"Quit");
         quitAction->setMenuRole(QAction::QuitRole);
         connect(quitAction,SIGNAL(triggered(bool)),
                 this,SLOT(quit()));
         connect(fileMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
 
         QToolBar* toolBar = m_toolBar;
+        m_toolBar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         toolBar->addAction( composeButton );
         toolBar->addAction( getMailButton );
         toolBar->addAction( cancelButton );
@@ -941,6 +986,7 @@ void EmailClient::updateActions()
         it.key()->setVisible(it.value());
 }
 
+
 void EmailClient::delayedInit()
 {
     if (moveAction)
@@ -997,13 +1043,14 @@ void EmailClient::init()
     deleteMailAction = 0;
 
     // Connect our service action signals
-    retrievalAction = new QMailRetrievalAction(this);
-    storageAction = new QMailStorageAction(this);
-    transmitAction = new QMailTransmitAction(this);
+    m_retrievalAction = new QMailRetrievalAction(this);
+    m_storageAction = new QMailStorageAction(this);
+    m_transmitAction = new QMailTransmitAction(this);
+    m_flagRetrievalAction = new QMailRetrievalAction(this);
 
-    foreach (QMailServiceAction *action, QList<QMailServiceAction*>() << retrievalAction
-                                                                      << storageAction
-                                                                      << transmitAction) {
+    foreach (QMailServiceAction *action, QList<QMailServiceAction*>() << m_retrievalAction
+                                                                      << m_storageAction
+                                                                      << m_transmitAction) {
         connect(action, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
         connect(action, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
         connect(action, SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(statusChanged(QMailServiceAction::Status)));
@@ -1011,8 +1058,7 @@ void EmailClient::init()
     }
 
     // Use a separate action for flag updates, which are not directed by the user
-    flagRetrievalAction = new QMailRetrievalAction(this);
-    connect(flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
+    connect(m_flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
 
     // We need to load the settings in case they affect our service handlers
     readSettings();
@@ -1028,16 +1074,16 @@ void EmailClient::cancelOperation()
     retrievalAccountIds.clear();
 
     if (isSending()) {
-        transmitAction->cancelOperation();
+        m_transmitAction->cancelOperation();
         setSendingInProgress( false );
     }
     if (isRetrieving()) {
-        retrievalAction->cancelOperation();
+        m_retrievalAction->cancelOperation();
         setRetrievalInProgress( false );
     }
 
-    if (flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
-        flagRetrievalAction->cancelOperation();
+    if (m_flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
+        m_flagRetrievalAction->cancelOperation();
     }
 }
 
@@ -1108,9 +1154,9 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 
     if (inserted) {
         // Inform the responsible service that it is a draft
-        storageAction->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
-
+        storageAction("Flagging message as draft")->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
         lastDraftId = mail.id();
+
     } else {
         QMailFolder folder(mail.parentFolderId());
         accessError(folder.displayName());
@@ -1121,7 +1167,7 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 void EmailClient::mailResponded()
 {
     if (repliedFromMailId.isValid()) {
-        storageAction->flagMessages(QMailMessageIdList() << repliedFromMailId, repliedFlags, 0);
+        storageAction("Marking message  as replied/forwarded")->flagMessages(QMailMessageIdList() << repliedFromMailId, repliedFlags, 0);
         repliedFromMailId = QMailMessageId();
         repliedFlags = 0;
     }
@@ -1164,21 +1210,20 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
 
         if (verifyAccount(transmitId, true)) {
             setSendingInProgress(true);
-
-            transmitAction->transmitMessages(transmitId);
+            transmitAction("Sending messages")->transmitMessages(transmitId);
             return;
         } else {
             // Move this account's outbox messages to Drafts
             QMailMessageKey accountFilter(QMailMessageKey::parentAccountId(transmitId));
             QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(accountFilter & outboxFilter));
-            storageAction->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
+            storageAction("Moving messages to drafts")->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
         }
     }
 }
 
 void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask)
 {
-    storageAction->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+    storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
@@ -1219,11 +1264,11 @@ void EmailClient::retrievalCompleted()
         if (syncState == ExportUpdates) {
             // Find any changes to the folder list of the server
             syncState = RetrieveFolders;
-            retrievalAction->retrieveFolderList(mailAccountId, QMailFolderId());
+            retrieveAction("Retrieving folder list for account")->retrieveFolderList(mailAccountId, QMailFolderId());
         } else if (syncState == RetrieveFolders) {
             // Now we need to retrieve the message lists for the folders
             syncState = RetrieveMessages;
-            retrievalAction->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
+            retrieveAction("Retrieving message list for account")->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
         } else {
             // See if there are more accounts to process
             getNextNewMail();
@@ -1253,7 +1298,7 @@ void EmailClient::getNewMail()
     setRetrievalInProgress(true);
     syncState = ExportUpdates;
 
-    retrievalAction->exportUpdates(mailAccountId);
+    retrieveAction("Exporting account updates")->exportUpdates(mailAccountId);
 }
 
 void EmailClient::getAllNewMail()
@@ -1290,7 +1335,7 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
     mailAccountId = message.parentAccountId();
     setRetrievalInProgress(true);
 
-    retrievalAction->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
+    retrieveAction("Retrieving single message")->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
 }
 
 void EmailClient::retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes)
@@ -1305,7 +1350,7 @@ void EmailClient::retrieveMessagePortion(const QMailMessageMetaData& message, ui
     setRetrievalInProgress(true);
 
     QMailMessage msg(message.id());
-    retrievalAction->retrieveMessageRange(message.id(), msg.body().length() + bytes);
+    retrieveAction("Retrieving message range")->retrieveMessageRange(message.id(), msg.body().length() + bytes);
 }
 
 void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
@@ -1325,7 +1370,7 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
         mailAccountId = metaData.parentAccountId();
         setRetrievalInProgress(true);
 
-        retrievalAction->retrieveMessagePart(partLocation);
+        retrieveAction("Retreiving message part")->retrieveMessagePart(partLocation);
     }
 }
 
@@ -1347,7 +1392,7 @@ void EmailClient::retrieveMessagePartPortion(const QMailMessagePart::Location &p
         setRetrievalInProgress(true);
 
         const QMailMessagePart &part(messsage.partAt(partLocation));
-        retrievalAction->retrieveMessagePartRange(partLocation, part.body().length() + bytes);
+        retrieveAction("Retrieving message part portion")->retrieveMessagePartRange(partLocation, part.body().length() + bytes);
     }
 }
 
@@ -1602,9 +1647,9 @@ void EmailClient::deleteSelectedMessages()
     clearNewMessageStatus(QMailMessageKey::id(messageListView()->selected()));
 
     if (deleting) {
-        storageAction->deleteMessages(deleteList);
+        storageAction("Deleting messages..")->deleteMessages(deleteList);
     } else {
-        storageAction->flagMessages(deleteList, QMailMessage::Trash, 0);
+        storageAction("Marking messages as deleted")->flagMessages(deleteList, QMailMessage::Trash, 0);
     }
 
     if (markingMode) {
@@ -1620,7 +1665,7 @@ void EmailClient::moveSelectedMessagesTo(const QMailFolderId &destination)
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(moveList));
-    storageAction->moveMessages(moveList, destination);
+    storageAction("Moving messages")->moveMessages(moveList, destination);
 
     AcknowledgmentBox::show(tr("Moving"), tr("Moving %n message(s)", "%1: number of messages", moveList.count()));
 }
@@ -1632,7 +1677,7 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(copyList));
-    storageAction->copyMessages(copyList, destination);
+    storageAction("Copying messages")->copyMessages(copyList, destination);
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
 }
@@ -1733,7 +1778,7 @@ void EmailClient::restoreSelectedMessages()
         return;
 
     AcknowledgmentBox::show(tr("Restoring"), tr("Restoring %n message(s)", "%1: number of messages", restoreIds.count()));
-    storageAction->flagMessages(restoreIds, 0, QMailMessage::Trash);
+    storageAction("Restoring messages")->flagMessages(restoreIds, 0, QMailMessage::Trash);
 }
 
 void EmailClient::selectAll()
@@ -1756,7 +1801,7 @@ void EmailClient::emptyTrashFolder()
 
     if (confirmDelete(this, "Empty trash", tr("all messages in the trash"))) {
         AcknowledgmentBox::show(tr("Deleting"), tr("Deleting %n message(s)", "%1: number of messages", trashIds.count()));
-        storageAction->deleteMessages(trashIds);
+        storageAction("Deleting messages")->deleteMessages(trashIds);
     }
 }
 
@@ -1776,11 +1821,6 @@ void EmailClient::detachThread()
     }
 }
 
-void EmailClient::setStatusText(QString &txt)
-{
-    emit updateStatus(txt);
-}
-
 void EmailClient::connectivityChanged(QMailServiceAction::Connectivity /*connectivity*/)
 {
 }
@@ -1789,16 +1829,16 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
 {
     if (QMailServiceAction *action = static_cast<QMailServiceAction*>(sender())) {
         if (activity == QMailServiceAction::Successful) {
-            if (action == transmitAction) {
+            if (action == m_transmitAction) {
                 transmitCompleted();
-            } else if (action == retrievalAction) {
+            } else if (action == m_retrievalAction) {
                 retrievalCompleted();
-            } else if (action == storageAction) {
+            } else if (action == m_storageAction) {
                 storageActionCompleted();
             }
         } else if (activity == QMailServiceAction::Failed) {
             const QMailServiceAction::Status status(action->status());
-            if (action == storageAction) {
+            if (action == m_storageAction) {
                 storageActionFailure(status.accountId, status.text);
             } else {
                 transferFailure(status.accountId, status.text, status.errorCode);
@@ -1824,7 +1864,9 @@ void EmailClient::statusChanged(const QMailServiceAction::Status &status)
 
 void EmailClient::progressChanged(uint progress, uint total)
 {
-    emit updateProgress(progress, total);
+    Q_UNUSED(progress);
+    Q_UNUSED(total);
+//    emit updateProgress(progress, total);
 }
 
 void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity activity)
@@ -1840,7 +1882,7 @@ void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity acti
 
         // Are there pending message IDS to be checked?
         if (!flagMessageIds.isEmpty()) {
-            flagRetrievalAction->retrieveMessages(flagMessageIds.toList(), QMailRetrievalAction::Flags);
+            m_flagRetrievalAction->retrieveMessages(flagMessageIds.toList(), QMailRetrievalAction::Flags);
             flagMessageIds.clear();
         }
     }
@@ -1925,8 +1967,7 @@ void EmailClient::deleteFolder()
 
     if(QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         return;
-
-    storageAction->deleteFolder(selectedFolderId);
+    storageAction("Deleting folder ")->deleteFolder(selectedFolderId);
 }
 
 void EmailClient::createFolder()
@@ -1936,7 +1977,7 @@ void EmailClient::createFolder()
     if(name.isEmpty())
         return;
 
-    storageAction->createFolder(name, selectedAccountId, selectedFolderId);
+    storageAction("Creating folder ")->createFolder(name, selectedAccountId, selectedFolderId);
 
 }
 
@@ -1950,7 +1991,7 @@ void EmailClient::renameFolder()
         if(newName.isEmpty())
             return;
 
-        storageAction->renameFolder(selectedFolderId, newName);
+        storageAction("Renaming folder")->renameFolder(selectedFolderId, newName);
     }
 }
 
@@ -2116,13 +2157,11 @@ void EmailClient::retrieveMoreMessages()
         countKey &= ~QMailMessageKey::status(QMailMessage::Removed);
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
         int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
-        
         // Request more messages
         retrievedMinimum += MoreMessagesIncrement;
 
         setRetrievalInProgress(true);
-
-        retrievalAction->retrieveMessageList(folder.parentAccountId(), folderId, retrievedMinimum);
+        retrieveAction("Retrieving message list for folder")->retrieveMessageList(folder.parentAccountId(), folderId, retrievedMinimum);
     }
 }
 
@@ -2142,12 +2181,12 @@ void EmailClient::retrieveVisibleMessagesFlags()
     if (ids.isEmpty())
         return;
 
-    QMailServiceAction::Activity activity(flagRetrievalAction->activity());
+    QMailServiceAction::Activity activity(m_flagRetrievalAction->activity());
     if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
         // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
         flagMessageIds += ids.toSet();
     } else {
-        flagRetrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
+        m_flagRetrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
     }
 }
 
@@ -2228,28 +2267,50 @@ void EmailClient::setupUi()
     int quarterWidth = width() /4;
     verticalSplitter->setSizes(QList<int>() << quarterWidth << (width()- quarterWidth));
 
-    QStatusBar* mainStatusBar = new QStatusBar();
-    StatusDisplay* status = new StatusDisplay;
-    mainStatusBar->addPermanentWidget(status,0);
-    setStatusBar(status);
-    connect(this, SIGNAL(statusVisible(bool)),
-            status, SLOT(showStatus(bool)) );
+    //detailed progress widget
+
+    m_statusMonitorWidget = new StatusMonitorWidget(this, StatusBarHeight,0);
+    m_statusMonitorWidget->hide();
+
+    //status bar
+
+    setStatusBar(new QStatusBar(this));
+    statusBar()->setMaximumHeight(StatusBarHeight);
+    statusBar()->setStyleSheet("QStatusBar::item { border: 0px;}");
+    StatusBar* m_statusBar = new StatusBar(this);
+    statusBar()->addPermanentWidget(m_statusBar,100);
+
+    connect(m_statusBar,SIGNAL(showDetails()),
+            m_statusMonitorWidget,SLOT(show()));
+    connect(m_statusBar,SIGNAL(hideDetails()),
+            m_statusMonitorWidget,SLOT(hide()));
+
     connect(this, SIGNAL(updateStatus(QString)),
-            status, SLOT(displayStatus(QString)) );
-    connect(this, SIGNAL(updateProgress(uint,uint)),
-            status, SLOT(displayProgress(uint,uint)) );
+            m_statusBar,SLOT(setStatus(QString)) );
+
+    connect(StatusMonitor::instance(),SIGNAL(statusChanged(QString)),
+            m_statusBar,SLOT(setStatus(QString)));
+
+//    connect(this, SIGNAL(updateProgress(uint,uint)),
+//            m_statusBar, SLOT(setProgress(uint,uint)) );
+    connect(StatusMonitor::instance(),SIGNAL(progressChanged(uint,uint)),
+            m_statusBar,SLOT(setProgress(uint,uint)));
+
     connect(this, SIGNAL(clearStatus()),
-            status, SLOT(clearStatus()) );
+            m_statusBar, SLOT(clearStatus()));
+
+    connect(this, SIGNAL(clearProgress()),
+            m_statusBar, SLOT(clearProgress()));
+
+
+    //main menu
 
     QMenuBar* mainMenuBar = new QMenuBar(this);
-
     QMenu* file = mainMenuBar->addMenu("File");
-
     QMenu* help = mainMenuBar->addMenu("Help");
     QAction* aboutQt = help->addAction("About Qt");
     aboutQt->setMenuRole(QAction::AboutQtRole);
     connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
-
     QWidget* menuWidget = new QWidget(this);
     QHBoxLayout*  menuLayout = new QHBoxLayout(menuWidget);
     menuLayout->setSpacing(0);
@@ -2260,13 +2321,17 @@ void EmailClient::setupUi()
     menuLayout->addWidget(mainMenuBar);
 #endif
 
-    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << storageAction
-                                                                             << retrievalAction
-                                                                             << transmitAction
-                                                                             << flagRetrievalAction,this);
+    //spinner icon
+
+    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << m_storageAction
+                                                                             << m_retrievalAction
+                                                                             << m_transmitAction
+                                                                             << m_flagRetrievalAction,this);
     menuLayout->addWidget(statusIcon);
     setMenuWidget(menuWidget);
     m_contextMenu = file;
+
+    //toolbar
 
     m_toolBar = new QToolBar(this);
     addToolBar(m_toolBar);
@@ -2362,7 +2427,7 @@ void EmailClient::clearOutboxFolder()
 
     // Set any unsent messages back to draft, and remove Outbox status
     if (!unsentIds.isEmpty()) {
-        storageAction->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
+        storageAction("Clearing outbox folder")->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
     }
 }
 
@@ -2524,6 +2589,27 @@ QAction* EmailClient::createSeparator()
     QAction* sep = new QAction(this);
     sep->setSeparator(true);
     return sep;
+}
+
+QMailStorageAction* EmailClient::storageAction(const QString& description)
+{
+    ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_storageAction,description);
+    StatusMonitor::instance()->add(newItem);
+    return m_storageAction;
+}
+
+QMailRetrievalAction* EmailClient::retrieveAction(const QString& description)
+{
+    ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_retrievalAction,description);
+    StatusMonitor::instance()->add(newItem);
+    return m_retrievalAction;
+}
+
+QMailTransmitAction* EmailClient::transmitAction(const QString& description)
+{
+    ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_transmitAction,description);
+    StatusMonitor::instance()->add(newItem);
+    return m_transmitAction;
 }
 
 void EmailClient::setMarkingMode(bool set)

@@ -60,6 +60,7 @@ class UILocation;
 class ReadMail;
 class WriteMail;
 class QuickSearchWidget;
+class StatusMonitorWidget;
 
 class QMailAccount;
 class QMailMessageSet;
@@ -86,10 +87,10 @@ public:
     virtual ~MessageUiBase() {}
 
 signals:
-    void statusVisible(bool);
     void updateStatus(const QString&);
     void updateProgress(uint, uint);
     void clearStatus();
+    void clearProgress();
 
 protected:
     void viewSearchResults(const QMailMessageKey& filter, const QString& title = QString());
@@ -129,6 +130,10 @@ protected slots:
     virtual void messageActivated() = 0;
     virtual void allWindowsClosed() = 0;
     virtual void search() = 0;
+
+private slots:
+    void updateWindowTitle();
+    void checkUpdateWindowTitle(const QModelIndex& topLeft, const QModelIndex& bottomRight);
 
 protected:
     QString appTitle;
@@ -221,8 +226,6 @@ protected slots:
     void transferFailure(const QMailAccountId& accountId, const QString&, int);
     void storageActionFailure(const QMailAccountId& accountId, const QString&);
 
-    void setStatusText(QString &);
-
     void search();
 
     void automaticFetch();
@@ -278,6 +281,7 @@ private slots:
     void createFolder();
     void deleteFolder();
     void renameFolder();
+
 private:
     bool isMessageServerRunning() const;
     virtual EmailFolderView* createFolderView();
@@ -340,6 +344,10 @@ private:
     void clearNewMessageStatus(const QMailMessageKey& key);
 
     QAction* createSeparator();
+
+    QMailStorageAction* storageAction(const QString& description);
+    QMailRetrievalAction* retrieveAction(const QString& description);
+    QMailTransmitAction* transmitAction(const QString& description);
 
 private:
     // Whether the initial action for the app was to view incoming messages 
@@ -417,18 +425,18 @@ private:
 
     QMailMessageId lastDraftId;
 
-    QMailTransmitAction *transmitAction;
-    QMailRetrievalAction *retrievalAction;
-    QMailStorageAction *storageAction;
+    QMailTransmitAction* m_transmitAction;
+    QMailRetrievalAction* m_retrievalAction;
+    QMailStorageAction* m_storageAction;
+    QMailRetrievalAction* m_flagRetrievalAction;
 
     QProcess* m_messageServerProcess;
-
     SyncState syncState;
-
-    QMailRetrievalAction *flagRetrievalAction;
     QSet<QMailMessageId> flagMessageIds;
     QMenu* m_contextMenu;
     QToolBar* m_toolBar;
+    StatusMonitorWidget* m_statusMonitorWidget;
+
 };
 
 #endif

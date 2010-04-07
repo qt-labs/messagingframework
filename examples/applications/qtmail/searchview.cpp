@@ -62,6 +62,7 @@
 #include <QStatusBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <qtmailnamespace.h>
 
 static const int maxMessageBytes = 100000000;
 static const int maxSearchTerms = 10;
@@ -117,12 +118,12 @@ void SearchButton::updateView()
     if(m_searching)
     {
         setText("Stop");
-        setIcon(QIcon(":icon/stop"));
+        setIcon(Qtmail::icon("cancel"));
     }
     else
     {
         setText("Search");
-        setIcon(QIcon(":icon/find"));
+        setIcon(Qtmail::icon("search"));
     }
 }
 
@@ -248,8 +249,8 @@ void FolderSelectorWidget::setupUi()
     vlayout->setContentsMargins(0,0,0,0);
 
     m_searchSpecification = new QComboBox(this);
-    m_searchSpecification->insertItem(0, QIcon(":/icon/folder"), tr("Local Search"), static_cast<int>(QMailSearchAction::Local));
-    m_searchSpecification->insertItem(1, QIcon(":/icon/folder-remote"), tr("Remote Search"), static_cast<int>(QMailSearchAction::Remote));
+    m_searchSpecification->insertItem(0, Qtmail::icon("folder"), tr("Local Search"), static_cast<int>(QMailSearchAction::Local));
+    m_searchSpecification->insertItem(1, Qtmail::icon("folderremote"), tr("Remote Search"), static_cast<int>(QMailSearchAction::Remote));
     vlayout->addWidget(m_searchSpecification);
 
     QHBoxLayout* layout = new QHBoxLayout;
@@ -264,7 +265,7 @@ void FolderSelectorWidget::setupUi()
     layout->addWidget(m_specificFolderDisplay);
 
     m_selectFolderButton = new QToolButton(this);
-    m_selectFolderButton->setIcon(QIcon(":icon/folder"));
+    m_selectFolderButton->setIcon(Qtmail::icon("folder"));
     layout->addWidget(m_selectFolderButton);
     connect(m_selectFolderButton,SIGNAL(clicked()),this,SLOT(selectFolder()));
 
@@ -762,12 +763,12 @@ QWidget(parent)
     QHBoxLayout* controlButtonsLayout = new QHBoxLayout;
 
     m_moreButton = new QPushButton("More",this);
-    m_moreButton->setIcon(QIcon(":icon/tick"));
+    m_moreButton->setIcon(Qtmail::icon("add"));
     connect(m_moreButton,SIGNAL(clicked(bool)),this,SLOT(moreButtonClicked()));
     controlButtonsLayout->addWidget(m_moreButton);
 
     m_lessButton = new QPushButton("Less",this);
-    m_lessButton->setIcon(QIcon(":icon/cross"));
+    m_lessButton->setIcon(Qtmail::icon("remove"));
     connect(m_lessButton,SIGNAL(clicked(bool)),this,SLOT(lessButtonClicked()));
     controlButtonsLayout->addWidget(m_lessButton);
 
@@ -914,7 +915,7 @@ void SearchView::setupUi()
     controlButtonsLayout->addStretch();
 
     m_closeButton = new QPushButton("Close",this);
-    m_closeButton->setIcon(QIcon(":icon/close"));
+    m_closeButton->setIcon(Qtmail::icon("close"));
     connect(m_closeButton,SIGNAL(clicked(bool)),this,SLOT(close()));
     controlButtonsLayout->addWidget(m_closeButton);
 

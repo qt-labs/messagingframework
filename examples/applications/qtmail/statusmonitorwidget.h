@@ -39,44 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef STATUSDISPLAY_H
-#define STATUSDISPLAY_H
+#ifndef STATUSMONITORWIDGET_H
+#define STATUSMONITORWIDGET_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt Extended API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QFrame>
+#include <qmailserviceaction.h>
 
-#include <QStatusBar>
+class ActionStatusWidget;
+class QMailServiceAction;
+class StatusItem;
 
 QT_BEGIN_NAMESPACE
 
-class QProgressBar;
+class QScrollArea;
+class QVBoxLayout;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
-class StatusDisplay : public QStatusBar
+class StatusMonitorWidget : public QFrame
 {
     Q_OBJECT
 
 public:
-    StatusDisplay(QWidget* parent = 0);
+    StatusMonitorWidget(QWidget* parent = 0, uint bottomMargin = 0, uint rightMargin = 0);
+    QSize sizeHint() const;
 
-public slots:
-    void showStatus(bool visible);
-    void displayStatus(const QString& txt);
-    void displayProgress(uint value, uint range);
-    void clearStatus();
+protected:
+    bool eventFilter(QObject* source, QEvent* e);
+    void resizeEvent(QResizeEvent* e);
+
+private slots:
+    void statusAdded(StatusItem* s);
+    void statusRemoved(StatusItem* s);
 
 private:
-    bool suppressed;
-    QProgressBar* m_progressBar;
+    void init();
+    void repositionToParent();
+
+private:
+    QMap<StatusItem*,QWidget*> m_statusWidgets;
+    QVBoxLayout* m_layout;
+    uint m_bottomMargin, m_rightMargin;
 };
 
 #endif

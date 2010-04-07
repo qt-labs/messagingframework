@@ -39,75 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef ACCOUNTSETTINGS_H
-#define ACCOUNTSETTINGS_H
+#ifndef STATUSBAR_H
+#define STATUSBAR_H
 
-#include <qmailid.h>
-#include <qmailserviceaction.h>
-#include <QMap>
-#include <QModelIndex>
-#include <QDialog>
+#include <QWidget>
 
-class StatusBar;
-class QMailAccount;
-class QMailAccountListModel;
+class QProgressBar;
+class QLabel;
+class ArrowButton;
 
-QT_BEGIN_NAMESPACE
-
-class QMenu;
-class QAction;
-class QSmoothList;
-class QListView;
-
-QT_END_NAMESPACE;
-
-class AccountSettings : public QDialog
+class StatusBar : public QWidget
 {
     Q_OBJECT
-public:
-    AccountSettings(QWidget *parent = 0, Qt::WFlags flags = 0);
 
-signals:
-    void deleteAccount(const QMailAccountId &id);
+public:
+    StatusBar(QWidget* parent = 0);
 
 public slots:
-    void addAccount();
+    void setProgress(unsigned int min, unsigned int max);
+    void clearProgress();
+    void setStatus(const QString& msg);
+    void clearStatus();
+    void setDetailsButtonVisible(bool val);
 
-protected:
-    void showEvent(QShowEvent* e);
-    void hideEvent(QHideEvent* e);
-
-private slots:
-    void removeAccount();
-    void resetAccount();
-    void updateActions();
-    void displayProgress(uint, uint);
-    void activityChanged(QMailServiceAction::Activity activity);
-    void testConfiguration();
-    void deleteMessages();
-    void editCurrentAccount();
+signals:
+    void showDetails();
+    void hideDetails();
 
 private:
-    void editAccount(QMailAccount *account);
+    void init();
 
 private:
-    QMap<int,int> listToAccountIdx;
-    QMailAccountListModel *accountModel;
-    QListView* accountView;
-    QMenu *context;
-    QAction *addAccountAction;
-    QAction *removeAccountAction;
-    QAction *resetAccountAction;
-    QAction *editAccountAction;
-    StatusBar* statusDisplay;
-    QPoint cPos;
-    bool preExisting;
-    QMailRetrievalAction *retrievalAction;
-    QMailTransmitAction *transmitAction;
-    QMailAccountId deleteAccountId;
-    QMailMessageIdList deleteMessageIds;
-    int deleteBatchSize;
-    int deleteProgress;
+    QProgressBar* m_progressBar;
+    QLabel* m_statusLabel;
+    ArrowButton* m_detailsButton;
+    bool m_showDetailsButton;
 };
 
 #endif
+

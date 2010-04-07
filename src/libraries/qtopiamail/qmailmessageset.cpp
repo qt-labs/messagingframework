@@ -506,14 +506,15 @@ void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
     if (i->_hierarchical)
         synchronizeChildren();
 
-    if (ids.contains(i->_id)) {
-        //check to see if the name has changed
-        if (i->_id.isValid()) {
-            QMailFolder folder(i->_id);
-            i->_name = folder.displayName();
-        }
+
+    if (ids.contains(i->_id))
+    {
+        //update our folder name
+        i->_name = QString();
+
         update(this);
     }
+
 }
 
 /*! \internal */
@@ -746,8 +747,14 @@ void QMailAccountMessageSet::foldersUpdated(const QMailFolderIdList &)
 /*! \internal */
 void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
 {
-    if (ids.contains(impl(this)->_id))
+    const ImplementationType *i = impl(this);
+
+    if (ids.contains(i->_id))
+    {
+        //update our account name
+        i->_name = QString();
         update(this);
+    }
 }
 
 /*! \internal */

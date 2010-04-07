@@ -39,50 +39,76 @@
 **
 ****************************************************************************/
 
-#include "statusdisplay.h"
-#include <QApplication>
-#include <QProgressBar>
+#ifndef STATUSMONITOR_H
+#define STATUSMONITOR_H
 
-StatusDisplay::StatusDisplay(QWidget* parent)
-    : QStatusBar(parent), suppressed(false)
+#include <QObject>
+#include <qmailserviceaction.h>
+
+class StatusMonitor;
+class QMailServiceAction;
+
+class StatusItem : public QObject
 {
-    m_progressBar = new QProgressBar(this);
-    m_progressBar->setMaximumWidth(150);
-    addPermanentWidget(m_progressBar);
-    m_progressBar->hide();
-}
+    Q_OBJECT
 
-void StatusDisplay::showStatus(bool visible)
+signals:
+    void finished();
+    void progressChanged(uint,uint);
+    void statusChanged(const QString& message);
+
+public:
+    virtual QWidget* widget() = 0;
+    virtual QPair<uint,uint> progress() const = 0;
+    virtual QString status() const = 0;
+};
+
+class ServiceActionStatusItem : public StatusItem
 {
-    suppressed = !visible;
-    if(!visible) clearMessage();
-}
+    Q_OBJECT
 
-void StatusDisplay::displayStatus(const QString& txt)
+public:
+    ServiceActionStatusItem(QMailServiceAction* sa, const QString& description);
+    QWidget* widget();
+    QPair<uint,uint> progress() const;
+    QString status() const;
+
+private slots:
+    void serviceActivityChanged(QMailServiceAction::Activity a);
+    void serviceStatusChanged(const QMailServiceAction::Status& s);
+
+private:
+    QMailServiceAction* m_serviceAction;
+    QString m_description;
+};
+
+static StatusMonitor* StatusMonitorInstance();
+
+class StatusMonitor : public QObject
 {
-    showMessage(txt);
-}
+    Q_OBJECT
 
-void StatusDisplay::displayProgress(uint value, uint range)
-{
-    if (range == 0) {
-        m_progressBar->hide();
-    } else {
-        m_progressBar->setVisible(true);
+public:
+    static StatusMonitor* instance();
+    void add(StatusItem* newItem);
 
-        if (static_cast<int>(range) != m_progressBar->maximum())
-            m_progressBar->setRange(0, range);
+signals:
+    void added(StatusItem* s);
+    void removed(StatusItem* s);
+    void progressChanged(uint,uint);
+    void statusChanged(const QString& msg);
 
-        m_progressBar->setValue(qMin(value, range));
-    }
-}
+private slots:
+    void statusItemFinished();
+    void statusItemProgressChanged();
 
-void StatusDisplay::clearStatus()
-{
-    m_progressBar->reset();
-    clearMessage(); 
+private:
+    StatusMonitor();
+    void updateProgress();
+    friend StatusMonitor* StatusMonitorInstance();
 
-    if (suppressed)
-        m_progressBar->setVisible(false);
-}
+private:
+    QList<StatusItem*> m_statusItems;
+};
 
+#endif

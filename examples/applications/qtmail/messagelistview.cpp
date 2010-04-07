@@ -62,6 +62,7 @@
 #include <QLineEdit>
 #include <QApplication>
 #include <qmaildatacomparator.h>
+#include <qtmailnamespace.h>
 
 static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
 static const QColor newMessageColor(Qt::blue);
@@ -102,7 +103,7 @@ QWidget(parent)
     QHBoxLayout* layout = new QHBoxLayout(this);
 
     m_clearButton = new QToolButton(this);
-    m_clearButton->setIcon(QIcon(":icon/clear_right"));
+    m_clearButton->setIcon(Qtmail::icon("clear"));
     connect(m_clearButton,SIGNAL(clicked()),this,SLOT(reset()));
     layout->addWidget(m_clearButton);
 
@@ -127,7 +128,7 @@ QWidget(parent)
     layout->addWidget(m_statusCombo);
 
     m_fullSearchButton = new QToolButton(this);
-    m_fullSearchButton->setIcon(QIcon(":icon/find"));
+    m_fullSearchButton->setIcon(Qtmail::icon("search"));
     connect(m_fullSearchButton,SIGNAL(clicked(bool)),this,SIGNAL(fullSearchRequested()));
     layout->addWidget(m_fullSearchButton);
     

@@ -191,7 +191,7 @@ void FolderView::itemCollapsed(const QModelIndex &index)
             expandedFolders.remove(folderId);
             return;
         }
-        
+
         QMailAccountId accountId = folderModel->accountIdFromIndex(index);
         if (accountId.isValid()) {
             expandedAccounts.remove(accountId);
@@ -203,7 +203,7 @@ void FolderView::itemCollapsed(const QModelIndex &index)
             QMailMessageKey key = item->messageKey();
             expandedKeys.remove(arrayFromKey(key));
             return;
-        }        
+        }
     }
 }
 
@@ -212,6 +212,13 @@ void FolderView::currentChanged(const QModelIndex &currentIndex, const QModelInd
     itemSelected(currentIndex);
 
     Q_UNUSED(previousIndex)
+}
+
+void FolderView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    if(topLeft == currentIndex() || bottomRight == currentIndex())
+        emit selectionUpdated();
+    QTreeView::dataChanged(topLeft,bottomRight);
 }
 
 namespace {

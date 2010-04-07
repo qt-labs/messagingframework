@@ -7,7 +7,6 @@
         <file alias="new">pics/mail_new.png</file>
         <file alias="settings">pics/configure.png</file>
         <file alias="cancel">pics/icons/14x14/cancel.png</file>
-        <file alias="reset">pics/icons/14x14/reset.png</file>
         <file alias="edit">pics/icons/14x14/edit.png</file>
         <file alias="compose">pics/icons/14x14/compose.png</file>
         <file alias="draft">pics/icons/14x14/draft.png</file>
@@ -21,11 +20,13 @@
         <file alias="exec">pics/exec.png</file>
         <file alias="tick">pics/button_ok.png</file>
         <file alias="cross">pics/button_cancel.png</file>
-        <file alias="close">pics/fileclose.png</file>
+        <file alias="lose">pics/fileclose.png</file>
         <file alias="stop">pics/stop.png</file>
         <file alias="sync">pics/reload.png</file>
         <file alias="add">pics/add.png</file>
         <file alias="erase">pics/eraser.png</file>
+        <file alias="up">pics/up.png</file>
+        <file alias="down">pics/down.png</file>
         <file alias="folder">pics/icons/14x14/folder.png</file>
         <file alias="folder-remote">pics/icons/14x14/folder-remote.png</file>
     </qresource>
