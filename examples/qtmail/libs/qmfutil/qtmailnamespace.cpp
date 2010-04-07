@@ -6,7 +6,7 @@ typedef QMap<QString,QIcon> IconMap;
 
 static QIcon loadIcon(const QString& themeIdentifier, const QString& resourceFallback)
 {
-#if (QT_VERSION < QT_VERSION_CHECK(4, 6, 0))
+#if ((QT_VERSION < QT_VERSION_CHECK(4, 6, 0)) || !defined(Q_OS_LINUX))
     Q_UNUSED(themeIdentifier);
     return QIcon(resourceFallback);
 #else
