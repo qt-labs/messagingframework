@@ -24,8 +24,8 @@ HEADERS += emailclient.h \
            selectcomposerwidget.h \
            readmail.h \
            writemail.h \
-           settings/accountsettings.h \
-           settings/editaccount.h \
+           accountsettings.h \
+           editaccount.h \
            statusmonitorwidget.h \
            statusbar.h \
            statusmonitor.h
@@ -37,8 +37,8 @@ SOURCES += emailclient.cpp \
            selectcomposerwidget.cpp \
            readmail.cpp \
            writemail.cpp \
-           settings/accountsettings.cpp \
-           settings/editaccount.cpp \
+           accountsettings.cpp \
+           editaccount.cpp \
            statusmonitorwidget.cpp \
            statusbar.cpp \
            statusmonitor.cpp
