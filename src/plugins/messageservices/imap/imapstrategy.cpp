@@ -376,7 +376,7 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder
 }
 
 void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
-{ 
+{
     // Store this message to the mail store
     if (message.id().isValid()) {
         if (!QMailStore::instance()->updateMessage(&message)) {
@@ -385,10 +385,25 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage
             return;
         }
     } else {
-        if (!QMailStore::instance()->addMessage(&message)) {
-            _error = true;
-            qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-            return;
+        int matching = QMailStore::instance()->countMessages(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
+        if (matching == 0) {
+            if (!QMailStore::instance()->addMessage(&message)) {
+                _error = true;
+                qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+                return;
+            }
+        } else {
+            if(matching > 1) {
+                qWarning() << "A duplicate message (which shouldn't exist) is being updated, meaning they now could be falling out of sync."
+                        << "Account: " << message.parentAccountId() << "UID:" << message.serverUid();
+            }
+            message.setId(QMailStore::instance()->message(message.serverUid(), message.parentAccountId()).id());
+
+            if (!QMailStore::instance()->updateMessage(&message)) {
+                _error = true;
+                qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+                return;
+            }
         }
 
         context->folderModified(message.parentFolderId());
@@ -1276,7 +1291,6 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
         if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
             context->protocol().sendUidFetchSection(numericUidSequence(_messageUids), msgSectionStr, _sectionStart, _sectionEnd);
         } else {
-            //TODO know if it's temp or not
             context->protocol().sendUidFetch(ContentFetchFlags, numericUidSequence(_messageUids));
         }
 
@@ -1386,18 +1400,8 @@ void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context,
     if(_canceled)
         return;
 
-    if(message.id().isValid()) {
-        qMailLog(IMAP) << "Fetched a valid message (which it shouldn't)";
-        return;
-    }
     message.setStatus(QMailMessage::Temporary, true);
-    bool stored = QMailStore::instance()->addMessage(&message);
-
-    if (!stored) {
-        _error = true;
-        qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-        return;
-    }
+    ImapRetrieveFolderListStrategy::messageFetched(context, message);
 
     _fetchedList.append(message.id());
     Q_UNUSED(context)
@@ -2283,6 +2287,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
 {
     QMailFolderId boxId = _currentMailbox.id();
     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
+    QMailMessageKey partialContentKey(QMailMessageKey::status(QMailMessage::PartialContentAvailable));
     QMailFolder folder(boxId);
     
     if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
@@ -2301,7 +2306,7 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
     // Messages (with at least metadata) stored locally
     QMailMessageKey folderKey(context->client()->messagesKey(boxId) | context->client()->trashKey(boxId));
     QStringList deletedUids = context->client()->deletedMessages(boxId);
-    QMailMessageKey storedKey((accountKey & folderKey) | QMailMessageKey::serverUid(deletedUids));
+    QMailMessageKey storedKey((accountKey & folderKey & partialContentKey) | QMailMessageKey::serverUid(deletedUids) );
 
     // New messages reported by the server that we don't yet have
     if (_options & RetrieveMail) {

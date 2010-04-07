@@ -2491,6 +2491,23 @@ bool QMailStorePrivate::idExists(const QMailMessageId& id, const QString& table)
     return idValueExists(id.toULongLong(), (table.isEmpty() ? "mailmessages" : table));
 }
 
+bool QMailStorePrivate::messageExists(const QString &serveruid, const QMailAccountId &id)
+{
+    QSqlQuery query(database);
+    QString sql = "SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?";
+    if(!query.prepare(sql)) {
+        setQueryError(query.lastError(), "Failed to prepare messageExists query");
+    }
+    query.addBindValue(serveruid);
+    query.addBindValue(id.toULongLong());
+
+    if(!query.exec()) {
+        setQueryError(query.lastError(), "Failed to execute messageExists");
+    }
+
+    return query.first();
+}
+
 QMailAccount QMailStorePrivate::extractAccount(const QSqlRecord& r)
 {
     const AccountRecord record(r);
@@ -4378,6 +4395,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     if (metaData->id().isValid() && idExists(metaData->id())) {
         qMailLog(Messaging) << "Message ID" << metaData->id() << "already exists in database, use update instead";
+        return Failure;
+    }
+
+    if(!metaData->serverUid().isEmpty() && metaData->parentAccountId().isValid()
+        && messageExists(metaData->serverUid(), metaData->parentAccountId()))
+    {
+        qMailLog(Messaging) << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
+                << "already exist. Use update instead.";
         return Failure;
     }
 

@@ -258,6 +258,8 @@ private:
     bool idExists(const QMailFolderId& id, const QString& table = QString());
     bool idExists(const QMailMessageId& id, const QString& table = QString());
 
+    bool messageExists(const QString &serveruid, const QMailAccountId &id);
+
     bool checkPreconditions(const QMailFolder& folder, bool update = false);
 
     void preloadHeaderCache(const QMailMessageId& id) const;
