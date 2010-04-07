@@ -14,7 +14,7 @@ SUBDIRS = src/libraries/qtopiamail \
           examples/qtmail/app \
           examples/qtmail/plugins/viewers/generic \
           examples/qtmail/plugins/composers/email \
-          examples/settings/messagingaccounts \
+          examples/messagingaccounts \
           
 # disable benchmark test on mac until ported
 !macx {

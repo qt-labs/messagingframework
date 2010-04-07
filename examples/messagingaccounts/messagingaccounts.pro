@@ -5,19 +5,19 @@ CONFIG += qtopiamail messageserver
 
 DEPENDPATH += .
 
-QTMAIL_EXAMPLE=../../qtmail
+QTMAIL_EXAMPLE=../qtmail
 
-INCLUDEPATH += . ../../../src/libraries/qtopiamail \
-                 ../../../src/libraries/qtopiamail/support \
-                 ../../../src/libraries/messageserver \
+INCLUDEPATH += . ../../src/libraries/qtopiamail \
+                 ../../src/libraries/qtopiamail/support \
+                 ../../src/libraries/messageserver \
                  $$QTMAIL_EXAMPLE/app \
                  $$QTMAIL_EXAMPLE/libs/qmfutil
 
-LIBS += -L../../../src/libraries/qtopiamail/build \
-        -L../../../src/libraries/messageserver/build
+LIBS += -L../../src/libraries/qtopiamail/build \
+        -L../../src/libraries/messageserver/build
 
-macx:LIBS += -F../../../src/libraries/qtopiamail/build \
-        -F../../../src/libraries/messageserver/build
+macx:LIBS += -F../../src/libraries/qtopiamail/build \
+        -F../../src/libraries/messageserver/build
 
 HEADERS += $$QTMAIL_EXAMPLE/app/accountsettings.h \
            $$QTMAIL_EXAMPLE/app/editaccount.h \
@@ -34,4 +34,4 @@ SOURCES += $$QTMAIL_EXAMPLE/app/accountsettings.cpp \
 
 RESOURCES += messagingaccounts.qrc
 
-include(../../../common.pri)
+include(../../common.pri)

@@ -1,9 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icon">
-<file alias="new">../../qtmail/app/pics/icons/14x14/new.png</file>
-<file alias="messagingaccounts">../../qtmail/app/pics/EMail_48.png</file>
-<file alias="add">../../qtmail/app/pics/add.png</file>
-<file alias="erase">../../qtmail/app/pics/eraser.png</file>
-<file alias="settings">../../qtmail/app/pics/configure.png</file>
+<file alias="new">../qtmail/app/pics/icons/14x14/new.png</file>
+<file alias="messagingaccounts">../qtmail/app/pics/EMail_48.png</file>
+<file alias="add">../qtmail/app/pics/add.png</file>
+<file alias="erase">../qtmail/app/pics/eraser.png</file>
+<file alias="settings">../qtmail/app/pics/configure.png</file>
 </qresource>
 </RCC>
