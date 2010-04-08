@@ -1301,7 +1301,7 @@ void tst_QMailStore::remove1000Messages()
     for(int i = 0; i < largeMessageCount; ++i)
     {
         QMailMessage message1;
-        message1.setServerUid("Just some message");
+        message1.setServerUid(QString("%1|Just some message").arg(i));
         message1.setParentAccountId(account.id());
         message1.setParentFolderId(folder.id());
         message1.setMessageType(QMailMessage::Sms);
@@ -1326,7 +1326,7 @@ void tst_QMailStore::remove1000Messages()
     for(int i = 0; i < largeMessageCount; ++i)
     {
         QMailMessage message1;
-        message1.setServerUid("Just some message");
+        message1.setServerUid(QString("Just some message$%1").arg(i));
         message1.setParentAccountId(account.id());
         message1.setParentFolderId(folder.id());
         message1.setMessageType(QMailMessage::Sms);
@@ -1348,4 +1348,3 @@ void tst_QMailStore::remove1000Messages()
     QVERIFY(QMailStore::instance()->purgeMessageRemovalRecords(account.id()));
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
 }
-
