@@ -2049,7 +2049,8 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       inTransaction(false),
       lastQueryError(0),
       mutex(0),
-      readLock(0)
+      readLock(0),
+      globalLocks(0)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
@@ -3586,6 +3587,28 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
                                         cref(key), status, set,
                                         updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
                                    "updateMessagesMetaData"); // not 'updateMessagesStatus', due to function name exported by QMailStore
+}
+
+bool QMailStorePrivate::lock(int timeout)
+{
+    if (databaseMutex().lock(timeout)) {
+        databaseReadLock().lock();
+        globalLocks++;
+        databaseMutex().unlock();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void QMailStorePrivate::unlock()
+{
+    if (globalLocks > 0) {
+        databaseReadLock().unlock();
+        globalLocks--;
+    } else {
+        qWarning() << "Unable to unlock when lock was not called (in this process)";
+    }
 }
 
 bool QMailStorePrivate::restoreToPreviousFolder(const QMailMessageKey &key,

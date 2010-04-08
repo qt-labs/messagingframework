@@ -128,6 +128,9 @@ public:
     bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
+    bool lock(int timeout);
+    void unlock();
+
     bool restoreToPreviousFolder(const QMailMessageKey &key,
                                  QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
@@ -542,6 +545,8 @@ private:
     ProcessReadLock *readLock;
 
     static ProcessMutex *contentMutex;
+
+    int globalLocks;
 };
 
 template <typename ValueType>

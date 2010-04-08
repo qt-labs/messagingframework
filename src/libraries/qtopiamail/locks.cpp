@@ -190,17 +190,12 @@ bool Semaphore::waitForZero(int milliSec)
 
 bool Semaphore::operation(struct sembuf *op, int milliSec)
 {
-#ifdef QTOPIA_HAVE_SEMTIMEDOP
     if (milliSec >= 0) {
         struct timespec ts;
         ts.tv_sec = milliSec / 1000;
         ts.tv_nsec = (milliSec % 1000) * 1000000;
         return (::semtimedop(m_semId, op, 1, &ts) != -1);
     }
-#else
-    Q_UNUSED(milliSec);
-#endif
-
     return (::semop(m_semId, op, 1) != -1);
 }
 

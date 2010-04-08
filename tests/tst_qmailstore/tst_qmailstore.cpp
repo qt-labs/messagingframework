@@ -71,6 +71,7 @@ private slots:
     void addFolder();
     void addMessage();
     void addMessages();
+    void locking();
     void updateAccount();
     void updateFolder();
     void updateMessage();
@@ -489,6 +490,54 @@ void tst_QMailStore::addMessages()
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 0), messageIds.mid(0, 9));
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 1), messageIds.mid(1, 9));
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 10, 0), messageIds);
+}
+
+void tst_QMailStore::locking()
+{
+    QMailAccount accnt;
+    accnt.setName("locking account");
+    accnt.setFromAddress(QMailAddress("Lochlan", "locking@locker.org"));
+
+    QMailAccountConfiguration config1;
+    config1.addServiceConfiguration("imap4");
+    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("imap4")) {
+        svcCfg->setValue("server", "mail.example.org");
+        svcCfg->setValue("username", "account1");
+    }
+
+    // Test that locking stop modifying
+    QVERIFY(QMailStore::instance()->lock(1000));
+    qDebug() << "<timeout to be expected, as database has been locked>";
+    bool done = QMailStore::instance()->addAccount(&accnt, &config1);
+    qDebug() << "</timeout>";
+    QVERIFY(done == false);
+
+    // Make sure we can actually modify after unlocking
+    QMailStore::instance()->unlock();
+    done = QMailStore::instance()->addAccount(&accnt, &config1);
+    QVERIFY(done == true);
+
+    // Make sure we can read when locked
+    QVERIFY(QMailStore::instance()->lock(1000));
+    QCOMPARE(QMailStore::instance()->account(accnt.id()).id(), accnt.id());
+
+    // Test recursive locking
+    QVERIFY(QMailStore::instance()->lock(1000));
+    QCOMPARE(QMailStore::instance()->account(accnt.id()).id(), accnt.id()); //still can read?
+
+    QMailStore::instance()->unlock();
+    // We should still have 1 layer of locking. Should be unable to modify
+    QMailFolder folder("fake folder");
+    folder.setParentAccountId(accnt.id());
+    qDebug() << "<timeout to be expected, as database has been locked>";
+    done = QMailStore::instance()->addFolder(&folder);
+    qDebug() << "</timeout>";
+    QVERIFY(done == false);
+
+    QMailStore::instance()->unlock();
+    // Now we should be able to modify.
+    done = QMailStore::instance()->removeAccount(accnt.id());
+    QVERIFY(done == true);
 }
 
 void tst_QMailStore::updateAccount()
@@ -1348,3 +1397,5 @@ void tst_QMailStore::remove1000Messages()
     QVERIFY(QMailStore::instance()->purgeMessageRemovalRecords(account.id()));
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
 }
+
+
