@@ -24,6 +24,7 @@
         <file alias="stop">pics/stop.png</file>
         <file alias="sync">pics/reload.png</file>
         <file alias="add">pics/add.png</file>
+	    <file alias="reset">pics/reset.png</file>
         <file alias="erase">pics/eraser.png</file>
         <file alias="up">pics/up.png</file>
         <file alias="down">pics/down.png</file>

@@ -19,8 +19,9 @@ static IconMap init()
     IconMap m;
     m.insert("clear",loadIcon("edit-clear",":icon/erase"));
     m.insert("attachment",loadIcon("mail-attachment",":icon/attach"));
-    m.insert("add",loadIcon("add",":icon/add"));
-    m.insert("remove",loadIcon("remove",":icon/erase"));
+    m.insert("add",loadIcon("list-add",":icon/add"));
+    m.insert("remove",loadIcon("list-remove",":icon/erase"));
+    m.insert("reset", loadIcon("document-revert", ":icon/reset"));
     m.insert("close",loadIcon("window-close",":icon/close"));
     m.insert("uparrow",loadIcon("up",":icon/up"));
     m.insert("downarrow",loadIcon("down",":icon/down"));

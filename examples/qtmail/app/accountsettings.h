@@ -94,7 +94,6 @@ private:
     QMap<int,int> listToAccountIdx;
     QMailAccountListModel *accountModel;
     QListView* accountView;
-    QMenu *context;
     QAction *addAccountAction;
     QAction *removeAccountAction;
     QAction *resetAccountAction;

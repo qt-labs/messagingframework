@@ -50,7 +50,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QRegExp>
-#include <QToolButton>
+#include <QToolBar>
 #include <qtmailnamespace.h>
 
 AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
@@ -63,73 +63,56 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
     QVBoxLayout *vb = new QVBoxLayout(this);
     vb->setContentsMargins(0, 0, 0, 0);
 
-    QMenuBar* menu = new QMenuBar(this);
-    context = menu->addMenu("File");
-    vb->addWidget(menu);
-
-    accountModel = new QMailAccountListModel();
+    accountModel = new QMailAccountListModel(this);
     accountModel->setKey(QMailAccountKey::status(QMailAccount::UserEditable, QMailDataComparator::Includes));
     accountModel->setSortKey(QMailAccountSortKey::id(Qt::AscendingOrder));
     connect(accountModel,SIGNAL(rowsInserted(QModelIndex,int,int)),this,SLOT(updateActions()));
     connect(accountModel,SIGNAL(rowsRemoved(QModelIndex,int,int)),this,SLOT(updateActions()));
-    accountView = new QListView(this);
 
+    accountView = new QListView(this);
+    accountView->setContextMenuPolicy(Qt::ActionsContextMenu);
     accountView->setModel(accountModel);
 
     if (accountModel->rowCount())
         accountView->setCurrentIndex(accountModel->index(0, 0));
     else //no accounts so automatically add
         QTimer::singleShot(0,this,SLOT(addAccount()));
-    vb->addWidget(accountView);
 
-    addAccountAction = new QAction( Qtmail::icon("add"), tr("Add"), this );
+    addAccountAction = new QAction( Qtmail::icon("add"), tr("New"), this );
     connect(addAccountAction, SIGNAL(triggered()), this, SLOT(addAccount()));
-    context->addAction( addAccountAction );
 
     editAccountAction = new QAction(Qtmail::icon("settings"),tr("Edit"), this);
     connect(editAccountAction,SIGNAL(triggered()),this,SLOT(editCurrentAccount()));
-    context->addAction( editAccountAction );
+    accountView->addAction(editAccountAction);
 
+    resetAccountAction = new QAction( Qtmail::icon("reset"), tr("Reset"), this );
+    connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
+    accountView->addAction(resetAccountAction);
+    
     removeAccountAction = new QAction( Qtmail::icon("remove"), tr("Remove"), this );
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
-    context->addAction(removeAccountAction);
+    accountView->addAction(removeAccountAction);
 
-    resetAccountAction = new QAction( tr("Reset"), this );
-    connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
-    context->addAction( resetAccountAction );
+    QToolBar *buttonBar = new QToolBar(this);
+    buttonBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonBar->addAction(addAccountAction);
+    buttonBar->addSeparator();
+    buttonBar->addAction(editAccountAction);
+    buttonBar->addAction(resetAccountAction);
+    buttonBar->addAction(removeAccountAction);
 
-    QAction* exitAction = new QAction(tr("Close"), this );
-    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
-    context->addAction(exitAction);
+    vb->addWidget(buttonBar);
+    vb->addWidget(accountView);
 
     statusDisplay = new StatusBar(this);
     statusDisplay->setDetailsButtonVisible(false);
     statusDisplay->setVisible(false);
 
-    QWidget *buttonHolder = new QWidget(this);
-    QHBoxLayout* buttonsLayout = new QHBoxLayout(buttonHolder);
-
-    QToolButton* addButton = new QToolButton(this);
-    addButton->setDefaultAction(addAccountAction);
-    buttonsLayout->addWidget(addButton);
-
-    QToolButton* editButton = new QToolButton(this);
-    editButton->setDefaultAction(editAccountAction);
-    buttonsLayout->addWidget(editButton);
-
-    QToolButton* removeButton = new QToolButton(this);
-    removeButton->setDefaultAction(removeAccountAction);
-    buttonsLayout->addWidget(removeButton);
-
-    buttonsLayout->addStretch();
-
-    vb->addWidget(buttonHolder);
 
     vb->addWidget(statusDisplay);
+
     connect(accountView, SIGNAL(activated(QModelIndex)),
 	    this, SLOT(editCurrentAccount()));
-    connect(context, SIGNAL(aboutToShow()),
-	    this, SLOT(updateActions()) );
 
     retrievalAction = new QMailRetrievalAction(this);
     connect(retrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
