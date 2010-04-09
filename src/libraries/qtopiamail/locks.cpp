@@ -190,12 +190,14 @@ bool Semaphore::waitForZero(int milliSec)
 
 bool Semaphore::operation(struct sembuf *op, int milliSec)
 {
+#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     if (milliSec >= 0) {
         struct timespec ts;
         ts.tv_sec = milliSec / 1000;
         ts.tv_nsec = (milliSec % 1000) * 1000000;
         return (::semtimedop(m_semId, op, 1, &ts) != -1);
     }
+#endif
     return (::semop(m_semId, op, 1) != -1);
 }
 
