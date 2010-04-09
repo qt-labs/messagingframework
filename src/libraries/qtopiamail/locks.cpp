@@ -197,6 +197,8 @@ bool Semaphore::operation(struct sembuf *op, int milliSec)
         ts.tv_nsec = (milliSec % 1000) * 1000000;
         return (::semtimedop(m_semId, op, 1, &ts) != -1);
     }
+#else
+    Q_UNUSED(milliSec);
 #endif
     return (::semop(m_semId, op, 1) != -1);
 }
