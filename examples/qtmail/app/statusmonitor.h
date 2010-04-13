@@ -82,7 +82,9 @@ private:
     QString m_description;
 };
 
+#ifdef DEFINE_STATUS_MONITOR_INSTANCE
 static StatusMonitor* StatusMonitorInstance();
+#endif
 
 class StatusMonitor : public QObject
 {
@@ -105,7 +107,9 @@ private slots:
 private:
     StatusMonitor();
     void updateProgress();
+#ifdef DEFINE_STATUS_MONITOR_INSTANCE
     friend StatusMonitor* StatusMonitorInstance();
+#endif
 
 private:
     QList<StatusItem*> m_statusItems;

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "statusmonitor.h"
+
 #include <QWidget>
 #include <QLabel>
 #include <QProgressBar>
@@ -47,6 +47,9 @@
 #include <QGridLayout>
 #include <QResizeEvent>
 #include <qtmailnamespace.h>
+
+#define DEFINE_STATUS_MONITOR_INSTANCE
+#include "statusmonitor.h"
 
 class ServiceActionStatusWidget : public QWidget
 {

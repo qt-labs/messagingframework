@@ -161,8 +161,8 @@ public:
         template <typename Stream> void serialize(Stream &stream) const
         {
             stream << count();
-            foreach (const QVariant& value, *this)
-                stream << value;
+            foreach (const QVariant& var, *this)
+                stream << var;
         }
 
         template <typename Stream> void deserialize(Stream &stream)
@@ -172,9 +172,9 @@ public:
             int v = 0;
             stream >> v;
             for (int i = 0; i < v; ++i) {
-                QVariant value;
-                stream >> value;
-                append(value);
+                QVariant var;
+                stream >> var;
+                append(var);
             }
         }
     };
