@@ -1,0 +1,8 @@
+Latest Changes
+---------------
+
+2010W14
+
+  * Fixes: NB#156526 - Duplicate message items shown inside Inbox view
+  * Fixes: NB#160646 - <MemLeak> in libqmf
+
