@@ -2054,7 +2054,7 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    if (guard.lock(1000)) {
+    if (guard.lock(10000)) {
         //open the database
         database = QMail::createDatabase();
     }
@@ -2090,7 +2090,7 @@ bool QMailStorePrivate::initStore()
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    if (!guard.lock(1000)) {
+    if (!guard.lock(10000)) {
         return false;
     }
 
@@ -2675,7 +2675,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
         QPair<QString, QString> elements(extractUriElements(contentUri));
 
         MutexGuard lock(contentManagerMutex());
-        if (!lock.lock(1000)) {
+        if (!lock.lock(10000)) {
             qMailLog(Messaging) << "Unable to acquire message body mutex in extractMessage!";
             return QMailMessage();
         }
@@ -3692,8 +3692,8 @@ QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, 
 
 QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
 {
-    if (accountCache.contains(id))
-        return accountCache.lookup(id);
+   // if (accountCache.contains(id))
+        //return accountCache.lookup(id);
 
     QMailAccount account;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptAccount, const_cast<QMailStorePrivate*>(this), 
@@ -3915,7 +3915,7 @@ void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, 
 
     {
         MutexGuard lock(contentManagerMutex());
-        if (!lock.lock(1000)) {
+        if (!lock.lock(10000)) {
             qMailLog(Messaging) << "Unable to acquire message body mutex in removeExpiredData!";
         } else {
             foreach (const QString& contentUri, contentUris) {
@@ -4169,23 +4169,23 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
         // Insert any standard folders configured for this account
         const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
         if (!folders.isEmpty()) {
-            QVariantList types;
-            QVariantList folderIds;
+            //QVariantList types;
+            //QVariantList folderIds;
 
             QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = folders.begin(), end = folders.end();
             for ( ; it != end; ++it) {
-                types.append(QVariant(static_cast<int>(it.key())));
-                folderIds.append(QVariant(it.value().toULongLong()));
-            }
+                QVariant type(static_cast<int>(it.key()));
+                QVariant folderId(it.value().toULongLong());
 
-            // Batch insert the folders
-            QString sql("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
-            QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
-                                       QVariantList() << QVariant(types)
-                                                      << QVariant(folderIds),
-                                       "addAccount mailaccountfolders query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
+                // Batch insert the folders
+                QString sql("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
+                QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
+                                           QVariantList() << QVariant(type)
+                                                          << QVariant(folderId),
+                                           "addAccount mailaccountfolders query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+            }
         }
 
         // Insert any custom fields belonging to this account
@@ -4362,7 +4362,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     MutexGuard lock(contentManagerMutex());
-    if (!lock.lock(1000)) {
+    if (!lock.lock(10000)) {
         qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
         return Failure;
     }
@@ -4731,14 +4731,18 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
         }
 
         if (!addedTypes.isEmpty()) {
-            // Batch insert the added fields
-            QString sql("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%2,?,?)");
-            QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
-                                       QVariantList() << QVariant(addedTypes)
-                                                      << QVariant(addedFolders),
-                                       "updateAccount mailaccountfolders insert query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
+           Q_ASSERT(addedTypes.size() == addedFolders.size());
+           for(int i = 0; i < addedTypes.size(); i++) {
+               // Batch insert the added fields
+               QString sql("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%2,?,?)");
+               QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
+                                          QVariantList() << addedTypes[i]
+                                          << addedFolders[i],
+                                          "updateAccount mailaccountfolders insert query"));
+               if (query.lastError().type() != QSqlError::NoError)
+                   return DatabaseFailure;
+           }
+
         }
 
         if (account->customFieldsModified()) {
@@ -5073,7 +5077,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
 
             MutexGuard lock(contentManagerMutex());
-            if (!lock.lock(1000)) {
+            if (!lock.lock(10000)) {
                 qMailLog(Messaging) << "Unable to acquire message body mutex in updateMessage!";
                 return Failure;
             }
