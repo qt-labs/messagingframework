@@ -6,4 +6,5 @@ Latest Changes
   * Fixes: NB#156526 - Duplicate message items shown inside Inbox view
   * Fixes: NB#160646 - <MemLeak> in libqmf
   * Fixes: NB#158354 - Message shown without body part in viewer for messages fetched during initial account creation
+  * Fixes: NB#163621 - qmf header prevents compilation with -Wshadow -Werror
 
