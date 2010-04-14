@@ -49,6 +49,9 @@
 #include <QTemporaryFile>
 #include <QCoreApplication>
 #include <QDir>
+#ifndef QT_NO_OPENSSL
+#include <QSslSocket>
+#endif
 #include <qmaillog.h>
 #include <qmailaddress.h>
 #include <qmailstore.h>
@@ -798,6 +801,16 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 
     // Don't send more data until all bytes have been written.
     if (waitingForBytes) return;
+
+    // There are more encrypted bytes written than what we send (encryption overhead)
+    // but we can't find out exactly how many bytes there are. Now that we think we've
+    // written everything, check to see if the connection has any pending encrypted
+    // bytes to write and if so, wait for them to be sent.
+#ifndef QT_NO_OPENSSL
+    QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
+    Q_ASSERT(socket);
+    if (socket->encryptedBytesToWrite()) return;
+#endif
 
     // No more data to send
     if (temporaryFile->atEnd()) {
