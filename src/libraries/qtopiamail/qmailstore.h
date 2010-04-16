@@ -163,7 +163,7 @@ public:
 
     const QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId& parentAccountId, const QMailFolderId& parentFolderId = QMailFolderId()) const;
 
-    bool lock(int timeout);
+    void lock();
     void unlock();
 
     bool purgeMessageRemovalRecords(const QMailAccountId& parentAccountId, const QStringList& serverUid = QStringList());

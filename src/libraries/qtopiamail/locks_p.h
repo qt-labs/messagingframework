@@ -70,7 +70,7 @@ public:
     ProcessMutex(const QString &path, int id = 0);
     ~ProcessMutex();
 
-    bool lock(int milliSec);
+    void lock();
     void unlock();
 
 private:
@@ -91,7 +91,7 @@ public:
     void lock();
     void unlock();
 
-    bool wait(int milliSec);
+    void wait();
 
 private:
     ProcessReadLock(const ProcessReadLock &);

@@ -69,16 +69,16 @@ class Semaphore
     int m_semId;
     int m_initialValue;
 
-    bool operation(struct sembuf *op, int milliSec);
+    void operation(struct sembuf *op);
 
 public:
     Semaphore(int id, bool remove, int initial);
     ~Semaphore();
 
-    bool decrement(int milliSec = -1);
-    bool increment(int milliSec = -1);
+    void decrement();
+    void increment();
 
-    bool waitForZero(int milliSec = -1);
+    void waitForZero();
 };
 
 Semaphore::Semaphore(int id, bool remove, int initial)
@@ -140,7 +140,7 @@ Semaphore::~Semaphore()
     }
 }
 
-bool Semaphore::decrement(int milliSec)
+void Semaphore::decrement()
 {
     if (m_semId != -1) {
         struct sembuf op;
@@ -148,15 +148,13 @@ bool Semaphore::decrement(int milliSec)
         op.sem_op = -1;
         op.sem_flg = SEM_UNDO;
 
-        return operation(&op, milliSec);
+        operation(&op);
     } else {
         qMailLog(Messaging) << "Semaphore: Unable to decrement invalid semaphore ID:" << m_id;
     }
-
-    return false;
 }
 
-bool Semaphore::increment(int milliSec)
+void Semaphore::increment()
 {
     if (m_semId != -1) {
         struct sembuf op;
@@ -164,15 +162,13 @@ bool Semaphore::increment(int milliSec)
         op.sem_op = 1;
         op.sem_flg = SEM_UNDO;
 
-        return operation(&op, milliSec);
+        operation(&op);
     } else {
         qMailLog(Messaging) << "Semaphore: Unable to increment invalid semaphore ID:" << m_id;
     }
-
-    return false;
 }
 
-bool Semaphore::waitForZero(int milliSec)
+void Semaphore::waitForZero()
 {
     if (m_semId != -1) {
         struct sembuf op;
@@ -180,27 +176,18 @@ bool Semaphore::waitForZero(int milliSec)
         op.sem_op = 0;
         op.sem_flg = 0;
 
-        return operation(&op, milliSec);
+        operation(&op);
     } else {
         qMailLog(Messaging) << "Semaphore: Unable to wait for zero on invalid semaphore ID:" << m_id;
     }
-
-    return false;
 }
 
-bool Semaphore::operation(struct sembuf *op, int milliSec)
+void Semaphore::operation(struct sembuf *op)
 {
-#if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-    if (milliSec >= 0) {
-        struct timespec ts;
-        ts.tv_sec = milliSec / 1000;
-        ts.tv_nsec = (milliSec % 1000) * 1000000;
-        return (::semtimedop(m_semId, op, 1, &ts) != -1);
+    if(::semop(m_semId, op, 1) != 0) {
+        qMailLog(Messaging) << "Semaphore operation had an error" << errno;
     }
-#else
-    Q_UNUSED(milliSec);
-#endif
-    return (::semop(m_semId, op, 1) != -1);
+
 }
 
 }
@@ -211,7 +198,7 @@ class ProcessMutexPrivate : private Semaphore
 public:
     ProcessMutexPrivate(int id) : Semaphore(id, false, 1) {}
 
-    bool lock(int milliSec) { return decrement(milliSec); }
+    void lock() { decrement(); }
     void unlock() { increment(); }
 };
 
@@ -225,9 +212,9 @@ ProcessMutex::~ProcessMutex()
     delete d;
 }
 
-bool ProcessMutex::lock(int milliSec)
+void ProcessMutex::lock()
 {
-    return d->lock(milliSec);
+    d->lock();
 }
 
 void ProcessMutex::unlock()
@@ -244,7 +231,7 @@ public:
     void lock() { increment(); }
     void unlock() { decrement(); }
 
-    bool wait(int milliSec) { return waitForZero(milliSec); }
+    bool wait() { waitForZero(); }
 };
 
 ProcessReadLock::ProcessReadLock(const QString &path, int id)
@@ -267,8 +254,7 @@ void ProcessReadLock::unlock()
     d->unlock();
 }
 
-bool ProcessReadLock::wait(int milliSec)
+void ProcessReadLock::wait()
 {
-    return d->wait(milliSec);
+    d->wait();
 }
-

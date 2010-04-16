@@ -170,11 +170,10 @@ class Guard
     bool locked;
 
 public:
-    enum { DefaultTimeout = 1000 };
 
     Guard(Mutex& m)
         : mutex(m),
-          locked(false) 
+          locked(false)
     {
     }
 
@@ -183,9 +182,12 @@ public:
         unlock();
     }
 
-    bool lock(int timeout = DefaultTimeout)
+    void lock()
     {
-        return (locked = mutex.lock(timeout));
+        if (!locked) {
+            mutex.lock();
+            locked = true;
+        }
     }
 
     void unlock()
@@ -1843,22 +1845,14 @@ QMailStorePrivate::Transaction::Transaction(QMailStorePrivate* d)
         m_initted = true;
     } else {
         // This process does not yet have a mutex lock
-        if (m_d->databaseMutex().lock(10000)) {
-            // Wait for any readers to complete
-            if (m_d->databaseReadLock().wait(10000)) {
-                if (m_d->transaction()) {
-                    ++mutexLockCount;
-                    m_initted = true;
-                }
-            } else {
-                qWarning() << "Unable to wait for database read lock to reach zero!";
-            }
-
-            if (!m_initted) {
-                m_d->databaseMutex().unlock();
-            }
+        m_d->databaseMutex().lock();
+        // Wait for any readers to complete
+        m_d->databaseReadLock().wait();
+        if (m_d->transaction()) {
+            ++mutexLockCount;
+            m_initted = true;
         } else {
-            qWarning() << "Unable to lock database mutex for transaction!";
+            m_d->databaseMutex().unlock();
         }
     }
 }
@@ -1914,17 +1908,15 @@ QMailStorePrivate::ReadLock::ReadLock(QMailStorePrivate* d)
     } else {
         // This process does not yet have a read lock
         // Lock the mutex to ensure no writers are active or waiting (unless we have already locked it)
-        if ((mutexLockCount > 0) || m_d->databaseMutex().lock(10000)) {
-            m_d->databaseReadLock().lock();
-            ++readLockCount;
-            m_locked = true;
+        if (mutexLockCount == 0)
+            m_d->databaseMutex().lock();
+        m_d->databaseReadLock().lock();
+        ++readLockCount;
+        m_locked = true;
 
-            if (mutexLockCount == 0)
-                m_d->databaseMutex().unlock();
-        } else {
-            qWarning() << "Unable to lock database mutex for read lock!";
-        }
-    }
+        if (mutexLockCount == 0)
+            m_d->databaseMutex().unlock();
+   }
 }
 
 QMailStorePrivate::ReadLock::~ReadLock()
@@ -2054,10 +2046,11 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    if (guard.lock(10000)) {
-        //open the database
-        database = QMail::createDatabase();
-    }
+    guard.lock();
+
+    //open the database
+    database = QMail::createDatabase();
+
     mutex = new ProcessMutex(databaseIdentifier(), 1);
     readLock = new ProcessReadLock(databaseIdentifier(), 2);
     if (contentMutex == 0) {
@@ -2090,9 +2083,7 @@ bool QMailStorePrivate::initStore()
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    if (!guard.lock(10000)) {
-        return false;
-    }
+    guard.lock();
 
     if (!database.isOpen()) {
         qMailLog(Messaging) << "Unable to open database in initStore!";
@@ -2675,10 +2666,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
         QPair<QString, QString> elements(extractUriElements(contentUri));
 
         MutexGuard lock(contentManagerMutex());
-        if (!lock.lock(10000)) {
-            qMailLog(Messaging) << "Unable to acquire message body mutex in extractMessage!";
-            return QMailMessage();
-        }
+        lock.lock();
 
         QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first);
         if (contentManager) {
@@ -3589,16 +3577,12 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
                                    "updateMessagesMetaData"); // not 'updateMessagesStatus', due to function name exported by QMailStore
 }
 
-bool QMailStorePrivate::lock(int timeout)
+void QMailStorePrivate::lock()
 {
-    if (databaseMutex().lock(timeout)) {
-        databaseReadLock().lock();
-        globalLocks++;
-        databaseMutex().unlock();
-        return true;
-    } else {
-        return false;
-    }
+    databaseMutex().lock();
+    databaseReadLock().lock();
+    globalLocks++;
+    databaseMutex().unlock();
 }
 
 void QMailStorePrivate::unlock()
@@ -3915,26 +3899,24 @@ void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, 
 
     {
         MutexGuard lock(contentManagerMutex());
-        if (!lock.lock(10000)) {
-            qMailLog(Messaging) << "Unable to acquire message body mutex in removeExpiredData!";
-        } else {
-            foreach (const QString& contentUri, contentUris) {
-                QPair<QString, QString> elements(extractUriElements(contentUri));
+        lock.lock();
+        foreach (const QString& contentUri, contentUris) {
+            QPair<QString, QString> elements(extractUriElements(contentUri));
 
-                if (QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first)) {
-                    QMailStore::ErrorCode code = contentManager->remove(elements.second);
-                    if (code != QMailStore::NoError) {
-                        qMailLog(Messaging) << "Unable to remove expired message content:" << contentUri;
-                        if (code == QMailStore::ContentNotRemoved) {
-                            // The existing content could not be removed - try again later
-                            obsoleteContent(contentUri);
-                        }
+            if (QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first)) {
+                QMailStore::ErrorCode code = contentManager->remove(elements.second);
+                if (code != QMailStore::NoError) {
+                    qMailLog(Messaging) << "Unable to remove expired message content:" << contentUri;
+                    if (code == QMailStore::ContentNotRemoved) {
+                        // The existing content could not be removed - try again later
+                        obsoleteContent(contentUri);
                     }
-                } else {
-                    qMailLog(Messaging) << "Unable to create content manager for scheme:" << elements.first;
                 }
+            } else {
+                qMailLog(Messaging) << "Unable to create content manager for scheme:" << elements.first;
             }
         }
+
     }
 
     foreach (const QMailFolderId& id, folderIds) {
@@ -4362,10 +4344,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     MutexGuard lock(contentManagerMutex());
-    if (!lock.lock(10000)) {
-        qMailLog(Messaging) << "Unable to acquire message body mutex in addMessage!";
-        return Failure;
-    }
+    lock.lock();
 
     ReferenceStorer refStorer(message);
     const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
@@ -5077,10 +5056,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
 
             MutexGuard lock(contentManagerMutex());
-            if (!lock.lock(10000)) {
-                qMailLog(Messaging) << "Unable to acquire message body mutex in updateMessage!";
-                return Failure;
-            }
+            lock.lock();
 
             if (QMailContentManager *contentManager = QMailContentManagerFactory::create(metaData->contentScheme())) {
                 QString contentUri(::contentUri(*metaData));

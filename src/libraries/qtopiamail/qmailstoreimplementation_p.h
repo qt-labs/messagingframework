@@ -229,7 +229,7 @@ public:
     virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
                                          QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
-    virtual bool lock(int timeout) = 0;
+    virtual void lock() = 0;
     virtual void unlock() = 0;
 
     virtual bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids) = 0;
@@ -317,7 +317,7 @@ public:
     virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
                                          QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    virtual bool lock(int timeout);
+    virtual void lock();
     virtual void unlock();
 
     virtual bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);

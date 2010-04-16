@@ -789,27 +789,25 @@ const QMailMessageRemovalRecordList QMailStore::messageRemovalRecords(const QMai
 }
 
 /*!
-    Locks QMailStore, preventing all write operations from taking place. Will wait up to \a timeout milliseconds
-    for existing write operations to complete before giving up. Read-only operations will be permitted as normal.
-    To resume normal operation unlock() must be called.
+    Locks QMailStore, preventing all write operations from taking place. Will block until all write operations have
+    completed and it can get a lock. Read-only operations will be permitted as normal.To resume normal operation unlock()
+    must be called.
 
     Note: This method only needs to be used in exceptional circumstances, such as when directly accessing
         the content of QMailStore files e.g. for backing up data.
 
-    Returns true if succesfully locked, otherwise returns false if unable to lock within \a timeout milliseconds.
-
     \sa unlock()
 */
 
-bool QMailStore::lock(int timeout)
+void QMailStore::lock()
 {
     d->setLastError(NoError);
-    return d->lock(timeout);
+    return d->lock();
 }
 
 /*!
     Unlocks QMailStore, allowing write operations to resume. This must only be used after a lock() call
-    and from the same process as which lock() was called. 
+    and from the same process in which lock() was called.
 
     \sa lock()
 */

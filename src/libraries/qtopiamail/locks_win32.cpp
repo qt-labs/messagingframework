@@ -56,9 +56,9 @@ namespace {
 
 QString pathIdentifier(const QString &path, int id)
 {
-	// Paths are not permitted to include backslash
-	QString key(path);
-	key.replace(QChar('\\'), QChar('/'));
+    // Paths are not permitted to include backslash
+    QString key(path);
+    key.replace(QChar('\\'), QChar('/'));
 
     // Object names do not need to correspond to paths that actually exist on Win32
     return QString("qtopiamail-%1-%2").arg(key).arg(id);
@@ -73,7 +73,7 @@ public:
     ProcessMutexPrivate(const QString &path);
     ~ProcessMutexPrivate();
 
-    bool lock(int milliSec);
+    void lock();
     void unlock();
 
 private:    
@@ -100,21 +100,19 @@ ProcessMutexPrivate::~ProcessMutexPrivate()
     }
 }
 
-bool ProcessMutexPrivate::lock(int milliSec)
+void ProcessMutexPrivate::lock()
 {
     if (count) {
         // We already have this lock
         ++count;
     } else {
-        DWORD rv = ::WaitForSingleObject(mutex, milliSec);
+        DWORD rv = ::WaitForSingleObject(mutex, INFINITE);
         if (rv == WAIT_FAILED) {
             qWarning() << "Unable to wait for mutex:" << QMail::lastSystemErrorMessage();
         } else if (rv != WAIT_TIMEOUT) {
             ++count;
         }
     }
-
-    return (count > 0);
 }
 
 void ProcessMutexPrivate::unlock()
@@ -136,9 +134,9 @@ ProcessMutex::~ProcessMutex()
     delete d;
 }
 
-bool ProcessMutex::lock(int milliSec)
+void ProcessMutex::lock()
 {
-    return d->lock(milliSec);
+    return d->lock();
 }
 
 void ProcessMutex::unlock()
@@ -156,7 +154,7 @@ public:
     void lock();
     void unlock();
 
-    bool wait(int milliSec);
+    void wait();
 
 private:
     enum { MaxConcurrentReaders = 10 };
@@ -229,10 +227,10 @@ void ProcessReadLockPrivate::unlock()
     }
 }
 
-bool ProcessReadLockPrivate::wait(int milliSec)
+void ProcessReadLockPrivate::wait()
 {
     // Wait for all of the locks
-    DWORD rv = ::WaitForMultipleObjects(MaxConcurrentReaders, mutexes, TRUE, milliSec);
+    DWORD rv = ::WaitForMultipleObjects(MaxConcurrentReaders, mutexes, TRUE, INFINITE);
     if (rv == WAIT_FAILED) {
         qWarning() << "Unable to wait for mutex:" << QMail::lastSystemErrorMessage();
     } else if (rv != WAIT_TIMEOUT) {
@@ -242,11 +240,7 @@ bool ProcessReadLockPrivate::wait(int milliSec)
                 qWarning() << "Unable to release mutex:" << QMail::lastSystemErrorMessage();
             }
         }
-
-        return true;
     }
-
-    return false;
 }
 
 ProcessReadLock::ProcessReadLock(const QString &path, int id)
@@ -269,8 +263,8 @@ void ProcessReadLock::unlock()
     d->unlock();
 }
 
-bool ProcessReadLock::wait(int milliSec)
+void ProcessReadLock::wait()
 {
-    return d->wait(milliSec);
+    d->wait();
 }
 

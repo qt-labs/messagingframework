@@ -795,14 +795,12 @@ bool QMailStoreNullImplementation::restoreToPreviousFolder(const QMailMessageKey
     return false;
 }
 
-bool QMailStoreNullImplementation::lock(int)
+void QMailStoreNullImplementation::lock()
 {
-    return false;
 }
 
 void QMailStoreNullImplementation::unlock()
 {
-
 }
 
 bool QMailStoreNullImplementation::purgeMessageRemovalRecords(const QMailAccountId &, const QStringList &)

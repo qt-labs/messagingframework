@@ -128,7 +128,7 @@ public:
     bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool lock(int timeout);
+    void lock();
     void unlock();
 
     bool restoreToPreviousFolder(const QMailMessageKey &key,

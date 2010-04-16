@@ -506,42 +506,27 @@ void tst_QMailStore::locking()
     }
 
     // Test that locking stop modifying
-    QVERIFY(QMailStore::instance()->lock(1000));
-#if !defined(Q_OS_MAC) //Currently the timeout is ignored on mac, meaning this unit test will hang
-    qDebug() << "<timeout to be expected, as database has been locked>";
-    bool done = QMailStore::instance()->addAccount(&accnt, &config1);
-    qDebug() << "</timeout>";
-    QVERIFY(done == false);
-#endif
+    QMailStore::instance()->lock();
 
     // Make sure we can actually modify after unlocking
     QMailStore::instance()->unlock();
-    done = QMailStore::instance()->addAccount(&accnt, &config1);
-    QVERIFY(done == true);
+    int added = QMailStore::instance()->addAccount(&accnt, &config1);
+    QVERIFY(added == true);
 
     // Make sure we can read when locked
-    QVERIFY(QMailStore::instance()->lock(1000));
+    QMailStore::instance()->lock();
     QCOMPARE(QMailStore::instance()->account(accnt.id()).id(), accnt.id());
 
     // Test recursive locking
-    QVERIFY(QMailStore::instance()->lock(1000));
+    QMailStore::instance()->lock();
     QCOMPARE(QMailStore::instance()->account(accnt.id()).id(), accnt.id()); //still can read?
 
     QMailStore::instance()->unlock();
-#if !defined(Q_OS_MAC) //Currently the timeout is ignored on mac, meaning this unit test will hang
-    // We should still have 1 layer of locking. Should be unable to modify
-    QMailFolder folder("fake folder");
-    folder.setParentAccountId(accnt.id());
-    qDebug() << "<timeout to be expected, as database has been locked>";
-    done = QMailStore::instance()->addFolder(&folder);
-    qDebug() << "</timeout>";
-    QVERIFY(done == false);
-#endif
-
+    //..should not be able to write here..
     QMailStore::instance()->unlock();
     // Now we should be able to modify.
-    done = QMailStore::instance()->removeAccount(accnt.id());
-    QVERIFY(done == true);
+    int removed = QMailStore::instance()->removeAccount(accnt.id());
+    QVERIFY(removed == true);
 }
 
 void tst_QMailStore::updateAccount()
