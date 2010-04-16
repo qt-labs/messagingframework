@@ -7,4 +7,24 @@ Latest Changes
   * Fixes: NB#160646 - <MemLeak> in libqmf
   * Fixes: NB#158354 - Message shown without body part in viewer for messages fetched during initial account creation
   * Fixes: NB#163621 - qmf header prevents compilation with -Wshadow -Werror
-
+  * Fixes: NB#157509 - Deleted messages are fetched back into Inbox after manual send/receiver
+  * Fixes: QTSOL-123 NB#154216 - /tmp full
+  * Fixes: QTSOL-533 NB#157257 - Crash in ServiceHandler::expireAction
+  * Fixes: IMAP protocol plugin doesn't support two way synchronization of message flags
+  * Fixes: IMAP protocol plugin doesn't batch status flag updates
+  * Fixes: QTSOL-76 SMTP protocol plugin uses excessive memory when sending large mails
+  * Fixes: QMailStore requires content manager plugins to load even if only message metadata operations are performed.
+  * Fixes: QTSOL-107 QMailMessageThreadedModel does not sort correctly
+  * Fixes: QMailMessageThreadModel scatters items after item deletion
+  * Fixes: QMailMessageThreadedModel is not updating all columns after a mesage is modified 
+  * Fixes: QTSOL-115 Crash when copying message from 'All Mail' into 'Trash' on gmail
+  * Fixes: QTSOL-111 Progress not shown when downloading attachments
+  * Fixes: QTSOL-110 Mail checking persistently fails if IMAP server returns incorrect message section size
+  * Fixes: QTSOL-108 Slow message deletion when many messages are in store
+  * API Change: QMailMessage::Important flag added and IMAP protocol plugin updated to handle flagged messages
+  * API Change: QMailStore::lock() and QMailStore::unlock() added to facilitate database backup
+  * API Change: QMailMessageModelBase emitDataChange additional QModelIndex parameter 
+  * Rearranged directory structure to remove qtmail example code form src directory
+  * Various qtmail improvements, e.g. as-you-type spell checking, new progress reporting widget
+  * Include html documentation in source package
+  * Initial support for Mac platform
