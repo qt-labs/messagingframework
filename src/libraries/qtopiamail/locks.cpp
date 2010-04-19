@@ -231,7 +231,7 @@ public:
     void lock() { increment(); }
     void unlock() { decrement(); }
 
-    bool wait() { waitForZero(); }
+    void wait() { waitForZero(); }
 };
 
 ProcessReadLock::ProcessReadLock(const QString &path, int id)
