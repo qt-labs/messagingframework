@@ -5,24 +5,24 @@ imagedirs               = images
 
 headerdirs              = ../../src/libraries/qtopiamail \
                           ../../src/libraries/messageserver \
-                          ../../src/libraries/qmfutil \
+                          ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
                           ../../src/plugins/messageservices/qtopiamailfile \
                           ../../src/plugins/contentmanagers/qtopiamailfile \
-                          ../../src/settings/messagingaccounts \
+                          ../../examples/messagingaccounts \
                           ../../src/tools/messageserver
  
 sourcedirs              = ../../src/libraries/qtopiamail \
                           ../../src/libraries/messageserver \
-                          ../../src/libraries/qmfutil \
+                          ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
                           ../../src/plugins/messageservices/qtopiamailfile \
                           ../../src/plugins/contentmanagers/qtopiamailfile \
-                          ../../src/settings/messagingaccounts \
+                          ../../examples/messagingaccounts \
                           ../../src/tools/messageserver \
                           ../../examples/messagenavigator \
                           ../../examples/messageviewer \
