@@ -294,6 +294,9 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     Removes a QMailAccount with QMailAccountId \a id from the store.  Also removes any 
     folder, message and message removal records associated with the removed account.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+    
+    Note: Using a QMailAccount instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeAccount(const QMailAccountId& id) 
 {
@@ -304,6 +307,9 @@ bool QMailStore::removeAccount(const QMailAccountId& id)
     Removes all QMailAccounts identified by the key \a key from the store. Also removes 
     any folder, message and message removal records associated with the removed account.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+
+    Note: Using a QMailAccount instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeAccounts(const QMailAccountKey& key)
 {
@@ -334,6 +340,9 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
     folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal 
     records will be created for each removed message.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+
+    Note: Using a QMailFolder instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeFolder(const QMailFolderId& id, QMailStore::MessageRemovalOption option)
 {
@@ -350,6 +359,9 @@ bool QMailStore::removeFolder(const QMailFolderId& id, QMailStore::MessageRemova
     the folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal 
     records will be created for each removed message.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+
+    Note: Using a QMailFolder instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRemovalOption option)
 {
@@ -377,6 +389,9 @@ bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRem
     QMailStore::CreateRemovalRecord then a removal record will be created for the
     removed message.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+
+    Note: Using a QMailMessage instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemovalOption option)
 {
@@ -388,6 +403,9 @@ bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemo
     If \a option is QMailStore::CreateRemovalRecord then removal records will be 
     created for each removed message.
     Returns \c true if the operation completed successfully, \c false otherwise. 
+
+    Note: Using a QMailMessage instance after it has been removed from the store will 
+    result in undefined behavior.
 */
 bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageRemovalOption option)
 {
