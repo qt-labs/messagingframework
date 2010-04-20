@@ -40,8 +40,11 @@
 ****************************************************************************/
 
 #include "qmailstoreimplementation_p.h"
-#include "qmailipc.h"
+#include <qmailipc.h>
 #include "qmaillog.h"
+#include <qcopadaptor.h>
+#include <qcopchannel.h>
+#include <qcopserver.h>
 #include <QCoreApplication>
 
 namespace {

@@ -79,6 +79,7 @@ After \c{make install} has run, the following layout should exist in your image 
 
 \code
 bin
+include
 lib
 plugins
 tests

@@ -20,65 +20,69 @@ DEPENDPATH += .
 
 INCLUDEPATH += support
 
-HEADERS += bind_p.h \
-           locks_p.h \
-           longstream_p.h \
-           longstring_p.h \
-           mailkeyimpl_p.h \
-           mailsortkeyimpl_p.h \
-           qmailaccount.h \
-           qmailaccountconfiguration.h \
-           qmailaccountkey.h \
-           qmailaccountkey_p.h \
-           qmailaccountlistmodel.h \
-           qmailaccountsortkey.h \
-           qmailaccountsortkey_p.h \
-           qmailaddress.h \
-           qmailcodec.h \
-           qmailcontentmanager.h \
-           qmaildatacomparator.h \
-           qmailfolder.h \
-           qmailfolderfwd.h \
-           qmailfolderkey.h \
-           qmailfolderkey_p.h \
-           qmailfoldersortkey.h \
-           qmailfoldersortkey_p.h \
-           qmailid.h \
-           qmailkeyargument.h \
-           qmailmessage_p.h \
-           qmailmessage.h \
-           qmailmessagefwd.h \
-           qmailmessagekey.h \
-           qmailmessagekey_p.h \
-           qmailmessagelistmodel.h \
-           qmailmessagemodelbase.h \
-           qmailmessageremovalrecord.h \
-           qmailmessageserver.h \
-           qmailmessageset_p.h \
-           qmailmessageset.h \
-           qmailmessagesortkey.h \
-           qmailmessagesortkey_p.h \
-           qmailmessagethreadedmodel.h \
-           qmailserviceaction_p.h \
-           qmailserviceaction.h \
-           qmailsortkeyargument.h \
-           qmailstore.h \
-           qmailstore_p.h \
-           qmailstoreimplementation_p.h \
-           qmailtimestamp.h \
-           qprivateimplementation.h \
-           qprivateimplementationdef.h \
-           support/qmailglobal.h \
-           support/qmaillog.h \
-           support/qmailnamespace.h \
-           support/qcopadaptor.h \
-           support/qcopapplicationchannel.h \
-           support/qcopchannel.h \
-           support/qcopchannel_p.h \
-           support/qcopchannelmonitor.h \
-           support/qcopserver.h \
-           support/qmailpluginmanager.h \
-           support/qringbuffer_p.h
+PUBLIC_HEADERS += qmailaccount.h \
+                  qmailaccountconfiguration.h \
+                  qmailaccountkey.h \
+                  qmailaccountlistmodel.h \
+                  qmailaccountsortkey.h \
+                  qmailaddress.h \
+                  qmailcodec.h \
+                  qmailcontentmanager.h \
+                  qmaildatacomparator.h \
+                  qmailfolder.h \
+                  qmailfolderfwd.h \
+                  qmailfolderkey.h \
+                  qmailfoldersortkey.h \
+                  qmailid.h \
+                  qmailkeyargument.h \
+                  qmailmessage.h \
+                  qmailmessagefwd.h \
+                  qmailmessagekey.h \
+                  qmailmessagelistmodel.h \
+                  qmailmessagemodelbase.h \
+                  qmailmessageremovalrecord.h \
+                  qmailmessageserver.h \
+                  qmailmessageset.h \
+                  qmailmessagesortkey.h \
+                  qmailmessagethreadedmodel.h \
+                  qmailserviceaction.h \
+                  qmailsortkeyargument.h \
+                  qmailstore.h \
+                  qmailtimestamp.h \
+                  qprivateimplementation.h \
+                  qprivateimplementationdef.h \
+                  support/qmailglobal.h \
+                  support/qmaillog.h \
+                  support/qmailnamespace.h \
+                  support/qmailpluginmanager.h \
+                  support/qmailipc.h
+
+PRIVATE_HEADERS += bind_p.h \
+                   locks_p.h \
+                   mailkeyimpl_p.h \
+                   mailsortkeyimpl_p.h \
+                   qmailaccountkey_p.h \
+                   qmailaccountsortkey_p.h \
+                   qmailfolderkey_p.h \
+                   qmailfoldersortkey_p.h \
+                   qmailmessage_p.h \
+                   qmailmessagekey_p.h \
+                   qmailmessageset_p.h \
+                   qmailmessagesortkey_p.h \
+                   qmailserviceaction_p.h \
+                   qmailstore_p.h \
+                   qmailstoreimplementation_p.h \
+                   longstring_p.h \
+                   longstream_p.h \
+                   support/qcopchannel_p.h \
+                   support/qringbuffer_p.h \
+                   support/qcopadaptor.h \
+                   support/qcopapplicationchannel.h \
+                   support/qcopchannel.h \
+                   support/qcopchannelmonitor.h \
+                   support/qcopserver.h
+
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
 SOURCES += longstream.cpp \
            longstring.cpp \
@@ -145,5 +149,10 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-pt_BR.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
+
+header_files.path=$$QMF_INSTALL_ROOT/include/qtopiamail
+header_files.files=$$PUBLIC_HEADERS
+
+INSTALLS += header_files 
 
 include(../../../common.pri)

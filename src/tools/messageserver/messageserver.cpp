@@ -50,6 +50,7 @@
 #include <qmaillog.h>
 #include <qmailipc.h>
 #include <newcountnotifier.h>
+#include <qcopserver.h>
 
 MessageServer::MessageServer(QObject *parent)
     : QObject(parent),

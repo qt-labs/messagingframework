@@ -45,6 +45,7 @@
 #include <qmailmessageserver.h>
 #include <QObject>
 #include <QSet>
+#include <qcopadaptor.h>
 
 class ServiceHandler;
 class MailMessageClient;

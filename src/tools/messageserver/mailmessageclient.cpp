@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "mailmessageclient.h"
+#include <qcopadaptor.h>
 
 static bool connectIpc( QObject *sender, const QByteArray& signal,
         QObject *receiver, const QByteArray& member)

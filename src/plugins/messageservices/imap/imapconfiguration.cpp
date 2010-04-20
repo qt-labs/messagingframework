@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "imapconfiguration.h"
+#include <QStringList>
 
 
 ImapConfiguration::ImapConfiguration(const QMailAccountConfiguration &config)

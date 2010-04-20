@@ -41,6 +41,7 @@
 
 #include "qmailserviceconfiguration.h"
 #include <qmailcodec.h>
+#include <QStringList>
 
 
 /*!

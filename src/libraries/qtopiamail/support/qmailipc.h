@@ -42,11 +42,6 @@
 #ifndef QMAILIPC_H
 #define QMAILIPC_H
 
-#ifndef QTOPIAMAIL_OMIT_QCOP
-#include "qcopadaptor.h"
-#include "qcopchannel.h"
-#include "qcopserver.h"
-#endif
 #include <QDataStream>
 #include <QVariant>
 
