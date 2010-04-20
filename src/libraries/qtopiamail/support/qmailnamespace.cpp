@@ -270,24 +270,32 @@ QSqlDatabase QMail::createDatabase()
 {
     static bool init = false;
     QSqlDatabase db;
-    if(!init)
-    {
+    if(init) {
+        db = QSqlDatabase::database();
+    } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
-        QDir dp(dataPath());
-        if(!dp.exists())
-            if(!dp.mkpath(dataPath()))
-                qCritical() << "Cannot create data path";
-        db.setDatabaseName(dataPath() + "qmailstore.db");
+        QDir dbDir(dataPath() + "database");
+        if (!dbDir.exists()) {
+            if (!dbDir.mkpath(dataPath() + "database"))
+                qCritical() << "Cannot create database path";
+        }
+
+        if (QFile::exists(dataPath() + "qmailstore.db")) { // TODO: remove this. It functions as an upgrade script
+            QFile::rename(dataPath() + "qmailstore.db", dataPath() + "database/qmailstore.db");
+        }
+
+        db.setDatabaseName(dataPath() + "database/qmailstore.db");
         if(!db.open())
             qCritical() << "Cannot open database";
-        
+
         QDir tp(tempPath());
         if(!tp.exists())
             if(!tp.mkpath(tempPath()))
                 qCritical() << "Cannot create temp path";
-        
+
         init = true;
     }
+
     return db;
 }
 #endif
