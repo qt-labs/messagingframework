@@ -282,7 +282,9 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     if (durable) {
         sync(file.data());
     } else {
+#ifdef USE_FSYNC_PER_FILE
         _openFiles.append(file);
+#endif
     }
 
     message->removeCustomField("qtopiamail-detached-filename");
@@ -315,11 +317,15 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMail
 
 QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
 {
+#ifdef USE_FSYNC_PER_FILE
     foreach (QSharedPointer<QFile> file, _openFiles) {
         sync(file.data());
     }
 
     _openFiles.clear();
+#else
+    ::sync();
+#endif
     return QMailStore::NoError;
 }
 
@@ -645,10 +651,13 @@ struct PartStorer
                 return false;
             }
 
-            if (openFiles)
+            if (openFiles) {
+#ifdef USE_FSYNC_PER_FILE
                 openFiles->append(file);
-            else
+#endif
+            } else {
                 sync(file.data());
+            }
         }
 
         return true;
