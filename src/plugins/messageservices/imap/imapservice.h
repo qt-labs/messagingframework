@@ -74,8 +74,6 @@ protected slots:
     void updateStatus(const QString& text);
 
 private:
-    void checkConfiguration(const QMailAccountId &accountId);
-
     class Source;
     friend class Source;
 

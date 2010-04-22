@@ -406,14 +406,23 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         roamingCheckBox->setChecked(!imapConfig.intervalCheckRoamingEnabled());
         imapBaseDir->setText(imapConfig.baseFolder());
         clearBaseButton->setEnabled(!imapBaseDir->text().isEmpty());
-        imapDraftsDir->setText(imapConfig.draftsFolder());
+
+        QMailFolderId draftFolderId = account.standardFolder(QMailFolder::DraftsFolder);
+        imapDraftsDir->setText(draftFolderId.isValid() ? QMailFolder(draftFolderId).path() : imapConfig.draftsFolder());
         clearDraftsButton->setEnabled(!imapDraftsDir->text().isEmpty());
-        imapSentDir->setText(imapConfig.sentFolder());
+
+        QMailFolderId sentFolderId = account.standardFolder(QMailFolder::SentFolder);
+        imapSentDir->setText(sentFolderId.isValid() ? QMailFolder(sentFolderId).path() : imapConfig.sentFolder());
         clearSentButton->setEnabled(!imapSentDir->text().isEmpty());
-        imapTrashDir->setText(imapConfig.trashFolder());
+
+        QMailFolderId trashFolderId = account.standardFolder(QMailFolder::TrashFolder);
+        imapTrashDir->setText(trashFolderId.isValid() ? QMailFolder(trashFolderId).path() : imapConfig.trashFolder());
         clearTrashButton->setEnabled(!imapTrashDir->text().isEmpty());
-        imapJunkDir->setText(imapConfig.junkFolder());
+
+        QMailFolderId junkFolderId = account.standardFolder(QMailFolder::JunkFolder);
+        imapJunkDir->setText(junkFolderId.isValid() ? QMailFolder(junkFolderId).path() : imapConfig.junkFolder());
         clearJunkButton->setEnabled(!imapJunkDir->text().isEmpty());
+
         pushFolders = imapConfig.pushFolders();
     }
         
@@ -456,10 +465,19 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setCheckInterval(intervalPeriod->value() * (intervalCheckBox->isChecked() ? 1 : -1));
     imapConfig.setIntervalCheckRoamingEnabled(!roamingCheckBox->isChecked());
     imapConfig.setBaseFolder(imapBaseDir->text());
-    imapConfig.setDraftsFolder(imapDraftsDir->text());
-    imapConfig.setSentFolder(imapSentDir->text());
-    imapConfig.setTrashFolder(imapTrashDir->text());
-    imapConfig.setJunkFolder(imapJunkDir->text());
+
+    if (!setStandardFolder(account, QMailFolder::DraftsFolder, imapDraftsDir->text()))
+        imapConfig.setDraftsFolder(imapDraftsDir->text());
+
+    if (!setStandardFolder(account, QMailFolder::SentFolder, imapSentDir->text()))
+        imapConfig.setSentFolder(imapSentDir->text());
+
+    if (!setStandardFolder(account, QMailFolder::TrashFolder, imapTrashDir->text()))
+        imapConfig.setTrashFolder(imapTrashDir->text());
+
+    if (!setStandardFolder(account, QMailFolder::JunkFolder, imapTrashDir->text()))
+        imapConfig.setJunkFolder(imapJunkDir->text());
+
     if (pushFolderList)
         imapConfig.setPushFolders(pushFolderList->folderNames());
 
@@ -469,6 +487,26 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
         account->setStatus(QMailAccount::CanRetrieve, true);
 
     return true;
+}
+
+bool ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::StandardFolder folderType, const QString &path)
+{
+    if (path.isEmpty())
+        return false;
+    QMailFolderIdList folders = QMailStore::instance()->queryFolders(QMailFolderKey::path(path));
+    if (folders.count() == 1) {
+        QMailFolder folder(folders.value(0));
+
+        bool outgoing = (folderType == QMailFolder::DraftsFolder || folderType == QMailFolder::SentFolder) ? true : false;
+        folder.setStatus(QMailFolder::Outgoing, outgoing);
+        folder.setStatus(QMailFolder::Incoming, !outgoing);
+        QMailStore::instance()->updateFolder(&folder);
+
+        account->setStandardFolder(folderType, folder.id());
+
+        return true;
+    }
+    return false;
 }
 
 #include "imapsettings.moc"

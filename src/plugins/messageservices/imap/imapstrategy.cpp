@@ -368,6 +368,22 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder
             if (!QMailStore::instance()->addFolder(&folder)) {
                 _error = true;
                 qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+
+            } // Is this folder special? If so, update the account
+            else if (folder.status() & (QMailFolder::Sent | QMailFolder::Drafts | QMailFolder::Junk)) {
+                QMailAccount account(c->config().id());
+                QMailAccountConfiguration conf(c->config().id());
+
+                if (folder.status() & QMailFolder::Sent)
+                    account.setStandardFolder(QMailFolder::SentFolder, folder.id());
+                if (folder.status() & QMailFolder::Drafts)
+                    account.setStandardFolder(QMailFolder::DraftsFolder, folder.id());
+                if (folder.status() & QMailFolder::Trash)
+                    account.setStandardFolder(QMailFolder::TrashFolder, folder.id());
+                if (folder.status() & QMailFolder::Junk)
+                    account.setStandardFolder(QMailFolder::JunkFolder, folder.id());
+
+                QMailStore::instance()->updateAccount(&account, &conf);
             }
         }
     }
@@ -2311,11 +2327,17 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
     // New messages reported by the server that we don't yet have
     if (_options & RetrieveMail) {
         // Opportunity for optimization here
+
+        qDebug() << "Reported UIDs on server:" << reportedOnServerUids;
+        qDebug() << "Local UIDs:" << context->client()->serverUids(storedKey);
+
         QStringList newUids(inFirstButNotSecond(reportedOnServerUids, context->client()->serverUids(storedKey)));
-        if (!newUids.isEmpty()) {
-            // Add this folder to the list to retrieve from later
-            _retrieveUids.append(qMakePair(boxId, newUids));
-        }
+
+        //qDebug() << "New UIDs::"
+        //if (!newUids.isEmpty()) {
+        //    // Add this folder to the list to retrieve from later
+        //    _retrieveUids.append(qMakePair(boxId, newUids));
+        //}
     }
 
     if (_searchState == Inconclusive) {

@@ -65,6 +65,7 @@ private:
     QMailAccountId accountId;
     bool warningEmitted;
     PushFolderList *pushFolderList;
+    bool setStandardFolder(QMailAccount *account, QMailFolder::StandardFolder folderType, const QString &path);
 };
 
 #endif

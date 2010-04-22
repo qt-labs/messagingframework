@@ -706,15 +706,19 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
 
             // Is this a special folder?
-            ImapConfiguration imapCfg(_config);
+            ImapConfigurationEditor imapCfg(&_config);
             if (!imapCfg.trashFolder().isEmpty() && (imapCfg.trashFolder() == mailboxPath)) {
                 folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
+                imapCfg.setTrashFolder("");
             } else if (!imapCfg.sentFolder().isEmpty() && (imapCfg.sentFolder() == mailboxPath)) {
                 folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, true);
+                imapCfg.setSentFolder("");
             } else if (!imapCfg.draftsFolder().isEmpty() && (imapCfg.draftsFolder() == mailboxPath)) {
                 folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, true);
+                imapCfg.setDraftsFolder("");
             } else if (!imapCfg.junkFolder().isEmpty() && (imapCfg.junkFolder() == mailboxPath)) {
                 folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
+                imapCfg.setDraftsFolder("");
             } else {
                 folder.setStatus(QMailFolder::Incoming, true);
             }

@@ -487,57 +487,40 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     // identify, as a client can always perform the changes incrementally.
 
     if ((setMask & QMailMessage::Trash) || (unsetMask & QMailMessage::Trash)) {
-        QString trashPath(imapCfg.trashFolder());
-        if (!trashPath.isEmpty()) {
-            _setMask = setMask;
-            _unsetMask = unsetMask;
 
-            if (_setMask & QMailMessage::Trash) {
-                // Move these messages to the predefined location
-                QMailFolderId trashId(_service->_client.mailboxId(trashPath));
-                if (!trashId.isValid()) {
-                    _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Trash folder"));
-                    return false;
+        QMailFolderId trashId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::TrashFolder));
+
+        if (trashId.isValid() && (_setMask & QMailMessage::Trash)) {
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+        } else if (_unsetMask & QMailMessage::Trash) {
+            QMap<QMailFolderId, QMailMessageIdList> destinationList;
+
+            // These messages need to be restored to their previous locations
+            QMailMessageKey key(QMailMessageKey::id(messageIds));
+            QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
+
+            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+                if (metaData.previousParentFolderId().isValid()) {
+                    destinationList[metaData.previousParentFolderId()].append(metaData.id());
                 }
-
-                _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, trashId);
-                return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
-            } else if (_unsetMask & QMailMessage::Trash) {
-                QMap<QMailFolderId, QMailMessageIdList> destinationList;
-
-                // These messages need to be restored to their previous locations
-                QMailMessageKey key(QMailMessageKey::id(messageIds));
-                QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
-
-                foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
-                    if (metaData.previousParentFolderId().isValid()) {
-                        destinationList[metaData.previousParentFolderId()].append(metaData.id());
-                    }
-                }
-
-                _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
-                QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
-                for ( ; it != end; ++it) {
-                    _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
-                }
-                return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
             }
+
+            _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+            QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
+            for ( ; it != end; ++it) {
+                _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
+            }
+            return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
         }
     }
 
     if (setMask & QMailMessage::Sent) {
-        QString sentPath(imapCfg.sentFolder());
-        if (!sentPath.isEmpty()) {
+        QMailFolderId sentId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::SentFolder));
+        if (sentId.isValid()) {
             _setMask = setMask;
             _unsetMask = unsetMask;
-
-            // Move these messages to the predefined location
-            QMailFolderId sentId(_service->_client.mailboxId(sentPath));
-            if (!sentId.isValid()) {
-                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Sent folder"));
-                return false;
-            }
 
             QMailMessageIdList moveIds;
             QMailMessageIdList flagIds;
@@ -570,19 +553,13 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
     }
 
     if (setMask & QMailMessage::Draft) {
-        QString draftsPath(imapCfg.draftsFolder());
-        if (!draftsPath.isEmpty()) {
+        QMailFolderId draftId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::DraftsFolder));
+        if (!draftId.isValid()) {
             _setMask = setMask;
             _unsetMask = unsetMask;
 
             // Move these messages to the predefined location - if they're already in the drafts
             // folder, we still want to overwrite them with the current content in case it has been updated
-            QMailFolderId draftId(_service->_client.mailboxId(draftsPath));
-            if (!draftId.isValid()) {
-                _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Cannot locate Drafts folder"));
-                return false;
-            }
-
             _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
             _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, draftId);
             return setStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
@@ -934,8 +911,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _client(this),
       _source(new Source(this))
 {
-    checkConfiguration(accountId);
-
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
@@ -1023,151 +998,6 @@ void ImapService::updateStatus(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
 }
-
-void ImapService::checkConfiguration(const QMailAccountId &accountId)
-{
-    // Ensure that the predefined folders are correctly marked
-    QMailAccountConfiguration accountCfg(accountId);
-    ImapConfiguration imapCfg(accountCfg);
-
-    QMailAccount account(accountId);
-    QMap<QMailFolder::StandardFolder, QMailFolderId> standardFolders(account.standardFolders());
-
-    if (!imapCfg.trashFolder().isEmpty()) {
-        QMailFolderId trashId(mailboxId(accountId, imapCfg.trashFolder()));
-
-        QMailFolderIdList trashFolderIds = statusFolders(accountId, QMailFolder::Trash);
-        foreach (const QMailFolderId &folderId, trashFolderIds) {
-            if (folderId != trashId) {
-                // Remove trash flag from this folder
-                QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Trash | QMailFolder::Outgoing, false);
-                folder.setStatus(QMailFolder::Incoming, true);
-                if (!QMailStore::instance()->updateFolder(&folder)) {
-                    qWarning() << "Unable to remove Trash flag from folder:" << folder.id();
-                }
-            }
-        }
-
-        if (trashId.isValid() && !trashFolderIds.contains(trashId)) {
-            QMailFolder folder(trashId);
-            folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
-            folder.setStatus(QMailFolder::Outgoing, false);
-            if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to set Trash flag on folder:" << folder.id();
-            }
-        }
-
-        if (trashId != account.standardFolder(QMailFolder::TrashFolder)) {
-            account.setStandardFolder(QMailFolder::TrashFolder, trashId);
-        }
-    } else if (account.standardFolder(QMailFolder::TrashFolder).isValid()) {
-        account.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId());
-    }
-
-    if (!imapCfg.sentFolder().isEmpty()) {
-        QMailFolderId sentId(mailboxId(accountId, imapCfg.sentFolder()));
-
-        QMailFolderIdList sentFolderIds = statusFolders(accountId, QMailFolder::Sent);
-        foreach (const QMailFolderId &folderId, sentFolderIds) {
-            if (folderId != sentId) {
-                // Remove sent flag from this folder
-                QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, false);
-                folder.setStatus(QMailFolder::Incoming, true);
-                if (!QMailStore::instance()->updateFolder(&folder)) {
-                    qWarning() << "Unable to remove Sent flag from folder:" << folder.id();
-                }
-            }
-        }
-
-        if (sentId.isValid() && !sentFolderIds.contains(sentId)) {
-            QMailFolder folder(sentId);
-            folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, true);
-            folder.setStatus(QMailFolder::Incoming, false);
-            if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to set Sent flag on folder:" << folder.id();
-            }
-        }
-
-        if (sentId != account.standardFolder(QMailFolder::SentFolder)) {
-            account.setStandardFolder(QMailFolder::SentFolder, sentId);
-        }
-    } else if (account.standardFolder(QMailFolder::SentFolder).isValid()) {
-        account.setStandardFolder(QMailFolder::SentFolder, QMailFolderId());
-    }
-
-    if (!imapCfg.draftsFolder().isEmpty()) {
-        QMailFolderId draftsId(mailboxId(accountId, imapCfg.draftsFolder()));
-
-        QMailFolderIdList draftsFolderIds = statusFolders(accountId, QMailFolder::Drafts);
-        foreach (const QMailFolderId &folderId, draftsFolderIds) {
-            if (folderId != draftsId) {
-                // Remove drafts flag from this folder
-                QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, false);
-                folder.setStatus(QMailFolder::Incoming, true);
-                if (!QMailStore::instance()->updateFolder(&folder)) {
-                    qWarning() << "Unable to remove Drafts flag from folder:" << folder.id();
-                }
-            }
-        }
-
-        if (draftsId.isValid() && !draftsFolderIds.contains(draftsId)) {
-            QMailFolder folder(draftsId);
-            folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, true);
-            folder.setStatus(QMailFolder::Incoming, false);
-            if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to set Drafts flag on folder:" << folder.id();
-            }
-        }
-
-        if (draftsId != account.standardFolder(QMailFolder::DraftsFolder)) {
-            account.setStandardFolder(QMailFolder::DraftsFolder, draftsId);
-        }
-    } else if (account.standardFolder(QMailFolder::DraftsFolder).isValid()) {
-        account.setStandardFolder(QMailFolder::DraftsFolder, QMailFolderId());
-    }
-
-    if (!imapCfg.junkFolder().isEmpty()) {
-        QMailFolderId junkId(mailboxId(accountId, imapCfg.junkFolder()));
-
-        QMailFolderIdList junkFolderIds = statusFolders(accountId, QMailFolder::Junk);
-        foreach (const QMailFolderId &folderId, junkFolderIds) {
-            if (folderId != junkId) {
-                // Remove junk flag from this folder
-                QMailFolder folder(folderId);
-                folder.setStatus(QMailFolder::Junk | QMailFolder::Outgoing, false);
-                folder.setStatus(QMailFolder::Incoming, true);
-                if (!QMailStore::instance()->updateFolder(&folder)) {
-                    qWarning() << "Unable to remove Junk flag from folder:" << folder.id();
-                }
-            }
-        }
-
-        if (junkId.isValid() && !junkFolderIds.contains(junkId)) {
-            QMailFolder folder(junkId);
-            folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
-            folder.setStatus(QMailFolder::Outgoing, false);
-            if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to set Junk flag on folder:" << folder.id();
-            }
-        }
-
-        if (junkId != account.standardFolder(QMailFolder::JunkFolder)) {
-            account.setStandardFolder(QMailFolder::JunkFolder, junkId);
-        }
-    } else if (account.standardFolder(QMailFolder::JunkFolder).isValid()) {
-        account.setStandardFolder(QMailFolder::JunkFolder, QMailFolderId());
-    }
-
-    if (account.standardFolders() != standardFolders) {
-        if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update standard folder IDs for account:" << accountId;
-        }
-    }
-}
-
 
 class ImapConfigurator : public QMailMessageServiceConfigurator
 {

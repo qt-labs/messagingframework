@@ -4151,23 +4151,23 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
         // Insert any standard folders configured for this account
         const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
         if (!folders.isEmpty()) {
-            //QVariantList types;
-            //QVariantList folderIds;
+            QVariantList types;
+            QVariantList folderIds;
 
             QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = folders.begin(), end = folders.end();
             for ( ; it != end; ++it) {
-                QVariant type(static_cast<int>(it.key()));
-                QVariant folderId(it.value().toULongLong());
-
-                // Batch insert the folders
-                QString sql("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
-                QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
-                                           QVariantList() << QVariant(type)
-                                                          << QVariant(folderId),
-                                           "addAccount mailaccountfolders query"));
-                if (query.lastError().type() != QSqlError::NoError)
-                    return DatabaseFailure;
+                types.append(static_cast<int>(it.key()));
+                folderIds.append(it.value().toULongLong());
             }
+
+            // Batch insert the folders
+            QString sql("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
+            QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
+                                       QVariantList() << QVariant(types)
+                                       << QVariant(folderIds),
+                                       "addAccount mailaccountfolders query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
         }
 
         // Insert any custom fields belonging to this account
@@ -4710,18 +4710,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
         }
 
         if (!addedTypes.isEmpty()) {
-           Q_ASSERT(addedTypes.size() == addedFolders.size());
-           for(int i = 0; i < addedTypes.size(); i++) {
-               // Batch insert the added fields
-               QString sql("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%2,?,?)");
-               QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
-                                          QVariantList() << addedTypes[i]
-                                          << addedFolders[i],
+            // Batch insert the added folders
+            QString sql("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
+            QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
+                                          QVariantList() << QVariant(addedTypes) << QVariant(addedFolders),
                                           "updateAccount mailaccountfolders insert query"));
-               if (query.lastError().type() != QSqlError::NoError)
-                   return DatabaseFailure;
-           }
-
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
         }
 
         if (account->customFieldsModified()) {
