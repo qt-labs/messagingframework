@@ -53,6 +53,7 @@
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #include <io.h>
+#define USE_FSYNC_PER_FILE
 #elif defined(Q_OS_UNIX)
 #include <unistd.h>
 #endif
