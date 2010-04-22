@@ -2328,16 +2328,11 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
     if (_options & RetrieveMail) {
         // Opportunity for optimization here
 
-        qDebug() << "Reported UIDs on server:" << reportedOnServerUids;
-        qDebug() << "Local UIDs:" << context->client()->serverUids(storedKey);
-
         QStringList newUids(inFirstButNotSecond(reportedOnServerUids, context->client()->serverUids(storedKey)));
-
-        //qDebug() << "New UIDs::"
-        //if (!newUids.isEmpty()) {
-        //    // Add this folder to the list to retrieve from later
-        //    _retrieveUids.append(qMakePair(boxId, newUids));
-        //}
+        if (!newUids.isEmpty()) {
+            // Add this folder to the list to retrieve from later
+            _retrieveUids.append(qMakePair(boxId, newUids));
+        }
     }
 
     if (_searchState == Inconclusive) {
