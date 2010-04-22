@@ -185,7 +185,7 @@ bool migrateAccountToVersion101(const QMailAccountId &accountId)
     return true;
 }
 
-void sync(QFile *file)
+void syncFile(QSharedPointer<QFile> file)
 {
     // Ensure data is flushed to OS before attempting sync
     file->flush();
@@ -205,6 +205,7 @@ void sync(QFile *file)
 
 
 QtopiamailfileManager::QtopiamailfileManager()
+    :_useFullSync(false)
 {
     QString path(messagesBodyPath(QMailAccountId()));
 
@@ -281,11 +282,9 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     }
 
     if (durable) {
-        sync(file.data());
+        syncFile(file);
     } else {
-#ifdef USE_FSYNC_PER_FILE
-        _openFiles.append(file);
-#endif
+        syncLater(file);
     }
 
     message->removeCustomField("qtopiamail-detached-filename");
@@ -318,15 +317,21 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMail
 
 QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
 {
-#ifdef USE_FSYNC_PER_FILE
-    foreach (QSharedPointer<QFile> file, _openFiles) {
-        sync(file.data());
-    }
-
-    _openFiles.clear();
+    if (_useFullSync) {
+        // More than one file needs to be synchronized
+#if defined(Q_OS_WIN)
+        qWarning() << "Unable to call sync on Windows.";
 #else
-    ::sync();
+        ::sync();
 #endif
+        _useFullSync = false;
+    } else {
+        foreach (QSharedPointer<QFile> file, _openFiles) {
+            syncFile(file);
+        }
+    }
+    _openFiles.clear();
+
     return QMailStore::NoError;
 }
 
@@ -596,9 +601,9 @@ struct PartStorer
     QMailMessage *message;
     QString fileName;
     QString existing;
-    QList< QSharedPointer<QFile> > *openFiles;
+    QList< QSharedPointer<QFile> > *openParts;
 
-    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o) : message(m), fileName(f), existing(e), openFiles(o) {}
+    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o) : message(m), fileName(f), existing(e), openParts(o) {}
 
     bool operator()(const QMailMessagePart &part)
     {
@@ -652,12 +657,10 @@ struct PartStorer
                 return false;
             }
 
-            if (openFiles) {
-#ifdef USE_FSYNC_PER_FILE
-                openFiles->append(file);
-#endif
+            if (openParts) {
+                openParts->append(file);
             } else {
-                sync(file.data());
+                syncFile(file);
             }
         }
 
@@ -676,10 +679,14 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QStrin
         }
     }
 
-    PartStorer partStorer(message, fileName, existing, (durable ? 0 : &_openFiles));
+    QList< QSharedPointer<QFile> > openParts;
+    PartStorer partStorer(message, fileName, existing, (durable ? 0 : &openParts));
     if (!const_cast<const QMailMessage*>(message)->foreachPart(partStorer)) {
         qMailLog(Messaging) << "Unable to store parts for message:" << fileName;
         return false;
+    }
+    foreach(QSharedPointer<QFile> part, openParts) {
+        syncLater(part);
     }
 
     return true;
@@ -711,6 +718,25 @@ bool QtopiamailfileManager::removeParts(const QString &fileName)
 
     return result;
 }
+
+void QtopiamailfileManager::syncLater(QSharedPointer<QFile> file)
+{
+#ifdef USE_FSYNC_PER_FILE
+    _openFiles.append(file);
+#else
+    // In the case of managing multiple files use ::sync, otherwise use fsync
+    if (!_useFullSync) {
+        if (_openFiles.count()) {
+            // Multiple files case
+            _useFullSync = true;
+            _openFiles.clear();
+        } else {
+            _openFiles.append(file);
+        }
+    }
+#endif
+}
+
 
 Q_EXPORT_PLUGIN2(qtopiamailfilemanager,QtopiamailfileManagerPlugin)
 

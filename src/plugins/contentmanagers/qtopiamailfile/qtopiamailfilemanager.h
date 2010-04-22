@@ -89,8 +89,10 @@ private:
 
     bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable);
     bool removeParts(const QString &fileName);
+    void syncLater(QSharedPointer<QFile> file);
 
     QList< QSharedPointer<QFile> > _openFiles;
+    bool _useFullSync;
 };
 
 
