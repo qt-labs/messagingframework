@@ -76,10 +76,6 @@ public:
     bool pushEnabled() const;
 
     QString baseFolder() const;
-    QString draftsFolder() const;
-    QString sentFolder() const;
-    QString trashFolder() const;
-    QString junkFolder() const;
     QStringList pushFolders() const;
 
     int checkInterval() const;
@@ -108,10 +104,6 @@ public:
     void setPushEnabled(bool enabled);
 
     void setBaseFolder(const QString &s);
-    void setDraftsFolder(const QString &s);
-    void setSentFolder(const QString &s);
-    void setTrashFolder(const QString &s);
-    void setJunkFolder(const QString &s);
     void setPushFolders(const QStringList &s);
 
     void setCheckInterval(int i);

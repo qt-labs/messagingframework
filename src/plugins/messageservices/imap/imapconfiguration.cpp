@@ -108,26 +108,6 @@ QString ImapConfiguration::baseFolder() const
     return value("baseFolder");
 }
 
-QString ImapConfiguration::draftsFolder() const
-{
-    return value("draftsFolder");
-}
-
-QString ImapConfiguration::sentFolder() const
-{
-    return value("sentFolder");
-}
-
-QString ImapConfiguration::trashFolder() const
-{
-    return value("trashFolder");
-}
-
-QString ImapConfiguration::junkFolder() const
-{
-    return value("junkFolder");
-}
-
 QStringList ImapConfiguration::pushFolders() const
 {
     return value("pushFolders").split(QChar('\x0A'), QString::SkipEmptyParts);
@@ -208,26 +188,6 @@ void ImapConfigurationEditor::setBaseFolder(const QString &s)
     setValue("baseFolder", s);
 }
 
-void ImapConfigurationEditor::setDraftsFolder(const QString &s)
-{
-    setValue("draftsFolder", s);
-}
-
-void ImapConfigurationEditor::setSentFolder(const QString &s)
-{
-    setValue("sentFolder", s);
-}
-
-void ImapConfigurationEditor::setTrashFolder(const QString &s)
-{
-    setValue("trashFolder", s);
-}
-
-void ImapConfigurationEditor::setJunkFolder(const QString &s)
-{
-    setValue("junkFolder", s);
-}
-
 void ImapConfigurationEditor::setPushFolders(const QStringList &s)
 {
     setValue("pushFolders", QString("") + s.join(QChar('\x0A'))); // can't setValue to null string
@@ -242,4 +202,3 @@ void ImapConfigurationEditor::setIntervalCheckRoamingEnabled(bool b)
 {
     setValue("intervalCheckRoamingEnabled", QString::number(b ? 1 : 0));
 }
-

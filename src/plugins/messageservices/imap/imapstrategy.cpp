@@ -368,22 +368,6 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder
             if (!QMailStore::instance()->addFolder(&folder)) {
                 _error = true;
                 qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
-
-            } // Is this folder special? If so, update the account
-            else if (folder.status() & (QMailFolder::Sent | QMailFolder::Drafts | QMailFolder::Junk)) {
-                QMailAccount account(c->config().id());
-                QMailAccountConfiguration conf(c->config().id());
-
-                if (folder.status() & QMailFolder::Sent)
-                    account.setStandardFolder(QMailFolder::SentFolder, folder.id());
-                if (folder.status() & QMailFolder::Drafts)
-                    account.setStandardFolder(QMailFolder::DraftsFolder, folder.id());
-                if (folder.status() & QMailFolder::Trash)
-                    account.setStandardFolder(QMailFolder::TrashFolder, folder.id());
-                if (folder.status() & QMailFolder::Junk)
-                    account.setStandardFolder(QMailFolder::JunkFolder, folder.id());
-
-                QMailStore::instance()->updateAccount(&account, &conf);
             }
         }
     }

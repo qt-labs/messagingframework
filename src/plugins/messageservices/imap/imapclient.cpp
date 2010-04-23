@@ -704,24 +704,8 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             QMailFolder folder(mailboxPath, parentId, _config.id());
             folder.setDisplayName(decodeFolderName(*it));
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
+            folder.setStatus(QMailFolder::Incoming, true);
 
-            // Is this a special folder?
-            ImapConfigurationEditor imapCfg(&_config);
-            if (!imapCfg.trashFolder().isEmpty() && (imapCfg.trashFolder() == mailboxPath)) {
-                folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
-                imapCfg.setTrashFolder("");
-            } else if (!imapCfg.sentFolder().isEmpty() && (imapCfg.sentFolder() == mailboxPath)) {
-                folder.setStatus(QMailFolder::Sent | QMailFolder::Outgoing, true);
-                imapCfg.setSentFolder("");
-            } else if (!imapCfg.draftsFolder().isEmpty() && (imapCfg.draftsFolder() == mailboxPath)) {
-                folder.setStatus(QMailFolder::Drafts | QMailFolder::Outgoing, true);
-                imapCfg.setDraftsFolder("");
-            } else if (!imapCfg.junkFolder().isEmpty() && (imapCfg.junkFolder() == mailboxPath)) {
-                folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
-                imapCfg.setDraftsFolder("");
-            } else {
-                folder.setStatus(QMailFolder::Incoming, true);
-            }
             if(QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
                 //don't let inbox be deleted/renamed
                 folder.setStatus(QMailFolder::DeletionPermitted, false);

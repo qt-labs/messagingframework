@@ -731,8 +731,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         QMailAccountConfiguration accountCfg(_service->accountId());
         ImapConfiguration imapCfg(accountCfg);
 
-        QMailFolderId sentId(mailboxId(_service->accountId(), imapCfg.sentFolder()));
-
+        QMailFolderId sentId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::SentFolder));
         // Prepare these messages by copying to the sent folder
         _service->_client.strategyContext()->externalizeMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->externalizeMessagesStrategy.appendMessageSet(externaliseIds, sentId);
