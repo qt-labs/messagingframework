@@ -104,6 +104,7 @@ signals:
 private slots:
     void statusItemFinished();
     void statusItemProgressChanged();
+    void statusItemDestroyed(QObject*);
 
 private:
     StatusMonitor();

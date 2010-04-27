@@ -123,6 +123,7 @@ StatusItem(),
 m_serviceAction(serviceAction),
 m_description(description)
 {
+    setParent(serviceAction);
     connect(m_serviceAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
             this,SLOT(serviceActivityChanged(QMailServiceAction::Activity)));
     connect(m_serviceAction, SIGNAL(statusChanged(const QMailServiceAction::Status)),
@@ -178,6 +179,7 @@ void StatusMonitor::add(StatusItem* newItem)
     connect(newItem,SIGNAL(progressChanged(uint,uint)),
         this,SLOT(statusItemProgressChanged()));
     connect(newItem,SIGNAL(statusChanged(QString)),this,SIGNAL(statusChanged(QString)));
+    connect(newItem,SIGNAL(destroyed(QObject*)),this,SLOT(statusItemDestroyed(QObject*)));
     emit added(newItem);
 }
 
@@ -211,6 +213,7 @@ void StatusMonitor::statusItemFinished()
     //remove the sender from the list
     StatusItem* item = qobject_cast<StatusItem*>(sender());
     m_statusItems.removeAll(item);
+    disconnect(item);
     emit removed(item);
     item->deleteLater();
 }
@@ -218,6 +221,17 @@ void StatusMonitor::statusItemFinished()
 void StatusMonitor::statusItemProgressChanged()
 {
     updateProgress();
+}
+
+void StatusMonitor::statusItemDestroyed(QObject* s)
+{
+    StatusItem* ss = qobject_cast<StatusItem*>(s);
+    if(ss)
+    {
+        m_statusItems.removeAll(ss);
+        disconnect(ss);
+        emit removed(ss);
+    }
 }
 
 #include <statusmonitor.moc>
