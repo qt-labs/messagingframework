@@ -94,44 +94,34 @@ class ActivityIcon : public QLabel
     Q_OBJECT
 
 public:
-    ActivityIcon(QList<const QMailServiceAction*> actions,
-                 QWidget* parent = 0);
+    ActivityIcon(QWidget* parent = 0);
 
 private slots:
-    void activityChanged(QMailServiceAction::Activity a);
+    void itemChanged(StatusItem* item);
     void showActivity(bool val);
 
 private:
     QMovie m_activeIcon;
     QPixmap m_inactiveIcon;
-    QList<QObject*> m_activeActions;
 };
 
-ActivityIcon::ActivityIcon(const QList<const QMailServiceAction*> actions,
-                           QWidget* parent)
+ActivityIcon::ActivityIcon(QWidget* parent)
 :
 QLabel(parent),
 m_activeIcon(":icon/activity_working"),
 m_inactiveIcon(":icon/activity_idle")
 {
-    foreach(const QMailServiceAction* a, actions)
-        connect(a,SIGNAL(activityChanged(QMailServiceAction::Activity)),
-                this,SLOT(activityChanged(QMailServiceAction::Activity)));
-
-
     setPixmap(m_inactiveIcon);
     setPalette(parent->palette());
+    connect(StatusMonitor::instance(),SIGNAL(added(StatusItem*)),this,SLOT(itemChanged(StatusItem*)));
+    connect(StatusMonitor::instance(),SIGNAL(removed(StatusItem*)),this,SLOT(itemChanged(StatusItem*)));
+
+    showActivity(StatusMonitor::instance()->itemCount() != 0);
 }
 
-void ActivityIcon::activityChanged(QMailServiceAction::Activity a)
+void ActivityIcon::itemChanged(StatusItem* item)
 {
-    bool active = (a == QMailServiceAction::InProgress);
-    if(active && !m_activeActions.contains(sender()))
-        m_activeActions.append(sender());
-    else if(!active)
-        m_activeActions.removeAll(sender());
-
-    showActivity(!m_activeActions.isEmpty());
+    showActivity(StatusMonitor::instance()->itemCount() != 0);
 }
 
 void ActivityIcon::showActivity(bool val)
@@ -2323,10 +2313,7 @@ void EmailClient::setupUi()
 
     //spinner icon
 
-    QLabel* statusIcon = new ActivityIcon(QList<const QMailServiceAction*>() << m_storageAction
-                                                                             << m_retrievalAction
-                                                                             << m_transmitAction
-                                                                             << m_flagRetrievalAction,this);
+    QLabel* statusIcon = new ActivityIcon(this);
     menuLayout->addWidget(statusIcon);
     setMenuWidget(menuWidget);
     m_contextMenu = file;

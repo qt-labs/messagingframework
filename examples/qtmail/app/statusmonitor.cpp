@@ -181,6 +181,11 @@ void StatusMonitor::add(StatusItem* newItem)
     emit added(newItem);
 }
 
+int StatusMonitor::itemCount() const
+{
+    return m_statusItems.count();
+}
+
 StatusMonitor::StatusMonitor()
 :
 QObject()

@@ -93,6 +93,7 @@ class StatusMonitor : public QObject
 public:
     static StatusMonitor* instance();
     void add(StatusItem* newItem);
+    int itemCount() const;
 
 signals:
     void added(StatusItem* s);
