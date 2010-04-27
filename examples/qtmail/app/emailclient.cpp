@@ -476,7 +476,10 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       preSearchWidgetId(-1),
       m_messageServerProcess(0),
       syncState(ExportUpdates),
-      m_contextMenu(0)
+      m_contextMenu(0),
+      m_transmitAction(0),
+      m_retrievalAction(0),
+      m_flagRetrievalAction(0)
 {
     setObjectName( "EmailClient" );
 
@@ -591,6 +594,14 @@ void EmailClient::messageServerProcessError(QProcess::ProcessError e)
     QString errorMsg = QString("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
     QMessageBox::critical(this,"Message Server",errorMsg);
     qFatal(errorMsg.toLatin1(),"");
+}
+
+void EmailClient::connectServiceAction(QMailServiceAction* action)
+{
+    connect(action, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
+    connect(action, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
+    connect(action, SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(statusChanged(QMailServiceAction::Status)));
+    connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
 }
 
 bool EmailClient::isMessageServerRunning() const
@@ -1033,19 +1044,7 @@ void EmailClient::init()
     deleteMailAction = 0;
 
     // Connect our service action signals
-    m_retrievalAction = new QMailRetrievalAction(this);
-    m_storageAction = new QMailStorageAction(this);
-    m_transmitAction = new QMailTransmitAction(this);
     m_flagRetrievalAction = new QMailRetrievalAction(this);
-
-    foreach (QMailServiceAction *action, QList<QMailServiceAction*>() << m_retrievalAction
-                                                                      << m_storageAction
-                                                                      << m_transmitAction) {
-        connect(action, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
-        connect(action, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
-        connect(action, SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(statusChanged(QMailServiceAction::Status)));
-        connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
-    }
 
     // Use a separate action for flag updates, which are not directed by the user
     connect(m_flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
@@ -1823,13 +1822,15 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
                 transmitCompleted();
             } else if (action == m_retrievalAction) {
                 retrievalCompleted();
-            } else if (action == m_storageAction) {
+            } else if (action->metaObject()->className() == QString("QMailStorageAction")) {
                 storageActionCompleted();
+                action->deleteLater();
             }
         } else if (activity == QMailServiceAction::Failed) {
             const QMailServiceAction::Status status(action->status());
-            if (action == m_storageAction) {
+            if (action->metaObject()->className() == QString("QMailStorageAction")) {
                 storageActionFailure(status.accountId, status.text);
+                action->deleteLater();
             } else {
                 transferFailure(status.accountId, status.text, status.errorCode);
             }
@@ -2580,13 +2581,21 @@ QAction* EmailClient::createSeparator()
 
 QMailStorageAction* EmailClient::storageAction(const QString& description)
 {
-    ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_storageAction,description);
+    QMailStorageAction* storageAction = new QMailStorageAction(this);
+    connectServiceAction(storageAction);
+
+    ServiceActionStatusItem* newItem = new ServiceActionStatusItem(storageAction,description);
     StatusMonitor::instance()->add(newItem);
-    return m_storageAction;
+    return storageAction;
 }
 
 QMailRetrievalAction* EmailClient::retrieveAction(const QString& description)
 {
+    if(!m_retrievalAction)
+    {
+        m_retrievalAction = new QMailRetrievalAction(this);
+        connectServiceAction(m_retrievalAction);
+    }
     ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_retrievalAction,description);
     StatusMonitor::instance()->add(newItem);
     return m_retrievalAction;
@@ -2594,6 +2603,12 @@ QMailRetrievalAction* EmailClient::retrieveAction(const QString& description)
 
 QMailTransmitAction* EmailClient::transmitAction(const QString& description)
 {
+    if(!m_transmitAction)
+    {
+        m_transmitAction = new QMailTransmitAction(this);
+        connectServiceAction(m_transmitAction);
+    }
+
     ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_transmitAction,description);
     StatusMonitor::instance()->add(newItem);
     return m_transmitAction;

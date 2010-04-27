@@ -283,6 +283,8 @@ private slots:
     void renameFolder();
 
 private:
+    void connectServiceAction(QMailServiceAction* action);
+
     bool isMessageServerRunning() const;
     virtual EmailFolderView* createFolderView();
     virtual MessageListView* createMessageListView();
@@ -425,11 +427,6 @@ private:
 
     QMailMessageId lastDraftId;
 
-    QMailTransmitAction* m_transmitAction;
-    QMailRetrievalAction* m_retrievalAction;
-    QMailStorageAction* m_storageAction;
-    QMailRetrievalAction* m_flagRetrievalAction;
-
     QProcess* m_messageServerProcess;
     SyncState syncState;
     QSet<QMailMessageId> flagMessageIds;
@@ -437,6 +434,9 @@ private:
     QToolBar* m_toolBar;
     StatusMonitorWidget* m_statusMonitorWidget;
 
+    QMailTransmitAction* m_transmitAction;
+    QMailRetrievalAction* m_retrievalAction;
+    QMailRetrievalAction* m_flagRetrievalAction;
 };
 
 #endif
