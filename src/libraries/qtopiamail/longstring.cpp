@@ -41,6 +41,7 @@
 
 #include "longstring_p.h"
 #include "qmaillog.h"
+#include <QAtomicInt>
 #include <QDataStream>
 #include <QFile>
 #include <QFileInfo>
@@ -175,7 +176,7 @@ public:
 
     const QString &fileName() const { return filename; }
     int length() const { return len; }
-    bool mapped() const { return (buffer != 0); }
+    bool mapped() const;
 
     const QByteArray toQByteArray() const;
 
@@ -193,12 +194,11 @@ private:
     // We need to keep these in an external map, because QFile is noncopyable
     struct QFileMapping
     {
-        QFileMapping() : file(0), mapping(0), refCount(0), mapCount(0), size(0) {}
+        QFileMapping() : file(0), mapping(0), size(0) {}
 
         QFile* file;
         char* mapping;
-        int refCount;
-        int mapCount;
+        QAtomicInt refCount;
         qint64 size;
     };
 
@@ -236,28 +236,20 @@ LongStringFileMapping::~LongStringFileMapping()
         } else {
             QFileMapping& fileMapping(it.value());
 
-            if (fileMapping.refCount > 1) {
-                fileMapping.refCount -= 1;
-
-                // See if we're the last user with a mapping
-                if (mapped() && (fileMapping.mapCount > 0)) {
-                    fileMapping.mapCount -= 1;
-                    if (fileMapping.mapCount == 0) {
-                        // Unmap this file
-                        if (fileMapping.file->unmap(reinterpret_cast<uchar*>(fileMapping.mapping))) {
-                            fileMapping.mapping = 0;
-                        } else {
-                            qWarning() << "Unable to unmap file:" << filename;
-                        }
-                    }
-                } 
-            } else {
+            if (!fileMapping.refCount.deref()) {
                 // We're the last user - delete the file
                 delete fileMapping.file;
                 fileMap.erase(it);
             }
         }
     }
+}
+
+bool LongStringFileMapping::mapped() const {
+    if (!buffer || !fileMap.contains(filename))
+        return false;
+
+    return buffer == fileMap.value(filename).mapping;
 }
 
 void LongStringFileMapping::init()
@@ -282,7 +274,7 @@ void LongStringFileMapping::init()
 
         if (it != fileMap.end()) {
             len = it.value().size;
-            it.value().refCount += 1;
+            it.value().refCount.ref();
         }
     }
 }
@@ -299,7 +291,7 @@ void LongStringFileMapping::map() const
                     fileMapping.mapping = reinterpret_cast<char*>(fileMapping.file->map(0, fileMapping.size));
                     fileMapping.file->close();
 
-                    if (!fileMapping.mapping) {
+                    if(!fileMapping.mapping) {
                         qWarning() << "Unable to map file:" << filename;
                     }
                 } else {
@@ -308,8 +300,9 @@ void LongStringFileMapping::map() const
             }
 
             buffer = fileMapping.mapping;
-            fileMapping.mapCount += 1;
         }
+    } else {
+        qWarning() << "Trying to map on a unspecified file?";
     }
 }
 
