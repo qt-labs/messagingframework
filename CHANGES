@@ -1,6 +1,12 @@
 Latest Changes
 ---------------
 
+2010W17
+  * Fixes: QTSOL-139 NB#156665 - Message body replaced with Junk characters in mail received from POP account
+  * Fixes: QTSOL-120 NB#159810 - QMailAccount::standardFolder retrieves an invalid id
+  * Fixes: QTSOL-143 NB#161028 - QMailStore::addMessages calls fsync() too many times
+  * Fixes: QTMOBILITY-181 - QMF does not have an option to install headers systemwide
+
 2010W14
 
   * Fixes: NB#156526 - Duplicate message items shown inside Inbox view
@@ -13,7 +19,7 @@ Latest Changes
   * Fixes: IMAP protocol plugin doesn't support two way synchronization of message flags
   * Fixes: IMAP protocol plugin doesn't batch status flag updates
   * Fixes: QTSOL-76 SMTP protocol plugin uses excessive memory when sending large mails
-  * Fixes: QMailStore requires content manager plugins to load even if only message metadata operations are performed.
+  * Fixes: QMailStore requires content manager plugins to load even if only message metadata operations are performed
   * Fixes: QTSOL-107 QMailMessageThreadedModel does not sort correctly
   * Fixes: QMailMessageThreadModel scatters items after item deletion
   * Fixes: QMailMessageThreadedModel is not updating all columns after a mesage is modified 
