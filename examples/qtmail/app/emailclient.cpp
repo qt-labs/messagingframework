@@ -160,9 +160,6 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
 // Number of new messages to request per increment
 static const int MoreMessagesIncrement = 20;
 
-// Time in ms to show new message dialog.  0 == Indefinate
-static const int NotificationVisualTimeout = 0;
-
 // This is used regularly:
 static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
                                                                                              QMailMessage::Sms |
@@ -1212,7 +1209,15 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
 
 void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask)
 {
-    storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+    if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), setMask, true)) {
+        qMailLog(Messaging) << "Unable to flag message:" << id;
+    }
+
+    if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), unsetMask, false)) {
+        qMailLog(Messaging) << "Unable to flag messages:" << id;
+    }
+
+    //storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
