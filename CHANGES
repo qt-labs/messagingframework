@@ -1,6 +1,12 @@
 Latest Changes
 ---------------
 
+2010W18
+  * Fixes: NB#159810 - QMailAccount::standardFolder retrieves an invalid id
+  * Fixes: NB#156665 - Message body replaced with Junk characters in mail received from GMail into Yahoo account
+  * Fixes: NB#164861 - duplicating messages in qmf DB
+
+
 2010W14
 
   * Fixes: NB#156526 - Duplicate message items shown inside Inbox view
