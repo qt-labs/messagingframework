@@ -5,9 +5,9 @@ Latest Changes
   * Fixes: NB#164861 - duplicating messages in qmf DB
 
 2010W17
-  * Fixes: QTSOL-139 NB#156665 - Message body replaced with Junk characters in mail received from POP account
-  * Fixes: QTSOL-120 NB#159810 - QMailAccount::standardFolder retrieves an invalid id
-  * Fixes: QTSOL-143 NB#161028 - QMailStore::addMessages calls fsync() too many times
+  * Fixes: NB#156665 - Message body replaced with Junk characters in mail received from POP account
+  * Fixes: NB#159810 - QMailAccount::standardFolder retrieves an invalid id
+  * Fixes: NB#161028 - QMailStore::addMessages calls fsync() too many times
   * Fixes: QTMOBILITY-181 - QMF does not have an option to install headers systemwide
 
 2010W14
