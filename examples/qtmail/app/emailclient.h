@@ -182,6 +182,7 @@ protected slots:
     void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
+    void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
     void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask);
 
     void messageActivated();

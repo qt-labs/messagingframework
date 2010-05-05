@@ -160,9 +160,6 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
 // Number of new messages to request per increment
 static const int MoreMessagesIncrement = 20;
 
-// Time in ms to show new message dialog.  0 == Indefinate
-static const int NotificationVisualTimeout = 0;
-
 // This is used regularly:
 static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
                                                                                              QMailMessage::Sms |
@@ -1210,9 +1207,30 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
     }
 }
 
+//flag messages functions are used to perform local operations. i.e marking messages and "move to trash"
+
+void EmailClient::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), setMask, true)) {
+        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+    }
+
+    if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), unsetMask, false)) {
+        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+    }
+    //storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+}
+
 void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask)
 {
-    storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+    if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), setMask, true)) {
+        qMailLog(Messaging) << "Unable to flag message:" << id;
+    }
+
+    if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), unsetMask, false)) {
+        qMailLog(Messaging) << "Unable to flag message:" << id;
+    }
+    //storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
@@ -1626,7 +1644,6 @@ void EmailClient::deleteSelectedMessages()
         action = tr("Deleting");
         actionDetails = tr("Deleting %n message(s)", "%1: number of messages", deleteCount);
     } else {
-        // Received messages will be removed from SIM on move to Trash
         action = tr("Moving");
         actionDetails = tr("Moving %n message(s) to Trash", "%1: number of messages", deleteCount);
     }
@@ -1638,7 +1655,8 @@ void EmailClient::deleteSelectedMessages()
     if (deleting) {
         storageAction("Deleting messages..")->deleteMessages(deleteList);
     } else {
-        storageAction("Marking messages as deleted")->flagMessages(deleteList, QMailMessage::Trash, 0);
+        //storageAction("Marking messages as deleted")->flagMessages(deleteList, QMailMessage::Trash, 0);
+        flagMessages(deleteList,QMailMessage::Trash,0);
     }
 
     if (markingMode) {

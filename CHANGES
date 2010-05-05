@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+2010W18
+  * Fixes: NB#164861 - duplicating messages in qmf DB
+
 2010W17
   * Fixes: QTSOL-139 NB#156665 - Message body replaced with Junk characters in mail received from POP account
   * Fixes: QTSOL-120 NB#159810 - QMailAccount::standardFolder retrieves an invalid id
