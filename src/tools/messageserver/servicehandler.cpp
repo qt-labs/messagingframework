@@ -960,8 +960,12 @@ void ServiceHandler::cancelTransfer(quint64 action)
 
         const ActionData &data(it.value());
         foreach (QMailMessageService *service, data.services) {
-            service->cancelOperation();
             mServiceAction.remove(service);
+            if (!service) {
+                qMailLog(Messaging) << "Unable to cancel null service for action:" << action;
+                continue;
+            }
+            service->cancelOperation();
 
             QMailAccountId accountId(service->accountId());
             if (accountId.isValid()) {
