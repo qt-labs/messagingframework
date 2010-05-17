@@ -1518,13 +1518,12 @@ void EmailClient::messageActivated()
     QMailMessage message(currentId);
     if (message.status() & QMailMessage::Draft) {
         modify(message);
-    } else {
-        bool hasNext = false;
-        bool hasPrevious = false;
-        if (readMailWidget()->displayedMessage() != currentId) {
-            readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
-        }
     }
+
+    bool hasNext = false;
+    bool hasPrevious = false;
+    if (readMailWidget()->displayedMessage() != currentId)
+        readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
 }
 
 void EmailClient::showSearchResult(const QMailMessageId &id)
