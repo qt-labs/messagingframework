@@ -128,6 +128,7 @@ protected slots:
     virtual void composeActivated() = 0;
     virtual void emptyTrashFolder() = 0;
     virtual void messageActivated() = 0;
+    virtual void messageOpenRequested() = 0;
     virtual void allWindowsClosed() = 0;
     virtual void search() = 0;
 
@@ -186,6 +187,7 @@ protected slots:
     void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask);
 
     void messageActivated();
+    void messageOpenRequested();
     void showSearchResult(const QMailMessageId& id);
     void emptyTrashFolder();
 
