@@ -2276,13 +2276,6 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
     }
 }
 
-void ImapSynchronizeAllStrategy::folderListCompleted(ImapStrategyContextBase *context)
-{
-    removeDeletedMailboxes(context);
-
-    previewDiscoveredMessages(context);
-}
-
 void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase *context)
 {
     QMailFolderId boxId = _currentMailbox.id();
