@@ -486,24 +486,30 @@ void ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::Standar
 {
     QMailFolderIdList folders = QMailStore::instance()->queryFolders(QMailFolderKey::path(path));
 
-    QMailFolder folder((folders.count() == 1) ? folders.value(0) : QMailFolderId(0));
+    QMailFolder folder;
 
-    if (folderType == QMailFolder::DraftsFolder)
-        folder.setStatus(QMailFolder::Drafts | QMailFolder::OutboxFolder, true);
-    else if (folderType == QMailFolder::SentFolder)
-        folder.setStatus(QMailFolder::Sent | QMailFolder::OutboxFolder, true);
-    else if (folderType == QMailFolder::InboxFolder)
-        folder.setStatus(QMailFolder::Incoming, true);
-    else if (folderType == QMailFolder::JunkFolder)
-        folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
-    else if (folderType == QMailFolder::TrashFolder)
-        folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
-    else if (folderType == QMailFolder::OutboxFolder)
-        folder.setStatus(QMailFolder::Outgoing, true);
-    else
-        qWarning() << "Unable to set unsupported folder type";
+    if(folders.count() == 1)
+        folder = QMailFolder(folders.value(0));
 
-    QMailStore::instance()->updateFolder(&folder);
+    if(folder.id().isValid())
+    {
+        if (folderType == QMailFolder::DraftsFolder)
+            folder.setStatus(QMailFolder::Drafts | QMailFolder::OutboxFolder, true);
+        else if (folderType == QMailFolder::SentFolder)
+            folder.setStatus(QMailFolder::Sent | QMailFolder::OutboxFolder, true);
+        else if (folderType == QMailFolder::InboxFolder)
+            folder.setStatus(QMailFolder::Incoming, true);
+        else if (folderType == QMailFolder::JunkFolder)
+            folder.setStatus(QMailFolder::Junk | QMailFolder::Incoming, true);
+        else if (folderType == QMailFolder::TrashFolder)
+            folder.setStatus(QMailFolder::Trash | QMailFolder::Incoming, true);
+        else if (folderType == QMailFolder::OutboxFolder)
+            folder.setStatus(QMailFolder::Outgoing, true);
+        else
+            qWarning() << "Unable to set unsupported folder type";
+
+        QMailStore::instance()->updateFolder(&folder);
+    }
 
     account->setStandardFolder(folderType, folder.id());
 }
