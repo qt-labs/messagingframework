@@ -2330,10 +2330,10 @@ void QMailMessageHeader::deserialize(Stream &stream)
 /* QMailMessageBody */
 
 QMailMessageBodyPrivate::QMailMessageBodyPrivate()
-    : QPrivateImplementationBase(this)
+    : QPrivateImplementationBase(this),
+    _encoding(QMailMessageBody::SevenBit), // Default encoding
+    _encoded(true)
 {
-    // Default encoding
-    _encoding = QMailMessageBody::SevenBit;
 }
 
 void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)

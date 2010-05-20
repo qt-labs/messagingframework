@@ -81,7 +81,7 @@ public:
         EightBit = 2, 
         Base64 = 3,
         QuotedPrintable = 4,
-        Binary = 5, 
+        Binary = 5
     };
 
     enum EncodingStatus
@@ -191,7 +191,7 @@ public:
         HeaderOnlyFormat = 1,
         StorageFormat = 2,
         TransmissionFormat = 3,
-        IdentityFormat = 4,
+        IdentityFormat = 4
     }; 
 
     enum ChunkType {
@@ -203,4 +203,3 @@ public:
 };
 
 #endif
-
