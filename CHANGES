@@ -1,10 +1,11 @@
 Latest Changes
 ---------------
 
-2010W18
+2010W21
   * Fixes: NB#164861 - duplicating messages in qmf DB
   * Fixes: NB#166299 - Messageserver crash after defining two POP accounts on IMAP account.
   * Fixes: NB#166378 - Fenix: "messageserver" crashed upon attempt to cancel the sync
+  * Fixes: NB#168824 - <UninitVar> unintialized variable at QMailMessageBodyPrivate
 
 2010W17
   * Fixes: NB#156665 - Message body replaced with Junk characters in mail received from POP account
