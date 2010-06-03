@@ -121,6 +121,7 @@ m_inactiveIcon(":icon/activity_idle")
 
 void ActivityIcon::itemChanged(StatusItem* item)
 {
+    Q_UNUSED(item);
     showActivity(StatusMonitor::instance()->itemCount() != 0);
 }
 
