@@ -1,7 +1,7 @@
 Latest Changes
 ---------------
 
-2010W23
+2010W22
   * Fixes: NB#164861 - duplicating messages in qmf DB
   * Fixes: NB#166299 - Messageserver crashes after defining POP account.
   * Fixes: NB#166378 - Fenix: "messageserver" crashed upon attempt to cancel the sync
