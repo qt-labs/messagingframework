@@ -4767,10 +4767,10 @@ QMailMessagePart::Location QMailMessagePart::location() const
 */
 QString QMailMessagePart::displayName() const
 {
-    QString id(contentType().name());
+    QString id(decodeWordSequence(contentType().name()));
 
     if (id.isEmpty())
-        id = contentDisposition().filename();
+        id = decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
         id = contentID();
