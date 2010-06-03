@@ -236,6 +236,7 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
 
     if (!config.services().contains(serviceKey)) {
         // New account
+        nameInput->setText("");
         emailInput->setText("");
         smtpServerInput->setText("");
         smtpPortInput->setText("25");
@@ -252,7 +253,7 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         signature = QString();
     } else {
         SmtpConfiguration smtpConfig(config);
-
+        nameInput->setText(smtpConfig.userName());;
         emailInput->setText(smtpConfig.emailAddress());
         smtpServerInput->setText(smtpConfig.smtpServer());
         smtpPortInput->setText(QString::number(smtpConfig.smtpPort()));
