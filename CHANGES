@@ -1,16 +1,17 @@
 Latest Changes
 ---------------
 
-2010W21
+2010W23
   * Fixes: NB#164861 - duplicating messages in qmf DB
-  * Fixes: NB#166299 - Messageserver crash after defining two POP accounts on IMAP account.
+  * Fixes: NB#166299 - Messageserver crashes after defining POP account.
   * Fixes: NB#166378 - Fenix: "messageserver" crashed upon attempt to cancel the sync
   * Fixes: NB#168824 - <UninitVar> unintialized variable at QMailMessageBodyPrivate
+  * Fixes: NB#164086 - messageserver crash at QCopClient::write
+  * Fixes: NB#147762 - [Qtmail][Scratchbox] Files with non-ascii chars in their filenames are saved with incorrect filenames.
+  * Fixes: NB#156665 - Message body replaced with Junk characters in mail received from GMail into Yahoo account.
+  * Fixes: NB#159810 - QMailAccount::standardFolder retrieves an invalid id
 
 2010W17
-  * Fixes: NB#156665 - Message body replaced with Junk characters in mail received from POP account
-  * Fixes: NB#159810 - QMailAccount::standardFolder retrieves an invalid id
-  * Fixes: NB#161028 - QMailStore::addMessages calls fsync() too many times
   * Fixes: QTMOBILITY-181 - QMF does not have an option to install headers systemwide
 
 2010W14
