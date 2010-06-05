@@ -404,7 +404,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
     // Sort the lists to yield ascending order
     qSort(removeIndices);
     for (int i = removeIndices.count(); i > 0; --i) {
-        int index = i - 1;
+        int index = removeIndices[i - 1];
         _model.emitBeginRemoveRows(QModelIndex(), index, index);
         removeItemAt(index, QModelIndex());
         _model.emitEndRemoveRows();
