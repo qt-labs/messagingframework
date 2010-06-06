@@ -196,7 +196,7 @@ QString tst_python_email::path(const QString& filename)
     return QString("/testdata/") + filename;
 #else
     // SRCDIR is defined in the .pro file as the directory where the .pro is located
-    return QString(SRCDIR "/testdata/") + filename;
+    return QCoreApplication::applicationDirPath() + QString("/testdata/") + filename;
 #endif
 }
 

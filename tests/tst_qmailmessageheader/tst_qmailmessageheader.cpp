@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QObject>
+#include <QCoreApplication>
 #include <QTest>
 #include <QDataStream>
 #include <qmailmessage.h>
@@ -195,7 +196,7 @@ private slots:
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc,argv);
+    QCoreApplication app(argc,argv);
 
     tst_QMailMessageHeader dummy;
     tst_QMailMessageHeaderField messageHeader;
