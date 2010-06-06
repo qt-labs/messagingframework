@@ -1340,7 +1340,7 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
         return;
     }
 
-    mailAccountId = message.parentAccountId();
+    mailAccountId = QMailAccountId();
     setRetrievalInProgress(true);
 
     retrieveAction("Retrieving single message")->retrieveMessages(QMailMessageIdList() << message.id(), QMailRetrievalAction::Content);
@@ -1354,7 +1354,7 @@ void EmailClient::retrieveMessagePortion(const QMailMessageMetaData& message, ui
         return;
     }
 
-    mailAccountId = message.parentAccountId();
+    mailAccountId = QMailAccountId();
     setRetrievalInProgress(true);
 
     QMailMessage msg(message.id());
@@ -1375,7 +1375,7 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
     } else {
         QMailMessageMetaData metaData(partLocation.containingMessageId());
 
-        mailAccountId = metaData.parentAccountId();
+        mailAccountId = QMailAccountId();
         setRetrievalInProgress(true);
 
         retrieveAction("Retreiving message part")->retrieveMessagePart(partLocation);
@@ -1396,7 +1396,7 @@ void EmailClient::retrieveMessagePartPortion(const QMailMessagePart::Location &p
     } else {
         QMailMessage messsage(partLocation.containingMessageId());
 
-        mailAccountId = messsage.parentAccountId();
+        mailAccountId = QMailAccountId();
         setRetrievalInProgress(true);
 
         const QMailMessagePart &part(messsage.partAt(partLocation));
