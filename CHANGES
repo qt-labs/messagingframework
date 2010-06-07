@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+2010W23
+  * Fixes: NB#166806 - Application crashes upon trying to open message from Main view during send/receive
+  * Fixes: QTSOL-154 - Retrieving an attachment causes full mail check (qtmail specific)
+
 2010W22
   * Fixes: NB#164861 - duplicating messages in qmf DB
   * Fixes: NB#166299 - Messageserver crashes after defining POP account.
