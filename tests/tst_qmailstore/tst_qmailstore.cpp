@@ -72,6 +72,7 @@ private slots:
     void addFolder();
     void addMessage();
     void addMessages();
+    void addMessages2();
     void locking();
     void updateAccount();
     void updateFolder();
@@ -425,6 +426,79 @@ void tst_QMailStore::addMessage()
 }
 
 void tst_QMailStore::addMessages()
+{
+    QMailAccount account;
+    account.setName("Account");
+
+    QCOMPARE(QMailStore::instance()->countAccounts(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!account.id().isValid());
+    QVERIFY(QMailStore::instance()->addAccount(&account, 0));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(account.id().isValid());
+    QCOMPARE(QMailStore::instance()->countAccounts(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder folder;
+    folder.setPath("Folder");
+    folder.setParentAccountId(account.id());
+
+    QCOMPARE(QMailStore::instance()->countFolders(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!folder.id().isValid());
+    QVERIFY(QMailStore::instance()->addFolder(&folder));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(folder.id().isValid());
+    QCOMPARE(QMailStore::instance()->countFolders(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QList<QMailMessage> messages;
+    QList<QMailMessage*> messageAddresses;
+    for (int i = 1; i <= 10; ++i) {
+        QMailMessage message;
+        message.setParentAccountId(account.id());
+        message.setParentFolderId(folder.id());
+        message.setMessageType(QMailMessage::Sms);
+        message.setSubject(QString("Message %1").arg(i));
+        message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+
+        messages.append(message);
+        messageAddresses.append(&messages.last());
+    }
+
+    // Verify that addition is successful
+    QCOMPARE(QMailStore::instance()->countMessages(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!messages.first().id().isValid());
+    QVERIFY(!messages.last().id().isValid());
+    QVERIFY(QMailStore::instance()->addMessages(messageAddresses));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(messages.first().id().isValid());
+    QVERIFY(messages.last().id().isValid());
+    QCOMPARE(QMailStore::instance()->countMessages(), 10);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    // Verify that retrieval yields matching result
+    for (int i = 1; i <= 10; ++i) {
+        QMailMessage message(messages.at(i - 1).id());
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+        QCOMPARE(message.subject(), QString("Message %1").arg(i));
+        QCOMPARE(message.body().data(), QString("Hi #%1").arg(i));
+    }
+
+    // Test basic limit/offset
+    QMailMessageKey key;
+    QMailMessageSortKey sort;
+    QMailMessageIdList messageIds(QMailStore::instance()->queryMessages(key, sort));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 0), messageIds.mid(0, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 3), messageIds.mid(3, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 4, 6), messageIds.mid(6, 4));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 0), messageIds.mid(0, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 1), messageIds.mid(1, 9));
+    QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 10, 0), messageIds);
+}
+
+void tst_QMailStore::addMessages2()
 {
     QMailAccount account;
     account.setName("Account");
