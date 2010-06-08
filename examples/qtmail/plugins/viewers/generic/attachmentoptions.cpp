@@ -42,6 +42,7 @@
 
 #include "attachmentoptions.h"
 #include "browserwidget.h"
+#include "genericviewer.h"
 #include "qmailaccount.h"
 #include "qmailmessage.h"
 
@@ -504,6 +505,14 @@ void AttachmentOptions::viewAttachment()
             display.setImage(_decodedData);
             display.exec();
         }
+    } else if (_part->contentType().content() == "message/rfc822") {
+        QDialog display(this);
+        QGridLayout *gl = new QGridLayout(&display);
+        GenericViewer *viewer = new GenericViewer(&display);
+        gl->addWidget(viewer->widget(), 0, 0);
+        QMailMessage message(QMailMessage::fromRfc2822(_part->body().data().toAscii()));
+        viewer->setMessage(message);
+        display.exec();
     } else {
 #if 1
         qWarning() << "Cannot display message of type:" << _part->contentType().content();
