@@ -812,14 +812,21 @@ QMailMessage EmailComposerInterface::message() const
                 QString partName(fi.fileName());
                 QString filePath(fi.absoluteFilePath());
 
-                QMailMessageContentType type(QMail::mimeTypeFromFileName(attachment).toLatin1());
+                QString mimeType(QMail::mimeTypeFromFileName(attachment));
+                QMailMessageContentType type(mimeType.toLatin1());
                 type.setName(partName.toLatin1());
 
                 QMailMessageContentDisposition disposition( QMailMessageContentDisposition::Attachment );
                 disposition.setFilename(partName.toLatin1());
                 disposition.setSize(fi.size());
 
-                QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
+                QMailMessageBodyFwd::TransferEncoding encoding(QMailMessageBody::Base64);
+                QMailMessageBodyFwd::EncodingStatus encodingStatus(QMailMessageBody::RequiresEncoding);
+                if (mimeType == "message/rfc822") {
+                    encoding = QMailMessageBody::NoEncoding;
+                    encodingStatus = QMailMessageBody::AlreadyEncoded;
+                }
+                QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, type, encoding, encodingStatus);
                 mail.appendPart(part);
 
                 // Store the location of this file for future reference
