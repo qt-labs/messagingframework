@@ -766,10 +766,10 @@ QMailMessage EmailComposerInterface::message() const
 
     QMailMessageContentType type("text/plain; charset=UTF-8");
     if (m_attachmentListWidget->isEmpty()) {
-        mail.setBody( QMailMessageBody::fromData( messageText, type, QMailMessageBody::Base64 ) );
+        mail.setBody( QMailMessageBody::fromData( messageText, type, QMailMessageBody::QuotedPrintable ) );
     } else {
         QMailMessagePart textPart;
-        textPart.setBody(QMailMessageBody::fromData(messageText.toUtf8(), type, QMailMessageBody::Base64));
+        textPart.setBody(QMailMessageBody::fromData(messageText.toUtf8(), type, QMailMessageBody::QuotedPrintable));
         mail.setMultipartType(QMailMessagePartContainer::MultipartMixed);
         mail.appendPart(textPart);
 
