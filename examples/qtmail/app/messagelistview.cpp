@@ -557,8 +557,6 @@ void MessageListView::init()
             this, SLOT(indexClicked(QModelIndex)));
     connect(mMessageList, SIGNAL(activated(QModelIndex)),
             this, SLOT(indexActivated(QModelIndex)));
-    connect(mMessageList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-            this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
     connect(mMessageList, SIGNAL(backPressed()),
             this, SIGNAL(backPressed()));
 
@@ -1016,6 +1014,8 @@ void MessageListView::reset()
     mMessageList->setModel(mModel);
     mMessageList->setRootIsDecorated(false);
     mExpandAllTimer.start(0);
+    connect(mMessageList->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
 
     if (!key.isEmpty() || !mQuickSearchWidget->searchKey().isEmpty()) {
         setKey(key);
