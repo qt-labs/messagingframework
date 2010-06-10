@@ -64,7 +64,7 @@
 #include <qmaildatacomparator.h>
 #include <qtmailnamespace.h>
 
-static QStringList headers(QStringList() << "Subject" << "Sender" << "Date" << "Size");
+static QStringList headers(QStringList() << QObject::tr("Subject") << QObject::tr("Addressee") << QObject::tr("Date") << QObject::tr("Size"));
 static const QColor newMessageColor(Qt::blue);
 
 class QuickSearchWidget : public QWidget
