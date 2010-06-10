@@ -244,7 +244,8 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
     */
 
     bool sent(message.status() & QMailMessage::Sent);
-    bool incoming(message.status() & QMailMessage::Incoming);
+    //bool incoming(message.status() & QMailMessage::Incoming);
+    bool incoming = !sent;
 
     switch(role)
     {
