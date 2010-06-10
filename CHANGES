@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+2010W24
+  * Fixes: NB#161943 - qtmail incorrectly sends message/rfc822 attachments
+
 2010W23
   * Fixes: NB#166806 - Application crashes upon trying to open message from Main view during send/receive
   * Fixes: QTSOL-154 - Retrieving an attachment causes full mail check (qtmail specific)
