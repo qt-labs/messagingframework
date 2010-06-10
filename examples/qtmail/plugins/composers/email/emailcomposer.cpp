@@ -86,7 +86,7 @@ static QCompleter* sentFolderCompleter()
     const int completionAddressLimit(1000);
     QSet<QString> addressSet;
     QMailMessageKey::Properties props(QMailMessageKey::Recipients);
-    QMailMessageKey key(QMailMessageKey::status(QMailMessage::Outbox));
+    QMailMessageKey key(QMailMessageKey::status(QMailMessage::Sent));
     QMailMessageMetaDataList metaDataList(QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct));
     foreach (const QMailMessageMetaData &metaData, metaDataList) {
         foreach(QMailAddress address, metaData.to()) {
