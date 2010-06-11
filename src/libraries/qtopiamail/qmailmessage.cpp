@@ -625,6 +625,18 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
         }
     }
 
+    // Process trailing text after unmatched double quote character
+    if (quoted)
+    {
+        bool lastEncoded = tokenEncoded;
+
+        QByteArray output = encodeWord(heldWhitespace + quotedText, charset, &tokenEncoded);
+
+        if (lastEncoded && tokenEncoded)
+            result.append(' ');
+        result.append(output);
+    }
+    
     return result;
 }
 
