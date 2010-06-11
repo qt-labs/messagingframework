@@ -135,6 +135,8 @@ private slots:
     void multiMultipart();
 
     void copyAndAssign();
+
+    void unterminatedDoubleQuote();
 };
 
 QTEST_MAIN(tst_QMailMessage)
@@ -1381,4 +1383,12 @@ void tst_QMailMessage::copyAndAssign()
     QCOMPARE( md3.serverUid(), m1.serverUid() );
 }
 
-
+void tst_QMailMessage::unterminatedDoubleQuote()
+{
+    QMailMessage m1;
+    QString testString("\"String with unterminated double quote");
+    m1.setSubject( testString );
+    qDebug() << m1.toRfc2822();
+    QMailMessage m2(QMailMessage::fromRfc2822(m1.toRfc2822()));
+    QCOMPARE( m2.subject(), testString );
+}
