@@ -1089,9 +1089,13 @@ void QCopClient::connectToServer()
 
         if ((++retryCount % 30) == 0) {
             if (reconnecting) {
+#ifndef SUPPRESS_QCOP_SERVER_WARNING
                 qWarning() << "Cannot connect to QCop server; retrying...";
+#endif
             } else {
+#ifndef SUPPRESS_QCOP_SERVER_WARNING
                 qWarning() << "Could not connect to QCop server; probably not running.";
+#endif
                 return;
             }
         }
