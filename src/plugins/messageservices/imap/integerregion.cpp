@@ -291,7 +291,8 @@ IntegerRegion IntegerRegion::subtract(IntegerRegion other) const
         } else if (((*b).first > (*a).first) && ((*b).second < (*a).second)) {
             // a strictly contains b
             IntegerRange lowerSlice((*a).first, (*b).first - 1);
-            result.mRangeList.insert(a, lowerSlice);
+            a = result.mRangeList.insert(a, lowerSlice);
+            ++a;
             (*a).first = (*b).second + 1;
             ++b;
             continue;
@@ -506,6 +507,27 @@ int IntegerRegion::tests()
     qMailLog(Messaging) << "IntegerRegion::fromString test8: " 
                         << ((ar.toString() == a3) ? "passed" : "failed");
 
+
+    values.clear();
+    list.clear();
+    values << 15555 << 15556 << 15557 << 15558 << 15559 << 15561 << 15562 << 15563 << 15565 
+           << 15566 << 15567 << 15569 << 15573 << 15578 << 15579 << 15580 << 15581 << 15582 
+           << 15584 << 15586 << 15587 << 15590 << 15593 << 15595 << 15596 << 15599 << 15600 
+           << 15602 << 15605 << 15606 << 15607 << 15609;
+
+    foreach (const int &v, values) {
+        list << QString::number(v);
+    }
+    
+    ir = IntegerRegion(list);
+    IntegerRegion jr(ir.minimum(), ir.maximum());
+    ar = jr.subtract(ir);
+    QString a4("15560,15564,15568,15570:15572,15574:15577,15583,15585,15588:15589,15591:15592,15594,15597:15598,15601,15603:15604,15608");
+    
+    qMailLog(Messaging) << "IntegerRegion::subtractTest test9: " 
+                        << ((ar.toString() == a4) ? "passed" : "failed");
+    
+    
     return 1;
 }
 
