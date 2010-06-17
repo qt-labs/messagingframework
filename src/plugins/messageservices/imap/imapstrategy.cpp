@@ -2905,6 +2905,53 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
     int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
 
+    // 
+    // Determine which messages are on the client but not the server
+    // (i.e. determine which messages have been deleted by other clients,
+    //       or have been marked as deleted on the client but have not yet 
+    //       been removed from the server using exportUpdates)
+    //
+    // The set of messages to fetch needs to be adjusted based on the number of such messages
+    IntegerRegion rawServerRegion;
+    foreach(const QString &uid, properties.uidList) {
+        bool ok;
+        uint number = stripFolderPrefix(uid).toUInt(&ok);
+        if (ok)
+            rawServerRegion.add(number);
+    }
+    int serverMinimum = rawServerRegion.minimum();
+    int serverMaximum = rawServerRegion.maximum();
+    
+    IntegerRegion serverRange(serverMinimum, serverMaximum);
+    IntegerRegion serverComplement(serverRange.subtract(rawServerRegion));
+    QStringList removedOnServerUids;
+    foreach(QString uid, serverComplement.toStringList()) {
+        removedOnServerUids.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
+    }
+
+    QMailMessageKey onClientButNotServerKey(QMailMessageKey::serverUid(removedOnServerUids));
+    onClientButNotServerKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+    onClientButNotServerKey &= QMailMessageKey::parentFolderId(folder.id());
+    QStringList removed;
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(onClientButNotServerKey, QMailMessageKey::ServerUid)) {
+        const QString uid(r.serverUid());
+        int serverUid(stripFolderPrefix(uid).toUInt());
+        if ((serverUid >= serverMinimum) && (serverUid <= serverMaximum)) {
+            removed += uid;
+        }
+    }
+    
+    // The list of existing messages on the server can be used to update the status of
+    // messages on the client i.e. mark messages on the client as removed for messages that have
+    // been removed on the server
+    QMailMessageKey removedKey(QMailMessageKey::serverUid(removed));
+    /*
+    Better safe than sorry needs ample testing before enabling
+    if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
+        qWarning() << "Unable to update removed message metadata for folder:" << folder.displayName();
+    }
+    */
+    
     // Use an optimization/simplification because client region should be contiguous
     IntegerRegion clientRegion;
     if ((clientMin != 0) && (clientMax != 0))
@@ -2916,7 +2963,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         if (ok)
             serverRegion.add(number);
     }
-    
+    serverRegion = IntegerRegion(serverRegion.toStringList().mid(removed.count()));
     if (!_fillingGap) {
         if (!clientRegion.isEmpty() && !serverRegion.isEmpty()) {
             uint newestClient(clientRegion.maximum());
@@ -2933,7 +2980,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     
     // TODO: Why is all this code not in processUidSearchResults?
     _updatedFolders.append(properties.id);
-
+    
     IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
@@ -2993,13 +3040,9 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     // 
     //   Messages may arrive in the currently selected folder, but this is not easy to
     //   determine, even when monitoring for unsolicited EXISTS responses
-    //   (there's no unsolicited UIDNEXT reponses, and race conditions with the EXIST response).
-    //
-    //   Also potentially messages may be deleted by an external client, this is even a problem 
-    //   in the above robust case, as it may cause too many messages to be retrieved.
+    //   (there's no unsolicited UIDNEXT response, and race conditions with the EXIST response).
     
     QMailMessageKey countKey(context->client()->messagesKey(properties.id));
-    countKey &= ~QMailMessageKey::status(QMailMessage::Removed);
     countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
     uint onClient(QMailStore::instance()->countMessages(countKey));
     if ((onClient >= _minimum) || (onClient >= properties.exists)) {

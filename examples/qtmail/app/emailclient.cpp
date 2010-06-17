@@ -1515,8 +1515,8 @@ void EmailClient::messageActivated()
     QMailMessageId currentId = messageListView()->current();
     if(!currentId.isValid())
         return;
-
     QMailMessage message(currentId);
+
     if (message.status() & QMailMessage::Draft) {
         modify(message);
     } else {
@@ -2164,7 +2164,6 @@ void EmailClient::retrieveMoreMessages()
 
         // Find how many messages we have requested for this folder
         QMailMessageKey countKey(QMailMessageKey::parentFolderId(folderId));
-        countKey &= ~QMailMessageKey::status(QMailMessage::Removed);
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
         int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
         // Request more messages
