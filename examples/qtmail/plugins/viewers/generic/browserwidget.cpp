@@ -44,6 +44,7 @@
 #include <qmailaddress.h>
 #include <qmailmessage.h>
 #include <qmailtimestamp.h>
+#include "qmaillog.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -193,7 +194,7 @@ QNetworkReply *ContentAccessManager::createRequest(Operation op, const QNetworkR
 {
     if (op == QNetworkAccessManager::GetOperation) {
         QUrl url(req.url());
-        if (url.scheme() == "cid") {
+        if ((url.scheme() == "cid") || (url.scheme() == "qmf-part")) {
             QString identifier(url.path().trimmed());
             // Remove any delimiters that are present
             if (identifier.startsWith('<') && identifier.endsWith('>')) {
@@ -202,6 +203,10 @@ QNetworkReply *ContentAccessManager::createRequest(Operation op, const QNetworkR
 
             // See if we have any data for this content identifier   
             QMap<QUrl, QPair<QByteArray, QString> >::iterator it = m_data.find(QUrl("cid:" + identifier));
+            if (it == m_data.end()) {
+                it = m_data.find(QUrl("qmf-part:" + identifier));
+            }
+            
             if (it != m_data.end()) {
                 return new ContentReply(this, &it.value().first, it.value().second);
             }
@@ -379,7 +384,8 @@ void BrowserWidget::setImageResource(const QSet<QUrl>& names, const QByteArray& 
     {
         // Write the scaled image data to a buffer
         QBuffer buffer(&scaledData);
-        image.save(&buffer);
+        buffer.open(QIODevice::WriteOnly);
+        image.save(&buffer, "PNG"); // default format doesn't render in webkit
     }
     m_accessManager->setResource(names, scaledData, contentType);
 #else
@@ -397,7 +403,13 @@ void BrowserWidget::setPartResource(const QMailMessagePart& part)
     QSet<QUrl> names;
 
 #ifdef USE_WEBKIT
-    QString name(Qt::escape(part.contentID()));
+    QString name(part.displayName());
+    if (!name.isEmpty()) {
+        // use 'qmf-part' url scheme to ensure inline images without a contentId are rendered
+        names.insert(QUrl("qmf-part:" + Qt::escape(name)));
+    }
+
+    name = Qt::escape(part.contentID());
     if (!name.isEmpty()) {
         // We can only resolve URLs using the cid: scheme
         if (name.startsWith("cid:", Qt::CaseInsensitive)) {
@@ -672,7 +684,12 @@ QString BrowserWidget::renderSimplePart(const QMailMessagePart& part)
         }
     } else if ( contentType.type().toLower() == "image") { // No tr
         setPartResource(part);
+#ifdef USE_WEBKIT
+        result = "<img src=\"qmf-part:" + partId + "\"></img>";
+#else
         result = "<img src=\"" + partId + "\"></img>";
+#endif
+        
     } else {
         result = renderAttachment(part);
     }
