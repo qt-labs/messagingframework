@@ -2124,6 +2124,7 @@ void EmailClient::respond(const QMailMessagePart::Location& partLocation, QMailM
     }
 
     repliedFromMailId = partLocation.containingMessageId();
+    repliedFlags = QMailMessage::Forwarded;
 
     writeMailWidget()->respond(partLocation, type);
     if (!writeMailWidget()->composer().isEmpty()) {
