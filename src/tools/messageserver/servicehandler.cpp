@@ -123,23 +123,15 @@ void deserialize(const QByteArray &data, T1& v1, T2& v2, T3& v3, T4& v4)
 
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
 {
-    QSet<QMailAccountId> accountIds; // Find the accounts that own these messages
-    QMailMessageIdList normalMessages; // messages that aren't temporary
+    QSet<QMailAccountId> accountIds; // accounts that own these messages
 
-    foreach(QMailMessageId id, ids) {
-        if((id.toULongLong() & Q_UINT64_C(9223372036854775808)) == 0)
-            normalMessages.append(id);
-        else
-            accountIds.insert(QMailMessage(id).parentAccountId()); 
-    }
-
-    if (!normalMessages.isEmpty()) {
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(normalMessages),
-                                                                                                QMailMessageKey::ParentAccountId, 
-                                                                                                QMailStore::ReturnDistinct)) {
-            if (metaData.parentAccountId().isValid())
-                accountIds.insert(metaData.parentAccountId());
-        }
+    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(
+                                                       QMailMessageKey::id(ids),
+                                                       QMailMessageKey::ParentAccountId,
+                                                       QMailStore::ReturnDistinct))
+    {
+        if (metaData.parentAccountId().isValid())
+            accountIds.insert(metaData.parentAccountId());
     }
 
     return accountIds;
