@@ -135,14 +135,15 @@ static bool updateMessagesMetaData(ImapStrategyContextBase *context,
                                    const QMailMessageKey &flaggedKey,
                                    const QMailMessageKey &unreadElsewhereKey,
                                    const QMailMessageKey &importantElsewhereKey,
-                                   const QMailMessageKey &unavailableKey)
+                                   const QMailMessageKey &unavailableKey,
+                                   const QMailMessageKey &movedKey)
 {
     bool result = true;
     QMailMessageKey reportedKey(seenKey | unseenKey);
     QMailMessageKey unflaggedKey(reportedKey & ~flaggedKey);
 
     // Mark as deleted any messages that the server does not report
-    QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
+    QMailMessageKey nonexistentKey(storedKey & ~reportedKey & ~movedKey);
     if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
         result = false;
         qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
@@ -1165,7 +1166,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     if (_listSize == 0)
         return;
 
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
 
     // Break retrieval of message meta data into chunks to reduce peak memory use
     QMailMessageIdList idsBatch;
@@ -1177,10 +1178,21 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             idsBatch.append(ids[i]);
             ++i;
         }
-    
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {    
+
+        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-            _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
+
+            //use previousparentfolderid if available since the message may have been moved locally
+            QMailFolderId previousParentFolderId = metaData.previousParentFolderId();
+            QMailFolderId parentFolderId = metaData.parentFolderId();
+            QMailFolderId remoteFolderId;
+
+            if(previousParentFolderId.isValid())
+                remoteFolderId = previousParentFolderId;
+            else
+                remoteFolderId = parentFolderId;
+
+            _selectionMap[remoteFolderId].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
 
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
@@ -2324,13 +2336,14 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
         QMailMessageKey seenKey(QMailMessageKey::serverUid(_seenUids));
         QMailMessageKey flaggedKey(QMailMessageKey::serverUid(_flaggedUids));
         QMailMessageKey importantElsewhereKey(QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes));
+        QMailMessageKey movedKey(QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(context->config().id()),QMailDataComparator::Includes));
         
         // Only delete messages the server still has
         _removedUids = inFirstAndSecond(deletedUids, reportedOnServerUids);
         _expungeRequired = !_removedUids.isEmpty();
 
         if (_options & ImportChanges) {
-            if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey)) {
+            if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey, movedKey)) {
                 _error = true;
             }
         }
@@ -2813,8 +2826,9 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
     QMailMessageKey unavailableKey(folderKey & accountKey & removedStatusKey);
     QMailMessageKey flaggedKey(QMailMessageKey::serverUid(_flaggedUids));
     QMailMessageKey importantElsewhereKey(QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes));
+    QMailMessageKey movedKey(QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(context->config().id()),QMailDataComparator::Includes));
 
-    if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey))
+    if (!updateMessagesMetaData(context, storedKey, unseenKey, seenKey, flaggedKey, unreadElsewhereKey, importantElsewhereKey, unavailableKey, movedKey))
         _error = true;
 
     processNextFolder(context);
@@ -3254,7 +3268,7 @@ void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
 }
 
 QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *context, QMailMessage &message)
-{ 
+{
     // See if we can update the status of the copied message from the source message
     QString sourceUid = _sourceUid[message.serverUid()];
     if (sourceUid.isEmpty()) {
@@ -3263,7 +3277,7 @@ QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *
             _sourceIndex++;
         }
     }
-        
+
     if (!sourceUid.isEmpty()) {
         QMailMessage source;
         if (sourceUid.startsWith("id:")) {
@@ -3286,10 +3300,14 @@ QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *
 }
 
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)
-{ 
+{
     if ((source.status() & QMailMessage::New) == 0) {
         message.setStatus(QMailMessage::New, false);
     }
+
+    if((source.status() & QMailMessage::Trash) == 0)
+        message.setStatus(QMailMessage::Trash,false);
+
     if (source.status() & QMailMessage::Read) {
         message.setStatus(QMailMessage::Read, true);
     }
@@ -3497,6 +3515,7 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
         return;
     }
 
+    message.setPreviousParentFolderId(QMailFolderId());
     if (source.serverUid().isEmpty()) {
         // This message has been moved to the external server - delete the local copy
         if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {

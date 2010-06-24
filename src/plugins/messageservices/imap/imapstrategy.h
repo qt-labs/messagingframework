@@ -72,7 +72,7 @@ struct SectionProperties {
     int _minimum;
 };
 
-struct MessageSelector 
+struct MessageSelector
 {
     MessageSelector(uint uid, const QMailMessageId &messageId, const SectionProperties &properties)
         : _uid(uid),
@@ -112,7 +112,7 @@ public:
     ImapProtocol &protocol();
     const ImapMailboxProperties &mailbox();
     const QMailAccountConfiguration &config();
-    
+
     void folderModified(const QMailFolderId &folderId) { _modifiedFolders.insert(folderId); }
 
     void updateStatus(const QString &);
@@ -149,8 +149,8 @@ public:
     virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
     virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName);
 
-    void clearError() { _error = false; } 
-    bool error() { return _error; } 
+    void clearError() { _error = false; }
+    bool error() { return _error; }
 
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);

@@ -1141,7 +1141,10 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 
     if (inserted) {
         // Inform the responsible service that it is a draft
-        storageAction("Flagging message as draft")->flagMessages(QMailMessageIdList() << mail.id(), QMailMessage::Draft, 0);
+
+        moveToStandardFolder(QMailMessageIdList() << mail.id(),QMailFolder::DraftsFolder);
+        flagMessage(mail.id(),QMailMessage::Draft,0,"Flagging message as draft");
+
         lastDraftId = mail.id();
 
     } else {
@@ -1154,7 +1157,7 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 void EmailClient::mailResponded()
 {
     if (repliedFromMailId.isValid()) {
-        storageAction("Marking message  as replied/forwarded")->flagMessages(QMailMessageIdList() << repliedFromMailId, repliedFlags, 0);
+        flagMessage(repliedFromMailId,repliedFlags,0,"Marking message as replied/forwared");
         repliedFromMailId = QMailMessageId();
         repliedFlags = 0;
     }
@@ -1203,14 +1206,144 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
             // Move this account's outbox messages to Drafts
             QMailMessageKey accountFilter(QMailMessageKey::parentAccountId(transmitId));
             QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(accountFilter & outboxFilter));
-            storageAction("Moving messages to drafts")->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
+
+            moveToStandardFolder(unsentIds,QMailFolder::DraftsFolder);
+            flagMessages(unsentIds,QMailMessage::Draft,QMailMessage::Outbox,"Moving messages to drafts");
+
+        }
+    }
+}
+
+void EmailClient::rollBackUpdates()
+{
+    QMailFolderKey accountFoldersKey(QMailFolderKey::parentAccountId(mailAccountId));
+
+    QMailMessageIdList copiedIds = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(mailAccountId) & QMailMessageKey::status(QMailMessage::LocalOnly));
+    QMailMessageIdList movedIds = QMailStore::instance()->queryMessages(QMailMessageKey::previousParentFolderId(accountFoldersKey));
+
+    if(copiedIds.isEmpty() && movedIds.isEmpty())
+        return;
+    else if(QMessageBox::Yes == QMessageBox::question(this,
+                                                      "Pending updates",
+                                                      "There are local updates pending synchronization, " \
+                                                      "do you want to revert these changes?",
+                                                      QMessageBox::Yes | QMessageBox::No))
+    {
+        //remove copies
+        if(!copiedIds.isEmpty())
+            QMailStore::instance()->removeMessages(QMailMessageKey::id(copiedIds));
+
+        //undo moves
+
+        foreach(const QMailMessageId& id, movedIds)
+        {
+            QMailMessageMetaData mail(id);
+            mail.setParentFolderId(mail.previousParentFolderId());
+            mail.setPreviousParentFolderId(QMailFolderId());
+            syncStatusWithFolder(mail);           
+            QMailStore::instance()->updateMessage(&mail);
+        }
+    }
+}
+
+static QMap<QMailFolder::StandardFolder,quint64> flagMap()
+{
+    static QMap<QMailFolder::StandardFolder,quint64> sFlagMap;
+    if(sFlagMap.isEmpty())
+    {
+        sFlagMap.insert(QMailFolder::DraftsFolder,QMailMessage::Draft);
+        sFlagMap.insert(QMailFolder::TrashFolder,QMailMessage::Trash);
+        sFlagMap.insert(QMailFolder::SentFolder,QMailMessage::Sent);
+        sFlagMap.insert(QMailFolder::JunkFolder,QMailMessage::Junk);
+    }
+    return sFlagMap;
+}
+
+void EmailClient::syncStatusWithFolder(QMailMessageMetaData& message)
+{
+    if(!message.parentAccountId().isValid())
+        return;
+
+    QMailAccount messageAccount(message.parentAccountId());
+
+    foreach(QMailFolder::StandardFolder sf, flagMap().keys())
+    {
+        if(message.parentFolderId().isValid() && messageAccount.standardFolder(sf) == message.parentFolderId())
+        {
+            syncStatusWithFolder(message,sf);
+            return;
+        }
+    }
+}
+
+void EmailClient::syncStatusWithFolder(QMailMessageMetaData& message, QMailFolder::StandardFolder standardFolder)
+{
+    quint64 clearFolderStatus = message.status() &~ (QMailMessage::Draft | QMailMessage::Sent | QMailMessage::Trash | QMailMessage::Junk);
+    message.setStatus(clearFolderStatus);
+    message.setStatus(flagMap().value(standardFolder),true);
+}
+
+//move messages to their standard account folders setting flags as necessary
+
+void EmailClient::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
+{
+    QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
+
+    foreach(const QMailAccountId& id, allAccounts)
+    {
+        QMailAccount account(id);
+        QMailFolderId standardFolderId = account.standardFolder(standardFolder);
+        if(standardFolderId.isValid())
+        {
+            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(id));
+            foreach(const QMailMessageId& messageId, messageIds)
+            {
+                QMailMessageMetaData msg(messageId);
+                if(msg.parentFolderId() == standardFolderId)
+                    continue;
+                if(!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty())
+                    msg.setPreviousParentFolderId(msg.parentFolderId());
+                msg.setParentFolderId(standardFolderId);
+                syncStatusWithFolder(msg,standardFolder);
+                QMailStore::instance()->updateMessage(&msg);
+            }
+        }
+    }
+}
+
+void EmailClient::copyToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
+{
+    QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
+
+    foreach(const QMailAccountId& id, allAccounts)
+    {
+        QMailAccount account(id);
+        QMailFolderId standardFolderId = account.standardFolder(standardFolder);
+        if(standardFolderId.isValid())
+        {
+            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(id));
+            foreach(const QMailMessageId& messageId, messageIds)
+            {
+                QMailMessage mail(messageId);
+                QMailMessage copy(QMailMessage::fromRfc2822(mail.toRfc2822()));
+                copy.setMessageType(QMailMessage::Email);
+                copy.setPreviousParentFolderId(QMailFolderId());
+                copy.setParentFolderId(standardFolderId);
+                copy.setParentAccountId(mail.parentAccountId());
+                copy.setSize(mail.size());
+
+                syncStatusWithFolder(copy,standardFolder);
+                copy.setStatus(QMailMessage::LocalOnly,true);
+                copy.setStatus(QMailMessage::Removed,false);
+                QMailStore::instance()->addMessage(&copy);
+            }
         }
     }
 }
 
 //flag messages functions are used to perform local operations. i.e marking messages and "move to trash"
 
-void EmailClient::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+void EmailClient::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, const QString& description)
 {
     if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), setMask, true)) {
         qMailLog(Messaging) << "Unable to flag messages:" << ids;
@@ -1219,19 +1352,11 @@ void EmailClient::flagMessages(const QMailMessageIdList &ids, quint64 setMask, q
     if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), unsetMask, false)) {
         qMailLog(Messaging) << "Unable to flag messages:" << ids;
     }
-    //storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
 }
 
-void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask)
+void EmailClient::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask, const QString& description)
 {
-    if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), setMask, true)) {
-        qMailLog(Messaging) << "Unable to flag message:" << id;
-    }
-
-    if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(id), unsetMask, false)) {
-        qMailLog(Messaging) << "Unable to flag message:" << id;
-    }
-    //storageAction("Updating message flags")->flagMessages(QMailMessageIdList() << id, setMask, unsetMask);
+    flagMessages(QMailMessageIdList() << id, setMask, unsetMask,description);
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
@@ -1479,6 +1604,9 @@ void EmailClient::transferFailure(const QMailAccountId& accountId, const QString
             emit updateStatus(tr("Transfer cancelled"));
         }
 
+        if(syncState == ExportUpdates)
+            rollBackUpdates();
+
         if (isSending()) {
             sendFailure(accountId);
         } else {
@@ -1610,10 +1738,7 @@ void EmailClient::updateAccounts()
 void EmailClient::deleteSelectedMessages()
 {
     QMailMessageIdList deleteList;
-    if(!markingMode)
-        deleteList.append(readMailWidget()->displayedMessage());
-    else
-        deleteList = messageListView()->selected();
+    deleteList = messageListView()->selected();
 
     int deleteCount = deleteList.count();
     if (deleteCount == 0)
@@ -1653,11 +1778,23 @@ void EmailClient::deleteSelectedMessages()
 
     clearNewMessageStatus(QMailMessageKey::id(messageListView()->selected()));
 
-    if (deleting) {
-        storageAction("Deleting messages..")->deleteMessages(deleteList);
-    } else {
-        //storageAction("Marking messages as deleted")->flagMessages(deleteList, QMailMessage::Trash, 0);
-        flagMessages(deleteList,QMailMessage::Trash,0);
+    if (deleting)
+    {
+        //delete LocalOnly messages clientside first
+        QMailMessageKey localOnlyKey(QMailMessageKey::id(deleteList) & QMailMessageKey::status(QMailMessage::LocalOnly));
+        QMailMessageIdList localOnlyIds(QMailStore::instance()->queryMessages(localOnlyKey));
+        if(!localOnlyIds.isEmpty())
+        {
+            QMailStore::instance()->removeMessages(QMailMessageKey::id(localOnlyIds));
+            deleteList = (deleteList.toSet().subtract(localOnlyIds.toSet())).toList();
+        }
+        if(!deleteList.isEmpty())
+            storageAction("Deleting messages..")->deleteMessages(deleteList);
+    }
+    else
+    {
+        moveToStandardFolder(deleteList,QMailFolder::TrashFolder);
+        flagMessages(deleteList,QMailMessage::Trash,0,"Marking messages as deleted");
     }
 
     if (markingMode) {
@@ -1685,7 +1822,28 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(copyList));
-    storageAction("Copying messages")->copyMessages(copyList, destination);
+
+    //copy locally for standard folders
+
+    QMailFolder destinationFolder(destination);
+    bool localCopy = false;
+    if(destinationFolder.parentAccountId().isValid())
+    {
+        QMailAccount account(destinationFolder.parentAccountId());
+
+        foreach(QMailFolder::StandardFolder sf, flagMap().keys())
+        {
+            QMailFolderId sfid = account.standardFolder(sf);
+            if(sfid.isValid() && sfid == destination)
+            {
+                copyToStandardFolder(copyList,sf);
+                localCopy=true;
+                break;
+            }
+        }
+    }
+    if(!localCopy)
+        storageAction("Copying messages")->copyMessages(copyList, destination);
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
 }
@@ -1786,7 +1944,8 @@ void EmailClient::restoreSelectedMessages()
         return;
 
     AcknowledgmentBox::show(tr("Restoring"), tr("Restoring %n message(s)", "%1: number of messages", restoreIds.count()));
-    storageAction("Restoring messages")->flagMessages(restoreIds, 0, QMailMessage::Trash);
+    QMailStore::instance()->restoreToPreviousFolder(QMailMessageKey::id(restoreIds));
+    flagMessages(restoreIds,0,QMailMessage::Trash,"Restoring messages");
 }
 
 void EmailClient::selectAll()
@@ -2434,7 +2593,8 @@ void EmailClient::clearOutboxFolder()
 
     // Set any unsent messages back to draft, and remove Outbox status
     if (!unsentIds.isEmpty()) {
-        storageAction("Clearing outbox folder")->flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox);
+        moveToStandardFolder(unsentIds,QMailFolder::DraftsFolder);
+        flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox,"Clearing outbox folder");
     }
 }
 

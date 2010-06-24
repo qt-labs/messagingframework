@@ -508,7 +508,6 @@ void MessageListView::setKey(const QMailMessageKey& newKey)
     if (mPreviousCurrentCache[newKeyArray]) {
         mPreviousCurrent = *mPreviousCurrentCache[newKeyArray];
     }
-
     mModel->setKey(newKey & mQuickSearchWidget->searchKey());
     mExpandAllTimer.start(0);
     mScrollTimer.stop();
