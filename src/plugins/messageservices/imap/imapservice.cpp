@@ -344,24 +344,22 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         return false;
     }
 
-    //sync disconnected move and copy operations for standard folders
+    //sync disconnected move and copy operations for account
 
     QMailAccount account(accountId);
-    QMailFolderIdList standardFolderIdList = QMailFolderIdList() << account.standardFolder(QMailFolder::TrashFolder)
-                                                                 << account.standardFolder(QMailFolder::DraftsFolder)
-                                                                 << account.standardFolder(QMailFolder::SentFolder)
-                                                                 << account.standardFolder(QMailFolder::JunkFolder);
+
+    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
 
     _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
 
     bool pendingDisconnectedOperations = false;
 
-    foreach(const QMailFolderId& standardFolderId, standardFolderIdList)
+    foreach(const QMailFolderId& folderId, folderList)
     {
-        if(!standardFolderId.isValid())
+        if(!folderId.isValid())
             continue;
 
-        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(standardFolderId)
+        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
                                                  & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
                                                     | QMailMessageKey::status(QMailMessage::LocalOnly));
 
@@ -371,7 +369,7 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
             continue;
 
         pendingDisconnectedOperations = true;
-        _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(movedMessages,standardFolderId);
+        _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(movedMessages,folderId);
     }
 
     if(pendingDisconnectedOperations)
