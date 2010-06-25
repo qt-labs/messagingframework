@@ -64,7 +64,6 @@ QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardF
 
     quint64 setMask = 0;
     quint64 unsetMask = 0;
-    quint64 excludeFolderMask = 0;
 
     switch (type) {
     case QMailFolder::OutboxFolder:
@@ -74,24 +73,20 @@ QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardF
     case QMailFolder::DraftsFolder:
         setMask = QMailMessage::Draft;
         unsetMask = QMailMessage::Trash | QMailMessage::Outbox;
-        excludeFolderMask = QMailFolder::Drafts;
         break;
 
     case QMailFolder::TrashFolder:
         setMask = QMailMessage::Trash;
-        excludeFolderMask = QMailFolder::Trash;
         break;
 
     case QMailFolder::SentFolder:
         setMask = QMailMessage::Sent;
         unsetMask = QMailMessage::Trash;
-        excludeFolderMask = QMailFolder::Sent;
         break;
 
     case QMailFolder::JunkFolder:
         setMask = QMailMessage::Junk;
         unsetMask = QMailMessage::Trash;
-        excludeFolderMask = QMailFolder::Junk;
         break;
 
     default:
@@ -103,12 +98,6 @@ QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardF
     }
     if (unsetMask) {
         key &= QMailMessageKey(QMailMessageKey::status(unsetMask, QMailDataComparator::Excludes));
-    }
-    if (excludeFolderMask) {
-        // Exclude messages in any account folder matching this mask
-        QMailFolderKey folderKey(QMailFolderKey::status(excludeFolderMask, QMailDataComparator::Includes));
-        QMailFolderKey accountKey(QMailFolderKey::parentAccountId(QMailAccountId(), QMailDataComparator::NotEqual));
-        key &= QMailMessageKey::parentFolderId(folderKey & accountKey, QMailDataComparator::Excludes);
     }
 
     if (key.isEmpty()) {
