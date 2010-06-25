@@ -1294,22 +1294,34 @@ void EmailClient::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolde
         QMailAccount account(id);
         QMailFolderId standardFolderId = account.standardFolder(standardFolder);
         if(standardFolderId.isValid())
-        {
-            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(id));
-            foreach(const QMailMessageId& messageId, messageIds)
-            {
-                QMailMessageMetaData msg(messageId);
-                if(msg.parentFolderId() == standardFolderId)
-                    continue;
-                if(!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty())
-                    msg.setPreviousParentFolderId(msg.parentFolderId());
-                msg.setParentFolderId(standardFolderId);
-                syncStatusWithFolder(msg,standardFolder);
-                QMailStore::instance()->updateMessage(&msg);
-            }
-        }
+            moveToFolder(ids,standardFolderId);
     }
 }
+
+void EmailClient::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    if(!folderId.isValid())
+        return;
+
+    QMailFolder folder(folderId);
+
+    if(!folder.parentAccountId().isValid())
+        return;
+
+    QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(folder.parentAccountId()));
+    foreach(const QMailMessageId& messageId, messageIds)
+    {
+        QMailMessageMetaData msg(messageId);
+        if(msg.parentFolderId() == folderId)
+            continue;
+        if(!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty())
+            msg.setPreviousParentFolderId(msg.parentFolderId());
+        msg.setParentFolderId(folderId);
+        syncStatusWithFolder(msg);
+        QMailStore::instance()->updateMessage(&msg);
+    }
+}
+
 
 void EmailClient::copyToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
 {
@@ -1320,24 +1332,32 @@ void EmailClient::copyToStandardFolder(const QMailMessageIdList& ids, QMailFolde
         QMailAccount account(id);
         QMailFolderId standardFolderId = account.standardFolder(standardFolder);
         if(standardFolderId.isValid())
-        {
-            QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(id));
-            foreach(const QMailMessageId& messageId, messageIds)
-            {
-                QMailMessage mail(messageId);
-                QMailMessage copy(QMailMessage::fromRfc2822(mail.toRfc2822()));
-                copy.setMessageType(QMailMessage::Email);
-                copy.setPreviousParentFolderId(QMailFolderId());
-                copy.setParentFolderId(standardFolderId);
-                copy.setParentAccountId(mail.parentAccountId());
-                copy.setSize(mail.size());
+            copyToFolder(ids,standardFolderId);
+   }
+}
 
-                syncStatusWithFolder(copy,standardFolder);
-                copy.setStatus(QMailMessage::LocalOnly,true);
-                copy.setStatus(QMailMessage::Removed,false);
-                QMailStore::instance()->addMessage(&copy);
-            }
-        }
+void EmailClient::copyToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    if(!folderId.isValid())
+        return;
+
+    QMailFolder folder(folderId);
+
+    QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(folder.parentAccountId()));
+    foreach(const QMailMessageId& messageId, messageIds)
+    {
+        QMailMessage mail(messageId);
+        QMailMessage copy(QMailMessage::fromRfc2822(mail.toRfc2822()));
+        copy.setMessageType(QMailMessage::Email);
+        copy.setPreviousParentFolderId(QMailFolderId());
+        copy.setParentFolderId(folderId);
+        copy.setParentAccountId(mail.parentAccountId());
+        copy.setSize(mail.size());
+        copy.setStatus(mail.status());
+        copy.setStatus(QMailMessage::LocalOnly,true);
+        copy.setStatus(QMailMessage::Removed,false);
+        syncStatusWithFolder(copy);
+        QMailStore::instance()->addMessage(&copy);
     }
 }
 
@@ -1810,7 +1830,8 @@ void EmailClient::moveSelectedMessagesTo(const QMailFolderId &destination)
         return;
 
     clearNewMessageStatus(QMailMessageKey::id(moveList));
-    storageAction("Moving messages")->moveMessages(moveList, destination);
+
+    moveToFolder(moveList,destination);
 
     AcknowledgmentBox::show(tr("Moving"), tr("Moving %n message(s)", "%1: number of messages", moveList.count()));
 }
@@ -1823,27 +1844,7 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
 
     clearNewMessageStatus(QMailMessageKey::id(copyList));
 
-    //copy locally for standard folders
-
-    QMailFolder destinationFolder(destination);
-    bool localCopy = false;
-    if(destinationFolder.parentAccountId().isValid())
-    {
-        QMailAccount account(destinationFolder.parentAccountId());
-
-        foreach(QMailFolder::StandardFolder sf, flagMap().keys())
-        {
-            QMailFolderId sfid = account.standardFolder(sf);
-            if(sfid.isValid() && sfid == destination)
-            {
-                copyToStandardFolder(copyList,sf);
-                localCopy=true;
-                break;
-            }
-        }
-    }
-    if(!localCopy)
-        storageAction("Copying messages")->copyMessages(copyList, destination);
+    copyToFolder(copyList,destination);
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
 }
