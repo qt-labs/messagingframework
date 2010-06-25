@@ -291,7 +291,7 @@ public:
 
     QVariant content() const { return static_cast<int>(_data.content()); }
 
-    QVariant previousParentFolderId() const { return _data.previousParentFolderId().toULongLong(); }
+    QVariant previousParentFolderId() const { if(!_data.previousParentFolderId().isValid()) return QVariant(QVariant::Int); else return _data.previousParentFolderId().toULongLong(); }
 
     QVariant contentScheme() const { return _data.contentScheme(); }
 
@@ -4998,7 +4998,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 if (parentFolderId != metaData->parentFolderId()) {
                     // The previous location folder has also changed
                     folderIds.append(parentFolderId);
-                    metaData->setPreviousParentFolderId(parentFolderId);
                 }
 
                 // Ancestor folders are also considered to be affected
@@ -5191,9 +5190,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
         }
 
-        // Don't update the previous parent folder if it isn't set
-        if (!metaData->previousParentFolderId().isValid())
-            updateProperties &= ~QMailMessageKey::PreviousParentFolderId;
 
         if (updateProperties != QMailMessageKey::Properties()) {
 

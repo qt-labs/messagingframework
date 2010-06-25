@@ -344,6 +344,39 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         return false;
     }
 
+    //sync disconnected move and copy operations for standard folders
+
+    QMailAccount account(accountId);
+    QMailFolderIdList standardFolderIdList = QMailFolderIdList() << account.standardFolder(QMailFolder::TrashFolder)
+                                                                 << account.standardFolder(QMailFolder::DraftsFolder)
+                                                                 << account.standardFolder(QMailFolder::SentFolder)
+                                                                 << account.standardFolder(QMailFolder::JunkFolder);
+
+    _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+
+    bool pendingDisconnectedOperations = false;
+
+    foreach(const QMailFolderId& standardFolderId, standardFolderIdList)
+    {
+        if(!standardFolderId.isValid())
+            continue;
+
+        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(standardFolderId)
+                                                 & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
+                                                    | QMailMessageKey::status(QMailMessage::LocalOnly));
+
+        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
+
+        if(movedMessages.isEmpty())
+            continue;
+
+        pendingDisconnectedOperations = true;
+        _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(movedMessages,standardFolderId);
+    }
+
+    if(pendingDisconnectedOperations)
+        appendStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesMoved(QMailMessageIdList)));
+
     _service->_client.strategyContext()->exportUpdatesStrategy.clearSelection();
     appendStrategy(&_service->_client.strategyContext()->exportUpdatesStrategy);
     if(!_unavailable)
@@ -871,8 +904,7 @@ void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMai
             message.setStatus(_unsetMask, false);
         }
     }
-
-    message.setPreviousParentFolderId(original.parentFolderId());
+    Q_UNUSED(original);
 }
 
 void ImapService::Source::messageActionCompleted(const QString &uid)

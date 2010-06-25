@@ -182,8 +182,14 @@ protected slots:
     void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
-    void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
-    void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask);
+   
+    void rollBackUpdates();
+    void syncStatusWithFolder(QMailMessageMetaData& message);
+    void syncStatusWithFolder(QMailMessageMetaData& message, QMailFolder::StandardFolder standardFolder);
+    void moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder);
+    void copyToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder);
+    void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask, const QString& description = QString("Updating message flags"));
+    void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask, const QString& description = QString("Updating message flags"));
 
     void messageActivated();
     void showSearchResult(const QMailMessageId& id);
