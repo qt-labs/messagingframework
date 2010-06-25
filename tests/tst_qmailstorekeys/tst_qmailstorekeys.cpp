@@ -410,6 +410,7 @@ void tst_QMailStoreKeys::initTestCase()
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
 
+        message.setPreviousParentFolderId(message.parentFolderId());
         message.setParentFolderId(archivedId1);
         QVERIFY(QMailStore::instance()->updateMessage(&message));
 
@@ -467,6 +468,7 @@ void tst_QMailStoreKeys::initTestCase()
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
 
+        message.setPreviousParentFolderId(message.parentFolderId());
         message.setParentFolderId(savedId2);
         QVERIFY(QMailStore::instance()->updateMessage(&message));
 
