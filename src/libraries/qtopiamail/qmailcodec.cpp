@@ -681,6 +681,7 @@ static inline void encodeCharacter(QDataStream& out, unsigned char value)
 static inline void lineBreak(QDataStream& out, int* _encodeLineCharsRemaining, int maximumLineLength)
 {
     out << static_cast<unsigned char>(Equals);
+    out << static_cast<unsigned char>(CarriageReturn);
     out << static_cast<unsigned char>(LineFeed);
 
     *_encodeLineCharsRemaining = maximumLineLength;
