@@ -266,6 +266,11 @@ QString QMail::messageSettingsPath()
     Returns the database where the Messaging framework will store its message meta-data. 
     If the database does not exist, it is created.
 */
+#ifdef Q_OS_UNIX
+// for mkdir
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 QSqlDatabase QMail::createDatabase()
 {
     static bool init = false;
@@ -276,6 +281,13 @@ QSqlDatabase QMail::createDatabase()
         db = QSqlDatabase::addDatabase("QSQLITE");
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
+#ifdef Q_OS_UNIX
+            QString path = dataPath();
+            if (path.endsWith("/"))
+                path = path.left(path.length() - 1);
+            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1) 
+                qCritical() << "Cannot create database directory";
+#endif
             if (!dbDir.mkpath(dataPath() + "database"))
                 qCritical() << "Cannot create database path";
         }
