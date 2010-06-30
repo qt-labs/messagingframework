@@ -80,6 +80,7 @@ public slots:
 
 signals:
     void quickSearchRequested(const QMailMessageKey& key);
+    void quickSearchReset();
     void fullSearchRequested();
 
 private slots:
@@ -146,6 +147,8 @@ void QuickSearchWidget::searchTermsChanged()
 {
     m_key = buildSearchKey();
     emit quickSearchRequested(m_key);
+    if (m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
+        emit quickSearchReset();
 }
 
 QMailMessageKey QuickSearchWidget::buildSearchKey() const
@@ -478,7 +481,8 @@ MessageListView::MessageListView(QWidget* parent)
     mSelectedRowsRemoved(false),
     mQuickSearchWidget(0),
     mShowMoreButton(false),
-    mThreaded(true)
+    mThreaded(true),
+    mQuickSearchIsEmpty(true)
 {
     init();
     showQuickSearch(true);
@@ -531,8 +535,20 @@ QMailFolderId MessageListView::folderId() const
 
 void MessageListView::setFolderId(const QMailFolderId& folderId)
 {
-    mFolderId = folderId;
-    setMoreButtonVisible(mFolderId.isValid());
+    // We need to see if the folder status has changed
+    QMailFolder folder;
+    if (folderId.isValid()) {
+        folder = QMailFolder(folderId);
+
+        // Are there more messages to be retrieved for this folder?
+        if ((folder.status() & QMailFolder::PartialContent) == 0) {
+            // No more messages to retrieve
+            folder = QMailFolder();
+        }
+    }
+
+    mFolderId = folder.id();
+    updateActions();
 }
 
 void MessageListView::init()
@@ -543,6 +559,7 @@ void MessageListView::init()
 
     mQuickSearchWidget = new QuickSearchWidget(this);
     connect(mQuickSearchWidget,SIGNAL(quickSearchRequested(QMailMessageKey)),this,SLOT(quickSearch(QMailMessageKey)));
+    connect(mQuickSearchWidget,SIGNAL(quickSearchReset()),this,SLOT(quickSearchReset()));
     connect(mQuickSearchWidget,SIGNAL(fullSearchRequested()),this,SIGNAL(fullSearchRequested()));
 
     reset();
@@ -581,6 +598,11 @@ void MessageListView::init()
     vLayout->addWidget(mMessageList);
 
     setFocusProxy(mMessageList);
+}
+
+void MessageListView::updateActions()
+{
+    setMoreButtonVisible(mFolderId.isValid() && mQuickSearchIsEmpty);
 }
 
 QMailMessageId MessageListView::current() const
@@ -900,6 +922,7 @@ void MessageListView::scrollTimeout()
 
 void MessageListView::quickSearch(const QMailMessageKey& key)
 {
+    mQuickSearchIsEmpty = false;
     if (current().isValid())
         mPreviousCurrent = current();
 
@@ -914,6 +937,12 @@ void MessageListView::quickSearch(const QMailMessageKey& key)
         setMoreButtonVisible(false);
     }
     mExpandAllTimer.start(0);
+}
+
+void MessageListView::quickSearchReset()
+{
+    mQuickSearchIsEmpty = true;
+    updateActions();
 }
 
 QMailMessageIdList MessageListView::visibleMessagesIds(bool buffer) const

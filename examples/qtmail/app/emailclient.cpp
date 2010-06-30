@@ -2115,18 +2115,7 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         if (contentsChanged)
             messageListView()->setKey(item->messageKey());
 
-        // We need to see if the folder status has changed
-        QMailFolder folder;
-        if (folderId.isValid()) {
-            folder = QMailFolder(folderId);
-
-            // Are there more messages to be retrieved for this folder?
-            if ((folder.status() & QMailFolder::PartialContent) == 0) {
-                // No more messages to retrieve
-                folder = QMailFolder();
-            }
-        }
-        messageListView()->setFolderId(folder.id());
+        messageListView()->setFolderId(folderId);
         updateActions();
     }
 }

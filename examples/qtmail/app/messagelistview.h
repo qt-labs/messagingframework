@@ -144,6 +144,7 @@ protected slots:
     void reviewVisibleMessages();
     void scrollTimeout();
     void quickSearch(const QMailMessageKey& key);
+    void quickSearchReset();
     void expandAll();
     void scrollTo(const QMailMessageId& id);
 
@@ -153,6 +154,7 @@ protected:
 
 private:
     void init();
+    void updateActions();
     bool eventFilter(QObject*, QEvent*);
     void selectedChildren(const QModelIndex &index, QMailMessageIdList *selectedIds) const;
     void selectChildren(const QModelIndex &index, bool selected, bool *modified);
@@ -173,6 +175,7 @@ private:
     QTimer mExpandAllTimer;
     QCache<QByteArray, QMailMessageId> mPreviousCurrentCache;
     QMailMessageId mPreviousCurrent;
+    bool mQuickSearchIsEmpty;
 };
 
 #endif
