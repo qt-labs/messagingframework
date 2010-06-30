@@ -75,6 +75,7 @@ public:
     void newConnection();
     void closeConnection();
     void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
+    void setAdditional(uint _additional = 0);
     void setDeleteOperation();
     void setSelectedMails(const SelectionMap& data);
     void checkForNewMessages();
@@ -141,6 +142,8 @@ private:
     SelectionMap::ConstIterator selectionItr;
     uint mailSize;
     uint headerLimit;
+    uint additional;
+    bool partialContent;
 
     QMap<QString, int> serverUidNumber;
     QMap<int, QString> serverUid;

@@ -41,6 +41,7 @@
 
 #include "messagelistview.h"
 #include <qmaillog.h>
+#include <qmailaccount.h>
 #include <qmailfolder.h>
 #include <qmailfolderkey.h>
 #include <qmailmessagethreadedmodel.h>
@@ -528,6 +529,16 @@ void MessageListView::setSortKey(const QMailMessageSortKey& sortKey)
     mModel->setSortKey(sortKey);
 }
 
+QMailAccountId MessageListView::accountId() const
+{
+    return mAccountId;
+}
+
+void MessageListView::setAccountId(const QMailAccountId& accountId)
+{
+    mAccountId = accountId;
+}
+
 QMailFolderId MessageListView::folderId() const
 {
     return mFolderId;
@@ -535,20 +546,7 @@ QMailFolderId MessageListView::folderId() const
 
 void MessageListView::setFolderId(const QMailFolderId& folderId)
 {
-    // We need to see if the folder status has changed
-    QMailFolder folder;
-    if (folderId.isValid()) {
-        folder = QMailFolder(folderId);
-
-        // Are there more messages to be retrieved for this folder?
-        if ((folder.status() & QMailFolder::PartialContent) == 0) {
-            // No more messages to retrieve
-            folder = QMailFolder();
-        }
-    }
-
-    mFolderId = folder.id();
-    updateActions();
+    mFolderId = folderId;
 }
 
 void MessageListView::init()
@@ -602,7 +600,38 @@ void MessageListView::init()
 
 void MessageListView::updateActions()
 {
-    setMoreButtonVisible(mFolderId.isValid() && mQuickSearchIsEmpty);
+    // Don't show get more message button when quick search bar is being used
+    if (!mQuickSearchIsEmpty) {
+        setMoreButtonVisible(false);
+        return;
+    }
+    
+    // We need to see if the folder status has changed
+    bool partialContent(false);
+    if (mFolderId.isValid()) {
+        QMailFolder folder;
+        folder = QMailFolder(mFolderId);
+
+        // Are there more messages to be retrieved for this folder?
+        if (folder.status() & QMailFolder::PartialContent) {
+            // More messages to retrieve
+            partialContent = true;
+        }
+    } else if (mAccountId.isValid()) {
+        // We need to see if the account status has changed
+        QMailAccount account;
+        if (mAccountId.isValid()) {
+            account = QMailAccount(mAccountId);
+
+            // Are there more messages to be retrieved for this account?
+            if (account.status() & QMailAccount::PartialContent) {
+                // More messages to retrieve
+                partialContent = true;
+            }
+        }
+    }
+    
+    setMoreButtonVisible(partialContent);
 }
 
 QMailMessageId MessageListView::current() const

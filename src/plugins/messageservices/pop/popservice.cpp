@@ -44,6 +44,7 @@
 #include "popsettings.h"
 #include <QTimer>
 #include <QtPlugin>
+#include <QtGlobal>
 
 namespace { const QString serviceKey("pop3"); }
 
@@ -135,12 +136,17 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
         return false;
     }
 
+    QMailMessageKey countKey(QMailMessageKey::parentAccountId(accountId));
+    countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+    uint existing = QMailStore::instance()->countMessages(countKey);
+    existing = qMin(existing, minimum);
+    
     _service->_client.setOperation(QMailRetrievalAction::MetaData);
+    _service->_client.setAdditional(minimum - existing);
     _service->_client.newConnection();
     _unavailable = true;
     return true;
 
-    Q_UNUSED(minimum)
     Q_UNUSED(sort)
 }
 

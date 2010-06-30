@@ -55,6 +55,8 @@ PopClient::PopClient(QObject* parent)
       selected(false),
       deleting(false),
       headerLimit(0),
+      additional(0),
+      partialContent(false),
       dataStream(new LongStream),
       transport(0)
 {
@@ -151,6 +153,9 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
 {
     selected = false;
     deleting = false;
+    additional = 0;
+    QMailAccount account(config.id());
+    partialContent = account.status() & QMailAccount::PartialContent;
 
     if (spec == QMailRetrievalAction::MetaData) {
         PopConfiguration popCfg(config);
@@ -164,6 +169,11 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     } else {
         headerLimit = 0;
     }
+}
+
+void PopClient::setAdditional(uint _additional)
+{
+    additional = _additional;
 }
 
 void PopClient::setDeleteOperation()
@@ -865,6 +875,13 @@ void PopClient::uidlIntegrityCheck()
             foreach (const QString &uid, deletedUids)
                 messageProcessed(uid);
         }
+
+        // Update partialContent status for the account
+        if (additional) {
+            partialContent = uint(newUids.count()) > additional;
+            // When minimum is set, only retrieve minimum ids
+            newUids = newUids.mid(0, additional);
+        }
     }
 }
 
@@ -981,6 +998,12 @@ void PopClient::cancelTransfer()
 
 void PopClient::retrieveOperationCompleted()
 {
+    QMailAccount account(config.id());
+    account.setStatus(QMailAccount::PartialContent, partialContent);
+    if (!QMailStore::instance()->updateAccount(&account)) {
+        qWarning() << "Unable to update account" << account.id() << "to set PartialContent";
+    }
+        
     // This retrieval may have been asynchronous
     emit allMessagesReceived();
 

@@ -81,6 +81,9 @@ public:
     QMailMessageSortKey sortKey() const;
     void setSortKey(const QMailMessageSortKey& sortKey);
 
+    QMailAccountId accountId() const;
+    void setAccountId(const QMailAccountId &id);
+
     QMailFolderId folderId() const;
     void setFolderId(const QMailFolderId &id);
 
@@ -133,6 +136,7 @@ signals:
 
 public slots:
     void reset();
+    void updateActions();
 
 protected slots:
     void indexClicked(const QModelIndex& index);
@@ -154,7 +158,6 @@ protected:
 
 private:
     void init();
-    void updateActions();
     bool eventFilter(QObject*, QEvent*);
     void selectedChildren(const QModelIndex &index, QMailMessageIdList *selectedIds) const;
     void selectChildren(const QModelIndex &index, bool selected, bool *modified);
@@ -166,6 +169,7 @@ private:
     bool mIgnoreWhenHidden;
     bool mSelectedRowsRemoved;
     QMailFolderId mFolderId;
+    QMailAccountId mAccountId;
     QTimer mScrollTimer;
     QMailMessageIdList mPreviousVisibleItems;
     QuickSearchWidget* mQuickSearchWidget;

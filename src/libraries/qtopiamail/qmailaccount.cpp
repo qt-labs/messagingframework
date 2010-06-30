@@ -66,6 +66,7 @@ static quint64 enabledFlag = 0;
 static quint64 canReferenceExternalDataFlag = 0;
 static quint64 canTransmitViaReferenceFlag = 0;
 static quint64 canCreateFoldersFlag = 0;
+static quint64 partialContentFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -153,6 +154,7 @@ public:
             canReferenceExternalDataFlag = registerFlag("CanReferenceExternalData");
             canTransmitViaReferenceFlag = registerFlag("CanTransmitViaReference");
             canCreateFoldersFlag = registerFlag("CanCreateFolders");
+            partialContentFlag = registerFlag("PartialContent");
         }
     }
 
@@ -285,8 +287,6 @@ private:
     \c "MessageSink" against the result of QMailAccount::status().
 
     This flag indicates that the account has been configured to act as a source of incoming messages.
-
-    \sa QMailAccount::messageType()
 */
 
 /*!
@@ -297,8 +297,6 @@ private:
 
     This flag indicates that the account has been sufficiently configured that an attempt to
     retrieve messages may be performed.
-
-    \sa QMailAccount::messageType()
 */
 
 /*!
@@ -308,8 +306,6 @@ private:
     \c "MessageSink" against the result of QMailAccount::status().
 
     This flag indicates that the account has been configured to act as a transmitter of outgoing messages.
-
-    \sa QMailAccount::messageType()
 */
 
 /*!
@@ -320,8 +316,6 @@ private:
 
     This flag indicates that the account has been sufficiently configured that an attempt to
     transmit messages may be performed.
-
-    \sa QMailAccount::messageType()
 */
 
 /*!
@@ -331,8 +325,49 @@ private:
     \c "Enabled" against the result of QMailAccount::status().
 
     This flag indicates that the account has been marked as suitable for use by the messaging server.
+*/
 
-    \sa QMailAccount::messageType()
+/*!
+    \variable QMailAccount::CanReferenceExternalData
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Enabled" against the result of QMailAccount::status().
+
+    This flag indicates that the account can contain messages that reference data in other messages.
+
+    \sa QMailMessagePart::setReference()
+*/
+
+/*!
+    \variable QMailAccount::CanTransmitViaReference
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Enabled" against the result of QMailAccount::status().
+
+    This flag indicates that the account can be used to transmit messages that contain references.
+
+    \sa QMailMessagePart::setReference()
+*/
+
+/*!
+    \variable QMailAccount::CanCreateFolders
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Enabled" against the result of QMailAccount::status().
+
+    This flag indicates that top level folders can be created for the account.
+
+    \sa QMailStorageAction::createFolder(), QMailFolder::ChildCreationPermitted;
+*/
+
+/*!
+    \variable QMailAccount::PartialContent
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Enabled" against the result of QMailAccount::status().
+
+    This flag is only applicable for accounts that do not support folders, it indicates that the account 
+    contains metadata records for only some of the messages known to exist at the external server.
 */
 
 const quint64 &QMailAccount::SynchronizationEnabled = synchronizationEnabledFlag;
@@ -349,6 +384,7 @@ const quint64 &QMailAccount::Enabled = enabledFlag;
 const quint64 &QMailAccount::CanReferenceExternalData = canReferenceExternalDataFlag;
 const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFlag;
 const quint64 &QMailAccount::CanCreateFolders = canCreateFoldersFlag;
+const quint64 &QMailAccount::PartialContent = partialContentFlag;
 
 /*!
     Creates an uninitialised account object.
