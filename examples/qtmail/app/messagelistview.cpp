@@ -529,16 +529,6 @@ void MessageListView::setSortKey(const QMailMessageSortKey& sortKey)
     mModel->setSortKey(sortKey);
 }
 
-QMailAccountId MessageListView::accountId() const
-{
-    return mAccountId;
-}
-
-void MessageListView::setAccountId(const QMailAccountId& accountId)
-{
-    mAccountId = accountId;
-}
-
 QMailFolderId MessageListView::folderId() const
 {
     return mFolderId;
@@ -616,18 +606,6 @@ void MessageListView::updateActions()
         if (folder.status() & QMailFolder::PartialContent) {
             // More messages to retrieve
             partialContent = true;
-        }
-    } else if (mAccountId.isValid()) {
-        // We need to see if the account status has changed
-        QMailAccount account;
-        if (mAccountId.isValid()) {
-            account = QMailAccount(mAccountId);
-
-            // Are there more messages to be retrieved for this account?
-            if (account.status() & QMailAccount::PartialContent) {
-                // More messages to retrieve
-                partialContent = true;
-            }
         }
     }
     

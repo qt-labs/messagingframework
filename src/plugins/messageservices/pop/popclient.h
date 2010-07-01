@@ -132,6 +132,7 @@ private:
     };
 
     QMailAccountConfiguration config;
+    QMailFolderId folderId;
     QTimer inactiveTimer;
     TransferStatus status;
     int messageCount;

@@ -81,9 +81,6 @@ public:
     QMailMessageSortKey sortKey() const;
     void setSortKey(const QMailMessageSortKey& sortKey);
 
-    QMailAccountId accountId() const;
-    void setAccountId(const QMailAccountId &id);
-
     QMailFolderId folderId() const;
     void setFolderId(const QMailFolderId &id);
 

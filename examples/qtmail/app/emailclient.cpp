@@ -2116,7 +2116,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         if (contentsChanged)
             messageListView()->setKey(item->messageKey());
 
-        messageListView()->setAccountId(accountId);
         messageListView()->setFolderId(folderId);
         messageListView()->updateActions();
         updateActions();
@@ -2313,7 +2312,6 @@ void EmailClient::retrieveMoreMessages()
     mailAccountId = QMailAccountId();
 
     QMailFolderId folderId(messageListView()->folderId());
-    QMailAccountId accountId(messageListView()->accountId());
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
 
@@ -2326,16 +2324,6 @@ void EmailClient::retrieveMoreMessages()
 
         setRetrievalInProgress(true);
         retrieveAction("Retrieving message list for folder")->retrieveMessageList(folder.parentAccountId(), folderId, retrievedMinimum);
-    } else if (accountId.isValid()) {
-        // Find how many messages we have requested for this account
-        QMailMessageKey countKey(QMailMessageKey::parentAccountId(accountId));
-        countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
-        int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
-        // Request more messages
-        retrievedMinimum += MoreMessagesIncrement;
-
-        setRetrievalInProgress(true);
-        retrieveAction("Retrieving message list for account")->retrieveMessageList(accountId, QMailFolderId(), retrievedMinimum);
     }
 }
 

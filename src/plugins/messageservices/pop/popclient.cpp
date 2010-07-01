@@ -155,7 +155,6 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     deleting = false;
     additional = 0;
     QMailAccount account(config.id());
-    partialContent = account.status() & QMailAccount::PartialContent;
 
     if (spec == QMailRetrievalAction::MetaData) {
         PopConfiguration popCfg(config);
@@ -169,6 +168,25 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     } else {
         headerLimit = 0;
     }
+    
+    // get/create child folder
+    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(account.id()));
+    if (folderList.count() > 1) {
+        qWarning() << "Pop account has more than one child folder, account" << account.id();
+        folderId = folderList.first();
+    } else if (folderList.count() == 1) {
+        folderId = folderList.first();
+    } else {
+        QMailFolder childFolder("Inbox", QMailFolderId(), account.id());
+        childFolder.setDisplayName(tr("Inbox"));
+        childFolder.setStatus(QMailFolder::SynchronizationEnabled, true);
+        childFolder.setStatus(QMailFolder::Incoming, true);
+
+        if(!QMailStore::instance()->addFolder(&childFolder))
+            qWarning() << "Unable to add child folder to pop account";
+        folderId = childFolder.id();
+    }
+    partialContent = QMailFolder(folderId).status() & QMailFolder::PartialContent;
 }
 
 void PopClient::setAdditional(uint _additional)
@@ -955,7 +973,7 @@ void PopClient::createMail()
     mail.setMessageType(QMailMessage::Email);
     mail.setParentAccountId(config.id());
 
-    mail.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    mail.setParentFolderId(folderId);
 
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
     mail.setStatus(QMailMessage::ContentAvailable, isComplete);
@@ -1017,11 +1035,10 @@ void PopClient::cancelTransfer()
 
 void PopClient::retrieveOperationCompleted()
 {
-    QMailAccount account(config.id());
-    account.setStatus(QMailAccount::PartialContent, partialContent);
-    if (!QMailStore::instance()->updateAccount(&account)) {
-        qWarning() << "Unable to update account" << account.id() << "to set PartialContent";
-    }
+    QMailFolder folder(folderId);
+    folder.setStatus(QMailFolder::PartialContent, partialContent);
+    if(!QMailStore::instance()->updateFolder(&folder))
+        qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
         
     // This retrieval may have been asynchronous
     emit allMessagesReceived();

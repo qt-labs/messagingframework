@@ -130,12 +130,6 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
         return false;
     }
 
-    if (folderId.isValid()) {
-        // Folders don't make sense for POP
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
-        return false;
-    }
-
     QMailMessageKey countKey(QMailMessageKey::parentAccountId(accountId));
     countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
     uint existing = QMailStore::instance()->countMessages(countKey);

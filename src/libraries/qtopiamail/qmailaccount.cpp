@@ -66,7 +66,6 @@ static quint64 enabledFlag = 0;
 static quint64 canReferenceExternalDataFlag = 0;
 static quint64 canTransmitViaReferenceFlag = 0;
 static quint64 canCreateFoldersFlag = 0;
-static quint64 partialContentFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -154,7 +153,6 @@ public:
             canReferenceExternalDataFlag = registerFlag("CanReferenceExternalData");
             canTransmitViaReferenceFlag = registerFlag("CanTransmitViaReference");
             canCreateFoldersFlag = registerFlag("CanCreateFolders");
-            partialContentFlag = registerFlag("PartialContent");
         }
     }
 
@@ -360,16 +358,6 @@ private:
     \sa QMailStorageAction::createFolder(), QMailFolder::ChildCreationPermitted;
 */
 
-/*!
-    \variable QMailAccount::PartialContent
-
-    The status mask needed for testing the value of the registered status flag named 
-    \c "Enabled" against the result of QMailAccount::status().
-
-    This flag is only applicable for accounts that do not support folders, it indicates that the account 
-    contains metadata records for only some of the messages known to exist at the external server.
-*/
-
 const quint64 &QMailAccount::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailAccount::Synchronized = synchronizedFlag;
 const quint64 &QMailAccount::AppendSignature = appendSignatureFlag;
@@ -384,7 +372,6 @@ const quint64 &QMailAccount::Enabled = enabledFlag;
 const quint64 &QMailAccount::CanReferenceExternalData = canReferenceExternalDataFlag;
 const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFlag;
 const quint64 &QMailAccount::CanCreateFolders = canCreateFoldersFlag;
-const quint64 &QMailAccount::PartialContent = partialContentFlag;
 
 /*!
     Creates an uninitialised account object.
