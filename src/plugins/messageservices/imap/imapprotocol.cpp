@@ -48,6 +48,7 @@
 
 #include <QApplication>
 #include <QTemporaryFile>
+#include <QFileInfo>
 #include <qmaillog.h>
 #include <longstring_p.h>
 #include <qmailaccountconfiguration.h>
@@ -3214,6 +3215,13 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
     // Remove the detached file if it is still present
     QFile::remove(detachedFile);
+    
+    // Workaround for message buffer file being deleted 
+    QFileInfo newFile(_fsm->buffer().fileName());
+    if (!newFile.exists()) {
+        qWarning() << "Unable to find message buffer file";
+        _fsm->buffer().detach();
+    }
 }
 
 void ImapProtocol::createPart(const QString &uid, const QString &section, const QString &detachedFile, int size)
@@ -3222,6 +3230,13 @@ void ImapProtocol::createPart(const QString &uid, const QString &section, const 
 
     // Remove the detached file if it is still present
     QFile::remove(detachedFile);
+
+    // Workaround for message part buffer file being deleted 
+    QFileInfo newFile(_fsm->buffer().fileName());
+    if (!newFile.exists()) {
+        qWarning() << "Unable to find message part buffer file";
+        _fsm->buffer().detach();
+    }
 }
 
 #include "imapprotocol.moc"

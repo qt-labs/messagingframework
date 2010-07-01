@@ -42,6 +42,7 @@
 #include "popclient.h"
 #include "popauthenticator.h"
 #include "popconfiguration.h"
+#include <QFileInfo>
 #include <longstream_p.h>
 #include <longstring_p.h>
 #include <qmailstore.h>
@@ -1020,6 +1021,14 @@ void PopClient::createMail()
 
     // Catch all cleanup of detached file
     QFile::remove(detachedFile);
+    
+    // Workaround for message buffer file being deleted 
+    QFileInfo newFile(dataStream->fileName());
+    if (!newFile.exists()) {
+        qWarning() << "Unable to find message buffer file, pop protocol";
+        dataStream->detach();
+    }
+    
 }
 
 void PopClient::checkForNewMessages()
