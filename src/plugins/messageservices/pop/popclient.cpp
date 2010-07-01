@@ -852,7 +852,18 @@ void PopClient::uidlIntegrityCheck()
         PopConfiguration popCfg(config);
 
         // Create list of new entries that should be downloaded
-        foreach (const QString &uid, serverUid.values()) {
+        bool gapFilled(false); // need to 'fill gap' (retrieve messages newly arrived on server since last sync)
+        uint gap(0);
+        if (messageUids.isEmpty()) {
+            // no 'gap' to fill
+            gapFilled = true;
+        }
+        QMapIterator<int, QString> it(serverUid);
+        QString uid;
+        it.toBack();
+        while (it.hasPrevious()) {
+            it.previous();
+            uid = it.value();
             obsoleteUids.removeAll(uid);
 
             if (deletedUids.contains(uid)) {
@@ -861,9 +872,16 @@ void PopClient::uidlIntegrityCheck()
 
                 if (popCfg.canDeleteMail())
                     obsoleteUids.append(uid);
-            } else if (!messageUids.contains(uid)) {
-                // This message is not present locally
-                newUids.append(uid);
+            } else {
+                if (messageUids.contains(uid)) {
+                    gapFilled = true;
+                } else {
+                    // This message is not present locally, new to client.
+                    newUids.append(uid);
+                    // measure gap
+                    if (!gapFilled)
+                        ++gap;
+                }
             }
         }
 
@@ -878,6 +896,7 @@ void PopClient::uidlIntegrityCheck()
 
         // Update partialContent status for the account
         if (additional) {
+            additional += gap;
             partialContent = uint(newUids.count()) > additional;
             // When minimum is set, only retrieve minimum ids
             newUids = newUids.mid(0, additional);
