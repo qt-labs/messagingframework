@@ -1113,6 +1113,11 @@ void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
     message in the nominated destination folder.  The moveMessages() slot requests that the 
     message server move each identified message from its current location to the nominated destination 
     folder.  Messages cannot be moved or copied between accounts.
+    
+    A QMailServiceAction instance supports only a single request at a time. Attempting 
+    to initiate an operation on a QMailServiceAction while another operation is already 
+    in progress for that action is not supported. Instead clients should use multiple 
+    QMailServiceAction instances to initiate a queue of requests.
 */
 
 /*!
