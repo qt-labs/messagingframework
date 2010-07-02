@@ -717,8 +717,8 @@ void PopClient::nextAction()
             QMailMessageKey accountKey(QMailMessageKey::parentAccountId(config.id()));
             QMailMessageKey uidKey(QMailMessageKey::serverUid(messageUid));
 
-            QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord);
             messageProcessed(messageUid);
+            QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord);
         }
 
         // See if there are more messages to delete

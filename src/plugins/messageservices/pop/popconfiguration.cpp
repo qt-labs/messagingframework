@@ -79,7 +79,7 @@ int PopConfiguration::mailEncryption() const
 
 bool PopConfiguration::canDeleteMail() const
 {
-    return (value("canDelete", "0").toInt() != 0);
+    return (value("canDelete", "1").toInt() != 0);
 }
 
 bool PopConfiguration::isAutoDownload() const
@@ -89,7 +89,7 @@ bool PopConfiguration::isAutoDownload() const
 
 int PopConfiguration::maxMailSize() const
 {
-    return value("maxSize", "102400").toInt();
+    return value("maxSize", "20").toInt();
 }
 
 int PopConfiguration::checkInterval() const
