@@ -97,6 +97,8 @@ signals:
 
     void shutdown();
 
+    void listActions();
+
     void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariant &data);
 
     void acknowledgeNewMessages(const QMailMessageTypeList&);
@@ -160,10 +162,14 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(cancelSearch(quint64)));
     connectIpc(this, SIGNAL(shutdown()),
                adaptor, MESSAGE(shutdown()));
+    connectIpc(this, SIGNAL(listActions()),
+               adaptor, MESSAGE(listActions()));
     connectIpc(this, SIGNAL(protocolRequest(quint64, QMailAccountId, QString, QVariant)),
                adaptor, MESSAGE(protocolRequest(quint64, QMailAccountId, QString, QVariant)));
 
     // Propagate received events as exposed signals
+    connectIpc(adaptor, MESSAGE(actionStarted(QMailActionData)),
+               parent, SIGNAL(actionStarted(QMailActionData)));
     connectIpc(adaptor, MESSAGE(activityChanged(quint64, QMailServiceAction::Activity)),
                parent, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)));
     connectIpc(adaptor, MESSAGE(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
@@ -198,6 +204,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(searchCompleted(quint64)),
                parent, SIGNAL(searchCompleted(quint64)));
+    connectIpc(adaptor, MESSAGE(actionsListed(QMailActionDataList)),
+               parent, SIGNAL(actionsListed(QMailActionDataList)));
     connectIpc(adaptor, MESSAGE(protocolResponse(quint64, QString, QVariant)),
                parent, SIGNAL(protocolResponse(quint64, QString, QVariant)));
     connectIpc(adaptor, MESSAGE(protocolRequestCompleted(quint64)),
@@ -741,6 +749,14 @@ void QMailMessageServer::cancelSearch(quint64 action)
 void QMailMessageServer::shutdown()
 {
     emit d->shutdown();
+}
+
+/*!
+    Requests that the MessageServer emits a list of currently executing actions
+*/
+void QMailMessageServer::listActions()
+{
+    emit d->listActions();
 }
 
 /*!

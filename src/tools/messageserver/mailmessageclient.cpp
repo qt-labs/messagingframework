@@ -57,6 +57,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
     connectIpc(adaptor, MESSAGE(acknowledgeNewMessages(QMailMessageTypeList)),
                               this, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)));
 
+    connectIpc(this, SIGNAL(actionStarted(QMailActionData)),
+               adaptor, MESSAGE(actionStarted(QMailActionData)));
     connectIpc(this, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
                adaptor, MESSAGE(activityChanged(quint64, QMailServiceAction::Activity)));
     connectIpc(this, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
@@ -91,6 +93,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
                adaptor, MESSAGE(matchingMessageIds(quint64, QMailMessageIdList)));
     connectIpc(this, SIGNAL(searchCompleted(quint64)), 
                adaptor, MESSAGE(searchCompleted(quint64)));
+    connectIpc(this, SIGNAL(actionsListed(QMailActionDataList)),
+               adaptor, MESSAGE(actionsListed(QMailActionDataList)));
     connectIpc(this, SIGNAL(protocolResponse(quint64, QString, QVariant)),
                adaptor, MESSAGE(protocolResponse(quint64, QString, QVariant)));
     connectIpc(this, SIGNAL(protocolRequestCompleted(quint64)),
@@ -136,6 +140,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
                this, SIGNAL(cancelSearch(quint64)));
     connectIpc(adaptor, MESSAGE(shutdown()),
                this, SIGNAL(shutdown()));
+    connectIpc(adaptor, MESSAGE(listActions()),
+               this, SIGNAL(listActions()));
     connectIpc(adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(adaptor, MESSAGE(protocolRequest(quint64, QMailAccountId, QString, QVariant)),

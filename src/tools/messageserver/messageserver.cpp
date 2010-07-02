@@ -82,6 +82,8 @@ MessageServer::MessageServer(QObject *parent)
                 this, SLOT(messagesRemoved(QMailMessageIdList)));
 
         // Propagate email handler signals to the client
+        connect(handler, SIGNAL(actionStarted(QMailActionData)),
+                client, SIGNAL(actionStarted(QMailActionData)));
         connect(handler, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
                 client, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)));
         connect(handler, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
@@ -110,6 +112,8 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
         connect(handler, SIGNAL(searchCompleted(quint64)),
                 client, SIGNAL(searchCompleted(quint64)));
+        connect(handler, SIGNAL(actionsListed(QMailActionDataList)),
+                client, SIGNAL(actionsListed(QMailActionDataList)));
         connect(handler, SIGNAL(protocolResponse(quint64, QString, QVariant)), 
                 client, SIGNAL(protocolResponse(quint64, QString, QVariant)));
         connect(handler, SIGNAL(protocolRequestCompleted(quint64)),
@@ -167,6 +171,8 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(cancelSearch(quint64)));
         connect(client, SIGNAL(shutdown()),
                 handler, SLOT(shutdown()));
+        connect(client, SIGNAL(listActions()),
+                handler, SLOT(listActions()));
        connect(handler, SIGNAL(newMessagesAvailable()),
                 this, SLOT(reportNewCounts()));
         connect(client, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),

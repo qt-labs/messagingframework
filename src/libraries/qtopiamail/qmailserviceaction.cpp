@@ -76,6 +76,7 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()),
       _total(0),
       _progress(0),
+      _isValid(false),
       _action(0)
 {
     connect(_server, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
@@ -94,9 +95,15 @@ QMailServiceActionPrivate::~QMailServiceActionPrivate()
 
 void QMailServiceActionPrivate::cancelOperation()
 {
-    if (_action != 0) {
+    if (_isValid) {
         _server->cancelTransfer(_action);
     }
+}
+
+void QMailServiceActionPrivate::setAction(quint64 action)
+{
+    _isValid = action != 0;
+    _action = action;
 }
 
 void QMailServiceActionPrivate::activityChanged(quint64 action, QMailServiceAction::Activity activity)
@@ -151,7 +158,7 @@ void QMailServiceActionPrivate::init()
 
 quint64 QMailServiceActionPrivate::newAction()
 {
-    if (_action != 0) {
+    if (_isValid) {
         qWarning() << "Unable to allocate new action - oustanding:" << messageActionParts(_action).second;
         return _action;
     }
@@ -159,6 +166,7 @@ quint64 QMailServiceActionPrivate::newAction()
     init();
 
     _action = nextMessageAction();
+    _isValid = true;
     setActivity(QMailServiceAction::Pending);
     emitChanges();
 
@@ -167,19 +175,17 @@ quint64 QMailServiceActionPrivate::newAction()
 
 bool QMailServiceActionPrivate::validAction(quint64 action)
 {
-    if (_action == 0)
+    if (_isValid) {
+        QPair<uint, uint> outstanding(messageActionParts(_action));
+        QPair<uint, uint> incoming(messageActionParts(action));
+
+        if (incoming.first != outstanding.first)
+            return false;
+
+        return (incoming.second == outstanding.second);
+    } else {
         return false;
-
-    QPair<uint, uint> outstanding(messageActionParts(_action));
-    QPair<uint, uint> incoming(messageActionParts(action));
-
-    if (incoming.first != outstanding.first)
-        return false;
-
-    if (incoming.second == outstanding.second)
-        return true;
-
-    return false;
+    }
 }
 
 void QMailServiceActionPrivate::setConnectivity(QMailServiceAction::Connectivity newConnectivity)
@@ -192,17 +198,12 @@ void QMailServiceActionPrivate::setConnectivity(QMailServiceAction::Connectivity
 
 void QMailServiceActionPrivate::setActivity(QMailServiceAction::Activity newActivity)
 {
-    if ((_action != 0) && (_activity != newActivity)) {
+    if (_isValid && (_activity != newActivity)) {
         _activity = newActivity;
 
         if (_activity == QMailServiceAction::Failed || _activity == QMailServiceAction::Successful) {
-            // Reset any progress we've indicated
-            _total = 0;
-            _progress = 0;
-            _progressChanged = true;
-
             // We're finished
-            _action = 0;
+            _isValid = false;
         }
 
         _activityChanged = true;
@@ -211,7 +212,7 @@ void QMailServiceActionPrivate::setActivity(QMailServiceAction::Activity newActi
 
 void QMailServiceActionPrivate::setStatus(const QMailServiceAction::Status &status)
 {
-    if (_action != 0) {
+    if (_isValid) {
         _status = status;
         _statusChanged = true;
     }
@@ -222,9 +223,13 @@ void QMailServiceActionPrivate::setStatus(QMailServiceAction::Status::ErrorCode 
     setStatus(code, text, QMailAccountId(), QMailFolderId(), QMailMessageId());
 }
 
-void QMailServiceActionPrivate::setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId)
+void QMailServiceActionPrivate::setStatus(QMailServiceAction::Status::ErrorCode code,
+                                          const QString &text,
+                                          const QMailAccountId &accountId,
+                                          const QMailFolderId &folderId,
+                                          const QMailMessageId &messageId)
 {
-    if (_action != 0) {
+    if (_isValid) {
         _status = QMailServiceAction::Status(code, text, accountId, folderId, messageId);
         _statusChanged = true;
     }
@@ -232,7 +237,7 @@ void QMailServiceActionPrivate::setStatus(QMailServiceAction::Status::ErrorCode 
 
 void QMailServiceActionPrivate::setProgress(uint newProgress, uint newTotal)
 {
-    if (_action != 0) {
+    if (_isValid) {
         if (newTotal != _total) {
             _total = newTotal;
             _progressChanged = true;
@@ -1381,6 +1386,200 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
     \sa matchingMessageIds()
 */
 
+QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QString description, QMailActionInfo *i)
+    : QMailServiceActionPrivate(this, i),
+      _description(description),
+      _actionCompleted(false)
+{
+    setAction(action);
+    connect(_server, SIGNAL(activityChanged(quint64,QMailServiceAction::Activity)),
+            this, SLOT(activityChanged(quint64,QMailServiceAction::Activity)));
+    // Service handler really should be sending the activity,
+    // rather than us faking it..
+    connect(_server, SIGNAL(retrievalCompleted(quint64)),
+            this, SLOT(activityCompleted(quint64)));
+    connect(_server, SIGNAL(storageActionCompleted(quint64)),
+            this, SLOT(activityCompleted(quint64)));
+    connect(_server, SIGNAL(searchCompleted(quint64)),
+            this, SLOT(activityCompleted(quint64)));
+    connect(_server, SIGNAL(transmissionCompleted(quint64)),
+            this, SLOT(activityCompleted(quint64)));
+}
+
+void QMailActionInfoPrivate::activityChanged(quint64 action, QMailServiceAction::Activity activity)
+{
+    if (validAction(action)) {
+        if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
+            if (_actionCompleted == false) {
+                emit actionFinished();
+                _actionCompleted = true;
+            } else {
+                qWarning() << "Action " << actionId() << "already completed?";
+            }
+        }
+    }
+}
+
+void QMailActionInfoPrivate::activityCompleted(quint64 action)
+{
+    if (validAction(action)) {
+        qDebug() << "Action: " << action << " completed";
+        setActivity(QMailServiceAction::Successful);
+
+        emitChanges();
+
+        if (_actionCompleted == false) {
+            emit actionFinished();
+            _actionCompleted = true;
+        } else {
+            qWarning() << "Action " << actionId() << "already completed?";
+        }
+    }
+}
+
+quint64 QMailActionInfoPrivate::actionId() const
+{
+    return _action;
+}
+
+QString QMailActionInfoPrivate::description() const
+{
+    return _description;
+}
+
+QMailActionInfo::QMailActionInfo(quint64 action, const QString &description)
+    : QMailServiceAction(new QMailActionInfoPrivate(action, description, this), 0) // NB: No qobject parent!
+{
+    connect(impl(this), SIGNAL(actionFinished()), this, SIGNAL(actionFinished()));
+}
+
+QString QMailActionInfo::description() const
+{
+    return impl(this)->description();
+}
+
+quint64 QMailActionInfo::id() const
+{
+    return impl(this)->actionId();
+}
+
+QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
+    : QMailServiceActionPrivate(this, i),
+      _isReady(false)
+{
+    connect(_server, SIGNAL(actionStarted(QMailActionData)),
+            this, SLOT(actionStarted(QMailActionData)));
+    connect(_server, SIGNAL(actionsListed(QMailActionDataList)),
+            this, SLOT(actionsListed(QMailActionDataList)));
+}
+
+bool QMailActionObserverPrivate::isReady()
+{
+    return _isReady;
+}
+
+QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActions() const
+{
+    return _runningActions.values();
+}
+
+void QMailActionObserverPrivate::requestInitialization()
+{
+    qDebug() << "QMailActionObserverPrivate::requestInitialized() called";
+    _server->listActions();
+}
+
+void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
+{
+    if (!_isReady) {
+        qDebug() << actions.count() << " actions have been listed.";
+        foreach(QMailActionData action, actions) {
+           addAction(action);
+        }
+        _isReady = true;
+        emit initialized();
+    }
+}
+
+void QMailActionObserverPrivate::completeAction(QMailActionId id)
+{
+    Q_ASSERT(_isReady);
+    if(_runningActions.remove(id)) {
+        qDebug() << "Emitting action id" << id << " finished.";
+        emit actionFinished(id);
+    } else {
+        asm("int3");
+        qDebug() << "Could not remove " << id << " after got activity completed";
+    }
+}
+
+void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
+{
+    if (_isReady) {
+        QSharedPointer<QMailActionInfo> actionInfo(addAction(action));
+        emit actionStarted(actionInfo);
+    }
+}
+
+QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
+{
+        qDebug() << "QMailActionObserverPrivate::addAction id:" << action.first << " description: " << action.second;
+
+        if (_runningActions.contains(action.first))
+            asm("int3");
+
+        QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action.first, action.second));
+        connect(actionInfo.data(), SIGNAL(actionFinished()), this, SLOT(anActionCompleted()));
+        _runningActions.insert(action.first, actionInfo);
+
+        return actionInfo;
+}
+
+void QMailActionObserverPrivate::anActionCompleted()
+{
+    qDebug() << "An action completed.";
+    const QMailActionInfo *theAction(qobject_cast<QMailActionInfo *>(sender()));
+    if(theAction) {
+        completeAction(theAction->id());
+    } else {
+        qWarning() << "Unable to determine who sent signal";
+    }
+}
+
+/*! \class QMailActionObserver
+
+   \preliminatry
+   \ingroup messaginglibrary
+
+   \brief The QMailActionObserver class provides an interface for monitoring currently running actions
+*/
+QMailActionObserver::QMailActionObserver(QObject *parent)
+    : QMailServiceAction(new QMailActionObserverPrivate(this), parent)
+{
+    connect(impl(this), SIGNAL(initialized()), this, SIGNAL(initialized()));
+    connect(impl(this), SIGNAL(actionStarted(QSharedPointer<QMailActionInfo>)), this, SIGNAL(actionStarted(QSharedPointer<QMailActionInfo>)));
+    connect(impl(this), SIGNAL(actionFinished(QMailActionId)), this, SIGNAL(actionFinished(QMailActionId)));
+}
+
+QMailActionObserver::~QMailActionObserver()
+{
+    qDebug() << "QMAObserver dtor";
+}
+
+QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::runningActions() const
+{
+    return impl(this)->runningActions();
+}
+
+void QMailActionObserver::requestInitialization()
+{
+    impl(this)->requestInitialization();
+}
+
+bool QMailActionObserver::isInitialized()
+{
+    return impl(this)->isReady();
+}
 
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)
@@ -1472,3 +1671,5 @@ void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const
     with the associated \a data.
 */
 
+Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
+Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)

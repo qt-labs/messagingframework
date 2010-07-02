@@ -82,6 +82,8 @@
 #include "statusmonitor.h"
 #include <qtmailnamespace.h>
 
+#include "observer.h"
+
 static const unsigned int StatusBarHeight = 20;
 #ifdef LOAD_DEBUG_VERSION
 static const QString debugSuffix("d");
@@ -592,6 +594,16 @@ void EmailClient::messageServerProcessError(QProcess::ProcessError e)
     QString errorMsg = QString("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
     QMessageBox::critical(this,"Message Server",errorMsg);
     qFatal(errorMsg.toLatin1(),"");
+}
+
+void EmailClient::showMessageServerInfo()
+{
+    qDebug() << "showMessageServerInfo pressed..";
+
+    Observer *o = new Observer();
+    o->setAttribute(Qt::WA_DeleteOnClose, true);
+    o->show();
+    o->activateWindow();
 }
 
 void EmailClient::connectServiceAction(QMailServiceAction* action)
@@ -1365,6 +1377,7 @@ void EmailClient::copyToFolder(const QMailMessageIdList& ids, const QMailFolderI
 
 void EmailClient::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, const QString& description)
 {
+    Q_UNUSED(description)
     if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), setMask, true)) {
         qMailLog(Messaging) << "Unable to flag messages:" << ids;
     }
@@ -2473,6 +2486,8 @@ void EmailClient::setupUi()
     QAction* aboutQt = help->addAction("About Qt");
     aboutQt->setMenuRole(QAction::AboutQtRole);
     connect(aboutQt,SIGNAL(triggered()),qApp,SLOT(aboutQt()));
+    QAction *msInfo = help->addAction("MessageServer Actions");
+    connect(msInfo, SIGNAL(triggered()), this, SLOT(showMessageServerInfo()));
     QWidget* menuWidget = new QWidget(this);
     QHBoxLayout*  menuLayout = new QHBoxLayout(menuWidget);
     menuLayout->setSpacing(0);

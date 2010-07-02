@@ -85,11 +85,14 @@ public slots:
     void deleteFolder(quint64 action, const QMailFolderId &folderId);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void cancelSearch(quint64);
+    void cancelSearch(quint64 action);
     void shutdown();
+    void listActions();
     void protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data);
 
 signals:
+    void actionStarted(QMailActionData action);
+
     void statusChanged(quint64 action, const QMailServiceAction::Status status);
     void availabilityChanged(quint64 action, bool available);
     void connectivityChanged(quint64 action, QMailServiceAction::Connectivity connectivity);
@@ -115,6 +118,8 @@ signals:
     void matchingMessageIds(quint64 action, const QMailMessageIdList&);
     void remoteSearchCompleted(quint64 action);
     void searchCompleted(quint64 action);
+
+    void actionsListed(const QMailActionDataList &actions);
 
     void protocolResponse(quint64 action, const QString &response, const QVariant &data);
     void protocolRequestCompleted(quint64 action);
@@ -187,7 +192,7 @@ private:
     typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
     typedef void (ServiceHandler::*CompletionSignal)(quint64);
 
-    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
+    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QString &description, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
     bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
     bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
@@ -234,6 +239,7 @@ private:
     class ActionData
     {
     public:
+        QString description;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
         QTime expiry;
@@ -255,6 +261,7 @@ private:
         QSet<QPointer<QMailMessageService> > preconditions;
         RequestServicer servicer;
         CompletionSignal completion;
+        QString description;
     };
 
     QList<Request> mRequests;

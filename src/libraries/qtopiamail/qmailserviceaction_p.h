@@ -70,6 +70,7 @@ public:
     virtual ~QMailServiceActionPrivate();
 
     void cancelOperation();
+    void setAction(quint64 action);
 
 protected slots:
     void activityChanged(quint64, QMailServiceAction::Activity activity);
@@ -106,6 +107,7 @@ protected:
     uint _total;
     uint _progress;
 
+    bool _isValid;
     quint64 _action;
 
     bool _connectivityChanged;
@@ -228,6 +230,46 @@ private:
     QMailMessageIdList _matchingIds;
 };
 
+class QMailActionInfoPrivate : public QMailServiceActionPrivate
+{
+    Q_OBJECT
+public:
+    QMailActionInfoPrivate(QMailActionId action, QString description, QMailActionInfo *i);
+
+    quint64 actionId() const;
+    QString description() const;
+signals:
+    void actionFinished();
+private slots:
+    void activityCompleted(quint64 action);
+    void activityChanged(quint64 action, QMailServiceAction::Activity activity);
+protected:
+    QString _description;
+    bool _actionCompleted;
+};
+
+class QMailActionObserverPrivate : public QMailServiceActionPrivate
+{
+    Q_OBJECT
+public:
+    QMailActionObserverPrivate(QMailActionObserver *i);
+    void requestInitialization();
+     QList< QSharedPointer<QMailActionInfo> > runningActions() const;
+    bool isReady();
+signals:
+    void initialized();
+    void actionStarted(QSharedPointer<QMailActionInfo>);
+    void actionFinished(QMailActionId);
+private slots:
+    void anActionCompleted();
+    void completeAction(QMailActionId);
+    void actionsListed(const QMailActionDataList &actions);
+    void actionStarted(const QMailActionData &action);
+private:
+    QSharedPointer<QMailActionInfo> addAction(const QMailActionData &action);
+    QMap< QMailActionId, QSharedPointer<QMailActionInfo> > _runningActions;
+    bool _isReady;
+};
 
 class QMailProtocolActionPrivate : public QMailServiceActionPrivate
 {

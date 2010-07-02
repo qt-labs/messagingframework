@@ -287,6 +287,8 @@ private slots:
     bool waitForMessageServer();
     void messageServerProcessError(QProcess::ProcessError);
 
+    void showMessageServerInfo();
+
     void createFolder();
     void deleteFolder();
     void renameFolder();
