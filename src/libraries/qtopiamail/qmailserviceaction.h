@@ -53,6 +53,11 @@
 
 class QMailServiceActionPrivate;
 
+typedef quint64 QMailActionId;
+typedef QPair<QMailActionId, QString> QMailActionData;
+typedef QList<QMailActionData> QMailActionDataList;
+
+
 class QTOPIAMAIL_EXPORT QMailServiceAction
     : public QObject,
       public QPrivatelyNoncopyable<QMailServiceActionPrivate>
@@ -126,8 +131,11 @@ public:
         QMailMessageId messageId;
     };
 
+    QMailServiceAction(quint64 actionId, QObject *parent = 0);
     ~QMailServiceAction();
 
+
+    QString description();
     Connectivity connectivity() const;
     Activity activity() const;
     const Status status() const;
@@ -149,9 +157,8 @@ protected:
 
 protected:
     void setStatus(Status::ErrorCode code, const QString &text = QString());
-    void setStatus(Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId = QMailFolderId(), const QMailMessageId &messageId = QMailMessageId());
+    void setStatus(Status::ErrorCode code, const QString &text, const QMailAccountId &accountId,const QMailFolderId &folderId = QMailFolderId(), const QMailMessageId &messageId = QMailMessageId());
 };
-
 
 class QMailRetrievalActionPrivate;
 
@@ -259,6 +266,44 @@ public slots:
     void cancelOperation();
 };
 
+class QMailActionInfoPrivate;
+
+class QMailActionInfo : public QMailServiceAction {
+    Q_OBJECT
+public:
+    typedef QMailActionInfoPrivate ImplementationType;
+
+    quint64 id() const;
+    QString description() const;
+signals:
+    void actionFinished();
+protected:
+    friend class QMailActionObserverPrivate;
+    QMailActionInfo(quint64 action, const QString &description);
+};
+
+class QMailActionObserverPrivate;
+
+// WARNING: QMailActionObserver is about to drastically change
+
+class QTOPIAMAIL_EXPORT QMailActionObserver : public QMailServiceAction
+{
+    Q_OBJECT
+public:   
+    typedef QMailActionObserverPrivate ImplementationType;
+    QMailActionObserver(QObject *parent = 0);
+    virtual ~QMailActionObserver();
+
+    QList< QSharedPointer<QMailActionInfo> > runningActions() const;
+    bool isInitialized();
+public slots:
+    void requestInitialization();
+signals:
+    void initialized();
+
+    void actionStarted( QSharedPointer<QMailActionInfo> );
+    void actionFinished( QMailActionId );
+};
 
 class QMailProtocolActionPrivate;
 
@@ -290,4 +335,9 @@ Q_DECLARE_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
 
+Q_DECLARE_METATYPE(QMailActionData)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
+
+Q_DECLARE_METATYPE(QMailActionDataList)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
 #endif

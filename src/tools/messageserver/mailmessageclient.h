@@ -101,8 +101,12 @@ signals:
 
     void shutdown();
 
+    void listActions();
+
     void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariant &data);
 
+
+    void actionStarted(QMailActionData);
     void activityChanged(quint64, QMailServiceAction::Activity);
     void connectivityChanged(quint64, QMailServiceAction::Connectivity);
     void statusChanged(quint64, const QMailServiceAction::Status);
@@ -126,6 +130,8 @@ signals:
 
     void matchingMessageIds(quint64, const QMailMessageIdList&);
     void searchCompleted(quint64);
+
+    void actionsListed(const QMailActionDataList &);
 
     void protocolResponse(quint64, const QString &response, const QVariant &data);
     void protocolRequestCompleted(quint64);
