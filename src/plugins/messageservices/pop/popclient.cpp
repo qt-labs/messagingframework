@@ -1044,10 +1044,13 @@ void PopClient::cancelTransfer()
 
 void PopClient::retrieveOperationCompleted()
 {
-    QMailFolder folder(folderId);
-    folder.setStatus(QMailFolder::PartialContent, partialContent);
-    if(!QMailStore::instance()->updateFolder(&folder))
-        qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
+    if (!deleting && !selected) {
+        // Only update PartialContent flag when retrieving message list
+        QMailFolder folder(folderId);
+        folder.setStatus(QMailFolder::PartialContent, partialContent);
+        if(!QMailStore::instance()->updateFolder(&folder))
+            qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
+    }
         
     // This retrieval may have been asynchronous
     emit allMessagesReceived();
