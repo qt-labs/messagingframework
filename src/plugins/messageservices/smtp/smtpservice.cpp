@@ -42,6 +42,7 @@
 #include "smtpservice.h"
 #include "smtpsettings.h"
 #include <QtPlugin>
+#include <QTimer>
 
 namespace { const QString serviceKey("smtp"); }
 
@@ -70,26 +71,33 @@ private:
 
 bool SmtpService::Sink::transmitMessages(const QMailMessageIdList &ids)
 {
-    QMailServiceAction::Status::ErrorCode errorCode = QMailServiceAction::Status::ErrNoError;
+    bool messageQueued = false;
+    QMailMessageIdList failedMessages;
     QString errorText;
 
     if (!ids.isEmpty()) {
         foreach (const QMailMessageId id, ids) {
             QMailMessage message(id);
-            if ((errorCode = _service->_client.addMail(message)) != QMailServiceAction::Status::ErrNoError) {
-                errorText = tr("Unable to addMail");
-                break;
+            if (_service->_client.addMail(message) == QMailServiceAction::Status::ErrNoError) {
+                messageQueued = true;
+            } else {
+                failedMessages << id;
             }
         }
     }
-
-    if (errorCode == QMailServiceAction::Status::ErrNoError) {
-        _service->_client.newConnection();
-        return true;
+    
+    if (failedMessages.count()) {
+        emit messagesFailedTransmission(failedMessages, QMailServiceAction::Status::ErrInvalidAddress);
     }
 
-    _service->errorOccurred(errorCode, errorText);
-    return false;
+    if (messageQueued) {
+        // At least one message could be queued for sending
+        _service->_client.newConnection();
+    } else {
+        // No messages to send, so sending completed successfully
+        QTimer::singleShot(0, this, SLOT(sendCompleted()));
+    }
+    return true;
 }
 
 void SmtpService::Sink::messageTransmitted(const QMailMessageId &id)

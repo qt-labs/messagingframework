@@ -1116,6 +1116,8 @@ QMailMessageSink::~QMailMessageSink()
 
     Successfully transmitted messages should be progressively reported via messagesTransmitted().
 
+    Messages for which for which an unsuccessful attempt to transmit has been made should be progressively reported via messagesFailedTransmission().
+
     Return true if an operation is initiated.
 */
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids)
@@ -1137,6 +1139,14 @@ void QMailMessageSink::notImplemented()
     \fn void QMailMessageSink::messagesTransmitted(const QMailMessageIdList &ids);
 
     Signal emitted by the sink to report the successful transmission of the messages listed in \a ids.
+*/
+
+/*!
+    \fn void QMailMessageSink::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error);
+
+    Signal emitted by the sink to report the failure of an attempt at transmission of the messages listed in \a ids.
+    
+    The failure is of type \a error.
 */
 
 

@@ -470,6 +470,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       enableMessageActions(false),
       closeAfterTransmissions(false),
       closeAfterWrite(false),
+      transmissionFailure(false),
       fetchTimer(this),
       autoGetMail(false),
       initialAction(None),
@@ -1096,10 +1097,7 @@ void EmailClient::enqueueMail(QMailMessage& mail)
         mail.setStatus(QMailMessage::TransmitFromExternal, true);
     }
 
-    // This message should be marked as a draft, and flagged for transmission
-    // Don't use flagMessages - we don't want this to be transmitted to a server 
-    // as a draft unless transmission fails
-    mail.setStatus((QMailMessage::Outbox | QMailMessage::Draft), true);
+    mail.setStatus(QMailMessage::Outbox, true);
 
     bool inserted(false);
     if (!mail.id().isValid()) {
@@ -1178,6 +1176,7 @@ void EmailClient::mailResponded()
 // each message that belongs to the current found account
 void EmailClient::sendAllQueuedMail(bool userRequest)
 {
+    transmissionFailure = false;
     QMailMessageKey outboxFilter(QMailMessageKey::status(QMailMessage::Outbox));
 
     if (transmitAccountIds.isEmpty()) {
@@ -1214,14 +1213,6 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
             setSendingInProgress(true);
             transmitAction("Sending messages")->transmitMessages(transmitId);
             return;
-        } else {
-            // Move this account's outbox messages to Drafts
-            QMailMessageKey accountFilter(QMailMessageKey::parentAccountId(transmitId));
-            QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(accountFilter & outboxFilter));
-
-            moveToStandardFolder(unsentIds,QMailFolder::DraftsFolder);
-            flagMessages(unsentIds,QMailMessage::Draft,QMailMessage::Outbox,"Moving messages to drafts");
-
         }
     }
 }
@@ -1410,6 +1401,15 @@ bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
 
 void EmailClient::transmitCompleted()
 {
+    // Check for messages that could nto be sent, e.g. due to bad recipients
+    if (transmissionFailure) {
+        transmissionFailure = false;
+        const QMailServiceAction::Status status(m_transmitAction->status());
+        transferFailure(status.accountId, 
+                        tr("Some messages could not be sent and have been left in the outbox. Verify that recipient addresses are well formed."), 
+                        QMailServiceAction::Status::ErrInvalidAddress);
+    }
+        
     // If there are more SMTP accounts to service, continue
     if (!transmitAccountIds.isEmpty()) {
         sendAllQueuedMail();
@@ -2053,6 +2053,12 @@ void EmailClient::progressChanged(uint progress, uint total)
 //    emit updateProgress(progress, total);
 }
 
+void EmailClient::messagesFailedTransmission()
+{
+    transmissionFailure = true;
+}
+
+
 void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity activity)
 {
     if (QMailServiceAction *action = static_cast<QMailServiceAction*>(sender())) {
@@ -2547,9 +2553,6 @@ void EmailClient::setSendingInProgress(bool set)
     } else {
         if (primaryActivity == Sending)
             primaryActivity = Inactive;
-
-        // Anything we could not send should move back to the drafts folder
-        clearOutboxFolder();
     }
 
     if (isSending() != set) {
@@ -2593,18 +2596,6 @@ void EmailClient::transferStatusUpdate(int status)
     }
 }
 
-
-void EmailClient::clearOutboxFolder()
-{
-    QMailMessageKey outboxFilter(QMailMessageKey::status(QMailMessage::Outbox));
-    QMailMessageIdList unsentIds(QMailStore::instance()->queryMessages(outboxFilter));
-
-    // Set any unsent messages back to draft, and remove Outbox status
-    if (!unsentIds.isEmpty()) {
-        moveToStandardFolder(unsentIds,QMailFolder::DraftsFolder);
-        flagMessages(unsentIds, QMailMessage::Draft, QMailMessage::Outbox,"Clearing outbox folder");
-    }
-}
 
 void EmailClient::contextStatusUpdate()
 {
@@ -2794,6 +2785,8 @@ QMailTransmitAction* EmailClient::transmitAction(const QString& description)
     {
         m_transmitAction = new QMailTransmitAction(this);
         connectServiceAction(m_transmitAction);
+        connect(m_transmitAction, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
+                this, SLOT(messagesFailedTransmission()));
     }
 
     ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_transmitAction,description);

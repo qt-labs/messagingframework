@@ -120,6 +120,8 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(protocolRequestCompleted(quint64)));
         connect(handler, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)), 
                 client, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)));
+        connect(handler, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+                client, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
 
         connect(handler, SIGNAL(transmissionCompleted(quint64)), 
                 this, SLOT(transmissionCompleted(quint64)));

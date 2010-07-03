@@ -71,6 +71,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
                adaptor, MESSAGE(transmissionCompleted(quint64)));
     connectIpc(this, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)), 
                adaptor, MESSAGE(messagesTransmitted(quint64, QMailMessageIdList)));
+    connectIpc(this, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+               adaptor, MESSAGE(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
     connectIpc(this, SIGNAL(retrievalCompleted(quint64)),
                adaptor, MESSAGE(retrievalCompleted(quint64)));
     connectIpc(this, SIGNAL(messagesDeleted(quint64, QMailMessageIdList)), 

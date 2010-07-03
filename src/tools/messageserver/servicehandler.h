@@ -102,6 +102,7 @@ signals:
     void retrievalCompleted(quint64 action);
 
     void messagesTransmitted(quint64 action, const QMailMessageIdList&);
+    void messagesFailedTransmission(quint64 action, const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
     void transmissionCompleted(quint64 action);
 
     void messagesDeleted(quint64 action, const QMailMessageIdList&);
@@ -135,6 +136,7 @@ private slots:
     void actionCompleted(bool);
 
     void messagesTransmitted(const QMailMessageIdList&);
+    void messagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
 
     void messagesDeleted(const QMailMessageIdList&);
     void messagesCopied(const QMailMessageIdList&);

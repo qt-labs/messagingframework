@@ -198,6 +198,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(retrievalCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(messagesTransmitted(quint64, QMailMessageIdList)),
                parent, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
+               parent, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
     connectIpc(adaptor, MESSAGE(transmissionCompleted(quint64)),
                parent, SIGNAL(transmissionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(matchingMessageIds(quint64, QMailMessageIdList)),
@@ -317,6 +319,17 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     Emitted when the messages identified by \a list have been transmitted to the external server,
     in response to the request identified by \a action.
+
+    \sa transmitMessages()
+*/
+
+/*!
+    \fn void QMailMessageServer::messagesFailedTransmitted(quint64 action, const QMailMessageIdList& list, QMailServiceAction::Status::ErrorCode error);
+
+    Emitted when a failed attempt has been made to transmit messages identified by \a list to the external server,
+    in response to the request identified by \a action.
+    
+    The error is described by \a error.
 
     \sa transmitMessages()
 */

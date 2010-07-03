@@ -912,6 +912,8 @@ QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
 {
     connect(_server, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)),
             this, SLOT(messagesTransmitted(quint64, QMailMessageIdList)));
+    connect(_server, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
+            this, SLOT(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
     connect(_server, SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(transmissionCompleted(quint64)));
 
@@ -922,31 +924,32 @@ void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountI
 {
     _server->transmitMessages(newAction(), accountId);
 
-    QMailAccount account(accountId);
-    _ids = QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId) & QMailMessageKey::status(QMailMessage::Outbox));
-
     emitChanges();
 }
 
 void QMailTransmitActionPrivate::init()
 {
     QMailServiceActionPrivate::init();
-
-    _ids.clear();
 }
 
 void QMailTransmitActionPrivate::messagesTransmitted(quint64 action, const QMailMessageIdList &ids)
 {
     if (validAction(action)) {
-        foreach (const QMailMessageId &id, ids)
-            _ids.removeAll(id);
+        emit messagesTransmitted(ids);
+    }
+}
+
+void QMailTransmitActionPrivate::messagesFailedTransmission(quint64 action, const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error)
+{
+    if (validAction(action)) {
+        emit messagesFailedTransmission(ids, error);
     }
 }
 
 void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
 {
     if (validAction(action)) {
-        QMailServiceAction::Activity result(_ids.isEmpty() ? QMailServiceAction::Successful : QMailServiceAction::Failed);
+        QMailServiceAction::Activity result(QMailServiceAction::Successful);
         setActivity(result);
         emitChanges();
     }
@@ -983,6 +986,10 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
 QMailTransmitAction::QMailTransmitAction(QObject *parent)
     : QMailServiceAction(new QMailTransmitActionPrivate(this), parent)
 {
+    connect(impl(this), SIGNAL(messagesTransmitted(QMailMessageIdList)), 
+            this, SIGNAL(messagesTransmitted(QMailMessageIdList)));
+    connect(impl(this), SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+            this, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
 }
 
 /*! \internal */

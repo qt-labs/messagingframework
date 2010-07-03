@@ -84,6 +84,7 @@ signals:
     void retrievalCompleted(quint64);
 
     void messagesTransmitted(quint64, const QMailMessageIdList&);
+    void messagesFailedTransmission(quint64, const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
     void transmissionCompleted(quint64);
 
     void messagesDeleted(quint64, const QMailMessageIdList&);

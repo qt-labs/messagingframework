@@ -207,8 +207,13 @@ public:
     QMailTransmitAction(QObject *parent = 0);
     ~QMailTransmitAction();
 
+signals:
+    void messagesTransmitted(const QMailMessageIdList &ids);
+    void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
+
 public slots:
     void transmitMessages(const QMailAccountId &accountId);
+
 };
 
 

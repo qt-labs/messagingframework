@@ -204,6 +204,7 @@ public slots:
 
 signals:
     void messagesTransmitted(const QMailMessageIdList &ids);
+    void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
 
 protected:
     QMailMessageSink(QMailMessageService *service);

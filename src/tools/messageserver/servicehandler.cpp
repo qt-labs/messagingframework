@@ -626,6 +626,8 @@ void ServiceHandler::registerAccountSink(const QMailAccountId &accountId, QMailM
     sinkService.insert(sink, service);
 
     connect(sink, SIGNAL(messagesTransmitted(QMailMessageIdList)), this, SLOT(messagesTransmitted(QMailMessageIdList)));
+    connect(sink, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+            this, SLOT(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
 }
 
 QMailMessageSink *ServiceHandler::accountSink(const QMailAccountId &accountId) const
@@ -1944,6 +1946,15 @@ void ServiceHandler::messagesTransmitted(const QMailMessageIdList &messageIds)
             mSentIds << messageIds;
 
             emit messagesTransmitted(action, messageIds);
+        }
+    }
+}
+
+void ServiceHandler::messagesFailedTransmission(const QMailMessageIdList &messageIds, QMailServiceAction::Status::ErrorCode error)
+{
+    if (QMailMessageSink *sink = qobject_cast<QMailMessageSink*>(sender())) {
+        if (quint64 action = sinkAction(sink)) {
+            emit messagesFailedTransmission(action, messageIds, error);
         }
     }
 }

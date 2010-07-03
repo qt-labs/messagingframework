@@ -213,6 +213,7 @@ protected slots:
     void activityChanged(QMailServiceAction::Activity activity);
     void statusChanged(const QMailServiceAction::Status &status);
     void progressChanged(uint progress, uint total);
+    void messagesFailedTransmission();
 
     void flagRetrievalActivityChanged(QMailServiceAction::Activity activity);
 
@@ -328,7 +329,6 @@ private:
 
     void transferStatusUpdate(int status);
     void setSuspendPermitted(bool y);
-    void clearOutboxFolder();
 
     void updateGetMailButton();
     void updateGetAccountButton();
@@ -416,6 +416,7 @@ private:
 
     bool closeAfterTransmissions;
     bool closeAfterWrite;
+    bool transmissionFailure;
 
     QTimer fetchTimer;
     bool autoGetMail;

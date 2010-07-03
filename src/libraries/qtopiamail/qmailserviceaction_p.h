@@ -155,17 +155,20 @@ public:
 
     void transmitMessages(const QMailAccountId &accountId);
 
+signals:
+    void messagesTransmitted(const QMailMessageIdList &ids);
+    void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
+
 protected:
     virtual void init();
 
 protected slots:
     void messagesTransmitted(quint64, const QMailMessageIdList &id);
+    void messagesFailedTransmission(quint64, const QMailMessageIdList &id, QMailServiceAction::Status::ErrorCode);
     void transmissionCompleted(quint64);
 
 private:
     friend class QMailTransmitAction;
-
-    QMailMessageIdList _ids;
 };
 
 
