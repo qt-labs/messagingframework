@@ -981,6 +981,21 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
 */
 
 /*!
+    \fn QMailTransmitAction::messagesTransmitted(const QMailMessageIdList &ids)
+
+    This signal is emitted to report the successful transmission of the messages listed in \a ids.
+*/
+
+/*!
+    \fn QMailTransmitAction::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error)
+
+    This signal is emitted to report the failure of an attempt at transmission of the messages listed in \a ids.
+
+    The failure is of type \a error.
+*/
+
+
+/*!
     Constructs a new transmit action object with the supplied \a parent.
 */
 QMailTransmitAction::QMailTransmitAction(QObject *parent)
