@@ -56,6 +56,7 @@ static quint64 junkFlag = 0;
 static quint64 childCreationPermittedFlag = 0;
 static quint64 renamePermittedFlag = 0;
 static quint64 deletionPermittedFlag = 0;
+static quint64 nonMailFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -142,6 +143,7 @@ public:
             childCreationPermittedFlag = registerFlag("ChildCreationPermitted");
             renamePermittedFlag = registerFlag("RenamePermitted");
             deletionPermittedFlag = registerFlag("DeletionPermitted");
+            nonMailFlag = registerFlag("NonMail");
         }
     }
 
@@ -292,6 +294,7 @@ const quint64 &QMailFolder::Junk = junkFlag;
 const quint64 &QMailFolder::ChildCreationPermitted = childCreationPermittedFlag;
 const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
 const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
+const quint64 &QMailFolder::NonMail = nonMailFlag;
 
 
 /*!

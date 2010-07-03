@@ -76,6 +76,7 @@ public:
     static const quint64 &ChildCreationPermitted;
     static const quint64 &RenamePermitted;
     static const quint64 &DeletionPermitted;
+    static const quint64 &NonMail;
 
     QMailFolder();
 
