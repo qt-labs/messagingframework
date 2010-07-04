@@ -6980,7 +6980,7 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
             } else if (value > 3) {
                 mail->setStatus(QMailMessage::LowPriority, true);
                 return;
-            } else if (value == 3) {
+            } else {
                 return; // Normal Priority
             }
         }
