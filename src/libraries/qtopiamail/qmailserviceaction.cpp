@@ -154,6 +154,7 @@ void QMailServiceActionPrivate::init()
     _activityChanged = false;
     _progressChanged = false;
     _statusChanged = false;
+    _isValid = false;
 }
 
 quint64 QMailServiceActionPrivate::newAction()
@@ -175,22 +176,12 @@ quint64 QMailServiceActionPrivate::newAction()
 
 bool QMailServiceActionPrivate::validAction(quint64 action)
 {
-    if (_isValid) {
-        QPair<uint, uint> outstanding(messageActionParts(_action));
-        QPair<uint, uint> incoming(messageActionParts(action));
-
-        if (incoming.first != outstanding.first)
-            return false;
-
-        return (incoming.second == outstanding.second);
-    } else {
-        return false;
-    }
+   return (action && _action == action);
 }
 
 void QMailServiceActionPrivate::setConnectivity(QMailServiceAction::Connectivity newConnectivity)
 {
-    if ((_action != 0) && (_connectivity != newConnectivity)) {
+    if (_isValid && (_connectivity != newConnectivity)) {
         _connectivity = newConnectivity;
         _connectivityChanged = true;
     }

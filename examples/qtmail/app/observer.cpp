@@ -124,8 +124,6 @@ void RowWidget::sendCancel()
 
 
 void RowWidget::progressChanged(uint x, uint y) {
-    if (_action->id() == 0)
-        asm("int3");
     qDebug() << "progress changed to" << x << "/" << y << " for " << _action->id();
     _progress->setMaximum(y);
     _progress->setValue(x);
