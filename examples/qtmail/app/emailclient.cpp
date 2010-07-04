@@ -1583,6 +1583,7 @@ void EmailClient::getNextNewMail()
             clearStatusText();
 
         setRetrievalInProgress(false);
+        retrieveVisibleMessagesFlags();      
     }
 }
 

@@ -899,7 +899,7 @@ void MessageListView::layoutChanged()
 
 void MessageListView::reviewVisibleMessages()
 {
-    const int maximumRefreshRate = 15; //seconds
+    const int maximumRefreshRate = 7; //seconds
 
     if (mScrollTimer.isActive())
         return;
