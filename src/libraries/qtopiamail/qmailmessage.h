@@ -554,6 +554,8 @@ public:
     static const quint64 &Temporary;
     static const quint64 &ImportantElsewhere;
     static const quint64 &Important;
+    static const quint64 &HighPriority;
+    static const quint64 &LowPriority;
 
     QMailMessageMetaData();
 #ifndef QTOPIAMAIL_PARSING_ONLY

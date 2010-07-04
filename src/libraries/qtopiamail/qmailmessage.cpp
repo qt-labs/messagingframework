@@ -5069,6 +5069,8 @@ static quint64 localOnlyFlag = 0;
 static quint64 temporaryFlag = 0;
 static quint64 importantElsewhereFlag = 0;
 static quint64 importantFlag = 0;
+static quint64 highPriorityFlag = 0;
+static quint64 lowPriorityFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5118,6 +5120,8 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         temporaryFlag = registerFlag("TemporaryFlag");
         importantElsewhereFlag = registerFlag("ImportantElsewhere");
         importantFlag = registerFlag("Important");
+        highPriorityFlag = registerFlag("HighPriority");
+        lowPriorityFlag = registerFlag("LowPriority");
     }
 }
 #endif
@@ -5630,6 +5634,30 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message is marked as important.
 */
 
+/*!
+    \variable QMailMessageMetaData::HighPriority
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "HighPriority" against the result of QMailMessage::status().
+
+    This flag indicates that the message has a header field specifying that the message 
+    is high priority. This flag is set only during message parsing.
+    
+    \sa QMailMessage::fromRfc2822();
+*/
+
+/*!
+    \variable QMailMessageMetaData::LowPriority
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "LowPriority" against the result of QMailMessage::status().
+
+    This flag indicates that the message has a header field specifying that the message 
+    is low priority. This flag is set only during message parsing.
+    
+    \sa QMailMessage::fromRfc2822();
+*/
+
 
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
@@ -5657,6 +5685,8 @@ const quint64 &QMailMessageMetaData::LocalOnly = localOnlyFlag;
 const quint64 &QMailMessageMetaData::Temporary = temporaryFlag;
 const quint64 &QMailMessageMetaData::ImportantElsewhere = importantElsewhereFlag;
 const quint64 &QMailMessageMetaData::Important = importantFlag;
+const quint64 &QMailMessageMetaData::HighPriority = highPriorityFlag;
+const quint64 &QMailMessageMetaData::LowPriority = lowPriorityFlag;
 
 /*!
     Constructs an empty message meta data object.
@@ -6936,6 +6966,57 @@ void QMailMessage::updateMetaData(const QByteArray& id, const QString& value)
     }
 }
 
+static void setMessagePriorityFromHeaderFields(QMailMessage *mail) 
+{
+    bool ok;
+    QString priority = mail->headerFieldText("X-Priority");
+    if (!priority.isEmpty()) {
+        // Consider X-Priority field first
+        int value = priority.toInt(&ok);
+        if (ok) {
+            if (value < 3) {
+                mail->setStatus(QMailMessage::HighPriority, true);
+                return;
+            } else if (value > 3) {
+                mail->setStatus(QMailMessage::LowPriority, true);
+                return;
+            } else if (value == 3) {
+                return; // Normal Priority
+            }
+        }
+    }
+
+    // If X-Priority is not set, consider X-MSMail-Priority
+    QString msPriority = mail->headerFieldText ("X-MSMail-Priority");
+    if (!msPriority.isEmpty()) {
+        if (msPriority.contains ("high", Qt::CaseInsensitive)) {
+            mail->setStatus(QMailMessage::HighPriority, true);
+            return;
+        } else if (msPriority.contains ("low", Qt::CaseInsensitive)) {
+            mail->setStatus(QMailMessage::LowPriority, true);
+            return;
+        } else if (msPriority.contains ("normal", Qt::CaseInsensitive)) {
+            return; // Normal Priority
+        }
+    }
+
+    // Finally, consider Importance
+    QString importance = mail->headerFieldText("Importance");
+    if (!importance.isEmpty()) {
+        if (importance.contains ("high", Qt::CaseInsensitive)) {
+            mail->setStatus(QMailMessage::HighPriority, true);
+            return;
+        } else if (importance.contains ("low", Qt::CaseInsensitive)) {
+            mail->setStatus(QMailMessage::LowPriority, true);
+            return;
+        } else if (importance.contains ("normal", Qt::CaseInsensitive)) {
+            return; // Normal Priority
+        }
+    }
+
+    return; // Normal Priority
+}
+
 /*! \internal */
 QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 {
@@ -6955,6 +7036,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
         mail.partContainerImpl()->fromRfc2822( ls.mid(pos + 4) );
     }
 
+    setMessagePriorityFromHeaderFields(&mail);
     return mail;
 }
 
