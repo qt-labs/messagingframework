@@ -143,7 +143,11 @@ static bool updateMessagesMetaData(ImapStrategyContextBase *context,
     QMailMessageKey unflaggedKey(reportedKey & ~flaggedKey);
 
     // Mark as deleted any messages that the server does not report
-    QMailMessageKey nonexistentKey(storedKey & ~reportedKey & ~movedKey);
+    QMailMessageIdList ids(QMailStore::instance()->queryMessages(movedKey));
+    QMailMessageKey movedIdsKey(QMailMessageKey::id(ids));
+    QMailMessageKey nonexistentKey(storedKey & ~reportedKey & ~movedIdsKey); // TODO remove workaround
+    //QMailMessageKey nonexistentKey(storedKey & ~reportedKey & ~movedKey);
+    
     if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
         result = false;
         qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
