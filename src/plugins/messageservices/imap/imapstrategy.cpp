@@ -2963,12 +2963,9 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     // messages on the client i.e. mark messages on the client as removed for messages that have
     // been removed on the server
     QMailMessageKey removedKey(QMailMessageKey::serverUid(removed));
-    /*
-    Better safe than sorry needs ample testing before enabling
     if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
         qWarning() << "Unable to update removed message metadata for folder:" << folder.displayName();
     }
-    */
     
     // Use an optimization/simplification because client region should be contiguous
     IntegerRegion clientRegion;
