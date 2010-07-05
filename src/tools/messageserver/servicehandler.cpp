@@ -427,8 +427,6 @@ ServiceHandler::ServiceHandler(QObject* parent)
         if (!_requestsFile.open(QIODevice::ReadOnly)) {
             qWarning() << "Unable to open requests file for read!";
         } else {
-            QString line;
-
             // Every request still in the file failed to complete
             for (QByteArray line = _requestsFile.readLine(); !line.isEmpty(); line = _requestsFile.readLine()) {
                 if (quint64 action = line.trimmed().toULongLong()) {
