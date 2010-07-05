@@ -200,8 +200,10 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
         // Retrieve messages for all folders in the account that have undiscovered messages
         QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
         QMailFolderKey undiscoveredKey(QMailFolderKey::serverUndiscoveredCount(0, QMailDataComparator::GreaterThan));
-
-        folderIds = QMailStore::instance()->queryFolders(accountKey & undiscoveredKey, QMailFolderSortKey::id(Qt::AscendingOrder));
+        QMailFolderKey filterKey(accountKey);
+        if (minimum <= 1)
+            filterKey &= undiscoveredKey;
+        folderIds = QMailStore::instance()->queryFolders(filterKey, QMailFolderSortKey::id(Qt::AscendingOrder));
     }
 
     _service->_client.strategyContext()->retrieveMessageListStrategy.clearSelection();

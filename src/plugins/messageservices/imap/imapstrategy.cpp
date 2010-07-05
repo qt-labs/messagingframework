@@ -2937,8 +2937,13 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         if (ok)
             rawServerRegion.add(number);
     }
-    int serverMinimum = rawServerRegion.minimum();
-    int serverMaximum = rawServerRegion.maximum();
+    int serverMinimum = properties.uidNext;
+    int serverMaximum = properties.uidNext;
+    if (rawServerRegion.cardinality()) {
+        // Found region on server
+        serverMinimum = rawServerRegion.minimum();
+    }
+    qMailLog(Messaging) << "handleUidSearch serverMinimum" << serverMinimum << "serverMaximum" << serverMaximum << "cardinality" << rawServerRegion.cardinality() << "minimum" << _minimum;
     
     IntegerRegion serverRange(serverMinimum, serverMaximum);
     IntegerRegion serverComplement(serverRange.subtract(rawServerRegion));
@@ -3023,9 +3028,16 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     _fillingGap = false;
 
     // Could get flag changes mod sequences when CONDSTORE is available
-    
     if ((properties.exists == 0) || (_minimum <= 0)) {
         // No messages, so no need to perform search
+        if (properties.exists == 0) {
+            // Folder is completely empty mark all messages in it on client as removed
+            QMailMessageKey removedKey(QMailMessageKey::parentFolderId(properties.id));
+            if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
+                qWarning() << "Unable to update removed messag data in empty folder:" << QMailFolder(properties.id).displayName();
+            }
+            
+        }
         processUidSearchResults(context);
         return;
     }
