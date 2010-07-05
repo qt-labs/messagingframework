@@ -141,6 +141,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
     _unavailable = true;
     return true;
 
+    Q_UNUSED(folderId)
     Q_UNUSED(sort)
 }
 
