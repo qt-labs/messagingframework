@@ -585,6 +585,14 @@ void ServiceHandler::accountsUpdated(const QMailAccountIdList &ids)
 void ServiceHandler::accountsRemoved(const QMailAccountIdList &ids)
 {
     deregisterAccountServices(ids);
+    foreach (const QMailAccountId &id, ids) {
+        // remove messages from this account
+        QMailMessageKey messageKey(QMailMessageKey::parentAccountId(id));
+        QMailStore::instance()->removeMessages(messageKey);
+        // remove folders from this account
+        QMailFolderKey accountKey(QMailFolderKey::parentAccountId(id));
+        QMailStore::instance()->removeFolders(accountKey);
+    }
 }
 
 QMailAccountId ServiceHandler::transmissionAccountId(const QMailAccountId &accountId) const
