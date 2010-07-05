@@ -39,56 +39,50 @@
 **
 ****************************************************************************/
 
+#ifndef QMAILACTIONFWD_H
+#define QMAILACTIONFWD_H
+#include "qmailglobal.h"
+#include "qmailipc.h"
+#include <QPair>
 
-#ifndef OBSERVER_H
-#define OBSERVER_H
-
-#include <QList>
-#include <QMap>
-#include <QWidget>
-#include <QMainWindow>
-
-#include <qmailserviceaction.h>
-
-class QLabel;
-class QProgressBar;
-class QPushButton;
-class QLayout;
-
-
-class RowWidget : public QWidget {
-    Q_OBJECT
-public:
-    RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent = 0);
-
-public slots:
-    void progressChanged(uint x, uint y);
-    void sendCancel();
-private:
-    static QString requestTypeToString(QMailServerRequestType t);
-
-    QSharedPointer<QMailActionInfo> _action;
-    QLabel *_description;
-    QProgressBar *_progress;
-    QPushButton *_cancel;
-};
-
-class Observer : public QMainWindow
+enum QMailServerRequestType
 {
-    Q_OBJECT
-public:
-    Observer(QWidget *parent = 0);
-    virtual ~Observer();
-private slots:
-    void actionObserverInitialized();
-    void addAction(QSharedPointer<QMailActionInfo> action);
-    void removeAction(QMailActionId action);
-
-private:
-    QLayout *_lay;
-    QMailActionObserver *_actionObs;
-
-    QMap<quint64, RowWidget *> _rows;
+    AcknowledgeNewMessagesRequestType,
+    TransmitMessagesRequestType,
+    RetrieveFolderListRequestType,
+    RetrieveMessageListRequestType,
+    RetrieveMessagesRequestType,
+    RetrieveMessagePartRequestType,
+    RetrieveMessageRangeRequestType,
+    RetrieveMessagePartRangeRequestType,
+    RetrieveAllRequestType,
+    ExportUpdatesRequestType,
+    SynchronizeRequestType,
+    CopyMessagesRequestType,
+    MoveMessagesRequestType,
+    FlagMessagesRequestType,
+    CreateFolderRequestType,
+    RenameFolderRequestType,
+    DeleteFolderRequestType,
+    CancelTransferRequestType,
+    DeleteMessagesRequestType,
+    SearchMessagesRequestType,
+    CancelSearchRequestType,
+    ListActionsRequestType,
+    ProtocolRequestRequestType
 };
+
+typedef quint64 QMailActionId;
+typedef QPair<QMailActionId, QMailServerRequestType> QMailActionData;
+typedef QList<QMailActionData> QMailActionDataList;
+
+//Q_DECLARE_METATYPE(ServerRequest)
+Q_DECLARE_USER_METATYPE_ENUM(QMailServerRequestType)
+
+Q_DECLARE_METATYPE(QMailActionData)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
+
+Q_DECLARE_METATYPE(QMailActionDataList)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
 
 #endif

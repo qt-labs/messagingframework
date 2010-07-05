@@ -39,56 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qmailaction.h"
 
-#ifndef OBSERVER_H
-#define OBSERVER_H
-
-#include <QList>
-#include <QMap>
-#include <QWidget>
-#include <QMainWindow>
-
-#include <qmailserviceaction.h>
-
-class QLabel;
-class QProgressBar;
-class QPushButton;
-class QLayout;
-
-
-class RowWidget : public QWidget {
-    Q_OBJECT
-public:
-    RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent = 0);
-
-public slots:
-    void progressChanged(uint x, uint y);
-    void sendCancel();
-private:
-    static QString requestTypeToString(QMailServerRequestType t);
-
-    QSharedPointer<QMailActionInfo> _action;
-    QLabel *_description;
-    QProgressBar *_progress;
-    QPushButton *_cancel;
-};
-
-class Observer : public QMainWindow
-{
-    Q_OBJECT
-public:
-    Observer(QWidget *parent = 0);
-    virtual ~Observer();
-private slots:
-    void actionObserverInitialized();
-    void addAction(QSharedPointer<QMailActionInfo> action);
-    void removeAction(QMailActionId action);
-
-private:
-    QLayout *_lay;
-    QMailActionObserver *_actionObs;
-
-    QMap<quint64, RowWidget *> _rows;
-};
-
-#endif
+Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServerRequestType)
+Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
+Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)

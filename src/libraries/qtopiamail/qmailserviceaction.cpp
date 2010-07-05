@@ -288,7 +288,7 @@ void QMailServiceActionPrivate::emitChanges()
     \value ErrNotImplemented        The requested operation is not implemented by the relevant service component.
     \value ErrFrameworkFault        A fault in the messaging framework prevented the execution of the request.
     \value ErrSystemError           A system-level error prevented the execution of the request.
-    \value ErrCancel                The operation was canceled by user intervention.
+    \value ErrCancel                The operation was cancelled by user intervention.
     \value ErrConfiguration         The configuration needed for the requested action is invalid.
     \value ErrNoConnection          A connection could not be established to the external service.
     \value ErrConnectionInUse       The connection to the external service is exclusively held by another user.
@@ -1399,7 +1399,7 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
     \sa matchingMessageIds()
 */
 
-QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QString description, QMailActionInfo *i)
+QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType description, QMailActionInfo *i)
     : QMailServiceActionPrivate(this, i),
       _description(description),
       _actionCompleted(false)
@@ -1455,18 +1455,18 @@ quint64 QMailActionInfoPrivate::actionId() const
     return _action;
 }
 
-QString QMailActionInfoPrivate::description() const
+QMailServerRequestType QMailActionInfoPrivate::description() const
 {
     return _description;
 }
 
-QMailActionInfo::QMailActionInfo(quint64 action, const QString &description)
+QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType description)
     : QMailServiceAction(new QMailActionInfoPrivate(action, description, this), 0) // NB: No qobject parent!
 {
     connect(impl(this), SIGNAL(actionFinished()), this, SIGNAL(actionFinished()));
 }
 
-QString QMailActionInfo::description() const
+QMailServerRequestType QMailActionInfo::description() const
 {
     return impl(this)->description();
 }
@@ -1684,5 +1684,3 @@ void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const
     with the associated \a data.
 */
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)

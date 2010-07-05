@@ -25,6 +25,7 @@ PUBLIC_HEADERS += qmailaccount.h \
                   qmailaccountkey.h \
                   qmailaccountlistmodel.h \
                   qmailaccountsortkey.h \
+                  qmailaction.h \
                   qmailaddress.h \
                   qmailcodec.h \
                   qmailcontentmanager.h \
@@ -91,6 +92,7 @@ SOURCES += longstream.cpp \
            qmailaccountkey.cpp \
            qmailaccountlistmodel.cpp \
            qmailaccountsortkey.cpp \
+           qmailaction.cpp \
            qmailaddress.cpp \
            qmailcodec.cpp \
            qmailcontentmanager.cpp \

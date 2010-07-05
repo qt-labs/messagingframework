@@ -101,7 +101,7 @@ void Observer::removeAction(QMailActionId action)
 RowWidget::RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent)
     : QWidget(parent),
       _action(action),
-      _description(new QLabel(QString("Action id: %1\nDescription: %2").arg(action->id()).arg(action->description()), this)),
+      _description(new QLabel(QString("Action id: %1\nDescription: %2").arg(action->id()).arg(requestTypeToString(action->description())), this)),
       _progress(new QProgressBar(this)),
       _cancel(new QPushButton("cancel", this))
 {
@@ -114,6 +114,64 @@ RowWidget::RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent)
     connect(_cancel, SIGNAL(clicked()), this, SLOT(sendCancel()));
 
     //qDe
+}
+
+QString RowWidget::requestTypeToString(QMailServerRequestType t)
+{
+    switch(t)
+    {
+    case AcknowledgeNewMessagesRequestType:
+        return tr("Acknowledging new messages");
+    case TransmitMessagesRequestType:
+        return tr("Transmitting new messages");
+    case RetrieveFolderListRequestType:
+        return tr("Retrieving a list of folders");
+    case RetrieveMessageListRequestType:
+        return tr("Retrieving a list of message");
+    case RetrieveMessagesRequestType:
+        return tr("Retrieving messages");
+    case RetrieveMessagePartRequestType:
+        return tr("Retrieving part of a message");
+    case RetrieveMessageRangeRequestType:
+        return tr("Retrieving a range of messages");
+    case RetrieveMessagePartRangeRequestType:
+        return tr("Retrieving parts of a messages");
+    case RetrieveAllRequestType:
+        return tr("Retrieving everything");
+    case ExportUpdatesRequestType:
+        return tr("Exporting updates");
+    case SynchronizeRequestType:
+        return tr("Synchronizing");
+    case CopyMessagesRequestType:
+        return tr("Copying messages");
+    case MoveMessagesRequestType:
+        return tr("Moving messages");
+    case FlagMessagesRequestType:
+        return tr("Flagging messages");
+    case CreateFolderRequestType:
+        return tr("Creating a folder");
+    case RenameFolderRequestType:
+        return tr("Renaming a folder");
+    case DeleteFolderRequestType:
+        return tr("Deleting a folder");
+    case CancelTransferRequestType:
+        return tr("Canceling a transfer");
+    case DeleteMessagesRequestType:
+        return tr("Deleteing a message");
+    case SearchMessagesRequestType:
+        return tr("Searching");
+    case CancelSearchRequestType:
+        return tr("Cancelling search");
+    case ListActionsRequestType:
+        return tr("Listing actions");
+    case ProtocolRequestRequestType:
+        return tr("Direct protocol request");
+        // No default, to get warning when requests added
+    }
+
+    qWarning() << "Did not handle:" << t;
+    Q_ASSERT(false);
+    return tr("Unknown/handled request.");
 }
 
 void RowWidget::sendCancel()

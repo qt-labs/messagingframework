@@ -48,15 +48,11 @@
 #include "qmailmessagekey.h"
 #include "qmailmessagesortkey.h"
 #include "qmailmessage.h"
+#include "qmailaction.h"
 #include <QString>
 #include <QStringList>
 
 class QMailServiceActionPrivate;
-
-typedef quint64 QMailActionId;
-typedef QPair<QMailActionId, QString> QMailActionData;
-typedef QList<QMailActionData> QMailActionDataList;
-
 
 class QTOPIAMAIL_EXPORT QMailServiceAction
     : public QObject,
@@ -279,12 +275,12 @@ public:
     typedef QMailActionInfoPrivate ImplementationType;
 
     quint64 id() const;
-    QString description() const;
+    QMailServerRequestType description() const;
 signals:
     void actionFinished();
 protected:
     friend class QMailActionObserverPrivate;
-    QMailActionInfo(quint64 action, const QString &description);
+    QMailActionInfo(quint64 action, QMailServerRequestType description);
 };
 
 class QMailActionObserverPrivate;
@@ -340,9 +336,4 @@ Q_DECLARE_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
 
-Q_DECLARE_METATYPE(QMailActionData)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
-
-Q_DECLARE_METATYPE(QMailActionDataList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
 #endif

@@ -237,17 +237,17 @@ class QMailActionInfoPrivate : public QMailServiceActionPrivate
 {
     Q_OBJECT
 public:
-    QMailActionInfoPrivate(QMailActionId action, QString description, QMailActionInfo *i);
+    QMailActionInfoPrivate(QMailActionId action, QMailServerRequestType description, QMailActionInfo *i);
 
     quint64 actionId() const;
-    QString description() const;
+    QMailServerRequestType description() const;
 signals:
     void actionFinished();
 private slots:
     void activityCompleted(quint64 action);
     void activityChanged(quint64 action, QMailServiceAction::Activity activity);
 protected:
-    QString _description;
+    QMailServerRequestType _description;
     bool _actionCompleted;
 };
 

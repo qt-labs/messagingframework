@@ -194,7 +194,7 @@ private:
     typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
     typedef void (ServiceHandler::*CompletionSignal)(quint64);
 
-    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, const QString &description, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
+    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, QMailServerRequestType description, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
     bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
     bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
@@ -241,7 +241,7 @@ private:
     class ActionData
     {
     public:
-        QString description;
+        QMailServerRequestType description;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
         QTime expiry;
@@ -263,7 +263,7 @@ private:
         QSet<QPointer<QMailMessageService> > preconditions;
         RequestServicer servicer;
         CompletionSignal completion;
-        QString description;
+        QMailServerRequestType description;
     };
 
     QList<Request> mRequests;
