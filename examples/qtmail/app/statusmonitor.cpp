@@ -216,6 +216,7 @@ void StatusMonitor::statusItemFinished()
     disconnect(item);
     emit removed(item);
     item->deleteLater();
+    updateProgress();
 }
 
 void StatusMonitor::statusItemProgressChanged()

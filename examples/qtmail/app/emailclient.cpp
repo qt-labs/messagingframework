@@ -2010,7 +2010,7 @@ void EmailClient::connectivityChanged(QMailServiceAction::Connectivity /*connect
 
 void EmailClient::activityChanged(QMailServiceAction::Activity activity)
 {
-    if (QMailServiceAction *action = static_cast<QMailServiceAction*>(sender())) {
+    if (QMailServiceAction *action = qobject_cast<QMailServiceAction*>(sender())) {
         if (activity == QMailServiceAction::Successful) {
             if (action == m_transmitAction) {
                 transmitCompleted();
