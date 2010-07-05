@@ -2943,7 +2943,6 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         // Found region on server
         serverMinimum = rawServerRegion.minimum();
     }
-    qMailLog(Messaging) << "handleUidSearch serverMinimum" << serverMinimum << "serverMaximum" << serverMaximum << "cardinality" << rawServerRegion.cardinality() << "minimum" << _minimum;
     
     IntegerRegion serverRange(serverMinimum, serverMaximum);
     IntegerRegion serverComplement(serverRange.subtract(rawServerRegion));
