@@ -79,7 +79,7 @@ public:
     void setDeleteOperation();
     void setSelectedMails(const SelectionMap& data);
     void checkForNewMessages();
-    void cancelTransfer();
+    void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
 signals:
     void errorOccurred(int, const QString &);

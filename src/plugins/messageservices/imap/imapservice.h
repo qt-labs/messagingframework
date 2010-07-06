@@ -64,7 +64,7 @@ public:
     virtual bool available() const;
 
 public slots:
-    virtual bool cancelOperation();
+    virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text);
     virtual void initiatePushEmail();
 
 protected slots:

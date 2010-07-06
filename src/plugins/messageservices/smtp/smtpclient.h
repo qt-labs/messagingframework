@@ -74,7 +74,7 @@ public:
     QMailAccountId account() const;
 
     void newConnection();
-    void cancelTransfer();
+    void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     QMailServiceAction::Status::ErrorCode addMail(const QMailMessage& mail);
 

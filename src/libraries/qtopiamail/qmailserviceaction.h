@@ -104,6 +104,7 @@ public:
             ErrInvalidAddress,
             ErrInvalidData,
             ErrTimeout,
+            ErrInternalStateReset,
             ErrorCodeMaximum = ErrTimeout
         };
 

@@ -1217,9 +1217,9 @@ void ImapClient::transportStatus(const QString& status)
     emit updateStatus(status);
 }
 
-void ImapClient::cancelTransfer()
+void ImapClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    operationFailed(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+    operationFailed(code, text);
 }
 
 void ImapClient::retrieveOperationCompleted()

@@ -730,9 +730,9 @@ void SmtpClient::nextAction(const QString &response)
     }
 }
 
-void SmtpClient::cancelTransfer()
+void SmtpClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    operationFailed(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+    operationFailed(code, text);
 }
 
 void SmtpClient::messageProcessed(const QMailMessageId &id)

@@ -241,7 +241,8 @@ public:
 
     virtual bool requiresReregistration() const { return true; }
 public slots:
-    virtual bool cancelOperation() = 0;
+    virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
+    bool cancelOperation() { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user")); }
 
 signals:
     void availabilityChanged(bool available);

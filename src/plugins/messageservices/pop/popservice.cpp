@@ -334,9 +334,9 @@ bool PopService::available() const
     return true;
 }
 
-bool PopService::cancelOperation()
+bool PopService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    _client.cancelTransfer();
+    _client.cancelTransfer(code, text);
     _client.closeConnection();
     _source->retrievalTerminated();
     return true;

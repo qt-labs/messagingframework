@@ -164,10 +164,10 @@ private:
     QMailAccountId transmissionAccountId(const QMailAccountId &accountId) const;
 
     void registerAccountServices(const QMailAccountIdList &ids);
-    void deregisterAccountServices(const QMailAccountIdList &ids);
+    void deregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text);
     void removeServiceFromActiveActions(QMailMessageService *removeService);
 
-    void reregisterAccountServices(const QMailAccountIdList &ids);
+    void reregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void registerAccountSource(const QMailAccountId &accountId, QMailMessageSource *source, QMailMessageService *service);
     QMailMessageSource *accountSource(const QMailAccountId &accountId) const;

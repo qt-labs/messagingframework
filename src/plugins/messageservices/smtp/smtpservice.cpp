@@ -155,9 +155,9 @@ bool SmtpService::available() const
     return true;
 }
 
-bool SmtpService::cancelOperation()
+bool SmtpService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    _client.cancelTransfer();
+    _client.cancelTransfer(code, text);
     return true;
 }
 

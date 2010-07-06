@@ -1081,9 +1081,9 @@ bool ImapService::available() const
     return true;
 }
 
-bool ImapService::cancelOperation()
+bool ImapService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    _client.cancelTransfer();
+    _client.cancelTransfer(code, text);
     _client.closeConnection();
     _source->retrievalTerminated();
     return true;
@@ -1091,7 +1091,7 @@ bool ImapService::cancelOperation()
 
 void ImapService::initiatePushEmail()
 {
-    cancelOperation();
+    cancelOperation(QMailServiceAction::Status::ErrInternalStateReset, tr("Initiating push email"));
     QMailFolderIdList ids(_client.configurationIdleFolderIds());
     if (ids.count()) {
         foreach(QMailFolderId id, ids) {
