@@ -66,6 +66,22 @@
 using nonstd::tr1::bind;
 using nonstd::tr1::cref;
 
+#define MAKE_APPEND_UNIQUE(Type) \
+    static inline void APPEND_UNIQUE(Type ## List *all_messageIds, const Type &id) {\
+        if (!all_messageIds->contains(id))\
+            (*all_messageIds) << id;\
+    }\
+    static inline void APPEND_UNIQUE(Type ## List *all_messageIds, Type ## List *messageIds) {\
+        foreach (const Type &id, *messageIds) {\
+            APPEND_UNIQUE(all_messageIds, id);\
+        }\
+    }
+
+MAKE_APPEND_UNIQUE(QMailMessageId)
+MAKE_APPEND_UNIQUE(QMailFolderId)
+MAKE_APPEND_UNIQUE(QMailAccountId)
+
+#undef MAKE_APPEND_UNIQUE
 
 class QMailStorePrivate::Key
 {
@@ -4465,7 +4481,7 @@ struct ReferenceStorer
 };
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
-                                                                      QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                      QMailMessageIdList *all_addedMessageIds, QMailMessageIdList *all_updatedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
                                                                       Transaction &t, bool commitOnSuccess)
 {
     if (!message->parentAccountId().isValid()) {
@@ -4515,9 +4531,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         }
     }
 
-    AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds, t, commitOnSuccess);
-
-
+    AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, all_addedMessageIds, all_updatedMessageIds, all_modifiedFolderIds, all_modifiedAccountIds, t, commitOnSuccess);
     if (result != Success) {
         bool obsoleted(false);
         foreach(QMailContentManager *manager, contentManagers) {
@@ -4542,7 +4556,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
-                                                                      QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+                                                                      QMailMessageIdList *all_addedMessageIds, QMailMessageIdList *all_updatedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
                                                                       Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->parentFolderId().isValid()) {
@@ -4675,14 +4689,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     // See if this message resolves any missing message items
-    result = resolveMissingMessages(identifier, metaData->inResponseTo(), baseSubject, insertId, updatedMessageIds);
+    QMailMessageIdList updatedMessageIds;
+    result = resolveMissingMessages(identifier, metaData->inResponseTo(), baseSubject, insertId, &updatedMessageIds);
+    APPEND_UNIQUE(all_updatedMessageIds, &updatedMessageIds);
     if (result != Success)
         return result;
 
-    if (!updatedMessageIds->isEmpty()) {
+    if (!updatedMessageIds.isEmpty()) {
         // Find the set of folders and accounts whose contents are modified by these messages
-        QMailMessageKey modifiedMessageKey(QMailMessageKey::id(*updatedMessageIds));
-        result = affectedByMessageIds(*updatedMessageIds, modifiedFolderIds, modifiedAccountIds);
+        QMailMessageKey modifiedMessageKey(QMailMessageKey::id(updatedMessageIds));
+        result = affectedByMessageIds(updatedMessageIds, all_modifiedFolderIds, all_modifiedAccountIds);
         if (result != Success)
             return result;
     }
@@ -4720,10 +4736,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     metaData->setId(QMailMessageId(insertId));
     metaData->setUnmodified();
-    addedMessageIds->append(metaData->id());
-    *modifiedFolderIds = folderIds;
+    APPEND_UNIQUE(all_addedMessageIds, metaData->id());
+    APPEND_UNIQUE(all_modifiedFolderIds, &folderIds);
     if (metaData->parentAccountId().isValid())
-        modifiedAccountIds->append(metaData->parentAccountId());
+        APPEND_UNIQUE(all_modifiedAccountIds, metaData->parentAccountId());
     return Success;
 }
 
@@ -5103,7 +5119,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *message, 
-                                                                         QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                         QMailMessageIdList *all_updatedMessageIds, QMailMessageIdList *all_modifiedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
                                                                          Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->id().isValid())
@@ -5469,14 +5485,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
         if (updatedIdentifier || (updateProperties & QMailMessageKey::InResponseTo)) {
             // See if this message resolves any missing message items
-            AttemptResult result = resolveMissingMessages(messageIdentifier, metaData->inResponseTo(), baseSubject, updateId, updatedMessageIds);
+            QMailMessageIdList updatedMessageIds;
+            AttemptResult result = resolveMissingMessages(messageIdentifier, metaData->inResponseTo(), baseSubject, updateId, &updatedMessageIds);
+            APPEND_UNIQUE(all_updatedMessageIds, &updatedMessageIds);
             if (result != Success)
                 return result;
 
-            if (!updatedMessageIds->isEmpty()) {
+            if (!updatedMessageIds.isEmpty()) {
                 // Find the set of folders and accounts whose contents are modified by these messages
-                QMailMessageKey modifiedMessageKey(QMailMessageKey::id(*updatedMessageIds));
-                result = affectedByMessageIds(*updatedMessageIds, modifiedFolderIds, modifiedAccountIds);
+                QMailMessageKey modifiedMessageKey(QMailMessageKey::id(updatedMessageIds));
+                result = affectedByMessageIds(updatedMessageIds, all_modifiedFolderIds, all_modifiedAccountIds);
                 if (result != Success)
                     return result;
             }
@@ -5503,19 +5521,19 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
         }
 
-        updatedMessageIds->append(metaData->id());
-        *modifiedFolderIds = folderIds;
+        APPEND_UNIQUE(all_updatedMessageIds, metaData->id());
+        APPEND_UNIQUE(all_modifiedFolderIds, &folderIds);
 
         if (metaData->parentAccountId().isValid())
-            modifiedAccountIds->append(metaData->parentAccountId());
+            APPEND_UNIQUE(all_modifiedAccountIds, metaData->parentAccountId());
         if (parentAccountId.isValid()) {
             if (parentAccountId != metaData->parentAccountId())
-                modifiedAccountIds->append(parentAccountId);
+                APPEND_UNIQUE(all_modifiedAccountIds, parentAccountId);
         }
     }
 
     if (updateContent) {
-        modifiedMessageIds->append(metaData->id());
+        APPEND_UNIQUE(all_modifiedMessageIds, metaData->id());
     }
 
     return Success;
@@ -6465,7 +6483,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByMessageIds(const Q
     return affectedByFolderIds(messageFolderIds, folderIds, accountIds);
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const
+QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *all_folderIds, QMailAccountIdList *all_accountIds) const
 {
     AttemptResult result;
 
@@ -6481,11 +6499,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
     if (result != Success)
         return result;
 
-    *folderIds = folders + ancestorIds;
+    QMailFolderIdList folderIds;
+    folderIds = folders + ancestorIds;
+    APPEND_UNIQUE(all_folderIds, &folderIds);
 
     // Find the set of accounts whose contents are modified by this update
     ReadLock l(self);
-    result = self->attemptFolderAccountIds(QMailFolderKey::id(*folderIds), accountIds, l);
+    QMailAccountIdList accountIds;
+    result = self->attemptFolderAccountIds(QMailFolderKey::id(folderIds), &accountIds, l);
+    APPEND_UNIQUE(all_accountIds, &accountIds);
     return result;
 }
 
