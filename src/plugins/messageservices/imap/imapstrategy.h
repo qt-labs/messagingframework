@@ -497,6 +497,7 @@ protected:
 
     uint _minimum;
     bool _fillingGap;
+    bool _listAll;
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
     QMailFolderIdList _updatedFolders;
 };
