@@ -2875,6 +2875,7 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _completionList.clear();
     _completionSectionList.clear();
     _newMinMaxMap.clear();
+    _listAll = false;
     
     ImapSynchronizeBaseStrategy::handleLogin(context);
 }
@@ -2942,6 +2943,25 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     if (rawServerRegion.cardinality()) {
         // Found region on server
         serverMinimum = rawServerRegion.minimum();
+        if (_listAll) {
+            // Considering all messages on the client in the folder
+            IntegerRegion beginningClientRegion; // none of these messages are on the server
+            foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(QMailMessageKey::parentFolderId(folder.id()), QMailMessageKey::ServerUid)) {
+                const QString uid(r.serverUid());
+                int serverUid(stripFolderPrefix(uid).toUInt());
+                if (serverUid < serverMinimum)
+                    beginningClientRegion.add(serverUid);
+            }
+            
+            QStringList removedList;
+            foreach(QString uid, beginningClientRegion.toStringList()) {
+                removedList.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
+            }
+            QMailMessageKey removedKey(QMailMessageKey::serverUid(removedList));
+            if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
+                qWarning() << "Unable to update removed message metadata for folder:" << folder.displayName();
+            }
+        }
     }
     
     IntegerRegion serverRange(serverMinimum, serverMaximum);
@@ -2975,14 +2995,8 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     IntegerRegion clientRegion;
     if ((clientMin != 0) && (clientMax != 0))
         clientRegion = IntegerRegion(clientMin, clientMax);
-    IntegerRegion serverRegion;
-    foreach(const QString &uid, properties.uidList) {
-        bool ok;
-        uint number = stripFolderPrefix(uid).toUInt(&ok);
-        if (ok)
-            serverRegion.add(number);
-    }
-    serverRegion = IntegerRegion(serverRegion.toStringList().mid(removed.count()));
+    
+    IntegerRegion serverRegion(rawServerRegion);
     if (!_fillingGap) {
         if (!clientRegion.isEmpty() && !serverRegion.isEmpty()) {
             uint newestClient(clientRegion.maximum());
@@ -2991,14 +3005,33 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
             if (newestClient + 1 < oldestServer) {
                 // There's a gap
                 _fillingGap = true;
-                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(newestClient + 1).arg(newestServer));
+                _listAll = true;
+                context->protocol().sendUidSearch(MFlag_All, QString("UID %1:%2").arg(clientRegion.minimum()).arg(newestServer));
                 return;
             }
         }
     }
     
-    // TODO: Why is all this code not in processUidSearchResults?
+    IntegerRegion serverNew(serverRegion.subtract(IntegerRegion(1, clientMax)));
+    IntegerRegion serverOld(serverRegion.subtract(IntegerRegion(clientMax + 1, INT_MAX)));
+    // Adjust for messages on client not on server
+    int adjustment(removed.count());
+    if (_listAll) {
+        // It's possible the server region extends to the beginning of the folder
+        // In this case insufficient information is available to adjust accurately
+        adjustment = 0;
+    }
+    // The idea here is that if the client has say n messages in a folder and 
+    // minimum is set to n then don't get any more messages even if some messages 
+    // are marked as removed on the client.
+    serverOld = IntegerRegion(serverOld.toStringList().mid(adjustment));
+    // a + b = c - (c - a - b)
+    if (!serverRegion.isEmpty()) {
+        IntegerRegion c(serverRegion.minimum(), serverRegion.maximum());
+        serverRegion = c.subtract(c.subtract(serverNew).subtract(serverOld));
+    }
     _updatedFolders.append(properties.id);
+    _listAll = false;
     
     IntegerRegion difference(serverRegion.subtract(clientRegion));
     if (difference.cardinality()) {
@@ -3025,6 +3058,7 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
     _fillingGap = false;
+    _listAll = false;
 
     // Could get flag changes mod sequences when CONDSTORE is available
     if ((properties.exists == 0) || (_minimum <= 0)) {
@@ -3052,6 +3086,8 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
         start = 1;
 
     if (!comparable) {
+        if (start == 1)
+            _listAll = true;
         // We need to determine these values again
         context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
         return;

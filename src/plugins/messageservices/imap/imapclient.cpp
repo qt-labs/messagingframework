@@ -1325,6 +1325,7 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 {
     // Find the local mailstore count for this folder
     QMailMessageKey folderContent(QMailMessageKey::parentFolderId(folder->id()));
+    folderContent &= ~QMailMessageKey::status(QMailMessage::Removed);
 
     uint count = QMailStore::instance()->countMessages(folderContent);
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
