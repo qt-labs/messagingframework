@@ -1358,7 +1358,7 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
         _progressRetrievalSize += it.value().first.first;
         context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
 
-        _retrievalSize.erase(it);
+        it = _retrievalSize.erase(it);
     }
 
     if (_listSize) {
@@ -2623,7 +2623,7 @@ bool ImapExportUpdatesStrategy::nextFolder()
 
     if (it.value().count() != 5) {
         qWarning() << "quintuple mismatch in export updates nextFolder, folder" << it.key() << "count" << it.value().count();
-        _folderMessageUids.erase(it);
+        it = _folderMessageUids.erase(it);
         return nextFolder();
     }
     
@@ -2634,7 +2634,7 @@ bool ImapExportUpdatesStrategy::nextFolder()
     _clientUnimportantUids = it.value()[3];
     _clientDeletedUids = it.value()[4];
 
-    _folderMessageUids.erase(it);
+    it = _folderMessageUids.erase(it);
     return true;
 }
 
@@ -2796,7 +2796,7 @@ bool ImapUpdateMessagesFlagsStrategy::nextFolder()
 
     _serverUids = it.value();
 
-    _folderMessageUids.erase(it);
+    it = _folderMessageUids.erase(it);
     return true;
 }
 
