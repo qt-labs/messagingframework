@@ -75,6 +75,15 @@ static QStringList stripFolderPrefix(const QStringList &list)
     return result;
 }
 
+static QMailFolderId serverFolderId(const QMailMessageMetaData &metaData)
+{
+    QMailFolderId previousParentFolderId = metaData.previousParentFolderId();
+    if (previousParentFolderId.isValid())
+        return previousParentFolderId;
+    
+    return metaData.parentFolderId();
+}
+
 static QStringList inFirstAndSecond(const QStringList &first, const QStringList &second)
 {
     // TODO: this may be more efficient if we convert both inputs to sets and perform set operations
@@ -871,10 +880,10 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     if (ids.count() == 0)
         return;
 
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
+        _selectionMap[serverFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
     }
 }
 
@@ -883,7 +892,7 @@ void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Loc
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[metaData.parentFolderId()].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
+        _selectionMap[serverFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
     }
 }
 
@@ -1187,14 +1196,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
 
             //use previousparentfolderid if available since the message may have been moved locally
-            QMailFolderId previousParentFolderId = metaData.previousParentFolderId();
-            QMailFolderId parentFolderId = metaData.parentFolderId();
-            QMailFolderId remoteFolderId;
-
-            if(previousParentFolderId.isValid())
-                remoteFolderId = previousParentFolderId;
-            else
-                remoteFolderId = parentFolderId;
+            QMailFolderId remoteFolderId(serverFolderId(metaData));
 
             _selectionMap[remoteFolderId].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
 
@@ -1217,7 +1219,7 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
     const QMailMessage message(location.containingMessageId());
     if (message.id().isValid()) {
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
-        _selectionMap[message.parentFolderId()].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
+        _selectionMap[serverFolderId(message)].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
 
         uint size = 0;
         uint bytes = minimum;
