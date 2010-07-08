@@ -96,7 +96,7 @@ void PopClient::newConnection()
     PopConfiguration popCfg(config);
     if ( popCfg.mailServer().isEmpty() ) {
         status = Exit;
-        retrieveOperationCompleted();
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without POP server configuration"));
         return;
     }
 
