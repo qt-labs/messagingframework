@@ -1941,6 +1941,22 @@ void EmailClient::moveSelectedMessages()
 
 void EmailClient::copySelectedMessages()
 {
+    QMailMessageIdList copyIds = messageListView()->selected();
+    foreach(QMailMessageId id, copyIds) {
+        QMailMessage message(id);
+        bool complete(message.status() & QMailMessage::ContentAvailable);
+        for(uint i = 0; (i < message.partCount()) && complete; ++i) {
+            complete &= message.partAt(i).contentAvailable();
+        }
+        
+        if (!complete) {
+            // IMAP limitation
+            AcknowledgmentBox::show(tr("Cannot copy"), tr("Can not copy partial message"));
+            return;
+        }
+    }
+    
+    
     if (applyToSelectedFolder(&EmailClient::copySelectedMessagesTo)) {
         if (markingMode) {
             // After copying the messages, clear marking mode
