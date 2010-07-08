@@ -442,7 +442,7 @@ void ImapClient::newConnection()
 
     ImapConfiguration imapCfg(_config);
     if ( imapCfg.mailServer().isEmpty() ) {
-        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without IMAP server configuration"));
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without IMAP server configuration"));
         return;
     }
 
