@@ -1293,7 +1293,8 @@ QStringList ImapClient::serverUids(QMailMessageKey key) const
     QStringList uidList;
 
     foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ServerUid))
-        uidList.append(r.serverUid());
+        if (!r.serverUid().isEmpty())
+            uidList.append(r.serverUid());
 
     return uidList;
 }
@@ -1316,7 +1317,8 @@ QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
     QStringList serverUidList;
 
     foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(_config.id(), folderId))
-        serverUidList.append(r.serverUid());
+        if (!r.serverUid().isEmpty())
+            serverUidList.append(r.serverUid());
 
     return serverUidList;
 }
