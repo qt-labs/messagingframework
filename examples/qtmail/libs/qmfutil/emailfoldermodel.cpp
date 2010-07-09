@@ -68,6 +68,7 @@ QMailMessageKey EmailStandardFolderMessageSet::contentKey(QMailFolder::StandardF
     switch (type) {
     case QMailFolder::OutboxFolder:
         setMask = QMailMessage::Outbox;
+        unsetMask = QMailMessage::Trash;
         break;
 
     case QMailFolder::DraftsFolder:

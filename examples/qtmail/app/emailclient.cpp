@@ -1177,7 +1177,7 @@ void EmailClient::mailResponded()
 void EmailClient::sendAllQueuedMail(bool userRequest)
 {
     transmissionFailure = false;
-    QMailMessageKey outboxFilter(QMailMessageKey::status(QMailMessage::Outbox));
+    QMailMessageKey outboxFilter(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
 
     if (transmitAccountIds.isEmpty()) {
         // Find which accounts have messages to transmit in the outbox

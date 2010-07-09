@@ -1024,7 +1024,7 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
     } else {
         // We need to see if any sources are required to prepare these messages
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
-        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
 
         // We need to prepare messages to:
         // - resolve references
@@ -1085,7 +1085,7 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
     if (QMailMessageSink *sink = accountSink(accountId)) {
         // Transmit any messages in the Outbox for this account
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
-        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox, QMailDataComparator::Includes));
+        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
 
         if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey))) {
             qMailLog(Messaging) << "Unable to service request to add messages to sink for account:" << accountId;
