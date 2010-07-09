@@ -2846,10 +2846,15 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
 
    Retrieval order is defined by server uid.
 */
-void ImapRetrieveMessageListStrategy::setMinimum(int minimum)
+void ImapRetrieveMessageListStrategy::setMinimum(uint minimum)
 {
     _minimum = minimum;
     _mailboxIds.clear();
+}
+
+void ImapRetrieveMessageListStrategy::setAccountCheck(bool check)
+{
+    _accountCheck = check;
 }
 
 void ImapRetrieveMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
@@ -3060,12 +3065,12 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
 {
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
-    int minimum(_minimum);
-    if (minimum == -1) {
-        // Request all (non search) messages in this folder
+    uint minimum(_minimum);
+    if (_accountCheck) {
+        // Request all (non search) messages in this folder or _minimum which ever is greater
         QMailMessageKey countKey(QMailMessageKey::parentFolderId(properties.id));
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
-        minimum = QMailStore::instance()->countMessages(countKey);
+        minimum = qMax((uint)QMailStore::instance()->countMessages(countKey), _minimum);
     }   
     _fillingGap = false;
     _listAll = false;

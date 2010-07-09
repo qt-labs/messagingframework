@@ -481,7 +481,8 @@ public:
     ImapRetrieveMessageListStrategy() {}
     virtual ~ImapRetrieveMessageListStrategy() {}
 
-    virtual void setMinimum(int minimum);
+    virtual void setMinimum(uint minimum);
+    virtual void setAccountCheck(bool accountCheck);
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
@@ -495,7 +496,8 @@ protected:
 
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
 
-    int _minimum;
+    uint _minimum;
+    bool _accountCheck;
     bool _fillingGap;
     bool _listAll;
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
