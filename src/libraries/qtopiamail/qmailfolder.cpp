@@ -57,6 +57,7 @@ static quint64 childCreationPermittedFlag = 0;
 static quint64 renamePermittedFlag = 0;
 static quint64 deletionPermittedFlag = 0;
 static quint64 nonMailFlag = 0;
+static quint64 messagesPermittedFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -144,6 +145,7 @@ public:
             renamePermittedFlag = registerFlag("RenamePermitted");
             deletionPermittedFlag = registerFlag("DeletionPermitted");
             nonMailFlag = registerFlag("NonMail");
+            messagesPermittedFlag = registerFlag("MessagesPermitted");
         }
     }
 
@@ -268,6 +270,52 @@ private:
 */
 
 /*!
+    \variable QMailFolder::ChildCreationPermitted
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "ChildCreationPermitted" against the result of QMailFolder::status().
+
+    This flag indicates that creation of child folders of this folder is allowed.
+*/
+
+/*!
+    \variable QMailFolder::RenamePermitted
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "RenamePermitted" against the result of QMailFolder::status().
+
+    This flag indicates that the folder may be renamed.
+*/
+
+/*!
+    \variable QMailFolder::DeletionPermitted
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "DeletionPermitted" against the result of QMailFolder::status().
+
+    This flag indicates that the folder may be deleted.
+*/
+
+/*!
+    \variable QMailFolder::MessagesPermitted
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "MessagesPermitted" against the result of QMailFolder::status().
+
+    This flag indicates that the folder is allowed to contain messages.
+*/
+
+/*!
+    \variable QMailFolder::NonMail
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "NonMail" against the result of QMailFolder::status().
+
+    This flag indicates that the folder contains only non mail items such as calendar 
+    and/or contacts items.
+*/
+
+/*!
     \enum QMailFolder::StandardFolder
 
     This enum type describes the standard folders pertinent to many account types.
@@ -295,6 +343,7 @@ const quint64 &QMailFolder::ChildCreationPermitted = childCreationPermittedFlag;
 const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
 const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
 const quint64 &QMailFolder::NonMail = nonMailFlag;
+const quint64 &QMailFolder::MessagesPermitted = messagesPermittedFlag;
 
 
 /*!

@@ -720,6 +720,11 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             else
                 folder.setStatus(QMailFolder::ChildCreationPermitted, true);
 
+            if(flags.contains("\\NoSelect"))
+                folder.setStatus(QMailFolder::MessagesPermitted, false);
+            else
+                folder.setStatus(QMailFolder::MessagesPermitted, true);
+
             // The reported flags pertain to the listed folder only
             QString folderFlags;
             if (mailboxPath == path) {
