@@ -291,7 +291,7 @@ public:
 
     QVariant content() const { return static_cast<int>(_data.content()); }
 
-    QVariant previousParentFolderId() const { if(!_data.previousParentFolderId().isValid()) return QVariant(QVariant::Int); else return _data.previousParentFolderId().toULongLong(); }
+    QVariant previousParentFolderId() const { return _data.previousParentFolderId().toULongLong(); }
 
     QVariant contentScheme() const { return _data.contentScheme(); }
 
@@ -2102,7 +2102,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 104)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 107)
+                                            << tableInfo("mailmessages", 108)
                                             << tableInfo("mailmessagecustom", 100)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
@@ -4448,9 +4448,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         values.insert("responseid", metaData->inResponseTo().toULongLong());
         values.insert("responsetype", metaData->responseType());
         values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toLocalTime());
-        if (metaData->previousParentFolderId().isValid()) {
-            values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
-        }
+        values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
 
         const QStringList &list(values.keys());
         QString columns = list.join(",");
