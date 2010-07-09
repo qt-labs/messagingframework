@@ -686,6 +686,9 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
+        bool childCreationPermitted(flags.contains("\\NoInferiors", Qt::CaseInsensitive));
+        bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
+        
         if (!mailboxPath.isEmpty())
             mailboxPath.append(_protocol.delimiter());
         mailboxPath.append(*it);
@@ -695,6 +698,16 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             // This element already exists
             if (mailboxPath == path) {
                 QMailFolder folder(boxId); 
+                QMailFolder folderOriginal(folder); 
+                folder.setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
+                folder.setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
+                
+                if (folder.status() != folderOriginal.status()) {
+                    if (!QMailStore::instance()->updateFolder(&folder)) {
+                        qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                    }
+                }
+                
                 _strategyContext->mailboxListed(folder, flags);
             }
 
@@ -714,16 +727,8 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 folder.setStatus(QMailFolder::DeletionPermitted, true);
                 folder.setStatus(QMailFolder::RenamePermitted, true);
             }
-
-            if(flags.contains("\\NoInferiors"))
-                folder.setStatus(QMailFolder::ChildCreationPermitted, false);
-            else
-                folder.setStatus(QMailFolder::ChildCreationPermitted, true);
-
-            if(flags.contains("\\NoSelect"))
-                folder.setStatus(QMailFolder::MessagesPermitted, false);
-            else
-                folder.setStatus(QMailFolder::MessagesPermitted, true);
+            folder.setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
+            folder.setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
 
             // The reported flags pertain to the listed folder only
             QString folderFlags;
