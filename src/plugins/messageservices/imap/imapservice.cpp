@@ -194,6 +194,8 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     }
     
     QMailFolderIdList folderIds;
+    _service->_client.strategyContext()->retrieveMessageListStrategy.clearSelection();
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
     if (folderId.isValid()) {
         folderIds.append(folderId);
     } else {
@@ -202,10 +204,9 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
         QMailFolderKey canSelectKey(QMailFolderKey::status(QMailFolder::MessagesPermitted));
         QMailFolderKey filterKey(accountKey & canSelectKey);
         folderIds = QMailStore::instance()->queryFolders(filterKey, QMailFolderSortKey::id(Qt::AscendingOrder));
+        _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(-1); // All messages in folder
     }
 
-    _service->_client.strategyContext()->retrieveMessageListStrategy.clearSelection();
-    _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
     _service->_client.strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
     appendStrategy(&_service->_client.strategyContext()->retrieveMessageListStrategy);
     if(!_unavailable)

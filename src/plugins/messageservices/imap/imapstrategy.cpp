@@ -2846,7 +2846,7 @@ void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContex
 
    Retrieval order is defined by server uid.
 */
-void ImapRetrieveMessageListStrategy::setMinimum(uint minimum)
+void ImapRetrieveMessageListStrategy::setMinimum(int minimum)
 {
     _minimum = minimum;
     _mailboxIds.clear();
@@ -2940,6 +2940,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         if (ok)
             rawServerRegion.add(number);
     }
+
     int serverMinimum = properties.uidNext;
     int serverMaximum = properties.uidNext;
     if (rawServerRegion.cardinality()) {
@@ -3059,11 +3060,18 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
 {
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
+    int minimum(_minimum);
+    if (minimum == -1) {
+        // Request all (non search) messages in this folder
+        QMailMessageKey countKey(QMailMessageKey::parentFolderId(properties.id));
+        countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+        minimum = QMailStore::instance()->countMessages(countKey);
+    }   
     _fillingGap = false;
     _listAll = false;
 
     // Could get flag changes mod sequences when CONDSTORE is available
-    if ((properties.exists == 0) || (_minimum <= 0)) {
+    if ((properties.exists == 0) || (minimum <= 0)) {
         // No messages, so no need to perform search
         if (properties.exists == 0) {
             // Folder is completely empty mark all messages in it on client as removed
@@ -3077,51 +3085,18 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
         return;
     }
 
-    bool comparable(false);
-    
     // Compute starting sequence number
-    int start = static_cast<int>(properties.exists) - _minimum + 1;
+    int start = static_cast<int>(properties.exists) - minimum + 1;
     // In the case of retrieving new messages only (minimum = 1) and multiple messages 
     // have arrived could possibly save a round trip by: 
     //   start -= QMailFolder(properties.id).serverUndiscoveredCount(); 
     if (start < 1)
         start = 1;
 
-    if (!comparable) {
-        if (start == 1)
-            _listAll = true;
-        // We need to determine these values again
-        context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
-        return;
-    }
-
-    // Optimized case, currently unreachable
-    
-    // The idea here is that we don't need to re-retrieve the uids of already stored messages.
-    // Problems occur because there's no simple way to say in IMAP 
-    //  search for the highest n uids less than uid x for some numbers n and x,
-    // so sequence numbers are used, but they are fragile. Since:
-    // 
-    //   Messages may arrive in the currently selected folder, but this is not easy to
-    //   determine, even when monitoring for unsolicited EXISTS responses
-    //   (there's no unsolicited UIDNEXT response, and race conditions with the EXIST response).
-    
-    QMailMessageKey countKey(context->client()->messagesKey(properties.id));
-    countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
-    uint onClient(QMailStore::instance()->countMessages(countKey));
-    if ((onClient >= _minimum) || (onClient >= properties.exists)) {
-        // We already have _minimum mails
-        processUidSearchResults(context);
-        return;
-    }
-
-    int end = properties.exists - onClient;
-    if (end >= start) {
-        context->protocol().sendUidSearch(MFlag_All, QString("%1:%2").arg(start).arg(end));
-    } else {
-        // We already have all the mails
-        processUidSearchResults(context);
-    }
+    if (start == 1)
+        _listAll = true;
+    // We need to determine these values again
+    context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
 }
 
 void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContextBase *context)
