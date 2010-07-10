@@ -332,8 +332,8 @@ void tst_QMailCodec::line_lengths_data()
         << "The quick brown fox jumps over the lazy dog"
         << "UTF-8"
         << QByteArray("VGhlIHF1aWNrIGJyb3duIGZveCBqdW1w\r\ncyBvdmVyIHRoZSBsYXp5IGRvZw==")
-        << QByteArray("The quick brown fox jumps over=\n the lazy dog")
-        << QByteArray("The_quick_brown_fox_jumps_over=\n_the_lazy_dog");
+        << QByteArray("The quick brown fox jumps over=\r\n the lazy dog")
+        << QByteArray("The_quick_brown_fox_jumps_over=\r\n_the_lazy_dog");
 
     QTest::newRow("line length 16") 
         << 16
@@ -341,8 +341,8 @@ void tst_QMailCodec::line_lengths_data()
         << "The quick brown fox jumps over the lazy dog"
         << "UTF-8"
         << QByteArray("VGhlIHF1aWNrIGJy\r\nb3duIGZveCBqdW1w\r\ncyBvdmVyIHRoZSBs\r\nYXp5IGRvZw==")
-        << QByteArray("The quick brown=\n fox jumps over=\n the lazy dog")
-        << QByteArray("The_quick_brown=\n_fox_jumps_over=\n_the_lazy_dog");
+        << QByteArray("The quick brown=\r\n fox jumps over=\r\n the lazy dog")
+        << QByteArray("The_quick_brown=\r\n_fox_jumps_over=\r\n_the_lazy_dog");
 
     QTest::newRow("line length 8") 
         << 8
@@ -350,8 +350,8 @@ void tst_QMailCodec::line_lengths_data()
         << "The quick brown fox jumps over the lazy dog"
         << "UTF-8"
         << QByteArray("VGhlIHF1\r\naWNrIGJy\r\nb3duIGZv\r\neCBqdW1w\r\ncyBvdmVy\r\nIHRoZSBs\r\nYXp5IGRv\r\nZw==")
-        << QByteArray("The quic=\nk brown=\n fox jum=\nps over=\n the laz=\ny dog")
-        << QByteArray("The_quic=\nk_brown=\n_fox_jum=\nps_over=\n_the_laz=\ny_dog");
+        << QByteArray("The quic=\r\nk brown=\r\n fox jum=\r\nps over=\r\n the laz=\r\ny dog")
+        << QByteArray("The_quic=\r\nk_brown=\r\n_fox_jum=\r\nps_over=\r\n_the_laz=\r\ny_dog");
 
     QTest::newRow("whitespace") 
         << 8
@@ -359,8 +359,8 @@ void tst_QMailCodec::line_lengths_data()
         << "The    quick\t\t  brown\t     \tfox"
         << "UTF-8"
         << QByteArray("VGhlICAg\r\nIHF1aWNr\r\nCQkgIGJy\r\nb3duCSAg\r\nICAgCWZv\r\neA==")
-        << QByteArray("The  =20=\n quick=\n\t\t  brow=\nn\t   =20=\n \tfox")
-        << QByteArray("The__=20=\n_quick=\n=09=09=\n__brown=\n=09__=20=\n__=09fox");
+        << QByteArray("The  =20=\r\n quick=\r\n\t\t  brow=\r\nn\t   =20=\r\n \tfox")
+        << QByteArray("The__=20=\r\n_quick=\r\n=09=09=\r\n__brown=\r\n=09__=20=\r\n__=09fox");
 
     // Restore normality
     QTest::newRow("restore default line length") 
@@ -506,8 +506,10 @@ void tst_QMailCodec::buffer_sizes()
     QString plaintext("The    quick\t\t  brown\t     \tfox");
     QString charset("UTF-8");
     QByteArray base64_encoded("VGhlICAg\r\nIHF1aWNr\r\nCQkgIGJy\r\nb3duCSAg\r\nICAgCWZv\r\neA==");
-    QByteArray qp2045_encoded("The  =20=\n quick=\n\t\t  brow=\nn\t   =20=\n \tfox");
-    QByteArray qp2047_encoded("The__=20=\n_quick=\n=09=09=\n__brown=\n=09__=20=\n__=09fox");
+    QByteArray qp2045_encoded("The  =20=\r\n quick=\r\n\t\t  brow=\r\nn\t   =20=\r\n \tfox");
+    QByteArray qp2047_encoded("The__=20=\r\n_quick=\r\n=09=09=\r\n__brown=\r\n=09__=20=\r\n__=09fox");
+    QByteArray qp2045_encoded_unix("The  =20=\n quick=\n\t\t  brow=\nn\t   =20=\n \tfox");
+    QByteArray qp2047_encoded_unix("The__=20=\n_quick=\n=09=09=\r\n__brown=\n=09__=20=\n__=09fox");
 
     QByteArray encoded;
     QString reversed;
@@ -533,6 +535,11 @@ void tst_QMailCodec::buffer_sizes()
         QCOMPARE(reversed, plaintext);
     }
     {
+        QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
+        reversed = codec.decode(qp2045_encoded_unix, charset);
+        QCOMPARE(reversed, plaintext);
+    }
+    {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
         encoded = codec.encode(plaintext, charset);
         QCOMPARE(encoded, qp2047_encoded);
@@ -540,6 +547,11 @@ void tst_QMailCodec::buffer_sizes()
     {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
         reversed = codec.decode(encoded, charset);
+        QCOMPARE(reversed, plaintext);
+    }
+    {
+        QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
+        reversed = codec.decode(qp2047_encoded_unix, charset);
         QCOMPARE(reversed, plaintext);
     }
 
@@ -580,6 +592,12 @@ void tst_QMailCodec::embedded_newlines()
     QFETCH(QByteArray, binary_encoded);
     QFETCH(QString, binary_decoded);
     QFETCH(QByteArray, b64_encoded);
+    
+    // Prevent cascading failures
+    int originalBase64MaxLineLength = Base64MaxLineLength;
+    Base64MaxLineLength = 76;
+    int originalQuotedPrintableMaxLineLength = QuotedPrintableMaxLineLength;
+    QuotedPrintableMaxLineLength = 74; 
 
     QByteArray encoded;
     QString reversed;
@@ -662,5 +680,7 @@ void tst_QMailCodec::embedded_newlines()
         reversed = codec.decode(encoded, charset);
         QCOMPARE( reversed, plaintext );
     }
+    Base64MaxLineLength = originalBase64MaxLineLength;
+    QuotedPrintableMaxLineLength = originalQuotedPrintableMaxLineLength;
 }
 
