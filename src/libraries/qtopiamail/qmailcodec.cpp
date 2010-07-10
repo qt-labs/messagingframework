@@ -882,6 +882,7 @@ void QMailQuotedPrintableCodec::decodeChunk(QDataStream& out, const char* it, in
                 value = decodeCharacter(input);
                 _decodePrecedingInput = value;
             }
+            _decodeLastChar = input;
         }
         else
         {
