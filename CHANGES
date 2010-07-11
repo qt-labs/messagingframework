@@ -1,6 +1,21 @@
 Latest Changes
 ---------------
 
+2010W28
+  * Fixes: NB#176450 - Lack of interface to distinguish user cancelled and internally cancelled services
+  * Fixes: NB#166468 - retrieveMessageList does not detect messages deleted on server
+  * Fixes: NB#168536 - Actual messages are not removed from qmf database upon account deletion from...
+  * Fixes: NB#176460 - Message importance is not available almost instantly
+  * Fixes: NB#153703 - When sending email in offline mode, email is found in Draft folder instead of Outbox
+  * Fixes: NB#177952 - SmtpService::Sink::transmitMessages() does not send mail when outbox has invalid mails
+  * Fixes: NB#167919 - Lack of interface to distinguish between mail and non-mail folders
+  * Fixes: NB#171448 - Messages from pop accounts are put into common folder
+  * Fixes: QTSOL-162 - retrieveMessageList retrieves all messages for pop accounts
+  * Fixes: QTSOL-161 - QMF data directory is world readable
+  * Fixes: QTSOL-160 - Some mails are corrupted when copied between folders
+  * Fixes: QTSOL-159 - Copying messages between folders on a fastmail account fails
+  * Fixes: NB#170917 - Failure to handle message header fields containing unmatched " character
+
 2010W24
   * Fixes: NB#161943 - qtmail incorrectly sends message/rfc822 attachments
 
