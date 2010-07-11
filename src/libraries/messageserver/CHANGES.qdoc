@@ -13,6 +13,13 @@ Changes since the QMF-1.0 release on 15/05/09:
 1. Changed 'QMailMessageSource::prepareMessages(const QMailMessageIdList&)' to
            'QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> >&).
 
+2. Added 'QMailMessageSink::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode)' signal.
+
+3. Changed 'virtual bool QMailMessageSink::cancelOperation()' to 
+   'virtual bool QMailMessageSink::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)'
+
+4. Added 'bool QMailMessageSink::cancelOperation()'
+
 
 *****************************************************************************
 
