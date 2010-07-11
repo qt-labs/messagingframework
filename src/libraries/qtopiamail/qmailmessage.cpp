@@ -422,7 +422,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047, maximumEncoded);
         QByteArray encoded = codec.encode(text, charset);
-        return generateEncodedWord(charset, 'Q', split(encoded, "=\n"));
+        return generateEncodedWord(charset, 'Q', split(encoded, "=\r\n"));
     }
 
     if (encoded)
