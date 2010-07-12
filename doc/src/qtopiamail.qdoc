@@ -159,16 +159,6 @@ Placeholder: The results of these tests would be available <here>, if those resu
 
 The Client library requires SQL support either through the included SQLite or through some other SQL engine.
 
-\section1 Examples
-
-The Client library contains some example programs that demonstrate how to use the library's functionality.
-
-\table
-\header \o Name \o Description
-\row \o \l{MessageViewer Example}{MessageViewer} \o Demonstrates the use of QMailMessageMetaData and QMailMessageKey in finding and viewing messages.
-\row \o \l{MessageNavigator Example}{MessageNavigator} \o Demonstrates the use of QMailMessageSetModel and QMailMessageListModel in presenting account, folder and message listings.
-\endtable
-
 \section1 Changes Between Versions
 
 Historical changes in the Client library API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
