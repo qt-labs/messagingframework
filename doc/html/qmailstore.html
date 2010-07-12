@@ -51,6 +51,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">QMailFolder </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#folder">folder</a></b> ( const QMailFolderId &amp; <i>id</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#folderStatusMask">folderStatusMask</a></b> ( const QString &amp; <i>name</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#lastError">lastError</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#lock">lock</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessage </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#message">message</a></b> ( const QMailMessageId &amp; <i>id</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessage </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#message-2">message</a></b> ( const QString &amp; <i>uid</i>, const QMailAccountId &amp; <i>accountId</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageMetaData </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#messageMetaData">messageMetaData</a></b> ( const QMailMessageId &amp; <i>id</i> ) const</td></tr>
@@ -76,6 +77,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#setRetrievalInProgress">setRetrievalInProgress</a></b> ( const QMailAccountIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#setTransmissionInProgress">setTransmissionInProgress</a></b> ( const QMailAccountIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#sizeOfMessages">sizeOfMessages</a></b> ( const QMailMessageKey &amp; <i>key</i> = QMailMessageKey() ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#unlock">unlock</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#updateAccount">updateAccount</a></b> ( QMailAccount * <i>account</i>, QMailAccountConfiguration * <i>config</i> = 0 )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#updateAccountConfiguration">updateAccountConfiguration</a></b> ( QMailAccountConfiguration * <i>config</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#updateFolder">updateFolder</a></b> ( QMailFolder * <i>folder</i> )</td></tr>
@@ -267,6 +269,10 @@
 <p>See also <a href="qmailstore.html#initializationState">initializationState</a>().</p>
 <h3 class="fn"><a name="lastError"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailStore::lastError () const</h3>
 <p>Returns the code of the last error condition reported by the <a href="qmailstore.html">QMailStore</a>.</p>
+<h3 class="fn"><a name="lock"></a>void QMailStore::lock ()</h3>
+<p>Locks <a href="qmailstore.html">QMailStore</a>, preventing all write operations from taking place. Will block until all write operations have completed and it can get a lock. Read-only operations will be permitted as normal.To resume normal operation <a href="qmailstore.html#unlock">unlock</a>() must be called.</p>
+<p>Note: This method only needs to be used in exceptional circumstances, such as when directly accessing the content of <a href="qmailstore.html">QMailStore</a> files e.g&#x2e; for backing up data.</p>
+<p>See also <a href="qmailstore.html#unlock">unlock</a>().</p>
 <h3 class="fn"><a name="message"></a><a href="qmailmessage.html">QMailMessage</a> QMailStore::message ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i> ) const</h3>
 <p>Returns the <a href="qmailmessage.html">QMailMessage</a> defined by the <a href="qmailmessageid.html">QMailMessageId</a> <i>id</i> from the store.</p>
 <h3 class="fn"><a name="message-2"></a><a href="qmailmessage.html">QMailMessage</a> QMailStore::message ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>uid</i>, const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> ) const</h3>
@@ -326,16 +332,22 @@
 <p>See also <a href="qmailstore.html#messageStatusMask">messageStatusMask</a>().</p>
 <h3 class="fn"><a name="removeAccount"></a>bool QMailStore::removeAccount ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i> )</h3>
 <p>Removes a <a href="qmailaccount.html">QMailAccount</a> with <a href="qmailaccountid.html">QMailAccountId</a> <i>id</i> from the store. Also removes any folder, message and message removal records associated with the removed account. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailaccount.html">QMailAccount</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="removeAccounts"></a>bool QMailStore::removeAccounts ( const <a href="qmailaccountkey.html">QMailAccountKey</a> &amp; <i>key</i> )</h3>
 <p>Removes all QMailAccounts identified by the key <i>key</i> from the store. Also removes any folder, message and message removal records associated with the removed account. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailaccount.html">QMailAccount</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="removeFolder"></a>bool QMailStore::removeFolder ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i>, <a href="qmailstore.html#MessageRemovalOption-enum">MessageRemovalOption</a> <i>option</i> = NoRemovalRecord )</h3>
 <p>Removes a <a href="qmailfolder.html">QMailFolder</a> with <a href="qmailfolderid.html">QMailFolderId</a> <i>id</i> from the message store. Also removes any sub-folders of the identified folder, and any messages contained in any of the folders removed. If <i>option</i> is <a href="qmailstore.html#MessageRemovalOption-enum">QMailStore::CreateRemovalRecord</a> then removal records will be created for each removed message. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailfolder.html">QMailFolder</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="removeFolders"></a>bool QMailStore::removeFolders ( const <a href="qmailfolderkey.html">QMailFolderKey</a> &amp; <i>key</i>, <a href="qmailstore.html#MessageRemovalOption-enum">MessageRemovalOption</a> <i>option</i> = NoRemovalRecord )</h3>
 <p>Removes all QMailFolders identified by the key <i>key</i> from the message store. Also removes any sub-folders of the removed folders, and any messages contained in any of the folders removed. If <i>option</i> is <a href="qmailstore.html#MessageRemovalOption-enum">QMailStore::CreateRemovalRecord</a> then removal records will be created for each removed message. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailfolder.html">QMailFolder</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="removeMessage"></a>bool QMailStore::removeMessage ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i>, <a href="qmailstore.html#MessageRemovalOption-enum">MessageRemovalOption</a> <i>option</i> = NoRemovalRecord )</h3>
 <p>Removes a <a href="qmailmessage.html">QMailMessage</a> with <a href="qmailmessageid.html">QMailMessageId</a> <i>id</i> from the message store. If <i>option</i> is <a href="qmailstore.html#MessageRemovalOption-enum">QMailStore::CreateRemovalRecord</a> then a removal record will be created for the removed message. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailmessage.html">QMailMessage</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="removeMessages"></a>bool QMailStore::removeMessages ( const <a href="qmailmessagekey.html">QMailMessageKey</a> &amp; <i>key</i>, <a href="qmailstore.html#MessageRemovalOption-enum">MessageRemovalOption</a> <i>option</i> = NoRemovalRecord )</h3>
 <p>Removes all QMailMessages identified by the key <i>key</i> from the message store. If <i>option</i> is <a href="qmailstore.html#MessageRemovalOption-enum">QMailStore::CreateRemovalRecord</a> then removal records will be created for each removed message. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>Note: Using a <a href="qmailmessage.html">QMailMessage</a> instance after it has been removed from the store will result in undefined behavior.</p>
 <h3 class="fn"><a name="restoreToPreviousFolder"></a>bool QMailStore::restoreToPreviousFolder ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i> )</h3>
 <p>Updates the <a href="qmailmessage.html">QMailMessage</a> with <a href="qmailmessageid.html">QMailMessageId</a> <i>id</i> to move the message back to the previous folder it was contained by.</p>
 <p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
@@ -356,6 +368,9 @@
 <h3 class="fn"><a name="transmissionInProgress"></a>void QMailStore::transmissionInProgress ( const <a href="qmailaccountid.html#QMailAccountIdList-typedef">QMailAccountIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <p>Signal that is emitted when the set of accounts currently transmitting to external sources is modified to <i>ids</i>. Accounts listed in <i>ids</i> are likely to be the source of numerous mail store signals; some clients may wish to ignore updates associated with these accounts whilst they are engaged in transmitting.</p>
 <p>See also <a href="qmailstore.html#setTransmissionInProgress">setTransmissionInProgress</a>() and <a href="qmailstore.html#retrievalInProgress">retrievalInProgress</a>().</p>
+<h3 class="fn"><a name="unlock"></a>void QMailStore::unlock ()</h3>
+<p>Unlocks <a href="qmailstore.html">QMailStore</a>, allowing write operations to resume. This must only be used after a <a href="qmailstore.html#lock">lock</a>() call and from the same process in which <a href="qmailstore.html#lock">lock</a>() was called.</p>
+<p>See also <a href="qmailstore.html#lock">lock</a>().</p>
 <h3 class="fn"><a name="updateAccount"></a>bool QMailStore::updateAccount ( <a href="qmailaccount.html">QMailAccount</a> * <i>account</i>, <a href="qmailaccountconfiguration.html">QMailAccountConfiguration</a> * <i>config</i> = 0 )</h3>
 <p>Updates the existing <a href="qmailaccount.html">QMailAccount</a> <i>account</i> on the store, with the configuration details optionally specified by <i>config</i>. Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
 <h3 class="fn"><a name="updateAccountConfiguration"></a>bool QMailStore::updateAccountConfiguration ( <a href="qmailaccountconfiguration.html">QMailAccountConfiguration</a> * <i>config</i> )</h3>

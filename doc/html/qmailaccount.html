@@ -56,8 +56,11 @@
 <h2>Static Public Members</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#AppendSignature-var">AppendSignature</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanCreateFolders-var">CanCreateFolders</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanReferenceExternalData-var">CanReferenceExternalData</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanRetrieve-var">CanRetrieve</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanTransmit-var">CanTransmit</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#CanTransmitViaReference-var">CanTransmitViaReference</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#Enabled-var">Enabled</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#MessageSink-var">MessageSink</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#MessageSource-var">MessageSource</a></b></td></tr>
@@ -172,26 +175,33 @@
 <h3 class="fn"><a name="AppendSignature-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::AppendSignature</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;AppendSignature&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that an account has been configured to append a signature block to outgoing messages.</p>
+<h3 class="fn"><a name="CanCreateFolders-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanCreateFolders</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Enabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that top level folders can be created for the account.</p>
+<p>See also <a href="qmailstorageaction.html#createFolder">QMailStorageAction::createFolder</a>() and <a href="qmailfolder.html#ChildCreationPermitted-var">QMailFolder::ChildCreationPermitted</a>.</p>
+<h3 class="fn"><a name="CanReferenceExternalData-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanReferenceExternalData</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Enabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account can contain messages that reference data in other messages.</p>
+<p>See also <a href="qmailmessagepart.html#setReference">QMailMessagePart::setReference</a>().</p>
 <h3 class="fn"><a name="CanRetrieve-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanRetrieve</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;CanRetrieve&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account has been sufficiently configured that an attempt to retrieve messages may be performed.</p>
-<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
 <h3 class="fn"><a name="CanTransmit-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanTransmit</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;CanTransmit&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account has been sufficiently configured that an attempt to transmit messages may be performed.</p>
-<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
+<h3 class="fn"><a name="CanTransmitViaReference-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::CanTransmitViaReference</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Enabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account can be used to transmit messages that contain references.</p>
+<p>See also <a href="qmailmessagepart.html#setReference">QMailMessagePart::setReference</a>().</p>
 <h3 class="fn"><a name="Enabled-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::Enabled</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Enabled&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account has been marked as suitable for use by the messaging server.</p>
-<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
 <h3 class="fn"><a name="MessageSink-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::MessageSink</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;MessageSink&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account has been configured to act as a transmitter of outgoing messages.</p>
-<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
 <h3 class="fn"><a name="MessageSource-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::MessageSource</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;MessageSink&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account has been configured to act as a source of incoming messages.</p>
-<p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
 <h3 class="fn"><a name="PreferredSender-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::PreferredSender</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;PreferredSender&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account is the user's preferred account for sending the type of message that the account creates.</p>

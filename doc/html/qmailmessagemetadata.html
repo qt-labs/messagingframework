@@ -83,11 +83,13 @@
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#HasAttachments-var">HasAttachments</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#HasReferences-var">HasReferences</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#HasUnresolvedReferences-var">HasUnresolvedReferences</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#HighPriority-var">HighPriority</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Important-var">Important</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#ImportantElsewhere-var">ImportantElsewhere</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Incoming-var">Incoming</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Junk-var">Junk</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#LocalOnly-var">LocalOnly</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#LowPriority-var">LowPriority</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#New-var">New</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Outbox-var">Outbox</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Outgoing-var">Outgoing</a></b></td></tr>
@@ -280,6 +282,10 @@
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;HasUnresolvedReferences&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
 <p>This flag indicates that the message contains at least one sub-part which is a reference, that has no corresponding resolution value.</p>
 <p>See also <a href="qmailmessagepart.html#referenceType">QMailMessagePart::referenceType</a>() and <a href="qmailmessagepart.html#referenceResolution">QMailMessagePart::referenceResolution</a>().</p>
+<h3 class="fn"><a name="HighPriority-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::HighPriority</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;HighPriority&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
+<p>This flag indicates that the message has a header field specifying that the message is high priority. This flag is set only during message parsing.</p>
+<p>See also <a href="qmailmessage.html#fromRfc2822">QMailMessage::fromRfc2822</a>().</p>
 <h3 class="fn"><a name="Important-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::Important</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Important&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
 <p>This flag indicates that the message is marked as important.</p>
@@ -295,6 +301,10 @@
 <h3 class="fn"><a name="LocalOnly-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::LocalOnly</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;LocalOnly&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
 <p>This flag indicates that the message exists only on the local device, and has no representation on any external server.</p>
+<h3 class="fn"><a name="LowPriority-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::LowPriority</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;LowPriority&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
+<p>This flag indicates that the message has a header field specifying that the message is low priority. This flag is set only during message parsing.</p>
+<p>See also <a href="qmailmessage.html#fromRfc2822">QMailMessage::fromRfc2822</a>().</p>
 <h3 class="fn"><a name="New-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::New</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;New&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
 <p>This flag indicates that the meta data of the message has not yet been displayed to the user.</p>

@@ -63,12 +63,17 @@
 <a name="static-public-members"></a>
 <h2>Static Public Members</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#ChildCreationPermitted-var">ChildCreationPermitted</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#DeletionPermitted-var">DeletionPermitted</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Drafts-var">Drafts</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Incoming-var">Incoming</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Junk-var">Junk</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#MessagesPermitted-var">MessagesPermitted</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#NonMail-var">NonMail</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Outgoing-var">Outgoing</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#PartialContent-var">PartialContent</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Removed-var">Removed</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#RenamePermitted-var">RenamePermitted</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Sent-var">Sent</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#SynchronizationEnabled-var">SynchronizationEnabled</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailfolder.html#Synchronized-var">Synchronized</a></b></td></tr>
@@ -189,6 +194,12 @@
 <p>Assigns the value of the <tt>QMailFolder</tt> object <i>other</i> to this.</p>
 <hr />
 <h2>Member Variable Documentation</h2>
+<h3 class="fn"><a name="ChildCreationPermitted-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::ChildCreationPermitted</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;ChildCreationPermitted&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that creation of child folders of this folder is allowed.</p>
+<h3 class="fn"><a name="DeletionPermitted-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::DeletionPermitted</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;DeletionPermitted&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that the folder may be deleted.</p>
 <h3 class="fn"><a name="Drafts-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Drafts</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Drafts&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
 <p>This flag indicates that a folder contains messages that are drafts for potential transmission.</p>
@@ -198,6 +209,12 @@
 <h3 class="fn"><a name="Junk-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Junk</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Junk&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
 <p>This flag indicates that a folder contains messages that have been marked as junk.</p>
+<h3 class="fn"><a name="MessagesPermitted-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::MessagesPermitted</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;MessagesPermitted&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that the folder is allowed to contain messages.</p>
+<h3 class="fn"><a name="NonMail-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::NonMail</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;NonMail&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that the folder contains only non mail items such as calendar and/or contacts items.</p>
 <h3 class="fn"><a name="Outgoing-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Outgoing</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Outgoing&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
 <p>This flag indicates that a folder contains messages that are outgoing from the point of view of the account owner.</p>
@@ -207,6 +224,9 @@
 <h3 class="fn"><a name="Removed-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Removed</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Removed&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
 <p>This flag indicates that a folder has been removed from the external server.</p>
+<h3 class="fn"><a name="RenamePermitted-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::RenamePermitted</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;RenamePermitted&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
+<p>This flag indicates that the folder may be renamed.</p>
 <h3 class="fn"><a name="Sent-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailFolder::Sent</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Sent&quot;</tt> against the result of <a href="qmailfolder.html#status">QMailFolder::status</a>().</p>
 <p>This flag indicates that a folder contains messages that were sent by the account owner.</p>

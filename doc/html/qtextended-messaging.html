@@ -51,6 +51,7 @@
 <h2>Running Messaging Framework</h2>
 <p>After <tt>make install</tt> has run, the following layout should exist in your image directory:</p>
 <pre>    bin
+    include
     lib
     plugins
     tests</pre>
@@ -74,9 +75,6 @@
 <pre>    make -C test/tst_qmailcodec ARGS=&quot;encode&quot; test</pre>
 <p>To run a single test case, provide the name of the test case in the <tt>ARGS</tt> variable:</p>
 <pre>    make -C test/tst_qmailcodec ARGS=&quot;encode:'one padding byte'&quot; test</pre>
-<a name="test-results"></a>
-<h3>Test Results</h3>
-<p>Placeholder: it should be possible to see the results produced by the QtSoftware continuous integration system &lt;here&gt;, if those results were exported yet..&#x2e;</p>
 <a name="changes-between-messaging-framework-versions"></a>
 <h2>Changes Between Messaging Framework Versions</h2>
 <p>Historical changes in the <a href="qtextendedmail.html">Messaging Framework Client Library</a> API are listed in <a href="changes-qtopiamail.html">CHANGES.qdoc</a>.</p>

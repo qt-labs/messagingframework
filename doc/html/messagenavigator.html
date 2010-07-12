@@ -109,7 +109,7 @@
         emit folderSelected(model.itemFromIndex(index));
     }</pre>
 <p>Once we have selected a message set, we will display a listing of the messages defined by that message set. For this, we need a stackable widget to list messages.</p>
-<p>The MessageSelector uses a <a href="http://doc.trolltech.com/4.5/qlistview.html">QListView</a> to present a listing of messages associated with a specific contact. To do this, we need to create a model of message data that the <a href="http://doc.trolltech.com/4.5/qlistview.html">QListView</a> will present. Our class therefore contains a <a href="qmailmessagelistmodel.html">QMailMessageListModel</a> object, and a <a href="qmailmessagedelegate.html">QMailMessageDelegate</a> object, whose responsibility is to render each element in the list view using the data of each message.</p>
+<p>The MessageSelector uses a <a href="http://doc.trolltech.com/4.5/qlistview.html">QListView</a> to present a listing of messages associated with a specific contact. To do this, we need to create a model of message data that the <a href="http://doc.trolltech.com/4.5/qlistview.html">QListView</a> will present. Our class therefore contains a <a href="qmailmessagelistmodel.html">QMailMessageListModel</a> object, and a QMailMessageDelegate object, whose responsibility is to render each element in the list view using the data of each message.</p>
 <pre>    class MessageSelector : public QWidget
     {
         Q_OBJECT

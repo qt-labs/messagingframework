@@ -66,6 +66,26 @@
 
     15. Added 'QMailMessage::contains(const QMailMessagePart::Location&amp;) const'.
 
+    16. Added 'void QMailMessageServer::actionStarted(QMailActionData)'.
+
+    17. Added 'void QMailMessageServer::messagesFailedTransmission(quint64, const QMailMessageIdList&amp;, QMailServiceAction::Status::ErrorCode)'.
+
+    18. Added 'void QMailMessageServer::actionsListed(const QMailActionDataList &amp;)' signal.
+
+    19. Added 'void QMailMessageServer::listActions()' slot.
+
+    20. Added 'QMailServiceAction(quint64 actionId, QObject *parent = 0)' constructor.
+
+    21. Added 'QString QMailServiceAction::description()'
+
+    22. Added 'void QMailRetrievalAction::messagesTransmitted(const QMailMessageIdList &amp;ids)' signal.
+
+    23. Added 'void QMailRetrievalAction::messagesFailedTransmission(const QMailMessageIdList &amp;ids, QMailServiceAction::Status::ErrorCode)' signal.
+
+    24. Added QMailActionInfo class.
+
+    25. Added QMailActionObserver class.
+
 
     *****************************************************************************
 
@@ -213,6 +233,16 @@
               'QMailMessagePartContainer::partialContentAvailable() const',
               'QMailMessageMetaData::contentAvailable() const' and
               'QMailMessageMetaData::partialContentAvailable() const'.
+
+    29. Changed 'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx)' to
+                'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx, const QModelIndex &amp;jdx)'.
+
+    30. Added 'QMailMessage::Important', and
+              'QMailMessage::ImportantElsewhere'.
+
+    31. Added 'QMailStore::lock()' and
+              'QMailStore::unlock()'.
+
 
 
     *****************************************************************************</pre>

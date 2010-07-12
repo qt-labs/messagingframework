@@ -98,6 +98,9 @@
 <h3 class="fn"><a name="QMailMessageSource"></a>QMailMessageSource::QMailMessageSource ( <a href="qmailmessageservice.html">QMailMessageService</a> * <i>service</i> )&nbsp;&nbsp;<tt> [protected]</tt></h3>
 <p>Creates a message source object associated with the service <i>service</i>.</p>
 <h3 class="fn"><a name="cancelSearch"></a>bool QMailMessageSource::cancelSearch ()&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>Invoked by the message server to initiate a request to stop remote searching.</p>
+<p>Searches in progress will be stopped, and no further results returned.</p>
+<p>See also <a href="qmailmessagesource.html#searchMessages">searchMessages</a>() and <a href="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</a>().</p>
 <h3 class="fn"><a name="copyMessages"></a>bool QMailMessageSource::copyMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>destinationId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message copy operation.</p>
 <p>For each message listed in <i>ids</i>, create a new copy in the folder identified by <i>destinationId</i>.</p>
