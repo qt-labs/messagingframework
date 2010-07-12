@@ -135,10 +135,6 @@ To run a single test case, provide the name of the test case in the \c ARGS vari
 make -C test/tst_qmailcodec ARGS="encode:'one padding byte'" test
 \endcode
 
-\section2 Test Results
-
-Placeholder: it should be possible to see the results produced by the QtSoftware continuous integration system <here>, if those results were exported yet...
-
 \section1 Changes Between Messaging Framework Versions
 
 Historical changes in the \l {Messaging Framework Client Library} API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
