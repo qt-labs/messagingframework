@@ -686,7 +686,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
-        bool childCreationPermitted(flags.contains("\\NoInferiors", Qt::CaseInsensitive));
+        bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
         bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
         
         if (!mailboxPath.isEmpty())
