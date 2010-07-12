@@ -52,7 +52,6 @@
 
 class MessageList;
 class QMailMessageModelBase;
-class QtopiaHomeMailMessageDelegate;
 class QuickSearchWidget;
 
 QT_BEGIN_NAMESPACE
