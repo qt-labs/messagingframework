@@ -1475,7 +1475,7 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
         qWarning() << "Custom searches are not handled..";
         break;
     default:
-        qDebug() << "Property " << property << " still not handled for search.";
+        qWarning() << "Property " << property << " still not handled for search.";
     }
     return "ALL";
 }

@@ -1437,7 +1437,6 @@ void QMailActionInfoPrivate::activityChanged(quint64 action, QMailServiceAction:
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
 {
     if (validAction(action)) {
-        qDebug() << "Action: " << action << " completed";
         setActivity(QMailServiceAction::Successful);
 
         emitChanges();
@@ -1499,14 +1498,12 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActi
 
 void QMailActionObserverPrivate::requestInitialization()
 {
-    qDebug() << "QMailActionObserverPrivate::requestInitialized() called";
     _server->listActions();
 }
 
 void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
 {
     if (!_isReady) {
-        qDebug() << actions.count() << " actions have been listed.";
         foreach(QMailActionData action, actions) {
            addAction(action);
         }
@@ -1519,11 +1516,9 @@ void QMailActionObserverPrivate::completeAction(QMailActionId id)
 {
     Q_ASSERT(_isReady);
     if(_runningActions.remove(id)) {
-        qDebug() << "Emitting action id" << id << " finished.";
         emit actionFinished(id);
     } else {
-        asm("int3");
-        qDebug() << "Could not remove " << id << " after got activity completed";
+        qWarning() << "Could not remove " << id << " after got activity completed";
     }
 }
 
@@ -1537,11 +1532,6 @@ void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
-        qDebug() << "QMailActionObserverPrivate::addAction id:" << action.first << " description: " << action.second;
-
-        if (_runningActions.contains(action.first))
-            asm("int3");
-
         QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action.first, action.second));
         connect(actionInfo.data(), SIGNAL(actionFinished()), this, SLOT(anActionCompleted()));
         _runningActions.insert(action.first, actionInfo);
@@ -1551,7 +1541,6 @@ QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMai
 
 void QMailActionObserverPrivate::anActionCompleted()
 {
-    qDebug() << "An action completed.";
     const QMailActionInfo *theAction(qobject_cast<QMailActionInfo *>(sender()));
     if(theAction) {
         completeAction(theAction->id());
@@ -1577,7 +1566,6 @@ QMailActionObserver::QMailActionObserver(QObject *parent)
 
 QMailActionObserver::~QMailActionObserver()
 {
-    qDebug() << "QMAObserver dtor";
 }
 
 QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::runningActions() const

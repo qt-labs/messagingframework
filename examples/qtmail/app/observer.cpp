@@ -70,7 +70,6 @@ Observer::~Observer() {}
 void Observer::actionObserverInitialized()
 {
     foreach(QSharedPointer<QMailActionInfo> action, _actionObs->runningActions()) {
-        qDebug() << "Initialized with: " << action->id();
         addAction(action);
     }
 }
@@ -82,8 +81,6 @@ void Observer::addAction(QSharedPointer<QMailActionInfo> action)
 
 
     RowWidget *row = new RowWidget(action, this);
-
-     qDebug() << "Adding action id" << action->id() << "as" << row;
     _rows.insert(action->id(), row);
     _lay->addWidget(row);
 }
@@ -92,7 +89,6 @@ void Observer::removeAction(QMailActionId action)
 {
 
     RowWidget *r = _rows.value(action);
-    qDebug() << "Removing action" << action << " aka " << r;
     _lay->removeWidget(r);
     delete r;
     _rows.remove(action);
@@ -176,13 +172,11 @@ QString RowWidget::requestTypeToString(QMailServerRequestType t)
 
 void RowWidget::sendCancel()
 {
-    qDebug() << "cancel pushed on action" << _action->id();
     _action->cancelOperation();
 }
 
 
 void RowWidget::progressChanged(uint x, uint y) {
-    qDebug() << "progress changed to" << x << "/" << y << " for " << _action->id();
     _progress->setMaximum(y);
     _progress->setValue(x);
 }
