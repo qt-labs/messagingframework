@@ -1845,7 +1845,6 @@ void ServiceHandler::listActions()
     for(QMap<quint64, ActionData>::iterator i(mActiveActions.begin()) ; i != mActiveActions.end(); ++i)
     {
         QMailActionData t = qMakePair(i.key(), i->description);
-        qDebug() << "Emitting " << i.key() << " description: " << i->description;
         list.append(t);
     }
 

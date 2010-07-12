@@ -128,11 +128,8 @@ public:
         QMailMessageId messageId;
     };
 
-    QMailServiceAction(quint64 actionId, QObject *parent = 0);
     ~QMailServiceAction();
 
-
-    QString description();
     Connectivity connectivity() const;
     Activity activity() const;
     const Status status() const;

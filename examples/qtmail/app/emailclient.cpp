@@ -599,8 +599,6 @@ void EmailClient::messageServerProcessError(QProcess::ProcessError e)
 
 void EmailClient::showMessageServerInfo()
 {
-    qDebug() << "showMessageServerInfo pressed..";
-
     Observer *o = new Observer();
     o->setAttribute(Qt::WA_DeleteOnClose, true);
     o->show();
