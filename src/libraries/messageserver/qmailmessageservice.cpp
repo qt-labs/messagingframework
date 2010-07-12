@@ -830,7 +830,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     Q_UNUSED(sort)
 }
 
-/*
+/*!
     Invoked by the message server to initiate a request to stop remote searching.
 
     Searches in progress will be stopped, and no further results returned.
@@ -1256,6 +1256,15 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Invoked by the message server to attempt cancellation of any request currently in progress.
     Return true to indicate cancellation of the request attempt.
+*/
+    
+/*!
+    \fn bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)
+
+    Invoked by the message server to attempt cancellation of any request currently in progress.
+    Return true to indicate cancellation of the request attempt.
+    
+    The error type is \a code, and the error is described by \a text.
 */
     
 /*!

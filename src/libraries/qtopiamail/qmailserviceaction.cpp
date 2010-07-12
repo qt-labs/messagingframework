@@ -1562,7 +1562,7 @@ void QMailActionObserverPrivate::anActionCompleted()
 
 /*! \class QMailActionObserver
 
-   \preliminatry
+   \preliminary
    \ingroup messaginglibrary
 
    \brief The QMailActionObserver class provides an interface for monitoring currently running actions

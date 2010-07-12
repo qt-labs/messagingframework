@@ -324,7 +324,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 */
 
 /*!
-    \fn void QMailMessageServer::messagesFailedTransmitted(quint64 action, const QMailMessageIdList& list, QMailServiceAction::Status::ErrorCode error);
+    \fn void QMailMessageServer::messagesFailedTransmission(quint64 action, const QMailMessageIdList& list, QMailServiceAction::Status::ErrorCode error);
 
     Emitted when a failed attempt has been made to transmit messages identified by \a list to the external server,
     in response to the request identified by \a action.
@@ -445,6 +445,20 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the protocol request identified by \a action is completed.
 
     \sa protocolRequest()
+*/
+
+/*!
+    \fn void QMailMessageServer::actionsListed(const QMailActionDataList &list);
+
+    Emitted when a list of running actions has been retrieved from the server. 
+    The list of running actions is described by \a list.
+*/
+
+/*!
+    \fn void QMailMessageServer::actionStarted(QMailActionData data)
+
+    Emitted when the action described by \a data has been started on the 
+    messageserver.
 */
 
 /*!

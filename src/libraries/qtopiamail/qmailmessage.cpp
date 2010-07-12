@@ -5643,7 +5643,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message has a header field specifying that the message 
     is high priority. This flag is set only during message parsing.
     
-    \sa QMailMessage::fromRfc2822();
+    \sa QMailMessage::fromRfc2822()
 */
 
 /*!
@@ -5655,7 +5655,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     This flag indicates that the message has a header field specifying that the message 
     is low priority. This flag is set only during message parsing.
     
-    \sa QMailMessage::fromRfc2822();
+    \sa QMailMessage::fromRfc2822()
 */
 
 
