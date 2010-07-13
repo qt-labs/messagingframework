@@ -3030,7 +3030,12 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     // The idea here is that if the client has say n messages in a folder and 
     // minimum is set to n then don't get any more messages even if some messages 
     // are marked as removed on the client.
-    serverOld = IntegerRegion(serverOld.toStringList().mid(adjustment));
+    QStringList serverOldList(serverOld.toStringList());
+    if (adjustment < serverOldList.count()) {
+        serverOld = IntegerRegion(serverOldList.mid(adjustment));
+    } else {
+        serverOld = IntegerRegion();
+    }
     // a + b = c - (c - a - b)
     if (!serverRegion.isEmpty()) {
         IntegerRegion c(serverRegion.minimum(), serverRegion.maximum());
