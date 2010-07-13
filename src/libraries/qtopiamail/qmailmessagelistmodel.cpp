@@ -82,7 +82,7 @@ public:
 
 private:
     void init() const;
-
+    
     int indexOf(const QMailMessageId& id) const;
 
     bool addMessages(const QMailMessageIdList &ids);
@@ -242,22 +242,21 @@ bool QMailMessageListModelPrivate::setIgnoreMailStoreUpdates(bool ignore)
 
 bool QMailMessageListModelPrivate::processMessagesAdded(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
 
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
     }
 
+    if (!_initialised) {
+        init();
+    }
+    
     // Find if and where these messages should be added
     if (!addMessages(ids)) {
         return false;
@@ -311,18 +310,13 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
 
 bool QMailMessageListModelPrivate::processMessagesUpdated(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
 
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
     }
@@ -332,6 +326,10 @@ bool QMailMessageListModelPrivate::processMessagesUpdated(const QMailMessageIdLi
         return false;
     }
 
+    if (!_initialised) {
+        init();
+    }
+    
     return true;
 }
 
@@ -427,22 +425,21 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
 
 bool QMailMessageListModelPrivate::processMessagesRemoved(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
 
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
     }
 
+    if (!_initialised) {
+        init();
+    }
+    
     // Find if and where these messages should be removed from
     if (!removeMessages(ids)) {
         return false;
@@ -553,7 +550,7 @@ int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 /*!
     Constructs a QMailMessageListModel with a parent \a parent.
 
-    By default, the model will match all messages in the database, and display them in
+    By default, the model will not match any messages, display messages in
     the order they were submitted, and mail store updates are not ignored.
 
     \sa setKey(), setSortKey(), setIgnoreMailStoreUpdates()

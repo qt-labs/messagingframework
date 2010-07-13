@@ -295,18 +295,13 @@ bool QMailMessageThreadedModelPrivate::setIgnoreMailStoreUpdates(bool ignore)
 
 bool QMailMessageThreadedModelPrivate::processMessagesAdded(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
 
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
     }
@@ -314,6 +309,10 @@ bool QMailMessageThreadedModelPrivate::processMessagesAdded(const QMailMessageId
     // Find if and where these messages should be added
     if (!addMessages(ids)) {
         return false;
+    }
+    
+    if (!_initialised) {
+        init();
     }
 
     return true;
@@ -441,20 +440,19 @@ bool QMailMessageThreadedModelPrivate::addMessages(const QMailMessageIdList &ids
 
 bool QMailMessageThreadedModelPrivate::processMessagesUpdated(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
 
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
+    }
+
+    if (!_initialised) {
+        init();
     }
 
     // Find if and where these messages should be added/removed/updated
@@ -579,20 +577,19 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
 
 bool QMailMessageThreadedModelPrivate::processMessagesRemoved(const QMailMessageIdList &ids)
 {
-    if (!_initialised) {
-        // Nothing to do yet
-        return true;
-    }
-    
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
         return true;
     }
     
-    if (_key.isEmpty()) {
+    if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
+    }
+
+    if (!_initialised) {
+        init();
     }
 
     // Find if and where these messages should be removed from
@@ -895,7 +892,7 @@ QModelIndex QMailMessageThreadedModelPrivate::indexFromItem(const QMailMessageTh
 /*!
     Constructs a QMailMessageThreadedModel with a parent \a parent.
 
-    By default, the model will match all messages in the database, and display them in
+    By default, the model will not match any messages, display messages in
     the order they were submitted, and mail store updates are not ignored.
 
     \sa setKey(), setSortKey(), setIgnoreMailStoreUpdates()
