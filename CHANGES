@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 2010W28
+  * Fixes: NB#175397 - QMailMessageListModel class not sending signals
   * Fixes: NB#176450 - Lack of interface to distinguish user cancelled and internally cancelled services
   * Fixes: NB#166468 - retrieveMessageList does not detect messages deleted on server
   * Fixes: NB#168536 - Actual messages are not removed from qmf database upon account deletion from...
