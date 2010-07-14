@@ -53,10 +53,8 @@ Observer::Observer(QWidget *parent)
     : QMainWindow(parent),
       _actionObs(new QMailActionObserver(this))
 {
-    connect(_actionObs, SIGNAL(initialized()), this, SLOT(actionObserverInitialized()));
-    connect(_actionObs, SIGNAL(actionStarted(QSharedPointer<QMailActionInfo>)), this, SLOT(addAction(QSharedPointer<QMailActionInfo>)));
-    connect(_actionObs, SIGNAL(actionFinished(QMailActionId)), this, SLOT(removeAction(QMailActionId)));
-    _actionObs->requestInitialization();
+    connect(_actionObs, SIGNAL(actionsChanged(QList< QSharedPointer<QMailActionInfo> >)),
+            this, SLOT(actionsChanged(QList< QSharedPointer<QMailActionInfo> >)));
 
     QWidget *central = new QWidget(this);
     _lay = new QVBoxLayout();
@@ -67,49 +65,42 @@ Observer::Observer(QWidget *parent)
 
 Observer::~Observer() {}
 
-void Observer::actionObserverInitialized()
+void Observer::actionsChanged(QList<QSharedPointer< QMailActionInfo> > actions)
 {
-    foreach(QSharedPointer<QMailActionInfo> action, _actionObs->runningActions()) {
-        addAction(action);
+    clear();
+    foreach(QSharedPointer<QMailActionInfo> action, actions) {
+        RowWidget *row = new RowWidget(action, this);
+        _rows.insert(action->id(), row);
+        _lay->addWidget(row);
     }
 }
 
-
-void Observer::addAction(QSharedPointer<QMailActionInfo> action)
+void Observer::clear()
 {
-    Q_ASSERT(_actionObs->isInitialized());
+    foreach(RowWidget *r, _rows) {
+        _lay->removeWidget(r);
+        delete r;
+    }
 
-
-    RowWidget *row = new RowWidget(action, this);
-    _rows.insert(action->id(), row);
-    _lay->addWidget(row);
-}
-
-void Observer::removeAction(QMailActionId action)
-{
-
-    RowWidget *r = _rows.value(action);
-    _lay->removeWidget(r);
-    delete r;
-    _rows.remove(action);
+    _rows.clear();
 }
 
 RowWidget::RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent)
     : QWidget(parent),
       _action(action),
-      _description(new QLabel(QString("Action id: %1\nDescription: %2").arg(action->id()).arg(requestTypeToString(action->description())), this)),
+      _description(new QLabel(this)),
       _progress(new QProgressBar(this)),
       _cancel(new QPushButton("cancel", this))
 {
+    generateDescription();
     QLayout *lay = new QHBoxLayout(this);
     lay->addWidget(_description);
     lay->addWidget(_progress);
     lay->addWidget(_cancel);
 
     connect(_action.data(), SIGNAL(progressChanged(uint,uint)), this, SLOT(progressChanged(uint,uint)));
+    connect(_action.data(), SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(generateDescription()));
     connect(_cancel, SIGNAL(clicked()), this, SLOT(sendCancel()));
-
-    //qDe
 }
 
 QString RowWidget::requestTypeToString(QMailServerRequestType t)
@@ -179,4 +170,12 @@ void RowWidget::sendCancel()
 void RowWidget::progressChanged(uint x, uint y) {
     _progress->setMaximum(y);
     _progress->setValue(x);
+}
+
+void RowWidget::generateDescription() {
+    _description->setText(QString("Action id: %1\nDescription: %2\nStatus: %3")
+                          .arg(_action->id())
+                          .arg(requestTypeToString(_action->requestType()))
+                          .arg(_action->statusText())
+                          );
 }

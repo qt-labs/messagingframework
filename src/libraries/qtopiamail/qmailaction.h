@@ -76,7 +76,6 @@ typedef quint64 QMailActionId;
 typedef QPair<QMailActionId, QMailServerRequestType> QMailActionData;
 typedef QList<QMailActionData> QMailActionDataList;
 
-//Q_DECLARE_METATYPE(ServerRequest)
 Q_DECLARE_USER_METATYPE_ENUM(QMailServerRequestType)
 
 Q_DECLARE_METATYPE(QMailActionData)

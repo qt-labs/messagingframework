@@ -240,14 +240,29 @@ public:
     QMailActionInfoPrivate(QMailActionId action, QMailServerRequestType description, QMailActionInfo *i);
 
     quint64 actionId() const;
-    QMailServerRequestType description() const;
+    QMailServerRequestType requestType() const;
+    float totalProgress() const;
+    QMailActionInfo::Status::ErrorCode statusErrorCode() const;
+    QString statusText() const;
+    QMailAccountId statusAccountId() const;
+    QMailFolderId statusFolderId() const;
+    QMailMessageId statusMessageId() const;
 signals:
-    void actionFinished();
+    void statusErrorCodeChanged(QMailActionInfo::StatusErrorCode newError);
+    void statusTextChanged(const QString &newText);
+    void statusAccountIdChanged(const QMailAccountId &newAccountId);
+    void statusFolderChanged(const QMailFolderId &newFolderId);
+    void statusMessageIdChanged(const QMailMessageId &newMessageId);
+    void totalProgressChanged(float progress);
+public slots:
+    void theStatusChanged(QMailServiceAction::Status newStatus);
+    void theProgressChanged(uint progress, uint total);
 private slots:
     void activityCompleted(quint64 action);
-    void activityChanged(quint64 action, QMailServiceAction::Activity activity);
+
 protected:
-    QMailServerRequestType _description;
+    QMailServiceAction::Status _lastStatus;
+    QMailServerRequestType _requestType;
     bool _actionCompleted;
 };
 
@@ -258,14 +273,11 @@ public:
     QMailActionObserverPrivate(QMailActionObserver *i);
     void requestInitialization();
      QList< QSharedPointer<QMailActionInfo> > runningActions() const;
-    bool isReady();
 signals:
-    void initialized();
-    void actionStarted(QSharedPointer<QMailActionInfo>);
-    void actionFinished(QMailActionId);
+    void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &);
 private slots:
-    void anActionCompleted();
-    void completeAction(QMailActionId);
+    void anActionActivityChanged(QMailServiceAction::Activity activity);
+    void completeAction(const QMailActionId &actionId);
     void actionsListed(const QMailActionDataList &actions);
     void actionStarted(const QMailActionData &action);
 private:

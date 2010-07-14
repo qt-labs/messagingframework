@@ -64,6 +64,8 @@ public:
 public slots:
     void progressChanged(uint x, uint y);
     void sendCancel();
+private slots:
+    void generateDescription();
 private:
     static QString requestTypeToString(QMailServerRequestType t);
 
@@ -80,10 +82,8 @@ public:
     Observer(QWidget *parent = 0);
     virtual ~Observer();
 private slots:
-    void actionObserverInitialized();
-    void addAction(QSharedPointer<QMailActionInfo> action);
-    void removeAction(QMailActionId action);
-
+    void actionsChanged(QList<QSharedPointer< QMailActionInfo> > actions);
+    void clear();
 private:
     QLayout *_lay;
     QMailActionObserver *_actionObs;

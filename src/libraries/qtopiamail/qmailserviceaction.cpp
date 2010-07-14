@@ -1400,14 +1400,13 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
     \sa matchingMessageIds()
 */
 
-QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType description, QMailActionInfo *i)
+QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType requestType, QMailActionInfo *i)
     : QMailServiceActionPrivate(this, i),
-      _description(description),
+      _requestType(requestType),
       _actionCompleted(false)
 {
     setAction(action);
-    connect(_server, SIGNAL(activityChanged(quint64,QMailServiceAction::Activity)),
-            this, SLOT(activityChanged(quint64,QMailServiceAction::Activity)));
+
     // Service handler really should be sending the activity,
     // rather than us faking it..
     connect(_server, SIGNAL(retrievalCompleted(quint64)),
@@ -1418,36 +1417,45 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
             this, SLOT(activityCompleted(quint64)));
     connect(_server, SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
-}
 
-void QMailActionInfoPrivate::activityChanged(quint64 action, QMailServiceAction::Activity activity)
-{
-    if (validAction(action)) {
-        if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
-            if (_actionCompleted == false) {
-                emit actionFinished();
-                _actionCompleted = true;
-            } else {
-                qWarning() << "Action " << actionId() << "already completed?";
-            }
-        }
-    }
+
+
+
 }
 
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
 {
     if (validAction(action)) {
         setActivity(QMailServiceAction::Successful);
-
         emitChanges();
-
-        if (_actionCompleted == false) {
-            emit actionFinished();
-            _actionCompleted = true;
-        } else {
-            qWarning() << "Action " << actionId() << "already completed?";
-        }
     }
+}
+
+float QMailActionInfoPrivate::totalProgress() const
+{
+    if (_total == 0)
+        return 0.0;
+    else
+        return static_cast<float>(_progress) / _total;
+}
+
+void QMailActionInfoPrivate::theProgressChanged(uint, uint)
+{
+    emit totalProgressChanged(totalProgress());
+}
+
+void QMailActionInfoPrivate::theStatusChanged(QMailServiceAction::Status newStatus)
+{
+    if (_lastStatus.accountId != newStatus.accountId)
+        emit statusAccountIdChanged(newStatus.accountId);
+    if (_lastStatus.errorCode != newStatus.errorCode)
+        emit statusErrorCodeChanged(newStatus.errorCode);
+    if (_lastStatus.folderId != newStatus.folderId)
+        emit statusFolderChanged(newStatus.folderId);
+    if (_lastStatus.messageId != newStatus.messageId)
+        emit statusMessageIdChanged(newStatus.messageId);
+
+    _lastStatus = newStatus;
 }
 
 quint64 QMailActionInfoPrivate::actionId() const
@@ -1455,25 +1463,92 @@ quint64 QMailActionInfoPrivate::actionId() const
     return _action;
 }
 
-QMailServerRequestType QMailActionInfoPrivate::description() const
+QMailServerRequestType QMailActionInfoPrivate::requestType() const
 {
-    return _description;
+    return _requestType;
+}
+
+QMailActionInfo::Status::ErrorCode QMailActionInfoPrivate::statusErrorCode() const
+{
+    return _status.errorCode;
+}
+
+QString QMailActionInfoPrivate::statusText() const
+{
+    return _status.text;
+}
+
+QMailAccountId QMailActionInfoPrivate::statusAccountId() const
+{
+    return _status.accountId;
+}
+QMailFolderId QMailActionInfoPrivate::statusFolderId() const
+{
+    return _status.folderId;
+}
+
+QMailMessageId QMailActionInfoPrivate::statusMessageId() const
+{
+    return _status.messageId;
 }
 
 QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType description)
     : QMailServiceAction(new QMailActionInfoPrivate(action, description, this), 0) // NB: No qobject parent!
 {
-    connect(impl(this), SIGNAL(actionFinished()), this, SIGNAL(actionFinished()));
+    connect(impl(this), SIGNAL(statusAccountIdChanged(QMailAccountId)),
+            this, SIGNAL(statusAccountIdChanged(QMailAccountId)));
+    connect(impl(this), SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)),
+             this, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)));
+    connect(impl(this), SIGNAL(statusTextChanged(QString)),
+            this, SIGNAL(statusTextChanged(QString)));
+    connect(impl(this), SIGNAL(statusFolderChanged(QMailFolderId)),
+            this, SIGNAL(statusFolderChanged(QMailFolderId)));
+    connect(impl(this), SIGNAL(statusMessageIdChanged(QMailMessageId)),
+            this, SIGNAL(statusMessageIdChanged(QMailMessageId)));
+
+    // Hack to get around _interface not being "ready" in the private class
+    connect(this, SIGNAL(progressChanged(uint,uint)), impl(this), SLOT(theProgressChanged(uint,uint)));
+    connect(this, SIGNAL(statusChanged(QMailServiceAction::Status)), impl(this), SLOT(theStatusChanged(QMailServiceAction::Status)));
+
 }
 
-QMailServerRequestType QMailActionInfo::description() const
+QMailServerRequestType QMailActionInfo::requestType() const
 {
-    return impl(this)->description();
+    return impl(this)->requestType();
 }
 
 quint64 QMailActionInfo::id() const
 {
     return impl(this)->actionId();
+}
+
+float QMailActionInfo::totalProgress() const
+{
+    return impl(this)->totalProgress();
+}
+
+QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
+{
+    return impl(this)->statusErrorCode();
+}
+
+QString QMailActionInfo::statusText() const
+{
+    return impl(this)->statusText();
+}
+
+QMailAccountId QMailActionInfo::statusAccountId() const
+{
+    return impl(this)->statusAccountId();
+}
+QMailFolderId QMailActionInfo::statusFolderId() const
+{
+    return impl(this)->statusFolderId();
+}
+
+QMailMessageId QMailActionInfo::statusMessageId() const
+{
+    return impl(this)->statusMessageId();
 }
 
 QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
@@ -1484,21 +1559,13 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
             this, SLOT(actionStarted(QMailActionData)));
     connect(_server, SIGNAL(actionsListed(QMailActionDataList)),
             this, SLOT(actionsListed(QMailActionDataList)));
-}
 
-bool QMailActionObserverPrivate::isReady()
-{
-    return _isReady;
+    _server->listActions();
 }
 
 QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActions() const
 {
     return _runningActions.values();
-}
-
-void QMailActionObserverPrivate::requestInitialization()
-{
-    _server->listActions();
 }
 
 void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
@@ -1508,15 +1575,15 @@ void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &action
            addAction(action);
         }
         _isReady = true;
-        emit initialized();
+        emit actionsChanged(runningActions());
     }
 }
 
-void QMailActionObserverPrivate::completeAction(QMailActionId id)
+void QMailActionObserverPrivate::completeAction(const QMailActionId &id)
 {
     Q_ASSERT(_isReady);
     if(_runningActions.remove(id)) {
-        emit actionFinished(id);
+        emit actionsChanged(runningActions());
     } else {
         qWarning() << "Could not remove " << id << " after got activity completed";
     }
@@ -1525,25 +1592,28 @@ void QMailActionObserverPrivate::completeAction(QMailActionId id)
 void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 {
     if (_isReady) {
-        QSharedPointer<QMailActionInfo> actionInfo(addAction(action));
-        emit actionStarted(actionInfo);
+        addAction(action);
+        emit actionsChanged(runningActions());
     }
 }
 
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
         QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action.first, action.second));
-        connect(actionInfo.data(), SIGNAL(actionFinished()), this, SLOT(anActionCompleted()));
+        connect(actionInfo.data(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
+                this, SLOT(anActionActivityChanged(QMailServiceAction::Activity)));
         _runningActions.insert(action.first, actionInfo);
 
         return actionInfo;
 }
 
-void QMailActionObserverPrivate::anActionCompleted()
+void QMailActionObserverPrivate::anActionActivityChanged(QMailServiceAction::Activity activity)
 {
     const QMailActionInfo *theAction(qobject_cast<QMailActionInfo *>(sender()));
-    if(theAction) {
-        completeAction(theAction->id());
+    if (theAction) {
+        if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
+            completeAction(theAction->id());
+        }
     } else {
         qWarning() << "Unable to determine who sent signal";
     }
@@ -1559,28 +1629,17 @@ void QMailActionObserverPrivate::anActionCompleted()
 QMailActionObserver::QMailActionObserver(QObject *parent)
     : QMailServiceAction(new QMailActionObserverPrivate(this), parent)
 {
-    connect(impl(this), SIGNAL(initialized()), this, SIGNAL(initialized()));
-    connect(impl(this), SIGNAL(actionStarted(QSharedPointer<QMailActionInfo>)), this, SIGNAL(actionStarted(QSharedPointer<QMailActionInfo>)));
-    connect(impl(this), SIGNAL(actionFinished(QMailActionId)), this, SIGNAL(actionFinished(QMailActionId)));
+    connect(impl(this), SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)), this,
+            SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)));
 }
 
 QMailActionObserver::~QMailActionObserver()
 {
 }
 
-QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::runningActions() const
+QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::actions() const
 {
     return impl(this)->runningActions();
-}
-
-void QMailActionObserver::requestInitialization()
-{
-    impl(this)->requestInitialization();
-}
-
-bool QMailActionObserver::isInitialized()
-{
-    return impl(this)->isReady();
 }
 
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)

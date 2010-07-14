@@ -269,13 +269,41 @@ class QMailActionInfoPrivate;
 
 class QMailActionInfo : public QMailServiceAction {
     Q_OBJECT
+    Q_PROPERTY(QMailServerRequestType requestType READ requestType)
+    Q_ENUMS(QMailServerRequestType)
+    Q_PROPERTY(QMailServiceAction::Activity activity READ activity NOTIFY activityChanged)
+    Q_PROPERTY(QMailActionId id READ id)
+    Q_PROPERTY(float totalProgress READ totalProgress NOTIFY totalprogressChanged)
+public:
+    typedef Status::ErrorCode StatusErrorCode; // moc hack
+private:
+    Q_PROPERTY(StatusErrorCode statusErrorCode READ statusErrorCode NOTIFY statusErrorCodeChanged)
+    Q_ENUMS(StatusErrorCode)
+
+    Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
+    Q_PROPERTY(QMailAccountId statusAccountId READ statusAccountId NOTIFY statusAccountIdChanged)
+    Q_PROPERTY(QMailFolderId statusFolderId READ statusFolderId NOTIFY statusFolderActionChanged)
+    Q_PROPERTY(QMailMessageId statusMessageId READ statusMessageId NOTIFY statusMessageIdChanged)
+
 public:
     typedef QMailActionInfoPrivate ImplementationType;
 
-    quint64 id() const;
-    QMailServerRequestType description() const;
+    QMailActionId id() const;
+    QMailServerRequestType requestType() const;
+    float totalProgress() const;
+    StatusErrorCode statusErrorCode() const;
+    QString statusText() const;
+    QMailAccountId statusAccountId() const;
+    QMailFolderId statusFolderId() const;
+    QMailMessageId statusMessageId() const;
+
 signals:
-    void actionFinished();
+    void statusErrorCodeChanged(QMailActionInfo::StatusErrorCode newError);
+    void statusTextChanged(const QString &newText);
+    void statusAccountIdChanged(const QMailAccountId &newAccountId);
+    void statusFolderChanged(const QMailFolderId &newFolderId);
+    void statusMessageIdChanged(const QMailMessageId &newMessageId);
+    void totalProgressChanged(float progress);
 protected:
     friend class QMailActionObserverPrivate;
     QMailActionInfo(quint64 action, QMailServerRequestType description);
@@ -283,25 +311,19 @@ protected:
 
 class QMailActionObserverPrivate;
 
-// WARNING: QMailActionObserver is about to drastically change
-
 class QTOPIAMAIL_EXPORT QMailActionObserver : public QMailServiceAction
 {
     Q_OBJECT
+    Q_PROPERTY(QList< QSharedPointer<QMailActionInfo> > actions READ actions NOTIFY actionsChanged)
 public:   
     typedef QMailActionObserverPrivate ImplementationType;
+
     QMailActionObserver(QObject *parent = 0);
     virtual ~QMailActionObserver();
 
-    QList< QSharedPointer<QMailActionInfo> > runningActions() const;
-    bool isInitialized();
-public slots:
-    void requestInitialization();
+    QList< QSharedPointer<QMailActionInfo> > actions() const;
 signals:
-    void initialized();
-
-    void actionStarted( QSharedPointer<QMailActionInfo> );
-    void actionFinished( QMailActionId );
+    void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions);
 };
 
 class QMailProtocolActionPrivate;
