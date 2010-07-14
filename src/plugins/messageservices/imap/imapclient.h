@@ -88,6 +88,7 @@ public:
     QMailMessageKey messagesKey(const QMailFolderId &folderId) const;
     QMailMessageKey trashKey(const QMailFolderId &folderId) const;
     QStringList deletedMessages(const QMailFolderId &folderId) const;
+    QMailMessageKey sourceKey(const QMailFolderId &folderId) const;
 
     void idling(const QMailFolderId &id);
     QMailFolderIdList configurationIdleFolderIds();

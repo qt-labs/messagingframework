@@ -2944,6 +2944,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
             rawServerRegion.add(number);
     }
 
+    QMailMessageKey sourceKey(context->client()->sourceKey(folder.id()));
     int serverMinimum = properties.uidNext;
     int serverMaximum = properties.uidNext;
     if (rawServerRegion.cardinality()) {
@@ -2952,7 +2953,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         if (_listAll) {
             // Considering all messages on the client in the folder
             IntegerRegion beginningClientRegion; // none of these messages are on the server
-            foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(QMailMessageKey::parentFolderId(folder.id()), QMailMessageKey::ServerUid)) {
+            foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
                 const QString uid(r.serverUid());
                 int serverUid(stripFolderPrefix(uid).toUInt());
                 if (serverUid < serverMinimum)
@@ -2978,8 +2979,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
 
     QMailMessageKey onClientButNotServerKey(QMailMessageKey::serverUid(removedOnServerUids));
-    onClientButNotServerKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
-    onClientButNotServerKey &= QMailMessageKey::parentFolderId(folder.id());
+    onClientButNotServerKey &= sourceKey;
     QStringList removed;
     foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(onClientButNotServerKey, QMailMessageKey::ServerUid)) {
         const QString uid(r.serverUid());
@@ -3069,12 +3069,13 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
     uint minimum(_minimum);
+    QMailMessageKey sourceKey(context->client()->sourceKey(properties.id));
     if (_accountCheck) {
         // Request all (non search) messages in this folder or _minimum which ever is greater
-        QMailMessageKey countKey(QMailMessageKey::parentFolderId(properties.id));
+        QMailMessageKey countKey(sourceKey);
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
         minimum = qMax((uint)QMailStore::instance()->countMessages(countKey), _minimum);
-    }   
+    }
     _fillingGap = false;
     _listAll = false;
 
@@ -3083,7 +3084,7 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
         // No messages, so no need to perform search
         if (properties.exists == 0) {
             // Folder is completely empty mark all messages in it on client as removed
-            QMailMessageKey removedKey(QMailMessageKey::parentFolderId(properties.id));
+            QMailMessageKey removedKey(sourceKey);
             if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
                 qWarning() << "Unable to update removed messag data in empty folder:" << QMailFolder(properties.id).displayName();
             }

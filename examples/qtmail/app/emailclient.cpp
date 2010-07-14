@@ -1857,7 +1857,14 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
 
     clearNewMessageStatus(QMailMessageKey::id(copyList));
 
+#if DISCONNECTED_COPY
+    // experimental disconnected copy disabled for now.
+    // retrieveMessageList and retriveMessages(flags) logic doesn't properly
+    // handle copied messages
     copyToFolder(copyList,destination);
+#else 
+    storageAction("Copying messages")->copyMessages(copyList, destination);
+#endif
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
 }
@@ -1940,6 +1947,9 @@ void EmailClient::moveSelectedMessages()
 void EmailClient::copySelectedMessages()
 {
     QMailMessageIdList copyIds = messageListView()->selected();
+
+#if DISCONNECTED_COPY
+    // disabled for now
     foreach(QMailMessageId id, copyIds) {
         QMailMessage message(id);
         bool complete(message.status() & QMailMessage::ContentAvailable);
@@ -1953,7 +1963,7 @@ void EmailClient::copySelectedMessages()
             return;
         }
     }
-    
+#endif
     
     if (applyToSelectedFolder(&EmailClient::copySelectedMessagesTo)) {
         if (markingMode) {
@@ -2351,8 +2361,11 @@ void EmailClient::retrieveMoreMessages()
 
         // Find how many messages we have requested for this folder
         QMailMessageKey countKey(QMailMessageKey::parentFolderId(folderId));
+        countKey &= QMailMessageKey::previousParentFolderId(QMailFolderId());
+        countKey |= QMailMessageKey::previousParentFolderId(folderId);
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
         int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
+
         // Request more messages
         retrievedMinimum += MoreMessagesIncrement;
 
