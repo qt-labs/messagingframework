@@ -766,14 +766,14 @@ bool EmailClient::isRetrieving()
 void EmailClient::initActions()
 {
     if (!getMailButton) {
-        getMailButton = new QAction( Qtmail::icon("sendandreceive"), tr("Get all mail"), this );
+        getMailButton = new QAction( Qtmail::icon("sendandreceive"), tr("Synchronize"), this );
         connect(getMailButton, SIGNAL(triggered()), this, SLOT(getAllNewMail()) );
-        getMailButton->setWhatsThis( tr("Get new mail from all your accounts.") );
+        getMailButton->setWhatsThis( tr("Synchronize all your accounts.") );
         setActionVisible(getMailButton, false);
 
         getAccountButton = new QAction( Qtmail::icon("accountfolder"), QString(), this );
         connect(getAccountButton, SIGNAL(triggered()), this, SLOT(getAccountMail()) );
-        getAccountButton->setWhatsThis( tr("Get new mail from current account.") );
+        getAccountButton->setWhatsThis( tr("Synchronize current account.") );
         setActionVisible(getAccountButton, false);
 
         cancelButton = new QAction( Qtmail::icon("cancel"), tr("Cancel transfer"), this );
@@ -2122,7 +2122,7 @@ void EmailClient::folderSelected(QMailMessageSet *item)
             selectedAccountId = accountId;
 
             QMailAccount account(accountId);
-            getAccountButton->setText(tr("Get mail for %1", "%1:account name").arg(account.name()));
+            getAccountButton->setText(tr("Synchronize %1", "%1:account name").arg(account.name()));
             getAccountButton->setData(accountId);
 
             // See if this is a folder that can have a menu
