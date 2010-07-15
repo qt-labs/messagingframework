@@ -2945,6 +2945,23 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     }
 
     QMailMessageKey sourceKey(context->client()->sourceKey(folder.id()));
+    
+#if 1 // debugging
+    IntegerRegion trueClientRegion;
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
+        const QString uid(r.serverUid());
+        int serverUid(stripFolderPrefix(uid).toUInt());
+        trueClientRegion.add(serverUid);
+    }
+
+    IntegerRegion missingRegion(rawServerRegion.subtract(trueClientRegion));
+    missingRegion = missingRegion.subtract(IntegerRegion(1, clientMin-1)).subtract(IntegerRegion(clientMax+1, properties.uidNext));
+    if (missingRegion.cardinality()) {
+        qWarning() << "WARNING server contains uids in contiguous region not on client!!!" << missingRegion.toString();
+        qWarning() << "WARNING clientMin" << clientMin << "clientMax" << clientMax;
+    }
+#endif    
+    
     int serverMinimum = properties.uidNext;
     int serverMaximum = properties.uidNext;
     if (rawServerRegion.cardinality()) {
@@ -3036,15 +3053,16 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     } else {
         serverOld = IntegerRegion();
     }
-    // a + b = c - (c - a - b)
-    if (!serverRegion.isEmpty()) {
-        IntegerRegion c(serverRegion.minimum(), serverRegion.maximum());
-        serverRegion = c.subtract(c.subtract(serverNew).subtract(serverOld));
-    }
+    
+    serverRegion = serverNew.add(serverOld);
     _updatedFolders.append(properties.id);
     _listAll = false;
     
     IntegerRegion difference(serverRegion.subtract(clientRegion));
+#if 1 // debugging
+    difference = difference.add(missingRegion);
+#endif
+    
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
         int newClientMin;
