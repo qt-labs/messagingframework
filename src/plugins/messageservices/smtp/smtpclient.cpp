@@ -585,6 +585,7 @@ void SmtpClient::nextAction(const QString &response)
     case Body:  
     {
         if (responseCode == 354) {
+            linestart = true;
             sendingId = mailItr->mail.id();
             sentLength = 0;
 
@@ -829,8 +830,24 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     // Queue up to SENDING_BUFFER_SIZE bytes for transmission
     char buffer[SENDING_BUFFER_SIZE];
     qint64 bytes = temporaryFile->read(buffer, SENDING_BUFFER_SIZE);
-    waitingForBytes += bytes;
-    transport->stream().writeRawData(buffer, bytes);
+    
+    QByteArray dotstuffed;
+    dotstuffed.reserve(SENDING_BUFFER_SIZE + 10); // more than 10 stuffs and array will be autoresized
+    for (int i = 0; i < bytes; ++i) {
+        if (linestart && (buffer[i] == '.')) {
+            dotstuffed.append("..");
+            linestart = false;
+        } else if (buffer[i] == '\n') {
+            dotstuffed.append(buffer[i]);
+            linestart = true;
+        } else {
+            dotstuffed.append(buffer[i]);
+            linestart = false;
+        }
+    }
+    
+    waitingForBytes += dotstuffed.length();
+    transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());
     //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
 }
 

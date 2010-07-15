@@ -140,6 +140,7 @@ private:
 
     QTemporaryFile *temporaryFile;
     qint64 waitingForBytes;
+    bool linestart;
 };
 
 #endif
