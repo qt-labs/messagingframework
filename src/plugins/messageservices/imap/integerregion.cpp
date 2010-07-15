@@ -313,6 +313,24 @@ IntegerRegion IntegerRegion::subtract(IntegerRegion other) const
 }
 
 /*
+  Returns the union of this region and the \a other region.
+*/
+IntegerRegion IntegerRegion::add(IntegerRegion other) const
+{
+    if (!cardinality())
+        return other;
+    
+    if (!other.cardinality())
+        return *this;
+    
+    int min = qMin(minimum(), other.minimum());
+    int max = qMax(maximum(), other.maximum());
+    IntegerRegion c(min, max);
+    // a + b = c - (c - a - b)
+    return c.subtract(c.subtract(*this).subtract(other));
+}
+
+/*
   Returns true if \a uids contains a list of integers; otherwise returns false.
 */
 bool IntegerRegion::isIntegerRegion(QStringList uids)
