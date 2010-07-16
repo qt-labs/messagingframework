@@ -180,10 +180,28 @@
         <keyword ref="qmailaccountsortkey.html#operator-eq-eq">operator==</keyword>
         <section ref="qmailaccountsortkey-members.html" title="List of all members"/>
     </section>
+    <section ref="qmailactioninfo.html" title="QMailActionInfo Class Reference">
+        <keyword ref="qmailactioninfo.html">QMailActionInfo</keyword>
+        <keyword ref="qmailactioninfo.html#StatusErrorCode-typedef">StatusErrorCode</keyword>
+        <keyword ref="qmailactioninfo.html#id">id</keyword>
+        <keyword ref="qmailactioninfo.html#requestType">requestType</keyword>
+        <keyword ref="qmailactioninfo.html#statusAccountId">statusAccountId</keyword>
+        <keyword ref="qmailactioninfo.html#statusAccountIdChanged">statusAccountIdChanged</keyword>
+        <keyword ref="qmailactioninfo.html#statusErrorCode">statusErrorCode</keyword>
+        <keyword ref="qmailactioninfo.html#statusErrorCodeChanged">statusErrorCodeChanged</keyword>
+        <keyword ref="qmailactioninfo.html#statusFolderId">statusFolderId</keyword>
+        <keyword ref="qmailactioninfo.html#statusFolderIdChanged">statusFolderIdChanged</keyword>
+        <keyword ref="qmailactioninfo.html#statusMessageId">statusMessageId</keyword>
+        <keyword ref="qmailactioninfo.html#statusMessageIdChanged">statusMessageIdChanged</keyword>
+        <keyword ref="qmailactioninfo.html#statusText">statusText</keyword>
+        <keyword ref="qmailactioninfo.html#statusTextChanged">statusTextChanged</keyword>
+        <keyword ref="qmailactioninfo.html#totalProgress">totalProgress</keyword>
+        <keyword ref="qmailactioninfo.html#totalProgressChanged">totalProgressChanged</keyword>
+        <section ref="qmailactioninfo-members.html" title="List of all members"/>
+    </section>
     <section ref="qmailactionobserver.html" title="QMailActionObserver Class Reference">
         <keyword ref="qmailactionobserver.html">QMailActionObserver</keyword>
-        <keyword ref="qmailactionobserver.html#ImplementationType-typedef">ImplementationType</keyword>
-        <keyword ref="qmailactionobserver.html#actions-prop">actions</keyword>
+        <keyword ref="qmailactionobserver.html#actions">actions</keyword>
         <keyword ref="qmailactionobserver.html#actionsChanged">actionsChanged</keyword>
         <section ref="qmailactionobserver-members.html" title="List of all members"/>
     </section>
