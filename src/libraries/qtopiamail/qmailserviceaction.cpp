@@ -1592,7 +1592,7 @@ quint64 QMailActionInfo::id() const
 /*!
     \fn QMailActionInfo::totalProgress() const
     Returns a floating point between (0..1) indicating the actions progress. This is a convience
-    method to \sa QMailServiceAction::progress()
+    method to \l QMailServiceAction::progress()
 */
 float QMailActionInfo::totalProgress() const
 {
@@ -1601,7 +1601,7 @@ float QMailActionInfo::totalProgress() const
 
 /*!
   \fn QMailActionInfo::statusErrorCode() const
-  This is a convience accessor to \sa QMailServiceAction::Status::errorCode
+  This is a convience accessor to \l QMailServiceAction::Status::errorCode
 */
 QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
 {
@@ -1610,7 +1610,7 @@ QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
 
 /*!
   \fn QMailActionInfo::statusText() const
-  This is a convience accessor to \sa QMailServiceAction::Status::text
+  This is a convience accessor to \l QMailServiceAction::Status::text
 */
 QString QMailActionInfo::statusText() const
 {
@@ -1619,7 +1619,7 @@ QString QMailActionInfo::statusText() const
 
 /*!
   \fn QMailActionInfo::statusAccountId() const
-  This is a convience accessor to \sa QMailServiceAction::Status::accountId
+  This is a convience accessor to \l QMailServiceAction::Status::accountId
 */
 QMailAccountId QMailActionInfo::statusAccountId() const
 {
@@ -1628,7 +1628,7 @@ QMailAccountId QMailActionInfo::statusAccountId() const
 
 /*!
   \fn QMailActionInfo::statusFolderId() const
-  This is a convience accessor to QMailServiceAction::Status::errorCode
+  This is a convience accessor to \l QMailServiceAction::Status::errorCode
 */
 QMailFolderId QMailActionInfo::statusFolderId() const
 {
@@ -1637,7 +1637,7 @@ QMailFolderId QMailActionInfo::statusFolderId() const
 
 /*!
   \fn QMailActionInfo::statusMessageId() const
-  This is a convience accessor for \sa QMailServiceAction::Status::messageId
+  This is a convience accessor for \l QMailServiceAction::Status::messageId
 */
 
 QMailMessageId QMailActionInfo::statusMessageId() const
