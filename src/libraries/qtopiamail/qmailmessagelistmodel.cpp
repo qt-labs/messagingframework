@@ -462,7 +462,7 @@ bool QMailMessageListModelPrivate::removeMessages(const QMailMessageIdList &ids)
     qSort(removeIndices);
 
     for (int i = removeIndices.count(); i > 0; --i) {
-        int index = i - 1;
+        int index = removeIndices.at(i - 1);
         _model.emitBeginRemoveRows(QModelIndex(), index, index);
         removeItemAt(index, QModelIndex());
         _model.emitEndRemoveRows();
