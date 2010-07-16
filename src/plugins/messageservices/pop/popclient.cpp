@@ -913,8 +913,13 @@ void PopClient::uidlIntegrityCheck()
                 messageProcessed(uid);
         }
 
+        // Partial pop retrieving is not working on gmail
+        // Does not seem possible to support it in a cross platform way.
+        const bool partialPopRetrievalWorking = false;
+        partialContent = false;
+        
         // Update partialContent status for the account
-        if (additional) {
+        if (additional && partialPopRetrievalWorking) {
             additional += gap;
             partialContent = uint(newUids.count()) > additional;
             // When minimum is set, only retrieve minimum ids
