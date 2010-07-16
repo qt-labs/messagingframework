@@ -1417,10 +1417,6 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
             this, SLOT(activityCompleted(quint64)));
     connect(_server, SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
-
-
-
-
 }
 
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
@@ -1451,7 +1447,7 @@ void QMailActionInfoPrivate::theStatusChanged(QMailServiceAction::Status newStat
     if (_lastStatus.errorCode != newStatus.errorCode)
         emit statusErrorCodeChanged(newStatus.errorCode);
     if (_lastStatus.folderId != newStatus.folderId)
-        emit statusFolderChanged(newStatus.folderId);
+        emit statusFolderIdChanged(newStatus.folderId);
     if (_lastStatus.messageId != newStatus.messageId)
         emit statusMessageIdChanged(newStatus.messageId);
 
@@ -1492,6 +1488,70 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
     return _status.messageId;
 }
 
+/*!
+    \class QMailActionInfo
+
+    \preliminary
+    \ingroup messaginglibrary
+
+    \brief The QMailActionInfo class provides the interface for tracking individual actions
+
+    QMailActionInfo provides the mechanism for messaging clients to track an action that is
+    or has run on the server. QMailActionInfo objects can only be created by QMailActionObserver
+    and derive most of their functionality and signals from \l QMailServiceAction.
+
+    QMailActionInfo presents \l requestType() and \l id() to the the client. For future QML
+    interoperability properties and notification signals have been added.
+*/
+
+/*!
+    \typedef QMailActionInfo::ImplementationType
+    \internal
+*/
+
+/*!
+    \typedef QMailActionInfo::StatusErrorCode
+
+    A typedef for QMailServiceAction::Status::ErrorCode so moc can parse it
+*/
+
+/*!
+  \fn QMailActionInfo::statusErrorCodeChanged(QMailActionInfo::StatusErrorCode error)
+
+  Signal emitted when \l statusErrorCode() has changed to a new value of \a error
+*/
+
+/*!
+  \fn QMailActionInfo::statusTextChanged(const QString &text)
+
+  Signal emittted when \l statusText() has changed to a new \a text.
+*/
+
+/*!
+  \fn QMailActionInfo::statusAccountIdChanged(const QMailAccountId &accountId)
+
+  Signal emitted when \l statusAccountId() has changed to a new \a accountId.
+*/
+
+/*!
+  \fn QMailActionInfo::statusFolderIdChanged(const QMailFolderId &folderId)
+
+  Signal emitted when \l statusFolderId() has changed to a new \a folderId.
+*/
+
+/*!
+  \fn QMailActionInfo::statusMessageIdChanged(const QMailMessageId &messageId)
+
+  Signal emitted when \l statusMessageId() has changed to a new \a messageId.
+*/
+
+/*!
+    \fn QMailActionInfo::totalProgressChanged(float progress)
+
+    Signal emitted when \l totalProgress() has changed to a new \a progress.
+*/
+
+/*! \internal */
 QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType description)
     : QMailServiceAction(new QMailActionInfoPrivate(action, description, this), 0) // NB: No qobject parent!
 {
@@ -1501,8 +1561,8 @@ QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType descript
              this, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)));
     connect(impl(this), SIGNAL(statusTextChanged(QString)),
             this, SIGNAL(statusTextChanged(QString)));
-    connect(impl(this), SIGNAL(statusFolderChanged(QMailFolderId)),
-            this, SIGNAL(statusFolderChanged(QMailFolderId)));
+    connect(impl(this), SIGNAL(statusFolderIdChanged(QMailFolderId)),
+            this, SIGNAL(statusFolderIdChanged(QMailFolderId)));
     connect(impl(this), SIGNAL(statusMessageIdChanged(QMailMessageId)),
             this, SIGNAL(statusMessageIdChanged(QMailMessageId)));
 
@@ -1512,39 +1572,73 @@ QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType descript
 
 }
 
+/*!
+    \fn QMailActionInfo::requestType() const
+    Returns the \c QMailServiceRequestType of action is it tracking
+*/
 QMailServerRequestType QMailActionInfo::requestType() const
 {
     return impl(this)->requestType();
 }
 
+/*!
+    Returns the unique action id that was assigned to the action QMailActionInfo is tracking
+*/
 quint64 QMailActionInfo::id() const
 {
     return impl(this)->actionId();
 }
 
+/*!
+    \fn QMailActionInfo::totalProgress() const
+    Returns a floating point between (0..1) indicating the actions progress. This is a convience
+    method to \sa QMailServiceAction::progress()
+*/
 float QMailActionInfo::totalProgress() const
 {
     return impl(this)->totalProgress();
 }
 
+/*!
+  \fn QMailActionInfo::statusErrorCode() const
+  This is a convience accessor to \sa QMailServiceAction::Status::errorCode
+*/
 QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
 {
     return impl(this)->statusErrorCode();
 }
 
+/*!
+  \fn QMailActionInfo::statusText() const
+  This is a convience accessor to \sa QMailServiceAction::Status::text
+*/
 QString QMailActionInfo::statusText() const
 {
     return impl(this)->statusText();
 }
 
+/*!
+  \fn QMailActionInfo::statusAccountId() const
+  This is a convience accessor to \sa QMailServiceAction::Status::accountId
+*/
 QMailAccountId QMailActionInfo::statusAccountId() const
 {
     return impl(this)->statusAccountId();
 }
+
+/*!
+  \fn QMailActionInfo::statusFolderId() const
+  This is a convience accessor to QMailServiceAction::Status::errorCode
+*/
 QMailFolderId QMailActionInfo::statusFolderId() const
 {
     return impl(this)->statusFolderId();
 }
+
+/*!
+  \fn QMailActionInfo::statusMessageId() const
+  This is a convience accessor for \sa QMailServiceAction::Status::messageId
+*/
 
 QMailMessageId QMailActionInfo::statusMessageId() const
 {
@@ -1625,7 +1719,35 @@ void QMailActionObserverPrivate::anActionActivityChanged(QMailServiceAction::Act
    \ingroup messaginglibrary
 
    \brief The QMailActionObserver class provides an interface for monitoring currently running actions
+
+    QMailActionObserver provides a mechanism for messaging clients to observe what actions
+    the messageserver is currently running. A list of currently running actions can be retrieved
+    with \l actions(). When actions are started or finished \l actionsChanged() is emitted with the
+    new list of actions.
+
+    QMailActionObserver is initialised asynchronously, thus reading \l actions() immediately will
+    return an empty list.
 */
+
+/*!
+    \typedef QMailActionObserver::ImplementationType
+    \internal
+*/
+
+/*!
+    \fn QMailActionObserver::actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions)
+
+    This signal is emitted whenever the list of actions we are observing changes. This can be
+    for three reasons: actions have started, actions have finished or the action list has just been
+    initialized.
+
+    New list given by \a newActions
+
+    \sa actions()
+
+*/
+
+/*! Constructs a new QMailActionObserver with a supplied \a parent  */
 QMailActionObserver::QMailActionObserver(QObject *parent)
     : QMailServiceAction(new QMailActionObserverPrivate(this), parent)
 {
@@ -1633,14 +1755,22 @@ QMailActionObserver::QMailActionObserver(QObject *parent)
             SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)));
 }
 
+/*! Destructs QMailActionObserver */
 QMailActionObserver::~QMailActionObserver()
 {
 }
 
+/*!
+    \fn QMailActionObserver::actions() const
+    Returns a list of the currently running actions on the message server.
+
+    \sa QMailActionInfo
+*/
 QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::actions() const
 {
     return impl(this)->runningActions();
 }
+
 
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)

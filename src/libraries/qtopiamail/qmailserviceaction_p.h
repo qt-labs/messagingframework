@@ -251,7 +251,7 @@ signals:
     void statusErrorCodeChanged(QMailActionInfo::StatusErrorCode newError);
     void statusTextChanged(const QString &newText);
     void statusAccountIdChanged(const QMailAccountId &newAccountId);
-    void statusFolderChanged(const QMailFolderId &newFolderId);
+    void statusFolderIdChanged(const QMailFolderId &newFolderId);
     void statusMessageIdChanged(const QMailMessageId &newMessageId);
     void totalProgressChanged(float progress);
 public slots:
