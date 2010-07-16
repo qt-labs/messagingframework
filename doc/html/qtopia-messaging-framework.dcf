@@ -183,12 +183,8 @@
     <section ref="qmailactionobserver.html" title="QMailActionObserver Class Reference">
         <keyword ref="qmailactionobserver.html">QMailActionObserver</keyword>
         <keyword ref="qmailactionobserver.html#ImplementationType-typedef">ImplementationType</keyword>
-        <keyword ref="qmailactionobserver.html#actionFinished">actionFinished</keyword>
-        <keyword ref="qmailactionobserver.html#actionStarted">actionStarted</keyword>
-        <keyword ref="qmailactionobserver.html#initialized">initialized</keyword>
-        <keyword ref="qmailactionobserver.html#isInitialized">isInitialized</keyword>
-        <keyword ref="qmailactionobserver.html#requestInitialization">requestInitialization</keyword>
-        <keyword ref="qmailactionobserver.html#runningActions">runningActions</keyword>
+        <keyword ref="qmailactionobserver.html#actions-prop">actions</keyword>
+        <keyword ref="qmailactionobserver.html#actionsChanged">actionsChanged</keyword>
         <section ref="qmailactionobserver-members.html" title="List of all members"/>
     </section>
     <section ref="qmailaddress.html" title="QMailAddress Class Reference">
