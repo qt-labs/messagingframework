@@ -427,8 +427,7 @@ void ReadMail::respondToMessagePart(const QMailMessagePart::Location &partLocati
 
 void ReadMail::getThisMail()
 {
-    if (getThisMailButton->isVisible())
-        emit getMailRequested(mail);
+    emit getMailRequested(mail);
 }
 
 void ReadMail::retrieveMessagePortion(uint bytes)
