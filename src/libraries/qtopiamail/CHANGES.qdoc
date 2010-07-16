@@ -231,7 +231,7 @@ Changes since the development preview release on 16/01/09:
 31. Added 'QMailStore::lock()' and
           'QMailStore::unlock()'.
 
-
+32. Added QMailActionInfo and QMailActionObserver classes.
 
 *****************************************************************************
 
