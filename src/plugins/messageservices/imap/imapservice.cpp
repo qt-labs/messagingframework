@@ -480,7 +480,7 @@ bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, con
 bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, const QMailFolderId &destinationId)
 {
     if (messageIds.isEmpty()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to copy"));
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to move"));
         return false;
     }
     if (!destinationId.isValid()) {
