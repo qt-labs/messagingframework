@@ -77,7 +77,8 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _total(0),
       _progress(0),
       _isValid(false),
-      _action(0)
+      _action(0),
+      _pendingTotal(0)
 {
     connect(_server, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
             this, SLOT(activityChanged(quint64, QMailServiceAction::Activity)));
@@ -96,6 +97,7 @@ QMailServiceActionPrivate::~QMailServiceActionPrivate()
 void QMailServiceActionPrivate::cancelOperation()
 {
     if (_isValid) {
+        clearSubActions();
         _server->cancelTransfer(_action);
     }
 }
@@ -142,6 +144,88 @@ void QMailServiceActionPrivate::progressChanged(quint64 action, uint progress, u
     }
 }
 
+void QMailServiceActionPrivate::subActionConnectivityChanged(QMailServiceAction::Connectivity c)
+{
+    connectivityChanged(_action, c);
+}
+
+void QMailServiceActionPrivate::subActionActivityChanged(QMailServiceAction::Activity a)
+{
+    if (a == QMailServiceAction::Failed) {
+        clearSubActions();
+    }
+    if (a == QMailServiceAction::Successful) {
+        if (_pendingActions.count()) {
+            disconnectSubAction(_pendingActions.first().action);
+            // Don't delete QObject while it's emitting a signal
+            _pendingActions.first().action->deleteLater();
+            _pendingActions.removeFirst();
+        }
+        if (_pendingActions.count()) {
+            // Composite action does not finish until all sub actions finish
+            _activityChanged = false;
+            executeNextSubAction();
+            return;
+        }
+    }
+    activityChanged(_action, a);
+}
+
+void QMailServiceActionPrivate::subActionStatusChanged(const QMailServiceAction::Status &s)
+{
+    statusChanged(_action, s);
+}
+
+void QMailServiceActionPrivate::subActionProgressChanged(uint value, uint total)
+{
+    if (_pendingTotal < 1) {
+        qWarning() << "Warning: Invalid pendingTotal";
+        _pendingTotal = 1;
+    }
+    if (total) {
+        const int pos(_pendingTotal - _pendingActions.count() + 1);
+        progressChanged(_action, (100*value*pos)/_pendingTotal, 100);
+    } else {
+        progressChanged(_action, 0, 0);
+    }
+}
+
+void QMailServiceActionPrivate::connectSubAction(QMailServiceAction *subAction)
+{
+    connect(subAction, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)),
+            this, SLOT(subActionConnectivityChanged(QMailServiceAction::Connectivity)));
+    connect(subAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
+            this, SLOT(subActionActivityChanged(QMailServiceAction::Activity)));
+    connect(subAction, SIGNAL(statusChanged(const QMailServiceAction::Status &)),
+            this, SLOT(subActionStatusChanged(const QMailServiceAction::Status &)));
+    connect(subAction, SIGNAL(progressChanged(uint, uint)),
+            this, SLOT(subActionProgressChanged(uint, uint)));
+}
+
+void QMailServiceActionPrivate::disconnectSubAction(QMailServiceAction *subAction)
+{
+    disconnect(subAction, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)),
+            this, SLOT(subActionConnectivityChanged(QMailServiceAction::Connectivity)));
+    disconnect(subAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
+            this, SLOT(subActionActivityChanged(QMailServiceAction::Activity)));
+    disconnect(subAction, SIGNAL(statusChanged(const QMailServiceAction::Status &)),
+            this, SLOT(subActionStatusChanged(const QMailServiceAction::Status &)));
+    disconnect(subAction, SIGNAL(progressChanged(uint, uint)),
+            this, SLOT(subActionProgressChanged(uint, uint)));
+}
+
+void QMailServiceActionPrivate::clearSubActions()
+{
+        if (_pendingActions.count())
+            disconnectSubAction(_pendingActions.first().action);
+        foreach(ActionCommand a, _pendingActions) {
+            // Don't delete QObject while it's emitting a signal
+            a.action->deleteLater();
+        }
+        _pendingTotal = 0;
+        _pendingActions.clear();
+}
+
 void QMailServiceActionPrivate::init()
 {
     _connectivity = QMailServiceAction::Offline;
@@ -155,6 +239,8 @@ void QMailServiceActionPrivate::init()
     _progressChanged = false;
     _statusChanged = false;
     _isValid = false;
+    _pendingActions.clear();
+    _pendingTotal = 0;
 }
 
 quint64 QMailServiceActionPrivate::newAction()
@@ -177,6 +263,24 @@ quint64 QMailServiceActionPrivate::newAction()
 bool QMailServiceActionPrivate::validAction(quint64 action)
 {
    return (action && _action == action);
+}
+
+void QMailServiceActionPrivate::appendSubAction(QMailServiceAction *subAction, QSharedPointer<QMailServiceActionCommand> command)
+{
+    ActionCommand a;
+    a.action = subAction;
+    a.command = command;
+    _pendingActions.append(a);
+    _pendingTotal = _pendingActions.count();
+}
+
+void QMailServiceActionPrivate::executeNextSubAction()
+{
+    if (_pendingActions.isEmpty())
+        return;
+
+    connectSubAction(_pendingActions.first().action);
+    _pendingActions.first().command->execute();
 }
 
 void QMailServiceActionPrivate::setConnectivity(QMailServiceAction::Connectivity newConnectivity)
@@ -635,9 +739,44 @@ void QMailRetrievalActionPrivate::retrieveAll(const QMailAccountId &accountId)
     _server->retrieveAll(newAction(), accountId);
 }
 
-void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
+void QMailRetrievalActionPrivate::exportUpdatesInternal(const QMailAccountId &accountId)
 {
     _server->exportUpdates(newAction(), accountId);
+}
+
+void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
+{
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
+    
+    //sync disconnected move and copy operations for account
+
+    QMailAccount account(accountId);
+    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
+
+    foreach(const QMailFolderId& folderId, folderList) {
+        if(!folderId.isValid())
+            continue;
+
+        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
+                                             & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
+                                                | QMailMessageKey::status(QMailMessage::LocalOnly));
+
+        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
+
+        if(movedMessages.isEmpty())
+            continue;
+
+        QMailStorageAction *moveAction = new QMailStorageAction();
+        QMailMoveCommand *moveCommand = new QMailMoveCommand(moveAction->impl(moveAction), movedMessages, folderId);
+        appendSubAction(moveAction, QSharedPointer<QMailServiceActionCommand>(moveCommand));
+    }
+
+    // flag changes
+    QMailRetrievalAction *exportAction = new QMailRetrievalAction();
+    QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->impl(exportAction), accountId);
+    appendSubAction(exportAction, QSharedPointer<QMailServiceActionCommand>(exportCommand));
+    executeNextSubAction();
 }
 
 void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)

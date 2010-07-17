@@ -56,8 +56,19 @@
 #include "qmailserviceaction.h"
 #include "qmailmessageserver.h"
 
-
 // These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
+
+class QMailServiceActionCommand
+{
+public:
+    virtual ~QMailServiceActionCommand() {};
+    virtual void execute() = 0;
+};
+
+struct ActionCommand {
+    QMailServiceAction *action;
+    QSharedPointer<QMailServiceActionCommand> command;
+};
 
 class QMailServiceActionPrivate : public QObject, public QPrivateNoncopyableBase
 {
@@ -77,6 +88,13 @@ protected slots:
     void connectivityChanged(quint64, QMailServiceAction::Connectivity connectivity);
     void statusChanged(quint64, const QMailServiceAction::Status status);
     void progressChanged(quint64, uint progress, uint total);
+    void subActionConnectivityChanged(QMailServiceAction::Connectivity c);
+    void subActionActivityChanged(QMailServiceAction::Activity a);
+    void subActionStatusChanged(const QMailServiceAction::Status &s);
+    void subActionProgressChanged(uint value, uint total);
+    void connectSubAction(QMailServiceAction *subAction);
+    void disconnectSubAction(QMailServiceAction *subAction);
+    void clearSubActions();
 
 protected:
     friend class QMailServiceAction;
@@ -85,6 +103,9 @@ protected:
 
     quint64 newAction();
     bool validAction(quint64 action);
+
+    void appendSubAction(QMailServiceAction *subAction, QSharedPointer<QMailServiceActionCommand> command);
+    void executeNextSubAction();
 
     void setActivity(QMailServiceAction::Activity newActivity);
     void setConnectivity(QMailServiceAction::Connectivity newConnectivity);
@@ -114,6 +135,9 @@ protected:
     bool _activityChanged;
     bool _progressChanged;
     bool _statusChanged;
+
+    QList<ActionCommand> _pendingActions;
+    uint _pendingTotal;
 };
 
 
@@ -135,6 +159,7 @@ public:
 
     void retrieveAll(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
+    void exportUpdatesInternal(const QMailAccountId &accountId);
 
     void synchronize(const QMailAccountId &accountId);
 
@@ -145,6 +170,15 @@ private:
     friend class QMailRetrievalAction;
 };
 
+class QMailExportUpdatesCommand : public QMailServiceActionCommand
+{
+public:
+    QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
+    void execute() { _action->exportUpdatesInternal(_accountId); }
+private:
+    QMailRetrievalActionPrivate *_action;
+    QMailAccountId _accountId;
+};
 
 class QMailTransmitActionPrivate : public QMailServiceActionPrivate
 {
@@ -203,6 +237,17 @@ private:
     QMailMessageIdList _ids;
 };
 
+class QMailMoveCommand : public QMailServiceActionCommand
+{
+public:
+    QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId) 
+        :_action(action), _ids(ids), _folderId(destinationId) {};
+    void execute() { _action->moveMessages(_ids, _folderId); }
+private:
+    QMailStorageActionPrivate *_action;
+    QMailMessageIdList _ids;
+    QMailFolderId _folderId;
+};
 
 class QMailSearchActionPrivate : public QMailServiceActionPrivate
 {
