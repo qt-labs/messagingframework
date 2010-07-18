@@ -47,6 +47,7 @@
 #include <QTimer>
 #include <qmaillog.h>
 #include <qmailmessage.h>
+#include <qmaildisconnected.h>
 
 namespace { 
 
@@ -549,19 +550,9 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
 
             } else if (_unsetMask & QMailMessage::Trash) {
 
-                // TODO Provide this functionality via a QMailDisconnected::restoreMap function
                 QMap<QMailFolderId, QMailMessageIdList> destinationList;
-
                 // These messages need to be restored to their previous locations
-                QMailMessageKey key(QMailMessageKey::id(messageIds));
-                QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
-
-                foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
-                    if (metaData.previousParentFolderId().isValid()) {
-                        destinationList[metaData.previousParentFolderId()].append(metaData.id());
-                    }
-                }
-                // END TODO
+                destinationList = QMailDisconnected::restoreMap(messageIds);
 
                 _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
                 QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
