@@ -3343,16 +3343,10 @@ QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *
 
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)
 {
-    if ((source.status() & QMailMessage::New) == 0) {
-        message.setStatus(QMailMessage::New, false);
-    }
-
-    if((source.status() & QMailMessage::Trash) == 0)
-        message.setStatus(QMailMessage::Trash,false);
-
-    if (source.status() & QMailMessage::Read) {
-        message.setStatus(QMailMessage::Read, true);
-    }
+    message.setStatus(QMailMessage::New, source.status() & QMailMessage::New);
+    message.setStatus(QMailMessage::Trash, source.status() & QMailMessage::Trash); // shouldn't standard flags be set correctly when retrieving?
+    message.setStatus(QMailMessage::Read, source.status() & QMailMessage::Read);
+    message.setStatus(QMailMessage::Important, source.status() & QMailMessage::Important);
 }
 
 void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
