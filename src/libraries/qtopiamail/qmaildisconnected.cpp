@@ -65,12 +65,12 @@ QMailMessageKey::Properties QMailDisconnected::parentFolderProperties()
     return QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId;
 }
 
-void QMailDisconnected::clearPreviousFolder(QMailMessage *message)
+void QMailDisconnected::clearPreviousFolder(QMailMessageMetaData *message)
 {
     message->setPreviousParentFolderId(QMailFolderId());
 }
 
-void QMailDisconnected::copyPreviousFolder(const QMailMessage &source, QMailMessage *dest)
+void QMailDisconnected::copyPreviousFolder(const QMailMessageMetaData &source, QMailMessageMetaData *dest)
 {
     dest->setPreviousParentFolderId(source.previousParentFolderId());
 }

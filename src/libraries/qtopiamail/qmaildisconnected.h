@@ -52,8 +52,8 @@ public:
     static QMailMessageKey sourceKey(const QMailFolderId &folderId);
     static QMailFolderId sourceFolderId(const QMailMessageMetaData &metaData);
     static QMailMessageKey::Properties parentFolderProperties();
-    static void clearPreviousFolder(QMailMessage *message);
-    static void copyPreviousFolder(const QMailMessage &source, QMailMessage *dest);
+    static void clearPreviousFolder(QMailMessageMetaData *message);
+    static void copyPreviousFolder(const QMailMessageMetaData &source, QMailMessageMetaData *dest);
     static QMap<QMailFolderId, QMailMessageIdList> restoreMap(const QMailMessageIdList &messageIds);
     static void rollBackUpdates(const QMailAccountId &mailAccountId);
     static bool updatesOutstanding(const QMailAccountId &mailAccountId);
