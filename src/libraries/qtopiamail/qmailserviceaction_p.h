@@ -95,6 +95,7 @@ protected slots:
     void connectSubAction(QMailServiceAction *subAction);
     void disconnectSubAction(QMailServiceAction *subAction);
     void clearSubActions();
+    void queueDisconnectedOperations(const QMailAccountId &accountId);
 
 protected:
     friend class QMailServiceAction;
@@ -159,7 +160,7 @@ public:
 
     void retrieveAll(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
-    void exportUpdatesInternal(const QMailAccountId &accountId);
+    void exportUpdatesHelper(const QMailAccountId &accountId);
 
     void synchronize(const QMailAccountId &accountId);
 
@@ -174,7 +175,7 @@ class QMailExportUpdatesCommand : public QMailServiceActionCommand
 {
 public:
     QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
-    void execute() { _action->exportUpdatesInternal(_accountId); }
+    void execute() { _action->exportUpdatesHelper(_accountId); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -223,6 +224,7 @@ public:
     void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(const QMailFolderId &id, const QString &name);
     void deleteFolder(const QMailFolderId &id);
+    void deleteFolderHelper(const QMailFolderId &id);
 
 protected:
     virtual void init();
@@ -235,6 +237,16 @@ private:
     friend class QMailStorageAction;
 
     QMailMessageIdList _ids;
+};
+
+class QMailDeleteFolderCommand : public QMailServiceActionCommand
+{
+public:
+    QMailDeleteFolderCommand(QMailStorageActionPrivate *action, const QMailFolderId &folderId) :_action(action), _folderId(folderId) {};
+    void execute() { _action->deleteFolderHelper(_folderId); }
+private:
+    QMailStorageActionPrivate *_action;
+    QMailFolderId _folderId;
 };
 
 class QMailMoveCommand : public QMailServiceActionCommand

@@ -226,6 +226,35 @@ void QMailServiceActionPrivate::clearSubActions()
         _pendingActions.clear();
 }
 
+void QMailServiceActionPrivate::queueDisconnectedOperations(const QMailAccountId &accountId)
+{
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
+    
+    //sync disconnected move and copy operations for account
+
+    QMailAccount account(accountId);
+    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
+
+    foreach(const QMailFolderId& folderId, folderList) {
+        if(!folderId.isValid())
+            continue;
+
+        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
+                                             & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
+                                                | QMailMessageKey::status(QMailMessage::LocalOnly));
+
+        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
+
+        if(movedMessages.isEmpty())
+            continue;
+
+        QMailStorageAction *moveAction = new QMailStorageAction();
+        QMailMoveCommand *moveCommand = new QMailMoveCommand(moveAction->impl(moveAction), movedMessages, folderId);
+        appendSubAction(moveAction, QSharedPointer<QMailServiceActionCommand>(moveCommand));
+    }
+}
+
 void QMailServiceActionPrivate::init()
 {
     _connectivity = QMailServiceAction::Offline;
@@ -739,39 +768,15 @@ void QMailRetrievalActionPrivate::retrieveAll(const QMailAccountId &accountId)
     _server->retrieveAll(newAction(), accountId);
 }
 
-void QMailRetrievalActionPrivate::exportUpdatesInternal(const QMailAccountId &accountId)
+void QMailRetrievalActionPrivate::exportUpdatesHelper(const QMailAccountId &accountId)
 {
     _server->exportUpdates(newAction(), accountId);
 }
 
 void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
 {
-    Q_ASSERT(!_pendingActions.count());
-    newAction();
+    queueDisconnectedOperations(accountId);
     
-    //sync disconnected move and copy operations for account
-
-    QMailAccount account(accountId);
-    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
-
-    foreach(const QMailFolderId& folderId, folderList) {
-        if(!folderId.isValid())
-            continue;
-
-        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
-                                             & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
-                                                | QMailMessageKey::status(QMailMessage::LocalOnly));
-
-        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
-
-        if(movedMessages.isEmpty())
-            continue;
-
-        QMailStorageAction *moveAction = new QMailStorageAction();
-        QMailMoveCommand *moveCommand = new QMailMoveCommand(moveAction->impl(moveAction), movedMessages, folderId);
-        appendSubAction(moveAction, QSharedPointer<QMailServiceActionCommand>(moveCommand));
-    }
-
     // flag changes
     QMailRetrievalAction *exportAction = new QMailRetrievalAction();
     QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->impl(exportAction), accountId);
@@ -1223,10 +1228,24 @@ void QMailStorageActionPrivate::renameFolder(const QMailFolderId &folderId, cons
     emitChanges();
 }
 
-void QMailStorageActionPrivate::deleteFolder(const QMailFolderId &folderId)
+void QMailStorageActionPrivate::deleteFolderHelper(const QMailFolderId &folderId)
 {
     _server->deleteFolder(newAction(), folderId);
     emitChanges();
+}
+
+void QMailStorageActionPrivate::deleteFolder(const QMailFolderId &folderId)
+{
+    if (folderId.isValid()) {
+        QMailFolder folder(folderId);
+        if (folder.parentAccountId().isValid())
+            queueDisconnectedOperations(folder.parentAccountId());
+    }
+
+    QMailStorageAction *deleteFolderAction = new QMailStorageAction();
+    QMailDeleteFolderCommand *deleteFolderCommand = new QMailDeleteFolderCommand(deleteFolderAction->impl(deleteFolderAction), folderId);
+    appendSubAction(deleteFolderAction, QSharedPointer<QMailServiceActionCommand>(deleteFolderCommand));
+    executeNextSubAction();
 }
 
 void QMailStorageActionPrivate::init()
