@@ -474,8 +474,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
     if (imapCfg.canDeleteMail()) {
-        QMailFolderKey accountFoldersKey(QMailFolderKey::parentAccountId(_service->accountId()));
-        serverMessages = QMailStore::instance()->queryMessages(QMailMessageKey::id(messageIds) & QMailMessageKey::parentFolderId(accountFoldersKey));
+        serverMessages = QMailStore::instance()->queryMessages(QMailMessageKey::id(messageIds) & QMailMessageKey::parentAccountId(_service->accountId()));
         if (!serverMessages.isEmpty()) {
             // Delete the messages from the server
             _service->_client.strategyContext()->deleteMessagesStrategy.clearSelection();
@@ -550,6 +549,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
 
             } else if (_unsetMask & QMailMessage::Trash) {
 
+                // TODO Provide this functionality via a QMailDisconnected::restoreMap function
                 QMap<QMailFolderId, QMailMessageIdList> destinationList;
 
                 // These messages need to be restored to their previous locations
@@ -561,6 +561,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                         destinationList[metaData.previousParentFolderId()].append(metaData.id());
                     }
                 }
+                // END TODO
 
                 _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
                 QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
