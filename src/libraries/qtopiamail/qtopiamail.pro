@@ -30,6 +30,7 @@ PUBLIC_HEADERS += qmailaccount.h \
                   qmailcodec.h \
                   qmailcontentmanager.h \
                   qmaildatacomparator.h \
+                  qmaildisconnected.h \
                   qmailfolder.h \
                   qmailfolderfwd.h \
                   qmailfolderkey.h \
@@ -97,6 +98,7 @@ SOURCES += longstream.cpp \
            qmailcodec.cpp \
            qmailcontentmanager.cpp \
            qmaildatacomparator.cpp \
+           qmaildisconnected.cpp \
            qmailfolder.cpp \
            qmailfolderkey.cpp \
            qmailfoldersortkey.cpp \
