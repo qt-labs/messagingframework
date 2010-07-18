@@ -50,6 +50,7 @@
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailnamespace.h>
+#include <qmaildisconnected.h>
 #include <limits.h>
 #include <QDir>
 
@@ -73,15 +74,6 @@ static QStringList stripFolderPrefix(const QStringList &list)
         result.append(stripFolderPrefix(uid));
     }
     return result;
-}
-
-static QMailFolderId serverFolderId(const QMailMessageMetaData &metaData)
-{
-    QMailFolderId previousParentFolderId = metaData.previousParentFolderId();
-    if (previousParentFolderId.isValid())
-        return previousParentFolderId;
-    
-    return metaData.parentFolderId();
 }
 
 static QStringList inFirstAndSecond(const QStringList &first, const QStringList &second)
@@ -418,7 +410,7 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage
             }
         }
 
-        context->folderModified(message.parentFolderId());
+        context->folderModified(QMailDisconnected::sourceFolderId(message));
     }
 
     context->completedMessageAction(message.serverUid());
@@ -603,6 +595,7 @@ void ImapDeleteFolderStrategy::process(ImapStrategyContextBase *context)
 
 void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapStrategyContextBase *context)
 {
+    // Assume no pending disconnected moves/copies exist for this folder
     QMailFolderKey childKey(QMailFolderKey::parentFolderId(folderId));
     QMailFolderIdList childrenList = QMailStore::instance()->queryFolders(childKey);
 
@@ -878,10 +871,10 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     if (ids.count() == 0)
         return;
 
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[serverFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
+        _selectionMap[QMailDisconnected::sourceFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
     }
 }
 
@@ -890,7 +883,7 @@ void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Loc
     QMailMessageMetaData metaData(location.containingMessageId());
     if (metaData.id().isValid()) {
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[serverFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
+        _selectionMap[QMailDisconnected::sourceFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
     }
 }
 
@@ -1177,7 +1170,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
     if (_listSize == 0)
         return;
 
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId | QMailMessageKey::ServerUid | QMailMessageKey::Size);
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid | QMailMessageKey::Size);
 
     // Break retrieval of message meta data into chunks to reduce peak memory use
     QMailMessageIdList idsBatch;
@@ -1193,8 +1186,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
 
-            //use previousparentfolderid if available since the message may have been moved locally
-            QMailFolderId remoteFolderId(serverFolderId(metaData));
+            QMailFolderId remoteFolderId(QMailDisconnected::sourceFolderId(metaData));
 
             _selectionMap[remoteFolderId].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
 
@@ -1217,7 +1209,7 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
     const QMailMessage message(location.containingMessageId());
     if (message.id().isValid()) {
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
-        _selectionMap[serverFolderId(message)].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
+        _selectionMap[QMailDisconnected::sourceFolderId(message)].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
 
         uint size = 0;
         uint bytes = minimum;
@@ -2705,10 +2697,11 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     _folderMessageUids.clear();
     if (!_selectedMessageIds.isEmpty()) {
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(_selectedMessageIds), 
-                                                                                                QMailMessageKey::ServerUid | QMailMessageKey::ParentFolderId, 
+                                                                                                QMailMessageKey::ServerUid 
+                                                                                                | QMailDisconnected::parentFolderProperties(),
                                                                                                 QMailStore::ReturnAll)) {
-            if (!metaData.serverUid().isEmpty() && metaData.parentFolderId().isValid())
-                _folderMessageUids[metaData.parentFolderId()].append(metaData.serverUid());
+            if (!metaData.serverUid().isEmpty() && QMailDisconnected::sourceFolderId(metaData).isValid())
+                _folderMessageUids[QMailDisconnected::sourceFolderId(metaData)].append(metaData.serverUid());
         }
     }
 
@@ -2944,7 +2937,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
             rawServerRegion.add(number);
     }
 
-    QMailMessageKey sourceKey(context->client()->sourceKey(folder.id()));
+    QMailMessageKey sourceKey(QMailDisconnected::sourceKey(folder.id()));
     
 #if 1 // debugging
     IntegerRegion trueClientRegion;
@@ -3087,7 +3080,7 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     // The current mailbox is now selected
     const ImapMailboxProperties &properties(context->mailbox());
     uint minimum(_minimum);
-    QMailMessageKey sourceKey(context->client()->sourceKey(properties.id));
+    QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
     if (_accountCheck) {
         // Request all (non search) messages in this folder or _minimum which ever is greater
         QMailMessageKey countKey(sourceKey);
@@ -3567,7 +3560,7 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
         return;
     }
 
-    message.setPreviousParentFolderId(QMailFolderId());
+    QMailDisconnected::clearPreviousFolder(&message);
     if (source.serverUid().isEmpty()) {
         // This message has been moved to the external server - delete the local copy
         if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {

@@ -56,6 +56,7 @@
 #include <qmailmessageserver.h>
 #include <qmailnamespace.h>
 #include <qmailtransport.h>
+#include <qmaildisconnected.h>
 
 #ifndef QT_NO_OPENSSL
 #include <QSslError>
@@ -3089,8 +3090,8 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
         
         result.append('/');
 
-        if (metaData.parentFolderId().isValid()) {
-            QMailFolder folder(metaData.parentFolderId());
+        if (QMailDisconnected::sourceFolderId(metaData).isValid()) {
+            QMailFolder folder(QMailDisconnected::sourceFolderId(metaData));
 
             result.append(folder.path()).append('/');
         }

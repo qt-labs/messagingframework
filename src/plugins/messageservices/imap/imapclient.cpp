@@ -47,6 +47,7 @@
 #include <qmaillog.h>
 #include <qmailfolder.h>
 #include <qmailnamespace.h>
+#include <qmaildisconnected.h>
 #include <limits.h>
 #include <QFile>
 #include <QDir>
@@ -788,7 +789,7 @@ void ImapClient::messageFetched(QMailMessage& mail)
             mail.setStatus(existing.status());
             mail.setContent(existing.content());
             mail.setReceivedDate(existing.receivedDate());
-            mail.setPreviousParentFolderId(existing.previousParentFolderId());
+            QMailDisconnected::copyPreviousFolder(existing, &mail);
             mail.setInResponseTo(existing.inResponseTo());
             mail.setResponseType(existing.responseType());
             mail.setContentScheme(existing.contentScheme());
@@ -1312,13 +1313,13 @@ QStringList ImapClient::serverUids(QMailMessageKey key) const
 QMailMessageKey ImapClient::messagesKey(const QMailFolderId &folderId) const
 {
     return (QMailMessageKey::parentAccountId(_config.id()) &
-            QMailMessageKey::parentFolderId(folderId));
+            QMailDisconnected::sourceKey(folderId));
 }
 
 QMailMessageKey ImapClient::trashKey(const QMailFolderId &folderId) const
 {
     return (QMailMessageKey::parentAccountId(_config.id()) &
-            QMailMessageKey::parentFolderId(folderId) &
+            QMailDisconnected::sourceKey(folderId) &
             QMailMessageKey::status(QMailMessage::Trash));
 }
 
@@ -1333,19 +1334,10 @@ QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
     return serverUidList;
 }
 
-// Messages that were retrieved from folderId
-QMailMessageKey ImapClient::sourceKey(const QMailFolderId &folderId) const
-{
-    QMailMessageKey result(QMailMessageKey::parentFolderId(folderId));
-    result &= QMailMessageKey::previousParentFolderId(QMailFolderId());
-    result |= QMailMessageKey::previousParentFolderId(folderId);
-    return result;
-}
-
 void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 {
     // Find the local mailstore count for this folder
-    QMailMessageKey folderContent(sourceKey(folder->id()));
+    QMailMessageKey folderContent(QMailDisconnected::sourceKey(folder->id()));
     folderContent &= ~QMailMessageKey::status(QMailMessage::Removed);
 
     uint count = QMailStore::instance()->countMessages(folderContent);
