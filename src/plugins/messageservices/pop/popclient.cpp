@@ -48,6 +48,7 @@
 #include <qmailstore.h>
 #include <qmailtransport.h>
 #include <qmaillog.h>
+#include <qmaildisconnected.h>
 
 #include <limits.h>
 
@@ -966,7 +967,7 @@ void PopClient::createMail()
         mail.setId(existing.id());
         mail.setStatus(existing.status());
         mail.setContent(existing.content());
-        mail.setPreviousParentFolderId(existing.previousParentFolderId());
+        QMailDisconnected::copyPreviousFolder(existing, &mail);
         mail.setContentScheme(existing.contentScheme());
         mail.setContentIdentifier(existing.contentIdentifier());
         mail.setCustomFields(existing.customFields());
