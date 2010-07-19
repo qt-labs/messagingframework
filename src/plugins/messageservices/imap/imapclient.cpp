@@ -1246,7 +1246,7 @@ void ImapClient::retrieveOperationCompleted()
 
 void ImapClient::deactivateConnection()
 {
-    const int inactivityPeriod = 20 * 1000;
+    const int inactivityPeriod = 50 * 60 * 1000; // 5 minutes
 
     _inactiveTimer.start(inactivityPeriod);
 }
