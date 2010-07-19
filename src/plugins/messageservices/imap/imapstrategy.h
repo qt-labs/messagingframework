@@ -531,6 +531,8 @@ protected:
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
     virtual void searchInconclusive(ImapStrategyContextBase *context);
 
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
+
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextNotSeen(ImapStrategyContextBase *context);
     virtual bool setNextImportant(ImapStrategyContextBase *context);
