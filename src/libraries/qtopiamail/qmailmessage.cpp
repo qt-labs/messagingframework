@@ -5250,10 +5250,23 @@ quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 }
 #endif
 
+void QMailMessageMetaDataPrivate::ensureCustomFieldsLoaded() const
+{
+    if (!_customFields.isInitialized())
+        _customFields = QMailStore::instance()->messageCustomFields(_id);
+}
+
+const QMap<QString, QString> &QMailMessageMetaDataPrivate::customFields() const
+{
+    ensureCustomFieldsLoaded();
+    return *_customFields;
+}
+
 QString QMailMessageMetaDataPrivate::customField(const QString &name) const
 {
-    QMap<QString, QString>::const_iterator it = _customFields.find(name);
-    if (it != _customFields.end()) {
+    ensureCustomFieldsLoaded();
+    QMap<QString, QString>::const_iterator it = _customFields->find(name);
+    if (it != _customFields->end()) {
         return *it;
     }
 
@@ -5262,23 +5275,25 @@ QString QMailMessageMetaDataPrivate::customField(const QString &name) const
 
 void QMailMessageMetaDataPrivate::setCustomField(const QString &name, const QString &value)
 {
-    QMap<QString, QString>::iterator it = _customFields.find(name);
-    if (it != _customFields.end()) {
+    ensureCustomFieldsLoaded();
+    QMap<QString, QString>::iterator it = _customFields->find(name);
+    if (it != _customFields->end()) {
         if (*it != value) {
             *it = value;
             _customFieldsModified = true;
         }
     } else {
-        _customFields.insert(name, value);
+        _customFields->insert(name, value);
         _customFieldsModified = true;
     }
 }
 
 void QMailMessageMetaDataPrivate::removeCustomField(const QString &name)
 {
-    QMap<QString, QString>::iterator it = _customFields.find(name);
-    if (it != _customFields.end()) {
-        _customFields.erase(it);
+    ensureCustomFieldsLoaded();
+    QMap<QString, QString>::iterator it = _customFields->find(name);
+    if (it != _customFields->end()) {
+        _customFields->erase(it);
         _customFieldsModified = true;
     }
 }
@@ -5314,7 +5329,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _contentIdentifier;
     stream << _responseId;
     stream << _responseType;
-    stream << _customFields;
+    stream << customFields();
     stream << _customFieldsModified;
     stream << _dirty;
 }
@@ -5323,6 +5338,7 @@ template <typename Stream>
 void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 {
     QString timeStamp;
+    QMap<QString, QString> customFields;
 
     stream >> _messageType;
     stream >> _status;
@@ -5348,9 +5364,11 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _contentIdentifier;
     stream >> _responseId;
     stream >> _responseType;
-    stream >> _customFields;
+    stream >> customFields;
+    _customFields = customFields;
     stream >> _customFieldsModified;
     stream >> _dirty;
+
 }
 
 
@@ -6168,7 +6186,7 @@ void QMailMessageMetaData::removeCustomField(const QString &name)
 */
 const QMap<QString, QString> &QMailMessageMetaData::customFields() const
 {
-    return d->_customFields;
+    return d->customFields();
 }
 
 /*! \internal */

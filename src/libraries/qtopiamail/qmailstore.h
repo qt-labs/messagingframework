@@ -219,6 +219,7 @@ signals:
 private:
     friend class QMailStoreImplementationBase;
     friend class QMailStorePrivate;
+    friend class QMailMessageMetaDataPrivate; // for ensureCustomFields
     friend class tst_QMailStore;
     friend class tst_QMailStoreKeys;
 
@@ -226,6 +227,7 @@ private:
 
     bool updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> >&);
 
+    QMap<QString, QString> messageCustomFields(const QMailMessageId &id);
     void clearContent();
 
     void emitErrorNotification(QMailStore::ErrorCode code);

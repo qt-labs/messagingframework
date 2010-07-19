@@ -179,6 +179,8 @@ public:
 
     static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
 
+    QMap<QString, QString> messageCustomFields(const QMailMessageId &id);
+
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
 

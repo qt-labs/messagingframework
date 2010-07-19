@@ -266,6 +266,7 @@ public:
 
     virtual bool registerMessageStatusFlag(const QString &name) = 0;
     virtual quint64 messageStatusMask(const QString &name) const = 0;
+    virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id) = 0;
 };
 
 class QMailStoreNullImplementation : public QMailStoreImplementation
@@ -354,6 +355,8 @@ public:
 
     virtual bool registerMessageStatusFlag(const QString &name);
     virtual quint64 messageStatusMask(const QString &name) const;
+
+    virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id);
 
 private:
     virtual bool initStore();

@@ -921,6 +921,11 @@ quint64 QMailStoreNullImplementation::messageStatusMask(const QString &) const
     return 0;
 }
 
+QMap<QString, QString> QMailStoreNullImplementation::messageCustomFields(const QMailMessageId &)
+{
+    return QMap<QString, QString>();
+}
+
 bool QMailStoreNullImplementation::initStore()
 {
     return false;

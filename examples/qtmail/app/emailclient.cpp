@@ -497,6 +497,15 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     init();
 
     setupUi();
+
+    QMailMessageMetaData message = QMailStore::instance()->messageMetaData(QMailMessageId(1));
+    message.setCustomField("mywonderful", "value");
+    QMailStore::instance()->updateMessage(&message);
+
+    QMailMessageMetaData messageReloaded = QMailStore::instance()->messageMetaData(QMailMessageId(1));
+    qDebug() << messageReloaded.customFields();
+    qDebug() << messageReloaded.customField("mywonderful");
+
 }
 
 EmailClient::~EmailClient()

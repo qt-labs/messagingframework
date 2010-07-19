@@ -295,6 +295,64 @@ private:
     QString _resolution;
 };
 
+template <typename T>
+struct Maybe
+{
+    Maybe()
+        : _value(NULL)
+    {}
+
+    Maybe(T other)
+        : _value(new T(other))
+    {}
+
+    Maybe(const Maybe<T> &other)
+    {
+        if (other.isInitialized())
+            _value = new T(*other);
+        else
+            _value = NULL;
+    }
+
+    ~Maybe()
+    {
+        delete _value;
+    }
+
+    bool isInitialized() const
+    {
+        return (_value != NULL);
+    }
+
+    T *operator->() const
+    {
+        return _value;
+    }
+
+    T &operator*() const
+    {
+        return *_value;
+    }
+
+    Maybe &operator=(const T &value)
+    {
+        if (isInitialized())
+            clear();
+        _value = new T(value);
+        return *this;
+    }
+
+    void clear()
+    {
+        Q_ASSERT(_value != NULL);
+        delete _value;
+        _value = NULL;
+    }
+
+private:
+    T *_value;
+};
+
 
 class QMailMessageMetaDataPrivate : public QPrivateImplementationBase
 {
@@ -334,6 +392,7 @@ public:
     bool dataModified() const;
     void setUnmodified();
 
+    const QMap<QString, QString> &customFields() const;
     QString customField(const QString &name) const;
     void setCustomField(const QString &name, const QString &value);
     void removeCustomField(const QString &name);
@@ -369,7 +428,7 @@ public:
     QMailMessageId _responseId;
     QMailMessage::ResponseType _responseType;
 
-    QMap<QString, QString> _customFields;
+    mutable Maybe< QMap<QString, QString> > _customFields;
     bool _customFieldsModified;
 
     template <typename T>
@@ -382,6 +441,7 @@ public:
     }
 
     bool _dirty;
+    void ensureCustomFieldsLoaded() const;
 
 private:
     static quint64 registerFlag(const QString &name);

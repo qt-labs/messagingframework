@@ -2002,7 +2002,7 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
 
 const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
 {
-    static QMailMessageKey::Properties p = QMailMessageKey::Id | updatableMessageProperties();
+    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | updatableMessageProperties();
     return p;
 }
 
@@ -2448,6 +2448,13 @@ void QMailStorePrivate::destroyTemporaryTables()
         }
     }
 }
+
+QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessageId &id)
+{
+    QMap<QString, QString> fields;
+    customFields(id.toULongLong(), &fields, "mailmessagecustom");
+    return fields;
+ }
 
 bool QMailStorePrivate::idValueExists(quint64 id, const QString& table)
 {

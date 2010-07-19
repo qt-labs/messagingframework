@@ -1005,6 +1005,12 @@ bool QMailStore::asynchronousEmission() const
 }
 
 /*! \internal */
+QMap<QString, QString> QMailStore::messageCustomFields(const QMailMessageId &id)
+{
+    return d->messageCustomFields(id);
+}
+
+/*! \internal */
 void QMailStore::clearContent()
 {
     d->clearContent();
