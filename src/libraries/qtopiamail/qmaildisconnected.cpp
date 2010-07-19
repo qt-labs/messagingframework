@@ -51,9 +51,9 @@ QMailMessageKey QMailDisconnected::sourceKey(const QMailFolderId &folderId)
     return result;
 }
 
-QMailFolderId sourceFolderId(const QMailMessageMetaData &metaData)
+QMailFolderId QMailDisconnected::sourceFolderId(const QMailMessageMetaData &metaData)
 {
-    QMailFolderId previousParentFolderId = metaData.previousParentFolderId();
+    QMailFolderId previousParentFolderId(metaData.previousParentFolderId());
     if (previousParentFolderId.isValid())
         return previousParentFolderId;
     
