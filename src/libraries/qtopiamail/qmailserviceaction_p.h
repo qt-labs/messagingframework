@@ -159,9 +159,9 @@ public:
     void retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
 
     void retrieveAll(const QMailAccountId &accountId);
-    void exportUpdates(const QMailAccountId &accountId);
     void exportUpdatesHelper(const QMailAccountId &accountId);
-
+    void exportUpdates(const QMailAccountId &accountId);
+    void synchronizeHelper(const QMailAccountId &accountId);
     void synchronize(const QMailAccountId &accountId);
 
 protected slots:
@@ -176,6 +176,16 @@ class QMailExportUpdatesCommand : public QMailServiceActionCommand
 public:
     QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
     void execute() { _action->exportUpdatesHelper(_accountId); }
+private:
+    QMailRetrievalActionPrivate *_action;
+    QMailAccountId _accountId;
+};
+
+class QMailSynchronizeCommand : public QMailServiceActionCommand
+{
+public:
+    QMailSynchronizeCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
+    void execute() { _action->synchronizeHelper(_accountId); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;

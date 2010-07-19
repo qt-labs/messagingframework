@@ -784,9 +784,19 @@ void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
     executeNextSubAction();
 }
 
-void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)
+void QMailRetrievalActionPrivate::synchronizeHelper(const QMailAccountId &accountId)
 {
     _server->synchronize(newAction(), accountId);
+}
+
+void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)
+{
+    queueDisconnectedOperations(accountId);
+    
+    QMailRetrievalAction *synchronizeAction = new QMailRetrievalAction();
+    QMailSynchronizeCommand *synchronizeCommand = new QMailSynchronizeCommand(synchronizeAction->impl(synchronizeAction), accountId);
+    appendSubAction(synchronizeAction, QSharedPointer<QMailServiceActionCommand>(synchronizeCommand));
+    executeNextSubAction();
 }
 
 void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
