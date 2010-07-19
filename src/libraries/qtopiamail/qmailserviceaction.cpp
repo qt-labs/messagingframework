@@ -1178,11 +1178,29 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     init();
 }
 
-void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
+void QMailStorageActionPrivate::deleteMessagesHelper(const QMailMessageIdList &ids)
 {
     _server->deleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
     _ids = ids;
     emitChanges();
+}
+
+void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
+{
+    QSet<QMailAccountId> accountIds;
+    QMailMessageKey::Properties props(QMailMessageKey::ParentAccountId);
+    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
+        QMailAccountId accountId(metaData.parentAccountId());
+        if (accountId.isValid() && !accountIds.contains(accountId)) {
+            accountIds.insert(accountId);
+            queueDisconnectedOperations(accountId);
+        }
+    }
+
+    QMailStorageAction *deleteMessagesAction = new QMailStorageAction();
+    QMailDeleteMessagesCommand *deleteMessagesCommand = new QMailDeleteMessagesCommand(deleteMessagesAction->impl(deleteMessagesAction), ids);
+    appendSubAction(deleteMessagesAction, QSharedPointer<QMailServiceActionCommand>(deleteMessagesCommand));
+    executeNextSubAction();
 }
 
 void QMailStorageActionPrivate::discardMessages(const QMailMessageIdList &ids)

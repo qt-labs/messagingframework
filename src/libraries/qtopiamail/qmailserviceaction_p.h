@@ -215,6 +215,7 @@ public:
     QMailStorageActionPrivate(QMailStorageAction *i);
 
     void deleteMessages(const QMailMessageIdList &ids);
+    void deleteMessagesHelper(const QMailMessageIdList &ids);
     void discardMessages(const QMailMessageIdList &ids);
 
     void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
@@ -259,6 +260,16 @@ private:
     QMailStorageActionPrivate *_action;
     QMailMessageIdList _ids;
     QMailFolderId _folderId;
+};
+
+class QMailDeleteMessagesCommand : public QMailServiceActionCommand
+{
+public:
+    QMailDeleteMessagesCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids) :_action(action), _ids(ids) {};
+    void execute() { _action->deleteMessagesHelper(_ids); }
+private:
+    QMailStorageActionPrivate *_action;
+    QMailMessageIdList _ids;
 };
 
 class QMailSearchActionPrivate : public QMailServiceActionPrivate
