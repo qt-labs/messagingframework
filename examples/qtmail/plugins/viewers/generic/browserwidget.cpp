@@ -936,10 +936,10 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 
     QString itemTemplate =
 "<tr>"
-    "<td align=right>"
+    "<td align='right' valign='top'>"
         "<b>ID_TEXT: </b>"
     "</td>"
-    "<td align=left>"
+    "<td align='left' valign='top'>"
         "CONTENT_TEXT"
     "</td>"
 "</tr>";
