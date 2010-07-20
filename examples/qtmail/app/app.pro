@@ -28,8 +28,7 @@ HEADERS += emailclient.h \
            editaccount.h \
            statusmonitorwidget.h \
            statusbar.h \
-           statusmonitor.h \
-           observer.h
+           statusmonitor.h
 
 SOURCES += emailclient.cpp \
            main.cpp \
@@ -42,8 +41,7 @@ SOURCES += emailclient.cpp \
            editaccount.cpp \
            statusmonitorwidget.cpp \
            statusbar.cpp \
-           statusmonitor.cpp \
-           observer.cpp
+           statusmonitor.cpp
 
 FORMS += searchviewbasephone.ui
 
