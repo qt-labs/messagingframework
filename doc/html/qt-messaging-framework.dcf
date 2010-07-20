@@ -1,5 +1,5 @@
 <!DOCTYPE DCF>
-<DCF ref="index.html" icon="qtopia-messaging-framework.png" imagedir="../../gif" title="QMF Reference Documentation">
+<DCF ref="index.html" icon="qt-messaging-framework.png" imagedir="../../gif" title="Qt Messaging Framework Reference Documentation">
 <section ref="classes.html" title="Classes">
     <section ref="qmailmessagepart-location.html" title="Location Class Reference">
         <keyword ref="qmailmessagepart-location.html">Location</keyword>

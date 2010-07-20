@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QDOCINDEX>
-<INDEX url="" title="QMF Reference Documentation" version="">
+<INDEX url="" title="Qt Messaging Framework Reference Documentation" version="">
     <namespace access="public" threadsafety="unspecified" status="commendable" name="" href="" location="" module="">
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailCodec" href="qmailcodec.html" location="qmailcodec.h" bases="" module="">
             <variable access="public" threadsafety="unspecified" status="commendable" name="ChunkCharacters" fullname="QMailCodec::ChunkCharacters" href="qmailcodec.html#ChunkCharacters-var" location="qmailcodec.h" type="const int" static="true"/>
