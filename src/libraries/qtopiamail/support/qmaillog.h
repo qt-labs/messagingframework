@@ -115,22 +115,42 @@ public:
         static inline bool enabled() { return 1; }\
     };
 
+QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag);
+QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags();
+QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category);
+#define QLOG_RUNTIME(dbgcat) \
+    class dbgcat##_QLog : public QLogBase { \
+    public: \
+        static inline bool enabled() { static char mem=0; if (!mem) { qmf_registerLoggingFlag(&mem); mem=(qmf_checkLoggingEnabled(#dbgcat))?3:2; } return mem&1; }\
+    };
+
 #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
 
 #ifdef QMF_ENABLE_LOGGING
-QLOG_ENABLE(Messaging)
-QLOG_ENABLE(IMAP)
-QLOG_ENABLE(SMTP)
-QLOG_ENABLE(POP)
-QLOG_DISABLE(ImapData)
-QLOG_DISABLE(MessagingState)
+#define QLOG_OPTION(x) QLOG_ENABLE(x)
 #else
-QLOG_DISABLE(Messaging)
-QLOG_DISABLE(IMAP)
-QLOG_DISABLE(SMTP)
-QLOG_DISABLE(POP)
-QLOG_DISABLE(ImapData)
-QLOG_DISABLE(MessagingState)
+#define QLOG_OPTION(x) QLOG_DISABLE(x)
 #endif
+
+// By default, these categories are disabled.
+// Define QMF_ENABLE_LOGGING to force them on instead.
+QLOG_OPTION(ImapData)
+QLOG_OPTION(MessagingState)
+
+#undef QLOG_OPTION
+#ifdef QMF_ENABLE_LOGGING
+#define QLOG_OPTION(x) QLOG_ENABLE(x)
+#elif defined(QMF_DISABLE_LOGGING)
+#define QLOG_OPTION(x) QLOG_DISABLE(x)
+#else
+#define QLOG_OPTION(x) QLOG_RUNTIME(x)
+#endif
+
+// By default, these categories are disabled but can be enabled at runtime.
+// Define QMF_ENABLE_LOGGING or QMF_DISABLE_LOGGING to force them on or off instead.
+QLOG_OPTION(Messaging)
+QLOG_OPTION(IMAP)
+QLOG_OPTION(SMTP)
+QLOG_OPTION(POP)
 
 #endif //QMAILLOG_H

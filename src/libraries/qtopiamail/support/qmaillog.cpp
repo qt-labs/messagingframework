@@ -41,6 +41,11 @@
 
 #include "qmaillog.h"
 #include <QString>
+#include <QSocketNotifier>
+#include <QSettings>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <signal.h>
 
 #ifdef QMAIL_SYSLOG
 
@@ -86,3 +91,108 @@ QTOPIAMAIL_EXPORT QDebug QLogBase::log(const char* category)
 
 #endif //QMAIL_SYSLOG
 
+// Singleton that manages the runtime logging housekeeping
+class RuntimeLoggingManager : public QObject
+{
+    Q_OBJECT
+
+public:
+    RuntimeLoggingManager(QObject *parent = 0);
+    ~RuntimeLoggingManager();
+
+    static void hupSignalHandler(int unused);
+
+public slots:
+    void handleSigHup();
+
+private:
+    static int sighupFd[2];
+    QSocketNotifier *snHup;
+
+public:
+    QSettings settings;
+    QList<char*> cache;
+};
+
+int RuntimeLoggingManager::sighupFd[2];
+
+RuntimeLoggingManager::RuntimeLoggingManager(QObject *parent)
+    : QObject(parent)
+    , settings("Nokia", "QMF") // This is ~/.config/Nokia/QMF.conf
+{
+    // Use a socket and notifier because signal handlers can't call Qt code
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
+        qFatal("Couldn't create HUP socketpair");
+    snHup = new QSocketNotifier(sighupFd[1], QSocketNotifier::Read, this);
+    connect(snHup, SIGNAL(activated(int)), this, SLOT(handleSigHup()));
+
+    struct sigaction hup;
+    hup.sa_handler = RuntimeLoggingManager::hupSignalHandler;
+    sigemptyset(&hup.sa_mask);
+    hup.sa_flags = 0;
+    hup.sa_flags |= SA_RESTART;
+    if (sigaction(SIGHUP, &hup, 0) > 0)
+        qFatal("Couldn't register HUP handler");
+}
+
+RuntimeLoggingManager::~RuntimeLoggingManager()
+{
+}
+
+void RuntimeLoggingManager::hupSignalHandler(int)
+{
+    // Can't call Qt code. Write to the socket and the notifier will fire from the Qt event loop
+    char a = 1;
+    ::write(sighupFd[0], &a, sizeof(a));
+}
+
+void RuntimeLoggingManager::handleSigHup()
+{
+    snHup->setEnabled(false);
+    char tmp;
+    ::read(sighupFd[1], &tmp, sizeof(tmp));
+
+    qmf_resetLoggingFlags();
+
+    snHup->setEnabled(true);
+}
+
+Q_GLOBAL_STATIC(RuntimeLoggingManager, runtimeLoggingManager)
+
+// Register the flag variable so it can be reset later
+QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag)
+{
+    RuntimeLoggingManager *rlm = runtimeLoggingManager();
+    if (!rlm->cache.contains(flag))
+        rlm->cache.append(flag);
+}
+
+// Reset the logging flags
+QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags()
+{
+    RuntimeLoggingManager *rlm = runtimeLoggingManager();
+
+    // re-read the .conf file
+    rlm->settings.sync();
+
+    // force everyone to re-check their logging status
+    foreach (char *flag, rlm->cache)
+        (*flag) = 0;
+}
+
+// Check if a given category is enabled
+// This looks for <category>=[1|0] in the General section of the .conf file.
+// eg.
+//
+// [General]
+// Foo=1
+//
+// qMailLog(Foo) << "this will work";
+// qMailLog(Bar) << "not seen";
+QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+{
+    RuntimeLoggingManager *rlm = runtimeLoggingManager();
+    return rlm->settings.value(QLatin1String(category),0).toBool();
+}
+
+#include "qmaillog.moc"
