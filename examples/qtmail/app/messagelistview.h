@@ -129,6 +129,7 @@ signals:
     void moreClicked();
     void visibleMessagesChanged();
     void fullSearchRequested();
+    void doubleClicked(const QMailMessageId& id);
 
 public slots:
     void reset();
@@ -147,6 +148,7 @@ protected slots:
     void quickSearchReset();
     void expandAll();
     void scrollTo(const QMailMessageId& id);
+    void indexDoubleClicked(const QModelIndex& index);
 
 protected:
     void showEvent(QShowEvent* e);

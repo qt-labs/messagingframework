@@ -443,6 +443,7 @@ MessageListView* MessageUiBase::createMessageListView()
     connect(view, SIGNAL(moreClicked()), this, SLOT(retrieveMoreMessages()) );
     connect(view, SIGNAL(visibleMessagesChanged()), this, SLOT(retrieveVisibleMessagesFlags()) );
     connect(view, SIGNAL(fullSearchRequested()),this,SLOT(search()));
+    connect(view, SIGNAL(doubleClicked(QMailMessageId)), this, SLOT(messageOpenRequested()));
 
     return view;
 }
@@ -1518,16 +1519,23 @@ void EmailClient::messageActivated()
     QMailMessageId currentId = messageListView()->current();
     if(!currentId.isValid())
         return;
+
+    bool hasNext = false;
+    bool hasPrevious = false;
+    if (readMailWidget()->displayedMessage() != currentId)
+        readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
+}
+
+void EmailClient::messageOpenRequested()
+{
+    QMailMessageId currentId = messageListView()->current();
+    if(!currentId.isValid())
+        return;
+
     QMailMessage message(currentId);
 
     if (message.status() & QMailMessage::Draft) {
         modify(message);
-    } else {
-        bool hasNext = false;
-        bool hasPrevious = false;
-        if (readMailWidget()->displayedMessage() != currentId) {
-            readMailWidget()->displayMessage(currentId, QMailViewerFactory::AnyPresentation, hasNext, hasPrevious);
-        }
     }
 }
 

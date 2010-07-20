@@ -308,6 +308,7 @@ protected:
     void scrollContentsBy(int dx, int dy);
     void mouseMoveEvent(QMouseEvent* e);
     void mousePressEvent(QMouseEvent* e);
+    void mouseDoubleClickEvent(QMouseEvent* e);
     bool mouseOverMoreLink(QMouseEvent* e);
 
     void drawRow(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -417,6 +418,11 @@ void MessageList::mousePressEvent(QMouseEvent* e)
     }
 
     QTreeView::mousePressEvent(e);
+}
+
+void MessageList::mouseDoubleClickEvent(QMouseEvent* e)
+{
+    QTreeView::mouseDoubleClickEvent(e);
 }
 
 bool MessageList::mouseOverMoreLink(QMouseEvent* e)
@@ -563,6 +569,8 @@ void MessageListView::init()
             this, SLOT(indexActivated(QModelIndex)));
     connect(mMessageList, SIGNAL(backPressed()),
             this, SIGNAL(backPressed()));
+    connect(mMessageList, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(indexDoubleClicked(QModelIndex)));
 
     connect(mMessageList, SIGNAL(moreButtonClicked()),
             this, SIGNAL(moreClicked()));
@@ -847,6 +855,16 @@ void MessageListView::indexClicked(const QModelIndex& index)
         QMailMessageId id(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
         if (id.isValid()) {
             emit clicked(id);
+        }
+    }
+}
+
+void MessageListView::indexDoubleClicked(const QModelIndex& index)
+{
+    if (!mMarkingMode) {
+        QMailMessageId id(index.data(QMailMessageModelBase::MessageIdRole).value<QMailMessageId>());
+        if (id.isValid()) {
+            emit doubleClicked(id);
         }
     }
 }
