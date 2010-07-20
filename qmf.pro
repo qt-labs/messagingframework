@@ -22,6 +22,9 @@ SUBDIRS = src/libraries/qtopiamail \
           SUBDIRS += benchmarks
 }
 
+defineReplace(targetPath) {
+    return($$replace(1, /, $$QMAKE_DIR_SEP))
+}
 
 # Custom target 'doc' to generate documentation
 dox.target = doc
@@ -30,3 +33,4 @@ dox.depends =
 
 QMAKE_EXTRA_TARGETS += dox
 
+include(doc/src/doc.pri)
