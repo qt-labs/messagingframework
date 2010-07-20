@@ -43,17 +43,14 @@
 #include <QApplication>
 #include <QDebug>
 #include <qmailnamespace.h>
+#include <qmaillog.h>
 
-#if defined(HANDLE_SHUTDOWN_SIGNALS) && defined(Q_OS_UNIX)
-#define SHUTDOWN_SIGNAL_HANDLING
-#endif
-
-#ifdef SHUTDOWN_SIGNAL_HANDLING
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
 #include <signal.h>
 
 static void shutdown(int n)
 {
-    qWarning() << "Received signal" << n << "- terminating.";
+    qMailLog(Messaging) << "Recieved signal" << n << ", shutting down.";
     QCoreApplication::exit();
 }
 #endif
@@ -68,7 +65,7 @@ int main(int argc, char** argv)
 
     MessageServer server;
 
-#ifdef SHUTDOWN_SIGNAL_HANDLING
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
     signal(SIGINT, shutdown);
     signal(SIGTERM, shutdown);
 #endif

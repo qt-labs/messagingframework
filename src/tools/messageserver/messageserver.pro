@@ -42,9 +42,4 @@ TRANSLATIONS += messageserver-ar.ts \
                 messageserver-zh_CN.ts \
                 messageserver-zh_TW.ts
 
-unix {
-    # Uncomment this to shutdown cleanly on termination signal
-    #DEFINES += HANDLE_SHUTDOWN_SIGNALS
-}
-
 include(../../../common.pri)
