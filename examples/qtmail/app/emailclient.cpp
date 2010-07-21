@@ -2707,13 +2707,6 @@ void EmailClient::synchronizeFolder()
         bool excludeFolder = (folder.status() & QMailFolder::SynchronizationEnabled);
 
         if (QMailStore *store = QMailStore::instance()) {
-            if (excludeFolder) {
-                // Delete any messages which are in this folder or its sub-folders
-                QMailMessageKey messageKey(QMailMessageKey::parentFolderId(selectedFolderId, QMailDataComparator::Equal));
-                QMailMessageKey descendantKey(QMailMessageKey::ancestorFolderIds(selectedFolderId, QMailDataComparator::Includes));
-                store->removeMessages(messageKey | descendantKey, QMailStore::NoRemovalRecord);
-            }
-
             // Find any subfolders of this folder
             QMailFolderKey subfolderKey(QMailFolderKey::ancestorFolderIds(selectedFolderId, QMailDataComparator::Includes));
             QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(subfolderKey);
