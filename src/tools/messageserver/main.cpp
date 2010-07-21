@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "messageserver.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDebug>
 #include <qmailnamespace.h>
 #include <qmaillog.h>
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     if(QMail::fileLock("messageserver-instance.lock") == -1)
         qFatal("Could not get messageserver lock. Messageserver might already be running!");
 
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
 
     MessageServer server;
 
