@@ -41,10 +41,13 @@
 
 #include "qmailid.h"
 
-class MailIdPrivate : public QSharedData
+class MailIdPrivate
 {
 public:
-    MailIdPrivate():QSharedData(){};
+    MailIdPrivate()
+        : id(0) {}
+    MailIdPrivate(quint64 value)
+        : id(value) {}
 
     quint64 id;
 };
@@ -52,20 +55,18 @@ public:
 Q_IMPLEMENT_USER_METATYPE(MailId);
 
 MailId::MailId()
+    : d(new MailIdPrivate())
 {
-    d = new MailIdPrivate();
-    d->id = 0;
 }
 
 MailId::MailId(quint64 value)
+    : d(new MailIdPrivate(value))
 {
-    d = new MailIdPrivate();
-    d->id = value;  
 }
 
 MailId::MailId(const MailId& other)
+    : d(new MailIdPrivate(other.d->id))
 {
-    d = other.d;
 }
 
 MailId::~MailId()
@@ -74,13 +75,13 @@ MailId::~MailId()
 
 MailId& MailId::operator=(const MailId& other) 
 {
-    d = other.d;
+    d->id = other.d->id;
     return *this;
 }
 
 bool MailId::isValid() const
 {
-    return d->id != 0; // Note: the msb is used as a flag, so it could trigger a false positive
+    return d->id != 0;
 }
 
 quint64 MailId::toULongLong() const

@@ -48,7 +48,6 @@
 #include <QDebug>
 #include <QString>
 #include <QVariant>
-#include <QSharedData>
 
 class MailIdPrivate;
 
@@ -61,7 +60,7 @@ private:
 
     explicit MailId(quint64 value);
 
-    QSharedDataPointer<MailIdPrivate> d;
+    QScopedPointer<MailIdPrivate> d;
 
 public:
     MailId();
