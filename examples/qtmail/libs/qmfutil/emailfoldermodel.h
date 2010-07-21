@@ -180,7 +180,7 @@ class QMFUTIL_EXPORT AccountFolderModel : public EmailFolderModel
     Q_OBJECT
 
 public:
-    AccountFolderModel(const QMailAccountId &id, QObject *parent = 0);
+    explicit AccountFolderModel(const QMailAccountId &id, QObject *parent = 0);
 
     virtual void init();
 

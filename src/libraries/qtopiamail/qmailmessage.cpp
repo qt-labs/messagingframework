@@ -577,9 +577,9 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
 
                 QByteArray output = encodeWord(heldWhitespace + quotedText, charset, &tokenEncoded);
 
-                quotedText = QString();
+                quotedText.clear();;
                 quoted = false;
-                heldWhitespace = QString();
+                heldWhitespace.clear();
 
                 if (lastEncoded && tokenEncoded)
                     result.append(' ');
@@ -606,7 +606,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
 
                     // See if this token needs encoding
                     QByteArray output = encodeWord(heldWhitespace + chars, charset, &tokenEncoded);
-                    heldWhitespace = QString();
+                    heldWhitespace.clear();
 
                     if (lastEncoded && tokenEncoded)
                         result.append(' ');
@@ -712,7 +712,7 @@ static QByteArray generateEncodedParameter(const QByteArray& charset, const QByt
     int index = result.indexOf('*');
     if (index != -1)
     {
-        // If no language is specfied, use the extracted part
+        // If no language is specified, use the extracted part
         if (lang.isEmpty())
             lang = result.mid(index + 1);
 
@@ -1322,7 +1322,7 @@ void QMailMessageHeaderFieldPrivate::output(QDataStream& out) const
 
     if (!_content.isEmpty()) {
         int lineLength = element.length();
-        outputHeaderPart(out, " " + _content, &lineLength, maxLineLength);
+        outputHeaderPart(out, ' ' + _content, &lineLength, maxLineLength);
     }
 
     out << DataString('\n');
@@ -2131,7 +2131,7 @@ static QByteArray fieldId(const QByteArray &id)
 
 static QPair<QByteArray, QByteArray> fieldParts(const QByteArray &id, const QByteArray &content)
 {
-    QByteArray value = QByteArray(" ") + content.trimmed();
+    QByteArray value(QByteArray(1, ' ') + content.trimmed());
     return qMakePair(fieldId(id), value);
 }
 
@@ -2353,7 +2353,7 @@ void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageC
     _encoding = te;
     _type = content;
     _encoded = (status == QMailMessageBody::AlreadyEncoded);
-    _filename = QString();
+    _filename.clear();
     _bodyData = ls;
 }
 
@@ -2371,7 +2371,7 @@ void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageCont
     _encoding = te;
     _type = content;
     _encoded = true;
-    _filename = QString();
+    _filename.clear();
     _bodyData = LongString();
     
     // If the data is already encoded, we don't need to do it again
@@ -2397,7 +2397,7 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
     _encoding = te;
     _type = content;
     _encoded = true;
-    _filename = QString();
+    _filename.clear();
     _bodyData = LongString();
 
     QMailCodec* codec = codecForEncoding(te, content);
@@ -4359,7 +4359,7 @@ QMailMessagePart::Location::Location(const QString& description)
     }
 
     if (!indices.isEmpty()) {
-        foreach (const QString &index, indices.split(".")) {
+        foreach (const QString &index, indices.split('.')) {
             d->_indices.append(index.toUInt());
         }
     }
@@ -4442,7 +4442,7 @@ QString QMailMessagePart::Location::toString(bool extended) const
     foreach (uint index, d->_indices)
         numbers.append(QString::number(index));
 
-    return result.append(numbers.join("."));
+    return result.append(numbers.join(QString('.')));
 }
 
 /*! 
@@ -4790,7 +4790,7 @@ QString QMailMessagePart::displayName() const
     if (id.isEmpty()) {
         int partNumber = impl(this)->partNumber();
         if (partNumber != -1) {
-            id = QString::number(partNumber) + " ";
+            id = QString::number(partNumber) + ' ';
         }
         id += contentType().content();
     }
@@ -4915,7 +4915,7 @@ static QString partFileName(const QMailMessagePart &part)
 
     // If possible, create the file with a useful filename extension
     QString existing;
-    int index = fileName.lastIndexOf(".");
+    int index = fileName.lastIndexOf('.');
     if (index != -1)
         existing = fileName.mid(index + 1);
 
@@ -4923,8 +4923,8 @@ static QString partFileName(const QMailMessagePart &part)
     if (!extensions.isEmpty()) {
         // See if the existing extension is a known one
         if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
-            if (!fileName.endsWith(".")) {
-                fileName.append(".");
+            if (!fileName.endsWith('.')) {
+                fileName.append('.');
             }
             fileName.append(extensions.first());
         }
@@ -4944,7 +4944,7 @@ static QString partFileName(const QMailMessagePart &part)
 QString QMailMessagePart::writeBodyTo(const QString &path) const
 {
     QString directory(path);
-    if (directory.endsWith("/"))
+    if (directory.endsWith('/'))
         directory.chop(1);
 
     if (!QDir(directory).exists()) {
@@ -4962,9 +4962,9 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
 
     QString fileName(partFileName(*this));
 
-    QString filepath = directory + "/" + fileName;
+    QString filepath = directory + '/' + fileName;
     while (QFile::exists(filepath))
-        filepath = directory + "/" + randomString(5) + "." + fileName;
+        filepath = directory + '/' + randomString(5) + '.' + fileName;
 
     if (!body().toFile(filepath, QMailMessageBody::Decoded)) {
         qWarning() << "Could not write part data to file " << filepath;
@@ -6480,7 +6480,7 @@ void QMailMessagePrivate::deserialize(Stream &stream)
     \ingroup messaginglibrary
    
     QMailMessage supports a number of types. These include telephony types 
-    such as SMS and MMS, and internet email messages as defined in 
+    such as SMS and MMS, and Internet email messages as defined in
     \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format), and 
     \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Format of Internet Message Bodies) through 
     \l{http://www.ietf.org/rfc/rfc2049.txt} {RFC 2049} (Conformance Criteria and Examples).
@@ -6497,7 +6497,7 @@ void QMailMessagePrivate::deserialize(Stream &stream)
     from QMailMessagePartContainer.
     
     Messages can be added to the QMailStore, or retrieved from the store via their QMailMessageId 
-    identifier.  The QMailMessage object also provides acces to any relevant meta data
+    identifier.  The QMailMessage object also provides access to any relevant meta data
     describing the message, using the functions inherited from QMailMessageMetaData.
 
     A message may be serialized to a QDataStream, or returned as a QByteArray using toRfc2822().
@@ -6836,7 +6836,7 @@ QList<QMailAddress> QMailMessage::recipients() const
     list.append( headerFieldText("Bcc").trimmed() );
     if (!list.isEmpty()) {
         list.removeAll( "" );
-        list.removeAll( QString::null );
+        list.removeAll( QString() );
     }
     if (!list.isEmpty()) {
         addresses += QMailAddress::fromStringList( list.join(",") );

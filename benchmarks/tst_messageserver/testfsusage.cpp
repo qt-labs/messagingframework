@@ -52,7 +52,7 @@ qint64 TestFsUsage::usage(QString const& path)
     if (!fi.isSymLink() && fi.isDir()) {
         QDir dir(fi.absoluteFilePath());
         foreach (QString const& name, dir.entryList(QDir::NoDotAndDotDot|QDir::AllEntries)) {
-            ret += usage(path + "/" + name);
+            ret += usage(path + '/' + name);
         }
     }
     return ret;

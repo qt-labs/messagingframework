@@ -151,7 +151,7 @@ uint IntegerRegion::cardinality() const
 {
     uint result(0);
 
-    foreach( const IntegerRange range, mRangeList)
+    foreach( const IntegerRange &range, mRangeList)
         result += range.second - range.first + 1;
 
     return result;
@@ -181,7 +181,7 @@ int IntegerRegion::minimum() const
 QStringList IntegerRegion::toStringList() const
 {
     QStringList result;
-    foreach(const IntegerRange range, mRangeList) {
+    foreach(const IntegerRange &range, mRangeList) {
         result += QString::number(range.first);
         for (int i = range.first + 1; i <= range.second; ++i)
             result += QString::number(i);
@@ -196,7 +196,7 @@ QString IntegerRegion::toString() const
 {
     QString result;
     bool first(true);
-    foreach(IntegerRange range, mRangeList) {
+    foreach(const IntegerRange &range, mRangeList) {
         if (!first)
             result += ",";
         result += QString::number(range.first);
@@ -407,8 +407,8 @@ QString IntegerRegion::toBinaryString(const IntegerRegion &ir)
         bool ok;
         int value = s.toInt(&ok);
         for (int i = last; i < value; ++i)
-            result += " ";
-        result += "-";
+            result += ' ';
+        result += '-';
         last = value + 1;
     }
     return result;

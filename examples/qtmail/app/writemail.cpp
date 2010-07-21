@@ -203,7 +203,7 @@ bool WriteMail::saveChangesOnRequest()
 {
     // ideally, you'd also check to see if the message is the same as it was
     // when we started working on it
-    // dont bother with a prompt for empty composers. Not likely to want to save empty draft.
+    // don't bother with a prompt for empty composers. Not likely to want to save empty draft.
     if (m_hasMessageChanged && hasContent() &&
         QMessageBox::warning(this,
                              tr("Save to drafts"),
@@ -459,7 +459,7 @@ bool WriteMail::draft()
 void WriteMail::statusChanged(const QString& status)
 {
     if(status.isEmpty())
-        setWindowTitle(tr("(Unamed)"));
+        setWindowTitle(tr("(Unnamed)"));
     else
         setWindowTitle(status);
 }

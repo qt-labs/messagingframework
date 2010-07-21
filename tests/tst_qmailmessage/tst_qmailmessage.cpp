@@ -866,7 +866,7 @@ void tst_QMailMessage::id()
     // Tested by: setId
 }
 
-// The real QMailStore (which we dont need here) has friend access to the QMailMessageId ctor
+// The real QMailStore (which we don't need here) has friend access to the QMailMessageId ctor
 class QMailStore 
 {
 public:

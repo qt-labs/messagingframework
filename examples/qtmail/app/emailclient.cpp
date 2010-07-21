@@ -364,7 +364,7 @@ void MessageUiBase::updateWindowTitle()
     {
         QMailAccount account(accountId);
         if(!account.name().isEmpty())
-            accountName = account.name() + "/";
+            accountName = account.name() + '/';
     }
 
     setWindowTitle(accountName + folderName + folderStatus  + " - " + appTitle);
@@ -1190,7 +1190,7 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
                 detail = tr("%n message(s)", "%1: number of messages", outgoingIds.count());
             }
 
-            AcknowledgmentBox::show(tr("Sending"), tr("Sending:") + " " + detail);
+            AcknowledgmentBox::show(tr("Sending"), tr("Sending:") + ' ' + detail);
         }
     }
 
@@ -2088,7 +2088,7 @@ void EmailClient::automaticFetch()
 void EmailClient::externalEdit(const QString &mailbox)
 {
     cancelOperation();
-    QString msg = mailbox + " "; //no tr
+    QString msg = mailbox + ' '; //no tr
     msg += tr("was edited externally");
     emit updateStatus(msg);
 }

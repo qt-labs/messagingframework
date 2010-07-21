@@ -250,7 +250,7 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         smtpPasswordInput->setEnabled(false);
         lblSmtpPassword->setEnabled(false);
 #endif
-        signature = QString();
+        signature.clear();
     } else {
         SmtpConfiguration smtpConfig(config);
         nameInput->setText(smtpConfig.userName());;

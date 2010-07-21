@@ -803,7 +803,7 @@ void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, cons
         _outstandingRequests.insert(action);
 
         QByteArray requestNumber(QByteArray::number(action));
-        _requestsFile.write(requestNumber.append("\n"));
+        _requestsFile.write(requestNumber.append('\n'));
         _requestsFile.flush();
     }
 
@@ -2059,7 +2059,7 @@ void ServiceHandler::actionCompleted(bool success)
                 _requestsFile.resize(0);
                 foreach (quint64 req, _outstandingRequests) {
                     QByteArray requestNumber(QByteArray::number(req));
-                    _requestsFile.write(requestNumber.append("\n"));
+                    _requestsFile.write(requestNumber.append('\n'));
                 }
                 _requestsFile.flush();
             }

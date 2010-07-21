@@ -644,9 +644,9 @@ protected:
         if (!s.isEmpty()) {
             // Delimit data for sql "LIKE" operator
             if (((arg.op == Includes) || (arg.op == Excludes)) || (((arg.op == Equal) || (arg.op == NotEqual)) && valueMinimalised))
-                return QString("%" + s + "%");
+                return QString('%' + s + '%');
         } else if ((arg.op == Includes) || (arg.op == Excludes)) {
-            return QString("%");
+            return QString('%');
         }
 
         return s;
@@ -1764,7 +1764,7 @@ QString buildWhereClause(const KeyType &key,
     if (!key.isEmpty()) {
         QTextStream s(&whereClause);
 
-        QString op = " ";
+        QString op(' ');
         foreach (typename ArgumentListType::const_reference a, args) {
             s << op << whereClauseItem(key, a, alias, field, store);
             op = logicalOpString;
@@ -1773,7 +1773,7 @@ QString buildWhereClause(const KeyType &key,
         // subkeys
         s.flush();
         if (whereClause.isEmpty())
-            op = " ";
+            op = ' ';
 
         foreach (typename KeyListType::const_reference subkey, subKeys) {
             QString nestedWhere(store.buildWhereClause(QMailStorePrivate::Key(subkey, alias), true));
@@ -3060,7 +3060,7 @@ qint64 QMailStorePrivate::incrementTableVersion(const QString &name, qint64 curr
     qint64 next = current + 1;
 
     QString versionInfo("-" + QString::number(current) + "-" + QString::number(next));
-    QString scriptName(":/QtopiaSql/" + database.driverName() + "/" + name + versionInfo);
+    QString scriptName(":/QtopiaSql/" + database.driverName() + '/' + name + versionInfo);
 
     QFile data(scriptName);
     if (!data.open(QIODevice::ReadOnly)) {
@@ -3096,7 +3096,7 @@ bool QMailStorePrivate::createTable(const QString &name)
     bool result = true;
 
     // load schema.
-    QFile data(":/QtopiaSql/" + database.driverName() + "/" + name);
+    QFile data(":/QtopiaSql/" + database.driverName() + '/' + name);
     if (!data.open(QIODevice::ReadOnly)) {
         qMailLog(Messaging) << "Failed to load table schema resource:" << name;
         result = false;
@@ -3312,7 +3312,7 @@ QString QMailStorePrivate::parseSql(QTextStream& ts)
         qry += line;
         
         if ( line.contains( ';' ) == false) 
-            qry += QLatin1String(" ");
+            qry += ' ';
         else
             return qry;
     }

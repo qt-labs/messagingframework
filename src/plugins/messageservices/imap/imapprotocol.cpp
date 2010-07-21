@@ -197,7 +197,7 @@ static QString token( QString str, QChar c1, QChar c2, int *index )
         c1 = QMailMessage::CarriageReturn;
     start = str.indexOf( c1, *index, Qt::CaseInsensitive );
     if (start == -1)
-        return QString::null;
+        return QString();
 
     // Bypass the LF if necessary
     if (c1 == QMailMessage::CarriageReturn)
@@ -207,7 +207,7 @@ static QString token( QString str, QChar c1, QChar c2, int *index )
         c2 = QMailMessage::CarriageReturn;
     stop = str.indexOf( c2, ++start, Qt::CaseInsensitive );
     if (stop == -1)
-        return QString::null;
+        return QString();
 
     // Bypass the LF if necessary
     *index = stop + (c2 == QMailMessage::CarriageReturn ? 2 : 1);
@@ -257,7 +257,7 @@ static QString searchFlagsToString(MessageFlags flags)
             result.append("$FORWARDED");
     }
 
-    return result.join(" ");
+    return result.join(QString(' '));
 }
 
 static QString messageFlagsToString(MessageFlags flags)
@@ -280,7 +280,7 @@ static QString messageFlagsToString(MessageFlags flags)
             result.append("$Forwarded");
     }
 
-    return result.join(" ");
+    return result.join(QString(' '));
 }
 
 static MessageFlags flagsForMessage(const QMailMessageMetaData &metaData)
@@ -365,7 +365,7 @@ public:
 
     virtual ~ImapState() {}
 
-    virtual void init() { mStatus = OpPending; mTag = QString::null; }
+    virtual void init() { mStatus = OpPending; mTag.clear(); }
 
     virtual QString transmit(ImapContext *) { return QString(); }
     virtual void enter(ImapContext *) {}
@@ -412,7 +412,7 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        QStringList capabilities = temp.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     }
 
@@ -517,8 +517,8 @@ QString CapabilityState::transmit(ImapContext *c)
 void CapabilityState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QStringList capabilities;
-    if (line.startsWith("* CAPABILITY")) {
-        capabilities = line.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+    if (line.startsWith(QLatin1String("* CAPABILITY"))) {
+        capabilities = line.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     } else {
         ImapState::untaggedResponse(c, line);
@@ -608,7 +608,7 @@ void LoginState::taggedResponse(ImapContext *c, const QString &line)
     if (line.indexOf("[CAPABILITY", Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QStringList capabilities = temp.mid(12).trimmed().split(" ", QString::SkipEmptyParts);
+        QStringList capabilities = temp.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     }
 
@@ -912,7 +912,7 @@ void ListState::leave(ImapContext *)
 
 void ListState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (!line.startsWith("* LIST")) {
+    if (!line.startsWith(QLatin1String("* LIST"))) {
         ImapState::untaggedResponse(c, line);
         return;
     }
@@ -930,7 +930,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
             c->protocol()->setFlatHierarchy(true);
         } else {
             pos = 0;
-            if (token(delimiter, '"', '"', &pos) != QString::null) {
+            if (!token(delimiter, '"', '"', &pos).isNull()) {
                 pos = 0;
                 delimiter = token(delimiter, '"', '"', &pos);
             }
@@ -943,7 +943,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     index--;    //to point back to previous ' ' so we can find it with next search
     path = token(str, ' ', '\n', &index).trimmed();
     pos = 0;
-    if (token(path, '"', '"', &pos) != QString::null) {
+    if (!token(path, '"', '"', &pos).isNull()) {
         pos = 0;
         path = token(path, '"', '"', &pos);
     }
@@ -1013,7 +1013,7 @@ void GenUrlAuthState::leave(ImapContext *)
 
 void GenUrlAuthState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (!line.startsWith("* GENURLAUTH")) {
+    if (!line.startsWith(QLatin1String("* GENURLAUTH"))) {
         ImapState::untaggedResponse(c, line);
         return;
     }
@@ -1253,7 +1253,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("PERMANENTFLAGS", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '(', ')', &start);
-        c->setPermanentFlags(temp.split(" ", QString::SkipEmptyParts));
+        c->setPermanentFlags(temp.split(' ', QString::SkipEmptyParts));
     } else {
         ImapState::untaggedResponse(c, line);
     }
@@ -1502,7 +1502,7 @@ QString SearchMessageState::convertKey(const QMailMessageKey &key) const
         subSearchKeys.append(convertKey(subkey));
     }
     if(!subSearchKeys.isEmpty()) {
-        result += " " + combine(subSearchKeys, combiner);
+        result += ' ' + combine(subSearchKeys, combiner);
     }
 
     return result;
@@ -1512,7 +1512,7 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
 {
     if(combiner == QMailKey::And) {
         //IMAP uses AND by default, so just add a space and we're good to go!
-        return searchKeys.join(" ");
+        return searchKeys.join(QString(QString(' ')));
     } else if(combiner == QMailKey::Or) {
         //IMAP uses OR (value-1 value-2)
         int left = searchKeys.count(); //how many are we joining
@@ -1532,7 +1532,7 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
     } else if(combiner == QMailKey::None) {
         if(searchKeys.count() != 1)
             qWarning() << "Attempting to combine more than thing, without a combiner?";
-        return searchKeys.join(" ");
+        return searchKeys.join(QString(' '));
     } else {
         qWarning() << "Unable to combine with an unknown combiner: " << combiner;
         return QString("");
@@ -1547,17 +1547,17 @@ void SearchMessageState::leave(ImapContext *)
 
 void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.startsWith("* SEARCH")) {
+    if (line.startsWith(QLatin1String("* SEARCH"))) {
         QStringList uidList;
 
         int index = 7;
         QString temp;
-        while ((temp = token(line, ' ', ' ', &index)) != QString::null) {
+        while (!(temp = token(line, ' ', ' ', &index)).isNull()) {
             uidList.append(messageUid(c->mailbox().id, temp));
             index--;
         }
         temp = token(line, ' ', '\n', &index);
-        if (temp != QString::null)
+        if (!temp.isNull())
             uidList.append(messageUid(c->mailbox().id, temp));
         c->setUidList(uidList);
     } else {
@@ -1627,12 +1627,12 @@ void SearchState::untaggedResponse(ImapContext *c, const QString &line)
 
         int index = 7;
         QString temp;
-        while ((temp = token(line, ' ', ' ', &index)) != QString::null) {
+        while (!(temp = token(line, ' ', ' ', &index)).isNull()) {
             numbers.append(temp.toUInt());
             index--;
         }
         temp = token(line, ' ', '\n', &index);
-        if (temp != QString::null)
+        if (!temp.isNull())
             numbers.append(temp.toUInt());
         c->setMsnList(numbers);
     } else {
@@ -1642,8 +1642,7 @@ void SearchState::untaggedResponse(ImapContext *c, const QString &line)
 
 QString SearchState::error(const QString &line)
 {
-    return line + QLatin1String("\n")
-        + QObject::tr( "This server does not provide a complete "
+    return line + '\n' + QObject::tr( "This server does not provide a complete "
                        "IMAP4rev1 implementation." );
 }
 
@@ -1710,12 +1709,12 @@ void UidSearchState::untaggedResponse(ImapContext *c, const QString &line)
 
         int index = 7;
         QString temp;
-        while ((temp = token(line, ' ', ' ', &index)) != QString::null) {
+        while (!(temp = token(line, ' ', ' ', &index)).isNull()) {
             uidList.append(messageUid(c->mailbox().id, temp));
             index--;
         }
         temp = token(line, ' ', '\n', &index);
-        if (temp != QString::null)
+        if (!temp.isNull())
             uidList.append(messageUid(c->mailbox().id, temp));
         c->setUidList(uidList);
     } else {
@@ -1874,7 +1873,7 @@ QString UidFetchState::transmit(ImapContext *c)
         if (params.mEnd > 0) {
             QString strStart = QString::number(params.mStart);
             QString strLen = QString::number(params.mEnd - params.mStart + 1);
-            flagStr += ("<" + strStart + "." + strLen + ">");
+            flagStr += ('<' + strStart + '.' + strLen + '>');
         }
     }
 
@@ -2499,7 +2498,7 @@ bool ImapProtocol::open( const ImapConfiguration& config )
     _requestCount = 0;
     _stream.reset();
     _literalDataRemaining = 0;
-    _precedingLiteral = QString();
+    _precedingLiteral.clear();
 
     _mailbox = ImapMailboxProperties();
 
@@ -2809,7 +2808,7 @@ QString ImapProtocol::sendCommand(const QString &cmd)
     QString tag = newCommandId();
 
     _stream.reset();
-    sendData(tag + " " + cmd);
+    sendData(tag + ' ' + cmd);
 
     return tag;
 }
@@ -2882,7 +2881,7 @@ void ImapProtocol::setPrecedingLiteral(const QString &line)
 bool ImapProtocol::checkSpace()
 {
     if (_stream.status() == LongStream::OutOfSpace) {
-        _lastError += LongStream::errorMessage( "\n" );
+        _lastError += LongStream::errorMessage( QString('\n') );
         clearResponse();
         return false;
     }
@@ -2950,7 +2949,7 @@ void ImapProtocol::processResponse(QString line)
 
                 // Process the line that contained the literal data
                 nextAction(_unprocessedInput + remainder);
-                _unprocessedInput = QString();
+                _unprocessedInput.clear();
             } else {
                 _unprocessedInput.append(remainder);
             }
@@ -2973,7 +2972,7 @@ void ImapProtocol::processResponse(QString line)
         // Do we have any preceding input to add to this?
         if (!_unprocessedInput.isEmpty()) {
             line.prepend(_unprocessedInput);
-            _unprocessedInput = QString();
+            _unprocessedInput.clear();
         }
 
         // Process this line

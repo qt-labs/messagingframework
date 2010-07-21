@@ -352,7 +352,7 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
     if (code == QMailServiceAction::Status::ErrFileSystemFull) {
         message->append(' ').append(LongStream::errorMessage());
     } else if (code == QMailServiceAction::Status::ErrEnqueueFailed) {
-        message->append("\n" + qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder"));
+        message->append('\n' + qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder"));
     } else if (code == QMailServiceAction::Status::ErrUnknownResponse) {
         message->prepend(qApp->translate("QMailServiceAction", "Unexpected response from server: "));
     } else {

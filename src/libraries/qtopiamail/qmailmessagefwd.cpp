@@ -274,6 +274,6 @@
 /*!
     \typedef QMailMessageFwd::MessageChunk
 
-    This type defines a single chunk in a sequence of partitioned ouput data.
+    This type defines a single chunk in a sequence of partitioned output data.
 */
 

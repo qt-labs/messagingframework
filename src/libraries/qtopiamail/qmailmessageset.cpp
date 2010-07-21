@@ -510,7 +510,7 @@ void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
     if (ids.contains(i->_id))
     {
         //update our folder name
-        i->_name = QString();
+        i->_name.clear();
 
         update(this);
     }
@@ -752,7 +752,7 @@ void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
     if (ids.contains(i->_id))
     {
         //update our account name
-        i->_name = QString();
+        i->_name.clear();
         update(this);
     }
 }
@@ -1117,7 +1117,7 @@ public:
     partitioning the set of messages into hierarchical groups.
 
     QMailMessageSetModel inherits from QAbstractItemModel, so it is suitable for use 
-    with the Qt View classes such as QTreeView, to visually represent the hierachical
+    with the Qt View classes such as QTreeView, to visually represent the hierarchical
     structure.
 
     The model listens for change events emitted from the QMailStore, and automatically 

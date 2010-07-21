@@ -78,8 +78,8 @@ QByteArray ImapAuthenticator::getAuthentication(const QMailAccountConfiguration:
 
     // If not handled by the authenticator, fall back to login
     ImapConfiguration imapCfg(svcCfg);
-    return QByteArray("LOGIN") + " " + ImapProtocol::quoteString(imapCfg.mailUserName().toAscii()) 
-                               + " " + ImapProtocol::quoteString(imapCfg.mailPassword().toAscii());
+    return QByteArray("LOGIN") + ' ' + ImapProtocol::quoteString(imapCfg.mailUserName().toAscii())
+                               + ' ' + ImapProtocol::quoteString(imapCfg.mailPassword().toAscii());
 }
 
 QByteArray ImapAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)

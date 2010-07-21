@@ -76,15 +76,15 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
     quint32 randomComponent(static_cast<quint32>(qrand()));
     quint32 timeComponent(QDateTime::currentDateTime().toUTC().toTime_t());
 
-    return ("<" + 
+    return ('<' +
             QString::number(randomComponent, 36) + 
-            "." +
+            '.' +
             QString::number(timeComponent, 36) +
-            "." +
+            '.' +
             QString::number(addressComponent, 36) +
             "-qmf@" +
             domainName +
-            ">").toAscii();
+            '>').toAscii();
 }
 
 

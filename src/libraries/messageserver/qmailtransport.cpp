@@ -103,7 +103,7 @@ QMailTransport::Socket::Socket(QObject *parent)
       written(0)
 {
 #ifndef QT_NO_OPENSSL
-    // We'll connect to servers offering any variant of encyption
+    // We'll connect to servers offering any variant of encryption
     setProtocol(QSsl::AnyProtocol);
 #endif
 }

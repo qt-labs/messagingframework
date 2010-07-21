@@ -103,7 +103,7 @@ static QMap<int, HANDLE> lockedFiles;
 */
 int QMail::fileLock(const QString& lockFile)
 {
-    QString path = QDir::tempPath() + "/" + lockFile;
+    QString path = QDir::tempPath() + '/' + lockFile;
 
 #ifdef Q_OS_WIN
     static int lockedCount = 0;
@@ -206,7 +206,7 @@ QString QMail::dataPath()
 {
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
-        return dataEnv + "/";
+        return dataEnv + '/';
     //default to ~/.qmf if not env set
     return QDir::homePath() + "/.qmf/";
 }
@@ -226,7 +226,7 @@ QString QMail::pluginsPath()
 {
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
-        return pluginsEnv + "/";
+        return pluginsEnv + '/';
     //default to "." if no env set
     return pluginsEnv;
 }
@@ -246,8 +246,8 @@ QString QMail::messageServerPath()
 {
     static QString serverEnv(qgetenv(QMF_SERVER_ENV));
     if(!serverEnv.isEmpty())
-        return serverEnv + "/";
-    return QApplication::applicationDirPath() + "/";
+        return serverEnv + '/';
+    return QApplication::applicationDirPath() + '/';
 }
 
 /*!
@@ -257,8 +257,8 @@ QString QMail::messageSettingsPath()
 {
     static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
     if(!settingsEnv.isEmpty())
-        return settingsEnv + "/";
-    return QApplication::applicationDirPath() + "/";
+        return settingsEnv + '/';
+    return QApplication::applicationDirPath() + '/';
 }
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
@@ -283,7 +283,7 @@ QSqlDatabase QMail::createDatabase()
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
             QString path = dataPath();
-            if (path.endsWith("/"))
+            if (path.endsWith('/'))
                 path = path.left(path.length() - 1);
             if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1) 
                 qCritical() << "Cannot create database directory";
@@ -319,7 +319,7 @@ QSqlDatabase QMail::createDatabase()
 static QString nextString( const char *line, int& posn )
 {
     if ( line[posn] == '\0' )
-        return QString::null;
+        return QString();
     int end = posn;
     char ch;
     for (;;) {
@@ -413,9 +413,9 @@ QString QMail::mimeTypeFromFileName(const QString& filename)
         return lwrExtOrId;
     }
 
-    // either it doesnt have exactly one mime-separator, or it has
+    // either it doesn't have exactly one mime-separator, or it has
     // a path separator at the beginning
-    QString mime_sep = QLatin1String("/");
+    QString mime_sep('/');
     bool doesntLookLikeMimeString = (filename.count(mime_sep) != 1) || (filename[0] == QDir::separator());
 
     if (doesntLookLikeMimeString || QFile::exists(filename)) {

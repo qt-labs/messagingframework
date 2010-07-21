@@ -525,7 +525,7 @@ void AttachmentOptions::viewAttachment()
             // Write the data to a temporary file
             QString templateText(QMail::tempPath() + "genericviewer-XXXXXX");
             if (!mt.extensions().isEmpty()) {
-                templateText.append(".").append(mt.extensions().last());
+                templateText.append('.').append(mt.extensions().last());
             } else {
                 // Try to get an extension from the part name
                 QString extension;
@@ -541,7 +541,7 @@ void AttachmentOptions::viewAttachment()
                 }
 
                 if (!extension.isEmpty()) {
-                    templateText.append(".").append(extension);
+                    templateText.append('.').append(extension);
                 }
             }
 
@@ -565,14 +565,14 @@ void AttachmentOptions::viewAttachment()
                 if (!content.executableName().isNull()) {
                     content.execute();
                 } else {
-                    QMessageBox mb(_view->text() + " " + tr("Error"),
-                                   tr("No application associated with file of type") + " " + mt.id(),
+                    QMessageBox mb(_view->text() + ' ' + tr("Error"),
+                                   tr("No application associated with file of type") + ' ' + mt.id(),
                                    QMessageBox::Warning,
                                    QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);
                     mb.exec();
                 }
             } else {
-                QMessageBox mb(_view->text() + " " + tr("Error"),
+                QMessageBox mb(_view->text() + ' ' + tr("Error"),
                                tr("Unable to create temporary file"),
                                QMessageBox::Warning,
                                QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);
@@ -581,7 +581,7 @@ void AttachmentOptions::viewAttachment()
 
             delete tempFile;
         } else {
-            QMessageBox mb(_view->text() + " " + tr("Error"),
+            QMessageBox mb(_view->text() + ' ' + tr("Error"),
                            tr("Unknown file type") + ": " + _part->contentType().content(),
                            QMessageBox::Warning,
                            QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);

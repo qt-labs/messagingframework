@@ -185,7 +185,7 @@ void GenericViewer::linkClicked(const QUrl& link)
 {
     QString command = link.toString();
 
-    if (command.startsWith("attachment")) {
+    if (command.startsWith(QLatin1String("attachment"))) {
         QRegExp splitter("attachment;([^;]+)(?:;([\\d\\.]*))?");
         if (splitter.exactMatch(command)) {
             QString cmd = splitter.cap(1);
@@ -207,7 +207,7 @@ void GenericViewer::linkClicked(const QUrl& link)
                 return;
             }
         }
-    } else if (command.startsWith("download")) {
+    } else if (command.startsWith(QLatin1String("download"))) {
         QRegExp splitter("download(?:;(\\d+))?");
         if (splitter.exactMatch(command)) {
             QString bytes = splitter.cap(1);

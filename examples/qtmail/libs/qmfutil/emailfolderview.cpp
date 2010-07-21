@@ -124,7 +124,7 @@ void EmailFolderDelegate::init(const QStyleOptionViewItem &option, const QModelI
 
         // Don't show a zero count
         if (_statusText == "0")
-            _statusText = QString();
+            _statusText.clear();
     }
 
     _unsynchronized = !index.data(EmailFolderModel::FolderSynchronizationEnabledRole).value<bool>();

@@ -67,8 +67,8 @@ QMap<QMailAccountId, QString> gAccountPath;
 QString defaultPath()
 {
     QString path = QMail::dataPath();
-    if (!path.endsWith("/"))
-        path.append("/");
+    if (!path.endsWith('/'))
+        path.append('/');
     path.append("mail");
 
     return path;
@@ -125,11 +125,11 @@ void recursivelyRemovePath(const QString &path, bool preserveTopDirectory = true
 
     QDir dir(path);
     foreach (const QString &file, dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
-        recursivelyRemovePath(path + "/" + file, false);
+        recursivelyRemovePath(path + '/' + file, false);
     }
 
     if (!preserveTopDirectory) {
-        dir.setPath("/");
+        dir.setPath(QString('/'));
         dir.rmpath(path);
     }
 }
@@ -583,7 +583,7 @@ const QString &QtopiamailfileManager::messagesBodyPath(const QMailAccountId &acc
 
 QString QtopiamailfileManager::messageFilePath(const QString &fileName, const QMailAccountId &accountId)
 {
-    return messagesBodyPath(accountId) + "/" + fileName;
+    return messagesBodyPath(accountId) + '/' + fileName;
 }
 
 QString QtopiamailfileManager::messagePartFilePath(const QMailMessagePart &part, const QString &fileName)
@@ -702,7 +702,7 @@ bool QtopiamailfileManager::removeParts(const QString &fileName)
     if (dir.exists()) {
         // Remove any files in this directory
         foreach (const QString &entry, dir.entryList()) {
-            if ((entry != QLatin1String(".")) && (entry != QLatin1String(".."))) {
+            if ((entry != QString('.')) && (entry != QLatin1String(".."))) {
                 if (!dir.remove(entry)) {
                     qMailLog(Messaging) << "Unable to remove part file:" << entry;
                     result = false;

@@ -352,7 +352,7 @@ void PopClient::processResponse(const QString &response)
     case Capabilities:
     {
         QString capability(response.left(response.length() - 2));
-        if (!capability.isEmpty() && (capability != QString("."))) {
+        if (!capability.isEmpty() && (capability != QString('.'))) {
             capabilities.append(capability);
 
             // More to follow
@@ -412,7 +412,7 @@ void PopClient::processResponse(const QString &response)
     case UidList:
     {
         QString input(response.left(response.length() - 2));
-        if (!input.isEmpty() && (input != QString("."))) {
+        if (!input.isEmpty() && (input != QString('.'))) {
             // Extract the number and UID
             QRegExp pattern("(\\d+) +(.*)");
             if (pattern.indexIn(input) != -1) {
@@ -438,7 +438,7 @@ void PopClient::processResponse(const QString &response)
     case SizeList:
     {
         QString input(response.left(response.length() - 2));
-        if (!input.isEmpty() && (input != QString("."))) {
+        if (!input.isEmpty() && (input != QString('.'))) {
             // Extract the number and size
             QRegExp pattern("(\\d+) +(\\d+)");
             if (pattern.indexIn(input) != -1) {
@@ -459,7 +459,7 @@ void PopClient::processResponse(const QString &response)
     case MessageData:
     {
         if (response != QString(".\r\n")) {
-            if (response.startsWith(".")) {
+            if (response.startsWith('.')) {
                 // This line has been byte-stuffed
                 dataStream->append(response.mid(1));
             } else {
@@ -467,7 +467,8 @@ void PopClient::processResponse(const QString &response)
             }
 
             if (dataStream->status() == LongStream::OutOfSpace) {
-                operationFailed(QMailServiceAction::Status::ErrFileSystemFull, LongStream::errorMessage( "\n" ));
+                operationFailed(QMailServiceAction::Status::ErrFileSystemFull,
+                                LongStream::errorMessage(QString('\n')));
             } else {
                 // More message data remains
                 waitForInput = true;
@@ -821,7 +822,7 @@ int PopClient::nextMsgServerPos()
                     serverId = selectionItr.key();
                     selectionItr++;
                 } else {
-                    serverId = QString();
+                    serverId.clear();
                 }
             } else {
                 thisMsg = pos;
@@ -1019,7 +1020,7 @@ void PopClient::createMail()
         messageProcessed(mail.serverUid());
 
         if (retrieveUid == mail.serverUid()) {
-            retrieveUid = QString();
+            retrieveUid.clear();
         }
     }
 

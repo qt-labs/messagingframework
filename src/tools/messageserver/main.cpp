@@ -50,7 +50,7 @@
 
 static void shutdown(int n)
 {
-    qMailLog(Messaging) << "Recieved signal" << n << ", shutting down.";
+    qMailLog(Messaging) << "Received signal" << n << ", shutting down.";
     QCoreApplication::exit();
 }
 #endif

@@ -664,7 +664,7 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
     QString name;
 
     if(!context->protocol().delimiter().isNull()) {
-        //only update if we're dealing with a hierachical system
+        //only update if we're dealing with a hierarchical system
         QChar delimiter = context->protocol().delimiter();
         if(folder.path().count(delimiter) == 0) {
             name = newPath;
@@ -1137,7 +1137,7 @@ void ImapMessageListStrategy::setCurrentMailbox(const QMailFolderId &id)
         _currentModSeq = _currentMailbox.customField("qmf-highestmodseq");
     } else {
         _currentMailbox = QMailFolder();
-        _currentModSeq = QString();
+        _currentModSeq.clear();
     }
 }
 
@@ -1623,7 +1623,7 @@ void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
 {
     QMailFolderId folderId = _currentMailbox.id();
     if(_folderStatus.contains(folderId) && _folderStatus[folderId] & NoSelect)
-        context->protocol().sendList(_currentMailbox, "%");
+        context->protocol().sendList(_currentMailbox, QString('%'));
     else
         context->protocol().sendSelect(_currentMailbox);
 
@@ -1980,7 +1980,7 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
         ImapSynchronizeBaseStrategy::handleLogin(context);
     } else {
         // We need to search for folders at the account root
-        context->protocol().sendList(QMailFolder(), "%");
+        context->protocol().sendList(QMailFolder(), QString('%'));
     }
 }
 
@@ -1992,7 +1992,7 @@ void ImapRetrieveFolderListStrategy::handleSearch(ImapStrategyContextBase *conte
     FolderStatus folderState = _folderStatus[_currentMailbox.id()];
     if (!(folderState & NoInferiors) && !(folderState & HasNoChildren)) {
         // Find the child folders of this mailbox
-        context->protocol().sendList(_currentMailbox, "%");
+        context->protocol().sendList(_currentMailbox, QString('%'));
     } else {
         folderListFolderAction(context);
     }
@@ -2006,7 +2006,7 @@ void ImapRetrieveFolderListStrategy::handleList(ImapStrategyContextBase *context
             QMailFolder ancestor;
             ancestor.setPath(_ancestorSearchPaths.takeFirst());
 
-            context->protocol().sendList(ancestor, "%");
+            context->protocol().sendList(ancestor, QString('%'));
             return;
         }
     }

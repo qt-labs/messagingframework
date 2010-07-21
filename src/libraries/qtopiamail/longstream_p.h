@@ -80,9 +80,9 @@ public:
     void resetStatus();
     void setStatus( Status );
     void updateStatus();
-    static bool freeSpace( const QString &path = QString::null, int min = -1);
+    static bool freeSpace( const QString &path = QString(), int min = -1);
 
-    static QString errorMessage( const QString &prefix = QString::null );
+    static QString errorMessage( const QString &prefix = QString());
     static QString tempDir();
     static void cleanupTempFiles();
 

@@ -276,7 +276,7 @@ void MessageServer::reportNewCounts()
     static QMap<QMailMessage::MessageType, QString> typeSignature(typeSignatureInit());
 
     QMailMessageCountMap newCounts;
-    foreach (QMailMessage::MessageType type, typeSignature.keys()) {
+    foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
         newCounts[type] = newMessageCount(type);
     }
 
@@ -284,7 +284,7 @@ void MessageServer::reportNewCounts()
 
     if (newMessageTotal) {
         // Inform QPE of changes to the new message counts
-        foreach (QMailMessage::MessageType type, typeSignature.keys()) {
+        foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
             if ((newCounts[type] > 0) && (newCounts[type] != messageCounts[type]))
                NewCountNotifier::notify(type, newCounts[type]);
         }
@@ -410,7 +410,7 @@ void MessageServer::updateNewMessageCounts()
         static QMap<QMailMessage::MessageType, QString> typeSignature(typeSignatureInit());
 
         // Update the individual counts
-        foreach (QMailMessage::MessageType type, typeSignature.keys()) {
+        foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
             int count(newMessageCount(type));
             if (count != messageCounts[type]) {
                 messageCounts[type] = count;

@@ -968,7 +968,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple plain addressses, comma-separated")
         << ( QStringList() 
                 << "wizard@oz.test"
-                << "wizzard@uu.edu.example" ).join(",")
+                << "wizzard@uu.edu.example" ).join(QString(','))
         << ( QList<QMailAddress>() 
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
@@ -976,7 +976,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple plain addressses, semicolon-separated")
         << ( QStringList() 
                 << "wizard@oz.test"
-                << "wizzard@uu.edu.example" ).join(";")
+                << "wizzard@uu.edu.example" ).join(QString(';'))
         << ( QList<QMailAddress>() 
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
@@ -984,7 +984,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple plain addressses, whitespace-separated")
         << ( QStringList() 
                 << "wizard@oz.test"
-                << "wizzard@uu.edu.example" ).join(" ")
+                << "wizzard@uu.edu.example" ).join(QString(' '))
         << ( QList<QMailAddress>() 
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
@@ -992,7 +992,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple named addressses, comma-separated")
         << ( QStringList() 
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
-                << "Rincewind <wizzard@uu.edu.example>" ).join(",")
+                << "Rincewind <wizzard@uu.edu.example>" ).join(QString(','))
         << ( QList<QMailAddress>() 
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
@@ -1000,7 +1000,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple named addressses, semicolon-separated")
         << ( QStringList() 
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
-                << "Rincewind <wizzard@uu.edu.example>" ).join(";")
+                << "Rincewind <wizzard@uu.edu.example>" ).join(QString(';'))
         << ( QList<QMailAddress>() 
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
@@ -1008,7 +1008,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple named addressses, whitespace-separated")
         << ( QStringList() 
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
-                << "Rincewind <wizzard@uu.edu.example>" ).join(" ")
+                << "Rincewind <wizzard@uu.edu.example>" ).join(QString(' '))
         << ( QList<QMailAddress>() 
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
@@ -1016,7 +1016,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple group addresses, comma-separated")
         << ( QStringList() 
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(",")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(','))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
@@ -1024,7 +1024,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple group addresses, semicolon-separated")
         << ( QStringList() 
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(";")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(';'))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
@@ -1032,7 +1032,7 @@ void tst_QMailAddress::fromStringList1_data()
     QTest::newRow("Multiple group addresses, whitespace-separated")
         << ( QStringList() 
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(" ")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(' '))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
@@ -1042,7 +1042,7 @@ void tst_QMailAddress::fromStringList1_data()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(",")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(','))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")
@@ -1054,7 +1054,7 @@ void tst_QMailAddress::fromStringList1_data()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(";")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(';'))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")
@@ -1066,7 +1066,7 @@ void tst_QMailAddress::fromStringList1_data()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
-                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(" ")
+                << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(' '))
         << ( QList<QMailAddress>() 
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")

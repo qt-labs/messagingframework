@@ -520,7 +520,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
     if ( (mail->status() & QMailMessage::Incoming) && 
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
-            bodyText += "\n" + tr("Awaiting download") + "\n";
+            bodyText += '\n' + tr("Awaiting download") + '\n';
             bodyText += tr("Size of message") + ": " + describeMailSize(mail->size());
         } else {
             // TODO: what?
@@ -559,9 +559,10 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
                 }
 
                 if (bestPart != 0)
-                    bodyText += bestPart->body().data() + "\n";
+                    bodyText += bestPart->body().data() + '\n';
                 else
-                    bodyText += "\n<" + tr("Message part is not displayable") + ">\n";
+                    bodyText += QLatin1String("\n<") + tr("Message part is not displayable") +
+                                QLatin1String(">\n");
             }
             else if ( mail->multipartType() == QMailMessagePartContainer::MultipartRelated ) {
                 const QMailMessagePart* startPart = &mail->partAt(0);
@@ -578,9 +579,10 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
 
                 // Render the start part, if possible
                 if (startPart->contentType().type().toLower() == "text")
-                    bodyText += startPart->body().data() + "\n";
+                    bodyText += startPart->body().data() + '\n';
                 else
-                    bodyText += "\n<" + tr("Message part is not displayable") + ">\n";
+                    bodyText +=  QLatin1String("\n<") + tr("Message part is not displayable") +
+                                  QLatin1String(">\n");
             }
             else {
                 // According to RFC 2046, any unrecognised type should be treated as 'mixed'
@@ -592,9 +594,10 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
                     const QMailMessagePart &part = mail->partAt( i );
 
                     if (part.hasBody() && (part.contentType().type().toLower() == "text")) {
-                        bodyText += part.body().data() + "\n";
+                        bodyText += part.body().data() + '\n';
                     } else {
-                        bodyText += "\n<" + tr("Part") + ": " + part.displayName() + ">\n";
+                        bodyText += QLatin1String("\n<") + tr("Part") + ": " + part.displayName() +
+                                    QLatin1String(">\n");
                     }
                 }
             }
@@ -604,44 +607,44 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
     QString text;
 
     if ((mail->messageType() != QMailMessage::Sms) && (mail->messageType() != QMailMessage::Instant))
-        text += tr("Subject") + ": " + mail->subject() + "\n";
+        text += tr("Subject") +  QLatin1String(": ") + mail->subject() + '\n';
 
     QMailAddress fromAddress(mail->from());
     if (!fromAddress.isNull())
-        text += tr("From") + ": " + fromAddress.toString() + "\n";
+        text += tr("From") + ": " + fromAddress.toString() + '\n';
 
     if (mail->to().count() > 0) {
         text += tr("To") + ": ";
-        text += QMailAddress::toStringList(mail->to()).join(", ");
+        text += QMailAddress::toStringList(mail->to()).join(QLatin1String(", "));
     }
     if (mail->cc().count() > 0) {
-        text += "\n" + tr("CC") + ": ";
-        text += QMailAddress::toStringList(mail->cc()).join(", ");
+        text += '\n' + tr("CC") +  QLatin1String(": ");
+        text += QMailAddress::toStringList(mail->cc()).join(QLatin1String(", "));
     }
     if (mail->bcc().count() > 0) {
-        text += "\n" + tr("BCC") + ": ";
-        text += QMailAddress::toStringList(mail->bcc()).join(", ");
+        text += '\n' + tr("BCC") +  QLatin1String(": ");
+        text += QMailAddress::toStringList(mail->bcc()).join(QLatin1String(", "));
     }
     if ( !mail->replyTo().isNull() ) {
-        text += "\n" + tr("Reply-To") + ": ";
+        text += '\n' + tr("Reply-To") + QLatin1String(": ");
         text += mail->replyTo().toString();
     }
 
-    text += "\n" + tr("Date") + ": ";
-    text += dateString(mail->date().toLocalTime()) + "\n";
+    text += '\n' + tr("Date") + QLatin1String(": ");
+    text += dateString(mail->date().toLocalTime()) + '\n';
 
     if (mail->status() & QMailMessage::Removed) {
         if (!bodyText.isEmpty()) {
             // Don't include the notice - the most likely reason to view plain text
             // is for printing, and we don't want to print the notice
         } else {
-            text += "\n";
+            text += '\n';
             text += tr("Message deleted from server");
         }
     }
 
     if (!bodyText.isEmpty()) {
-        text += "\n";
+        text += '\n';
         text += bodyText;
     }
 #ifdef USE_WEBKIT
@@ -1006,7 +1009,7 @@ QString BrowserWidget::smsBreakReplies(const QString& txt) const
     /*  Preserve white space, add linebreaks so text is wrapped to
         fit the display width */
     QString str = "";
-    QStringList p = txt.split("\n");
+    QStringList p = txt.split('\n');
 
     QStringList::Iterator it = p.begin();
     while ( it != p.end() ) {
@@ -1022,7 +1025,7 @@ QString BrowserWidget::noBreakReplies(const QString& txt) const
     /*  Maintains the original linebreaks, but colours the lines
         according to reply level    */
     QString str = "";
-    QStringList p = txt.split("\n");
+    QStringList p = txt.split('\n');
 
     int x, levelList;
     QStringList::Iterator it = p.begin();
@@ -1080,7 +1083,7 @@ QString appendLine(const QString& preceding, const QString& suffix)
 
 QString unwrap(const QString& txt, const QString& prepend)
 {
-    QStringList lines = txt.split("\n", QString::KeepEmptyParts);
+    QStringList lines = txt.split('\n', QString::KeepEmptyParts);
 
     QString result;
     result.reserve(txt.length());
@@ -1114,7 +1117,7 @@ QString unwrap(const QString& txt, const QString& prepend)
                         int totalLength = prevLength + prepend.length();
                         if ((wsIndex != -1) && ((totalLength + wsIndex) > 78)) {
                             // This was probably a forced newline - convert it to a space
-                            terminator = " ";
+                            terminator = ' ';
                         }
                     }
                 }
@@ -1139,13 +1142,13 @@ QString unwrap(const QString& txt, const QString& prepend)
 QString BrowserWidget::handleReplies(const QString& txt) const
 {
     QStringList out;
-    QStringList p = txt.split("\n");
+    QStringList p = txt.split('\n');
     QList<uint> levelList;
     QStringList::Iterator it = p.begin();
     uint lastLevel = 0, level = 0;
 
     // Skip the last string, if it's non-existent
-    int offset = (txt.endsWith("\n") ? 1 : 0);
+    int offset = (txt.endsWith('\n') ? 1 : 0);
 
     QString str, line;
     while ( (it + offset) != p.end() ) {
@@ -1181,7 +1184,7 @@ QString BrowserWidget::handleReplies(const QString& txt) const
             lastLevel = level;
             it--;
         } else {
-            str += line.mid(level * 2) + "\n";
+            str += line.mid(level * 2) + '\n';
         }
 
         it++;
@@ -1231,10 +1234,10 @@ QString BrowserWidget::buildParagraph(const QString& txt, const QString& prepend
 
     QString input = encodeUrlAndMail( preserveWs ? txt : txt.simplified() );
     if (preserveWs)
-        return input.replace("\n", "<br>");
+        return input.replace('\n', "<br>");
 
-    QStringList p = input.split( " ", QString::SkipEmptyParts );
-    return p.join(" ");
+    QStringList p = input.split( ' ', QString::SkipEmptyParts );
+    return p.join(QString(' '));
 }
 
 QString BrowserWidget::encodeUrlAndMail(const QString& txt)

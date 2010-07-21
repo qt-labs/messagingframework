@@ -710,7 +710,7 @@ QString QMailAddressPrivate::minimalPhoneNumber() const
 {
     static const QRegExp nondiallingChars("[^\\d,xpwXPW\\+\\*#]");
 
-    // Remove any characters which don't affect dialling
+    // Remove any characters which don't affect dialing
     QString minimal(_address);
     minimal.remove(nondiallingChars);
 
@@ -1039,7 +1039,7 @@ QString QMailAddress::emailAddressPattern()
     // Taken from: http://www.regular-expressions.info/email.html, but 
     // modified to accept uppercase characters as well as lower-case
     // Also - RFC 1034 seems to prohibit domain name elements beginning
-    // with digits, but they exist in practise...
+    // with digits, but they exist in practice...
     static const QString pattern("[A-Za-z\\d!#$%&'*+/=?^_`{|}~-]+"      // one-or-more: legal chars (some punctuation permissible)
                                  "(?:"                                  // zero-or-more: 
                                      "\\."                                  // '.',

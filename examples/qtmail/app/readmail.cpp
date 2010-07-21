@@ -91,7 +91,7 @@ public:
         connect(existingButton, SIGNAL(clicked()), this, SLOT(buttonClicked()));
 
         QString text = tr("Saving '%1' to Contacts.", "%1=name/address/number").arg(address.address());
-        text += "\n";
+        text += '\n';
         text += tr("Create new contact or add to an existing contact?");
 
         QPlainTextEdit* textEdit = new QPlainTextEdit(text, this);

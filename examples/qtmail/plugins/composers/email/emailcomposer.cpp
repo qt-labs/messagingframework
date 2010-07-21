@@ -1091,10 +1091,10 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
     QString bodyText;
     if ((type == QMailMessage::Forward) || (type == QMailMessage::ForwardPart)) {
         QString forwardBlock = "\n------------ Forwarded Message ------------\n";
-        forwardBlock += "Date: " + source.date().toString() + "\n";
-        forwardBlock += "From: " + source.from().toString() + "\n";
-        forwardBlock += "To: " + QMailAddress::toStringList(source.to()).join(", ") + "\n";
-        forwardBlock += "Subject: " + source.subject() + "\n";
+        forwardBlock += "Date: " + source.date().toString() + '\n';
+        forwardBlock += "From: " + source.from().toString() + '\n';
+        forwardBlock += "To: " + QMailAddress::toStringList(source.to()).join(QLatin1String(", ")) + '\n';
+        forwardBlock += "Subject: " + source.subject() + '\n';
 
         QMailAccount originAccount(source.parentAccountId());
         bool viaReference((originAccount.status() & QMailAccount::CanReferenceExternalData) &&
@@ -1118,7 +1118,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
                 mail.appendPart(QMailMessagePart::fromData(partData, disposition, sourcePart.contentType(), sourcePart.transferEncoding()));
             }
             
-            bodyText = forwardBlock + "\n" + originalText;
+            bodyText = forwardBlock + '\n' + originalText;
             textPart = -1;
         } else {
             if (viaReference) {
@@ -1133,7 +1133,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
 
                 textPart = -1;
             } else {
-                bodyText = forwardBlock + "\n" + originalText;
+                bodyText = forwardBlock + '\n' + originalText;
             }
         }
     } else {
@@ -1146,7 +1146,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
         while ((pos = bodyText.indexOf('\n', pos)) != -1)
             bodyText.insert(++pos, EmailComposerInterface::quotePrefix());
 
-        bodyText.append("\n");
+        bodyText.append('\n');
     }
 
     // Whatever text subtype it was before, it's now plain...

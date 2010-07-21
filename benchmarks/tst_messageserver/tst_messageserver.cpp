@@ -162,7 +162,7 @@ void tst_MessageServer::removePath(QString const& path)
     if (fi.isDir() && !fi.isSymLink()) {
         QDir dir(path);
         foreach (QString const& name, dir.entryList(QDir::NoDotAndDotDot|QDir::AllEntries|QDir::Hidden)) {
-            removePath(path + "/" + name);
+            removePath(path + '/' + name);
         }
     }
 
@@ -535,7 +535,7 @@ void tst_MessageServer::completeRetrievalImap_data()
                 << QByteArray("Subject: 20,000 Leagues Under the Sea")
                 << QByteArray("I went to the central staircase which opened on to the platform,")
                 << QByteArray("from Ceylon to Sydney, touching at King George's Point and Melbourne.")
-                << QByteArray("274     2  occured                occurred")
+                << QByteArray("274     2  occurred                occurred")
             )
             << (TestMail()
                 << QByteArray("Subject: Fwd:3: Message with multiple attachments")
@@ -761,7 +761,7 @@ void tst_MessageServer::onProgressChanged(uint value,uint total)
     static int i = 0;
     bool output = RUNNING_ON_VALGRIND || verbose;
     if (output && !(i++ % 25)) {
-        qWarning() << "Progress:" << value << "/" << total;
+        qWarning() << "Progress:" << value << '/' << total;
     }
 
     /* We are making some progress, so reset the timeout timer. */

@@ -618,7 +618,7 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
     uint origin;
     ds >> origin;
 
-    if (pid == origin) //dont notify ourselves 
+    if (pid == origin) // don't notify ourselves
         return;
 
     if (message == "forceIpcFlush") {

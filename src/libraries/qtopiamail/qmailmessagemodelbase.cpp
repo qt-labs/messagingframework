@@ -135,7 +135,7 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
         The MessageAddressTextRole concatenated with the MessageSubjectTextRole. This can be used by filtering classes to filter
         messages based on the text of these commonly displayed roles. 
     \value MessageTimeStampTextRole
-        The timestamp of a message. "Recieved" or "Sent" is prepended to the timestamp string depending on the message direction.
+        The timestamp of a message. "Received" or "Sent" is prepended to the timestamp string depending on the message direction.
     \value MessageSizeTextRole
         The size of a message, formatted as text.
     \value MessageTypeIconRole
@@ -284,7 +284,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         break;
 
         case MessageFilterTextRole:
-            return messageAddressText(message,incoming) + " " + message.subject();
+            return messageAddressText(message,incoming) + ' ' + message.subject();
         break;
 
         case Qt::DecorationRole:

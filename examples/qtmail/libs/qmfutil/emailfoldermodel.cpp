@@ -205,7 +205,7 @@ QMailMessageKey InboxMessageSet::messageKey() const
 
 QMailMessageKey InboxMessageSet::contentKey()
 {
-    // Return all incoming messages for any email acount, unless in the Trash/Junk folder
+    // Return all incoming messages for any email account, unless in the Trash/Junk folder
     return (QMailMessageKey::parentAccountId(emailAccountKey()) &
             QMailMessageKey::status(QMailMessage::Trash | QMailMessage::Junk | QMailMessage::Outgoing, QMailDataComparator::Excludes));
 }

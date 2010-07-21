@@ -421,7 +421,7 @@ ImapClient::~ImapClient()
     if (_protocol.inUse()) {
         _protocol.close();
     }
-    foreach(QMailFolderId id, _monitored.keys()) {
+    foreach(const QMailFolderId &id, _monitored.keys()) {
         IdleProtocol *protocol = _monitored.take(id);
         if (protocol->inUse())
             protocol->close();
@@ -557,7 +557,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 monitor(_waitingForIdleFolderIds);
             } else {
                 if (!imapCfg.pushEnabled()) {
-                    foreach(QMailFolderId id, _monitored.keys()) {
+                    foreach(const QMailFolderId &id, _monitored.keys()) {
                         IdleProtocol *protocol = _monitored.take(id);
                         protocol->close();
                         delete protocol;
@@ -1381,7 +1381,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
         return;
     }
     
-    foreach(QMailFolderId id, _monitored.keys()) {
+    foreach(const QMailFolderId &id, _monitored.keys()) {
         if (!mailboxIds.contains(id)) {
             IdleProtocol *protocol = _monitored.take(id);
             protocol->close(); // Instead of closing could reuse below in some cases
@@ -1419,7 +1419,7 @@ void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
         }
     }
     _protocol.close();
-    foreach(QMailFolderId id, _monitored.keys()) {
+    foreach(const QMailFolderId &id, _monitored.keys()) {
         IdleProtocol *protocol = _monitored.take(id);
         if (protocol->inUse())
             protocol->close();

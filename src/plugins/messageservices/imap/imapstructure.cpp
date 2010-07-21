@@ -369,7 +369,7 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     if (next < details.count()) {
         disposition = details.at(next);
         if (disposition.trimmed().toUpper() == "NIL") {
-            disposition = QString();
+            disposition.clear();
         }
     }
     part->setContentDisposition(fromDispositionDescription(disposition, size));
@@ -422,7 +422,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         if (details.count() > 2) {
             disposition = details.at(2);
             if (disposition.trimmed().toUpper() == "NIL") {
-                disposition = QString();
+                disposition.clear();
             }
         }
         part->setContentDisposition(fromDispositionDescription(disposition, QString()));
