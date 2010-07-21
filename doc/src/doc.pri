@@ -33,9 +33,8 @@ qch_docs.depends += html_docs
 qch_docs.files = $$QCH_FILE
 
 unix:!macx {
-    qch_docs.path = $$[QT_INSTALL_PREFIX]/share/qmf/doc
+    qch_docs.path = $$QMF_INSTALL_ROOT/share/qmf/doc
     qch_docs.CONFIG += no_check_exist
-    INSTALLS += qch_docs
 }
 
 docs.depends = qch_docs
