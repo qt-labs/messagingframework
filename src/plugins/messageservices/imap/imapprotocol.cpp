@@ -1512,7 +1512,7 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
 {
     if(combiner == QMailKey::And) {
         //IMAP uses AND by default, so just add a space and we're good to go!
-        return searchKeys.join(QString(QString(' ')));
+        return searchKeys.join(QString(' '));
     } else if(combiner == QMailKey::Or) {
         //IMAP uses OR (value-1 value-2)
         int left = searchKeys.count(); //how many are we joining
@@ -1527,7 +1527,7 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
 
             result += searchKey;
         }
-        result += QString(")").repeated(searchKeys.count() - 2); //add closing parenthesis
+        result += QString(')').repeated(searchKeys.count() - 2); //add closing parenthesis
         return result;
     } else if(combiner == QMailKey::None) {
         if(searchKeys.count() != 1)
@@ -1535,7 +1535,7 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
         return searchKeys.join(QString(' '));
     } else {
         qWarning() << "Unable to combine with an unknown combiner: " << combiner;
-        return QString("");
+        return QString();
     }
 }
 
