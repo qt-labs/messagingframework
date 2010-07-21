@@ -2,29 +2,29 @@ QDOC_BIN = $$targetPath($$[QT_INSTALL_BINS]/qdoc3)
 HELPGENERATOR = $$targetPath($$[QT_INSTALL_BINS]/qhelpgenerator)
 
 equals(QMAKE_DIR_SEP, /) {   # unix, mingw+msys
-    QDOC = SRCDIR=$$PWD OUTDIR=$$OUT_PWD/doc/html $$QDOC_BIN
+    QDOC = SRCDIR=$$PWD OUTDIR=$$_PRO_FILE_PWD_/doc/html $$QDOC_BIN
 } else:win32-g++* {   # just mingw
     # The lack of spaces in front of the && is necessary!
-    QDOC = set SRCDIR=$$PWD&& set OUTDIR=$$OUT_PWD/doc/html&& $$QDOC_BIN
+    QDOC = set SRCDIR=$$PWD&& set OUTDIR=$$_PRO_FILE_PWD_/doc/html&& $$QDOC_BIN
 } else {   # nmake
     QDOC = set SRCDIR=$$PWD $$escape_expand(\\n\\t) \
-           set OUTDIR=$$OUT_PWD/doc/html $$escape_expand(\\n\\t) \
+           set OUTDIR=$$_PRO_FILE_PWD_/doc/html $$escape_expand(\\n\\t) \
            $$QDOC_BIN
 }
 
-QHP_FILE = $$OUT_PWD/doc/html/qmf.qhp
-QCH_FILE = $$OUT_PWD/doc/html/qmf.qch
+QHP_FILE = $$_PRO_FILE_PWD_/doc/html/qmf.qhp
+QCH_FILE = $$_PRO_FILE_PWD_/doc/html/qmf.qch
 
-HELP_DEP_FILES = $$PWD/index.qdoc \
-                 $$PWD/messageserver.qdoc \
-                 $$PWD/messaging.qdoc \
-                 $$PWD/qtmail.qdoc \
-                 $$PWD/qtopiamail.qdoc \
-                 $$PWD/qtopiamail_messageserver.qdoc \
-                 $$PWD/qtopiamail_qmfutil.qdoc \
-                 $$PWD/qmf.qdocconf \
+HELP_DEP_FILES = $$_PRO_FILE_PWD_/doc/src/index.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/messageserver.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/messaging.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/qtmail.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/qtopiamail.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/qtopiamail_messageserver.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/qtopiamail_qmfutil.qdoc \
+                 $$_PRO_FILE_PWD_/doc/src/qmf.qdocconf \
 
-html_docs.commands = $$QDOC $$PWD/qmf.qdocconf
+html_docs.commands = $$QDOC $$_PRO_FILE_PWD_/doc/src/qmf.qdocconf
 html_docs.depends += $$HELP_DEP_FILES
 html_docs.files = $$QHP_FILE
 
@@ -42,8 +42,8 @@ docs.depends = qch_docs
 QMAKE_EXTRA_TARGETS += html_docs qch_docs docs
 
 OTHER_FILES = $$HELP_DEP_FILES \
-              $$PWD/api/api-pages.qdoc \
-              $$PWD/api/classhierarchy.qdoc \
-              $$PWD/api/groups.qdoc \
-              $$PWD/examples/messageviewer.qdoc \
-              $$PWD/examples/messagenavigator.qdoc
+              $$_PRO_FILE_PWD_/doc/src/api/api-pages.qdoc \
+              $$_PRO_FILE_PWD_/doc/src/api/classhierarchy.qdoc \
+              $$_PRO_FILE_PWD_/doc/src/api/groups.qdoc \
+              $$_PRO_FILE_PWD_/doc/src/examples/messageviewer.qdoc \
+              $$_PRO_FILE_PWD_/doc/src/examples/messagenavigator.qdoc
