@@ -224,7 +224,7 @@ void AccountSettings::deleteMessages()
         QMailMessageIdList batch(deleteMessageIds.mid(0, deleteBatchSize));
         deleteMessageIds = deleteMessageIds.mid(deleteBatchSize);
 
-        QMailStore::instance()->removeMessages(QMailMessageKey::id(batch), QMailStore::CreateRemovalRecord);
+        QMailStore::instance()->removeMessages(QMailMessageKey::id(batch), QMailStore::NoRemovalRecord);
         deleteProgress += batch.count();
 
         statusDisplay->setProgress(deleteProgress, deleteProgress + deleteMessageIds.count());
