@@ -823,7 +823,7 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     A range of functions are available to support varying client operations:
 
     The retrieveFolderList() function allows a client to retrieve the list of folders available for an account.
-    The retrieveMessageList() function allows a client to retrieve the list of messages available for an account.
+    The retrieveMessageList() function allows a client to retrieve a subset of messages available for an account or folder.
 
     The retrieveMessages() function allows a client to retrieve the flags, meta data or content of a 
     specific list of messages.
@@ -834,13 +834,8 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     The retrieveMessagePart() function allows a specific part of a multi-part message to be retrieved.
     The retrieveMessagePartRange() function allows a portion of a specific part of a multi-part message to be retrieved.
 
-    The retrieveAll() function allows a client to retrieve the meta data for all messages currently
-    available for the specified account.  
-    The exportUpdates() function allows a client to push local changes such as message-read notifications
-    to the external server.
-
-    The synchronize() function allows a client to synchronize the local representation of an account
-    with that available at the external server.
+    The exportUpdates() function allows a client to push local changes such as message-read notifications 
+    and pending disconnected operations to the external server.
 */
 
 /*!
@@ -883,7 +878,7 @@ QMailRetrievalAction::~QMailRetrievalAction()
     folder that is searched for child folders; these properties are not updated 
     for folders that are merely discovered by searching.
     
-    \sa retrieveAll()
+    \sa retrieveMessageList()
 */
 void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
@@ -916,8 +911,6 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
     marked with the \l QMailMessage::New status flag. Messages that are present
     in the mail store but found to be no longer available are marked with the 
     \l QMailMessage::Removed status flag.
-
-    \sa retrieveAll()
 */
 void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
@@ -991,6 +984,8 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
 }
 
 /*!
+    \deprecated
+  
     Requests that the message server retrieve all folders and meta data for messages available 
     for the account \a accountId.
     
@@ -1004,7 +999,7 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
     marked with the \l QMailMessage::New status flag.  Messages that are no longer 
     available will be marked with the \l QMailMessage::Removed status flag.  
 
-    \sa retrieveFolderList(), retrieveMessageList(), synchronize()
+    \sa retrieveFolderList(), retrieveMessageList()
 */
 void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 {
@@ -1015,11 +1010,10 @@ void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
     Requests that the message server update the external server with changes that have 
     been effected on the local device for account \a accountId.
     Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
-    flags should be exported to the external server, and messages that have been removed
+    flags should be exported to the external server, messages that have been removed
     using the \l QMailStore::CreateRemovalRecord option should be removed from the 
-    external server.
-
-    \sa synchronize()
+    external server, and any flag, copy or move operations that have been applied
+    using \l QMailDisconnected should be applied to the external server.
 */
 void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 {
@@ -1027,6 +1021,8 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 }
 
 /*!
+    \deprecated
+  
     Requests that the message server synchronize the set of known folder and message 
     identifiers with those currently available for the account identified by \a accountId.
     Newly discovered messages should have their meta data retrieved, messages that have been 
@@ -1045,7 +1041,7 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
     the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
     QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
 
-    \sa retrieveAll(), exportUpdates()
+    \sa retrieveFolderList(), retrieveMessageList(), exportUpdates()
 */
 void QMailRetrievalAction::synchronize(const QMailAccountId &accountId)
 {

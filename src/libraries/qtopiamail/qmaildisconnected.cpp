@@ -43,6 +43,39 @@
 #include "qmailstore.h"
 #include "qmaillog.h"
 
+/*!
+    \class QMailDisconnected
+    \ingroup messaginglibrary
+
+    \preliminary
+    \brief The QMailDisconnected class provides functions to work with external servers using the 
+    disconnected mode of operation.
+        
+    Functions are provided such as moveToFolder() and flagMessage() to update the state 
+    of the mail store without requiring that the update be immediately propagated to 
+    any external servers affected by that update. A function rollBackUpdates() is
+    provided to allow clients to roll back changes that have been applied to the mail store
+    but not yet synchronized with an external server.
+    
+    QMailDisconnected also provides functions such as sourceKey() and 
+    sourceFolderId() to query the state of a folder or message as it was at the time of 
+    the last synchronization with the external server associated with the folder or message.
+    
+    Additionally QMailDisconnected provides functions to work with messages containing 
+    disconnected state such as clearPreviousFolder(), copyPreviousFolder() and restoreMap().
+    
+    Finally pending disconnected operations may be propagaged to an external server, that is 
+    synchronized with an external server using QMailRetrievalAction::exportUpdates().
+*/
+
+
+/*!
+    Returns a key matching messages who parent folder's identifier was equal to \a folderId,
+    at the time the most recent synchronization of the message with the external 
+    server occurred.
+
+    \sa QMailMessageKey::parentFolderId()
+*/
 QMailMessageKey QMailDisconnected::sourceKey(const QMailFolderId &folderId)
 {
     QMailMessageKey result(QMailMessageKey::parentFolderId(folderId));
@@ -51,6 +84,12 @@ QMailMessageKey QMailDisconnected::sourceKey(const QMailFolderId &folderId)
     return result;
 }
 
+/*!
+    Return the QMailFolderId of the folder that contained the message \a metaData at the time the most 
+    recent synchronization of the message with the external server occurred.
+    
+    \sa QMailMessageMetaData::parentFolderId()
+*/
 QMailFolderId QMailDisconnected::sourceFolderId(const QMailMessageMetaData &metaData)
 {
     QMailFolderId previousParentFolderId(metaData.previousParentFolderId());
@@ -60,21 +99,38 @@ QMailFolderId QMailDisconnected::sourceFolderId(const QMailMessageMetaData &meta
     return metaData.parentFolderId();
 }
 
+
+/*!
+    Returns a bit mask matching all QMailMessageKey properties related to disconnected state.
+*/
 QMailMessageKey::Properties QMailDisconnected::parentFolderProperties()
 {
     return QMailMessageKey::ParentFolderId | QMailMessageKey::PreviousParentFolderId;
 }
 
+/*!
+    Clears all data related to the disconnected state of the \a message.
+*/
 void QMailDisconnected::clearPreviousFolder(QMailMessageMetaData *message)
 {
     message->setPreviousParentFolderId(QMailFolderId());
 }
 
+/*!
+    Copies all message data related to disconnected state from \a source into \a dest.
+*/
 void QMailDisconnected::copyPreviousFolder(const QMailMessageMetaData &source, QMailMessageMetaData *dest)
 {
     dest->setPreviousParentFolderId(source.previousParentFolderId());
 }
 
+/*!
+    Returns a map of originating folders for a list of messages that are in the disconnected moved state
+    as identified by \a messageIds.
+    
+    The map contains a key for each originating folder, and for each key the value is a list of messages
+    moved out of the folder.
+*/
 QMap<QMailFolderId, QMailMessageIdList> QMailDisconnected::restoreMap(const QMailMessageIdList &messageIds)
 {
     QMap<QMailFolderId, QMailMessageIdList> result;
@@ -125,6 +181,14 @@ static void syncStatusWithFolder(QMailMessageMetaData& message)
     }
 }
 
+/*!
+    Returns true if disconnected operations have been applied to the message store since 
+    the most recent synchronization with the account specified by \a mailAccountId.
+    
+    Otherwise returns false.
+    
+    \sa rollBackUpdates()
+*/
 bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
 {
     QMailFolderKey accountFoldersKey(QMailFolderKey::parentAccountId(mailAccountId));
@@ -139,6 +203,13 @@ bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
     return true;
 }
 
+/*!
+    Rolls back all disconnected move and copy operations that have been applied to the 
+    message store since the most recent synchronization of the message with the account 
+    specified by \a mailAccountId.
+    
+    \sa updatesOutstanding()
+*/
 void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
 {
     QMailFolderKey accountFoldersKey(QMailFolderKey::parentAccountId(mailAccountId));
@@ -163,10 +234,16 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
         syncStatusWithFolder(mail);           
             QMailStore::instance()->updateMessage(&mail);
     }
+    
+    //could also do flag changes but no point as propagation of those currently fails silenty
 }
 
-// move messages to their standard account folders setting flags as necessary
-
+/*!
+    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    folder flags as appropriate.
+    
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+*/
 void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
 {
     QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
@@ -179,6 +256,12 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
     }
 }
 
+/*!
+    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    folder flags as appropriate.
+
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+*/
 void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
     if (!folderId.isValid())
@@ -203,6 +286,17 @@ void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailF
     }
 }
 
+/*!
+    Disconnected copies the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    folder flags as appropriate.
+    
+    The copy operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+    
+    This function must only be used on messages for which the entire content of the message and all parts of the 
+    message is available in the message store; otherwise the behavior is undefined.
+    
+    \sa QMailMessagePartContainer::contentAvailable()
+*/
 void QMailDisconnected::copyToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
 {
     QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
@@ -215,6 +309,17 @@ void QMailDisconnected::copyToStandardFolder(const QMailMessageIdList& ids, QMai
    }
 }
 
+/*!
+    Disconnected copies the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    folder flags as appropriate.
+
+    The copy operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+
+    This function must only be used on messages for which the entire content of the message and all parts of the 
+    message is available in the message store; otherwise the behavior is undefined.
+
+    \sa QMailMessagePartContainer::contentAvailable()
+*/
 void QMailDisconnected::copyToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
     if (!folderId.isValid())
@@ -240,8 +345,16 @@ void QMailDisconnected::copyToFolder(const QMailMessageIdList& ids, const QMailF
     }
 }
 
-//flag messages functions are used to perform local operations. i.e marking messages and "move to trash"
+/*!
+    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
+    to on and setting the flags set by the bit mask \a unsetMask to off.
+    
+    For example this function may be used to mark messages as important or 'move to trash' messages.
 
+    The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+    
+    During synchronization with the server a status message with contents \a description may be emitted.
+*/
 void QMailDisconnected::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, const QString& description)
 {
     Q_UNUSED(description)
@@ -254,6 +367,16 @@ void QMailDisconnected::flagMessages(const QMailMessageIdList &ids, quint64 setM
     }
 }
 
+/*!
+    Disconnected flags the list a message identified by \a id, setting the flags specified by the bit mask \a setMask 
+    to on and setting the flags set by the bit mask \a unsetMask to off.
+    
+    For example this function may be used to mark a message as important or 'move to trash' a message.
+
+    The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+    
+    During synchronization with the server a status message with contents \a description may be emitted.
+*/
 void QMailDisconnected::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask, const QString& description)
 {
     flagMessages(QMailMessageIdList() << id, setMask, unsetMask, description);
