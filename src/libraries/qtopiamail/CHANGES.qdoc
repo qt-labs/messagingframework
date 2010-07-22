@@ -233,6 +233,8 @@ Changes since the development preview release on 16/01/09:
 
 32. Added QMailActionInfo and QMailActionObserver classes.
 
+33. Added QMailDisconnected class.
+
 *****************************************************************************
 
 \endcode
