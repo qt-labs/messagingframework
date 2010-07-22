@@ -19,6 +19,7 @@
 <li><a href="#accounts">Accounts</a></li>
 <li><a href="#interface">Interface</a></li>
 <li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#logging">Logging</a></li>
 </ul>
 <a name="introduction"></a>
 <h2>Introduction</h2>
@@ -73,6 +74,18 @@
 <li>the <a href="qtextendedmail.html">Messaging Framework Client Library</a></li>
 <li>the <a href="qtextendedmail-messageserver.html">Message Server Support Library</a></li>
 </ul>
+<a name="logging"></a>
+<h2>Logging</h2>
+<p>MessageServer supports runtime-enabled logging. The logging levels in use can be changed by updating the configuration file and sending a HUP signal to the messageserver process.</p>
+<p>The config file for logging is located at ~/.config/Nokia/QMF.conf. The logging configuration is in the <tt>[Logging]</tt> section. <tt>qmaillog.h</tt> defines the categories that can be used.</p>
+<p>An example config file follows:</p>
+<pre>    [Logging]
+    Messaging=0
+    IMAP=0
+    SMTP=0
+    POP=0</pre>
+<p>To inform the messageserver process that the logging levels have been changed you must send it a HUP signal.</p>
+<pre>    killall -HUP messageserver</pre>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>

@@ -86,6 +86,9 @@
                     <section ref="qmailcontentmanagerplugininterface-members.html" title="List of all members"/>
                 </section>
                 <section ref="qmaildatacomparator.html" title="QMailDataComparator"/>
+                <section ref="qmaildisconnected.html" title="QMailDisconnected Class Reference">
+                    <section ref="qmaildisconnected-members.html" title="List of all members"/>
+                </section>
                 <section ref="qmailfiltermessageset.html" title="QMailFilterMessageSet Class Reference">
                     <section ref="qmailfiltermessageset-members.html" title="List of all members"/>
                 </section>
@@ -520,6 +523,21 @@
             <keyword name="QMailDataComparator::LessThanEqual" id="QMailDataComparator::LessThanEqual" ref="qmaildatacomparator.html#RelationComparator-enum"/>
             <keyword name="QMailDataComparator::GreaterThan" id="QMailDataComparator::GreaterThan" ref="qmaildatacomparator.html#RelationComparator-enum"/>
             <keyword name="QMailDataComparator::GreaterThanEqual" id="QMailDataComparator::GreaterThanEqual" ref="qmaildatacomparator.html#RelationComparator-enum"/>
+            <keyword name="QMailDisconnected" id="QMailDisconnected" ref="qmaildisconnected.html"/>
+            <keyword name="clearPreviousFolder" id="QMailDisconnected::clearPreviousFolder" ref="qmaildisconnected.html#clearPreviousFolder"/>
+            <keyword name="copyPreviousFolder" id="QMailDisconnected::copyPreviousFolder" ref="qmaildisconnected.html#copyPreviousFolder"/>
+            <keyword name="copyToFolder" id="QMailDisconnected::copyToFolder" ref="qmaildisconnected.html#copyToFolder"/>
+            <keyword name="copyToStandardFolder" id="QMailDisconnected::copyToStandardFolder" ref="qmaildisconnected.html#copyToStandardFolder"/>
+            <keyword name="flagMessage" id="QMailDisconnected::flagMessage" ref="qmaildisconnected.html#flagMessage"/>
+            <keyword name="flagMessages" id="QMailDisconnected::flagMessages" ref="qmaildisconnected.html#flagMessages"/>
+            <keyword name="moveToFolder" id="QMailDisconnected::moveToFolder" ref="qmaildisconnected.html#moveToFolder"/>
+            <keyword name="moveToStandardFolder" id="QMailDisconnected::moveToStandardFolder" ref="qmaildisconnected.html#moveToStandardFolder"/>
+            <keyword name="parentFolderProperties" id="QMailDisconnected::parentFolderProperties" ref="qmaildisconnected.html#parentFolderProperties"/>
+            <keyword name="restoreMap" id="QMailDisconnected::restoreMap" ref="qmaildisconnected.html#restoreMap"/>
+            <keyword name="rollBackUpdates" id="QMailDisconnected::rollBackUpdates" ref="qmaildisconnected.html#rollBackUpdates"/>
+            <keyword name="sourceFolderId" id="QMailDisconnected::sourceFolderId" ref="qmaildisconnected.html#sourceFolderId"/>
+            <keyword name="sourceKey" id="QMailDisconnected::sourceKey" ref="qmaildisconnected.html#sourceKey"/>
+            <keyword name="updatesOutstanding" id="QMailDisconnected::updatesOutstanding" ref="qmaildisconnected.html#updatesOutstanding"/>
             <keyword name="QMailFilterMessageSet" id="QMailFilterMessageSet" ref="qmailfiltermessageset.html"/>
             <keyword name="displayName" id="QMailFilterMessageSet::displayName" ref="qmailfiltermessageset.html#displayName"/>
             <keyword name="messageKey" id="QMailFilterMessageSet::messageKey" ref="qmailfiltermessageset.html#messageKey"/>
@@ -1612,6 +1630,7 @@
             <file>qmailmessageservice.html</file>
             <file>qmailstore-members.html</file>
             <file>qmailstore.html</file>
+            <file>qmaildisconnected-members.html</file>
             <file>qmailstoreaccountfilter-members.html</file>
             <file>classes.html</file>
             <file>qmailfolder.html</file>
@@ -1656,6 +1675,7 @@
             <file>qmailactioninfo.html</file>
             <file>qmailpassthroughcodec.html</file>
             <file>qmailmessagepart.html</file>
+            <file>qmaildisconnected.html</file>
             <file>images/messagenavigator-example.png</file>
             <file>qmailserviceaction-members.html</file>
             <file>qmailmessageserviceplugin.html</file>

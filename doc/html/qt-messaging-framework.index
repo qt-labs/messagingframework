@@ -2652,13 +2652,13 @@
                 <parameter left="const QMailMessagePart::Location &amp;" right="" name="partLocation" default=""/>
                 <parameter left="uint" right="" name="minimum" default=""/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="retrieveAll" fullname="QMailRetrievalAction::retrieveAll" href="qmailretrievalaction.html#retrieveAll" location="qmailserviceaction.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="retrieveAll(const QMailAccountId &amp; accountId)">
+            <function access="public" threadsafety="unspecified" status="deprecated" name="retrieveAll" fullname="QMailRetrievalAction::retrieveAll" href="qmailretrievalaction.html#retrieveAll" location="qmailserviceaction.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="retrieveAll(const QMailAccountId &amp; accountId)">
                 <parameter left="const QMailAccountId &amp;" right="" name="accountId" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="exportUpdates" fullname="QMailRetrievalAction::exportUpdates" href="qmailretrievalaction.html#exportUpdates" location="qmailserviceaction.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="exportUpdates(const QMailAccountId &amp; accountId)">
                 <parameter left="const QMailAccountId &amp;" right="" name="accountId" default=""/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="synchronize" fullname="QMailRetrievalAction::synchronize" href="qmailretrievalaction.html#synchronize" location="qmailserviceaction.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="synchronize(const QMailAccountId &amp; accountId)">
+            <function access="public" threadsafety="unspecified" status="deprecated" name="synchronize" fullname="QMailRetrievalAction::synchronize" href="qmailretrievalaction.html#synchronize" location="qmailserviceaction.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="synchronize(const QMailAccountId &amp; accountId)">
                 <parameter left="const QMailAccountId &amp;" right="" name="accountId" default=""/>
             </function>
         </class>
@@ -2993,6 +2993,59 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="messageRemovalRecordsAdded" fullname="QMailStoreAccountFilter::messageRemovalRecordsAdded" href="qmailstoreaccountfilter.html#messageRemovalRecordsAdded" location="qmailstoreaccountfilter.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="messageRemovalRecordsAdded()"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="messageRemovalRecordsRemoved" fullname="QMailStoreAccountFilter::messageRemovalRecordsRemoved" href="qmailstoreaccountfilter.html#messageRemovalRecordsRemoved" location="qmailstoreaccountfilter.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="messageRemovalRecordsRemoved()"/>
+        </class>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailDisconnected" href="qmaildisconnected.html" location="qmaildisconnected.h" bases="" module="">
+            <function access="public" threadsafety="unspecified" status="commendable" name="sourceKey" fullname="QMailDisconnected::sourceKey" href="qmaildisconnected.html#sourceKey" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageKey" signature="sourceKey(const QMailFolderId &amp; folderId)">
+                <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="sourceFolderId" fullname="QMailDisconnected::sourceFolderId" href="qmaildisconnected.html#sourceFolderId" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailFolderId" signature="sourceFolderId(const QMailMessageMetaData &amp; metaData)">
+                <parameter left="const QMailMessageMetaData &amp;" right="" name="metaData" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentFolderProperties" fullname="QMailDisconnected::parentFolderProperties" href="qmaildisconnected.html#parentFolderProperties" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageKey::Properties" signature="parentFolderProperties()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="clearPreviousFolder" fullname="QMailDisconnected::clearPreviousFolder" href="qmaildisconnected.html#clearPreviousFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="clearPreviousFolder(QMailMessageMetaData * message)">
+                <parameter left="QMailMessageMetaData *" right="" name="message" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="copyPreviousFolder" fullname="QMailDisconnected::copyPreviousFolder" href="qmaildisconnected.html#copyPreviousFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="copyPreviousFolder(const QMailMessageMetaData &amp; source, QMailMessageMetaData * dest)">
+                <parameter left="const QMailMessageMetaData &amp;" right="" name="source" default=""/>
+                <parameter left="QMailMessageMetaData *" right="" name="dest" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="restoreMap" fullname="QMailDisconnected::restoreMap" href="qmaildisconnected.html#restoreMap" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMap&lt;QMailFolderId, QMailMessageIdList&gt;" signature="restoreMap(const QMailMessageIdList &amp; messageIds)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="messageIds" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="rollBackUpdates" fullname="QMailDisconnected::rollBackUpdates" href="qmaildisconnected.html#rollBackUpdates" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="rollBackUpdates(const QMailAccountId &amp; mailAccountId)">
+                <parameter left="const QMailAccountId &amp;" right="" name="mailAccountId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="updatesOutstanding" fullname="QMailDisconnected::updatesOutstanding" href="qmaildisconnected.html#updatesOutstanding" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="bool" signature="updatesOutstanding(const QMailAccountId &amp; mailAccountId)">
+                <parameter left="const QMailAccountId &amp;" right="" name="mailAccountId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="moveToStandardFolder" fullname="QMailDisconnected::moveToStandardFolder" href="qmaildisconnected.html#moveToStandardFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="moveToStandardFolder(const QMailMessageIdList &amp; ids, QMailFolder::StandardFolder standardFolder)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="QMailFolder::StandardFolder" right="" name="standardFolder" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="moveToFolder" fullname="QMailDisconnected::moveToFolder" href="qmaildisconnected.html#moveToFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="moveToFolder(const QMailMessageIdList &amp; ids, const QMailFolderId &amp; folderId)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="copyToStandardFolder" fullname="QMailDisconnected::copyToStandardFolder" href="qmaildisconnected.html#copyToStandardFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="copyToStandardFolder(const QMailMessageIdList &amp; ids, QMailFolder::StandardFolder standardFolder)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="QMailFolder::StandardFolder" right="" name="standardFolder" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="copyToFolder" fullname="QMailDisconnected::copyToFolder" href="qmaildisconnected.html#copyToFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="copyToFolder(const QMailMessageIdList &amp; ids, const QMailFolderId &amp; folderId)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="flagMessages" fullname="QMailDisconnected::flagMessages" href="qmaildisconnected.html#flagMessages" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="flagMessages(const QMailMessageIdList &amp; ids, quint64 setMask, quint64 unsetMask, const QString &amp; description)">
+                <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="quint64" right="" name="setMask" default=""/>
+                <parameter left="quint64" right="" name="unsetMask" default=""/>
+                <parameter left="const QString &amp;" right="" name="description" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="flagMessage" fullname="QMailDisconnected::flagMessage" href="qmaildisconnected.html#flagMessage" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="flagMessage(const QMailMessageId &amp; id, quint64 setMask, quint64 unsetMask, const QString &amp; description)">
+                <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
+                <parameter left="quint64" right="" name="setMask" default=""/>
+                <parameter left="quint64" right="" name="unsetMask" default=""/>
+                <parameter left="const QString &amp;" right="" name="description" default=""/>
+            </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessageKey" href="qmailmessagekey.html" location="qmailmessagekey.h" bases="" module="">
             <enum access="public" threadsafety="unspecified" status="commendable" name="Property" fullname="QMailMessageKey::Property" href="qmailmessagekey.html#Property-enum" location="qmailmessagekey.h" typedef="QMailMessageKey::Properties">
@@ -3600,6 +3653,7 @@
             <contents name="accounts" title="Accounts" level="1"/>
             <contents name="interface" title="Interface" level="1"/>
             <contents name="dependencies" title="Dependencies" level="1"/>
+            <contents name="logging" title="Logging" level="1"/>
         </page>
         <page access="public" status="commendable" name="qtextendedmail-messageserver.html" href="qtextendedmail-messageserver.html" subtype="page" title="Message Server Support Library" fulltitle="Message Server Support Library" subtitle="" location="qtopiamail_messageserver.qdoc">
             <contents name="overview" title="Overview" level="1"/>

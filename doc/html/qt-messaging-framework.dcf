@@ -297,6 +297,24 @@
         <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::LessThan</keyword>
         <keyword ref="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::GreaterThanEqual</keyword>
     </section>
+    <section ref="qmaildisconnected.html" title="QMailDisconnected Class Reference">
+        <keyword ref="qmaildisconnected.html">QMailDisconnected</keyword>
+        <keyword ref="qmaildisconnected.html#clearPreviousFolder">clearPreviousFolder</keyword>
+        <keyword ref="qmaildisconnected.html#copyPreviousFolder">copyPreviousFolder</keyword>
+        <keyword ref="qmaildisconnected.html#copyToFolder">copyToFolder</keyword>
+        <keyword ref="qmaildisconnected.html#copyToStandardFolder">copyToStandardFolder</keyword>
+        <keyword ref="qmaildisconnected.html#flagMessage">flagMessage</keyword>
+        <keyword ref="qmaildisconnected.html#flagMessages">flagMessages</keyword>
+        <keyword ref="qmaildisconnected.html#moveToFolder">moveToFolder</keyword>
+        <keyword ref="qmaildisconnected.html#moveToStandardFolder">moveToStandardFolder</keyword>
+        <keyword ref="qmaildisconnected.html#parentFolderProperties">parentFolderProperties</keyword>
+        <keyword ref="qmaildisconnected.html#restoreMap">restoreMap</keyword>
+        <keyword ref="qmaildisconnected.html#rollBackUpdates">rollBackUpdates</keyword>
+        <keyword ref="qmaildisconnected.html#sourceFolderId">sourceFolderId</keyword>
+        <keyword ref="qmaildisconnected.html#sourceKey">sourceKey</keyword>
+        <keyword ref="qmaildisconnected.html#updatesOutstanding">updatesOutstanding</keyword>
+        <section ref="qmaildisconnected-members.html" title="List of all members"/>
+    </section>
     <section ref="qmailfiltermessageset.html" title="QMailFilterMessageSet Class Reference">
         <keyword ref="qmailfiltermessageset.html">QMailFilterMessageSet</keyword>
         <keyword ref="qmailfiltermessageset.html#displayName">displayName</keyword>
