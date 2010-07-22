@@ -120,6 +120,7 @@ RuntimeLoggingManager::RuntimeLoggingManager(QObject *parent)
     : QObject(parent)
     , settings("Nokia", "QMF") // This is ~/.config/Nokia/QMF.conf
 {
+    settings.beginGroup("Logging");
     // Use a socket and notifier because signal handlers can't call Qt code
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
         qFatal("Couldn't create HUP socketpair");
@@ -180,15 +181,19 @@ QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags()
         (*flag) = 0;
 }
 
-// Check if a given category is enabled
-// This looks for <category>=[1|0] in the General section of the .conf file.
+// Check if a given category is enabled.
+// This looks for <category>=[1|0] in the [Logging] section of the .conf file.
 // eg.
 //
-// [General]
+// [Logging]
 // Foo=1
 //
 // qMailLog(Foo) << "this will work";
 // qMailLog(Bar) << "not seen";
+//
+// Note that qMailLog(Foo) will cause a compile error unless one of the
+// QLOG_ENABLED(Foo), QLOG_DISABLED(Foo) or QLOG_RUNTIME(Foo) macros have
+// been used.
 QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
 {
     RuntimeLoggingManager *rlm = runtimeLoggingManager();
