@@ -1,6 +1,12 @@
 Latest Changes
 ---------------
 
+2010W29
+  * Fixes: NB#172040 - QMailRetrievalAction signals "progressChanged" after "QMailServiceAction::Successful
+  * Fixes: NB#175805 - Unix shutdown signals are not handled. 
+  * Fixes: NB#147963 - <Others> Code review comments - messagingframework
+  * Fixes: NB#176463 - It shall be possible to define the logging parameters of the messageserver in runtime
+
 2010W28
   * Fixes: NB#175397 - QMailMessageListModel class not sending signals
   * Fixes: NB#176450 - Lack of interface to distinguish user cancelled and internally cancelled services
