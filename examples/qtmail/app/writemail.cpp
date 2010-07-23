@@ -597,7 +597,7 @@ void WriteMail::messageModified()
 
 bool WriteMail::forcedClosure()
 {
-    if (draft())
+    if (changed() && draft())
         return true;
 
     discard();

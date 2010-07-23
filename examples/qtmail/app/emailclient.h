@@ -295,7 +295,6 @@ private:
     virtual MessageListView* createMessageListView();
 
     void init();
-    void userInvocation();
 
     void mailResponded();
 

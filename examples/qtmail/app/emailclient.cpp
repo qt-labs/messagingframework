@@ -526,6 +526,9 @@ void EmailClient::openFiles()
     if ( cachedDisplayMailId.isValid() ) {
         displayCachedMail();
     }
+    
+    // See if there is a draft whose composition was interrupted by the Red Key (tm)
+    QTimer::singleShot(0, this, SLOT(resumeInterruptedComposition()));
 }
 
 void EmailClient::displayCachedMail()
@@ -633,20 +636,7 @@ bool EmailClient::cleanExit(bool force)
 
 bool EmailClient::closeImmediately()
 {
-    if (writeMailWidget()->isVisible() && (writeMailWidget()->hasContent())) {
-        // We need to save whatever is currently being worked on
-        writeMailWidget()->forcedClosure();
-
-        if (lastDraftId.isValid()) {
-            // Store this value to remind the user on next startup
-            QSettings mailconf("Trolltech", "qtmail");
-            mailconf.beginGroup("restart");
-            mailconf.setValue("lastDraftId", lastDraftId.toULongLong() );
-            mailconf.endGroup();
-        }
-    }
-
-    if (isTransmitting()) {
+    if (isTransmitting()) { // obsolete?
         closeAfterTransmissionsFinished();
         return false;
     }
@@ -1520,6 +1510,7 @@ void EmailClient::messageActivated()
     if(!currentId.isValid())
         return;
 
+    QMailMessage message(currentId);
     bool hasNext = false;
     bool hasPrevious = false;
     if (readMailWidget()->displayedMessage() != currentId)
@@ -1533,7 +1524,6 @@ void EmailClient::messageOpenRequested()
         return;
 
     QMailMessage message(currentId);
-
     if (message.status() & QMailMessage::Draft) {
         modify(message);
     }
@@ -1956,6 +1946,7 @@ void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity acti
 void EmailClient::folderSelected(QMailMessageSet *item)
 {
     if (item) {
+        initActions();
         contextStatusUpdate();
 
         bool atAccount(false);
@@ -2275,6 +2266,20 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
 
 void EmailClient::quit()
 {
+    if (writeMailWidget()->hasContent()) {
+        
+        // We need to save whatever is currently being worked on
+        writeMailWidget()->forcedClosure();
+
+        if (lastDraftId.isValid()) {
+            // Store this value to remind the user on next startup
+            QSettings mailconf("Trolltech", "qtmail");
+            mailconf.beginGroup("restart");
+            mailconf.setValue("lastDraftId", lastDraftId.toULongLong() );
+            mailconf.endGroup();
+        }
+    }
+    
     if(m_messageServerProcess)
     {
         //we started the messageserver, direct it to shut down
@@ -2394,27 +2399,10 @@ void EmailClient::setupUi()
 void EmailClient::showEvent(QShowEvent* e)
 {
     Q_UNUSED(e);
-
-    clearStatusText();
-
-    closeAfterTransmissions = false;
-
-    // We have been launched and raised by QPE in response to a user request
-    userInvocation();
-
+    
     suspendMailCount = false;
 
     QTimer::singleShot(0, this, SLOT(delayedInit()) );
-}
-
-void EmailClient::userInvocation()
-{
-    // Since the action list hasn't been created until now, it wasn't given focus
-    // before the application was shown.  Give it focus now.
-    folderView()->setFocus();
-
-    // See if there is a draft whose composition was interrupted by the Red Key (tm)
-    QTimer::singleShot(0, this, SLOT(resumeInterruptedComposition()));
 }
 
 void EmailClient::setSendingInProgress(bool set)
