@@ -385,6 +385,18 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
 {
     bool success = false;
 
+    // Don't discard mail being composed without user intervention
+    if (changed()) {
+        if (QMessageBox::question(qApp->activeWindow(),
+                                  tr("Compose new message"),
+                                  tr("A message is currently being composed. Do you wish to save the message in drafts?"),
+                                  QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+            draft();
+        } else {
+            return false;
+        }
+    }
+    
     reset();
 
     if (type == QMailMessage::AnyType) {
