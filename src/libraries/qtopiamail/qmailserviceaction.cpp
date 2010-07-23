@@ -228,9 +228,6 @@ void QMailServiceActionPrivate::clearSubActions()
 
 void QMailServiceActionPrivate::queueDisconnectedOperations(const QMailAccountId &accountId)
 {
-    Q_ASSERT(!_pendingActions.count());
-    newAction();
-    
     //sync disconnected move and copy operations for account
 
     QMailAccount account(accountId);
@@ -775,6 +772,8 @@ void QMailRetrievalActionPrivate::exportUpdatesHelper(const QMailAccountId &acco
 
 void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
 {
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
     queueDisconnectedOperations(accountId);
     
     // flag changes
@@ -791,6 +790,8 @@ void QMailRetrievalActionPrivate::synchronizeHelper(const QMailAccountId &accoun
 
 void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)
 {
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
     queueDisconnectedOperations(accountId);
     
     QMailRetrievalAction *synchronizeAction = new QMailRetrievalAction();
@@ -1193,6 +1194,8 @@ void QMailStorageActionPrivate::deleteMessagesHelper(const QMailMessageIdList &i
 
 void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
 {
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
     QSet<QMailAccountId> accountIds;
     QMailMessageKey::Properties props(QMailMessageKey::ParentAccountId);
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
@@ -1260,6 +1263,8 @@ void QMailStorageActionPrivate::deleteFolderHelper(const QMailFolderId &folderId
 
 void QMailStorageActionPrivate::deleteFolder(const QMailFolderId &folderId)
 {
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
     if (folderId.isValid()) {
         QMailFolder folder(folderId);
         if (folder.parentAccountId().isValid())
