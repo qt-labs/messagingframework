@@ -2132,7 +2132,7 @@ bool QMailStorePrivate::initStore()
     // default sqlite cache_size of 2000*1.5KB is too large, as we only want
     // to cache 100 metadata records 
     QSqlQuery query( database );
-    query.exec(QLatin1String("PRAGMA cache_size=50"));
+    query.exec(QLatin1String("PRAGMA cache_size=500")); // increased from 50
 #endif
 
     if (!QMailContentManagerFactory::init()) {
