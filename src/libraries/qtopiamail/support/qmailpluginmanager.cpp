@@ -160,7 +160,6 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 QMailPluginManagerPrivate::~QMailPluginManagerPrivate()
 {
     foreach (QPluginLoader *lib, pluginMap.values()) {
-        lib->unload();
         delete lib;
     }
 }
