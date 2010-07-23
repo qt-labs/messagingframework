@@ -385,7 +385,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
 {
     bool success = false;
 
-    // Don't discard mail being composed without user intervention
+    // Don't discard mail being composed without user confirmation
     if (changed()) {
         if (QMessageBox::question(qApp->activeWindow(),
                                   tr("Compose new message"),
@@ -475,6 +475,13 @@ void WriteMail::statusChanged(const QString& status)
     else
         setWindowTitle(status);
 }
+
+void WriteMail::closeEvent(QCloseEvent *event)
+{
+    reset();
+    QMainWindow::closeEvent(event);
+}
+
 
 bool WriteMail::composerSelected(const QPair<QString, QMailMessage::MessageType> &selection)
 {

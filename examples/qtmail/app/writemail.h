@@ -98,6 +98,9 @@ protected slots:
     bool composerSelected(const QPair<QString, QMailMessage::MessageType> &selection);
     void statusChanged(const QString& status);
 
+protected:
+    void closeEvent(QCloseEvent * event);
+
 private:
     bool largeAttachments();
     bool buildMail(bool includeSignature);
