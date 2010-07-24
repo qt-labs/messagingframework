@@ -105,7 +105,7 @@ public:
             ErrInvalidData,
             ErrTimeout,
             ErrInternalStateReset,
-            ErrorCodeMaximum = ErrTimeout
+            ErrorCodeMaximum = ErrInternalStateReset
         };
 
         Status();
