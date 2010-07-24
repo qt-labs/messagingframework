@@ -278,7 +278,7 @@ void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailF
         QMailMessageMetaData msg(messageId);
         if (msg.parentFolderId() == folderId)
             continue;
-        if (!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty())
+        if (!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty() && !msg.previousParentFolderId().isValid())
             msg.setPreviousParentFolderId(msg.parentFolderId());
         msg.setParentFolderId(folderId);
         syncStatusWithFolder(msg);
