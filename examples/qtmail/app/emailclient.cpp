@@ -1147,6 +1147,7 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
 
         QMailDisconnected::moveToStandardFolder(QMailMessageIdList() << mail.id(),QMailFolder::DraftsFolder);
         QMailDisconnected::flagMessage(mail.id(),QMailMessage::Draft,0,"Flagging message as draft");
+        exportPendingChanges();
 
         lastDraftId = mail.id();
 
@@ -1161,6 +1162,7 @@ void EmailClient::mailResponded()
 {
     if (repliedFromMailId.isValid()) {
         QMailDisconnected::flagMessage(repliedFromMailId,repliedFlags,0,"Marking message as replied/forwared");
+        exportPendingChanges();
         repliedFromMailId = QMailMessageId();
         repliedFlags = 0;
     }
@@ -1226,6 +1228,7 @@ void EmailClient::rollBackUpdates()
 void EmailClient::flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask, const QString& description)
 {
     QMailDisconnected::flagMessage(id, setMask, unsetMask, description);
+    exportPendingChanges();
 }
 
 bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
@@ -1682,6 +1685,7 @@ void EmailClient::deleteSelectedMessages()
     {
         QMailDisconnected::moveToStandardFolder(deleteList,QMailFolder::TrashFolder);
         QMailDisconnected::flagMessages(deleteList,QMailMessage::Trash,0,"Marking messages as deleted");
+        exportPendingChanges();
     }
 
     if (markingMode) {
@@ -1699,6 +1703,7 @@ void EmailClient::moveSelectedMessagesTo(const QMailFolderId &destination)
     clearNewMessageStatus(QMailMessageKey::id(moveList));
 
     QMailDisconnected::moveToFolder(moveList,destination);
+    exportPendingChanges();
 
     AcknowledgmentBox::show(tr("Moving"), tr("Moving %n message(s)", "%1: number of messages", moveList.count()));
 }
@@ -1840,6 +1845,7 @@ void EmailClient::restoreSelectedMessages()
     AcknowledgmentBox::show(tr("Restoring"), tr("Restoring %n message(s)", "%1: number of messages", restoreIds.count()));
     QMailStore::instance()->restoreToPreviousFolder(QMailMessageKey::id(restoreIds));
     QMailDisconnected::flagMessages(restoreIds,0,QMailMessage::Trash,"Restoring messages");
+    exportPendingChanges();
 }
 
 void EmailClient::selectAll()
