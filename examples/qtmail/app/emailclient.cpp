@@ -480,7 +480,8 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       m_contextMenu(0),
       m_transmitAction(0),
       m_retrievalAction(0),
-      m_flagRetrievalAction(0)
+      m_flagRetrievalAction(0),
+      m_exportAction(0)
 {
     setObjectName( "EmailClient" );
 
@@ -795,6 +796,12 @@ void EmailClient::initActions()
         connect(settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
         settingsAction->setIconText(QString());
 
+        workOfflineAction = new QAction( Qtmail::icon("workoffline"), tr("Work offline"), this );
+        connect(workOfflineAction, SIGNAL(triggered()), this, SLOT(exportPendingChanges()));
+        workOfflineAction->setCheckable(true);
+        workOfflineAction->setChecked(false);
+        workOfflineAction->setIconText(QString());
+
         emptyTrashAction = new QAction( Qtmail::icon("trashfolder"), tr("Empty trash"), this );
         connect(emptyTrashAction, SIGNAL(triggered()), this, SLOT(emptyTrashFolder()));
         setActionVisible(emptyTrashAction, false);
@@ -884,6 +891,7 @@ void EmailClient::initActions()
         fileMenu->addAction( cancelButton );
         fileMenu->addAction( emptyTrashAction );
         fileMenu->addAction( settingsAction );
+        fileMenu->addAction( workOfflineAction );
         fileMenu->addSeparator();
 
         QAction* quitAction = fileMenu->addAction(Qtmail::icon("quit"),"Quit");
@@ -1026,19 +1034,21 @@ void EmailClient::init()
     searchButton = 0;
     synchronizeAction = 0;
     settingsAction = 0;
+    workOfflineAction = 0;
     emptyTrashAction = 0;
     moveAction = 0;
     copyAction = 0;
     restoreAction = 0;
     selectAllAction = 0;
     deleteMailAction = 0;
+    m_exportAction = 0;
 
     // Connect our service action signals
     m_flagRetrievalAction = new QMailRetrievalAction(this);
 
     // Use a separate action for flag updates, which are not directed by the user
     connect(m_flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
-
+    
     // We need to load the settings in case they affect our service handlers
     readSettings();
 }
@@ -1063,6 +1073,10 @@ void EmailClient::cancelOperation()
 
     if (m_flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
         m_flagRetrievalAction->cancelOperation();
+    }
+
+    if (m_exportAction->activity() == QMailServiceAction::InProgress) {
+        m_exportAction->cancelOperation();
     }
 }
 
@@ -1883,12 +1897,20 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
             } else if (action->metaObject()->className() == QString("QMailStorageAction")) {
                 storageActionCompleted();
                 action->deleteLater();
+            } else if (action == m_exportAction) {
+                m_queuedExports.takeFirst(); // finished successfully
+                clearStatusText();
+                runNextPendingExport();
             }
         } else if (activity == QMailServiceAction::Failed) {
             const QMailServiceAction::Status status(action->status());
             if (action->metaObject()->className() == QString("QMailStorageAction")) {
                 storageActionFailure(status.accountId, status.text);
                 action->deleteLater();
+            } else if (action == m_exportAction) {
+                m_exportAction->deleteLater();
+                m_exportAction = 0;
+                rollBackUpdates();
             } else {
                 transferFailure(status.accountId, status.text, status.errorCode);
             }
@@ -2474,6 +2496,52 @@ void EmailClient::settings()
 
     AccountSettings settingsDialog(this);
     settingsDialog.exec();
+}
+
+void EmailClient::exportPendingChanges()
+{
+    if (workOfflineAction->isChecked())
+        return;
+    
+    if (!m_exportAction) {
+        m_exportAction = new QMailRetrievalAction(this);
+        connectServiceAction(m_exportAction);
+    }
+        
+    foreach(QMailAccountId accountId, emailAccounts()) {
+        exportPendingChanges(accountId);
+    }
+}
+
+void EmailClient::exportPendingChanges(const QMailAccountId &accountId)
+{
+    if (workOfflineAction->isChecked())
+        return;
+    
+    if (!m_queuedExports.contains(accountId)) {
+        m_queuedExports.append(accountId);
+    }
+    
+    runNextPendingExport();
+}
+
+void EmailClient::runNextPendingExport()
+{
+    if (m_queuedExports.isEmpty()) {
+        m_exportAction->deleteLater();
+        m_exportAction = 0;
+        return;
+    }
+    
+    if ((m_exportAction->activity() != QMailServiceAction::InProgress)
+        && (m_exportAction->activity() != QMailServiceAction::Pending)) {
+        QMailAccountId mailAccountId = m_queuedExports.first();
+        
+        ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_exportAction, "Exporting pending updates");
+        StatusMonitor::instance()->add(newItem);
+        m_exportAction->exportUpdates(mailAccountId);
+        return;
+    }
 }
 
 void EmailClient::accountsAdded(const QMailAccountIdList&)

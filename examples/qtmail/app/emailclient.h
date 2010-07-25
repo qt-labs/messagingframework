@@ -260,6 +260,9 @@ protected slots:
     void readReplyRequested(const QMailMessageMetaData&);
 
     void settings();
+    void exportPendingChanges();
+    void exportPendingChanges(const QMailAccountId &accountId);
+    void runNextPendingExport();
 
     void accountsAdded(const QMailAccountIdList& ids);
     void accountsRemoved(const QMailAccountIdList& ids);
@@ -384,6 +387,7 @@ private:
     QAction *detachThreadAction;
     QAction *markAction;
     QAction *threadAction;
+    QAction *workOfflineAction;
     bool enableMessageActions;
 
     QMailAccountId selectedAccountId;
@@ -441,6 +445,8 @@ private:
     QMailTransmitAction* m_transmitAction;
     QMailRetrievalAction* m_retrievalAction;
     QMailRetrievalAction* m_flagRetrievalAction;
+    QMailRetrievalAction* m_exportAction;
+    QMailAccountIdList m_queuedExports;
 };
 
 #endif
