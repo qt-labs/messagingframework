@@ -44,6 +44,7 @@
 #include "qmailmessagekey.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
+#include "qmaildisconnected.h"
 #include <QCoreApplication>
 #include <QPair>
 #include <QTimer>
@@ -1018,6 +1019,14 @@ void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 */
 void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 {
+    if (!QMailDisconnected::updatesOutstanding(accountId)) {
+        // nothing to do
+        impl(this)->newAction();
+        impl(this)->setActivity(QMailServiceAction::Successful);
+        impl(this)->emitChanges();
+        return;
+    }
+        
     impl(this)->exportUpdates(accountId);
 }
 
