@@ -797,7 +797,7 @@ void EmailClient::initActions()
         settingsAction->setIconText(QString());
 
         workOfflineAction = new QAction( Qtmail::icon("workoffline"), tr("Work offline"), this );
-        connect(workOfflineAction, SIGNAL(triggered()), this, SLOT(exportPendingChanges()));
+        connect(workOfflineAction, SIGNAL(triggered()), this, SLOT(connectionStateChanged()));
         workOfflineAction->setCheckable(true);
         workOfflineAction->setChecked(false);
         workOfflineAction->setIconText(QString());
@@ -1102,7 +1102,12 @@ void EmailClient::enqueueMail(QMailMessage& mail)
     }
 
     if (inserted) {
-        sendAllQueuedMail(true);
+        
+        if (workOfflineAction->isChecked()) {
+            AcknowledgmentBox::show(tr("Message queued"), tr("Message has been queued in outbox"));
+        } else {
+            sendAllQueuedMail(true);
+        }
 
         if (closeAfterWrite) {
             closeAfterTransmissionsFinished();
@@ -2243,6 +2248,9 @@ void EmailClient::retrieveMoreMessages()
 
 void EmailClient::retrieveVisibleMessagesFlags()
 {
+    if (workOfflineAction->isChecked())
+        return;
+    
     // This code to detect flag changes is required to address a limitation 
     // of IMAP servers that do not support NOTIFY+CONDSTORE functionality.
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
@@ -2502,6 +2510,15 @@ void EmailClient::settings()
 
     AccountSettings settingsDialog(this);
     settingsDialog.exec();
+}
+
+void EmailClient::connectionStateChanged()
+{
+    if (workOfflineAction->isChecked())
+        return;
+    
+    exportPendingChanges();
+    sendAllQueuedMail();
 }
 
 void EmailClient::exportPendingChanges()

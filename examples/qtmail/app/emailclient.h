@@ -260,6 +260,7 @@ protected slots:
     void readReplyRequested(const QMailMessageMetaData&);
 
     void settings();
+    void connectionStateChanged();
     void exportPendingChanges();
     void exportPendingChanges(const QMailAccountId &accountId);
     void runNextPendingExport();
