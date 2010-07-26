@@ -139,7 +139,10 @@ public:
 QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 {
     QStringList libraryPaths;
-    libraryPaths << QMail::pluginsPath() << QCoreApplication::libraryPaths();
+    QString mailPluginsPath = QMail::pluginsPath();
+    QStringList coreLibraryPaths = QCoreApplication::libraryPaths();
+    libraryPaths.append(mailPluginsPath);
+    libraryPaths.append(coreLibraryPaths);
 
     foreach(QString libraryPath, libraryPaths) {
         QDir dir(libraryPath);
