@@ -2509,14 +2509,16 @@ void EmailClient::exportPendingChanges()
     if (workOfflineAction->isChecked())
         return;
     
+    foreach(QMailAccountId accountId, emailAccounts()) {
+        exportPendingChanges(accountId);
+    }
+
     if (!m_exportAction) {
         m_exportAction = new QMailRetrievalAction(this);
         connectServiceAction(m_exportAction);
     }
         
-    foreach(QMailAccountId accountId, emailAccounts()) {
-        exportPendingChanges(accountId);
-    }
+    runNextPendingExport();
 }
 
 void EmailClient::exportPendingChanges(const QMailAccountId &accountId)
@@ -2527,8 +2529,6 @@ void EmailClient::exportPendingChanges(const QMailAccountId &accountId)
     if (!m_queuedExports.contains(accountId)) {
         m_queuedExports.append(accountId);
     }
-    
-    runNextPendingExport();
 }
 
 void EmailClient::runNextPendingExport()
