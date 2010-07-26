@@ -197,10 +197,45 @@ bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
     QMailMessageKey movedKey(QMailMessageKey::previousParentFolderId(accountFoldersKey));
     QMailMessageIdList copiedIds = QMailStore::instance()->queryMessages(copiedKey);
     QMailMessageIdList movedIds = QMailStore::instance()->queryMessages(movedKey);
+    
+    if (!copiedIds.isEmpty() || !movedIds.isEmpty())
+        return true;
+    
+    QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
+    QStringList serverUidList;
+    foreach (const QMailMessageRemovalRecord& r, removalRecords) {
+        if (!r.serverUid().isEmpty())
+            serverUidList.append(r.serverUid());
+    }
+    if (!serverUidList.isEmpty())
+        return true;
+    
+    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(mailAccountId));
+    QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
+    readStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes);
+    readStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    if (QMailStore::instance()->countMessages(accountKey & readStatusKey))
+        return true;
 
-    if(copiedIds.isEmpty() && movedIds.isEmpty())
-        return false;
-    return true;
+    QMailMessageKey unreadStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes));
+    unreadStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
+    unreadStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    if (QMailStore::instance()->countMessages(accountKey & unreadStatusKey))
+        return true;
+
+    QMailMessageKey importantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes));
+    importantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes);
+    importantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    if (QMailStore::instance()->countMessages(accountKey & importantStatusKey))
+        return true;
+    
+    QMailMessageKey unimportantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes));
+    unimportantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes);
+    unimportantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
+    if (QMailStore::instance()->countMessages(accountKey & unimportantStatusKey))
+        return true;
+    
+    return false;
 }
 
 /*!
@@ -219,23 +254,74 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     QMailMessageIdList copiedIds = QMailStore::instance()->queryMessages(copiedKey);
     QMailMessageIdList movedIds = QMailStore::instance()->queryMessages(movedKey);
 
-    if(copiedIds.isEmpty() && movedIds.isEmpty())
-        return;
+    // remove copies
+    if(!copiedIds.isEmpty()) {
+        if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(copiedIds))) {
+            qWarning() << "Unable to rollback disconnected copies for account:" << mailAccountId;
+            return;
+        }
+    }
 
-    //remove copies
-    if(!copiedIds.isEmpty())
-        QMailStore::instance()->removeMessages(QMailMessageKey::id(copiedIds));
-
-    //undo moves
+    // undo moves
     foreach(const QMailMessageId& id, movedIds) {
         QMailMessageMetaData mail(id);
         mail.setParentFolderId(mail.previousParentFolderId());
         mail.setPreviousParentFolderId(QMailFolderId());
         syncStatusWithFolder(mail);           
-            QMailStore::instance()->updateMessage(&mail);
+        if (!QMailStore::instance()->updateMessage(&mail)) {
+            qWarning() << "Unable to rollback disconnected moves for account:" << mailAccountId;
+            return;
+        }
+    }
+
+    // undo removals
+   QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
+   QStringList serverUidList;
+   foreach (const QMailMessageRemovalRecord& r, removalRecords) {
+       if (!r.serverUid().isEmpty())
+           serverUidList.append(r.serverUid());
+   }
+   
+   if (!QMailStore::instance()->purgeMessageRemovalRecords(mailAccountId, serverUidList)) {
+       qWarning() << "Unable to rollback disconnected removal records for account:" << mailAccountId;
+       return;
+   }
+   
+   // undo flag changes
+   QMailMessageKey accountKey(QMailMessageKey::parentAccountId(mailAccountId));
+   QMailMessageKey removedKey(accountKey & QMailMessageKey::serverUid(serverUidList));
+   if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, false)) {
+       qWarning() << "Unable to rollback disconnected removed flagging for account:" << mailAccountId;
+       return;
+   }
+   
+    QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
+    readStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes);
+    if (!QMailStore::instance()->updateMessagesMetaData(accountKey & readStatusKey, QMailMessage::Read, false)) {
+        qWarning() << "Unable to rollback disconnected unread->read flagging for account:" << mailAccountId;
+        return;
     }
     
-    //could also do flag changes but no point as propagation of those currently fails silenty
+    QMailMessageKey unreadStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes));
+    unreadStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
+    if (!QMailStore::instance()->updateMessagesMetaData(accountKey & unreadStatusKey, QMailMessage::Read, true)) {
+        qWarning() << "Unable to rollback disconnected read->unread flagging for account:" << mailAccountId;
+        return;
+    }
+    
+    QMailMessageKey importantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes));
+    importantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes);
+    if (!QMailStore::instance()->updateMessagesMetaData(accountKey & importantStatusKey, QMailMessage::Important, false)) {
+        qWarning() << "Unable to rollback disconnected unimportant->important flagging for account:" << mailAccountId;
+        return;
+    }
+    
+    QMailMessageKey unimportantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes));
+    unimportantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes);
+    if (!QMailStore::instance()->updateMessagesMetaData(accountKey & unimportantStatusKey, QMailMessage::Important, true)) {
+        qWarning() << "Unable to rollback disconnected important->unimportant flagging for account:" << mailAccountId;
+        return;
+    }    
 }
 
 /*!
