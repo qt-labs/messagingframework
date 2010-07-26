@@ -5549,8 +5549,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFold
             return result;
 
         // Update the message records
-        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentfolderid=previousparentfolderid, previousparentfolderid=0 where previousparentfolderid!=0",
-                                    Key(QMailMessageKey::id(*updatedMessageIds)),
+        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentfolderid=previousparentfolderid, previousparentfolderid=0",
+                                    Key(QMailMessageKey::id(*updatedMessageIds) & ~QMailMessageKey::previousParentFolderId(QMailFolderId())),
                                     "restoreToPreviousFolder update query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
