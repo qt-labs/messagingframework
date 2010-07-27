@@ -714,10 +714,8 @@ void SmtpClient::nextAction(const QString &response)
         if (count) {
             mailList.clear();
             emit updateStatus(tr("Sent %n messages", "", count));
-        } else {
-            // There was nothing to send
-            emit sendCompleted();
         }
+        emit sendCompleted();
         break;
     }
 
@@ -745,10 +743,6 @@ void SmtpClient::messageProcessed(const QMailMessageId &id)
         emit progressChanged(progressSendSize, totalSendSize);
 
         sendSize.erase(it);
-        if (sendSize.isEmpty()) {
-            // We have attempted to send all the supplied messages
-            emit sendCompleted();
-        }
     }
 }
 
