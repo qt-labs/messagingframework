@@ -179,6 +179,10 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
 }
 
 namespace {
+    quint64 newLocalActionId() {
+        static quint64 id(QCoreApplication::applicationPid() << 32);
+        return ++id;
+    }
 
 struct ResolverSet
 {
@@ -2003,19 +2007,20 @@ void ServiceHandler::actionCompleted(bool success)
 
                 if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
                     // Mark these message as Sent, via the source service
-                    if (QMailMessageSource *source = accountSource(service->accountId())) {
-                        source->flagMessages(mSentIds, QMailMessage::Sent, (QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly));
+                    if (accountSource(service->accountId())) {
 
-                        // The source is now the service responsible for this action
-                        mServiceAction.remove(service);
-                        data.services.remove(service);
+                        enqueueRequest(newLocalActionId(),
+                                       serialize(accountMessages(mSentIds),
+                                                 QMailMessage::Sent,
+                                                 (QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly)),
+                                        sourceServiceSet(service->accountId()),
+                                        &ServiceHandler::dispatchFlagMessages,
+                                        &ServiceHandler::storageActionCompleted,
+                                        FlagMessagesRequestType);
 
-                        mServiceAction.insert(sourceService[source], action);
-                        data.services.insert(sourceService[source]);
                     }
 
                     mSentIds.clear();
-                    return;
                 }
 
                 QSet<QPointer<QMailMessageService> >::iterator sit = data.services.find(service);
