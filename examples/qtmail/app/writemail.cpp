@@ -359,10 +359,8 @@ void WriteMail::modify(const QMailMessage& previousMessage)
 
 bool WriteMail::hasContent()
 {
-    // Be conservative when returning false, which means the message can
-    // be discarded without user confirmation.
     if (!m_composerInterface)
-        return true;
+        return false;
     return !m_composerInterface->isEmpty();
 }
 
