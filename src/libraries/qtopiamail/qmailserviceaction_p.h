@@ -355,12 +355,13 @@ signals:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &);
 private slots:
     void anActionActivityChanged(QMailServiceAction::Activity activity);
-    void completeAction(const QMailActionId &actionId);
+    void removeOldActions();
     void actionsListed(const QMailActionDataList &actions);
     void actionStarted(const QMailActionData &action);
 private:
     QSharedPointer<QMailActionInfo> addAction(const QMailActionData &action);
     QMap< QMailActionId, QSharedPointer<QMailActionInfo> > _runningActions;
+    QList<QMailActionId> _delayRemoveList;
     bool _isReady;
 };
 

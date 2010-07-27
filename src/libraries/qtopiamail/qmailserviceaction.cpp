@@ -1869,14 +1869,17 @@ void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &action
     }
 }
 
-void QMailActionObserverPrivate::completeAction(const QMailActionId &id)
+void QMailActionObserverPrivate::removeOldActions()
 {
     Q_ASSERT(_isReady);
-    if(_runningActions.remove(id)) {
-        emit actionsChanged(runningActions());
-    } else {
-        qWarning() << "Could not remove " << id << " after got activity completed";
+    bool changed(false);
+    while(!_delayRemoveList.isEmpty()) {
+        _runningActions.remove(_delayRemoveList.takeFirst());
+        changed = true;
     }
+
+    if (changed)
+        emit actionsChanged(runningActions());
 }
 
 void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
@@ -1902,7 +1905,9 @@ void QMailActionObserverPrivate::anActionActivityChanged(QMailServiceAction::Act
     const QMailActionInfo *theAction(qobject_cast<QMailActionInfo *>(sender()));
     if (theAction) {
         if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
-            completeAction(theAction->id());
+            // Avoid possibly deleting from within its own signal
+            _delayRemoveList.append(theAction->id());
+            QTimer::singleShot(0, this, SLOT(removeOldActions()));
         }
     } else {
         qWarning() << "Unable to determine who sent signal";
