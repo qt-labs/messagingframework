@@ -100,6 +100,7 @@ SOURCES += longstream.cpp \
            qmaildatacomparator.cpp \
            qmaildisconnected.cpp \
            qmailfolder.cpp \
+           qmailfolderfwd.cpp \
            qmailfolderkey.cpp \
            qmailfoldersortkey.cpp \
            qmailid.cpp \
