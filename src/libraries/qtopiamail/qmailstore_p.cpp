@@ -3683,8 +3683,8 @@ QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, 
 
 QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
 {
-   // if (accountCache.contains(id))
-        //return accountCache.lookup(id);
+    if (accountCache.contains(id))
+        return accountCache.lookup(id);
 
     QMailAccount account;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptAccount, const_cast<QMailStorePrivate*>(this), 
