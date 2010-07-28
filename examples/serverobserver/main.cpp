@@ -40,11 +40,39 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QMutex>
+#include <QWaitCondition>
+#include <qmailnamespace.h>
 #include "serverobserver.h"
+
+static void fakeSleep(int time)
+{
+    QMutex m;
+    m.lock();
+    QWaitCondition cond;
+    cond.wait(&m, time);
+}
+
+static bool messageServerRunning()
+{
+    QString lockfile = "messageserver-instance.lock";
+    int lockid = QMail::fileLock(lockfile);
+        if (lockid == -1)
+                return true;
+
+    QMail::fileUnlock(lockid);
+    return false;
+}
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+
+    while (!messageServerRunning()) {
+        qDebug() << "Message server is not running. Waiting.";
+        fakeSleep(5000);
+    }
+
     ServerObserver observer;
     observer.show();
     return app.exec();

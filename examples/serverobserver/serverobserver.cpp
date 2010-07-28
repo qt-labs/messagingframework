@@ -60,7 +60,9 @@ ServerObserver::ServerObserver(QWidget *parent)
     _lay = new QVBoxLayout();
     central->setLayout(_lay);
 
-    this->setCentralWidget(central);
+
+    setWindowTitle(tr("Server Observer"));
+    setCentralWidget(central);
 }
 
 ServerObserver::~ServerObserver() {}
@@ -173,9 +175,11 @@ void RowWidget::progressChanged(uint x, uint y) {
 }
 
 void RowWidget::generateDescription() {
-    _description->setText(QString("Action id: %1\nDescription: %2\nStatus: %3")
+    _description->setText(QString("Action id: %1\nDescription: %2\nStatus: %3\nProbable initiator pid: %4\nProbable action number: %5")
                           .arg(_action->id())
                           .arg(requestTypeToString(_action->requestType()))
                           .arg(_action->statusText())
+                          .arg(_action->id() >> 32) // relying on implementation detail
+                          .arg(_action->id() & 0xFFFFFFFF ) // don't do this at home
                           );
 }
