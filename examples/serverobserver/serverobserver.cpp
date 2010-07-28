@@ -60,7 +60,9 @@ ServerObserver::ServerObserver(QWidget *parent)
     _lay = new QVBoxLayout();
     central->setLayout(_lay);
 
-    this->setCentralWidget(central);
+
+    setWindowTitle(tr("Server Observer"));
+    setCentralWidget(central);
 }
 
 ServerObserver::~ServerObserver() {}
