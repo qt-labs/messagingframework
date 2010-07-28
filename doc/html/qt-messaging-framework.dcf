@@ -376,6 +376,12 @@
         <keyword ref="qmailfolder.html#Trash-var">Trash</keyword>
         <section ref="qmailfolder-members.html" title="List of all members"/>
     </section>
+    <section ref="qmailfolderfwd.html" title="QMailFolderFwd Class Reference">
+        <keyword ref="qmailfolderfwd.html">QMailFolderFwd</keyword>
+        <keyword ref="qmailfolderfwd.html#PredefinedFolderId-enum">PredefinedFolderId</keyword>
+        <keyword ref="qmailfolderfwd.html#PredefinedFolderId-enum">QMailFolderFwd::LocalStorageFolderId</keyword>
+        <section ref="qmailfolderfwd-members.html" title="List of all members"/>
+    </section>
     <section ref="qmailfolderid.html" title="QMailFolderId Class Reference">
         <keyword ref="qmailfolderid.html">QMailFolderId</keyword>
         <keyword ref="qmailfolderid.html#isValid">isValid</keyword>

@@ -384,7 +384,7 @@
                 <parameter left="Qt::SortOrder" right="" name="order" default="Qt::DescendingOrder"/>
             </function>
         </class>
-        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailFolder" href="qmailfolder.html" location="qmailfolder.h" bases="" module="">
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailFolder" href="qmailfolder.html" location="qmailfolder.h" bases="QMailFolderFwd" module="">
             <enum access="public" threadsafety="unspecified" status="commendable" name="StandardFolder" fullname="QMailFolder::StandardFolder" href="qmailfolder.html#StandardFolder-enum" location="qmailfolder.h">
                 <value name="InboxFolder" value="1"/>
                 <value name="OutboxFolder" value="2"/>
@@ -1528,6 +1528,11 @@
                 <parameter left="const QString &amp;" right="" name="value" default=""/>
             </function>
         </class>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailFolderFwd" href="qmailfolderfwd.html" location="qmailfolderfwd.h" bases="" module="">
+            <enum access="public" threadsafety="unspecified" status="commendable" name="PredefinedFolderId" fullname="QMailFolderFwd::PredefinedFolderId" href="qmailfolderfwd.html#PredefinedFolderId-enum" location="qmailfolderfwd.h">
+                <value name="LocalStorageFolderId" value="1"/>
+            </enum>
+        </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailAccountKey" href="qmailaccountkey.html" location="qmailaccountkey.h" bases="" module="">
             <enum access="public" threadsafety="unspecified" status="commendable" name="Property" fullname="QMailAccountKey::Property" href="qmailaccountkey.html#Property-enum" location="qmailaccountkey.h">
                 <value name="Id" value="( 1&lt;&lt;0 )"/>
@@ -2568,7 +2573,7 @@
                     <value name="ErrInvalidData" value=""/>
                     <value name="ErrTimeout" value=""/>
                     <value name="ErrInternalStateReset" value=""/>
-                    <value name="ErrorCodeMaximum" value="ErrTimeout"/>
+                    <value name="ErrorCodeMaximum" value="ErrInternalStateReset"/>
                 </enum>
                 <function access="public" threadsafety="unspecified" status="commendable" name="Status" fullname="QMailServiceAction::Status::Status" href="qmailserviceaction-status.html#Status" location="qmailserviceaction.cpp" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="Status()"/>
                 <function access="public" threadsafety="unspecified" status="commendable" name="Status" fullname="QMailServiceAction::Status::Status" href="qmailserviceaction-status.html#Status-2" location="qmailserviceaction.cpp" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="Status(ErrorCode c, const QString &amp; t, const QMailAccountId &amp; a, const QMailFolderId &amp; f, const QMailMessageId &amp; m)">

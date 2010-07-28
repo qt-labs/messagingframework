@@ -95,6 +95,7 @@
                 <section ref="qmailfolder.html" title="QMailFolder Class Reference">
                     <section ref="qmailfolder-members.html" title="List of all members"/>
                 </section>
+                <section ref="qmailfolderfwd.html" title="QMailFolderFwd Class Reference"/>
                 <section ref="qmailfolderid.html" title="QMailFolderId Class Reference">
                     <section ref="qmailfolderid-members.html" title="List of all members"/>
                 </section>
@@ -579,6 +580,9 @@
             <keyword name="status" id="QMailFolder::status" ref="qmailfolder.html#status"/>
             <keyword name="statusMask" id="QMailFolder::statusMask" ref="qmailfolder.html#statusMask"/>
             <keyword name="~QMailFolder" id="QMailFolder::~QMailFolder" ref="qmailfolder.html#dtor.QMailFolder"/>
+            <keyword name="QMailFolderFwd" id="QMailFolderFwd" ref="qmailfolderfwd.html"/>
+            <keyword name="QMailFolderFwd::PredefinedFolderId" id="QMailFolderFwd::PredefinedFolderId" ref="qmailfolderfwd.html#PredefinedFolderId-enum"/>
+            <keyword name="QMailFolderFwd::LocalStorageFolderId" id="QMailFolderFwd::LocalStorageFolderId" ref="qmailfolderfwd.html#PredefinedFolderId-enum"/>
             <keyword name="QMailFolderId" id="QMailFolderId" ref="qmailfolderid.html"/>
             <keyword name="isValid" id="QMailFolderId::isValid" ref="qmailfolderid.html#isValid"/>
             <keyword name="operator QVariant" id="QMailFolderId::operator QVariant" ref="qmailfolderid.html#operator-QVariant"/>
@@ -1662,6 +1666,7 @@
             <file>messagenavigator-foldermodel-cpp.html</file>
             <file>qmailmessageserviceconfigurator.html</file>
             <file>images/messageviewer-example.png</file>
+            <file>qmailfolderfwd.html</file>
             <file>qmailmessagepart-location.html</file>
             <file>qmailpluginmanager.html</file>
             <file>qmailretrievalaction-members.html</file>
