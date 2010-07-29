@@ -848,7 +848,7 @@ void ServiceHandler::dispatchRequest()
 
             if (mActionExpiry.isEmpty()) {
                 // Start the expiry timer
-                QTimer::singleShot(ExpiryPeriod, this, SLOT(expireAction()));
+                QTimer::singleShot(ExpiryPeriod + 50, this, SLOT(expireAction()));
             }
             mActionExpiry.append(request.action);
         } else {
@@ -935,7 +935,7 @@ void ServiceHandler::expireAction()
 
                     mActiveActions.erase(it);
                 }
-                
+
                 mActionExpiry.removeFirst();
 
                 // Restart the service(s) for each of these accounts
@@ -943,15 +943,15 @@ void ServiceHandler::expireAction()
 
                 // See if there are more actions to dispatch
                 dispatchRequest();
-
-                if (!mActionExpiry.isEmpty()) {
-                    // Return here to test the new oldest action
-                    QTimer::singleShot(0, this, SLOT(expireAction()));
-                }
-            } else {
-                // Test again when it is due to expire
-                QTimer::singleShot(now.msecsTo(data.expiry), this, SLOT(expireAction()));
             }
+        }
+    }
+
+    foreach (quint32 nextAction, mActionExpiry) {
+        if (mActiveActions.contains(nextAction)) {
+            int nextExpiry(QTime::currentTime().msecsTo(mActiveActions.value(nextAction).expiry));
+            QTimer::singleShot(nextExpiry+50, this, SLOT(expireAction()));
+            return;
         } else {
             // Just remove this non-existent action
             mActionExpiry.removeFirst();
