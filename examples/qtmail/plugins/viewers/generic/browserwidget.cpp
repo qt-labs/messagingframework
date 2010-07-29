@@ -855,12 +855,9 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     } else {
         if (mail->partCount() > 0) {
             bodyText = renderMultipart(*mail);
-        } else if (mail->messageType() == QMailMessage::System) {
+        } else {
             // Assume this is appropriately formatted for display
             bodyText = mail->body().data();
-        } else {
-            QString data(mail->body().data());
-            bodyText = formatText(data);
 
             if (!mail->contentAvailable()) {
                 QString trailer =
@@ -879,7 +876,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
                 trailer = replaceLast(trailer, "DOWNLOAD_TEXT", tr("Retrieve more data"));
 
                 bodyText += trailer;
-            } else if (data.isEmpty()) {
+            } else if (bodyText.isEmpty()) {
                 // Possibly a badly formatted mail, give user option to completely download
                 qWarning() << "Mail with empty body detected";
                 QString trailer = "<br><a href=\"download\">DOWNLOAD_TEXT</a>";
