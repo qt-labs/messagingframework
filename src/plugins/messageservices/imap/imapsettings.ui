@@ -226,7 +226,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Skip larger</string>
+          <string>Download limit</string>
          </property>
          <property name="checked">
           <bool>true</bool>
