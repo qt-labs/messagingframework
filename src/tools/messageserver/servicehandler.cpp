@@ -959,14 +959,14 @@ void ServiceHandler::expireAction()
         }
     }
 
-    foreach (quint32 nextAction, mActionExpiry) {
-        if (mActiveActions.contains(nextAction)) {
-            int nextExpiry(QTime::currentTime().msecsTo(mActiveActions.value(nextAction).expiry));
-            QTimer::singleShot(nextExpiry+50, this, SLOT(expireAction()));
+    QLinkedList<quint64>::iterator expiryIt(mActionExpiry.begin());
+    while (expiryIt != mActionExpiry.end()) {
+        if (mActiveActions.contains(*expiryIt)) {
+            int nextExpiry(QTime::currentTime().msecsTo(mActiveActions.value(*expiryIt).expiry));
+            QTimer::singleShot(qMax(nextExpiry+50, 0), this, SLOT(expireAction()));
             return;
         } else {
-            // Just remove this non-existent action
-            mActionExpiry.removeFirst();
+            expiryIt = mActionExpiry.erase(expiryIt); // Just remove this non-existent action
         }
     }
 }
