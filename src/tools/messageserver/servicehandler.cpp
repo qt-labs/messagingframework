@@ -499,33 +499,38 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
     }
 }
 
-void ServiceHandler::removeServiceFromActiveActions(QMailMessageService *removeService)
+void ServiceHandler::removeServiceFromActions(QMailMessageService *removeService)
 {
     if (removeService == NULL)
         return;
 
-    QMap<quint64, ActionData>::iterator it = mActiveActions.begin();
-    QMap<quint64, ActionData>::iterator end = mActiveActions.end();
-
-    while (it != end) {
-       ActionData &data(it.value());
-       if (data.services.remove(removeService)) {
+    for (QMap<quint64, ActionData>::iterator it(mActiveActions.begin()) ; it != mActiveActions.end(); ++it) {
+       if (it->services.remove(removeService)) {
            qMailLog(Messaging) << "Removed service from action";
        }
-       it++;
+    }
+
+    for (QList<Request>::iterator it(mRequests.begin()); it != mRequests.end();) {
+        if (it->services.contains(removeService) || it->preconditions.contains(removeService))
+        {
+            reportFailure(it->action, QMailServiceAction::Status::ErrFrameworkFault, tr("Service became unavailable, couldn't dispatch"));
+            it = mRequests.erase(it);
+            continue;
+        }
+        ++it;
     }
 }
 
 void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::iterator it = serviceMap.begin(), end = serviceMap.end();
-    while (it != end) {
+    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::iterator it = serviceMap.begin();
+    while (it != serviceMap.end()) {
         if (ids.contains(it.key().first)) {
             // Remove any services associated with this account
             if (QMailMessageService *service = it.value()) {
                 qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
                 service->cancelOperation(code, text);
-                removeServiceFromActiveActions(service);
+                removeServiceFromActions(service);
                 delete service;
             }
 
