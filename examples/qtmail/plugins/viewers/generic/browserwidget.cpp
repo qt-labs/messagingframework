@@ -856,8 +856,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
         if (mail->partCount() > 0) {
             bodyText = renderMultipart(*mail);
         } else {
-            // Assume this is appropriately formatted for display
-            bodyText = mail->body().data();
+            bodyText = (mail->content() == QMailMessage::PlainTextContent) ? formatText(mail->body().data()) : mail->body().data();
 
             if (!mail->contentAvailable()) {
                 QString trailer =
