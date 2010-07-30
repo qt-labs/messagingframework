@@ -49,6 +49,7 @@
 class QTOPIAMAIL_EXPORT QMailDisconnected
 {
 public:
+    static QMailMessageKey destinationKey(const QMailFolderId &folderId);
     static QMailMessageKey sourceKey(const QMailFolderId &folderId);
     static QMailFolderId sourceFolderId(const QMailMessageMetaData &metaData);
     static QMailMessageKey::Properties parentFolderProperties();

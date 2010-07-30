@@ -70,8 +70,22 @@
 
 
 /*!
-    Returns a key matching messages who parent folder's identifier was equal to \a folderId,
-    at the time the most recent synchronization of the message with the external 
+    Returns a key matching messages that are scheduled to be moved into the folder identified by \a folderId,
+    when the next synchronization of the account containing that folder occurs.
+    
+    \sa QMailRetrievalAction::exportUpdates()
+*/
+QMailMessageKey QMailDisconnected::destinationKey(const QMailFolderId &folderId)
+{
+    QMailMessageKey result(QMailMessageKey::parentFolderId(folderId));
+    result &= (~QMailMessageKey::previousParentFolderId(QMailFolderId())
+              | QMailMessageKey::status(QMailMessage::LocalOnly));
+    return result;
+}
+
+/*!
+    Returns a key matching messages whose parent folder's identifier was equal to \a folderId,
+    at the time the most recent synchronization of the message with the originating external 
     server occurred.
 
     \sa QMailMessageKey::parentFolderId()
@@ -86,7 +100,7 @@ QMailMessageKey QMailDisconnected::sourceKey(const QMailFolderId &folderId)
 
 /*!
     Return the QMailFolderId of the folder that contained the message \a metaData at the time the most 
-    recent synchronization of the message with the external server occurred.
+    recent synchronization of the message with the originating external server occurred.
     
     \sa QMailMessageMetaData::parentFolderId()
 */
