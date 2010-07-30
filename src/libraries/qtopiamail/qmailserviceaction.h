@@ -185,7 +185,7 @@ public slots:
     void retrieveAll(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
 
-    void synchronize(const QMailAccountId &accountId);
+    void synchronizeAll(const QMailAccountId &accountId);
 };
 
 

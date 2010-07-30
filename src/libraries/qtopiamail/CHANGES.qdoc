@@ -235,6 +235,8 @@ Changes since the development preview release on 16/01/09:
 
 33. Added QMailDisconnected class.
 
+34. Changed 'QMailRetrievalAction::synchronize(const QMailAccountId &accountId)' to
+            'QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)'
 *****************************************************************************
 
 \endcode

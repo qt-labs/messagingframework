@@ -160,8 +160,8 @@ public:
     void retrieveAll(const QMailAccountId &accountId);
     void exportUpdatesHelper(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
-    void synchronizeHelper(const QMailAccountId &accountId);
-    void synchronize(const QMailAccountId &accountId);
+    void synchronizeAllHelper(const QMailAccountId &accountId);
+    void synchronizeAll(const QMailAccountId &accountId);
 
 protected slots:
     void retrievalCompleted(quint64);
@@ -184,7 +184,7 @@ class QMailSynchronizeCommand : public QMailServiceActionCommand
 {
 public:
     QMailSynchronizeCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
-    void execute() { _action->synchronizeHelper(_accountId); }
+    void execute() { _action->synchronizeAllHelper(_accountId); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;

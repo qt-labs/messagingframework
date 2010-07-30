@@ -751,15 +751,15 @@ void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
     exportUpdatesHelper(accountId);
 }
 
-void QMailRetrievalActionPrivate::synchronizeHelper(const QMailAccountId &accountId)
+void QMailRetrievalActionPrivate::synchronizeAllHelper(const QMailAccountId &accountId)
 {
     _server->synchronize(newAction(), accountId);
 }
 
-void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)
+void QMailRetrievalActionPrivate::synchronizeAll(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_pendingActions.count());
-    synchronizeHelper(accountId);
+    synchronizeAllHelper(accountId);
 }
 
 void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
@@ -1014,9 +1014,9 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 
     \sa retrieveFolderList(), retrieveMessageList(), exportUpdates()
 */
-void QMailRetrievalAction::synchronize(const QMailAccountId &accountId)
+void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 {
-    impl(this)->synchronize(accountId);
+    impl(this)->synchronizeAll(accountId);
 }
 
 
