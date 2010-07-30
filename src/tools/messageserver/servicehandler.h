@@ -178,7 +178,9 @@ private:
     void registerAccountService(const QMailAccountId &accountId, const QMailServiceConfiguration &svcCfg);
     QMailMessageService *createService(const QString &service, const QMailAccountId &accountId);
 
-    bool serviceAvailable(QMailMessageService *service) const;
+    struct Request;
+    bool servicesAvailable(const Request &services) const;
+    bool serviceAvailable(QPointer<QMailMessageService> service) const;
 
     QSet<QMailMessageService*> sourceServiceSet(const QMailAccountId &id) const;
     QSet<QMailMessageService*> sourceServiceSet(const QSet<QMailAccountId> &ids) const;

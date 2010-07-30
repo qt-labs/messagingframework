@@ -693,7 +693,16 @@ void ServiceHandler::registerAccountService(const QMailAccountId &accountId, con
     }
 }
 
-bool ServiceHandler::serviceAvailable(QMailMessageService *service) const
+bool ServiceHandler::servicesAvailable(const Request &req) const
+{
+    foreach(QPointer<QMailMessageService> service, (req.services + req.preconditions)) {
+        if (!serviceAvailable(service))
+            return false;
+    }
+    return true;
+}
+
+bool ServiceHandler::serviceAvailable(QPointer<QMailMessageService> service) const
 {
     if (mServiceAction.contains(service) || mUnavailableServices.contains(service))
         return false;
@@ -821,52 +830,50 @@ void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, cons
 
 void ServiceHandler::dispatchRequest()
 {
-    if (!mRequests.isEmpty()) {
-        const Request &request(mRequests.first());
-
-        foreach (QMailMessageService *service, request.services + request.preconditions) {
-            if (!serviceAvailable(service)) {
-                // We can't dispatch this request yet...
-                return;
-            }
+    QList<Request>::iterator request(mRequests.begin());
+    while(request != mRequests.end())
+    {
+        if (!servicesAvailable(*request)) {
+            ++request;
+            continue;
         }
 
         // Associate the services with the action, so that signals are reported correctly
-        foreach (QMailMessageService *service, request.services)
-            mServiceAction.insert(service, request.action);
+        foreach (QMailMessageService *service, request->services)
+            mServiceAction.insert(service, request->action);
 
         // The services required for this request are available
         ActionData data;
-        data.services = request.services;
-        data.completion = request.completion;
+        data.services = request->services;
+        data.completion = request->completion;
         data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
         data.reported = false;
-        data.description = request.description;
+        data.description = request->description;
 
 
-        mActiveActions.insert(request.action, data);
-        emit actionStarted(qMakePair(request.action, request.description));
-        emit activityChanged(request.action, QMailServiceAction::InProgress);
+        mActiveActions.insert(request->action, data);
+        emit actionStarted(qMakePair(request->action, request->description));
+        emit activityChanged(request->action, QMailServiceAction::InProgress);
 
-        if ((this->*request.servicer)(request.action, request.data)) {
+        if ((this->*request->servicer)(request->action, request->data)) {
             // This action is now underway
 
             if (mActionExpiry.isEmpty()) {
                 // Start the expiry timer
                 QTimer::singleShot(ExpiryPeriod + 50, this, SLOT(expireAction()));
             }
-            mActionExpiry.append(request.action);
+            mActionExpiry.append(request->action);
         } else {
-            mActiveActions.remove(request.action);
+            mActiveActions.remove(request->action);
 
-            qMailLog(Messaging) << "Unable to dispatch request:" << request.action << "to services:" << request.services;
-            emit activityChanged(request.action, QMailServiceAction::Failed);
+            qMailLog(Messaging) << "Unable to dispatch request:" << request->action << "to services:" << request->services;
+            emit activityChanged(request->action, QMailServiceAction::Failed);
 
-            foreach (QMailMessageService *service, request.services)
+            foreach (QMailMessageService *service, request->services)
                 mServiceAction.remove(service);
         }
 
-        mRequests.removeFirst();
+        request = mRequests.erase(request);
     }
 }
 
