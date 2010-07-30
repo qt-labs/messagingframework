@@ -730,6 +730,7 @@ public:
     ImapFlagMessagesStrategy() {}
     virtual ~ImapFlagMessagesStrategy() {}
 
+    virtual void newConnection(ImapStrategyContextBase *context);
     virtual void clearSelection();
     virtual void setMessageFlags(MessageFlags flags, bool set);
 

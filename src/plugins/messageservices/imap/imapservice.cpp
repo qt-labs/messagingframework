@@ -150,6 +150,7 @@ private:
 
     virtual void appendStrategy(ImapStrategy *strategy, const char *signal = 0);
     virtual bool initiateStrategy();
+    void queueDisconnectedOperations(const QMailAccountId &accountId);
 
     enum MailCheckPhase { RetrieveFolders = 0, RetrieveMessages, CheckFlags };
 
@@ -340,6 +341,37 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
     return true;
 }
 
+void ImapService::Source::queueDisconnectedOperations(const QMailAccountId &accountId)
+{
+    //sync disconnected move and copy operations for account
+
+    QMailAccount account(accountId);
+    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
+    bool pendingDisconnectedOperations = false;
+    _service->_client.strategyContext()->moveMessagesStrategy.clearSelection();
+
+    foreach(const QMailFolderId& folderId, folderList) {
+        
+        if (!folderId.isValid())
+            continue;
+
+        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
+                                             & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
+                                                | QMailMessageKey::status(QMailMessage::LocalOnly));
+
+        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
+
+        if (movedMessages.isEmpty())
+            continue;
+
+        pendingDisconnectedOperations = true;
+        _service->_client.strategyContext()->moveMessagesStrategy.appendMessageSet(movedMessages, folderId);
+    }
+
+    if (pendingDisconnectedOperations)
+        appendStrategy(&_service->_client.strategyContext()->moveMessagesStrategy, SIGNAL(messagesMoved(QMailMessageIdList)));
+}
+
 bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
 {
     if (!accountId.isValid()) {
@@ -347,6 +379,8 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         return false;
     }
     
+    queueDisconnectedOperations(accountId);
+
     _service->_client.strategyContext()->exportUpdatesStrategy.clearSelection();
     appendStrategy(&_service->_client.strategyContext()->exportUpdatesStrategy);
     if(!_unavailable)
@@ -360,6 +394,8 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
+
+    queueDisconnectedOperations(accountId);
 
     _service->_client.strategyContext()->synchronizeAccountStrategy.clearSelection();
     _service->_client.strategyContext()->synchronizeAccountStrategy.setBase(QMailFolderId());
@@ -394,17 +430,9 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
             _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Could not delete messages"));
             return false;
         }
-        if (messageIds.isEmpty()) {
-            return true;
-        }
     }
     
     // Proceed with normal deletion for non-duplicate messages
-    if (messageIds.isEmpty()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to delete"));
-        return false;
-    }
-
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
     if (imapCfg.canDeleteMail()) {
@@ -714,6 +742,10 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
         return false;
     }
 
+    // Don't delete messages that the user has moved out of the folder
+    QMailFolder folder(folderId);
+    queueDisconnectedOperations(folder.parentAccountId());
+    
     //remove remote copy
     _service->_client.strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
     appendStrategy(&_service->_client.strategyContext()->deleteFolderStrategy);

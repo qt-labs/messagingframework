@@ -3700,6 +3700,15 @@ void ImapExternalizeMessagesStrategy::resolveNextMessage(ImapStrategyContextBase
 
 /* A strategy to flag selected messages.
 */
+void ImapFlagMessagesStrategy::newConnection(ImapStrategyContextBase *context)
+{
+    if (!_listSize) {
+        // Nothing to do
+        context->operationCompleted();
+    }
+    ImapFetchSelectedMessagesStrategy::newConnection(context);
+}
+
 void ImapFlagMessagesStrategy::clearSelection()
 {
     _setMask = 0;

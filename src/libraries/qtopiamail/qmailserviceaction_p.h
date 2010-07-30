@@ -95,7 +95,6 @@ protected slots:
     void connectSubAction(QMailServiceAction *subAction);
     void disconnectSubAction(QMailServiceAction *subAction);
     void clearSubActions();
-    void queueDisconnectedOperations(const QMailAccountId &accountId);
 
 protected:
     friend class QMailServiceAction;

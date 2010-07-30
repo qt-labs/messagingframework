@@ -227,32 +227,6 @@ void QMailServiceActionPrivate::clearSubActions()
         _pendingActions.clear();
 }
 
-void QMailServiceActionPrivate::queueDisconnectedOperations(const QMailAccountId &accountId)
-{
-    //sync disconnected move and copy operations for account
-
-    QMailAccount account(accountId);
-    QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
-
-    foreach(const QMailFolderId& folderId, folderList) {
-        if(!folderId.isValid())
-            continue;
-
-        QMailMessageKey movedIntoFolderKey = QMailMessageKey::parentFolderId(folderId)
-                                             & (QMailMessageKey::previousParentFolderId(QMailFolderKey::parentAccountId(accountId))
-                                                | QMailMessageKey::status(QMailMessage::LocalOnly));
-
-        QMailMessageIdList movedMessages = QMailStore::instance()->queryMessages(movedIntoFolderKey);
-
-        if(movedMessages.isEmpty())
-            continue;
-
-        QMailStorageAction *moveAction = new QMailStorageAction();
-        QMailMoveCommand *moveCommand = new QMailMoveCommand(moveAction->impl(moveAction), movedMessages, folderId);
-        appendSubAction(moveAction, QSharedPointer<QMailServiceActionCommand>(moveCommand));
-    }
-}
-
 void QMailServiceActionPrivate::init()
 {
     _connectivity = QMailServiceAction::Offline;
@@ -774,14 +748,7 @@ void QMailRetrievalActionPrivate::exportUpdatesHelper(const QMailAccountId &acco
 void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_pendingActions.count());
-    newAction();
-    queueDisconnectedOperations(accountId);
-    
-    // flag changes
-    QMailRetrievalAction *exportAction = new QMailRetrievalAction();
-    QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->impl(exportAction), accountId);
-    appendSubAction(exportAction, QSharedPointer<QMailServiceActionCommand>(exportCommand));
-    executeNextSubAction();
+    exportUpdatesHelper(accountId);
 }
 
 void QMailRetrievalActionPrivate::synchronizeHelper(const QMailAccountId &accountId)
@@ -792,13 +759,7 @@ void QMailRetrievalActionPrivate::synchronizeHelper(const QMailAccountId &accoun
 void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_pendingActions.count());
-    newAction();
-    queueDisconnectedOperations(accountId);
-    
-    QMailRetrievalAction *synchronizeAction = new QMailRetrievalAction();
-    QMailSynchronizeCommand *synchronizeCommand = new QMailSynchronizeCommand(synchronizeAction->impl(synchronizeAction), accountId);
-    appendSubAction(synchronizeAction, QSharedPointer<QMailServiceActionCommand>(synchronizeCommand));
-    executeNextSubAction();
+    synchronizeHelper(accountId);
 }
 
 void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
@@ -1197,28 +1158,16 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
 void QMailStorageActionPrivate::deleteMessagesHelper(const QMailMessageIdList &ids)
 {
     _server->deleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
-    _ids = ids;
+    // Successful as long as ids have been deleted, 
+    // this action doesn't have to be the one to have deleted them
+    _ids.clear();
     emitChanges();
 }
 
 void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
 {
     Q_ASSERT(!_pendingActions.count());
-    newAction();
-    QSet<QMailAccountId> accountIds;
-    QMailMessageKey::Properties props(QMailMessageKey::ParentAccountId);
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        QMailAccountId accountId(metaData.parentAccountId());
-        if (accountId.isValid() && !accountIds.contains(accountId)) {
-            accountIds.insert(accountId);
-            queueDisconnectedOperations(accountId);
-        }
-    }
-
-    QMailStorageAction *deleteMessagesAction = new QMailStorageAction();
-    QMailDeleteMessagesCommand *deleteMessagesCommand = new QMailDeleteMessagesCommand(deleteMessagesAction->impl(deleteMessagesAction), ids);
-    appendSubAction(deleteMessagesAction, QSharedPointer<QMailServiceActionCommand>(deleteMessagesCommand));
-    executeNextSubAction();
+    deleteMessagesHelper(ids);
 }
 
 void QMailStorageActionPrivate::discardMessages(const QMailMessageIdList &ids)
@@ -1273,17 +1222,7 @@ void QMailStorageActionPrivate::deleteFolderHelper(const QMailFolderId &folderId
 void QMailStorageActionPrivate::deleteFolder(const QMailFolderId &folderId)
 {
     Q_ASSERT(!_pendingActions.count());
-    newAction();
-    if (folderId.isValid()) {
-        QMailFolder folder(folderId);
-        if (folder.parentAccountId().isValid())
-            queueDisconnectedOperations(folder.parentAccountId());
-    }
-
-    QMailStorageAction *deleteFolderAction = new QMailStorageAction();
-    QMailDeleteFolderCommand *deleteFolderCommand = new QMailDeleteFolderCommand(deleteFolderAction->impl(deleteFolderAction), folderId);
-    appendSubAction(deleteFolderAction, QSharedPointer<QMailServiceActionCommand>(deleteFolderCommand));
-    executeNextSubAction();
+    deleteFolderHelper(folderId);
 }
 
 void QMailStorageActionPrivate::init()
@@ -2062,4 +2001,3 @@ void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const
     This signal is emitted when the response \a response is emitted by the messageserver,
     with the associated \a data.
 */
-
