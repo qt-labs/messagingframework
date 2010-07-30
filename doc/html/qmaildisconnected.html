@@ -26,6 +26,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#copyPreviousFolder">copyPreviousFolder</a></b> ( const QMailMessageMetaData &amp; <i>source</i>, QMailMessageMetaData * <i>dest</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#copyToFolder">copyToFolder</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, const QMailFolderId &amp; <i>folderId</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#copyToStandardFolder">copyToStandardFolder</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailFolder::StandardFolder <i>standardFolder</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#destinationKey">destinationKey</a></b> ( const QMailFolderId &amp; <i>folderId</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#flagMessage">flagMessage</a></b> ( const QMailMessageId &amp; <i>id</i>, quint64 <i>setMask</i>, quint64 <i>unsetMask</i>, const QString &amp; <i>description</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#flagMessages">flagMessages</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, quint64 <i>setMask</i>, quint64 <i>unsetMask</i>, const QString &amp; <i>description</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#moveToFolder">moveToFolder</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, const QMailFolderId &amp; <i>folderId</i> )</td></tr>
@@ -61,6 +62,9 @@
 <p>The copy operation will be propagated to the server by a successful call to <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <p>This function must only be used on messages for which the entire content of the message and all parts of the message is available in the message store; otherwise the behavior is undefined.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#contentAvailable">QMailMessagePartContainer::contentAvailable</a>().</p>
+<h3 class="fn"><a name="destinationKey"></a><a href="qmailmessagekey.html">QMailMessageKey</a> QMailDisconnected::destinationKey ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching messages that are scheduled to be moved into the folder identified by <i>folderId</i>, when the next synchronization of the account containing that folder occurs.</p>
+<p>See also <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <h3 class="fn"><a name="flagMessage"></a>void QMailDisconnected::flagMessage ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>setMask</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>unsetMask</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>description</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected flags the list a message identified by <i>id</i>, setting the flags specified by the bit mask <i>setMask</i> to on and setting the flags set by the bit mask <i>unsetMask</i> to off.</p>
 <p>For example this function may be used to mark a message as important or 'move to trash' a message.</p>
@@ -86,10 +90,10 @@
 <p>Rolls back all disconnected move and copy operations that have been applied to the message store since the most recent synchronization of the message with the account specified by <i>mailAccountId</i>.</p>
 <p>See also <a href="qmaildisconnected.html#updatesOutstanding">updatesOutstanding</a>().</p>
 <h3 class="fn"><a name="sourceFolderId"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailDisconnected::sourceFolderId ( const <a href="qmailmessagemetadata.html">QMailMessageMetaData</a> &amp; <i>metaData</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
-<p>Return the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contained the message <i>metaData</i> at the time the most recent synchronization of the message with the external server occurred.</p>
+<p>Return the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contained the message <i>metaData</i> at the time the most recent synchronization of the message with the originating external server occurred.</p>
 <p>See also <a href="qmailmessagemetadata.html#parentFolderId">QMailMessageMetaData::parentFolderId</a>().</p>
 <h3 class="fn"><a name="sourceKey"></a><a href="qmailmessagekey.html">QMailMessageKey</a> QMailDisconnected::sourceKey ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
-<p>Returns a key matching messages who parent folder's identifier was equal to <i>folderId</i>, at the time the most recent synchronization of the message with the external server occurred.</p>
+<p>Returns a key matching messages whose parent folder's identifier was equal to <i>folderId</i>, at the time the most recent synchronization of the message with the originating external server occurred.</p>
 <p>See also <a href="qmailmessagekey.html#parentFolderId">QMailMessageKey::parentFolderId</a>().</p>
 <h3 class="fn"><a name="updatesOutstanding"></a>bool QMailDisconnected::updatesOutstanding ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>mailAccountId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns true if disconnected operations have been applied to the message store since the most recent synchronization with the account specified by <i>mailAccountId</i>.</p>

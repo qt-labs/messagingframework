@@ -529,6 +529,7 @@
             <keyword name="copyPreviousFolder" id="QMailDisconnected::copyPreviousFolder" ref="qmaildisconnected.html#copyPreviousFolder"/>
             <keyword name="copyToFolder" id="QMailDisconnected::copyToFolder" ref="qmaildisconnected.html#copyToFolder"/>
             <keyword name="copyToStandardFolder" id="QMailDisconnected::copyToStandardFolder" ref="qmaildisconnected.html#copyToStandardFolder"/>
+            <keyword name="destinationKey" id="QMailDisconnected::destinationKey" ref="qmaildisconnected.html#destinationKey"/>
             <keyword name="flagMessage" id="QMailDisconnected::flagMessage" ref="qmaildisconnected.html#flagMessage"/>
             <keyword name="flagMessages" id="QMailDisconnected::flagMessages" ref="qmaildisconnected.html#flagMessages"/>
             <keyword name="moveToFolder" id="QMailDisconnected::moveToFolder" ref="qmaildisconnected.html#moveToFolder"/>
@@ -1331,7 +1332,7 @@
             <keyword name="retrieveMessagePartRange" id="QMailRetrievalAction::retrieveMessagePartRange" ref="qmailretrievalaction.html#retrieveMessagePartRange"/>
             <keyword name="retrieveMessageRange" id="QMailRetrievalAction::retrieveMessageRange" ref="qmailretrievalaction.html#retrieveMessageRange"/>
             <keyword name="retrieveMessages" id="QMailRetrievalAction::retrieveMessages" ref="qmailretrievalaction.html#retrieveMessages"/>
-            <keyword name="synchronize" id="QMailRetrievalAction::synchronize" ref="qmailretrievalaction.html#synchronize"/>
+            <keyword name="synchronizeAll" id="QMailRetrievalAction::synchronizeAll" ref="qmailretrievalaction.html#synchronizeAll"/>
             <keyword name="QMailSearchAction" id="QMailSearchAction" ref="qmailsearchaction.html"/>
             <keyword name="QMailSearchAction::SearchSpecification" id="QMailSearchAction::SearchSpecification" ref="qmailsearchaction.html#SearchSpecification-enum"/>
             <keyword name="QMailSearchAction::Local" id="QMailSearchAction::Local" ref="qmailsearchaction.html#SearchSpecification-enum"/>

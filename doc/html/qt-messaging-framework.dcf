@@ -303,6 +303,7 @@
         <keyword ref="qmaildisconnected.html#copyPreviousFolder">copyPreviousFolder</keyword>
         <keyword ref="qmaildisconnected.html#copyToFolder">copyToFolder</keyword>
         <keyword ref="qmaildisconnected.html#copyToStandardFolder">copyToStandardFolder</keyword>
+        <keyword ref="qmaildisconnected.html#destinationKey">destinationKey</keyword>
         <keyword ref="qmaildisconnected.html#flagMessage">flagMessage</keyword>
         <keyword ref="qmaildisconnected.html#flagMessages">flagMessages</keyword>
         <keyword ref="qmaildisconnected.html#moveToFolder">moveToFolder</keyword>
@@ -1280,7 +1281,7 @@
         <keyword ref="qmailretrievalaction.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessageRange">retrieveMessageRange</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessages">retrieveMessages</keyword>
-        <keyword ref="qmailretrievalaction.html#synchronize">synchronize</keyword>
+        <keyword ref="qmailretrievalaction.html#synchronizeAll">synchronizeAll</keyword>
         <section ref="qmailretrievalaction-members.html" title="List of all members"/>
     </section>
     <section ref="qmailsearchaction.html" title="QMailSearchAction Class Reference">
