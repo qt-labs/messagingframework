@@ -329,6 +329,8 @@ bool SmtpSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     if (!smtpConfig.smtpServer().isEmpty() && !smtpConfig.emailAddress().isEmpty())
         account->setStatus(QMailAccount::CanTransmit, true);
 
+    account->setStatus(QMailAccount::UseSmartReply, false);
+
     return true;
 }
 
