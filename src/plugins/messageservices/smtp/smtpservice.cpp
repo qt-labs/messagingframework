@@ -40,9 +40,12 @@
 ****************************************************************************/
 
 #include "smtpservice.h"
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 #include "smtpsettings.h"
+#endif
 #include <QtPlugin>
 #include <QTimer>
+#include <QCoreApplication>
 
 namespace { const QString serviceKey("smtp"); }
 
@@ -188,7 +191,9 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+#endif
 };
 
 SmtpConfigurator::SmtpConfigurator()
@@ -206,9 +211,10 @@ QString SmtpConfigurator::service() const
 
 QString SmtpConfigurator::displayName() const
 {
-    return qApp->translate("QMailMessageService", "SMTP");
+    return QCoreApplication::instance()->translate("QMailMessageService", "SMTP");
 }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 QMailMessageServiceEditor *SmtpConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Sink)
@@ -216,6 +222,7 @@ QMailMessageServiceEditor *SmtpConfigurator::createEditor(QMailMessageServiceFac
 
     return 0;
 }
+#endif
 
 Q_EXPORT_PLUGIN2(smtp,SmtpServicePlugin)
 

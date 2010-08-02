@@ -43,7 +43,6 @@
 #include "qmailmessage.h"
 #include "qmailstore.h"
 #include <QCoreApplication>
-#include <QIcon>
 
 namespace {
 
@@ -139,13 +138,13 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
     \value MessageSizeTextRole
         The size of a message, formatted as text.
     \value MessageTypeIconRole
-        An Icon representing the type of the message.
+        A string that can be passed to QIcon representing the type of the message.
     \value MessageStatusIconRole
-        An Icon representing the status of the message. e.g Read, Unread, Downloaded
+        A string that can be passed to QIcon representing the status of the message. e.g Read, Unread, Downloaded
     \value MessageDirectionIconRole
-        An Icon representing the incoming or outgoing direction of a message.
+        A string that can be passed to QIcon representing the incoming or outgoing direction of a message.
     \value MessagePresenceIconRole
-        An Icon representing the presence status of the contact associated with the MessageAddressTextRole.
+        A string that can be passed to QIcon representing the presence status of the contact associated with the MessageAddressTextRole.
     \value MessageBodyTextRole  
         The body of a message represented as text.
     \value MessageIdRole
@@ -220,27 +219,27 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
 /*! \internal */
 QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int role) const
 {
-    static QIcon outgoingIcon(":icon/sendmail");
-    static QIcon incomingIcon(":icon/getmail");
+    static QString outgoingIcon(":icon/sendmail");
+    static QString incomingIcon(":icon/getmail");
 
-    static QIcon readIcon(":icon/flag_normal");
-    static QIcon unreadIcon(":icon/flag_unread");
-    static QIcon toGetIcon(":icon/flag_toget");
-    static QIcon toSendIcon(":icon/flag_tosend");
-    static QIcon unfinishedIcon(":icon/flag_unfinished");
-    static QIcon removedIcon(":icon/flag_removed");
+    static QString readIcon(":icon/flag_normal");
+    static QString unreadIcon(":icon/flag_unread");
+    static QString toGetIcon(":icon/flag_toget");
+    static QString toSendIcon(":icon/flag_tosend");
+    static QString unfinishedIcon(":icon/flag_unfinished");
+    static QString removedIcon(":icon/flag_removed");
 
     /* No longer used...
-    static QIcon noPresenceIcon(":icon/presence-none");
-    static QIcon offlineIcon(":icon/presence-offline");
-    static QIcon awayIcon(":icon/presence-away");
-    static QIcon busyIcon(":icon/presence-busy");
-    static QIcon onlineIcon(":icon/presence-online");
+    static QString noPresenceIcon(":icon/presence-none");
+    static QString offlineIcon(":icon/presence-offline");
+    static QString awayIcon(":icon/presence-away");
+    static QString busyIcon(":icon/presence-busy");
+    static QString onlineIcon(":icon/presence-online");
 
-    static QIcon messageIcon(":icon/txt");
-    static QIcon mmsIcon(":icon/multimedia");
-    static QIcon emailIcon(":icon/email");
-    static QIcon instantMessageIcon(":icon/im");
+    static QString messageIcon(":icon/txt");
+    static QString mmsIcon(":icon/multimedia");
+    static QString emailIcon(":icon/email");
+    static QString instantMessageIcon(":icon/im");
     */
 
     bool sent(message.status() & QMailMessage::Sent);
@@ -291,13 +290,13 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         case MessageTypeIconRole:
         {
             // Not currently implemented...
-            return QIcon();
+            return QString();
         }
         break;
 
         case MessageDirectionIconRole:
         {
-            QIcon mainIcon = incoming ? incomingIcon : outgoingIcon;
+            QString mainIcon = incoming ? incomingIcon : outgoingIcon;
             return mainIcon;
         }
         break;
@@ -333,7 +332,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         case MessagePresenceIconRole:
         {
             // Not currently implemented...
-            return QIcon();
+            return QString();
         }
         break;
 

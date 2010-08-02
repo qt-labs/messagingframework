@@ -5,7 +5,8 @@ TARGET = messageserver
 
 target.path += $$QMF_INSTALL_ROOT/lib
 
-QT *= network
+QT = core network
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
 
 symbian: {
     MMP_RULES += EXPORTUNFROZEN

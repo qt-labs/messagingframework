@@ -4,16 +4,13 @@ CONFIG += messageserver qtopiamail plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
-QT += network
+QT = core network
 
 DEPENDPATH += .
 
-QMFUTIL_LIB = ../../../../examples/qtmail/libs/qmfutil
-
 INCLUDEPATH += . ../../../libraries/qtopiamail \
                ../../../libraries/messageserver \
-               ../../../libraries/qtopiamail/support \
-               $$QMFUTIL_LIB
+               ../../../libraries/qtopiamail/support
 
 LIBS += -L../../../libraries/qtopiamail/build \
         -L../../../libraries/messageserver/build \
@@ -27,11 +24,29 @@ HEADERS += imapclient.h \
            imapmailboxproperties.h \
            imapprotocol.h \
            imapservice.h \
-           imapsettings.h \
            imapstructure.h \
            imapauthenticator.h \
            imapstrategy.h \
-           integerregion.h \
+           integerregion.h
+
+SOURCES += imapclient.cpp \
+           imapconfiguration.cpp \
+           imapprotocol.cpp \
+           imapservice.cpp \
+           imapstructure.cpp \
+           imapauthenticator.cpp \
+           imapstrategy.cpp \
+           integerregion.cpp
+
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+QT += gui
+
+QMFUTIL_LIB = ../../../../examples/qtmail/libs/qmfutil
+
+INCLUDEPATH += \
+               $$QMFUTIL_LIB
+HEADERS += \
+           imapsettings.h \
            $$QMFUTIL_LIB/selectfolder.h \
            $$QMFUTIL_LIB/emailfoldermodel.h \
            $$QMFUTIL_LIB/foldermodel.h \
@@ -42,15 +57,8 @@ HEADERS += imapclient.h \
 
 FORMS += imapsettings.ui
 
-SOURCES += imapclient.cpp \
-           imapconfiguration.cpp \
-           imapprotocol.cpp \
-           imapservice.cpp \
+SOURCES += \
            imapsettings.cpp \
-           imapstructure.cpp \
-           imapauthenticator.cpp \
-           imapstrategy.cpp \
-           integerregion.cpp \
            $$QMFUTIL_LIB/selectfolder.cpp \
            $$QMFUTIL_LIB/emailfoldermodel.cpp \
            $$QMFUTIL_LIB/foldermodel.cpp \
@@ -60,5 +68,6 @@ SOURCES += imapclient.cpp \
            $$QMFUTIL_LIB/qtmailnamespace.cpp
 
 RESOURCES += imap.qrc                
+}
 
 include(../../../../common.pri)

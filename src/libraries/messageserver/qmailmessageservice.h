@@ -48,7 +48,6 @@
 #include <QMap>
 #include <QObject>
 #include <QString>
-#include <QWidget>
 #include <qfactoryinterface.h>
 
 
@@ -275,7 +274,8 @@ private:
     const QMailMessageService &operator=(const QMailMessageService &other);
 };
 
-
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#include <QWidget>
 class MESSAGESERVER_EXPORT QMailMessageServiceEditor : public QWidget
 {
     Q_OBJECT
@@ -287,7 +287,7 @@ public:
     virtual void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config) = 0;
     virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config) = 0;
 };
-
+#endif
 
 class MESSAGESERVER_EXPORT QMailMessageServiceConfigurator
 {
@@ -300,7 +300,9 @@ public:
 
     virtual QStringList serviceConstraints(QMailMessageServiceFactory::ServiceType type) const;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) = 0;
+#endif
 };
 
 #endif

@@ -46,7 +46,6 @@
 #include "imapstructure.h"
 #include "integerregion.h"
 
-#include <QApplication>
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <qmaillog.h>

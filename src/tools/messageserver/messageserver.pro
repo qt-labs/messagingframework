@@ -1,6 +1,8 @@
 TEMPLATE = app
 TARGET = messageserver
 CONFIG += messageserver qtopiamail
+QT = core
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
 
 target.path += $$QMF_INSTALL_ROOT/bin
 

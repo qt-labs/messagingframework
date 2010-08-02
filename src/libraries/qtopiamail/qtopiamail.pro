@@ -10,7 +10,7 @@ win32: {
     lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
 }
 
-QT *= sql network
+QT = core sql network
 symbian: {
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN

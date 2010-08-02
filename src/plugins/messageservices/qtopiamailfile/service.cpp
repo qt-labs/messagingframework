@@ -40,8 +40,11 @@
 ****************************************************************************/
 
 #include "service.h"
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 #include "settings.h"
+#endif
 #include <QtPlugin>
+#include <QCoreApplication>
 
 namespace { const QString serviceKey("qtopiamailfile"); }
 
@@ -55,7 +58,9 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+#endif
 };
 
 QtopiamailfileConfigurator::QtopiamailfileConfigurator()
@@ -73,9 +78,10 @@ QString QtopiamailfileConfigurator::service() const
 
 QString QtopiamailfileConfigurator::displayName() const
 {
-    return qApp->translate("QMailMessageService", "Mailfile");
+    return QCoreApplication::instance()->translate("QMailMessageService", "Mailfile");
 }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 QMailMessageServiceEditor *QtopiamailfileConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Storage)
@@ -83,6 +89,7 @@ QMailMessageServiceEditor *QtopiamailfileConfigurator::createEditor(QMailMessage
 
     return 0;
 }
+#endif
 
 Q_EXPORT_PLUGIN2(qtopiamailfile,QtopiamailfileServicePlugin)
 

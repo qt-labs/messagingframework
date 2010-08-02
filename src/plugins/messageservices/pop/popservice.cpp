@@ -41,10 +41,13 @@
 
 #include "popservice.h"
 #include "popconfiguration.h"
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 #include "popsettings.h"
+#endif
 #include <QTimer>
 #include <QtPlugin>
 #include <QtGlobal>
+#include <QCoreApplication>
 
 namespace { const QString serviceKey("pop3"); }
 
@@ -371,7 +374,9 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+#endif
 };
 
 PopConfigurator::PopConfigurator()
@@ -389,9 +394,10 @@ QString PopConfigurator::service() const
 
 QString PopConfigurator::displayName() const
 {
-    return qApp->translate("QMailMessageService", "POP");
+    return QCoreApplication::instance()->translate("QMailMessageService", "POP");
 }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Source)
@@ -399,6 +405,7 @@ QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFact
 
     return 0;
 }
+#endif
 
 Q_EXPORT_PLUGIN2(pop,PopServicePlugin)
 

@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "imapservice.h"
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 #include "imapsettings.h"
+#endif
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include <QtPlugin>
@@ -48,6 +50,7 @@
 #include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
+#include <QCoreApplication>
 
 namespace { 
 
@@ -1118,7 +1121,9 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+#endif
 };
 
 ImapConfigurator::ImapConfigurator()
@@ -1136,9 +1141,10 @@ QString ImapConfigurator::service() const
 
 QString ImapConfigurator::displayName() const
 {
-    return qApp->translate("QMailMessageService", "IMAP");
+    return QCoreApplication::instance()->translate("QMailMessageService", "IMAP");
 }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Source)
@@ -1146,6 +1152,7 @@ QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFac
 
     return 0;
 }
+#endif
 
 Q_EXPORT_PLUGIN2(imap,ImapServicePlugin)
 

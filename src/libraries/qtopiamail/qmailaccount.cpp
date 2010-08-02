@@ -47,7 +47,6 @@
 #include "qmailmessageremovalrecord.h"
 #include "qmailstore.h"
 
-#include <QApplication>
 #include <QDir>
 #include <qtimer.h>
 #include <qsettings.h>

@@ -1360,7 +1360,7 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
     }
 }
 
-
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 /*!
     \class QMailMessageServiceEditor
     \ingroup libmessageserver
@@ -1393,6 +1393,7 @@ QMailMessageServiceEditor::~QMailMessageServiceEditor()
     Invoked to update the account \a account and configuration \a config with the details currently displayed by the editor.
     Return true if the account and configuration are appropriately updated, and any necessary data storage external to the mail store has been performed.
 */
+#endif
 
 /*!
     \class QMailMessageServiceConfigurator
@@ -1436,9 +1437,11 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
     return QStringList();
 }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
 /*!
     \fn QMailMessageServiceEditor *QMailMessageServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type);
 
     Creates an instance of the editor class for the service of type \a type.
 */
+#endif
 

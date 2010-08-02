@@ -69,7 +69,9 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
 
     for (int i = 0; i < ServiceTypesCount; ++i) {
         context[i] = new QVBoxLayout;
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
         editor[i] = 0;
+#endif
         selector[i] = new QComboBox;
 
         QFormLayout* formLayout = new QFormLayout;
@@ -210,31 +212,39 @@ void EditAccount::accept()
 
     QStringList currentServices;
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     // Currently, we permit only one service of each type to be configured
     if (editor[Incoming]) {
         account->setStatus(QMailAccount::MessageSource, true);
 
         editor[Incoming]->updateAccount(account, config);
         currentServices.append((availableKeys[Incoming])[selector[Incoming]->currentIndex() - 1]);
-    } else {
+    } else
+#endif
+    {
         account->setStatus(QMailAccount::MessageSource, false);
         account->setStatus(QMailAccount::CanRetrieve, false);
     }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     if (editor[Outgoing]) {
         account->setStatus(QMailAccount::MessageSink, true);
 
         editor[Outgoing]->updateAccount(account, config);
         currentServices.append((availableKeys[Outgoing])[selector[Outgoing]->currentIndex() - 1]);
-    } else {
+    } else
+#endif
+    {
         account->setStatus(QMailAccount::MessageSink, false);
         account->setStatus(QMailAccount::CanTransmit, false);
     }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     if (editor[Storage]) {
         editor[Storage]->updateAccount(account, config);
         currentServices.append((availableKeys[Storage])[selector[Storage]->currentIndex()]);
     }
+#endif
 
     foreach (const QString& service, config->services()) {
         if (!currentServices.contains(service)) 
@@ -264,6 +274,7 @@ void EditAccount::selectService(int type, int index)
         return;
     }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     if (editor[type]) {
         // Save the current settings in case this service is reverted to
         editor[type]->updateAccount(account, config);
@@ -273,6 +284,7 @@ void EditAccount::selectService(int type, int index)
         delete editor[type];
         editor[type] = 0;
     }
+#endif
 
     if ((index == 0) && (type != Storage)) {
         // Any previous constraints are now invalid
@@ -289,7 +301,9 @@ void EditAccount::selectService(int type, int index)
         }
     } else {
         if (QMailMessageServiceConfigurator *service = serviceMap[(availableKeys[type])[mapIndex]]) {
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
             editor[type] = service->createEditor(serviceType(type));
+#endif
 
             // Does this service constrains the other types allowable?
             for (int i = 0; i < ServiceTypesCount; ++i) {
@@ -305,10 +319,12 @@ void EditAccount::selectService(int type, int index)
         }
     }
 
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     if (editor[type]) {
         editor[type]->displayConfiguration(*account, *config);
         context[type]->addWidget(editor[type]);
     }
+#endif
 }
 
 void EditAccount::setServices(int type, const QStringList &services)

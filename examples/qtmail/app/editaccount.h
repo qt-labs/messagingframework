@@ -87,7 +87,9 @@ private:
 
     QVBoxLayout* context[ServiceTypesCount];
     QComboBox* selector[ServiceTypesCount];
+#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
     QMailMessageServiceEditor* editor[ServiceTypesCount];
+#endif
     QStringList extantKeys[ServiceTypesCount];
     QStringList availableKeys[ServiceTypesCount];
 

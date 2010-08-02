@@ -4,7 +4,7 @@ CONFIG += qtopiamail messageserver plugin
 
 target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
 
-QT += network
+QT = core network
 
 DEPENDPATH += .
 
@@ -21,15 +21,23 @@ macx:LIBS += -F../../../libraries/qtopiamail/build \
 HEADERS += popclient.h \
            popconfiguration.h \
            popservice.h \
-           popsettings.h \
            popauthenticator.h
 
 SOURCES += popclient.cpp \
            popconfiguration.cpp \
            popservice.cpp \
-           popsettings.cpp \
            popauthenticator.cpp
 
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+QT += gui
+
+HEADERS += \
+           popsettings.h
+
 FORMS += popsettings.ui
+
+SOURCES += \
+           popsettings.cpp \
+}
 
 include(../../../../common.pri)

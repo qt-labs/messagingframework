@@ -48,7 +48,7 @@
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>
 #include <qmaillog.h>
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDir>
 #include <QTimer>
 
@@ -1851,7 +1851,7 @@ bool ServiceHandler::dispatchCancelSearch(quint64 action, const QByteArray &data
 
 void ServiceHandler::shutdown()
 {
-    QTimer::singleShot(0,qApp,SLOT(quit()));
+    QTimer::singleShot(0,QCoreApplication::instance(),SLOT(quit()));
 }
 
 void ServiceHandler::listActions()

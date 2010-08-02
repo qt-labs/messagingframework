@@ -516,3 +516,4 @@ void ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::Standar
 }
 
 #include "imapsettings.moc"
+

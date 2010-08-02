@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmailnamespace.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
 #include <QDir>
@@ -247,7 +247,7 @@ QString QMail::messageServerPath()
     static QString serverEnv(qgetenv(QMF_SERVER_ENV));
     if(!serverEnv.isEmpty())
         return serverEnv + '/';
-    return QApplication::applicationDirPath() + '/';
+    return QCoreApplication::applicationDirPath() + '/';
 }
 
 /*!
@@ -258,7 +258,7 @@ QString QMail::messageSettingsPath()
     static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
     if(!settingsEnv.isEmpty())
         return settingsEnv + '/';
-    return QApplication::applicationDirPath() + '/';
+    return QCoreApplication::applicationDirPath() + '/';
 }
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile

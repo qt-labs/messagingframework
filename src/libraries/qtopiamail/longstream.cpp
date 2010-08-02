@@ -41,7 +41,7 @@
 
 #include "longstream_p.h"
 #include "qmaillog.h"
-#include <QApplication>
+#include <QCoreApplication>
 #include "qmailnamespace.h"
 #include <QIODevice>
 #include <QTextStream>
@@ -259,7 +259,7 @@ bool LongStream::freeSpace( const QString &path, int min)
 
 QString LongStream::errorMessage( const QString &prefix )
 {
-    QString str = QApplication::tr( "Storage for messages is full. Some new "
+    QString str = QCoreApplication::tr( "Storage for messages is full. Some new "
                                     "messages could not be retrieved." );
     if (!prefix.isEmpty())
         return prefix + str;

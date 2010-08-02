@@ -4,7 +4,7 @@ CONFIG += qtopiamail messageserver plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
-QT += network
+QT = core network
 
 DEPENDPATH += .
 
@@ -17,10 +17,18 @@ LIBS += -L../../../libraries/qtopiamail/build \
 macx:LIBS += -F../../../libraries/qtopiamail/build \
         -F../../../libraries/messageserver/build
 
-HEADERS += service.h settings.h
+HEADERS += service.h
+
+SOURCES += service.cpp
+
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+QT += gui
+
+HEADERS += settings.h
 
 FORMS += settings.ui
 
-SOURCES += service.cpp settings.cpp storagelocations.cpp
+SOURCES += settings.cpp storagelocations.cpp
+}
 
 include(../../../../common.pri)
