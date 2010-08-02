@@ -65,6 +65,7 @@ static quint64 enabledFlag = 0;
 static quint64 canReferenceExternalDataFlag = 0;
 static quint64 canTransmitViaReferenceFlag = 0;
 static quint64 canCreateFoldersFlag = 0;
+static quint64 useSmartReplyFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -152,6 +153,7 @@ public:
             canReferenceExternalDataFlag = registerFlag("CanReferenceExternalData");
             canTransmitViaReferenceFlag = registerFlag("CanTransmitViaReference");
             canCreateFoldersFlag = registerFlag("CanCreateFolders");
+            useSmartReplyFlag = registerFlag("UseSmartReply");
         }
     }
 
@@ -357,6 +359,17 @@ private:
     \sa QMailStorageAction::createFolder(), QMailFolder::ChildCreationPermitted
 */
 
+/*!
+    \variable QMailAccount::UseSmartReply
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "UseSmartReply" against the result of QMailAccount::status().
+
+    This flag indicates that the account uses 'Smart Reply', a technique in which the server will
+    automatically append the text of the replied-to message, and as such does not need to be done
+    manually.
+*/
+
 const quint64 &QMailAccount::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailAccount::Synchronized = synchronizedFlag;
 const quint64 &QMailAccount::AppendSignature = appendSignatureFlag;
@@ -371,6 +384,7 @@ const quint64 &QMailAccount::Enabled = enabledFlag;
 const quint64 &QMailAccount::CanReferenceExternalData = canReferenceExternalDataFlag;
 const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFlag;
 const quint64 &QMailAccount::CanCreateFolders = canCreateFoldersFlag;
+const quint64 &QMailAccount::UseSmartReply = useSmartReplyFlag;
 
 /*!
     Creates an uninitialised account object.
