@@ -328,7 +328,7 @@ private:
     \variable QMailAccount::CanReferenceExternalData
 
     The status mask needed for testing the value of the registered status flag named 
-    \c "Enabled" against the result of QMailAccount::status().
+    \c "CanReferenceExternalData" against the result of QMailAccount::status().
 
     This flag indicates that the account can contain messages that reference data in other messages.
 
@@ -339,7 +339,7 @@ private:
     \variable QMailAccount::CanTransmitViaReference
 
     The status mask needed for testing the value of the registered status flag named 
-    \c "Enabled" against the result of QMailAccount::status().
+    \c "CanTransmitViaReference" against the result of QMailAccount::status().
 
     This flag indicates that the account can be used to transmit messages that contain references.
 
@@ -350,7 +350,7 @@ private:
     \variable QMailAccount::CanCreateFolders
 
     The status mask needed for testing the value of the registered status flag named 
-    \c "Enabled" against the result of QMailAccount::status().
+    \c "CanCreateFolders" against the result of QMailAccount::status().
 
     This flag indicates that top level folders can be created for the account.
 
