@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+2010W30
+  * Fixes: NB#175678 - QMF messageserver depends on libQtGui.so.4, libXext.so.6 et cetera
+
 2010W29
   * Fixes: NB#172040 - QMailRetrievalAction signals "progressChanged" after "QMailServiceAction::Successful
   * Fixes: NB#175805 - Unix shutdown signals are not handled. 
