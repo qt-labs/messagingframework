@@ -44,7 +44,9 @@
 #include <QSocketNotifier>
 #include <QSettings>
 #include <sys/types.h>
+#ifndef Q_OS_WIN
 #include <sys/socket.h>
+#endif
 #include <signal.h>
 
 #ifdef QMAIL_SYSLOG
@@ -91,6 +93,7 @@ QTOPIAMAIL_EXPORT QDebug QLogBase::log(const char* category)
 
 #endif //QMAIL_SYSLOG
 
+#ifndef Q_OS_WIN
 // Singleton that manages the runtime logging housekeeping
 class RuntimeLoggingManager : public QObject
 {
@@ -200,4 +203,17 @@ QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
     return rlm->settings.value(QLatin1String(category),0).toBool();
 }
 
+#else
+QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag)
+{
+    Q_UNUSED(flag);
+}
+QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags() { }
+
+QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+{
+    Q_UNUSED(category);
+    return false;
+}
+#endif
 #include "qmaillog.moc"
