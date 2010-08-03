@@ -1048,6 +1048,9 @@ QString BrowserWidget::noBreakReplies(const QString& txt) const
         it++;
     }
 
+    while ( str.endsWith("<br>") ) {
+        str.chop(4);   //remove trailing br
+    }
     return str;
 }
 
@@ -1216,7 +1219,7 @@ QString BrowserWidget::handleReplies(const QString& txt) const
         it++;
     }
 
-    if ( str.endsWith("<br>") ) {
+    while ( str.endsWith("<br>") ) {
         str.chop(4);   //remove trailing br
     }
 
