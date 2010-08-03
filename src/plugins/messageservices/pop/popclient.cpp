@@ -312,7 +312,7 @@ QString PopClient::readResponse()
 {
     QString response = transport->readLine();
 
-    if (response.length() > 1){
+    if ((response.length() > 1) && (status != MessageData)) {
         qMailLog(POP) << "RECV:" << qPrintable(response.left(response.length() - 2));
     }
 
@@ -968,6 +968,8 @@ void PopClient::createMail()
 {
     int detachedSize = dataStream->length();
     QString detachedFile = dataStream->detach();
+
+    qMailLog(POP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
     
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
 
