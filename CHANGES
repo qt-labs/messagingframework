@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+2010W31
+  * Fixes: NB#181179 -  GMail IMAP fetch and content retrieve stops working after continuous usage
+
 2010W30
   * Fixes: NB#175678 - QMF messageserver depends on libQtGui.so.4, libXext.so.6 et cetera
 
