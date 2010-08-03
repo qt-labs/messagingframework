@@ -174,6 +174,7 @@ private:
 
     QStringList capabilities;
     QList<QByteArray> authCommands;
+    QTime lastStatusTimer;
 };
 
 #endif

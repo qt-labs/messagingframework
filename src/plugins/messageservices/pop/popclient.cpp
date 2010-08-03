@@ -79,6 +79,7 @@ QMailMessage::MessageType PopClient::messageType() const
 
 void PopClient::newConnection()
 {
+    lastStatusTimer.start();
     if (transport && transport->connected()) {
         if (selected) {
             // Re-use the existing connection
@@ -426,6 +427,10 @@ void PopClient::processResponse(const QString &response)
             // More to follow
             waitForInput = true;
         }
+        if (lastStatusTimer.elapsed() > 1000) {
+            lastStatusTimer.start();
+            emit progressChanged(0, 0);
+        }
         break;
     }
     case List:
@@ -446,6 +451,10 @@ void PopClient::processResponse(const QString &response)
             }
 
             waitForInput = true;
+        }
+        if (lastStatusTimer.elapsed() > 1000) {
+            lastStatusTimer.start();
+            emit progressChanged(0, 0);
         }
         break;
     }
@@ -641,8 +650,13 @@ void PopClient::nextAction()
         int msgNum = nextMsgServerPos();
         if (msgNum != -1) {
             if (!selected) {
-                if (messageCount == 1)
+                if (messageCount == 1) {
                     emit updateStatus(tr("Previewing","Previewing <no of messages>") +QChar(' ') + QString::number(newUids.count()));
+                }
+                if (lastStatusTimer.elapsed() > 1000) {
+                    lastStatusTimer.start();
+                    emit progressChanged(messageCount, newUids.count());
+                }
             } else {
                 emit updateStatus(tr("Completing %1 / %2").arg(messageCount).arg(selectionMap.count()));
             }
