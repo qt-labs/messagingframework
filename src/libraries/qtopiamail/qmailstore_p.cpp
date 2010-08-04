@@ -7356,9 +7356,8 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::FolderUpda
 
 void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids)
 {
-    foreach (const QMailMessageId &id, ids) {
-        Q_ASSERT(id.toULongLong());
-    }
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+
     if ((signal == &QMailStore::messagesUpdated) || (signal == &QMailStore::messagesRemoved)) {
         foreach (const QMailMessageId &id, ids)
             messageCache.remove(id);
