@@ -2257,11 +2257,12 @@ void EmailClient::retrieveVisibleMessagesFlags()
     if (ids.isEmpty())
         return;
 
-    // Ensure that we only ask for flag updates for messages that are in account folders
+    // Ensure that we only ask for flag updates for messages that are retrievable
     QMailMessageKey idKey(QMailMessageKey::id(ids));
-    QMailFolderKey accountFolderKey(QMailFolderKey::parentAccountId(QMailAccountId(), QMailDataComparator::NotEqual));
+    QMailMessageKey retrieveKey(QMailMessageKey::parentAccountId(QMailAccountKey::status(QMailAccount::CanRetrieve, QMailDataComparator::Includes)));
+    QMailMessageKey enabledKey(QMailMessageKey::parentAccountId(QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes)));
 
-    ids = QMailStore::instance()->queryMessages(idKey & QMailMessageKey::parentFolderId(accountFolderKey));
+    ids = QMailStore::instance()->queryMessages(idKey & retrieveKey & enabledKey);
     if (ids.isEmpty())
         return;
 
