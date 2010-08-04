@@ -1071,11 +1071,11 @@ void EmailClient::cancelOperation()
         setRetrievalInProgress( false );
     }
 
-    if (m_flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
+    if (m_flagRetrievalAction && m_flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
         m_flagRetrievalAction->cancelOperation();
     }
 
-    if (m_exportAction->activity() == QMailServiceAction::InProgress) {
+    if (m_exportAction && m_exportAction->activity() == QMailServiceAction::InProgress) {
         m_exportAction->cancelOperation();
     }
 }
