@@ -501,6 +501,7 @@ protected:
     bool _fillingGap;
     bool _listAll;
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
+    QMap<QMailFolderId, QString> _highestModSeqMap;
     QMailFolderIdList _updatedFolders;
 };
 

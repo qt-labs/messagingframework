@@ -2508,6 +2508,7 @@ void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase 
         QMailFolder folder(properties.id);
         folder.setCustomField("qmf-min-serveruid", QString::number(1));
         folder.setCustomField("qmf-max-serveruid", QString::number(properties.uidNext - 1));
+        folder.removeCustomField("qmf-highestmodseq");
         folder.setServerUndiscoveredCount(0);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -2880,6 +2881,7 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _completionList.clear();
     _completionSectionList.clear();
     _newMinMaxMap.clear();
+    _highestModSeqMap.clear();
     _listAll = false;
     
     ImapSynchronizeBaseStrategy::handleLogin(context);
@@ -2891,10 +2893,14 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
         QMailFolder folder(folderId);
 
         bool modified(false);
-        if (!_error // Only update the range of downloaded messages if no store errors, including add errors have occurred
-            && _newMinMaxMap.contains(folderId)) {
-            folder.setCustomField("qmf-min-serveruid", QString::number(_newMinMaxMap[folderId].minimum()));
-            folder.setCustomField("qmf-max-serveruid", QString::number(_newMinMaxMap[folderId].maximum()));
+        if (!_error) { // Only update the range of downloaded messages if no store errors, including add errors have occurred
+            if (_newMinMaxMap.contains(folderId)) {
+                folder.setCustomField("qmf-min-serveruid", QString::number(_newMinMaxMap[folderId].minimum()));
+                folder.setCustomField("qmf-max-serveruid", QString::number(_newMinMaxMap[folderId].maximum()));
+            }
+            if (_highestModSeqMap.contains(folderId)) {
+                folder.setCustomField("qmf-highestmodseq", _highestModSeqMap[folderId]);
+            }
             modified = true;
         }
 
@@ -2928,7 +2934,15 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
     int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
     int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
-
+    QString highestModSeq;
+    if (!properties.noModSeq 
+        && !properties.highestModSeq.isEmpty() 
+        && folder.customField("qmf-highestmodseq").isEmpty()) {
+        // Condstore is enabled for folder and have not successfully retrieveMessageList before
+        // so save highestModSeq for this folder
+        _highestModSeqMap[properties.id] = properties.highestModSeq;
+    }
+    
     // 
     // Determine which messages are on the client but not the server
     // (i.e. determine which messages have been deleted by other clients,
