@@ -259,6 +259,7 @@ protected:
     enum { DefaultBatchSize = 50 };
 
     virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void checkUidValidity(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleCreate(ImapStrategyContextBase *context);
     virtual void handleDelete(ImapStrategyContextBase *context);

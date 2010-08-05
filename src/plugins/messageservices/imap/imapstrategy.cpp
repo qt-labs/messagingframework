@@ -900,6 +900,52 @@ void ImapMessageListStrategy::initialAction(ImapStrategyContextBase *context)
     ImapStrategy::initialAction(context);
 }
 
+void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
+{
+    const ImapMailboxProperties &properties(context->mailbox());
+    QMailFolder folder(properties.id);
+    QString oldUidValidity(folder.customField("qmf-uidvalidity"));
+    
+    if (!oldUidValidity.isEmpty()
+        && !properties.uidValidity.isEmpty()
+        && (oldUidValidity != properties.uidValidity)) {
+        // uidvalidity has changed
+        // mark all messages as removed, reset all folder sync custom fields
+        qWarning() << "UidValidity has changed for folder:" << folder.displayName() << "account:" << context->config().id();
+        folder.removeCustomField("qmf-min-serveruid");
+        folder.removeCustomField("qmf-max-serveruid");
+        folder.removeCustomField("qmf-highestmodseq");
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
+            qWarning() << "Unable to update folder for account:" << context->config().id();
+        }
+        
+        QMailMessageKey removedKey(QMailDisconnected::sourceKey(properties.id));
+        QStringList vanishedIds;
+        foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
+            const QString &uid(r.serverUid()); 
+            // We might have a deletion record for this UID
+            vanishedIds << uid;
+        }
+        if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
+            _error = true;
+            qWarning() << "Unable to purge message records for account:" << context->config().id();
+        }
+        if (!QMailStore::instance()->removeMessages(removedKey, QMailStore::NoRemovalRecord)) {
+            _error = true;
+            qWarning() << "Unable to update folder after uidvalidity changed:" << QMailFolder(properties.id).displayName();
+        }
+    }
+    if (!properties.uidValidity.isEmpty() &&
+        (properties.uidValidity != oldUidValidity)) {
+        folder.setCustomField("qmf-uidvalidity", properties.uidValidity);
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
+            qWarning() << "Unable to update folder for account:" << context->config().id();
+        }
+    }
+}
+
 void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
 {
     switch( command ) {
@@ -911,6 +957,7 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
         
         case IMAP_Select:
         {
+            checkUidValidity(context);
             handleSelect(context);
             break;
         }
