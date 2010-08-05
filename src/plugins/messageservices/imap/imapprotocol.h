@@ -86,7 +86,8 @@ enum ImapCommand
     IMAP_Idle,
     IMAP_Create,
     IMAP_Delete,
-    IMAP_Rename
+    IMAP_Rename,
+    IMAP_Enable
 };
 
 enum MessageFlag
@@ -192,6 +193,7 @@ public:
     void sendUidCopy(const QString &range, const QMailFolder &destination);
     void sendExpunge();
     void sendClose();
+    void sendEnable(const QString &extensions);
     void sendIdle();
     void sendIdleDone();
 

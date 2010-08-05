@@ -2248,6 +2248,52 @@ void CloseState::taggedResponse(ImapContext *c, const QString &line)
     ImapState::taggedResponse(c, line);
 }
 
+class EnableState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    EnableState() : ImapState(IMAP_Enable, "Enable") {}
+
+    void setExtensions(const QString &extensions);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+
+private:
+    QStringList _extensionsList;
+};
+
+void EnableState::setExtensions(const QString &extensions)
+{
+    _extensionsList.append(extensions);
+}
+
+void EnableState::init()
+{
+    ImapState::init();
+    _extensionsList.clear();
+}
+
+QString EnableState::transmit(ImapContext *c)
+{
+    QString cmd("ENABLE " + _extensionsList.last());
+    return c->sendCommand(cmd);
+}
+
+void EnableState::leave(ImapContext *)
+{
+    ImapState::init();
+    _extensionsList.removeFirst();
+}
+
+void EnableState::taggedResponse(ImapContext *c, const QString &line)
+{
+    ImapState::taggedResponse(c, line);
+}
 
 class FullState : public ImapState
 {
@@ -2321,6 +2367,7 @@ public:
     ExamineState examineState;
     CreateState createState;
     DeleteState deleteState;
+    EnableState enableState;
     RenameState renameState;
     SearchMessageState searchMessageState;
     SearchState searchState;
@@ -2753,6 +2800,12 @@ void ImapProtocol::sendExpunge()
 void ImapProtocol::sendClose()
 {
     _fsm->setState(&_fsm->closeState);
+}
+
+void ImapProtocol::sendEnable(const QString &extensions)
+{
+    _fsm->enableState.setExtensions(extensions);
+    _fsm->setState(&_fsm->enableState);
 }
 
 void ImapProtocol::connected(QMailTransport::EncryptType encryptType)
