@@ -120,6 +120,7 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
     }
 
     // Just report success
+    _service->updateStatus("");
     QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
     return true;
 
