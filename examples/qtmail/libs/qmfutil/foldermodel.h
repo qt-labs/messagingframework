@@ -42,8 +42,9 @@
 #ifndef FOLDERMODEL_H
 #define FOLDERMODEL_H
 
-#include <QIcon>
+#include <qtmailnamespace.h>
 #include <qmailmessageset.h>
+#include <QIcon>
 #include <QPair>
 #include <QString>
 
