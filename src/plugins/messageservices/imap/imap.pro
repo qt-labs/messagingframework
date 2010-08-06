@@ -43,6 +43,9 @@ QT += gui
 
 QMFUTIL_LIB = ../../../../examples/qtmail/libs/qmfutil
 
+#Required to build on windows
+DEFINES += QMFUTIL_INTERNAL
+
 INCLUDEPATH += \
                $$QMFUTIL_LIB
 HEADERS += \
