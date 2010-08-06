@@ -487,6 +487,7 @@ public:
     virtual void setAccountCheck(bool accountCheck);
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    virtual void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);

@@ -1316,6 +1316,39 @@ void SelectState::leave(ImapContext *)
 }
 
 
+class QResyncState : public SelectState
+{
+    Q_OBJECT
+
+public:
+    QResyncState() : SelectState(IMAP_QResync, "QResync") { init(); }
+
+    virtual QString transmit(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+};
+
+QString QResyncState::transmit(ImapContext *c)
+{
+    QMailFolder folder(_mailboxList.last());
+    QString cmd("SELECT " + ImapProtocol::quoteString(folder.path()));
+    QString uidValidity(folder.customField("qmf-uidvalidity"));
+    QString highestModSeq(folder.customField("qmf-highestmodseq"));
+    QString minServerUid(folder.customField("qmf-min-serveruid"));
+    QString maxServerUid(folder.customField("qmf-max-serveruid"));
+    if (!uidValidity.isEmpty() && !highestModSeq.isEmpty() && !minServerUid.isEmpty() && !maxServerUid.isEmpty()) {
+        cmd += QString(" (QRESYNC (%1 %2 %3:%4))").arg(uidValidity).arg(highestModSeq).arg(minServerUid).arg(maxServerUid);
+    } else {
+        cmd.append(" (CONDSTORE)");
+    }
+    
+    return c->sendCommand(cmd);
+}
+
+void QResyncState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    SelectState::untaggedResponse(c, line);
+}
+
 class ExamineState : public SelectState
 {
     Q_OBJECT
@@ -2364,6 +2397,7 @@ public:
     GenUrlAuthState genUrlAuthState;
     AppendState appendState;
     SelectState selectState;
+    QResyncState qresyncState;
     ExamineState examineState;
     CreateState createState;
     DeleteState deleteState;
@@ -2713,6 +2747,12 @@ void ImapProtocol::sendSelect(const QMailFolder &mailbox)
 {
     _fsm->selectState.setMailbox(mailbox);
     _fsm->setState(&_fsm->selectState);
+}
+
+void ImapProtocol::sendQResync(const QMailFolder &mailbox)
+{
+    _fsm->qresyncState.setMailbox(mailbox);
+    _fsm->setState(&_fsm->qresyncState);
 }
 
 void ImapProtocol::sendExamine(const QMailFolder &mailbox)

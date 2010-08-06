@@ -87,7 +87,8 @@ enum ImapCommand
     IMAP_Create,
     IMAP_Delete,
     IMAP_Rename,
-    IMAP_Enable
+    IMAP_Enable,
+    IMAP_QResync
 };
 
 enum MessageFlag
@@ -178,6 +179,7 @@ public:
     void sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism = QString());
     void sendAppend(const QMailFolder &mailbox, const QMailMessageId &message);
     void sendSelect(const QMailFolder &mailbox);
+    void sendQResync(const QMailFolder &mailbox);
     void sendExamine(const QMailFolder &mailbox);
     void sendCreate(const QMailFolderId &parentFolderId, const QString &name);
     void sendDelete(const QMailFolder &mailbox);

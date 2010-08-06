@@ -645,18 +645,6 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     updateFolderCountStatus(&folder);
                 }
                 
-                if (folder.customField("qmf-uidvalidity") != properties.uidValidity) {
-                    folder.setCustomField("qmf-uidvalidity", properties.uidValidity);
-                    modified = true;
-                }
-
-                if (!properties.noModSeq) {
-                    if (folder.customField("qmf-highestmodseq") != properties.highestModSeq) {
-                        folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
-                        modified = true;
-                    }
-                }
-
                 QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
                 if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
                     if (supportsForwarded.isEmpty()) {

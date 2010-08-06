@@ -960,6 +960,7 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
             break;
         }
         
+        case IMAP_QResync: // fall through
         case IMAP_Select:
         {
             checkUidValidity(context);
@@ -2925,6 +2926,15 @@ void ImapRetrieveMessageListStrategy::transition(ImapStrategyContextBase *contex
     }
 }
 
+void ImapRetrieveMessageListStrategy::selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder)
+{
+    if (context->protocol().capabilities().contains("QRESYNC")) {
+        context->protocol().sendQResync(folder);
+    } else {
+        ImapSynchronizeBaseStrategy::selectFolder(context, folder);
+    }
+}
+
 void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     context->updateStatus(QObject::tr("Scanning folder"));
@@ -2988,8 +2998,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
     QString highestModSeq;
     if (!properties.noModSeq 
-        && !properties.highestModSeq.isEmpty() 
-        && folder.customField("qmf-highestmodseq").isEmpty()) {
+        && !properties.highestModSeq.isEmpty() ) {
         // Condstore is enabled for folder and have not successfully retrieveMessageList before
         // so save highestModSeq for this folder
         _highestModSeqMap[properties.id] = properties.highestModSeq;
