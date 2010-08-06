@@ -148,6 +148,7 @@ public:
     virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
     virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
     virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName);
+    virtual void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder);
 
     void clearError() { _error = false; }
     bool error() { return _error; }

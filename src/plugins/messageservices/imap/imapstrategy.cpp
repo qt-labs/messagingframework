@@ -499,6 +499,11 @@ void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFo
     Q_UNUSED(newPath)
 }
 
+void ImapStrategy::selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder)
+{
+    context->protocol().sendSelect(folder);
+}
+
 /* A strategy to create a folder */
 void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
 {
@@ -1163,7 +1168,7 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
             // No folder should be selected
             context->protocol().sendClose();
         } else {
-            context->protocol().sendSelect(_currentMailbox);
+            selectFolder(context, _currentMailbox);
         }
     } else {
         messageListCompleted(context);
@@ -1572,7 +1577,7 @@ void ImapFolderListStrategy::handleList(ImapStrategyContextBase *context)
                     processNextFolder(context);
                 } else {
                     // Select this folder
-                    context->protocol().sendSelect( _currentMailbox );
+                    selectFolder(context,  _currentMailbox );
                     return;
                 }
             } else {
@@ -1672,7 +1677,7 @@ void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
     if(_folderStatus.contains(folderId) && _folderStatus[folderId] & NoSelect)
         context->protocol().sendList(_currentMailbox, QString('%'));
     else
-        context->protocol().sendSelect(_currentMailbox);
+        selectFolder(context, _currentMailbox);
 
     context->progressChanged(++_processed, _processable);
 }
@@ -1835,7 +1840,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
                 context->updateStatus( status );
             }
 
-            context->protocol().sendSelect( _currentMailbox );
+            selectFolder(context,  _currentMailbox );
 
             // Send fetch command without waiting for Select response
             fetchNextMailPreview(context);
@@ -2855,7 +2860,7 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
     
     //not not try select an unselectable mailbox
     if(!_folderStatus.contains(folderId) || !(_folderStatus.value(folderId) & NoSelect))
-        context->protocol().sendSelect(_currentMailbox);
+        selectFolder(context, _currentMailbox);
 }
 
 void ImapUpdateMessagesFlagsStrategy::processUidSearchResults(ImapStrategyContextBase *context)
@@ -3339,7 +3344,7 @@ void ImapCopyMessagesStrategy::messageListCompleted(ImapStrategyContextBase *con
     } else {
         // We have copied all the messages - now we need to retrieve the copies
         _transferState = Search;
-        context->protocol().sendSelect(_destination);
+        selectFolder(context, _destination);
     }
 }
 
@@ -3488,7 +3493,7 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
             // We already have the appropriate mailbox selected
             handleSelect(context);
         } else {
-            context->protocol().sendSelect(_destination);
+            selectFolder(context, _destination);
         }
     } else {
         // Nothing more to do
