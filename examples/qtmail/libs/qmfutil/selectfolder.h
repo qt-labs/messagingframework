@@ -44,6 +44,7 @@
 
 #include <QDialog>
 #include <QList>
+#include <qtmailnamespace.h>
 #include <qmailid.h>
 #include <qmailmessageset.h>
 
