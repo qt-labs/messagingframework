@@ -345,6 +345,8 @@ public:
     void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
     void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
     void setPermanentFlags(const QStringList &flags) { mProtocol->_mailbox.permanentFlags = flags; }
+    void setVanished(const QString &vanished) { mProtocol->_mailbox.qresyncVanished = vanished; }
+    void setChanges(const QList<QResyncChange> &changes) { mProtocol->_mailbox.qresyncChanges = changes; }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -1325,7 +1327,26 @@ public:
 
     virtual QString transmit(ImapContext *c);
     virtual void untaggedResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual void enter(ImapContext *c);
+    virtual void leave(ImapContext *c);
+
+protected:
+    QString vanished;
+    QList<QResyncChange> changes;
 };
+
+void QResyncState::enter(ImapContext *c)
+{
+    vanished.clear();
+    changes.clear();
+    SelectState::enter(c);
+}
+
+void QResyncState::leave(ImapContext *c)
+{
+    SelectState::leave(c);
+}
 
 QString QResyncState::transmit(ImapContext *c)
 {
@@ -1346,8 +1367,33 @@ QString QResyncState::transmit(ImapContext *c)
 
 void QResyncState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    SelectState::untaggedResponse(c, line);
+    QString str = line;
+    QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    QRegExp vanishResponsePattern("\\*\\s+\\VANISHED\\s+\\(EARLIER\\)\\s+(\\S+)");
+    vanishResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
+    if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
+        QString uid = extractUid(str, c->mailbox().id);
+        if (!uid.isEmpty()) {
+            MessageFlags flags = 0;
+            parseFlags(str, flags);
+            changes.append(QResyncChange(uid, flags));
+        }
+    } else if (vanishResponsePattern.indexIn(str) == 0) {
+        vanished = vanishResponsePattern.cap(1);
+    } else {
+        SelectState::untaggedResponse(c, line);
+    }
 }
+
+void QResyncState::taggedResponse(ImapContext *c, const QString &line)
+{
+    c->setVanished(vanished);
+    c->setChanges(changes);
+    vanished.clear();
+    changes.clear();
+    SelectState::taggedResponse(c, line);
+}
+
 
 class ExamineState : public SelectState
 {

@@ -104,8 +104,6 @@ enum MessageFlag
     MFlag_Forwarded = (1 << 7)
 };
 
-typedef uint MessageFlags;
-
 enum FetchDataItem
 {
     F_Rfc822_Size   = (1 << 0),
