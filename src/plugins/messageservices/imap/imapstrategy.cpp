@@ -905,6 +905,24 @@ void ImapMessageListStrategy::initialAction(ImapStrategyContextBase *context)
     ImapStrategy::initialAction(context);
 }
 
+void ImapMessageListStrategy::purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
+{
+    QStringList vanishedIds;
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
+        const QString &uid(r.serverUid()); 
+        // We might have a deletion record for this UID
+        vanishedIds << uid;
+    }
+    if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
+        _error = true;
+        qWarning() << "Unable to purge message records for account:" << context->config().id();
+    }
+    if (!QMailStore::instance()->removeMessages(removedKey, QMailStore::NoRemovalRecord)) {
+        _error = true;
+        qWarning() << "Unable to update folder after uidvalidity changed:" << QMailFolder(context->mailbox().id).displayName();
+    }
+}
+
 void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
 {
     const ImapMailboxProperties &properties(context->mailbox());
@@ -926,20 +944,7 @@ void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
         }
         
         QMailMessageKey removedKey(QMailDisconnected::sourceKey(properties.id));
-        QStringList vanishedIds;
-        foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
-            const QString &uid(r.serverUid()); 
-            // We might have a deletion record for this UID
-            vanishedIds << uid;
-        }
-        if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
-            _error = true;
-            qWarning() << "Unable to purge message records for account:" << context->config().id();
-        }
-        if (!QMailStore::instance()->removeMessages(removedKey, QMailStore::NoRemovalRecord)) {
-            _error = true;
-            qWarning() << "Unable to update folder after uidvalidity changed:" << QMailFolder(properties.id).displayName();
-        }
+        purge(context, removedKey);
     }
     if (!properties.uidValidity.isEmpty() &&
         (properties.uidValidity != oldUidValidity)) {
@@ -3163,6 +3168,19 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     const ImapMailboxProperties &properties(context->mailbox());
     uint minimum(_minimum);
     QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
+
+    // Could get flag changes mod sequences when CONDSTORE is available
+    if ((properties.exists == 0) || (minimum <= 0)) {
+        // No messages, so no need to perform search
+        if (properties.exists == 0) {
+            // Folder is completely empty mark all messages in it on client as removed
+            QMailMessageKey removedKey(sourceKey);
+            purge(context, removedKey);
+        }
+        processUidSearchResults(context);
+        return;
+    }
+
     if (_accountCheck) {
         // Request all (non search) messages in this folder or _minimum which ever is greater
         QMailMessageKey countKey(sourceKey);
@@ -3171,21 +3189,6 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     }
     _fillingGap = false;
     _listAll = false;
-
-    // Could get flag changes mod sequences when CONDSTORE is available
-    if ((properties.exists == 0) || (minimum <= 0)) {
-        // No messages, so no need to perform search
-        if (properties.exists == 0) {
-            // Folder is completely empty mark all messages in it on client as removed
-            QMailMessageKey removedKey(sourceKey);
-            if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
-                qWarning() << "Unable to update removed messag data in empty folder:" << QMailFolder(properties.id).displayName();
-            }
-            
-        }
-        processUidSearchResults(context);
-        return;
-    }
 
     // Compute starting sequence number
     int start = static_cast<int>(properties.exists) - minimum + 1;
