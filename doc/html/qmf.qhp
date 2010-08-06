@@ -1341,6 +1341,7 @@
             <keyword name="matchingMessageIds" id="QMailSearchAction::matchingMessageIds" ref="qmailsearchaction.html#matchingMessageIds"/>
             <keyword name="messageIdsMatched" id="QMailSearchAction::messageIdsMatched" ref="qmailsearchaction.html#messageIdsMatched"/>
             <keyword name="searchMessages" id="QMailSearchAction::searchMessages" ref="qmailsearchaction.html#searchMessages"/>
+            <keyword name="temporaryKey" id="QMailSearchAction::temporaryKey" ref="qmailsearchaction.html#temporaryKey"/>
             <keyword name="QMailServiceAction" id="QMailServiceAction" ref="qmailserviceaction.html"/>
             <keyword name="QMailServiceAction::Activity" id="QMailServiceAction::Activity" ref="qmailserviceaction.html#Activity-enum"/>
             <keyword name="QMailServiceAction::Pending" id="QMailServiceAction::Pending" ref="qmailserviceaction.html#Activity-enum"/>

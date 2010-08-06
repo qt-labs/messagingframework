@@ -67,6 +67,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#PreferredSender-var">PreferredSender</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#SynchronizationEnabled-var">SynchronizationEnabled</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#Synchronized-var">Synchronized</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#UseSmartReply-var">UseSmartReply</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#UserEditable-var">UserEditable</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#UserRemovable-var">UserRemovable</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#statusMask">statusMask</a></b> ( const QString &amp; <i>flagName</i> )</td></tr>
@@ -212,6 +213,9 @@
 <h3 class="fn"><a name="Synchronized-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::Synchronized</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;Synchronized&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that an account has been synchronized by a synchronization operation.</p>
+<h3 class="fn"><a name="UseSmartReply-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::UseSmartReply</h3>
+<p>The status mask needed for testing the value of the registered status flag named <tt>&quot;UseSmartReply&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
+<p>This flag indicates that the account uses 'Smart Reply', a technique in which the server will automatically append the text of the replied-to message, and as such does not need to be done manually.</p>
 <h3 class="fn"><a name="UserEditable-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailAccount::UserEditable</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;UserEditable&quot;</tt> against the result of <a href="qmailaccount.html#status">QMailAccount::status</a>().</p>
 <p>This flag indicates that the account's configuration may be modified by the user.</p>

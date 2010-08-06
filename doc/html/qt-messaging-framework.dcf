@@ -67,6 +67,7 @@
         <keyword ref="qmailaccount.html#PreferredSender-var">PreferredSender</keyword>
         <keyword ref="qmailaccount.html#SynchronizationEnabled-var">SynchronizationEnabled</keyword>
         <keyword ref="qmailaccount.html#Synchronized-var">Synchronized</keyword>
+        <keyword ref="qmailaccount.html#UseSmartReply-var">UseSmartReply</keyword>
         <keyword ref="qmailaccount.html#UserEditable-var">UserEditable</keyword>
         <keyword ref="qmailaccount.html#UserRemovable-var">UserRemovable</keyword>
         <section ref="qmailaccount-members.html" title="List of all members"/>
@@ -1293,6 +1294,7 @@
         <keyword ref="qmailsearchaction.html#matchingMessageIds">matchingMessageIds</keyword>
         <keyword ref="qmailsearchaction.html#messageIdsMatched">messageIdsMatched</keyword>
         <keyword ref="qmailsearchaction.html#searchMessages">searchMessages</keyword>
+        <keyword ref="qmailsearchaction.html#temporaryKey">temporaryKey</keyword>
         <section ref="qmailsearchaction-members.html" title="List of all members"/>
     </section>
     <section ref="qmailserviceaction.html" title="QMailServiceAction Class Reference">
