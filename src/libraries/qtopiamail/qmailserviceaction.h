@@ -267,7 +267,7 @@ public slots:
 
 class QMailActionInfoPrivate;
 
-class QMailActionInfo : public QMailServiceAction {
+class QTOPIAMAIL_EXPORT  QMailActionInfo : public QMailServiceAction {
     Q_OBJECT
 //    If needed properties can be enabled by uncommenting this code
 //    and won't break api/abi
