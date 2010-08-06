@@ -2235,7 +2235,7 @@ void EmailClient::retrieveMoreMessages()
 
         // Find how many messages we have requested for this folder
         QMailMessageKey countKey(QMailDisconnected::sourceKey(folderId));
-        countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+        countKey &= ~QMailSearchAction::temporaryKey();
         int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
 
         // Request more messages

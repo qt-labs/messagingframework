@@ -1527,6 +1527,15 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
 }
 
 /*!
+    Returns a key matching messages that are temporary messages existing only as 
+    the result of a search action.
+*/
+QMailMessageKey QMailSearchAction::temporaryKey()
+{
+    return QMailMessageKey::status(QMailMessage::Temporary);
+}
+
+/*!
     \fn QMailSearchAction::messageIdsMatched(const QMailMessageIdList &ids)
 
     This signal is emitted when the messages in \a ids are discovered to match

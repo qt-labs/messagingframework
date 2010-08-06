@@ -256,6 +256,7 @@ public:
     ~QMailSearchAction();
 
     QMailMessageIdList matchingMessageIds() const;
+    static QMailMessageKey temporaryKey();
 
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);
