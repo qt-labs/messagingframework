@@ -158,6 +158,7 @@ private:
     bool _waitingForIdle;
     QMailFolderIdList _waitingForIdleFolderIds;
     bool _idlesEstablished;
+    bool _qresyncEnabled;
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;

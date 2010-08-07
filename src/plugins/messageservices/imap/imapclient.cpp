@@ -370,7 +370,8 @@ void IdleProtocol::idleErrorRecovery()
 ImapClient::ImapClient(QObject* parent)
     : QObject(parent),
       _waitingForIdle(false),
-      _idlesEstablished(false)
+      _idlesEstablished(false),
+      _qresyncEnabled(false)
 {
     static int count(0);
     ++count;
@@ -439,6 +440,7 @@ void ImapClient::newConnection()
     } else {
         // Reload the account configuration
         _config = QMailAccountConfiguration(_config.id());
+        _qresyncEnabled = false;
     }
 
     ImapConfiguration imapCfg(_config);
@@ -568,6 +570,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 if (_protocol.capabilities().contains("QRESYNC")) {
                     // pipeline enable command
                     _protocol.sendEnable("QRESYNC CONDSTORE");
+                    _qresyncEnabled = true;
                 }
             }
             break;
@@ -580,6 +583,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             if (_protocol.capabilities().contains("QRESYNC")) {
                 // pipeline enable command
                 _protocol.sendEnable("QRESYNC CONDSTORE");
+                _qresyncEnabled = true;
             }
             break;
         }
@@ -610,6 +614,11 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
             if (!_protocol.capabilities().contains("QRESYNC")) {
                 _strategyContext->commandTransition(command, status);
+            } else {
+                if (!_qresyncEnabled) {
+                    _protocol.sendEnable("QRESYNC CONDSTORE");
+                    _qresyncEnabled = true;
+                }
             }
             break;
         }
