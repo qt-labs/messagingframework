@@ -45,6 +45,9 @@
 #include <qmailfolder.h>
 #include <qstringlist.h>
 
+typedef uint MessageFlags;
+typedef QPair<QString, MessageFlags> QResyncChange;
+
 struct ImapMailboxProperties
 {
     ImapMailboxProperties(const QMailFolder &folder = QMailFolder())
@@ -75,6 +78,8 @@ struct ImapMailboxProperties
     QString highestModSeq;
     bool noModSeq;
     QStringList permanentFlags;
+    QString qresyncVanished;
+    QList<QResyncChange> qresyncChanges;
 };
 
 #endif
