@@ -331,6 +331,18 @@ IntegerRegion IntegerRegion::add(IntegerRegion other) const
 }
 
 /*
+  Returns the intersection of this region and the \a other region.
+*/
+IntegerRegion IntegerRegion::intersect(IntegerRegion other) const
+{
+    IntegerRegion A(*this);
+    IntegerRegion B(other);
+    // A n B = (A U B) - ((A - B) U (B - A)) 
+    IntegerRegion result(A.add(B).subtract(A.subtract(B).add(B.subtract(A))));
+    return result;
+}
+
+/*
   Returns true if \a uids contains a list of integers; otherwise returns false.
 */
 bool IntegerRegion::isIntegerRegion(QStringList uids)
@@ -545,7 +557,55 @@ int IntegerRegion::tests()
     qMailLog(Messaging) << "IntegerRegion::subtractTest test9: " 
                         << ((ar.toString() == a4) ? "passed" : "failed");
     
+    ir = IntegerRegion("1:20");
+    jr = IntegerRegion("10:30");
+    ar = jr.intersect(ir);
+    QString a5("10:20");
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test10: " 
+                        << ((ar.toString() == a5) ? "passed" : "failed");
+
+    ar = ir.intersect(jr);
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test11: " 
+                        << ((ar.toString() == a5) ? "passed" : "failed");
     
+    ir = IntegerRegion("1:10");
+    jr = IntegerRegion("20:30");
+    ar = jr.intersect(ir);
+    QString a6("");
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test12: " 
+                        << ((ar.toString() == a6) ? "passed" : "failed");
+
+    ir = IntegerRegion("1:10");
+    jr = IntegerRegion("20:30");
+    ar = ir.intersect(jr);
+    QString a7("");
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test13: " 
+                        << ((ar.toString() == a7) ? "passed" : "failed");
+
+    ar = ir.intersect(ir);
+    QString a8("1:10");
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test14: " 
+                        << ((ar.toString() == a8) ? "passed" : "failed");
+    
+    ir = IntegerRegion("1:4,6:8,9,10,30,1000,20000,30000");
+    jr = IntegerRegion("1:30000");
+    ar = ir.intersect(jr);
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test15: " 
+                        << ((ar.toString() == ir.toString()) ? "passed" : "failed");
+    ar = jr.intersect(ir);
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test16: " 
+                        << ((ar.toString() == ir.toString()) ? "passed" : "failed");
+    
+    jr = IntegerRegion("2,5,7,100:10000,25000,26000,27000,28000");
+    ar = jr.intersect(ir);
+    QString a9("2,7,1000");
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test17: " 
+                        << ((ar.toString() == a9) ? "passed" : "failed");
+    
+    ar = ir.intersect(jr);
+    qMailLog(Messaging) << "IntegerRegion::intersectionTest test18: " 
+                        << ((ar.toString() == a9) ? "passed" : "failed");
+
     return 1;
 }
 

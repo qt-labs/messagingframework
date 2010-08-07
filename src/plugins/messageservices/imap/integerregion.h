@@ -67,6 +67,7 @@ public:
     void add(int number);
     IntegerRegion subtract(IntegerRegion) const;
     IntegerRegion add(IntegerRegion) const;
+    IntegerRegion intersect(IntegerRegion) const;
 
     static bool isIntegerRegion(QStringList uids);
 
