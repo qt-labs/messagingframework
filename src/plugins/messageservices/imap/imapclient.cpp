@@ -608,7 +608,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
             }
 
-            _strategyContext->commandTransition(command, status);
+            if (!_protocol.capabilities().contains("QRESYNC")) {
+                _strategyContext->commandTransition(command, status);
+            }
             break;
         }
 
