@@ -493,19 +493,23 @@ public:
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void qresyncHandleUidSearch(ImapStrategyContextBase *context);
 
     virtual void messageListCompleted(ImapStrategyContextBase *context);
     virtual void folderListCompleted(ImapStrategyContextBase *context);
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    virtual void qresyncFolderListFolderAction(ImapStrategyContextBase *context);
 
     uint _minimum;
     bool _accountCheck;
     bool _fillingGap;
     bool _listAll;
+    bool _qresyncListingNew;
+    IntegerRegion _qresyncRetrieve;
+    int _qresyncVanished;
     QMap<QMailFolderId, IntegerRegion> _newMinMaxMap;
-    QMap<QMailFolderId, QString> _highestModSeqMap;
     QMailFolderIdList _updatedFolders;
 };
 

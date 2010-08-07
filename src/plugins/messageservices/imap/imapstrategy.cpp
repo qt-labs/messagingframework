@@ -2948,8 +2948,10 @@ void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *conte
     _completionList.clear();
     _completionSectionList.clear();
     _newMinMaxMap.clear();
-    _highestModSeqMap.clear();
     _listAll = false;
+    _qresyncListingNew = false;
+    _qresyncRetrieve.clear();
+    _qresyncVanished = 0;
     
     ImapSynchronizeBaseStrategy::handleLogin(context);
 }
@@ -2964,9 +2966,6 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
             if (_newMinMaxMap.contains(folderId)) {
                 folder.setCustomField("qmf-min-serveruid", QString::number(_newMinMaxMap[folderId].minimum()));
                 folder.setCustomField("qmf-max-serveruid", QString::number(_newMinMaxMap[folderId].maximum()));
-            }
-            if (_highestModSeqMap.contains(folderId)) {
-                folder.setCustomField("qmf-highestmodseq", _highestModSeqMap[folderId]);
             }
             modified = true;
         }
@@ -2994,20 +2993,17 @@ void ImapRetrieveMessageListStrategy::folderListCompleted(ImapStrategyContextBas
 
 void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *context)
 {
-    const ImapMailboxProperties &properties(context->mailbox());
+    if (context->protocol().capabilities().contains("QRESYNC")) {
+        qresyncHandleUidSearch(context);
+        return;
+    }
 
+    const ImapMailboxProperties &properties(context->mailbox());
     QMailFolder folder(properties.id);
 
     bool ok; // toUint returns 0 on error, which is an invalid IMAP uid
     int clientMin(folder.customField("qmf-min-serveruid").toUInt(&ok));
     int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok));
-    QString highestModSeq;
-    if (!properties.noModSeq 
-        && !properties.highestModSeq.isEmpty() ) {
-        // Condstore is enabled for folder and have not successfully retrieveMessageList before
-        // so save highestModSeq for this folder
-        _highestModSeqMap[properties.id] = properties.highestModSeq;
-    }
     
     // 
     // Determine which messages are on the client but not the server
@@ -3180,28 +3176,209 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
         processUidSearchResults(context);
         return;
     }
+    _fillingGap = false;
+    _listAll = false;
 
+    if (context->protocol().capabilities().contains("QRESYNC")) {
+        qresyncFolderListFolderAction(context);
+        return;
+    }
+    
     if (_accountCheck) {
         // Request all (non search) messages in this folder or _minimum which ever is greater
         QMailMessageKey countKey(sourceKey);
         countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
         minimum = qMax((uint)QMailStore::instance()->countMessages(countKey), _minimum);
     }
-    _fillingGap = false;
-    _listAll = false;
 
     // Compute starting sequence number
     int start = static_cast<int>(properties.exists) - minimum + 1;
     // In the case of retrieving new messages only (minimum = 1) and multiple messages 
     // have arrived could possibly save a round trip by: 
     //   start -= QMailFolder(properties.id).serverUndiscoveredCount(); 
-    if (start < 1)
+    if (start <= 1) {
         start = 1;
-
-    if (start == 1)
         _listAll = true;
+    }
     // We need to determine these values again
     context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
+}
+
+void ImapRetrieveMessageListStrategy::qresyncHandleUidSearch(ImapStrategyContextBase *context)
+{
+    // Add the listed uids to the retrieve list
+    const ImapMailboxProperties &properties(context->mailbox());
+    foreach(const QString &uid, properties.uidList) {
+        bool ok;
+        uint number = stripFolderPrefix(uid).toUInt(&ok);
+        if (ok) {
+            _qresyncRetrieve.add(number);
+        }
+    }
+        
+    if (_qresyncListingNew) {
+        // Only new messages have been retrieved, check to see if it's necessary to get more messages
+        QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
+        QMailMessageKey countKey(sourceKey);
+        countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+        if ((uint)QMailStore::instance()->countMessages(countKey) < _minimum) {
+            // Need to get more messages, min argument + new on server - removed on server and were on client
+            uint adjustedMinimum = _minimum + _qresyncRetrieve.cardinality() - _qresyncVanished;
+            int start = static_cast<int>(properties.exists) - adjustedMinimum + 1;
+            if (start <= 1) {
+                start = 1;
+                _listAll = true;
+            }
+            _qresyncListingNew = false;
+            context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
+            return;
+        }
+    }
+    
+    if (_qresyncRetrieve.isEmpty()) {
+        // Nothing to do
+        processUidSearchResults(context);
+        return;
+    }
+        
+    // Retrieve messages list in _qresyncRetrieve region that are not already in the store
+    QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
+    IntegerRegion clientRegion;
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
+        const QString uid(r.serverUid());
+        int serverUid(stripFolderPrefix(uid).toUInt());
+        clientRegion.add(serverUid);
+    }
+    
+    IntegerRegion difference(_qresyncRetrieve.subtract(clientRegion));
+    if (difference.cardinality()) {
+        _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
+        _updatedFolders.append(properties.id);
+        int newClientMin(difference.minimum());
+        int newClientMax(difference.maximum());
+        if (clientRegion.cardinality()) {
+            newClientMin = qMin(newClientMin, clientRegion.minimum());
+            newClientMax = qMax(newClientMax, clientRegion.maximum());
+        }
+        
+        _newMinMaxMap.insert(properties.id, IntegerRegion(newClientMin, newClientMax));
+    }
+    processUidSearchResults(context);
+}
+
+static void markMessages(IntegerRegion region, quint64 flag, bool set, QMailFolderId folderId, bool *error)
+{
+    if (!region.cardinality())
+        return;
+    
+    QStringList uidList;
+    foreach(QString uid, region.toStringList()) {
+        uidList.append(QString::number(folderId.toULongLong()) + UID_SEPARATOR + uid);
+    }
+    QMailMessageKey uidKey(QMailMessageKey::serverUid(uidList));
+    if (!QMailStore::instance()->updateMessagesMetaData(uidKey, flag, set)) {
+        qWarning() << "Unable to update message metadata for folder:" << folderId << "flag" << flag << "set" << set;
+        *error = true;
+    }
+}
+
+void ImapRetrieveMessageListStrategy::qresyncFolderListFolderAction(ImapStrategyContextBase *context)
+{
+    _qresyncListingNew = false;
+    _qresyncRetrieve.clear();
+    _qresyncVanished = 0;
+    bool ok;
+    bool ok2;
+
+    // Update highestModSeq for this folder
+    const ImapMailboxProperties &properties(context->mailbox());
+    
+    IntegerRegion vanished(properties.qresyncVanished);
+    QMailFolder folder(properties.id);
+    QString minServerUid(folder.customField("qmf-min-serveruid"));
+    int clientMin(minServerUid.toUInt(&ok));
+    QString maxServerUid(folder.customField("qmf-max-serveruid"));
+    int clientMax(maxServerUid.toUInt(&ok2));
+    if (!minServerUid.isEmpty() && !maxServerUid.isEmpty() && ok && ok2) {
+        IntegerRegion vanishedOnClient(vanished.intersect(IntegerRegion(clientMin, INT_MAX)));
+        _qresyncVanished = vanishedOnClient.cardinality();
+        QStringList removedList;
+        foreach(QString uid, vanishedOnClient.toStringList()) {
+            removedList.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
+        }
+        if (!removedList.isEmpty()) {
+            QMailMessageKey removedKey(QMailMessageKey::serverUid(removedList));
+            purge(context, removedKey);
+        }
+        
+        IntegerRegion read;
+        IntegerRegion unread;
+        IntegerRegion important;
+        IntegerRegion notImportant;
+        foreach(QResyncChange change, properties.qresyncChanges) {
+            bool ok;
+            QString uidStr(stripFolderPrefix(change.first));
+            MessageFlags flags(change.second);
+            int uid(uidStr.toUInt(&ok));
+            if (!uidStr.isEmpty() && ok) {
+                if (flags & MFlag_Seen) {
+                    read.add(uid);
+                } else {
+                    unread.add(uid);
+                }
+                if (flags & MFlag_Flagged) {
+                    important.add(uid);
+                } else {
+                    notImportant.add(uid);
+                }
+            }
+        }
+        markMessages(read, QMailMessage::Read, true, properties.id, &_error);
+        markMessages(read, QMailMessage::ReadElsewhere, true, properties.id, &_error);
+        markMessages(unread, QMailMessage::Read, false, properties.id, &_error);
+        markMessages(unread, QMailMessage::ReadElsewhere, false, properties.id, &_error);
+        markMessages(important, QMailMessage::Important, true, properties.id, &_error);
+        markMessages(important, QMailMessage::ImportantElsewhere, true, properties.id, &_error);
+        markMessages(notImportant, QMailMessage::Important, false, properties.id, &_error);
+        markMessages(notImportant, QMailMessage::ImportantElsewhere, false, properties.id, &_error);
+        folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            _error = true;
+            qWarning() << "Unable to update folder HIGHESTMODSEQ for account:" << context->config().id();
+        }
+    }
+    
+    if (!maxServerUid.isEmpty() && ok2 && (clientMax + 1 < static_cast<int>(properties.uidNext))) {
+        // This folder has been synchronized before, fetch new messages in it on external server
+        _qresyncListingNew = true;
+        context->protocol().sendUidSearch(MFlag_All, QString("UID %1:*").arg(clientMax + 1));
+        return;
+    }
+        
+    if (!_minimum) {
+        // Nothing to do
+        processNextFolder(context);
+        return;
+    }
+    
+    // Get recent messages but no more than minimum of them
+    QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
+    QMailMessageKey countKey(sourceKey);
+    countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
+    if ((uint)QMailStore::instance()->countMessages(countKey) < _minimum) {
+        uint adjustedMinimum = _minimum - _qresyncVanished;
+        int start = static_cast<int>(properties.exists) - adjustedMinimum + 1;
+        if (start <= 1) {
+            start = 1;
+            _listAll = true;
+        }
+        context->protocol().sendUidSearch(MFlag_All, QString("%1:*").arg(start));
+        return;
+    }
+    
+    // Nothing to do
+    processNextFolder(context);
+    return;
 }
 
 void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContextBase *context)
