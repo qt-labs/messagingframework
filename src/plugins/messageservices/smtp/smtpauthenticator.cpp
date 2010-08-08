@@ -56,7 +56,7 @@ QByteArray SmtpAuthenticator::getAuthentication(const QMailAccountConfiguration:
 {
     QByteArray result(QMailAuthenticator::getAuthentication(svcCfg, capabilities));
     if (!result.isEmpty())
-        return result;
+        return result.prepend("AUTH ");;
 
 #ifndef QT_NO_OPENSSL
     SmtpConfiguration smtpCfg(svcCfg);
