@@ -64,7 +64,8 @@ public:
         Auth_LOGIN = 1,
         Auth_PLAIN = 2,
 #endif
-        Auth_INCOMING = 3
+        Auth_CRAMMD5 = 3,
+        Auth_INCOMING = 4
     };
 
     explicit SmtpConfiguration(const QMailAccountConfiguration &config);

@@ -136,6 +136,7 @@ const SmtpConfiguration::AuthType authenticationType[] = {
     SmtpConfiguration::Auth_LOGIN,
     SmtpConfiguration::Auth_PLAIN,
 #endif
+    SmtpConfiguration::Auth_CRAMMD5,
     SmtpConfiguration::Auth_INCOMING
 };
 
@@ -211,7 +212,9 @@ void SmtpSettings::authChanged(int index)
 {
 #ifndef QT_NO_OPENSSL
     SmtpConfiguration::AuthType type = authenticationType[index];
-    bool enableCredentials = (type == SmtpConfiguration::Auth_LOGIN || type == SmtpConfiguration::Auth_PLAIN);
+    bool enableCredentials = (type == SmtpConfiguration::Auth_LOGIN
+                              || type == SmtpConfiguration::Auth_PLAIN
+                              || type == SmtpConfiguration::Auth_CRAMMD5);
 
     smtpUsernameInput->setEnabled(enableCredentials);
     lblSmtpUsername->setEnabled(enableCredentials);

@@ -228,6 +228,11 @@
            <string>Plain</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>Cram MD5</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="6" column="0">
