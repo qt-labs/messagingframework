@@ -2657,6 +2657,12 @@ void ImapExportUpdatesStrategy::handleUidSearch(ImapStrategyContextBase *context
     processUidSearchResults(context);
 }
 
+void ImapExportUpdatesStrategy::handleSelect(ImapStrategyContextBase *context)
+{
+    // Don't list subfolders, instead skip directly to processing current folder
+    handleList(context);
+}
+
 void ImapExportUpdatesStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     _serverReportedUids = QStringList();
