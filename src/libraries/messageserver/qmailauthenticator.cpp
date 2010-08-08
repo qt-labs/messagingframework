@@ -40,6 +40,45 @@
 ****************************************************************************/
 
 #include "qmailauthenticator.h"
+#include <qmailserviceconfiguration.h>
+#include <qcryptographichash.h>
+#include <qbytearray.h>
+
+// cram-md5 helper code
+
+static QByteArray xorArray(const QByteArray input, char c)
+{
+    QByteArray result;
+    for (int i = 0; i < input.size(); ++i) {
+        result += (input[i] ^ c);
+    }
+    return result;
+}
+
+static QByteArray cramMd5Response(const QByteArray &nonce, const QByteArray &name, const QByteArray &password)
+{
+    char opad(0x5c);
+    char ipad(0x36);
+    QByteArray result = name + " ";
+    QCryptographicHash hash(QCryptographicHash::Md5);
+    QCryptographicHash hash1(QCryptographicHash::Md5);
+    QCryptographicHash hash2(QCryptographicHash::Md5);
+    QByteArray passwordPad(password);
+    if (passwordPad.size() > 64) {
+        hash.addData(passwordPad);
+        passwordPad = hash.result();
+    }
+    while (passwordPad.size() < 64)
+        passwordPad.append(char(0));
+    hash1.addData(xorArray(passwordPad, ipad));
+    hash1.addData(nonce);
+    hash2.addData(xorArray(passwordPad, opad));
+    hash2.addData(hash1.result());
+    result.append(hash2.result().toHex());
+    return result;
+}
+
+// end cram-md5 helper code
 
 
 /*!
@@ -79,10 +118,19 @@ bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceC
 */
 QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
-    return QByteArray();
+    QMailServiceConfiguration configuration(svcCfg);
+    if (!configuration.value("smtpusername").isEmpty() && (configuration.value("authentication") == "3")) {
+        // SMTP server CRAM-MD5 authentication
+        foreach(QString capa, capabilities) {
+            capa += " ";
+            if (capa.startsWith("AUTH") && capa.contains(" CRAM-MD5 ")) {
+                return "CRAM-MD5";
+            }
+        }
+    }
 
-    Q_UNUSED(svcCfg)
-    Q_UNUSED(capabilities)
+    // Unknown service type and/or authentication type
+    return QByteArray();
 }
 
 /*!
@@ -96,9 +144,13 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
 */
 QByteArray QMailAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
 {
-    return QByteArray();
+    QMailServiceConfiguration configuration(svcCfg);
+    if (!configuration.value("smtpusername").isEmpty() && (configuration.value("authentication") == "3")) {
+        // SMTP server CRAM-MD5 authentication
+        return cramMd5Response(challenge, configuration.value("smtpusername").toUtf8(), QByteArray::fromBase64(configuration.value("smtppassword").toUtf8()));
+    }
 
-    Q_UNUSED(svcCfg)
-    Q_UNUSED(challenge)
+    // Unknown service type and/or authentication type
+    return QByteArray();
 }
 
