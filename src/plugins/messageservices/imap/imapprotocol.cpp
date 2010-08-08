@@ -2368,6 +2368,23 @@ void EnableState::taggedResponse(ImapContext *c, const QString &line)
     ImapState::taggedResponse(c, line);
 }
 
+class NoopState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    NoopState() : ImapState(IMAP_Noop, "Noop") {}
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual QString transmit(ImapContext *c);
+};
+
+QString NoopState::transmit(ImapContext *c)
+{
+    QString cmd("NOOP");
+    return c->sendCommand(cmd);
+}
+
 class FullState : public ImapState
 {
     Q_OBJECT
@@ -2442,6 +2459,7 @@ public:
     CreateState createState;
     DeleteState deleteState;
     EnableState enableState;
+    NoopState noopState;
     RenameState renameState;
     SearchMessageState searchMessageState;
     SearchState searchState;
@@ -2729,6 +2747,11 @@ void ImapProtocol::sendLogin( const QMailAccountConfiguration &config )
 void ImapProtocol::sendLogout()
 {
     _fsm->setState(&_fsm->logoutState);
+}
+
+void ImapProtocol::sendNoop()
+{
+    _fsm->setState(&_fsm->noopState);
 }
 
 void ImapProtocol::sendIdle()

@@ -149,10 +149,13 @@ private:
     void updateFolderCountStatus(QMailFolder *folder);
 
 private:
+    enum { InactivityPeriod = 60 * 1000 }; // 1 minute
+
     QMailAccountConfiguration _config;
 
     ImapProtocol _protocol;
     QTimer _inactiveTimer;
+    int _closeCount;
 
     QMailFolder _idleFolder;
     bool _waitingForIdle;

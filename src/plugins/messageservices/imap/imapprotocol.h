@@ -88,7 +88,8 @@ enum ImapCommand
     IMAP_Delete,
     IMAP_Rename,
     IMAP_Enable,
-    IMAP_QResync
+    IMAP_QResync,
+    IMAP_Noop
 };
 
 enum MessageFlag
@@ -194,6 +195,7 @@ public:
     void sendExpunge();
     void sendClose();
     void sendEnable(const QString &extensions);
+    void sendNoop();
     void sendIdle();
     void sendIdleDone();
 
