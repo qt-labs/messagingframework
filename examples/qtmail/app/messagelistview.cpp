@@ -66,7 +66,8 @@
 #include <qtmailnamespace.h>
 
 static QStringList headers(QStringList() << QObject::tr("Subject") << QObject::tr("Addressee") << QObject::tr("Date") << QObject::tr("Size"));
-static const QColor newMessageColor(Qt::blue);
+//xxxstatic const QColor newMessageColor(Qt::blue);
+static const QColor newMessageColor(Qt::cyan);
 
 class QuickSearchWidget : public QWidget
 {

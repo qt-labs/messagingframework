@@ -154,7 +154,7 @@ enum ActivityType {
 };
 
 static bool confirmDelete( QWidget *parent, const QString & caption, const QString & object ) {
-    QString msg = "<qt>" + QString("Are you sure you want to delete: %1?").arg( object ) + "</qt>";
+    QString msg = "<qt>" + QObject::tr("Are you sure you want to delete: %1?").arg( object ) + "</qt>";
     int r = QMessageBox::question( parent, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default| QMessageBox::Escape, 0 );
     return r == QMessageBox::Yes;
 }
@@ -595,9 +595,9 @@ bool EmailClient::waitForMessageServer()
 
 void EmailClient::messageServerProcessError(QProcess::ProcessError e)
 {
-    QString errorMsg = QString("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
-    QMessageBox::critical(this,"Message Server",errorMsg);
-    qFatal(errorMsg.toLatin1(),"");
+    QString errorMsg = tr("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
+    QMessageBox::critical(this, tr("Message Server"), errorMsg);
+    qFatal(errorMsg.toLatin1(), "");
 }
 
 void EmailClient::connectServiceAction(QMailServiceAction* action)
@@ -1222,9 +1222,9 @@ void EmailClient::rollBackUpdates()
     if (!QMailDisconnected::updatesOutstanding(mailAccountId))
         return;
     if (QMessageBox::Yes == QMessageBox::question(this,
-                                                  "Pending updates",
-                                                  "There are local updates pending synchronization, " \
-                                                  "do you want to revert these changes?",
+                                                  tr("Pending updates"),
+                                                  tr("There are local updates pending synchronization, " \
+                                                     "do you want to revert these changes?"),
                                                   QMessageBox::Yes | QMessageBox::No)) {
         QMailDisconnected::rollBackUpdates(mailAccountId);
     }
