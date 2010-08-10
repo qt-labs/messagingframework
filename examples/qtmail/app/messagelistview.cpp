@@ -66,8 +66,7 @@
 #include <qtmailnamespace.h>
 
 static QStringList headers(QStringList() << QObject::tr("Subject") << QObject::tr("Addressee") << QObject::tr("Date") << QObject::tr("Size"));
-//xxxstatic const QColor newMessageColor(Qt::blue);
-static const QColor newMessageColor(Qt::cyan);
+static const QColor newMessageColor(Qt::blue);
 
 class QuickSearchWidget : public QWidget
 {
@@ -161,7 +160,8 @@ QMailMessageKey QuickSearchWidget::buildSearchKey() const
 
     QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
     QMailMessageKey senderKey = QMailMessageKey::sender(m_searchTerms->text(),QMailDataComparator::Includes);
-    return ((subjectKey | senderKey) & statusKey);
+    QMailMessageKey recipientsKey = QMailMessageKey::recipients(m_searchTerms->text(),QMailDataComparator::Includes);
+    return ((subjectKey | senderKey | recipientsKey) & statusKey);
 }
 
 
