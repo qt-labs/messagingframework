@@ -836,6 +836,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
     _classifier.classifyMessage(mail);
 
     _strategyContext->messageFetched(mail);
+    _strategyContext->messageFlushed(mail);
 }
 
 
@@ -1167,6 +1168,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         }
 
         _strategyContext->dataFetched(mail, uid, section);
+        _strategyContext->dataFlushed(mail, uid, section);
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));

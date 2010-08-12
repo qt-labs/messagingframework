@@ -496,8 +496,9 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder
     Q_UNUSED(flags)
 }
 
-void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+void ImapStrategy::messageFetched(ImapStrategyContextBase * /*context*/, QMailMessage &message)
 {
+    _folder[message.serverUid()] = false;
     // Store this message to the mail store
     if (message.id().isValid()) {
         if (!QMailStore::instance()->updateMessage(&message)) {
@@ -518,13 +519,27 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage
             return;
         }
 
+        _folder[message.serverUid()] = true;
+    }
+}
+
+void ImapStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    bool folder = _folder.take(message.serverUid());
+    // Remove the detached file if it is still present
+    QString detachedFile = message.customField("qtopiamail-detached-filename");
+    if (!detachedFile.isEmpty())
+        QFile::remove(detachedFile);
+    if (_error) return;
+
+    if (folder) {
         context->folderModified(QMailDisconnected::sourceFolderId(message));
     }
 
     context->completedMessageAction(message.serverUid());
 }
 
-void ImapStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
+void ImapStrategy::dataFetched(ImapStrategyContextBase * /*context*/, QMailMessage &message, const QString &/*uid*/, const QString &/*section*/)
 {
     // Store the updated message
     if (!QMailStore::instance()->updateMessage(&message)) {
@@ -532,10 +547,17 @@ void ImapStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &m
         qWarning() << "Unable to update message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
         return;
     }
+}
+
+void ImapStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &/*section*/)
+{
+    // Remove the detached file if it is still present
+    QString detachedFile = message.customField("qtopiamail-detached-filename");
+    if (!detachedFile.isEmpty())
+        QFile::remove(detachedFile);
+    if (_error) return;
 
     context->completedMessageAction(uid);
-            
-    Q_UNUSED(section)
 }
 
 void ImapStrategy::nonexistentUid(ImapStrategyContextBase *context, const QString &uid)
@@ -1497,6 +1519,12 @@ void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *co
 void ImapFetchSelectedMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapMessageListStrategy::messageFetched(context, message);
+}
+
+void ImapFetchSelectedMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapMessageListStrategy::messageFlushed(context, message);
+    if (_error) return;
 
     itemFetched(context, message.serverUid());
 }
@@ -1504,6 +1532,12 @@ void ImapFetchSelectedMessagesStrategy::messageFetched(ImapStrategyContextBase *
 void ImapFetchSelectedMessagesStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
 { 
     ImapMessageListStrategy::dataFetched(context, message, uid, section);
+}
+
+void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
+{ 
+    ImapMessageListStrategy::dataFlushed(context, message, uid, section);
+    if (_error) return;
 
     itemFetched(context, message.serverUid());
 }
@@ -1594,9 +1628,14 @@ void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context,
 
     message.setStatus(QMailMessage::Temporary, true);
     ImapRetrieveFolderListStrategy::messageFetched(context, message);
+}
+
+void ImapSearchMessageStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapRetrieveFolderListStrategy::messageFlushed(context, message);
+    if (_error) return;
 
     _fetchedList.append(message.id());
-    Q_UNUSED(context)
 }
 
 void ImapSearchMessageStrategy::handleUidFetch(ImapStrategyContextBase *context)
@@ -2107,6 +2146,12 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
 void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapFolderListStrategy::messageFetched(context, message);
+}
+
+void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapFolderListStrategy::messageFlushed(context, message);
+    if (_error) return;
 
     if (_transferState == Preview) {
         context->progressChanged(_progress++, _total);
@@ -3751,8 +3796,17 @@ void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, 
 void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     QString sourceUid = copiedMessageFetched(context, message);
+    _remember[message.serverUid()] = sourceUid;
 
     ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+}
+
+void ImapCopyMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapFetchSelectedMessagesStrategy::messageFlushed(context, message);
+    if (_error) return;
+
+    QString sourceUid = _remember.take(message.serverUid());
 
     if (!sourceUid.isEmpty()) {
         // We're now completed with the source message also
@@ -4078,6 +4132,12 @@ void ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *co
     copiedMessageFetched(context, message);
 
     ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+}
+
+void ImapExternalizeMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapCopyMessagesStrategy::messageFlushed(context, message);
+    if (_error) return;
 
     _urlIds.append(message.id());
 }

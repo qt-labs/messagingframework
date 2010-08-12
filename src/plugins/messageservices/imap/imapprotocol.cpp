@@ -3372,9 +3372,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
     emit messageFetched(mail, detachedFile, !structure.isEmpty());
 
-    // Remove the detached file if it is still present
-    QFile::remove(detachedFile);
-    
     // Workaround for message buffer file being deleted 
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
@@ -3386,9 +3383,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 void ImapProtocol::createPart(const QString &uid, const QString &section, const QString &detachedFile, int size)
 {
     emit dataFetched(uid, section, detachedFile, size);
-
-    // Remove the detached file if it is still present
-    QFile::remove(detachedFile);
 
     // Workaround for message part buffer file being deleted 
     QFileInfo newFile(_fsm->buffer().fileName());
