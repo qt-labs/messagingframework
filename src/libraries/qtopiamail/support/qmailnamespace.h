@@ -124,6 +124,13 @@ namespace QMail
         return result;
     }
 
+    enum SaslMechanism {
+        NoMechanism = 0,
+        LoginMechanism = 1,
+        PlainMechanism = 2,
+        CramMd5Mechanism = 3
+    };
+
 }
 
 #endif

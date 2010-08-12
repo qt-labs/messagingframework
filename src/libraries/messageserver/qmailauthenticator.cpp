@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmailauthenticator.h"
+#include "qmailnamespace.h"
 #include <qmailserviceconfiguration.h>
 #include <qcryptographichash.h>
 #include <qbytearray.h>
@@ -119,7 +120,8 @@ bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceC
 QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
     QMailServiceConfiguration configuration(svcCfg);
-    if (!configuration.value("smtpusername").isEmpty() && (configuration.value("authentication") == "3")) {
+    if (!configuration.value("smtpusername").isEmpty() 
+        && (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
         foreach(QString capa, capabilities) {
             capa += " ";

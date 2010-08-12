@@ -54,17 +54,18 @@
 //
 
 #include <qmailserviceconfiguration.h>
+#include <qmailnamespace.h>
 
 class PLUGIN_EXPORT SmtpConfiguration : public QMailServiceConfiguration
 {
 public:
     enum AuthType {
-        Auth_NONE = 0,
+        Auth_NONE = QMail::NoMechanism,
 #ifndef QT_NO_OPENSSL
-        Auth_LOGIN = 1,
-        Auth_PLAIN = 2,
+        Auth_LOGIN = QMail::LoginMechanism,
+        Auth_PLAIN = QMail::PlainMechanism,
 #endif
-        Auth_CRAMMD5 = 3,
+        Auth_CRAMMD5 = QMail::CramMd5Mechanism,
         Auth_INCOMING = 4
     };
 
