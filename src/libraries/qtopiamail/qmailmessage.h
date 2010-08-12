@@ -661,6 +661,18 @@ private:
 #ifndef QTOPIAMAIL_PARSING_ONLY
     static void initStore();
 #endif
+public:
+    virtual QString copyServerUid() const;
+    virtual void setCopyServerUid(const QString &s);
+
+    virtual QMailFolderId restoreFolderId() const;
+    virtual void setRestoreFolderId(const QMailFolderId &s);
+
+    virtual QString listId() const;
+    virtual void setListId(const QString &s);
+
+    virtual QString rfcId() const;
+    virtual void setRfcId(const QString &s);
 };
 
 class QMailMessagePrivate;

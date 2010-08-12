@@ -83,6 +83,10 @@
     \value Size The size of the message.
     \value ContentType The type of data contained within the message.
     \value PreviousParentFolderId The parent folder ID this message was contained in, prior to moving to the current parent folder.
+    \value CopyServerUid The server uid of the message this is a copy of
+    \value ListId The name of the list
+    \value RestoreFolderId The folderId of where the message should be restored to
+    \value RfcId The messages rfc id
 */
 
 /*!
@@ -343,6 +347,26 @@ QMailMessageSortKey QMailMessageSortKey::contentType(Qt::SortOrder order)
 QMailMessageSortKey QMailMessageSortKey::previousParentFolderId(Qt::SortOrder order)
 {
     return QMailMessageSortKey(PreviousParentFolderId, order);
+}
+
+QMailMessageSortKey QMailMessageSortKey::copyServerUid(Qt::SortOrder order)
+{
+    return QMailMessageSortKey(CopyServerUid, order);
+}
+
+QMailMessageSortKey QMailMessageSortKey::restoreFolderId(Qt::SortOrder order)
+{
+    return QMailMessageSortKey(RestoreFolderId, order);
+}
+
+QMailMessageSortKey QMailMessageSortKey::listId(Qt::SortOrder order)
+{
+    return QMailMessageSortKey(ListId, order);
+}
+
+QMailMessageSortKey QMailMessageSortKey::rfcId(Qt::SortOrder order)
+{
+    return QMailMessageSortKey(RfcId, order);
 }
 
 /*!

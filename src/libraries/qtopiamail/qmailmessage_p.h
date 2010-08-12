@@ -381,6 +381,12 @@ public:
     void setFrom(const QString& s);
     void setTo(const QString& s);
 
+    void setCopyServerUid(const QString &copyServerUid);
+    void setListId(const QString &listId);
+    void setRestoreFolderId(const QMailFolderId &folderId);
+    void setRfcId(const QString &rfcId);
+
+
     void setContentScheme(const QString& scheme);
     void setContentIdentifier(const QString& identifier);
 
@@ -421,6 +427,11 @@ public:
     QMailTimeStamp _receivedDate;
     QString _from;
     QString _to;
+
+    QString _copyServerUid;
+    QMailFolderId _restoreFolderId;
+    QString _listId;
+    QString _rfcId;
 
     QString _contentScheme;
     QString _contentIdentifier;

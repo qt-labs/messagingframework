@@ -87,7 +87,11 @@ public:
         ContentIdentifier = (1 << 17),
         InResponseTo = (1 << 18),
         ResponseType = (1 << 19),
-        Custom = (1 << 20)
+        Custom = (1 << 20),
+        CopyServerUid = (1 << 21),
+        RestoreFolderId = (1 << 22),
+        ListId = (1 << 23),
+        RfcId = (1 << 24)
     };
     Q_DECLARE_FLAGS(Properties,Property)
 
@@ -198,6 +202,20 @@ public:
     static QMailMessageKey conversation(const QMailMessageId &id);
     static QMailMessageKey conversation(const QMailMessageIdList &ids);
     static QMailMessageKey conversation(const QMailMessageKey &key);
+
+    static QMailMessageKey copyServerUid(const QString &uid, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey copyServerUid(const QString &uid, QMailDataComparator::InclusionComparator cmp);
+    static QMailMessageKey copyServerUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp);
+
+    static QMailMessageKey restoreFolderId(const QMailFolderId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey restoreFolderId(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey restoreFolderId(const QMailFolderKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+
+    static QMailMessageKey listId(const QString &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey listId(const QString &id, QMailDataComparator::InclusionComparator cmp);
+
+    static QMailMessageKey rfcId(const QString &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey rfcId(const QString &id, QMailDataComparator::InclusionComparator cmp);
 
 private:
     QMailMessageKey(Property p, const QVariant& value, QMailKey::Comparator c);

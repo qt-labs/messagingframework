@@ -274,6 +274,14 @@ public:
 
     QVariant to() const { return QMailAddress::toStringList(_data.to()).join(","); }
 
+    QVariant copyServerUid() const { return _data.copyServerUid(); }
+
+    QVariant restoreFolderId() const { return _data.restoreFolderId().toULongLong(); }
+
+    QVariant listId() const { return _data.listId(); }
+
+    QVariant rfcId() const { return _data.rfcId(); }
+
     QVariant subject() const { return _data.subject(); }
 
     QVariant date() const { return _data.date().toLocalTime(); }
@@ -344,6 +352,14 @@ public:
     QMailMessageId inResponseTo() const { return QMailMessageId(QMailStorePrivate::extractValue<quint64>(_value)); }
 
     QMailMessage::ResponseType responseType() const { return static_cast<QMailMessage::ResponseType>(QMailStorePrivate::extractValue<int>(_value)); }
+
+    QString copyServerUid() const { return QMailStorePrivate::extractValue<QString>(_value); }
+
+    QMailFolderId restoreFolderId() const { return QMailFolderId(QMailStorePrivate::extractValue<quint64>(_value)); }
+
+    QString listId() const { return QMailStorePrivate::extractValue<QString>(_value); }
+
+    QString rfcId() const { return QMailStorePrivate::extractValue<QString>(_value); }
 };
 
 
@@ -371,7 +387,10 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::InResponseTo,"responseid");
     map.insert(QMailMessageKey::ResponseType,"responsetype");
     map.insert(QMailMessageKey::Conversation,"id");
-
+    map.insert(QMailMessageKey::CopyServerUid, "copyserveruid");
+    map.insert(QMailMessageKey::RestoreFolderId, "restorefolderid");
+    map.insert(QMailMessageKey::ListId, "listid");
+    map.insert(QMailMessageKey::RfcId, "rfcid");
     return map;
 }
 
@@ -508,6 +527,10 @@ static QMap<QMailMessageSortKey::Property, QMailMessageKey::Property> messageSor
     map.insert(QMailMessageSortKey::Size, QMailMessageKey::Size);
     map.insert(QMailMessageSortKey::ContentType, QMailMessageKey::ContentType);
     map.insert(QMailMessageSortKey::PreviousParentFolderId, QMailMessageKey::PreviousParentFolderId);
+    map.insert(QMailMessageSortKey::CopyServerUid, QMailMessageKey::CopyServerUid);
+    map.insert(QMailMessageSortKey::ListId, QMailMessageKey::ListId);
+    map.insert(QMailMessageSortKey::RestoreFolderId, QMailMessageKey::RestoreFolderId);
+    map.insert(QMailMessageSortKey::RfcId, QMailMessageKey::RfcId);
 
     return map;
 }
@@ -842,6 +865,15 @@ public:
 
     QMailMessage::ResponseType responseType() const { return static_cast<QMailMessage::ResponseType>(value<int>(QMailMessageKey::ResponseType, QMailMessage::NoResponse)); }
 
+
+    QString copyServerUid() const { return value<QString>(QMailMessageKey::CopyServerUid); }
+
+    QMailFolderId restoreFolderId() const { return QMailFolderId(value<quint64>(QMailMessageKey::RestoreFolderId)); }
+
+    QString listId() const { return value<QString>(QMailMessageKey::ListId); }
+
+    QString rfcId() const { return value<QString>(QMailMessageKey::RfcId); }
+
 private:
     int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
     {
@@ -930,6 +962,14 @@ public:
     QVariantList conversation() const { return idValues<QMailMessageKey>(); }
 
     QVariantList custom() const { return customValues(); }
+
+    QVariantList copyServerUid() const { return stringValues(); }
+
+    QVariantList listId() const { return stringValues(); }
+
+    QVariantList restoreFolderId() const { return idValues<QMailFolderKey>(); }
+
+    QVariantList rfcId() const { return stringValues(); }
 };
 
 template<>
@@ -1029,6 +1069,22 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
 
     case QMailMessageKey::Custom:
         values += extractor.custom();
+        break;
+
+    case QMailMessageKey::CopyServerUid:
+        values += extractor.copyServerUid();
+        break;
+
+    case QMailMessageKey::ListId:
+        values += extractor.listId();
+        break;
+
+    case QMailMessageKey::RestoreFolderId:
+        values += extractor.restoreFolderId();
+        break;
+
+    case QMailMessageKey::RfcId:
+        values += extractor.rfcId();
         break;
     }
 }
@@ -1518,6 +1574,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
 
         case QMailMessageKey::ParentFolderId:
         case QMailMessageKey::PreviousParentFolderId:
+        case QMailMessageKey::RestoreFolderId:
             if(a.valueList.first().canConvert<QMailFolderKey>()) {
                 QMailFolderKey parentFolderKey = a.valueList.first().value<QMailFolderKey>();
                 QString nestedAlias(incrementAlias(alias));
@@ -1613,6 +1670,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::ServerUid:
+        case QMailMessageKey::CopyServerUid:
             if (a.valueList.count() >= IdLookupThreshold) {
                 q << baseExpression(columnName, a.op, true) << "( SELECT id FROM " << QMailStorePrivate::temporaryTableName(a) << ")";
             } else {
@@ -1632,8 +1690,10 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
         case QMailMessageKey::ContentScheme:
         case QMailMessageKey::ContentIdentifier:
         case QMailMessageKey::ResponseType:
+        case QMailMessageKey::ListId:
+        case QMailMessageKey::RfcId:
             q << expression;
-            break;     
+            break;
         }
     }
     return item;
@@ -1996,7 +2056,11 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
                                            QMailMessageKey::ContentScheme |
                                            QMailMessageKey::ContentIdentifier |
                                            QMailMessageKey::InResponseTo |
-                                           QMailMessageKey::ResponseType;
+                                           QMailMessageKey::ResponseType |
+                                           QMailMessageKey::CopyServerUid |
+                                           QMailMessageKey::RestoreFolderId |
+                                           QMailMessageKey::ListId |
+                                           QMailMessageKey::RfcId;
     return p;
 }
 
@@ -2102,7 +2166,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 104)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 108)
+                                            << tableInfo("mailmessages", 109)
                                             << tableInfo("mailmessagecustom", 100)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
@@ -2626,6 +2690,18 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
             case QMailMessageKey::ResponseType:
                 metaData->setResponseType(messageRecord.responseType());
                 break;
+            case QMailMessageKey::CopyServerUid:
+                metaData->setCopyServerUid(messageRecord.copyServerUid());
+                break;
+        case QMailMessageKey::RestoreFolderId:
+                metaData->setRestoreFolderId(messageRecord.restoreFolderId());
+                break;
+        case QMailMessageKey::ListId:
+                metaData->setListId(messageRecord.listId());
+                break;
+        case QMailMessageKey::RfcId:
+                metaData->setRfcId(messageRecord.rfcId());
+                break;
         }
     }
     
@@ -2848,6 +2924,22 @@ QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties&
             case QMailMessageKey::ResponseType:
                 values.append(extractor.responseType());
                 break;
+
+            case QMailMessageKey::CopyServerUid:
+                values.append(extractor.copyServerUid());
+                break;
+
+            case QMailMessageKey::RestoreFolderId:
+                values.append(extractor.restoreFolderId());
+                break;
+
+            case QMailMessageKey::ListId:
+                values.append(extractor.listId());
+                break;
+
+            case QMailMessageKey::RfcId:
+                values.append(extractor.rfcId());
+                break;
         }
     }
 
@@ -2951,6 +3043,18 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                 metaData.setCustomFields(customFields);
                 break;
 
+            case QMailMessageKey::CopyServerUid:
+                metaData.setCopyServerUid(extractor.copyServerUid());
+                break;
+            case QMailMessageKey::RestoreFolderId:
+                metaData.setRestoreFolderId((extractor.restoreFolderId()));
+                break;
+            case QMailMessageKey::ListId:
+                metaData.setListId(extractor.listId());
+                break;
+            case QMailMessageKey::RfcId:
+                metaData.setRfcId(extractor.rfcId());
+                break;
             default:
                 valueConsumed = false;
                 break;
@@ -4456,6 +4560,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         values.insert("responsetype", metaData->responseType());
         values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toLocalTime());
         values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
+        values.insert("copyserveruid", metaData->copyServerUid());
+        values.insert("restorefolderid", metaData->restoreFolderId().toULongLong());
+        values.insert("listid", metaData->listId());
+        values.insert("rfcID", metaData->rfcId());
 
         const QStringList &list(values.keys());
         QString columns = list.join(",");

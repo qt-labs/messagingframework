@@ -5081,6 +5081,9 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
       _status(0),
       _contentType(QMailMessage::UnknownContent),
       _size(0),
+      _copyServerUid(""),
+      _listId(""),
+      _rfcId(""),
       _responseType(QMailMessage::NoResponse),
       _customFieldsModified(false),
       _dirty(false)
@@ -5198,6 +5201,26 @@ void QMailMessageMetaDataPrivate::setFrom(const QString& s)
 void QMailMessageMetaDataPrivate::setTo(const QString& s)
 {
     updateMember(_to, s);
+}
+
+void QMailMessageMetaDataPrivate::setCopyServerUid(const QString &copyServerUid)
+{
+    updateMember(_copyServerUid, copyServerUid.isNull() ? QString("") : copyServerUid);
+}
+
+void QMailMessageMetaDataPrivate::setListId(const QString &listId)
+{
+    updateMember(_listId, listId.isNull() ? QString("") : listId);
+}
+
+void QMailMessageMetaDataPrivate::setRestoreFolderId(const QMailFolderId &folderId)
+{
+    updateMember(_restoreFolderId, folderId);
+}
+
+void QMailMessageMetaDataPrivate::setRfcId(const QString &rfcId)
+{
+    updateMember(_rfcId, rfcId.isNull() ? QString("") : rfcId);
 }
 
 void QMailMessageMetaDataPrivate::setContentScheme(const QString& scheme)
@@ -5325,6 +5348,10 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _receivedDate.toString();
     stream << _from;
     stream << _to;
+    stream << _copyServerUid;
+    stream << _restoreFolderId;
+    stream << _listId;
+    stream << _rfcId;
     stream << _contentScheme;
     stream << _contentIdentifier;
     stream << _responseId;
@@ -5360,6 +5387,10 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     _receivedDate = QMailTimeStamp(timeStamp);
     stream >> _from;
     stream >> _to;
+    stream >> _copyServerUid;
+    stream >> _restoreFolderId;
+    stream >> _listId;
+    stream >> _rfcId;
     stream >> _contentScheme;
     stream >> _contentIdentifier;
     stream >> _responseId;
@@ -5893,6 +5924,85 @@ void QMailMessageMetaData::setTo(const QList<QMailAddress>& toList)
 void QMailMessageMetaData::setTo(const QMailAddress& address)
 {
     setTo(QList<QMailAddress>() << address);
+}
+
+/*!
+    If this messsage is an unsynchronized copy, it will return the server identifier of
+    the message it is a copy of. Otherwise an empty string is returned.
+
+    Most clients should probably not need to use this.
+
+    \sa serverUid()
+*/
+QString QMailMessageMetaData::copyServerUid() const
+{
+    return impl(this)->_copyServerUid;
+}
+
+/*!
+    Sets the server identifier of which message this is an unsychronized copy of.
+
+    There is little reason for clients to use this.
+
+    \sa copyServerUid()
+*/
+void QMailMessageMetaData::setCopyServerUid(const QString &s)
+{
+    impl(this)->setCopyServerUid(s);
+}
+
+/*!
+    Return the folder in which this message should be moved to, if it were to be restored from trash.
+    Returns an invalid QMailFolderId if this message is not in trash or require a move when restored.
+*/
+QMailFolderId QMailMessageMetaData::restoreFolderId() const
+{
+    return impl(this)->_restoreFolderId;
+}
+
+/*!
+    Sets the identifier for which folder this message should be restorable to \id
+    \sa restoreFolderId()
+*/
+void QMailMessageMetaData::setRestoreFolderId(const QMailFolderId &id)
+{
+    impl(this)->setRestoreFolderId(id);
+}
+
+/*!
+    Returns the list identifier. This corresponds to "list-id-namespace" specified in RFC 2919. Returns
+    an empty string if this message does not belong to a list.
+*/
+QString QMailMessageMetaData::listId() const
+{
+    return impl(this)->_listId;
+}
+
+/*!
+    Sets the list identifier to \a id
+    \sa listId()
+*/
+void QMailMessageMetaData::setListId(const QString &id)
+{
+    impl(this)->setListId(id);
+}
+
+/*!
+    Returns the message-id identifier. This is taken from the message-id field of an RFC2822 message. Returns
+    and empty string if not available.
+*/
+QString QMailMessageMetaData::rfcId() const
+{
+    return impl(this)->_rfcId;
+}
+
+/*!
+    Sets the RfcId to \id
+    \sa rfcId()
+*/
+void QMailMessageMetaData::setRfcId(const QString &id)
+{
+    impl(this)->setRfcId(id);
 }
 
 /*!
@@ -6951,6 +7061,7 @@ void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMe
 
     // See if any of the header fields need to be propagated to the meta data object
     foreach (const QMailMessageHeaderField& field, headerFields()) {
+        qDebug() << "Header field" << field;
         QByteArray duplicatedId(duplicatedData(field.id()));
         if (!duplicatedId.isNull()) {
             updateMetaData(duplicatedId, field.decodedContent());
@@ -6964,7 +7075,8 @@ QByteArray QMailMessage::duplicatedData(const QString& id) const
     // These items are duplicated in both the message content and the meta data
     QByteArray plainId( to7BitAscii(id).trimmed().toLower() );
 
-    if ((plainId == "from") || (plainId == "to") || (plainId == "subject") || (plainId == "date"))
+    if ((plainId == "from") || (plainId == "to") || (plainId == "subject") ||
+        (plainId == "date") || (plainId == "list-id") || plainId == "message-id")
         return plainId;
 
     return QByteArray();
@@ -6981,6 +7093,16 @@ void QMailMessage::updateMetaData(const QByteArray& id, const QString& value)
         metaDataImpl()->setSubject(value);
     } else if (id == "date") {
         metaDataImpl()->setDate(QMailTimeStamp(value));
+    } else if (id == "list-id") {
+        int to(value.lastIndexOf('>'));
+        int from(value.lastIndexOf('<', to)+1);
+
+        if (from > 0 && to > from)
+            metaDataImpl()->setListId(value.mid(from, to-from).trimmed());
+    } else if (id == "message-id") {
+        QStringList identifiers(QMail::messageIdentifiers(value));
+        if (!identifiers.isEmpty())
+            metaDataImpl()->setRfcId(identifiers.first());
     }
 }
 

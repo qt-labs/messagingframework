@@ -68,7 +68,11 @@ public:
         Size,
         ParentAccountId,
         ContentType,
-        PreviousParentFolderId
+        PreviousParentFolderId,
+        CopyServerUid,
+        ListId,
+        RestoreFolderId,
+        RfcId
     };
 
     typedef QMailSortKeyArgument<Property> ArgumentType;
@@ -106,6 +110,10 @@ public:
     static QMailMessageSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey contentType(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey previousParentFolderId(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailMessageSortKey copyServerUid(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailMessageSortKey restoreFolderId(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailMessageSortKey listId(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailMessageSortKey rfcId(Qt::SortOrder order = Qt::AscendingOrder);
         
     static QMailMessageSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
 

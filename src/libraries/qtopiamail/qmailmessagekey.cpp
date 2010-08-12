@@ -119,6 +119,10 @@ using namespace QMailKey;
     \value InResponseTo The identifier of the other message that the message was created in response to.
     \value ResponseType The type of response that the message was created as.
     \value Custom The custom fields of the message.
+    \value CopyServerUid The serveruid this message is a copy of
+    \value RestoreFolderId The folderId this message could be untrashed to
+    \value ListId The list-id-namespace of this message
+    \value RfcId The rfc id of this message
 */
 
 /*!
@@ -917,6 +921,115 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
 {
     return QMailMessageKey(Conversation, key, QMailKey::Includes);
+}
+
+/*!
+    Returns a key matching messages whose copyServerUid matches \a uid, according to \a cmp.
+
+    \sa QMailMessage::copyServerUid()
+*/
+QMailMessageKey QMailMessageKey::copyServerUid(const QString &uid, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(CopyServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose copyServerUid matches the substring \a uid, according to \a cmp.
+
+    \sa QMailMessage::copyServerUid()
+*/
+QMailMessageKey QMailMessageKey::copyServerUid(const QString &uid, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(CopyServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose serverUid is a member of \a uids, according to \a cmp.
+
+    \sa QMailMessage::copyServerUid()
+*/
+QMailMessageKey QMailMessageKey::copyServerUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp)
+{
+#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
+    if (uids.count() >= IdLookupThreshold) {
+        // If there are a large number of UIDs, they will be inserted into a temporary table
+        // with a uniqueness constraint; ensure only unique values are supplied
+        return QMailMessageKey(uids.toSet().toList(), CopyServerUid, QMailKey::comparator(cmp));
+    }
+#endif
+
+    return QMailMessageKey(uids, CopyServerUid, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose restore folder identifier's matches \a id, according to \a cmp.
+
+    \sa QMailMessage::restoreFolderId()
+*/
+QMailMessageKey QMailMessageKey::restoreFolderId(const QMailFolderId &id, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(RestoreFolderId, id, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose restore folder's identifier is a member of \a ids, according to \a cmp.
+
+    \sa QMailMessage::previousParentFolderId()
+*/
+QMailMessageKey QMailMessageKey::restoreFolderId(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ids, RestoreFolderId, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose previous parent folder's identifier is a member of the set yielded by \a key, according to \a cmp.
+
+    \sa QMailMessage::previousParentFolderId()
+*/
+QMailMessageKey QMailMessageKey::restoreFolderId(const QMailFolderKey &key, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(RestoreFolderId, key, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose list identifier matches \a value, according to \a cmp.
+
+    \sa QMailMessage::listId()
+*/
+QMailMessageKey QMailMessageKey::listId(const QString &value, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(ListId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose list identifier matches the substring \a value, according to \a cmp.
+
+    \sa QMailMessage::listId()
+*/
+QMailMessageKey QMailMessageKey::listId(const QString &value, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ListId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+
+/*!
+    Returns a key matching messages whose rfc identifier matches \a value, according to \a cmp.
+
+    \sa QMailMessage::rfcId()
+*/
+QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(RfcId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose content identifier matches the substring \a value, according to \a cmp.
+
+    \sa QMailMessage::rfcId()
+*/
+QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(RfcId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
 //create implementations for QDataStream
