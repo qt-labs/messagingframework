@@ -48,6 +48,8 @@
 #include <sys/socket.h>
 #endif
 #include <signal.h>
+#include <errno.h>
+#include <stdio.h>
 
 #ifdef QMAIL_SYSLOG
 
@@ -105,6 +107,9 @@ public:
 
     static void hupSignalHandler(int unused);
 
+signals:
+    void callOtherHandlers();
+
 public slots:
     void handleSigHup();
 
@@ -147,16 +152,27 @@ void RuntimeLoggingManager::hupSignalHandler(int)
 {
     // Can't call Qt code. Write to the socket and the notifier will fire from the Qt event loop
     char a = 1;
-    ::write(sighupFd[0], &a, sizeof(a));
+    int ret;
+    do {
+        ret = ::write(sighupFd[0], &a, sizeof(a));
+    } while (ret == -1 && errno == EINTR);
+    if (ret != 1) {
+        fprintf(stderr, "Could not notify eventloop. HUP ignored.\n");
+    }
 }
 
 void RuntimeLoggingManager::handleSigHup()
 {
     snHup->setEnabled(false);
     char tmp;
-    ::read(sighupFd[1], &tmp, sizeof(tmp));
+    int ret;
+    do {
+        ret = ::read(sighupFd[1], &tmp, sizeof(tmp));
+    } while (ret == -1 && errno == EINTR);
 
     qmf_resetLoggingFlags();
+
+    emit callOtherHandlers();
 
     snHup->setEnabled(true);
 }
@@ -225,4 +241,11 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
     return false;
 }
 #endif
+
+QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method)
+{
+    RuntimeLoggingManager *rlm = runtimeLoggingManager();
+    QObject::connect(rlm, SIGNAL(callOtherHandlers()), receiver, method);
+}
+
 #include "qmaillog.moc"
