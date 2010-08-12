@@ -359,7 +359,6 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
 {
     if (sender() == static_cast<QObject*>(retrievalAction)) {
         const QMailServiceAction::Status status(retrievalAction->status());
-        qMailLog(Messaging) << "XXX AccountSettings::activityChanged, account" << status.accountId.toULongLong();
         if (status.accountId.isValid()) {
             QMailAccount account(status.accountId);
 
