@@ -147,7 +147,8 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
 QByteArray QMailAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
 {
     QMailServiceConfiguration configuration(svcCfg);
-    if (!configuration.value("smtpusername").isEmpty() && (configuration.value("authentication") == "3")) {
+    if (!configuration.value("smtpusername").isEmpty() 
+        && (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
         return cramMd5Response(challenge, configuration.value("smtpusername").toUtf8(), QByteArray::fromBase64(configuration.value("smtppassword").toUtf8()));
     }
