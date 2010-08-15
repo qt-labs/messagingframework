@@ -62,9 +62,11 @@ public:
     virtual QMailMessageSource &source() const;
 
     virtual bool available() const;
+    bool pushEmailEstablished();
 
 public slots:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text);
+    virtual void restartPushEmail();
     virtual void initiatePushEmail();
 
 protected slots:
@@ -79,6 +81,9 @@ private:
 
     ImapClient _client;
     Source *_source;
+    bool _establishingPushEmail;
+    int _pushRetry;
+    enum { ThirtySeconds = 30 };
 };
 
 class ImapServicePlugin : public QMailMessageServicePlugin

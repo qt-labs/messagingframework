@@ -1370,6 +1370,15 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 
+bool ImapClient::idlesEstablished()
+{
+    ImapConfiguration imapCfg(_config);
+    if (!imapCfg.pushEnabled())
+        return true;
+
+    return _idlesEstablished;
+}
+
 void ImapClient::idling(const QMailFolderId &id)
 {
     if (_waitingForIdle) {

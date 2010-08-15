@@ -929,6 +929,10 @@ void ImapService::Source::retrievalCompleted()
             retrieveMessageList(_service->accountId(), _mailCheckFolderId, 1, QMailMessageSortKey());
             return;
         } else {
+            // Push email must be established
+            _service->_establishingPushEmail = false;
+            _service->_pushRetry = ThirtySeconds;
+            
             _queuedMailCheckInProgress = false;
             emit _service->availabilityChanged(true);
         }
@@ -1022,24 +1026,21 @@ void ImapService::Source::retrievalTerminated()
 ImapService::ImapService(const QMailAccountId &accountId)
     : QMailMessageService(),
       _client(this),
-      _source(new Source(this))
+      _source(new Source(this)),
+      _establishingPushEmail(false),
+      _pushRetry(ThirtySeconds)
 {
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
-    connect(&_client, SIGNAL(restartPushEmail()), this, SLOT(initiatePushEmail()));
+    connect(&_client, SIGNAL(restartPushEmail()), this, SLOT(restartPushEmail()));
 
     _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
     ImapConfiguration imapCfg(accountCfg);
     if (imapCfg.pushEnabled()) {
-        QMailFolderIdList ids(_client.configurationIdleFolderIds());
-        if (ids.count()) {
-            foreach(QMailFolderId id, ids) {
-                _source->queueMailCheck(id);
-            }
-        }
+        initiatePushEmail();
     }
     _source->setIntervalTimer(imapCfg.checkInterval());
 }
@@ -1082,19 +1083,41 @@ bool ImapService::cancelOperation(QMailServiceAction::Status::ErrorCode code, co
     return true;
 }
 
-void ImapService::initiatePushEmail()
+void ImapService::restartPushEmail()
 {
     cancelOperation(QMailServiceAction::Status::ErrInternalStateReset, tr("Initiating push email"));
+    initiatePushEmail();
+}
+    
+void ImapService::initiatePushEmail()
+{    
     QMailFolderIdList ids(_client.configurationIdleFolderIds());
     if (ids.count()) {
+        _establishingPushEmail = true;
         foreach(QMailFolderId id, ids) {
             _source->queueMailCheck(id);
         }
     }
 }
 
+bool ImapService::pushEmailEstablished()
+{
+    if (!_establishingPushEmail)
+        return true;
+    if (_client.idlesEstablished())
+        return true;
+
+    const int oneHour = 60*60;
+    qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
+    QTimer::singleShot(_pushRetry * 1000, this, SLOT(restartPushEmail()));
+    _pushRetry = qMin(oneHour, _pushRetry * 2);
+    return false;
+}
+
 void ImapService::errorOccurred(int code, const QString &text)
 {
+    if (!pushEmailEstablished())
+        return;
     _source->retrievalTerminated();
     updateStatus(code, text, _client.account());
     emit actionCompleted(false);
@@ -1102,6 +1125,8 @@ void ImapService::errorOccurred(int code, const QString &text)
 
 void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
+    if (!pushEmailEstablished())
+        return;
     _source->retrievalTerminated();
     updateStatus(code, text, _client.account());
     emit actionCompleted(false);
