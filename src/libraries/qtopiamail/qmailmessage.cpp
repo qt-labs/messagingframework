@@ -7061,7 +7061,6 @@ void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMe
 
     // See if any of the header fields need to be propagated to the meta data object
     foreach (const QMailMessageHeaderField& field, headerFields()) {
-        qDebug() << "Header field" << field;
         QByteArray duplicatedId(duplicatedData(field.id()));
         if (!duplicatedId.isNull()) {
             updateMetaData(duplicatedId, field.decodedContent());
