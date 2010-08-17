@@ -2018,13 +2018,21 @@ void ServiceHandler::actionCompleted(bool success)
                 ActionData &data(it.value());
 
                 if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
-                    // Mark these message as Sent, via the source service
                     if (accountSource(service->accountId())) {
+                        // Mark these message as Sent
+                        quint64 setMask(QMailMessage::Sent);
+                        quint64 unsetMask((QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly));
+
+                        QMailMessageKey idsKey(QMailMessageKey::id(mSentIds));
+
+                        if (!QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true) ||
+                            !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false))
+                        {
+                            qMailLog(Messaging) << "Unable to flag messages:" << mSentIds;
+                        }
 
                         enqueueRequest(newLocalActionId(),
-                                       serialize(accountMessages(mSentIds),
-                                                 QMailMessage::Sent,
-                                                 (QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly)),
+                                       serialize(accountMessages(mSentIds), setMask, unsetMask),
                                         sourceServiceSet(service->accountId()),
                                         &ServiceHandler::dispatchFlagMessages,
                                         &ServiceHandler::storageActionCompleted,
