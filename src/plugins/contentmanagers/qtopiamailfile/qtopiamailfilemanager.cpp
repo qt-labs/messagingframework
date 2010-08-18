@@ -257,7 +257,6 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     QSharedPointer<QFile> file(new QFile(filePath));
 
     if (!file->open(QIODevice::WriteOnly)) {
-        qMailLog(Messaging) << "Unable to open new message content file:" << filePath;
         return (pathOnDefault(filePath) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 

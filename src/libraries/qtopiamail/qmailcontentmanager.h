@@ -56,7 +56,9 @@ class QTOPIAMAIL_EXPORT QMailContentManagerFactory
 {
 public:
     static QStringList schemes();
+    static QString defaultFilterScheme();
     static QString defaultScheme();
+    static QString defaultIndexerScheme();
 
     static QMailContentManager *create(const QString &scheme);
 
@@ -102,6 +104,12 @@ protected:
     virtual ~QMailContentManager();
 
 public:
+    enum ManagerRole {
+        FilterRole,
+        StorageRole,
+        IndexRole
+    };
+
     enum DurabilityRequirement { 
         EnsureDurability = 0,
         DeferDurability
@@ -113,10 +121,12 @@ public:
     virtual QMailStore::ErrorCode ensureDurability() = 0;
 
     virtual QMailStore::ErrorCode remove(const QString &identifier) = 0;
+    virtual QMailStore::ErrorCode remove(const QList<QString> &identifiers);
     virtual QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message) = 0;
 
     virtual bool init();
     virtual void clearContent();
+    virtual ManagerRole role() const;
 };
 
 #endif

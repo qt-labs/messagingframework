@@ -81,6 +81,7 @@ public:
     static QString messagePartDirectory(const QString &fileName);
     static QString messagePartFilePath(const QMailMessagePart &part, const QString &fileName);
 
+    virtual ManagerRole role() const { return StorageRole; }
 protected slots:
     void clearAccountPath(const QMailAccountIdList&);
 

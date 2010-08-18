@@ -67,6 +67,18 @@ ContentPluginMap init(QMailPluginManager& manager)
     return map;
 }
 
+QString & defaultFilter()
+{
+    static QString filter;
+    return filter;
+}
+
+QString & defaultIndexer()
+{
+    static QString index;
+    return index;
+}
+
 ContentPluginMap &contentPlugins()
 {
     static QMailPluginManager manager(PLUGIN_KEY);
@@ -111,6 +123,20 @@ QStringList QMailContentManagerFactory::schemes()
     return contentPlugins().keys();
 }
 
+
+/*!
+    Returns the default content managent for filtering supported by the factory
+*/
+QString QMailContentManagerFactory::defaultFilterScheme()
+{
+    return defaultFilter();
+}
+
+QString QMailContentManagerFactory::defaultIndexerScheme()
+{
+    return defaultIndexer();
+}
+
 /*!
     Returns the default content management scheme supported by the factory.
 */
@@ -140,10 +166,16 @@ QMailContentManager *QMailContentManagerFactory::create(const QString &scheme)
 */
 bool QMailContentManagerFactory::init()
 {
-    foreach (QMailContentManager *manager, contentPlugins().values())
-        if (!manager->init())
+    ContentPluginMap::iterator end(contentPlugins().end());
+    for (ContentPluginMap::iterator it(contentPlugins().begin()); it != end; ++it) {
+        if (!(*it)->init())
             return false;
+        else if (defaultFilter().isEmpty() && (*it)->role() == QMailContentManager::FilterRole)
+            defaultFilter() = it.key();
+        else if (defaultIndexer().isEmpty() && (*it)->role() == QMailContentManager::IndexRole)
+            defaultIndexer() = it.key();
 
+    }
     return true;
 }
 
@@ -261,6 +293,21 @@ QStringList QMailContentManagerPlugin::keys() const
 */
 
 /*!
+    \enum QMailContentManager::ManagerRole
+
+    This enum type is used to define the purpose of the plugin
+
+    \value FilterRole The content manager is a filtering content manager. It is used to modify messages
+           that match its own criteria. Filtering content managers are called before any others.
+    \value StorageRole The content manager is a storage content manager. It is used to storage messages
+           persistently. Storage content managers are called after filter content managers, but
+           before index content managers.
+    \value IndexRole The content manager is for indexing purposes. It is called after the message has been
+           stored.
+
+*/
+
+/*!
     \fn QMailStore::ErrorCode QMailContentManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 
     Requests that the content manager add the content of \a message to its storage.  The 
@@ -340,6 +387,20 @@ QMailContentManager::~QMailContentManager()
 {
 }
 
+
+QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifiers)
+{
+     QMailStore::ErrorCode returnError(QMailStore::NoError);
+    foreach(QString const &identifier, identifiers) {
+        QMailStore::ErrorCode err(remove(identifier));
+        if (returnError == QMailStore::NoError) // report the first failure, but continue.
+            returnError = err;
+    }
+
+    return returnError;
+}
+
+
 /*!
     Directs the content manager to perform any initialization tasks required.
     The content manager should return false if unable to perform initialization tasks; otherwise return true.
@@ -358,5 +419,13 @@ bool QMailContentManager::init()
 */
 void QMailContentManager::clearContent()
 {
+}
+
+/*!
+    This function is called by the mail store to query the purpose of this particular plugin.
+*/
+QMailContentManager::ManagerRole QMailContentManager::role() const
+{
+    return StorageRole;
 }
 
