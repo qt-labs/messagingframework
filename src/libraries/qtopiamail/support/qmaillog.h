@@ -126,25 +126,18 @@ QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category);
 
 #define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
 
-// By default, these categories are disabled.
-// Change these lines to enable them.
+// By default, these categories are completely disabled.
+// Any logging statements for these categories will be compiled out of the executable.
 QLOG_DISABLE(ImapData)
 QLOG_DISABLE(MessagingState)
 
-#undef QLOG_OPTION
-#ifdef QMF_ENABLE_LOGGING
-#define QLOG_OPTION(x) QLOG_ENABLE(x)
-#elif defined(QMF_DISABLE_LOGGING)
-#define QLOG_OPTION(x) QLOG_DISABLE(x)
-#else
-#define QLOG_OPTION(x) QLOG_RUNTIME(x)
-#endif
-
 // By default, these categories are disabled but can be enabled at runtime.
-// Define QMF_ENABLE_LOGGING or QMF_DISABLE_LOGGING to force them on or off instead.
-QLOG_OPTION(Messaging)
-QLOG_OPTION(IMAP)
-QLOG_OPTION(SMTP)
-QLOG_OPTION(POP)
+// Note that a debug build (CONFIG+=debug) will cause these categories to default to on rather than off.
+// To prevent logging statements using these categories from being compiled into the executable
+// these statements must be changed to QLOG_DISABLE calls.
+QLOG_RUNTIME(Messaging)
+QLOG_RUNTIME(IMAP)
+QLOG_RUNTIME(SMTP)
+QLOG_RUNTIME(POP)
 
 #endif //QMAILLOG_H

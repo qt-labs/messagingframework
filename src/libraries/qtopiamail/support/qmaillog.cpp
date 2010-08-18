@@ -195,12 +195,21 @@ QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags()
 // qMailLog(Bar) << "not seen";
 //
 // Note that qMailLog(Foo) will cause a compile error unless one of the
-// QLOG_ENABLED(Foo), QLOG_DISABLED(Foo) or QLOG_RUNTIME(Foo) macros have
+// QLOG_ENABLE(Foo), QLOG_DISABLE(Foo) or QLOG_RUNTIME(Foo) macros have
 // been used.
+
+// Note that in debug mode (CONFIG+=debug), runtime categories default
+// to on instead of off due to the defines here.
+#ifdef QMF_ENABLE_LOGGING
+#define LOGGING_DEFAULT 1
+#else
+#define LOGGING_DEFAULT 0
+#endif
+
 QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
 {
     RuntimeLoggingManager *rlm = runtimeLoggingManager();
-    return rlm->settings.value(QLatin1String(category),0).toBool();
+    return rlm->settings.value(QLatin1String(category),LOGGING_DEFAULT).toBool();
 }
 
 #else

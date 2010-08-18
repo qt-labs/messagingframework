@@ -109,4 +109,7 @@ To inform the messageserver process that the logging levels have been changed yo
 killall -HUP messageserver
 \endcode
 
+Note that the default for a runtime-enabled logging category in release builds is off and in debug builds
+it is on. If a category is defined in the config file that definition will take precedence over the default.
+
 */
