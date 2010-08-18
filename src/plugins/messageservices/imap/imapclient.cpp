@@ -51,6 +51,41 @@
 #include <limits.h>
 #include <QFile>
 #include <QDir>
+#include "messagebuffer.h"
+
+class MessageFlushedWrapper : public MessageBufferFlushCallback
+{
+    ImapStrategyContext *context;
+public:
+    MessageFlushedWrapper(ImapStrategyContext *_context)
+        : context(_context)
+    {
+    }
+
+    void messageFlushed(QMailMessage *message)
+    {
+        context->messageFlushed(*message);
+    }
+};
+
+class DataFlushedWrapper : public MessageBufferFlushCallback
+{
+    ImapStrategyContext *context;
+    QString uid;
+    QString section;
+public:
+    DataFlushedWrapper(ImapStrategyContext *_context, const QString &_uid, const QString &_section)
+        : context(_context)
+        , uid(_uid)
+        , section(_section)
+    {
+    }
+
+    void messageFlushed(QMailMessage *message)
+    {
+        context->dataFlushed(*message, uid, section);
+    }
+};
 
 namespace {
 
@@ -469,6 +504,9 @@ void ImapClient::setStrategy(ImapStrategy *strategy)
 
 void ImapClient::commandCompleted(ImapCommand command, OperationStatus status)
 {
+    // Flush now because code assumes that the messages have all been processed
+    MessageBuffer::instance()->flush();
+
     checkCommandResponse(command, status);
     if (status == OpOk)
         commandTransition(command, status);
@@ -836,7 +874,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
     _classifier.classifyMessage(mail);
 
     _strategyContext->messageFetched(mail);
-    _strategyContext->messageFlushed(mail);
+    MessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(_strategyContext));
 }
 
 
@@ -1168,7 +1206,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         }
 
         _strategyContext->dataFetched(mail, uid, section);
-        _strategyContext->dataFlushed(mail, uid, section);
+        MessageBuffer::instance()->setCallback(&mail, new DataFlushedWrapper(_strategyContext, uid, section));
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));

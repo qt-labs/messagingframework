@@ -49,7 +49,7 @@
 #include <qlist.h>
 #include <qmap.h>
 #include <qmailfolder.h>
-
+#include "messagebuffer.h"
 
 struct SectionProperties {
     enum MinimumType {
@@ -102,7 +102,7 @@ class QMailAccount;
 class QMailAccountConfiguration;
 class ImapClient;
 
-class ImapStrategyContextBase
+class ImapStrategyContextBase : public MessageBufferProgressCallback
 {
 public:
     ImapStrategyContextBase(ImapClient *client) { _client = client; }

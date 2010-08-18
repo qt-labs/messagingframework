@@ -501,19 +501,19 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase * /*context*/, QMailMe
     _folder[message.serverUid()] = false;
     // Store this message to the mail store
     if (message.id().isValid()) {
-        if (!QMailStore::instance()->updateMessage(&message)) {
+        if (!MessageBuffer::instance()->updateMessage(&message)) {
             _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
     } else {
         QMailMessageKey duplicateKey(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
-        if (!QMailStore::instance()->removeMessages(duplicateKey)) {
+        if (!MessageBuffer::instance()->removeMessages(duplicateKey)) {
             _error = true;
             qWarning() << "Unable to remove duplicate message(s) for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
-        if (!QMailStore::instance()->addMessage(&message)) {
+        if (!MessageBuffer::instance()->addMessage(&message)) {
             _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
@@ -542,7 +542,7 @@ void ImapStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage
 void ImapStrategy::dataFetched(ImapStrategyContextBase * /*context*/, QMailMessage &message, const QString &/*uid*/, const QString &/*section*/)
 {
     // Store the updated message
-    if (!QMailStore::instance()->updateMessage(&message)) {
+    if (!MessageBuffer::instance()->updateMessage(&message)) {
         _error = true;
         qWarning() << "Unable to update message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
         return;
@@ -1976,7 +1976,7 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
     }
 
     _progress = 0;
-    context->progressChanged(_progress, _total);
+    MessageBuffer::instance()->progressChanged(context, _progress, _total);
 
     _transferState = Preview;
 
@@ -2154,7 +2154,7 @@ void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *contex
     if (_error) return;
 
     if (_transferState == Preview) {
-        context->progressChanged(_progress++, _total);
+        MessageBuffer::instance()->progressChanged(context, _progress++, _total);
 
         if (message.size() < _headerLimit) {
             _completionList.append(message.id());
