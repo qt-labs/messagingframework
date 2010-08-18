@@ -257,6 +257,7 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
     QSharedPointer<QFile> file(new QFile(filePath));
 
     if (!file->open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to open new message content file:" << filePath;
         return (pathOnDefault(filePath) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
@@ -641,7 +642,7 @@ struct PartStorer
             // We need to write the content to a new file
             QSharedPointer<QFile> file(new QFile(partFilePath));
             if (!file->open(QIODevice::WriteOnly)) {
-                qMailLog(Messaging) << "Unable to open new message part content file:" << partFilePath;
+                qWarning() << "Unable to open new message part content file:" << partFilePath;
                 return false;
             }
 
@@ -651,7 +652,7 @@ struct PartStorer
                 qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
                 if (!QFile::remove(partFilePath)){
-                    qMailLog(Messaging) << "Unable to remove temporary message part content file:" << partFilePath;
+                    qWarning()  << "Unable to remove temporary message part content file:" << partFilePath;
                 }
                 return false;
             }

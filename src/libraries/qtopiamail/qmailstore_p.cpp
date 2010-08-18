@@ -4495,7 +4495,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
                                 << QMailContentManagerFactory::defaultIndexerScheme())
      {
         if (!scheme.isEmpty()) {
-            qDebug() << "Adding scheme" << scheme;
             QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
             if (!manager) {
                 qWarning() << "Unable to create content manager for scheme:" << message->contentScheme();
