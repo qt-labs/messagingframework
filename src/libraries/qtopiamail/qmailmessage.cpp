@@ -192,37 +192,12 @@ static QByteArray charsetForInput(const QString& input)
     return (latin1? QByteArray("ISO-8859-1") : QByteArray());
 }
 
-static QTextCodec* codecForName(const QByteArray& charset, bool translateAscii = true)
-{
-    QByteArray encoding(charset.toLower());
-
-    if (!encoding.isEmpty())
-    {
-        int index;
-
-        if (translateAscii && encoding.contains("ascii")) 
-        {
-            // We'll assume the text is plain ASCII, to be extracted to Latin-1
-            encoding = "ISO-8859-1";
-        }
-        else if ((index = encoding.indexOf('*')) != -1)
-        {
-            // This charset specification includes a trailing language specifier
-            encoding = encoding.left(index);
-        }
-
-        return QTextCodec::codecForName(encoding);
-    }
-
-    return 0;
-}
-
 static QByteArray fromUnicode(const QString& input, const QByteArray& charset)
 {
     if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1))
     {
         // See if we can convert using the nominated charset
-        if (QTextCodec* textCodec = codecForName(charset))
+        if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->fromUnicode(input);
 
         qWarning() << "fromUnicode: unable to find codec for charset:" << charset;
@@ -236,7 +211,7 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset)
     if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1))
     {
         // See if we can convert using the nominated charset
-        if (QTextCodec* textCodec = codecForName(charset))
+        if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->toUnicode(input);
 
         qWarning() << "toUnicode: unable to find codec for charset:" << charset;
@@ -2425,7 +2400,7 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
 static bool unicodeConvertingCharset(const QByteArray& charset)
 {
     // See if this is a unicode-capable codec
-    if (QTextCodec* textCodec = codecForName(charset, true))
+    if (QTextCodec* textCodec = QMailCodec::codecForName(charset, true))
     {
         const QChar multiByteChar = 0x1234;
         return textCodec->canEncode(multiByteChar);

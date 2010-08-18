@@ -73,6 +73,7 @@ public:
     QByteArray decode(const QByteArray& in);
 
     // Static helper functions
+    static QTextCodec * codecForName(const QByteArray& charset, bool translateAscii = true);
     static void copy(QDataStream& out, QDataStream& in);
     static void copy(QTextStream& out, QTextStream& in);
 

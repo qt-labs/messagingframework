@@ -131,38 +131,6 @@ static void enumerateCodecs()
     }
 }
 
-static QTextCodec* codecForName(const QByteArray& charset, bool translateAscii = true)
-{
-    QByteArray encoding(charset.toLower());
-
-    if (!encoding.isEmpty())
-    {
-        int index;
-
-        if (translateAscii && encoding.contains("ascii")) 
-        {
-            // We'll assume the text is plain ASCII, to be extracted to Latin-1
-            encoding = "ISO-8859-1";
-        }
-        else if ((index = encoding.indexOf('*')) != -1)
-        {
-            // This charset specification includes a trailing language specifier
-            encoding = encoding.left(index);
-        }
-
-        QTextCodec* codec = QTextCodec::codecForName(encoding);
-        if (!codec)
-        {
-            qWarning() << "QMailCodec::codecForName - Unable to find codec for charset" << encoding;
-            enumerateCodecs();
-        }
-
-        return codec;
-    }
-
-    return 0;
-}
-
 /*!
     Writes the data read from the stream \a in to the stream \a out, as a sequence 
     of 7-bit ASCII characters.  The unicode characters read from \a in are first 
@@ -254,6 +222,47 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
         decodeChunk(out, buffer, length, in.atEnd());
     }
     delete [] buffer;
+}
+
+/*!
+    Returns a pointer to an appropriate QTextCodec based on \a charset. If charset is ascii and \a translateAscii is true,
+    it will use the Latin-1 codec.
+
+    Returns 0 if could not locate a codec.
+*/
+QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAscii)
+{
+    QByteArray encoding(charset.toLower());
+
+    if (!encoding.isEmpty())
+    {
+        int index;
+
+        if (translateAscii && encoding.contains("ascii"))
+        {
+            // We'll assume the text is plain ASCII, to be extracted to Latin-1
+            encoding = "ISO-8859-1";
+        } else if(encoding.contains("ks_c_5601"))
+        {
+            encoding = "EUC-KR";
+        }
+        else if ((index = encoding.indexOf('*')) != -1)
+        {
+            // This charset specification includes a trailing language specifier
+            encoding = encoding.left(index);
+        }
+
+        QTextCodec* codec = QTextCodec::codecForName(encoding);
+        if (!codec)
+        {
+            qWarning() << "QMailCodec::codecForName - Unable to find codec for charset" << encoding;
+            enumerateCodecs();
+        }
+
+        return codec;
+    }
+
+    return 0;
 }
 
 /*!
