@@ -83,6 +83,8 @@ public:
     void checkForNewMessages();
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
+    void messageFlushed(QMailMessage &message, bool isComplete);
+
 signals:
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
