@@ -5915,15 +5915,15 @@ QString QMailMessageMetaData::copyServerUid() const
 }
 
 /*!
-    Sets the server identifier of which message this is an unsychronized copy of.
+    Sets the server identifier to \a serverUid of which message this is an unsychronized copy of.
 
     There is little reason for clients to use this.
 
     \sa copyServerUid()
 */
-void QMailMessageMetaData::setCopyServerUid(const QString &s)
+void QMailMessageMetaData::setCopyServerUid(const QString &serverUid)
 {
-    impl(this)->setCopyServerUid(s);
+    impl(this)->setCopyServerUid(serverUid);
 }
 
 /*!
@@ -5936,7 +5936,7 @@ QMailFolderId QMailMessageMetaData::restoreFolderId() const
 }
 
 /*!
-    Sets the identifier for which folder this message should be restorable to \id
+    Sets the identifier for which folder this message should be restorable to \a id
     \sa restoreFolderId()
 */
 void QMailMessageMetaData::setRestoreFolderId(const QMailFolderId &id)
@@ -5972,7 +5972,7 @@ QString QMailMessageMetaData::rfcId() const
 }
 
 /*!
-    Sets the RfcId to \id
+    Sets the RfcId to \a id
     \sa rfcId()
 */
 void QMailMessageMetaData::setRfcId(const QString &id)

@@ -366,6 +366,10 @@ QStringList QMailContentManagerPlugin::keys() const
     by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content 
     has been successfully removed.
 
+    The content manager should only remove data it has created with association to identifier. For instance
+    a content manager that does indexing, should only remove the data it has created reaction to the identifier,
+    but not the file itself.
+
     If the content cannot be removed, the content manager should return 
     \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
     should be retried at a later time.
@@ -393,6 +397,21 @@ QMailContentManager::~QMailContentManager()
 {
 }
 
+/*!
+    Requests that the content manager remove the message content stored at the location indicated
+    by \a identifiers.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content
+    has been successfully removed.
+
+    The content manager should only remove data it has created with association to identifier. For instance
+    a content manager that does indexing, should only remove the data it has created reaction to the identifier,
+    but not the file itself.
+
+    If the content cannot be removed, the content manager should return
+    \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
+    should be retried at a later time.
+
+    If the identified content does not already exist, the content manager should return \l{QMailStore::InvalidId}{InvalidId}.
+*/
 
 QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifiers)
 {

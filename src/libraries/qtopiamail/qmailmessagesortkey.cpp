@@ -349,16 +349,31 @@ QMailMessageSortKey QMailMessageSortKey::previousParentFolderId(Qt::SortOrder or
     return QMailMessageSortKey(PreviousParentFolderId, order);
 }
 
+/*!
+    Returns a key that sorts messages by their copy server identifiers, according to \a order.
+
+    \sa QMailMessage::copyServerUid()
+*/
 QMailMessageSortKey QMailMessageSortKey::copyServerUid(Qt::SortOrder order)
 {
     return QMailMessageSortKey(CopyServerUid, order);
 }
 
+/*!
+    Returns a key that sorts messages by their restore folder identifiers, according to \a order.
+
+    \sa QMailMessage::restoreFolderId()
+*/
 QMailMessageSortKey QMailMessageSortKey::restoreFolderId(Qt::SortOrder order)
 {
     return QMailMessageSortKey(RestoreFolderId, order);
 }
 
+/*!
+    Returns a key that sorts messages by list identifier according to \a order.
+
+    \sa QMailMessage::listId()
+*/
 QMailMessageSortKey QMailMessageSortKey::listId(Qt::SortOrder order)
 {
     return QMailMessageSortKey(ListId, order);

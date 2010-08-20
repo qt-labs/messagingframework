@@ -86,6 +86,7 @@
     POP=0</pre>
 <p>To inform the messageserver process that the logging levels have been changed you must send it a HUP signal.</p>
 <pre>    killall -HUP messageserver</pre>
+<p>Note that the default for a runtime-enabled logging category in release builds is off and in debug builds it is on. If a category is defined in the config file that definition will take precedence over the default.</p>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>
