@@ -1,6 +1,11 @@
 Latest Changes
 ---------------
 
+2010W32
+  * Adds support in QMailContentManager for filtering and indexing plugins
+  * Speed up message deletion
+  * Adds method for batched removal in QMailContentManager
+
 2010W31
   * Fixes: NB#173974 - POP: Unable to receive message with >20MB attachment
   * Fixes: NB#181179 - GMail IMAP fetch and content retrieve stops working after continuous usage

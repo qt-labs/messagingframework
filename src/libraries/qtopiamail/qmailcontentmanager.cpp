@@ -125,12 +125,18 @@ QStringList QMailContentManagerFactory::schemes()
 
 
 /*!
-    Returns the default content managent for filtering supported by the factory
+    Returns the default filter content manager scheme for filtering supported by the factory. Returns an empty string
+    if none are found.
 */
 QString QMailContentManagerFactory::defaultFilterScheme()
 {
     return defaultFilter();
 }
+
+/*!
+    Returns the default content indexing scheme supported by the factory. Returns an empty string
+    if none are found.
+*/
 
 QString QMailContentManagerFactory::defaultIndexerScheme()
 {
@@ -204,7 +210,7 @@ void QMailContentManagerFactory::clearContent()
 /*!
     \fn QString QMailContentManagerPluginInterface::key() const
 
-    Returns a string identifying the content management scheme implemented by the plugin.
+    Returns a unique string identifying the content management scheme implemented by the plugin.
 */
 
 /*!
