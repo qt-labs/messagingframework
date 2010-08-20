@@ -62,7 +62,7 @@ class QtopiamailfileManager : public QObject, public QMailContentManager
     Q_OBJECT
 
 public:
-    QtopiamailfileManager();
+    QtopiamailfileManager(QObject *parent = 0);
     ~QtopiamailfileManager();
 
     QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);

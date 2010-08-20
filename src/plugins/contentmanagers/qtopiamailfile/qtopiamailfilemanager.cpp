@@ -204,8 +204,9 @@ void syncFile(QSharedPointer<QFile> file)
 }
 
 
-QtopiamailfileManager::QtopiamailfileManager()
-    :_useFullSync(false)
+QtopiamailfileManager::QtopiamailfileManager(QObject *parent)
+    : QObject(parent),
+      _useFullSync(false)
 {
     QString path(messagesBodyPath(QMailAccountId()));
 
@@ -752,6 +753,6 @@ QString QtopiamailfileManagerPlugin::key() const
 
 QMailContentManager *QtopiamailfileManagerPlugin::create()
 {
-    return new QtopiamailfileManager;
+    return new QtopiamailfileManager(this);
 }
 
