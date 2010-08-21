@@ -388,25 +388,16 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage
             return;
         }
     } else {
-        int matching = QMailStore::instance()->countMessages(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
-        if (matching == 0) {
-            if (!QMailStore::instance()->addMessage(&message)) {
-                _error = true;
-                qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-                return;
-            }
-        } else {
-            if(matching > 1) {
-                qWarning() << "A duplicate message (which shouldn't exist) is being updated, meaning they now could be falling out of sync."
-                        << "Account: " << message.parentAccountId() << "UID:" << message.serverUid();
-            }
-            message.setId(QMailStore::instance()->message(message.serverUid(), message.parentAccountId()).id());
-
-            if (!QMailStore::instance()->updateMessage(&message)) {
-                _error = true;
-                qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-                return;
-            }
+        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
+        if (!QMailStore::instance()->removeMessages(duplicateKey)) {
+            _error = true;
+            qWarning() << "Unable to remove duplicate message(s) for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+            return;
+        }
+        if (!QMailStore::instance()->addMessage(&message)) {
+            _error = true;
+            qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+            return;
         }
 
         context->folderModified(QMailDisconnected::sourceFolderId(message));

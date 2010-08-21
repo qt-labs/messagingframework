@@ -1019,16 +1019,9 @@ void PopClient::createMail()
     if (mail.id().isValid()) {
         QMailStore::instance()->updateMessage(&mail);
     } else {
-        int matching = QMailStore::instance()->countMessages(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
-        if (matching == 0) {
-            QMailStore::instance()->addMessage(&mail);
-        } else {
-            if (matching > 1)
-                qWarning() << "Updating only 1 of many duplicate messages (" << mail.serverUid() << "). Account: " << mail.parentAccountId();
-
-            mail.setId(QMailStore::instance()->message(mail.serverUid(), mail.parentAccountId()).id());
-            QMailStore::instance()->updateMessage(&mail);
-        }
+        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
+        QMailStore::instance()->removeMessages(duplicateKey);
+        QMailStore::instance()->addMessage(&mail);
     }
 
     if (isComplete && !mail.serverUid().isEmpty()) {
