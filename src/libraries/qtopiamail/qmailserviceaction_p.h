@@ -148,7 +148,9 @@ class QMailRetrievalActionPrivate : public QMailServiceActionPrivate
 public:
     QMailRetrievalActionPrivate(QMailRetrievalAction *);
 
+    void retrieveFolderListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
+    void retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
 
     void retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
@@ -157,12 +159,13 @@ public:
     void retrieveMessageRange(const QMailMessageId &messageId, uint minimum);
     void retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
 
-    void retrieveAll(const QMailAccountId &accountId);
     void exportUpdatesHelper(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
+    void synchronize(const QMailAccountId &accountId, uint minimum);
+
+    void retrieveAll(const QMailAccountId &accountId);
     void synchronizeAllHelper(const QMailAccountId &accountId);
     void synchronizeAll(const QMailAccountId &accountId);
-
 protected slots:
     void retrievalCompleted(quint64);
 
@@ -188,6 +191,30 @@ public:
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
+};
+
+class QMailRetrieveFolderListCommand : public QMailServiceActionCommand
+{
+public:
+    QMailRetrieveFolderListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
+    void execute() { _action->retrieveFolderListHelper(_accountId, QMailFolderId()); }
+private:
+    QMailRetrievalActionPrivate *_action;
+    QMailAccountId _accountId;
+};
+
+class QMailRetrieveMessageListCommand : public QMailServiceActionCommand
+{
+public:
+ QMailRetrieveMessageListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId, uint minimum) 
+     :_action(action), 
+      _accountId(accountId),
+      _minimum(minimum) {};
+    void execute() { _action->retrieveMessageListHelper(_accountId, QMailFolderId(), _minimum, QMailMessageSortKey()); }
+private:
+    QMailRetrievalActionPrivate *_action;
+    QMailAccountId _accountId;
+    uint _minimum;
 };
 
 class QMailTransmitActionPrivate : public QMailServiceActionPrivate

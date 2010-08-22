@@ -182,10 +182,11 @@ public slots:
     void retrieveMessageRange(const QMailMessageId &messageId, uint minimum);
     void retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
 
-    void retrieveAll(const QMailAccountId &accountId);
     void exportUpdates(const QMailAccountId &accountId);
+    void synchronize(const QMailAccountId &accountId, uint minimum);
 
-    void synchronizeAll(const QMailAccountId &accountId);
+    void retrieveAll(const QMailAccountId &accountId); // deprecated
+    void synchronizeAll(const QMailAccountId &accountId); // deprecated
 };
 
 

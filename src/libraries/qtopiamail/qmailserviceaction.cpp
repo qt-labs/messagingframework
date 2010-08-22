@@ -705,14 +705,26 @@ QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i
     init();
 }
 
-void QMailRetrievalActionPrivate::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+void QMailRetrievalActionPrivate::retrieveFolderListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
     _server->retrieveFolderList(newAction(), accountId, folderId, descending);
 }
 
-void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalActionPrivate::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+{
+    Q_ASSERT(!_pendingActions.count());
+    retrieveFolderListHelper(accountId, folderId, descending);
+}
+
+void QMailRetrievalActionPrivate::retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     _server->retrieveMessageList(newAction(), accountId, folderId, minimum, sort);
+}
+
+void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+{
+    Q_ASSERT(!_pendingActions.count());
+    retrieveMessageListHelper(accountId, folderId, minimum, sort);
 }
 
 void QMailRetrievalActionPrivate::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
@@ -760,6 +772,26 @@ void QMailRetrievalActionPrivate::synchronizeAll(const QMailAccountId &accountId
 {
     Q_ASSERT(!_pendingActions.count());
     synchronizeAllHelper(accountId);
+}
+
+void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId, uint minimum)
+{
+    Q_ASSERT(!_pendingActions.count());
+    newAction();
+
+    QMailRetrievalAction *exportAction = new QMailRetrievalAction();
+    QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->impl(exportAction), accountId);
+    appendSubAction(exportAction, QSharedPointer<QMailServiceActionCommand>(exportCommand));
+
+    QMailRetrievalAction *retrieveFolderListAction = new QMailRetrievalAction();
+    QMailRetrieveFolderListCommand *retrieveFolderListCommand = new QMailRetrieveFolderListCommand(retrieveFolderListAction->impl(retrieveFolderListAction), accountId);
+    appendSubAction(retrieveFolderListAction, QSharedPointer<QMailServiceActionCommand>(retrieveFolderListCommand));
+    
+    QMailRetrievalAction *retrieveMessageListAction = new QMailRetrievalAction();
+    QMailRetrieveMessageListCommand *retrieveMessageListCommand = new QMailRetrieveMessageListCommand(retrieveMessageListAction->impl(retrieveMessageListAction), accountId, minimum);
+    appendSubAction(retrieveMessageListAction, QSharedPointer<QMailServiceActionCommand>(retrieveMessageListCommand));
+    
+    executeNextSubAction();
 }
 
 void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
@@ -1017,6 +1049,21 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 {
     impl(this)->synchronizeAll(accountId);
+}
+
+
+/*!
+    Essentially performs the same functions as calling exportUpdates(), retrieveFolderList() 
+    and retrieveMessageList() consecutively using the given \a accountId and \a minimum, but 
+    may perform optimizations such as retrieving the folder list at the same time as 
+    retrieving messages, and retrieving messages in multiple folder simultaneously by using 
+    multiple connections to the server.
+
+    \sa exportUpdates(), retrieveMessageList(), retrieveFolderList()
+*/
+void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint minimum)
+{
+    impl(this)->synchronize(accountId, minimum);
 }
 
 
