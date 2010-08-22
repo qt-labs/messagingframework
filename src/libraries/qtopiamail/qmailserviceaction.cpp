@@ -78,8 +78,7 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _total(0),
       _progress(0),
       _isValid(false),
-      _action(0),
-      _pendingTotal(0)
+      _action(0)
 {
     connect(_server, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
             this, SLOT(activityChanged(quint64, QMailServiceAction::Activity)));
@@ -179,16 +178,7 @@ void QMailServiceActionPrivate::subActionStatusChanged(const QMailServiceAction:
 
 void QMailServiceActionPrivate::subActionProgressChanged(uint value, uint total)
 {
-    if (_pendingTotal < 1) {
-        qWarning() << "Warning: Invalid pendingTotal";
-        _pendingTotal = 1;
-    }
-    if (total) {
-        const int pos(_pendingTotal - _pendingActions.count() + 1);
-        progressChanged(_action, (100*value*pos)/_pendingTotal, 100);
-    } else {
-        progressChanged(_action, 0, 0);
-    }
+    progressChanged(_action, value, total);
 }
 
 void QMailServiceActionPrivate::connectSubAction(QMailServiceAction *subAction)
@@ -223,7 +213,6 @@ void QMailServiceActionPrivate::clearSubActions()
             // Don't delete QObject while it's emitting a signal
             a.action->deleteLater();
         }
-        _pendingTotal = 0;
         _pendingActions.clear();
 }
 
@@ -241,7 +230,6 @@ void QMailServiceActionPrivate::init()
     _statusChanged = false;
     _isValid = false;
     _pendingActions.clear();
-    _pendingTotal = 0;
 }
 
 quint64 QMailServiceActionPrivate::newAction()
@@ -272,7 +260,6 @@ void QMailServiceActionPrivate::appendSubAction(QMailServiceAction *subAction, Q
     a.action = subAction;
     a.command = command;
     _pendingActions.append(a);
-    _pendingTotal = _pendingActions.count();
 }
 
 void QMailServiceActionPrivate::executeNextSubAction()

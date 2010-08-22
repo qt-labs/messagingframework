@@ -137,7 +137,6 @@ protected:
     bool _statusChanged;
 
     QList<ActionCommand> _pendingActions;
-    uint _pendingTotal;
 };
 
 
