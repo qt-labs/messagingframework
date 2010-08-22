@@ -86,6 +86,22 @@
 
     25. Added QMailActionObserver class.
 
+    26. Added 'QMailMessage::Important', and
+              'QMailMessage::ImportantElsewhere'.
+
+    27. Added 'QMailStore::lock()' and
+              'QMailStore::unlock()'.
+
+    28. Added QMailActionInfo and QMailActionObserver classes.
+
+    29. Added QMailDisconnected class.
+
+    30. Changed 'QMailRetrievalAction::synchronize(const QMailAccountId &amp;accountId)' to
+                'QMailRetrievalAction::synchronizeAll(const QMailAccountId &amp;accountId)'
+
+    31. Added 'QMailDisconnected::destinationKey(const QMailFolderId &amp;)'
+
+    32. Added 'QMailRetrievalAction::synchronize(const QMailAccountId &amp;accountId, uint minimum)'
 
     *****************************************************************************
 
@@ -236,21 +252,6 @@
 
     29. Changed 'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx)' to
                 'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx, const QModelIndex &amp;jdx)'.
-
-    30. Added 'QMailMessage::Important', and
-              'QMailMessage::ImportantElsewhere'.
-
-    31. Added 'QMailStore::lock()' and
-              'QMailStore::unlock()'.
-
-    32. Added QMailActionInfo and QMailActionObserver classes.
-
-    33. Added QMailDisconnected class.
-
-    34. Changed 'QMailRetrievalAction::synchronize(const QMailAccountId &amp;accountId)' to
-                'QMailRetrievalAction::synchronizeAll(const QMailAccountId &amp;accountId)'
-
-    35. Added 'QMailDisconnected::destinationKey(const QMailFolderId &amp;)'
 
     *****************************************************************************</pre>
 <p /><address><hr /><div align="center">
