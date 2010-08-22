@@ -384,8 +384,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(commandCompleted(ImapCommand, OperationStatus)) );
     connect(&_protocol, SIGNAL(mailboxListed(QString,QString)),
             this, SLOT(mailboxListed(QString,QString)));
-    connect(&_protocol, SIGNAL(messageFetched(QMailMessage&)),
-            this, SLOT(messageFetched(QMailMessage&)) );
+    connect(&_protocol, SIGNAL(messageFetched(QMailMessage&, const QString &)),
+            this, SLOT(messageFetched(QMailMessage&, const QString &)) );
     connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
             this, SLOT(dataFetched(QString, QString, QString, int)) );
     connect(&_protocol, SIGNAL(nonexistentUid(QString)),
@@ -766,7 +766,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     }
 }
 
-void ImapClient::messageFetched(QMailMessage& mail)
+void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilename)
 {
     if (mail.status() & QMailMessage::New) {
         mail.setParentAccountId(_config.id());
@@ -830,6 +830,7 @@ void ImapClient::messageFetched(QMailMessage& mail)
             qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _config.id();
         }
     }
+    mail.setCustomField("qtopiamail-detached-filename", detachedFilename);
 
     _classifier.classifyMessage(mail);
 
@@ -1134,12 +1135,6 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                     // We only have a portion of the part data
                     part.setHeaderField("X-qtopiamail-internal-partial-content", "true");
                 }
-
-                // The file we wrote the content to is detached, and the mailstore can assume ownership
-                if (mail.customField("qtopiamail-detached-filename").isEmpty()) {
-                    // Only use one detached file at a time
-                    mail.setCustomField("qtopiamail-detached-filename", fileName);
-                } 
             } else {
                 // Find the part bodies in the retrieved data
                 QFile file(fileName);

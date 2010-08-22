@@ -3364,9 +3364,8 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     mail.setReceivedDate( QMailTimeStamp( timeStamp ) );
 
     // The file we wrote to is detached, and the mailstore can assume ownership
-    mail.setCustomField( "qtopiamail-detached-filename", detachedFile );
 
-    emit messageFetched(mail);
+    emit messageFetched(mail, detachedFile);
 
     // Remove the detached file if it is still present
     QFile::remove(detachedFile);

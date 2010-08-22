@@ -118,7 +118,7 @@ public slots:
     void transportError(QMailServiceAction::Status::ErrorCode, const QString &msg);
 
     void mailboxListed(const QString &, const QString &);
-    void messageFetched(QMailMessage& mail);
+    void messageFetched(QMailMessage& mail, const QString &detachedFilename);
     void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void nonexistentUid(const QString &uid);
     void messageStored(const QString &);

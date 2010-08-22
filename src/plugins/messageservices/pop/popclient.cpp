@@ -975,7 +975,6 @@ void PopClient::createMail()
 
     mail.setSize(mailSize);
     mail.setServerUid(messageUid);
-    mail.setCustomField( "qtopiamail-detached-filename", detachedFile );
 
     if (selectionMap.contains(mail.serverUid())) {
         // We need to update the message from the existing data
@@ -993,6 +992,7 @@ void PopClient::createMail()
         mail.setStatus(QMailMessage::New, true);
         mail.setReceivedDate(QMailTimeStamp::currentDateTime());
     }
+    mail.setCustomField( "qtopiamail-detached-filename", detachedFile );
 
     mail.setMessageType(QMailMessage::Email);
     mail.setParentAccountId(config.id());
