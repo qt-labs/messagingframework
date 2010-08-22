@@ -628,3 +628,15 @@ QString QMail::lastSystemErrorMessage()
 #endif
 }
 
+/*!
+    \enum QMail::SaslMechanism
+
+    This enum type describes the available SASL (Simple Authentication and Security Layer \l{http://www.ietf.org/rfc/rfc4422.txt} {RFC 2822} ) 
+    mechanisms for authenticating with external servers using protocol plugins. They should be used in conjunction with a data security 
+    mechanism such as TLS (Transport Layer Security \l{http://www.ietf.org/rfc4346} {RFC 4346})
+
+    \value NoMechanism No SASL mechanism will be used.
+    \value LoginMechanism Simple clear-text user/password authentication mechanism, obsoleted by Plain.
+    \value PlainMechanism Simple clear-text user/password authentication mechanism.
+    \value CramMd5Mechanism A challenge-response authentication mechanism.
+*/
