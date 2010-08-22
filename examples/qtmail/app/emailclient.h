@@ -361,7 +361,6 @@ private:
 private:
     // Whether the initial action for the app was to view incoming messages 
     enum InitialAction { None = 0, IncomingMessages, NewMessages, View, Compose, Cleanup };
-    enum SyncState { ExportUpdates = 0, RetrieveFolders, RetrieveMessages };
 
     bool filesRead;
     QMailMessageId cachedDisplayMailId;
@@ -437,7 +436,6 @@ private:
     QMailMessageId lastDraftId;
 
     QProcess* m_messageServerProcess;
-    SyncState syncState;
     QSet<QMailMessageId> flagMessageIds;
     QMenu* m_contextMenu;
     QToolBar* m_toolBar;

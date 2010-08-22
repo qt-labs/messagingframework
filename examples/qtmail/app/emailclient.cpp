@@ -476,7 +476,6 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       initialAction(None),
       preSearchWidgetId(-1),
       m_messageServerProcess(0),
-      syncState(ExportUpdates),
       m_contextMenu(0),
       m_transmitAction(0),
       m_retrievalAction(0),
@@ -1281,18 +1280,8 @@ void EmailClient::retrievalCompleted()
 {
     messageListView()->updateActions(); // update GetMoreMessagesButton
     if (mailAccountId.isValid()) {
-        if (syncState == ExportUpdates) {
-            // Find any changes to the folder list of the server
-            syncState = RetrieveFolders;
-            retrieveAction("Retrieving folder list for account")->retrieveFolderList(mailAccountId, QMailFolderId());
-        } else if (syncState == RetrieveFolders) {
-            // Now we need to retrieve the message lists for the folders
-            syncState = RetrieveMessages;
-            retrieveAction("Retrieving message list for account")->retrieveMessageList(mailAccountId, QMailFolderId(), MoreMessagesIncrement);
-        } else {
-            // See if there are more accounts to process
-            getNextNewMail();
-        }
+        // See if there are more accounts to process
+        getNextNewMail();
     } else {
         autoGetMail = false;
 
@@ -1316,9 +1305,7 @@ void EmailClient::getNewMail()
         selectedMessageId = QMailMessageId();
 
     setRetrievalInProgress(true);
-    syncState = ExportUpdates;
-
-    retrieveAction("Exporting account updates")->exportUpdates(mailAccountId);
+    retrieveAction("Exporting account updates")->synchronize(mailAccountId, MoreMessagesIncrement);
 }
 
 void EmailClient::getAllNewMail()
@@ -1492,8 +1479,7 @@ void EmailClient::transferFailure(const QMailAccountId& accountId, const QString
             emit updateStatus(tr("Transfer cancelled"));
         }
 
-        if(syncState == ExportUpdates)
-            rollBackUpdates();
+        rollBackUpdates();
 
         if (isSending()) {
             sendFailure(accountId);
