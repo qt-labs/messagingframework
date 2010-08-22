@@ -23,6 +23,8 @@
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#clearContent">clearContent</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailContentManager * </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#create">create</a></b> ( const QString &amp; <i>scheme</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#defaultFilterScheme">defaultFilterScheme</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#defaultIndexerScheme">defaultIndexerScheme</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#defaultScheme">defaultScheme</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#init">init</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanagerfactory.html#schemes">schemes</a></b> ()</td></tr>
@@ -40,6 +42,10 @@
 <p>Clears the content managed by all content managers known to the factory.</p>
 <h3 class="fn"><a name="create"></a><a href="qmailcontentmanager.html">QMailContentManager</a> * QMailContentManagerFactory::create ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>scheme</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Creates a content manager object for the scheme identified by <i>scheme</i>.</p>
+<h3 class="fn"><a name="defaultFilterScheme"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailContentManagerFactory::defaultFilterScheme ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the default filter content manager scheme for filtering supported by the factory. Returns an empty string if none are found.</p>
+<h3 class="fn"><a name="defaultIndexerScheme"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailContentManagerFactory::defaultIndexerScheme ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the default content indexing scheme supported by the factory. Returns an empty string if none are found.</p>
 <h3 class="fn"><a name="defaultScheme"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailContentManagerFactory::defaultScheme ()&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns the default content management scheme supported by the factory.</p>
 <h3 class="fn"><a name="init"></a>bool QMailContentManagerFactory::init ()&nbsp;&nbsp;<tt> [static]</tt></h3>

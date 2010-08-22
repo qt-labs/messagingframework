@@ -54,14 +54,16 @@
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#contentAvailable">contentAvailable</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#contentScheme">contentScheme</a></b> () const : QString</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#copyServerUid">copyServerUid</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#customField">customField</a></b> ( const QString &amp; ) const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#customFields">customFields</a></b> () const : const QMap&lt;QString, QString&gt; &amp;</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#date">date</a></b> () const : QMailTimeStamp</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#from">from</a></b> () const : QMailAddress</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#id">id</a></b> () const : QMailMessageId</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#inResponseTo">inResponseTo</a></b> () const : QMailMessageId</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#indicativeSize">indicativeSize</a></b> () const : uint</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#listId">listId</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#messageType">messageType</a></b> () const : MessageType</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#parentAccountId">parentAccountId</a></b> () const : QMailAccountId</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#parentFolderId">parentFolderId</a></b> () const : QMailFolderId</div></li>
@@ -70,21 +72,27 @@
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#receivedDate">receivedDate</a></b> () const : QMailTimeStamp</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#removeCustomField">removeCustomField</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#responseType">responseType</a></b> () const : ResponseType</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#restoreFolderId">restoreFolderId</a></b> () const : QMailFolderId</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#rfcId">rfcId</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#serverUid">serverUid</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setContent">setContent</a></b> ( ContentType )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setContentIdentifier">setContentIdentifier</a></b> ( const QString &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setContentScheme">setContentScheme</a></b> ( const QString &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setCopyServerUid">setCopyServerUid</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setCustomField">setCustomField</a></b> ( const QString &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setDate">setDate</a></b> ( const QMailTimeStamp &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setFrom">setFrom</a></b> ( const QMailAddress &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setId">setId</a></b> ( const QMailMessageId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setInResponseTo">setInResponseTo</a></b> ( const QMailMessageId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setListId">setListId</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setMessageType">setMessageType</a></b> ( MessageType )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</a></b> ( const QMailAccountId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</a></b> ( const QMailFolderId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</a></b> ( const QMailFolderId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</a></b> ( const QMailTimeStamp &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setResponseType">setResponseType</a></b> ( ResponseType )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setRestoreFolderId">setRestoreFolderId</a></b> ( const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setRfcId">setRfcId</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setServerUid">setServerUid</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setSize">setSize</a></b> ( uint )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setStatus">setStatus</a></b> ( quint64 )</div></li>

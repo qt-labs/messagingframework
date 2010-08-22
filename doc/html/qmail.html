@@ -17,6 +17,12 @@
 <pre>    #include &lt;QMail&gt;</pre><ul>
 </ul>
 <hr />
+<a name="types"></a>
+<h2>Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#SaslMechanism-enum">SaslMechanism</a></b> { NoMechanism, LoginMechanism, PlainMechanism, CramMd5Mechanism }</td></tr>
+</table>
+<hr />
 <a name="functions"></a>
 <h2>Functions</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -42,6 +48,17 @@
 <hr />
 <h2>Detailed Description</h2>
 <p>The QMail namespace contains miscellaneous functionality used by the Messaging framework.</p>
+<hr />
+<h2>Type Documentation</h2>
+<h3 class="fn"><a name="SaslMechanism-enum"></a>enum QMail::SaslMechanism</h3>
+<p>This enum type describes the available SASL (Simple Authentication and Security Layer <a href="http://www.ietf.org/rfc/rfc4422.txt">RFC 2822</a> ) mechanisms for authenticating with external servers using protocol plugins. They should be used in conjunction with a data security mechanism such as TLS (Transport Layer Security <a href="http://www.ietf.org/rfc4346">RFC 4346</a>)</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMail::NoMechanism</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">No SASL mechanism will be used.</td></tr>
+<tr><td valign="top"><tt>QMail::LoginMechanism</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">Simple clear text user/password authentication mechanism, obsoleted by Plain.</td></tr>
+<tr><td valign="top"><tt>QMail::PlainMechanism</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">Simple clear text user/password authentication mechanism.</td></tr>
+<tr><td valign="top"><tt>QMail::CramMd5Mechanism</tt></td><td align="center" valign="top"><tt>3</tt></td><td valign="top">A challenge-response authentication mechanism.</td></tr>
+</table></p>
 <hr />
 <h2>Function Documentation</h2>
 <h3 class="fn"><a name="baseSubject"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMail::baseSubject ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>subject</i>, bool * <i>replyOrForward</i> )</h3>

@@ -254,21 +254,6 @@
                 <section ref="qmailtransport.html" title="QMailTransport Class Reference">
                     <section ref="qmailtransport-members.html" title="List of all members"/>
                 </section>
-                <section ref="messagenavigator-foldermodel-cpp.html" title="foldermodel.cpp Example File"/>
-                <section ref="messagenavigator-foldermodel-h.html" title="foldermodel.h Example File"/>
-                <section ref="messageviewer-main-cpp.html" title="main.cpp Example File"/>
-                <section ref="messageviewer-messagedelegate-cpp.html" title="messagedelegate.cpp Example File"/>
-                <section ref="messageviewer-messagedelegate-h.html" title="messagedelegate.h Example File"/>
-                <section ref="messageviewer-messagemodel-cpp.html" title="messagemodel.cpp Example File"/>
-                <section ref="messageviewer-messagemodel-h.html" title="messagemodel.h Example File"/>
-                <section ref="messagenavigator-messagenavigator-cpp.html" title="messagenavigator.cpp Example File"/>
-                <section ref="messagenavigator-messagenavigator-h.html" title="messagenavigator.h Example File"/>
-                <section ref="messagenavigator-messagenavigator-pro.html" title="messagenavigator.pro Example File"/>
-                <section ref="messagenavigator-messagenavigatorbase-ui.html" title="messagenavigatorbase.ui Example File"/>
-                <section ref="messageviewer-messageviewer-cpp.html" title="messageviewer.cpp Example File"/>
-                <section ref="messageviewer-messageviewer-h.html" title="messageviewer.h Example File"/>
-                <section ref="messageviewer-messageviewer-pro.html" title="messageviewer.pro Example File"/>
-                <section ref="messageviewer-messageviewerbase-ui.html" title="messageviewerbase.ui Example File"/>
             </section>
         </toc>
         <keywords>
@@ -291,6 +276,11 @@
             <keyword name="Messaging Framework Developer Resources" id="Messaging Framework Developer Resources" ref="index.html"/>
             <keyword name="Messaging Framework Namespaces" id="Messaging Framework Namespaces" ref="namespaces.html"/>
             <keyword name="QMail" id="QMail" ref="qmail.html"/>
+            <keyword name="QMail::SaslMechanism" id="QMail::SaslMechanism" ref="qmail.html#SaslMechanism-enum"/>
+            <keyword name="QMail::NoMechanism" id="QMail::NoMechanism" ref="qmail.html#SaslMechanism-enum"/>
+            <keyword name="QMail::LoginMechanism" id="QMail::LoginMechanism" ref="qmail.html#SaslMechanism-enum"/>
+            <keyword name="QMail::PlainMechanism" id="QMail::PlainMechanism" ref="qmail.html#SaslMechanism-enum"/>
+            <keyword name="QMail::CramMd5Mechanism" id="QMail::CramMd5Mechanism" ref="qmail.html#SaslMechanism-enum"/>
             <keyword name="baseSubject" id="QMail::baseSubject" ref="qmail.html#baseSubject"/>
             <keyword name="createDatabase" id="QMail::createDatabase" ref="qmail.html#createDatabase"/>
             <keyword name="dataPath" id="QMail::dataPath" ref="qmail.html#dataPath"/>
@@ -479,6 +469,7 @@
             <keyword name="QMailBase64Codec::Binary" id="QMailBase64Codec::Binary" ref="qmailbase64codec.html#ContentType-enum"/>
             <keyword name="name" id="QMailBase64Codec::name" ref="qmailbase64codec.html#name"/>
             <keyword name="QMailCodec" id="QMailCodec" ref="qmailcodec.html"/>
+            <keyword name="codecForName" id="QMailCodec::codecForName" ref="qmailcodec.html#codecForName"/>
             <keyword name="copy" id="QMailCodec::copy" ref="qmailcodec.html#copy"/>
             <keyword name="decode" id="QMailCodec::decode" ref="qmailcodec.html#decode"/>
             <keyword name="decodeChunk" id="QMailCodec::decodeChunk" ref="qmailcodec.html#decodeChunk"/>
@@ -490,16 +481,23 @@
             <keyword name="QMailContentManager::DurabilityRequirement" id="QMailContentManager::DurabilityRequirement" ref="qmailcontentmanager.html#DurabilityRequirement-enum"/>
             <keyword name="QMailContentManager::EnsureDurability" id="QMailContentManager::EnsureDurability" ref="qmailcontentmanager.html#DurabilityRequirement-enum"/>
             <keyword name="QMailContentManager::DeferDurability" id="QMailContentManager::DeferDurability" ref="qmailcontentmanager.html#DurabilityRequirement-enum"/>
+            <keyword name="QMailContentManager::ManagerRole" id="QMailContentManager::ManagerRole" ref="qmailcontentmanager.html#ManagerRole-enum"/>
+            <keyword name="QMailContentManager::FilterRole" id="QMailContentManager::FilterRole" ref="qmailcontentmanager.html#ManagerRole-enum"/>
+            <keyword name="QMailContentManager::StorageRole" id="QMailContentManager::StorageRole" ref="qmailcontentmanager.html#ManagerRole-enum"/>
+            <keyword name="QMailContentManager::IndexRole" id="QMailContentManager::IndexRole" ref="qmailcontentmanager.html#ManagerRole-enum"/>
             <keyword name="add" id="QMailContentManager::add" ref="qmailcontentmanager.html#add"/>
             <keyword name="clearContent" id="QMailContentManager::clearContent" ref="qmailcontentmanager.html#clearContent"/>
             <keyword name="ensureDurability" id="QMailContentManager::ensureDurability" ref="qmailcontentmanager.html#ensureDurability"/>
             <keyword name="init" id="QMailContentManager::init" ref="qmailcontentmanager.html#init"/>
             <keyword name="load" id="QMailContentManager::load" ref="qmailcontentmanager.html#load"/>
             <keyword name="remove" id="QMailContentManager::remove" ref="qmailcontentmanager.html#remove"/>
+            <keyword name="role" id="QMailContentManager::role" ref="qmailcontentmanager.html#role"/>
             <keyword name="update" id="QMailContentManager::update" ref="qmailcontentmanager.html#update"/>
             <keyword name="QMailContentManagerFactory" id="QMailContentManagerFactory" ref="qmailcontentmanagerfactory.html"/>
             <keyword name="clearContent" id="QMailContentManagerFactory::clearContent" ref="qmailcontentmanagerfactory.html#clearContent"/>
             <keyword name="create" id="QMailContentManagerFactory::create" ref="qmailcontentmanagerfactory.html#create"/>
+            <keyword name="defaultFilterScheme" id="QMailContentManagerFactory::defaultFilterScheme" ref="qmailcontentmanagerfactory.html#defaultFilterScheme"/>
+            <keyword name="defaultIndexerScheme" id="QMailContentManagerFactory::defaultIndexerScheme" ref="qmailcontentmanagerfactory.html#defaultIndexerScheme"/>
             <keyword name="defaultScheme" id="QMailContentManagerFactory::defaultScheme" ref="qmailcontentmanagerfactory.html#defaultScheme"/>
             <keyword name="init" id="QMailContentManagerFactory::init" ref="qmailcontentmanagerfactory.html#init"/>
             <keyword name="schemes" id="QMailContentManagerFactory::schemes" ref="qmailcontentmanagerfactory.html#schemes"/>
@@ -843,6 +841,10 @@
             <keyword name="QMailMessageKey::InResponseTo" id="QMailMessageKey::InResponseTo" ref="qmailmessagekey.html#Property-enum"/>
             <keyword name="QMailMessageKey::ResponseType" id="QMailMessageKey::ResponseType" ref="qmailmessagekey.html#Property-enum"/>
             <keyword name="QMailMessageKey::Custom" id="QMailMessageKey::Custom" ref="qmailmessagekey.html#Property-enum"/>
+            <keyword name="QMailMessageKey::CopyServerUid" id="QMailMessageKey::CopyServerUid" ref="qmailmessagekey.html#Property-enum"/>
+            <keyword name="QMailMessageKey::RestoreFolderId" id="QMailMessageKey::RestoreFolderId" ref="qmailmessagekey.html#Property-enum"/>
+            <keyword name="QMailMessageKey::ListId" id="QMailMessageKey::ListId" ref="qmailmessagekey.html#Property-enum"/>
+            <keyword name="QMailMessageKey::RfcId" id="QMailMessageKey::RfcId" ref="qmailmessagekey.html#Property-enum"/>
             <keyword name="ancestorFolderIds" id="QMailMessageKey::ancestorFolderIds" ref="qmailmessagekey.html#ancestorFolderIds"/>
             <keyword name="arguments" id="QMailMessageKey::arguments" ref="qmailmessagekey.html#arguments"/>
             <keyword name="combiner" id="QMailMessageKey::combiner" ref="qmailmessagekey.html#combiner"/>
@@ -850,6 +852,7 @@
             <keyword name="contentScheme" id="QMailMessageKey::contentScheme" ref="qmailmessagekey.html#contentScheme"/>
             <keyword name="contentType" id="QMailMessageKey::contentType" ref="qmailmessagekey.html#contentType"/>
             <keyword name="conversation" id="QMailMessageKey::conversation" ref="qmailmessagekey.html#conversation"/>
+            <keyword name="copyServerUid" id="QMailMessageKey::copyServerUid" ref="qmailmessagekey.html#copyServerUid"/>
             <keyword name="customField" id="QMailMessageKey::customField" ref="qmailmessagekey.html#customField"/>
             <keyword name="deserialize" id="QMailMessageKey::deserialize" ref="qmailmessagekey.html#deserialize"/>
             <keyword name="id" id="QMailMessageKey::id" ref="qmailmessagekey.html#id"/>
@@ -857,6 +860,7 @@
             <keyword name="isEmpty" id="QMailMessageKey::isEmpty" ref="qmailmessagekey.html#isEmpty"/>
             <keyword name="isNegated" id="QMailMessageKey::isNegated" ref="qmailmessagekey.html#isNegated"/>
             <keyword name="isNonMatching" id="QMailMessageKey::isNonMatching" ref="qmailmessagekey.html#isNonMatching"/>
+            <keyword name="listId" id="QMailMessageKey::listId" ref="qmailmessagekey.html#listId"/>
             <keyword name="messageType" id="QMailMessageKey::messageType" ref="qmailmessagekey.html#messageType"/>
             <keyword name="nonMatchingKey" id="QMailMessageKey::nonMatchingKey" ref="qmailmessagekey.html#nonMatchingKey"/>
             <keyword name="operator QVariant" id="QMailMessageKey::operator QVariant" ref="qmailmessagekey.html#operator-QVariant"/>
@@ -874,6 +878,8 @@
             <keyword name="receptionTimeStamp" id="QMailMessageKey::receptionTimeStamp" ref="qmailmessagekey.html#receptionTimeStamp"/>
             <keyword name="recipients" id="QMailMessageKey::recipients" ref="qmailmessagekey.html#recipients"/>
             <keyword name="responseType" id="QMailMessageKey::responseType" ref="qmailmessagekey.html#responseType"/>
+            <keyword name="restoreFolderId" id="QMailMessageKey::restoreFolderId" ref="qmailmessagekey.html#restoreFolderId"/>
+            <keyword name="rfcId" id="QMailMessageKey::rfcId" ref="qmailmessagekey.html#rfcId"/>
             <keyword name="sender" id="QMailMessageKey::sender" ref="qmailmessagekey.html#sender"/>
             <keyword name="serialize" id="QMailMessageKey::serialize" ref="qmailmessagekey.html#serialize"/>
             <keyword name="serverUid" id="QMailMessageKey::serverUid" ref="qmailmessagekey.html#serverUid"/>
@@ -894,6 +900,7 @@
             <keyword name="contentAvailable" id="QMailMessageMetaData::contentAvailable" ref="qmailmessagemetadata.html#contentAvailable"/>
             <keyword name="contentIdentifier" id="QMailMessageMetaData::contentIdentifier" ref="qmailmessagemetadata.html#contentIdentifier"/>
             <keyword name="contentScheme" id="QMailMessageMetaData::contentScheme" ref="qmailmessagemetadata.html#contentScheme"/>
+            <keyword name="copyServerUid" id="QMailMessageMetaData::copyServerUid" ref="qmailmessagemetadata.html#copyServerUid"/>
             <keyword name="customField" id="QMailMessageMetaData::customField" ref="qmailmessagemetadata.html#customField"/>
             <keyword name="customFields" id="QMailMessageMetaData::customFields" ref="qmailmessagemetadata.html#customFields"/>
             <keyword name="date" id="QMailMessageMetaData::date" ref="qmailmessagemetadata.html#date"/>
@@ -901,6 +908,7 @@
             <keyword name="id" id="QMailMessageMetaData::id" ref="qmailmessagemetadata.html#id"/>
             <keyword name="inResponseTo" id="QMailMessageMetaData::inResponseTo" ref="qmailmessagemetadata.html#inResponseTo"/>
             <keyword name="indicativeSize" id="QMailMessageMetaData::indicativeSize" ref="qmailmessagemetadata.html#indicativeSize"/>
+            <keyword name="listId" id="QMailMessageMetaData::listId" ref="qmailmessagemetadata.html#listId"/>
             <keyword name="messageType" id="QMailMessageMetaData::messageType" ref="qmailmessagemetadata.html#messageType"/>
             <keyword name="parentAccountId" id="QMailMessageMetaData::parentAccountId" ref="qmailmessagemetadata.html#parentAccountId"/>
             <keyword name="parentFolderId" id="QMailMessageMetaData::parentFolderId" ref="qmailmessagemetadata.html#parentFolderId"/>
@@ -909,21 +917,27 @@
             <keyword name="receivedDate" id="QMailMessageMetaData::receivedDate" ref="qmailmessagemetadata.html#receivedDate"/>
             <keyword name="removeCustomField" id="QMailMessageMetaData::removeCustomField" ref="qmailmessagemetadata.html#removeCustomField"/>
             <keyword name="responseType" id="QMailMessageMetaData::responseType" ref="qmailmessagemetadata.html#responseType"/>
+            <keyword name="restoreFolderId" id="QMailMessageMetaData::restoreFolderId" ref="qmailmessagemetadata.html#restoreFolderId"/>
+            <keyword name="rfcId" id="QMailMessageMetaData::rfcId" ref="qmailmessagemetadata.html#rfcId"/>
             <keyword name="serverUid" id="QMailMessageMetaData::serverUid" ref="qmailmessagemetadata.html#serverUid"/>
             <keyword name="setContent" id="QMailMessageMetaData::setContent" ref="qmailmessagemetadata.html#setContent"/>
             <keyword name="setContentIdentifier" id="QMailMessageMetaData::setContentIdentifier" ref="qmailmessagemetadata.html#setContentIdentifier"/>
             <keyword name="setContentScheme" id="QMailMessageMetaData::setContentScheme" ref="qmailmessagemetadata.html#setContentScheme"/>
+            <keyword name="setCopyServerUid" id="QMailMessageMetaData::setCopyServerUid" ref="qmailmessagemetadata.html#setCopyServerUid"/>
             <keyword name="setCustomField" id="QMailMessageMetaData::setCustomField" ref="qmailmessagemetadata.html#setCustomField"/>
             <keyword name="setDate" id="QMailMessageMetaData::setDate" ref="qmailmessagemetadata.html#setDate"/>
             <keyword name="setFrom" id="QMailMessageMetaData::setFrom" ref="qmailmessagemetadata.html#setFrom"/>
             <keyword name="setId" id="QMailMessageMetaData::setId" ref="qmailmessagemetadata.html#setId"/>
             <keyword name="setInResponseTo" id="QMailMessageMetaData::setInResponseTo" ref="qmailmessagemetadata.html#setInResponseTo"/>
+            <keyword name="setListId" id="QMailMessageMetaData::setListId" ref="qmailmessagemetadata.html#setListId"/>
             <keyword name="setMessageType" id="QMailMessageMetaData::setMessageType" ref="qmailmessagemetadata.html#setMessageType"/>
             <keyword name="setParentAccountId" id="QMailMessageMetaData::setParentAccountId" ref="qmailmessagemetadata.html#setParentAccountId"/>
             <keyword name="setParentFolderId" id="QMailMessageMetaData::setParentFolderId" ref="qmailmessagemetadata.html#setParentFolderId"/>
             <keyword name="setPreviousParentFolderId" id="QMailMessageMetaData::setPreviousParentFolderId" ref="qmailmessagemetadata.html#setPreviousParentFolderId"/>
             <keyword name="setReceivedDate" id="QMailMessageMetaData::setReceivedDate" ref="qmailmessagemetadata.html#setReceivedDate"/>
             <keyword name="setResponseType" id="QMailMessageMetaData::setResponseType" ref="qmailmessagemetadata.html#setResponseType"/>
+            <keyword name="setRestoreFolderId" id="QMailMessageMetaData::setRestoreFolderId" ref="qmailmessagemetadata.html#setRestoreFolderId"/>
+            <keyword name="setRfcId" id="QMailMessageMetaData::setRfcId" ref="qmailmessagemetadata.html#setRfcId"/>
             <keyword name="setServerUid" id="QMailMessageMetaData::setServerUid" ref="qmailmessagemetadata.html#setServerUid"/>
             <keyword name="setSize" id="QMailMessageMetaData::setSize" ref="qmailmessagemetadata.html#setSize"/>
             <keyword name="setStatus" id="QMailMessageMetaData::setStatus" ref="qmailmessagemetadata.html#setStatus"/>
@@ -1243,11 +1257,17 @@
             <keyword name="QMailMessageSortKey::ParentAccountId" id="QMailMessageSortKey::ParentAccountId" ref="qmailmessagesortkey.html#Property-enum"/>
             <keyword name="QMailMessageSortKey::ContentType" id="QMailMessageSortKey::ContentType" ref="qmailmessagesortkey.html#Property-enum"/>
             <keyword name="QMailMessageSortKey::PreviousParentFolderId" id="QMailMessageSortKey::PreviousParentFolderId" ref="qmailmessagesortkey.html#Property-enum"/>
+            <keyword name="QMailMessageSortKey::CopyServerUid" id="QMailMessageSortKey::CopyServerUid" ref="qmailmessagesortkey.html#Property-enum"/>
+            <keyword name="QMailMessageSortKey::ListId" id="QMailMessageSortKey::ListId" ref="qmailmessagesortkey.html#Property-enum"/>
+            <keyword name="QMailMessageSortKey::RestoreFolderId" id="QMailMessageSortKey::RestoreFolderId" ref="qmailmessagesortkey.html#Property-enum"/>
+            <keyword name="QMailMessageSortKey::RfcId" id="QMailMessageSortKey::RfcId" ref="qmailmessagesortkey.html#Property-enum"/>
             <keyword name="arguments" id="QMailMessageSortKey::arguments" ref="qmailmessagesortkey.html#arguments"/>
             <keyword name="contentType" id="QMailMessageSortKey::contentType" ref="qmailmessagesortkey.html#contentType"/>
+            <keyword name="copyServerUid" id="QMailMessageSortKey::copyServerUid" ref="qmailmessagesortkey.html#copyServerUid"/>
             <keyword name="deserialize" id="QMailMessageSortKey::deserialize" ref="qmailmessagesortkey.html#deserialize"/>
             <keyword name="id" id="QMailMessageSortKey::id" ref="qmailmessagesortkey.html#id"/>
             <keyword name="isEmpty" id="QMailMessageSortKey::isEmpty" ref="qmailmessagesortkey.html#isEmpty"/>
+            <keyword name="listId" id="QMailMessageSortKey::listId" ref="qmailmessagesortkey.html#listId"/>
             <keyword name="messageType" id="QMailMessageSortKey::messageType" ref="qmailmessagesortkey.html#messageType"/>
             <keyword name="operator!=" id="QMailMessageSortKey::operator!=" ref="qmailmessagesortkey.html#operator-not-eq"/>
             <keyword name="operator&amp;" id="QMailMessageSortKey::operator&amp;" ref="qmailmessagesortkey.html#operator-and"/>
@@ -1259,6 +1279,8 @@
             <keyword name="previousParentFolderId" id="QMailMessageSortKey::previousParentFolderId" ref="qmailmessagesortkey.html#previousParentFolderId"/>
             <keyword name="receptionTimeStamp" id="QMailMessageSortKey::receptionTimeStamp" ref="qmailmessagesortkey.html#receptionTimeStamp"/>
             <keyword name="recipients" id="QMailMessageSortKey::recipients" ref="qmailmessagesortkey.html#recipients"/>
+            <keyword name="restoreFolderId" id="QMailMessageSortKey::restoreFolderId" ref="qmailmessagesortkey.html#restoreFolderId"/>
+            <keyword name="rfcId" id="QMailMessageSortKey::rfcId" ref="qmailmessagesortkey.html#rfcId"/>
             <keyword name="sender" id="QMailMessageSortKey::sender" ref="qmailmessagesortkey.html#sender"/>
             <keyword name="serialize" id="QMailMessageSortKey::serialize" ref="qmailmessagesortkey.html#serialize"/>
             <keyword name="serverUid" id="QMailMessageSortKey::serverUid" ref="qmailmessagesortkey.html#serverUid"/>
@@ -1332,6 +1354,7 @@
             <keyword name="retrieveMessagePartRange" id="QMailRetrievalAction::retrieveMessagePartRange" ref="qmailretrievalaction.html#retrieveMessagePartRange"/>
             <keyword name="retrieveMessageRange" id="QMailRetrievalAction::retrieveMessageRange" ref="qmailretrievalaction.html#retrieveMessageRange"/>
             <keyword name="retrieveMessages" id="QMailRetrievalAction::retrieveMessages" ref="qmailretrievalaction.html#retrieveMessages"/>
+            <keyword name="synchronize" id="QMailRetrievalAction::synchronize" ref="qmailretrievalaction.html#synchronize"/>
             <keyword name="synchronizeAll" id="QMailRetrievalAction::synchronizeAll" ref="qmailretrievalaction.html#synchronizeAll"/>
             <keyword name="QMailSearchAction" id="QMailSearchAction" ref="qmailsearchaction.html"/>
             <keyword name="QMailSearchAction::SearchSpecification" id="QMailSearchAction::SearchSpecification" ref="qmailsearchaction.html#SearchSpecification-enum"/>
@@ -1570,7 +1593,6 @@
             <file>qtextendedmail-qmfutil.html</file>
             <file>qtextended-messaging.html</file>
             <file>qmailmessageserver-members.html</file>
-            <file>messagenavigator-messagenavigator-pro.html</file>
             <file>classeshierarchy.html</file>
             <file>qmailmessageserviceplugininterface.html</file>
             <file>messagenavigator.html</file>
@@ -1585,9 +1607,7 @@
             <file>qmailmessagemodelbase-members.html</file>
             <file>qmailmessageserviceeditor-members.html</file>
             <file>qmailmessagesetmodel-members.html</file>
-            <file>messageviewer-messagedelegate-cpp.html</file>
             <file>qmailmessagepartfwd.html</file>
-            <file>messageviewer-messageviewer-pro.html</file>
             <file>qmailquotedprintablecodec.html</file>
             <file>qmailaccountconfiguration-members.html</file>
             <file>namespaces.html</file>
@@ -1595,14 +1615,13 @@
             <file>qmailmessagesetmodel.html</file>
             <file>qmailaccount-members.html</file>
             <file>qmailfoldersortkey.html</file>
-            <file>messagenavigator-messagenavigatorbase-ui.html</file>
             <file>qmailcodec.html</file>
             <file>messaging-classes.html</file>
             <file>qmailtransmitaction.html</file>
             <file>qmailmessagethreadedmodel.html</file>
             <file>qmailserviceaction-status-members.html</file>
-            <file>qmailactionobserver.html</file>
             <file>qmailfoldermessageset-members.html</file>
+            <file>qmailactionobserver.html</file>
             <file>qmailcontentmanagerfactory-members.html</file>
             <file>messaging.html</file>
             <file>qmailaccountid-members.html</file>
@@ -1610,7 +1629,6 @@
             <file>qmailmessageid.html</file>
             <file>qmailmessagesource-members.html</file>
             <file>qmailaccountkey-members.html</file>
-            <file>messageviewer-messagedelegate-h.html</file>
             <file>qmailaccountid.html</file>
             <file>qmailmessagekey.html</file>
             <file>qmailtimestamp-members.html</file>
@@ -1657,15 +1675,12 @@
             <file>qmailmessageservice-members.html</file>
             <file>qmailfolderkey.html</file>
             <file>qmailkeyargument-valuelist.html</file>
-            <file>messagenavigator-main-cpp.html</file>
             <file>qmailactionobserver-members.html</file>
             <file>qmailmessageserviceplugininterface-members.html</file>
             <file>qmailactioninfo-members.html</file>
             <file>libmessageserver.html</file>
-            <file>messageviewer-messageviewer-h.html</file>
             <file>qmailtransmitaction-members.html</file>
             <file>qmailmessagesetcontainer-members.html</file>
-            <file>messagenavigator-foldermodel-cpp.html</file>
             <file>qmailmessageserviceconfigurator.html</file>
             <file>images/messageviewer-example.png</file>
             <file>qmailfolderfwd.html</file>
@@ -1673,8 +1688,6 @@
             <file>qmailpluginmanager.html</file>
             <file>qmailretrievalaction-members.html</file>
             <file>qmailserviceaction-status.html</file>
-            <file>messagenavigator-messagenavigator-cpp.html</file>
-            <file>messagenavigator-messagenavigator-h.html</file>
             <file>qmailmessageserviceeditor.html</file>
             <file>qmailmessagepart-location-members.html</file>
             <file>qmailmessageserviceconfigurator-members.html</file>
@@ -1707,15 +1720,12 @@
             <file>qmailfolderkey-members.html</file>
             <file>qmailmessagecontentdispositionfwd.html</file>
             <file>qmailcodec-members.html</file>
-            <file>messageviewer-messageviewer-cpp.html</file>
             <file>qmailmessageservicefactory.html</file>
             <file>qmailaddress.html</file>
             <file>qmailcontentmanagerplugin.html</file>
             <file>qtextendedmail.html</file>
-            <file>messageviewer-messagemodel-cpp.html</file>
             <file>qmailmessagesetcontainer.html</file>
             <file>qmailsearchaction.html</file>
-            <file>messageviewer-messageviewerbase-ui.html</file>
             <file>qmailserviceconfiguration-members.html</file>
             <file>qmailserviceconfiguration.html</file>
             <file>qmailtimestamp.html</file>
@@ -1726,17 +1736,14 @@
             <file>qmailfiltermessageset.html</file>
             <file>qmailfolderid.html</file>
             <file>qmailaccountlistmodel-members.html</file>
-            <file>messageviewer-messagemodel-h.html</file>
             <file>qmailaccountconfiguration-serviceconfiguration.html</file>
             <file>qmailfoldermessageset.html</file>
             <file>qmailcontentmanagerplugininterface-members.html</file>
-            <file>messageserver.html</file>
             <file>qmailkeyargument-members.html</file>
+            <file>messageserver.html</file>
             <file>qmailaddress-members.html</file>
             <file>qmailcontentmanagerplugin-members.html</file>
-            <file>messagenavigator-foldermodel-h.html</file>
             <file>qmailmessageset.html</file>
-            <file>messageviewer-main-cpp.html</file>
             <file>qmailmessage-members.html</file>
             <file>qmailmessagelistmodel.html</file>
             <file>messageviewer.html</file>

@@ -11,6 +11,11 @@
     </section>
     <section ref="qmail.html" title="QMail Namespace Reference">
         <keyword ref="qmail.html">QMail</keyword>
+        <keyword ref="qmail.html#SaslMechanism-enum">SaslMechanism</keyword>
+        <keyword ref="qmail.html#SaslMechanism-enum">QMail::LoginMechanism</keyword>
+        <keyword ref="qmail.html#SaslMechanism-enum">QMail::CramMd5Mechanism</keyword>
+        <keyword ref="qmail.html#SaslMechanism-enum">QMail::NoMechanism</keyword>
+        <keyword ref="qmail.html#SaslMechanism-enum">QMail::PlainMechanism</keyword>
         <keyword ref="qmail.html#baseSubject">baseSubject</keyword>
         <keyword ref="qmail.html#createDatabase">createDatabase</keyword>
         <keyword ref="qmail.html#dataPath">dataPath</keyword>
@@ -239,6 +244,7 @@
     </section>
     <section ref="qmailcodec.html" title="QMailCodec Class Reference">
         <keyword ref="qmailcodec.html">QMailCodec</keyword>
+        <keyword ref="qmailcodec.html#codecForName">codecForName</keyword>
         <keyword ref="qmailcodec.html#copy">copy</keyword>
         <keyword ref="qmailcodec.html#decode">decode</keyword>
         <keyword ref="qmailcodec.html#decodeChunk">decodeChunk</keyword>
@@ -252,12 +258,17 @@
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</keyword>
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::DeferDurability</keyword>
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::EnsureDurability</keyword>
+        <keyword ref="qmailcontentmanager.html#ManagerRole-enum">ManagerRole</keyword>
+        <keyword ref="qmailcontentmanager.html#ManagerRole-enum">QMailContentManager::IndexRole</keyword>
+        <keyword ref="qmailcontentmanager.html#ManagerRole-enum">QMailContentManager::StorageRole</keyword>
+        <keyword ref="qmailcontentmanager.html#ManagerRole-enum">QMailContentManager::FilterRole</keyword>
         <keyword ref="qmailcontentmanager.html#add">add</keyword>
         <keyword ref="qmailcontentmanager.html#clearContent">clearContent</keyword>
         <keyword ref="qmailcontentmanager.html#ensureDurability">ensureDurability</keyword>
         <keyword ref="qmailcontentmanager.html#init">init</keyword>
         <keyword ref="qmailcontentmanager.html#load">load</keyword>
         <keyword ref="qmailcontentmanager.html#remove">remove</keyword>
+        <keyword ref="qmailcontentmanager.html#role">role</keyword>
         <keyword ref="qmailcontentmanager.html#update">update</keyword>
         <section ref="qmailcontentmanager-members.html" title="List of all members"/>
     </section>
@@ -265,6 +276,8 @@
         <keyword ref="qmailcontentmanagerfactory.html">QMailContentManagerFactory</keyword>
         <keyword ref="qmailcontentmanagerfactory.html#clearContent">clearContent</keyword>
         <keyword ref="qmailcontentmanagerfactory.html#create">create</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#defaultFilterScheme">defaultFilterScheme</keyword>
+        <keyword ref="qmailcontentmanagerfactory.html#defaultIndexerScheme">defaultIndexerScheme</keyword>
         <keyword ref="qmailcontentmanagerfactory.html#defaultScheme">defaultScheme</keyword>
         <keyword ref="qmailcontentmanagerfactory.html#init">init</keyword>
         <keyword ref="qmailcontentmanagerfactory.html#schemes">schemes</keyword>
@@ -671,8 +684,10 @@
         <keyword ref="qmailmessagekey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">Property</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">Properties</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ListId</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::InResponseTo</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ResponseType</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::RestoreFolderId</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Id</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Size</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Type</keyword>
@@ -687,9 +702,11 @@
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Status</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ReceptionTimeStamp</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::AncestorFolderIds</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::CopyServerUid</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentType</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Recipients</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentIdentifier</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::RfcId</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Subject</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ServerUid</keyword>
         <keyword ref="qmailmessagekey.html#ancestorFolderIds">ancestorFolderIds</keyword>
@@ -699,6 +716,7 @@
         <keyword ref="qmailmessagekey.html#contentScheme">contentScheme</keyword>
         <keyword ref="qmailmessagekey.html#contentType">contentType</keyword>
         <keyword ref="qmailmessagekey.html#conversation">conversation</keyword>
+        <keyword ref="qmailmessagekey.html#copyServerUid">copyServerUid</keyword>
         <keyword ref="qmailmessagekey.html#customField">customField</keyword>
         <keyword ref="qmailmessagekey.html#deserialize">deserialize</keyword>
         <keyword ref="qmailmessagekey.html#id">id</keyword>
@@ -706,6 +724,7 @@
         <keyword ref="qmailmessagekey.html#isEmpty">isEmpty</keyword>
         <keyword ref="qmailmessagekey.html#isNegated">isNegated</keyword>
         <keyword ref="qmailmessagekey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailmessagekey.html#listId">listId</keyword>
         <keyword ref="qmailmessagekey.html#messageType">messageType</keyword>
         <keyword ref="qmailmessagekey.html#nonMatchingKey">nonMatchingKey</keyword>
         <keyword ref="qmailmessagekey.html#parentAccountId">parentAccountId</keyword>
@@ -714,6 +733,8 @@
         <keyword ref="qmailmessagekey.html#receptionTimeStamp">receptionTimeStamp</keyword>
         <keyword ref="qmailmessagekey.html#recipients">recipients</keyword>
         <keyword ref="qmailmessagekey.html#responseType">responseType</keyword>
+        <keyword ref="qmailmessagekey.html#restoreFolderId">restoreFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#rfcId">rfcId</keyword>
         <keyword ref="qmailmessagekey.html#sender">sender</keyword>
         <keyword ref="qmailmessagekey.html#serialize">serialize</keyword>
         <keyword ref="qmailmessagekey.html#serverUid">serverUid</keyword>
@@ -747,6 +768,7 @@
         <keyword ref="qmailmessagemetadata.html#contentAvailable">contentAvailable</keyword>
         <keyword ref="qmailmessagemetadata.html#contentIdentifier">contentIdentifier</keyword>
         <keyword ref="qmailmessagemetadata.html#contentScheme">contentScheme</keyword>
+        <keyword ref="qmailmessagemetadata.html#copyServerUid">copyServerUid</keyword>
         <keyword ref="qmailmessagemetadata.html#customField">customField</keyword>
         <keyword ref="qmailmessagemetadata.html#customFields">customFields</keyword>
         <keyword ref="qmailmessagemetadata.html#date">date</keyword>
@@ -754,6 +776,7 @@
         <keyword ref="qmailmessagemetadata.html#id">id</keyword>
         <keyword ref="qmailmessagemetadata.html#inResponseTo">inResponseTo</keyword>
         <keyword ref="qmailmessagemetadata.html#indicativeSize">indicativeSize</keyword>
+        <keyword ref="qmailmessagemetadata.html#listId">listId</keyword>
         <keyword ref="qmailmessagemetadata.html#messageType">messageType</keyword>
         <keyword ref="qmailmessagemetadata.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailmessagemetadata.html#parentFolderId">parentFolderId</keyword>
@@ -762,21 +785,27 @@
         <keyword ref="qmailmessagemetadata.html#receivedDate">receivedDate</keyword>
         <keyword ref="qmailmessagemetadata.html#removeCustomField">removeCustomField</keyword>
         <keyword ref="qmailmessagemetadata.html#responseType">responseType</keyword>
+        <keyword ref="qmailmessagemetadata.html#restoreFolderId">restoreFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#rfcId">rfcId</keyword>
         <keyword ref="qmailmessagemetadata.html#serverUid">serverUid</keyword>
         <keyword ref="qmailmessagemetadata.html#setContent">setContent</keyword>
         <keyword ref="qmailmessagemetadata.html#setContentIdentifier">setContentIdentifier</keyword>
         <keyword ref="qmailmessagemetadata.html#setContentScheme">setContentScheme</keyword>
+        <keyword ref="qmailmessagemetadata.html#setCopyServerUid">setCopyServerUid</keyword>
         <keyword ref="qmailmessagemetadata.html#setCustomField">setCustomField</keyword>
         <keyword ref="qmailmessagemetadata.html#setDate">setDate</keyword>
         <keyword ref="qmailmessagemetadata.html#setFrom">setFrom</keyword>
         <keyword ref="qmailmessagemetadata.html#setId">setId</keyword>
         <keyword ref="qmailmessagemetadata.html#setInResponseTo">setInResponseTo</keyword>
+        <keyword ref="qmailmessagemetadata.html#setListId">setListId</keyword>
         <keyword ref="qmailmessagemetadata.html#setMessageType">setMessageType</keyword>
         <keyword ref="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</keyword>
         <keyword ref="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</keyword>
         <keyword ref="qmailmessagemetadata.html#setResponseType">setResponseType</keyword>
+        <keyword ref="qmailmessagemetadata.html#setRestoreFolderId">setRestoreFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setRfcId">setRfcId</keyword>
         <keyword ref="qmailmessagemetadata.html#setServerUid">setServerUid</keyword>
         <keyword ref="qmailmessagemetadata.html#setSize">setSize</keyword>
         <keyword ref="qmailmessagemetadata.html#setStatus">setStatus</keyword>
@@ -1161,31 +1190,39 @@
         <keyword ref="qmailmessagesortkey.html">QMailMessageSortKey</keyword>
         <keyword ref="qmailmessagesortkey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ListId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::RestoreFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Id</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Size</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Type</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::TimeStamp</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentAccountId</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Size</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ServerUid</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ContentType</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Sender</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Subject</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentFolderId</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::PreviousParentFolderId</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Type</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Recipients</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Id</keyword>
-        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ReceptionTimeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentFolderId</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Status</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ReceptionTimeStamp</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::CopyServerUid</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ContentType</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Recipients</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::RfcId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Subject</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ServerUid</keyword>
         <keyword ref="qmailmessagesortkey.html#arguments">arguments</keyword>
         <keyword ref="qmailmessagesortkey.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagesortkey.html#copyServerUid">copyServerUid</keyword>
         <keyword ref="qmailmessagesortkey.html#deserialize">deserialize</keyword>
         <keyword ref="qmailmessagesortkey.html#id">id</keyword>
         <keyword ref="qmailmessagesortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailmessagesortkey.html#listId">listId</keyword>
         <keyword ref="qmailmessagesortkey.html#messageType">messageType</keyword>
         <keyword ref="qmailmessagesortkey.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailmessagesortkey.html#parentFolderId">parentFolderId</keyword>
         <keyword ref="qmailmessagesortkey.html#previousParentFolderId">previousParentFolderId</keyword>
         <keyword ref="qmailmessagesortkey.html#receptionTimeStamp">receptionTimeStamp</keyword>
         <keyword ref="qmailmessagesortkey.html#recipients">recipients</keyword>
+        <keyword ref="qmailmessagesortkey.html#restoreFolderId">restoreFolderId</keyword>
+        <keyword ref="qmailmessagesortkey.html#rfcId">rfcId</keyword>
         <keyword ref="qmailmessagesortkey.html#sender">sender</keyword>
         <keyword ref="qmailmessagesortkey.html#serialize">serialize</keyword>
         <keyword ref="qmailmessagesortkey.html#serverUid">serverUid</keyword>
@@ -1282,6 +1319,7 @@
         <keyword ref="qmailretrievalaction.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessageRange">retrieveMessageRange</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessages">retrieveMessages</keyword>
+        <keyword ref="qmailretrievalaction.html#synchronize">synchronize</keyword>
         <keyword ref="qmailretrievalaction.html#synchronizeAll">synchronizeAll</keyword>
         <section ref="qmailretrievalaction-members.html" title="List of all members"/>
     </section>

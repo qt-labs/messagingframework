@@ -23,7 +23,7 @@
 <h2>Public Types</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#ArgumentType-typedef">ArgumentType</a></b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#Property-enum">Property</a></b> { Id, Type, ParentFolderId, Sender, ..., PreviousParentFolderId }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#Property-enum">Property</a></b> { Id, Type, ParentFolderId, Sender, ..., RfcId }</td></tr>
 </table>
 <hr />
 <a name="public-functions"></a>
@@ -47,13 +47,17 @@
 <h2>Static Public Members</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#contentType">contentType</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#copyServerUid">copyServerUid</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#id">id</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#listId">listId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#messageType">messageType</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#parentAccountId">parentAccountId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#parentFolderId">parentFolderId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#previousParentFolderId">previousParentFolderId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#receptionTimeStamp">receptionTimeStamp</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#recipients">recipients</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#restoreFolderId">restoreFolderId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#rfcId">rfcId</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#sender">sender</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#serverUid">serverUid</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesortkey.html#size">size</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
@@ -92,6 +96,10 @@
 <tr><td valign="top"><tt>QMailMessageSortKey::Size</tt></td><td align="center" valign="top"><tt>10</tt></td><td valign="top">The size of the message.</td></tr>
 <tr><td valign="top"><tt>QMailMessageSortKey::ContentType</tt></td><td align="center" valign="top"><tt>12</tt></td><td valign="top">The type of data contained within the message.</td></tr>
 <tr><td valign="top"><tt>QMailMessageSortKey::PreviousParentFolderId</tt></td><td align="center" valign="top"><tt>13</tt></td><td valign="top">The parent folder ID this message was contained in, prior to moving to the current parent folder.</td></tr>
+<tr><td valign="top"><tt>QMailMessageSortKey::CopyServerUid</tt></td><td align="center" valign="top"><tt>14</tt></td><td valign="top">The server uid of the message this is a copy of</td></tr>
+<tr><td valign="top"><tt>QMailMessageSortKey::ListId</tt></td><td align="center" valign="top"><tt>15</tt></td><td valign="top">The name of the list</td></tr>
+<tr><td valign="top"><tt>QMailMessageSortKey::RestoreFolderId</tt></td><td align="center" valign="top"><tt>16</tt></td><td valign="top">The folderId of where the message should be restored to</td></tr>
+<tr><td valign="top"><tt>QMailMessageSortKey::RfcId</tt></td><td align="center" valign="top"><tt>17</tt></td><td valign="top">The messages rfc id</td></tr>
 </table></p>
 <hr />
 <h2>Member Function Documentation</h2>
@@ -109,6 +117,9 @@
 <h3 class="fn"><a name="contentType"></a>QMailMessageSortKey QMailMessageSortKey::contentType ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that sorts messages by their content types, according to <i>order</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#content">QMailMessage::content</a>().</p>
+<h3 class="fn"><a name="copyServerUid"></a>QMailMessageSortKey QMailMessageSortKey::copyServerUid ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key that sorts messages by their copy server identifiers, according to <i>order</i>.</p>
+<p>See also <a href="qmailmessagemetadata.html#copyServerUid">QMailMessage::copyServerUid</a>().</p>
 <h3 class="fn"><a name="deserialize"></a>void QMailMessageSortKey::deserialize ( Stream &amp; <i>stream</i> )</h3>
 <p>Reads the contents of a <a href="qmailmessagesortkey.html">QMailMessageSortKey</a> from <i>stream</i>.</p>
 <h3 class="fn"><a name="id"></a>QMailMessageSortKey QMailMessageSortKey::id ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
@@ -116,6 +127,9 @@
 <p>See also <a href="qmailmessagemetadata.html#id">QMailMessage::id</a>().</p>
 <h3 class="fn"><a name="isEmpty"></a>bool QMailMessageSortKey::isEmpty () const</h3>
 <p>Returns true if the key remains empty after default construction; otherwise returns false.</p>
+<h3 class="fn"><a name="listId"></a>QMailMessageSortKey QMailMessageSortKey::listId ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key that sorts messages by list identifier according to <i>order</i>.</p>
+<p>See also <a href="qmailmessagemetadata.html#listId">QMailMessage::listId</a>().</p>
 <h3 class="fn"><a name="messageType"></a>QMailMessageSortKey QMailMessageSortKey::messageType ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that sorts messages by their message type, according to <i>order</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#messageType">QMailMessage::messageType</a>().</p>
@@ -134,6 +148,10 @@
 <h3 class="fn"><a name="recipients"></a>QMailMessageSortKey QMailMessageSortKey::recipients ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that sorts messages by the addresses to which they were sent, according to <i>order</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#to">QMailMessage::to</a>().</p>
+<h3 class="fn"><a name="restoreFolderId"></a>QMailMessageSortKey QMailMessageSortKey::restoreFolderId ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key that sorts messages by their restore folder identifiers, according to <i>order</i>.</p>
+<p>See also <a href="qmailmessagemetadata.html#restoreFolderId">QMailMessage::restoreFolderId</a>().</p>
+<h3 class="fn"><a name="rfcId"></a>QMailMessageSortKey QMailMessageSortKey::rfcId ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <h3 class="fn"><a name="sender"></a>QMailMessageSortKey QMailMessageSortKey::sender ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that sorts messages by the address from which they were sent, according to <i>order</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#from">QMailMessage::from</a>().</p>
