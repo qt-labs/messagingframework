@@ -171,7 +171,13 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     } else {
         headerLimit = 0;
     }
-    
+    findInbox();
+}
+
+void PopClient::findInbox()
+{
+    QMailAccount account(config.id());
+
     // get/create child folder
     QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(account.id()));
     if (folderList.count() > 1) {

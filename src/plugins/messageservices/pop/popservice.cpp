@@ -112,12 +112,8 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-
-    if (folderId.isValid()) {
-        // Folders don't make sense for POP
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
-        return false;
-    }
+    
+    _service->_client.findInbox(); // find/create local inbox
 
     // Just report success
     _service->updateStatus("");
