@@ -68,7 +68,8 @@ public:
         MessageType = (1 << 2),
         FromAddress = (1 << 3),
         Status = (1 << 4),
-        Custom = (1 << 5)
+        Custom = (1 << 5),
+        LastSynchronized = (1 << 6)
     };
 
     typedef QMailAccountId IdType;
@@ -119,6 +120,9 @@ public:
 
     static QMailAccountKey fromAddress(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailAccountKey fromAddress(const QString &value, QMailDataComparator::InclusionComparator cmp);
+
+    static QMailAccountKey lastSynchronized(const QDateTime &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailAccountKey lastSynchronized(const QDateTime &value, QMailDataComparator::RelationComparator cmp);
 
     static QMailAccountKey status(quint64 mask, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailAccountKey status(quint64 mask, QMailDataComparator::EqualityComparator cmp);

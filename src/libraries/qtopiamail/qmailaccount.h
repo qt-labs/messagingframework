@@ -52,6 +52,7 @@
 #include "qmailfolder.h"
 #include "qmailmessagefwd.h"
 #include "qmailmessagekey.h"
+#include "qmailtimestamp.h"
 
 class QMailFolderId;
 class QMailAccountPrivate;
@@ -102,6 +103,9 @@ public:
 
     QString signature() const;
     void setSignature(const QString &str);
+
+    QMailTimeStamp lastSynchronized() const;
+    void setLastSynchronized(const QMailTimeStamp &synced);
 
     QMailMessageMetaDataFwd::MessageType messageType() const;
     void setMessageType(QMailMessageMetaDataFwd::MessageType type);

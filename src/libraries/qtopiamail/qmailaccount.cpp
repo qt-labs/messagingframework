@@ -46,6 +46,7 @@
 #include "qmailmessage.h"
 #include "qmailmessageremovalrecord.h"
 #include "qmailstore.h"
+#include "qmailtimestamp.h"
 
 #include <QDir>
 #include <qtimer.h>
@@ -74,7 +75,7 @@ public:
                             _messageType(QMailMessage::None),
                             _status(0),
                             _customFieldsModified(false)
-    {};
+    {}
 
     ~QMailAccountPrivate()
     {
@@ -85,6 +86,7 @@ public:
     QMailMessage::MessageType _messageType;
     quint64 _status;
     QString _signature;
+    QMailTimeStamp _lastSynchronized;
     QMailAddress _address;
     QStringList _sources;
     QStringList _sinks;
@@ -491,6 +493,24 @@ QString QMailAccount::signature() const
 void QMailAccount::setSignature(const QString &str)
 {
     d->_signature = str;
+}
+
+/*!
+    Returns the time the account was last succesfully synchronized.
+
+    \sa setLastSynchronized()
+*/
+QMailTimeStamp QMailAccount::lastSynchronized() const
+{
+    return d->_lastSynchronized;
+}
+
+/*!
+    Sets the last successful synchronized time to \a synced
+*/
+void QMailAccount::setLastSynchronized(const QMailTimeStamp &synced)
+{
+    d->_lastSynchronized = synced;
 }
 
 /*!
