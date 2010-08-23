@@ -218,7 +218,7 @@ int MessageListModel<BaseModel>::rowCount(const QModelIndex &parentIndex) const
 {
     int actualRows = SuperType::rowCount(parentIndex);
 
-    if (!parentIndex.isValid() && (actualRows > 0) && m_parent->moreButtonVisible())
+    if (!parentIndex.isValid() && m_parent->moreButtonVisible())
         actualRows++;
 
     return actualRows;
