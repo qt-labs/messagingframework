@@ -43,6 +43,7 @@
 #include "qmailaccountkey_p.h"
 
 #include <QStringList>
+#include <QDateTime>
 
 using namespace QMailDataComparator;
 
@@ -431,6 +432,17 @@ QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComp
 QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComparator::InclusionComparator cmp)
 {
     return QMailAccountKey(FromAddress, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
+{
+    // An invalid QDateTime does not exist-compare correctly, so use a substitute value
+    return QMailAccountKey(LastSynchronized, (value.isNull() ? QDateTime::fromTime_t(0) : value), QMailKey::comparator(cmp));
+}
+
+QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailDataComparator::RelationComparator cmp)
+{
+    return QMailAccountKey(LastSynchronized, value, QMailKey::comparator(cmp));
 }
 
 /*! 

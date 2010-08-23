@@ -237,6 +237,16 @@ QMailAccountSortKey QMailAccountSortKey::messageType(Qt::SortOrder order)
 }
 
 /*!
+    Returns a key that sorts accounts by the message type they handle, according to \a order.
+
+    \sa QMailAccount::lastSynchronized(()
+*/
+QMailAccountSortKey QMailAccountSortKey::lastSynchronized(Qt::SortOrder order)
+{
+    return QMailAccountSortKey(LastSynchronized, order);
+}
+
+/*!
     Returns a key that sorts accounts by comparing their status value bitwise ANDed with \a mask, according to \a order.
 
     \sa QMailAccount::status()

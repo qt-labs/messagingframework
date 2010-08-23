@@ -4,4 +4,5 @@ CREATE TABLE mailaccounts(
     name VARCHAR,
     emailaddress VARCHAR,
     status INTEGER,
-    signature VARCHAR);
+    signature VARCHAR,
+    lastsynchronized TIMESTAMP);

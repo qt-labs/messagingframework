@@ -592,6 +592,7 @@ static QMap<QMailAccountSortKey::Property, QMailAccountKey::Property> accountSor
     map.insert(QMailAccountSortKey::Name, QMailAccountKey::Name);
     map.insert(QMailAccountSortKey::MessageType, QMailAccountKey::MessageType);
     map.insert(QMailAccountSortKey::Status, QMailAccountKey::Status);
+    map.insert(QMailAccountSortKey::LastSynchronized, QMailAccountKey::LastSynchronized);
 
     return map;
 }
@@ -1125,6 +1126,7 @@ public:
 
     QString signature() const { return value<QString>("signature"); }
 
+    QMailTimeStamp lastSynchronized() const { return QMailTimeStamp(value<QDateTime>(QMailAccountKey::LastSynchronized)); }
 private:
     int fieldIndex(const QString &field, int props) const
     {
@@ -1166,6 +1168,9 @@ public:
     QVariant status() const { return quint64Value(); }
 
     QVariantList custom() const { return customValues(); }
+
+    QVariant lastSynchronized() const { return QMailStorePrivate::extractValue<QDateTime>(arg.valueList.first()); }
+
 };
 
 template<>
@@ -1198,6 +1203,10 @@ void appendWhereValues<QMailAccountKey::ArgumentType>(const QMailAccountKey::Arg
     case QMailAccountKey::Custom:
         values += extractor.custom();
         break;
+
+    case QMailAccountKey::LastSynchronized:
+        values += extractor.lastSynchronized();
+
     }
 }
 
@@ -1540,7 +1549,7 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
         case QMailAccountKey::MessageType:
         case QMailAccountKey::Name:
         case QMailAccountKey::FromAddress:
-
+        case QMailAccountKey::LastSynchronized:
             q << expression;
             break;
         }
@@ -2175,7 +2184,7 @@ bool QMailStorePrivate::initStore()
 
         if (!ensureVersionInfo() ||
             !setupTables(QList<TableInfo>() << tableInfo("maintenancerecord", 100)
-                                            << tableInfo("mailaccounts", 106)
+                                            << tableInfo("mailaccounts", 107)
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
@@ -4280,15 +4289,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
     QMailAccountId insertId;
 
     {
-        QString properties("type,name,status,signature,emailaddress");
-        QString values("?,?,?,?,?");
+        QString properties("type,name,emailaddress,status,signature,lastsynchronized");
+        QString values("?,?,?,?,?,?");
         QVariantList propertyValues;
         propertyValues << static_cast<int>(account->messageType()) 
                        << account->name() 
+                       << account->fromAddress().toString(true)
                        << account->status()
                        << account->signature()
-                       << account->fromAddress().toString(true);
-
+                       << QMailTimeStamp(account->lastSynchronized()).toLocalTime();
         {
             QSqlQuery query(simpleQuery(QString("INSERT INTO mailaccounts (%1) VALUES (%2)").arg(properties).arg(values),
                                         propertyValues,
@@ -4803,13 +4812,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
         return Failure;
 
     if (account) {
-        QString properties("type=?, name=?, status=?, signature=?, emailaddress=?");
+        QString properties("type=?, name=?, emailaddress=?, status=?, signature=?, lastsynchronized=?");
         QVariantList propertyValues;
         propertyValues << static_cast<int>(account->messageType()) 
-                       << account->name() 
+                       << account->name()
+                       << account->fromAddress().toString(true)
                        << account->status()
-                       << account->signature()
-                       << account->fromAddress().toString(true);
+                       << account->signature()                       
+                       << QMailTimeStamp(account->lastSynchronized()).toLocalTime();
 
         {
             QSqlQuery query(simpleQuery(QString("UPDATE mailaccounts SET %1 WHERE id=?").arg(properties),
