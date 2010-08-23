@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201034
+  * Fixes: NB#186566 PopService::Source::retrieveFolderList should create Inbox folder
+
 2010W32
   * Adds support in QMailContentManager for filtering and indexing plugins
   * Speed up message deletion
