@@ -1,5 +1,5 @@
 CREATE TABLE mailfolders (
-    id INTEGER PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     name VARCHAR(255) NOT NULL,
     parentid INTEGER,
     parentaccountid INTEGER,

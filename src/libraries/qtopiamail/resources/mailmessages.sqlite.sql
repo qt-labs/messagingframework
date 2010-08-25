@@ -1,5 +1,5 @@
 CREATE TABLE mailmessages ( 
-    id INTEGER PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     type INTEGER NOT NULL,
     parentfolderid INTEGER NOT NULL,
     previousparentfolderid INTEGER NOT NULL,
