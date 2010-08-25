@@ -255,7 +255,7 @@ private:
 
     QMap<QPointer<QMailMessageService>, quint64> mServiceAction;
 
-    enum { ExpiryPeriod = 30 * 1000 };
+    enum { ExpiryPeriod = 120 * 1000 };
 
     struct Request 
     {
