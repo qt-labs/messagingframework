@@ -50,6 +50,7 @@
 #include <qmaillog.h>
 #include <QCoreApplication>
 #include <QDir>
+#include <QDateTime>
 #include <QTimer>
 
 // Account preparation is handled by an external function
@@ -846,7 +847,7 @@ void ServiceHandler::dispatchRequest()
         ActionData data;
         data.services = request->services;
         data.completion = request->completion;
-        data.expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
+        data.unixTimeExpiry = QDateTime::currentDateTime().toTime_t() + ExpirySeconds;
         data.reported = false;
         data.description = request->description;
 
@@ -859,8 +860,8 @@ void ServiceHandler::dispatchRequest()
             // This action is now underway
 
             if (mActionExpiry.isEmpty()) {
-                // Start the expiry timer
-                QTimer::singleShot(ExpiryPeriod + 50, this, SLOT(expireAction()));
+                // Start the expiry timer. Convert to miliseconds, and avoid shooting too early
+                QTimer::singleShot(ExpirySeconds * 1000 + 50, this, SLOT(expireAction()));
             }
             mActionExpiry.append(request->action);
         } else {
@@ -886,12 +887,14 @@ void ServiceHandler::updateAction(quint64 action)
         mActionExpiry.append(action);
 
         // Update the expiry time for this action
-        mActiveActions[action].expiry = QTime::currentTime().addMSecs(ExpiryPeriod);
+        mActiveActions[action].unixTimeExpiry = QDateTime::currentDateTime().toTime_t() + ExpirySeconds;
     }
 }
 
 void ServiceHandler::expireAction()
 {
+    uint now(QDateTime::currentDateTime().toTime_t());
+
     if (!mActionExpiry.isEmpty()) {
         quint64 action = *mActionExpiry.begin();
 
@@ -900,8 +903,7 @@ void ServiceHandler::expireAction()
             ActionData &data(it.value());
 
             // Is the oldest action expired?
-            QTime now = QTime::currentTime();
-            if (data.expiry <= now) {
+            if (data.unixTimeExpiry <= now) {
                 qMailLog(Messaging) << "Expired request:" << action;
                 reportFailure(action, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
                 emit activityChanged(action, QMailServiceAction::Failed);
@@ -962,8 +964,11 @@ void ServiceHandler::expireAction()
     QLinkedList<quint64>::iterator expiryIt(mActionExpiry.begin());
     while (expiryIt != mActionExpiry.end()) {
         if (mActiveActions.contains(*expiryIt)) {
-            int nextExpiry(QTime::currentTime().msecsTo(mActiveActions.value(*expiryIt).expiry));
-            QTimer::singleShot(qMax(nextExpiry+50, 0), this, SLOT(expireAction()));
+            uint nextExpiry(mActiveActions.value(*expiryIt).unixTimeExpiry);
+
+            // miliseconds until it expires..
+            uint nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
+            QTimer::singleShot(nextShot, this, SLOT(expireAction()));
             return;
         } else {
             expiryIt = mActionExpiry.erase(expiryIt); // Just remove this non-existent action
