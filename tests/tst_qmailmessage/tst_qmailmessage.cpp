@@ -1003,6 +1003,14 @@ void tst_QMailMessage::setTo_data()
     QTest::newRow("multiple")
         << ( QList<QMailAddress>() << QMailAddress("hello") << QMailAddress("world") );
 
+    QTest::newRow("morethan78charactersofconsecutivenonwhitespace")
+        << ( QList<QMailAddress>() << QMailAddress("\"dummy inbox444\" <dummy.inbox444@gmail.com")
+             << QMailAddress("ext-varaprasad.2.killampalli@gmail.com")
+             << QMailAddress("sadhukills@yahoo.com")
+             << QMailAddress("groovetest007@gmail.com")
+             << QMailAddress("dummy.dummy5555@gmail.com")
+             << QMailAddress("don.sanders@nokia.com") );
+
     QTest::newRow("realistic")
         << ( QList<QMailAddress>() << QMailAddress("John Doe <jdoe@machine.example>")
                                    << QMailAddress("Mary Smith <mary@example.net>")
@@ -1034,6 +1042,11 @@ void tst_QMailMessage::setTo()
             QCOMPARE(m.dataModified(), true);
             QCOMPARE(m.contentModified(), true);
         }
+        
+        // Test that conversion to-and-from RFC2822 yields equivalence
+        QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);
+        QMailMessage reconstituted = QMailMessage::fromRfc2822(identity);
+        QCOMPARE(QMailAddress::fromStringList(reconstituted.headerFieldText("To")), list);
     }
 
     {
