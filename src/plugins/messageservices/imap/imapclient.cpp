@@ -528,6 +528,8 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
+    _closeCount = 5; // 5 minutes
+    _inactiveTimer.setSingleShot(true);
     switch( command ) {
         case IMAP_Init:
         {
