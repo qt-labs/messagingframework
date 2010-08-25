@@ -121,6 +121,7 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
     return true;
 
     Q_UNUSED(descending)
+    Q_UNUSED(folderId)
 }
 
 bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
