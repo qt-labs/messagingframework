@@ -5906,7 +5906,7 @@ QList<QMailAddress> QMailMessageMetaData::to() const
 */
 void QMailMessageMetaData::setTo(const QList<QMailAddress>& toList)
 {
-    impl(this)->setTo(QMailAddress::toStringList(toList).join(","));
+    impl(this)->setTo(QMailAddress::toStringList(toList).join(", "));
 }
 
 /*! 
@@ -6839,7 +6839,7 @@ void QMailMessage::setDate(const QMailTimeStamp &timeStamp)
 /*! \reimp */
 void QMailMessage::setTo(const QList<QMailAddress>& toList)
 {
-    QString flattened(QMailAddress::toStringList(toList).join(","));
+    QString flattened(QMailAddress::toStringList(toList).join(", "));
     metaDataImpl()->setTo(flattened);
     partContainerImpl()->setTo(flattened);
 }
@@ -6867,7 +6867,7 @@ QList<QMailAddress> QMailMessage::cc() const
 */  
 void QMailMessage::setCc(const QList<QMailAddress>& ccList)
 {
-    partContainerImpl()->setCc(QMailAddress::toStringList(ccList).join(","));
+    partContainerImpl()->setCc(QMailAddress::toStringList(ccList).join(", "));
 }
 
 /*!
@@ -6887,7 +6887,7 @@ QList<QMailAddress> QMailMessage::bcc() const
 */  
 void QMailMessage::setBcc(const QList<QMailAddress>& bccList)
 {
-    partContainerImpl()->setBcc(QMailAddress::toStringList(bccList).join(","));
+    partContainerImpl()->setBcc(QMailAddress::toStringList(bccList).join(", "));
 }
 
 /*!

@@ -278,7 +278,7 @@ void tst_QMailMessage::toRfc2822_data()
         /* text_parts        */ << QList<pair_type>()
         /* rfc_header_text   */ << QByteArray(
 "From: =?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= <jdoe@example.net>" CRLF
-"To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>,mary@example.net" CRLF
+"To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>, mary@example.net" CRLF
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Content-Type: text/plain; charset=UTF-8" CRLF
@@ -298,7 +298,7 @@ void tst_QMailMessage::toRfc2822_data()
                                                         << qMakePair(QByteArray("text/html"), QByteArray("<p>Hello.</p>")) )
         /* rfc_header_text   */ << QByteArray(
 "From: =?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= <jdoe@example.net>" CRLF
-"To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>,mary@example.net" CRLF
+"To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>, mary@example.net" CRLF
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
 "Content-Type: multipart/alternative; boundary=bound01" CRLF
