@@ -1218,6 +1218,7 @@ QByteArray QMailMessageHeaderFieldPrivate::toString(bool includeName, bool prese
 static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* lineLength, const int maxLineLength)
 {
     static const QRegExp whitespace("\\s");
+    static const QRegExp syntacticBreak(";|,");
 
     int remaining = maxLineLength - *lineLength;
     if (text.length() <= remaining)
@@ -1231,11 +1232,13 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
         int wsIndex = -1;
         int lastIndex = -1;
         int preferredIndex = -1;
+        bool syntacticBreakUsed = false;
         do 
         {
             lastIndex = wsIndex;
-            if ((lastIndex > 0) && (text[lastIndex - 1] == ';')) {
-                // Prefer to split after (possible) parameters
+            if ((lastIndex > 0) 
+                && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
+                // Prefer to split after (possible) parameters and commas
                 preferredIndex = lastIndex;
             }
 
@@ -1247,8 +1250,21 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
 
         if (lastIndex == -1)
         {
-            // We couldn't find any suitable whitespace - just break at the last char
-            lastIndex = remaining;
+            int syntacticIn = -1;
+            // We couldn't find any suitable whitespace, look for high-level syntactic break
+            do {
+                lastIndex = syntacticIn;
+                syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
+            } while ((syntacticIn != -1) && (syntacticIn < remaining - 1));
+            
+            if (lastIndex != -1) {
+                syntacticBreakUsed = true;
+                ++lastIndex;
+            } else {
+                // We couldn't find any high-level syntactic break either - just break at the last char
+                qWarning() << "Unable to break header field at white space or syntactic break";
+                lastIndex = remaining;
+            }
         }
 
         if (lastIndex == 0)
@@ -1261,9 +1277,9 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
         {
             out << DataString(text.left(lastIndex)) << DataString('\n');
 
-            if (lastIndex == remaining) {
+            if ((lastIndex == remaining) || (syntacticBreakUsed)) {
                 // We need to insert some artifical whitespace
-                out << DataString('\t');
+                out << DataString(' ');
             } else {
                 // Append the breaking whitespace (ensure it does not get CRLF-ified)
                 out << DataString(QByteArray(1, text[lastIndex]));
