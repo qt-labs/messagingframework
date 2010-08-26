@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 201034
+  * Fixes: NB#186282 Removing a part from a multipart message does not update the locations of the remaining parts
   * Fixes: NB#167917 POP/IMAP: Attachments missing in case of 'Mail as attachment'
   * Fixes: NB#186566 PopService::Source::retrieveFolderList should create Inbox folder
   * Fixes: NB#183351 email addresses corrupted while sending
