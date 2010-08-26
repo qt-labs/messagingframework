@@ -246,7 +246,7 @@ private:
         QMailServerRequestType description;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
-        QTime expiry;
+        uint unixTimeExpiry;
         bool reported;
     };
     
@@ -255,7 +255,7 @@ private:
 
     QMap<QPointer<QMailMessageService>, quint64> mServiceAction;
 
-    enum { ExpiryPeriod = 120 * 1000 };
+    static const int ExpirySeconds = 120;
 
     struct Request 
     {
