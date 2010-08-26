@@ -3311,6 +3311,9 @@ struct AttachmentDetector
 
 bool hasAttachments(const QMailMessagePartContainer &partContainer)
 {
+    if (partContainer.headerFieldText("X-MS-Has-Attach").toLower() == "yes")
+        return true;
+    
     // If foreachPart yields false there is at least one attachment
     return (partContainer.foreachPart(AttachmentDetector()) == false);
 }

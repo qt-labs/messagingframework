@@ -5574,7 +5574,8 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     The status mask needed for testing the value of the registered status flag named 
     \c "HasAttachments" against the result of QMailMessage::status().
 
-    This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.
+    This flag indicates that the message contains at least one sub-part with 
+    'Attachment' disposition, or a "X-MS-Has-Attach" headerfield with value yes.
 
     \sa QMailMessageContentDisposition
 */
