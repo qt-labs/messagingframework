@@ -147,7 +147,7 @@ void PopClient::setAccount(const QMailAccountId &id)
     config = QMailAccountConfiguration(id);
 }
 
-QMailAccountId PopClient::account() const
+QMailAccountId PopClient::accountId() const
 {
     return config.id();
 }
@@ -1075,6 +1075,13 @@ void PopClient::retrieveOperationCompleted()
         folder.setStatus(QMailFolder::PartialContent, partialContent);
         if(!QMailStore::instance()->updateFolder(&folder))
             qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
+    }
+    
+    if (!selected) {
+        QMailAccount account(accountId());
+        account.setLastSynchronized(QMailTimeStamp::currentDateTime());
+        if (!QMailStore::instance()->updateAccount(&account))
+            qWarning() << "Unable to update account" << account.id() << "to set lastSynchronized";
     }
         
     // This retrieval may have been asynchronous

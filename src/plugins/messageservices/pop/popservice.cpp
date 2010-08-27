@@ -317,7 +317,7 @@ QString PopService::service() const
 
 QMailAccountId PopService::accountId() const
 {
-    return _client.account();
+    return _client.accountId();
 }
 
 bool PopService::hasSource() const
@@ -345,21 +345,21 @@ bool PopService::cancelOperation(QMailServiceAction::Status::ErrorCode code, con
 
 void PopService::errorOccurred(int code, const QString &text)
 {
-    updateStatus(code, text, _client.account());
+    updateStatus(code, text, _client.accountId());
     _source->retrievalTerminated();
     emit actionCompleted(false);
 }
 
 void PopService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    updateStatus(code, text, _client.account());
+    updateStatus(code, text, _client.accountId());
     _source->retrievalTerminated();
     emit actionCompleted(false);
 }
 
 void PopService::updateStatus(const QString &text)
 {
-    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
+    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.accountId());
 }
 
 

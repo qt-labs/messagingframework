@@ -70,7 +70,7 @@ public:
     QMailMessage::MessageType messageType() const;
 
     void setAccount(const QMailAccountId &accountId);
-    QMailAccountId account() const;
+    QMailAccountId accountId() const;
 
     void newConnection();
     void closeConnection();

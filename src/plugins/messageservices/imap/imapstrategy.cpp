@@ -270,6 +270,14 @@ static bool transferMessageData(QMailMessage &message, const QMailMessage &sourc
     return true;
 }
 
+static void updateAccountLastSynchronized(ImapStrategyContextBase *context)
+{
+    QMailAccount account(context->config().id());
+    account.setLastSynchronized(QMailTimeStamp::currentDateTime());
+    if (!QMailStore::instance()->updateAccount(&account))
+        qWarning() << "Unable to update account" << account.id() << "to set lastSynchronized";
+}
+
 
 ImapClient *ImapStrategyContextBase::client() 
 { 
@@ -2565,6 +2573,11 @@ void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase 
             qWarning() << "Unable to update folder for account:" << context->config().id();
         }
     }
+    
+    if (!_error) {
+        updateAccountLastSynchronized(context);
+    }
+    
 }
 
 
@@ -2980,6 +2993,11 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
 
     _updatedFolders.clear();
     _newMinMaxMap.clear();
+    
+    if (!_error && _accountCheck) {
+        updateAccountLastSynchronized(context);
+    }
+        
     ImapSynchronizeBaseStrategy::messageListCompleted(context);
 }
 
