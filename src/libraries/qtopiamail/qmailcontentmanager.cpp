@@ -262,19 +262,35 @@ QStringList QMailContentManagerPlugin::keys() const
     \brief The QMailContentManager class defines the interface to objects that provide a storage facility for message content.
     \ingroup messaginglibrary
 
-    Qt Extended uses the QMailContentManager interface to delegate the storage and retrieval of message content from the
-    QMailStore class to classes loaded from plugin libraries.  A library may provide this service by exporting a 
+    Qt Extended uses the QMailContentManager interface to delegate the filtering, storage, retrieval and indexing of message content
+    from the QMailStore class to classes loaded from plugin libraries.  A library may provide this service by exporting a
     class implementing the QMailContentManager interface, and an associated instance of QMailContentManagerPlugin.
-    
-    The content manager used to store the content of a message is determined by the 
-    \l{QMailMessageMetaData::contentScheme()}{contentScheme} function of a QMailMessage object.  The identifier of
-    the message content is provided by the corresponding \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
-    function; this property is provided for the use of the content manager code, and is opaque to the remainder of the
-    system.  A QMailMessage object may be associated with a particular content manager by calling
-    \l{QMailMessageMetaData::setContentScheme()}{setContentScheme} to set the relevant scheme before adding the 
-    message to the mail store.
 
-    If a content manager provides data to clients by creating references to file-backed memory
+    There are three roles a content manager can take, as defined by \l{QMailContentManager::ManagerRole}{ManagerRole}. This changes
+    the order in which the plugins are called.
+
+    FilterRole: A content manager may be defined as a filtering content manager by returning FilterRole from
+    \l{QMailContentManager::role()}{Role}. Filtering content managers are called before message operations take place, and before
+    the message is stored on disk. Filtering content managers may change any details, and messages will be added to the database with
+    the changes. As messages are not in the database, they will not have an id -- and setting one is invalid. Filtering content managers
+    are not notified when a message is deleted, so they should be careful not to leak diskspace. Filtering content managers
+    should only return errors in fatal errors, not to indicate they filtered a message or not.
+
+    IndexRole: A content manager may be defined as an indexing content manager by returning IndexRole from
+    \l{QMailContentManager::role()}{Role}. Indexing content managers are called after successful operations have taken place,
+    and the fields updated. An indexing content manager should not modify existing messages, but only be used to do something
+    external to QMF (e.g. Add/Remove the message from an external index). Indexing content manager should only return errors
+    in very serious circumstances.
+
+    StorageRole: A content manager may be defined as a storage content manager by returning StorageRole from
+    \l{QMailContentManager::role()}{Role} (the default). Storage content managers are used for saving and
+    loading messages from disk. The particular storage content managed used for a message is determined by
+    the \l{QMailMessageMetaData::contentScheme()}{contentScheme} function of a QMailMessage object.  The identifier of
+    the message content is provided by the corresponding \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
+    function; this property is provided for the use of the storage content manager code, and is opaque to the remainder of the
+    system.
+
+    If a storage content manager provides data to clients by creating references to file-backed memory
     mappings, then the content manager must ensure that those files remain valid.  The existing content
     within the file must not be modified, and the file must not be truncated.  If the content manager
     updates the content of a message which is already exported using memory mappings, then the updated 
@@ -316,10 +332,11 @@ QStringList QMailContentManagerPlugin::keys() const
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 
-    Requests that the content manager add the content of \a message to its storage.  The 
-    message should be updated such that its \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
-    property contains the location at which the content is stored.  
-    Returns \l{QMailStore::NoError}{NoError} to indicate successful addition of the message content to permanent storage.
+    Tells the content manager of a new \a message. If this is a storage content manager it should add to storage and then update the
+    message such that its \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}
+    property contains the location at which the content is stored.
+
+    Returns \l{QMailStore::NoError}{NoError} to indicate success.
 
     If \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} is already populated at invocation, 
     the content manager should determine whether the supplied identifier can be used.  If not, it should 
@@ -333,7 +350,8 @@ QStringList QMailContentManagerPlugin::keys() const
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 
-    Requests that the content manager update the message content stored at the location indicated 
+    Notifies the content manager that \a message has been updated. If this is a storage content manager
+    it should update the message content stored at the location indicated
     by \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}, to contain the current 
     content of \a message.  
     Returns \l{QMailStore::NoError}{NoError} to indicate successful update of the message content.
@@ -362,13 +380,14 @@ QStringList QMailContentManagerPlugin::keys() const
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::remove(const QString &identifier)
 
-    Requests that the content manager remove the message content stored at the location indicated
-    by \a identifier.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content 
-    has been successfully removed.
+    Notifies the content manager that the message identified by \a identifier has been removed.
 
     The content manager should only remove data it has created with association to identifier. For instance
     a content manager that does indexing, should only remove the data it has created reaction to the identifier,
     but not the file itself.
+
+    Returns \l{QMailStore::NoError}{NoError} to indicate that the message content
+    has been successfully removed.
 
     If the content cannot be removed, the content manager should return 
     \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
@@ -380,7 +399,7 @@ QStringList QMailContentManagerPlugin::keys() const
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::load(const QString &identifier, QMailMessage *message)
 
-    Requests that the content manager load the message content stored at the location indicated
+    Requests that the storage content manager load the message content stored at the location indicated
     by \a identifier into the message record \a message.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message 
     content has been successfully loaded.
 
@@ -398,13 +417,14 @@ QMailContentManager::~QMailContentManager()
 }
 
 /*!
-    Requests that the content manager remove the message content stored at the location indicated
-    by \a identifiers.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message content
-    has been successfully removed.
+    Notifies the content manager that the messages identified by \a identifiers have been removed.
 
     The content manager should only remove data it has created with association to identifier. For instance
     a content manager that does indexing, should only remove the data it has created reaction to the identifier,
     but not the file itself.
+
+    Returns \l{QMailStore::NoError}{NoError} to indicate that the message content
+    has been successfully removed.
 
     If the content cannot be removed, the content manager should return
     \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
