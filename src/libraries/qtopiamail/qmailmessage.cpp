@@ -3448,7 +3448,10 @@ void QMailMessagePartContainerPrivate::removePartAt(uint pos)
 
     // Update the part numbers of the existing parts
     QList<uint> location(_indices);
-    for (uint i = pos; i < _messageParts.count(); ++i) {
+
+    uint partCount(static_cast<uint>(_messageParts.count()));
+
+    for (uint i = pos; i < partCount; ++i) {
         location.append(i + 1);
         _messageParts[i].impl<QMailMessagePartContainerPrivate>()->setLocation(_messageId, location);
         location.removeLast();
