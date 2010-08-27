@@ -271,9 +271,9 @@ QStringList QMailContentManagerPlugin::keys() const
 
     FilterRole: A content manager may be defined as a filtering content manager by returning FilterRole from
     \l{QMailContentManager::role()}{Role}. Filtering content managers are called before message operations take place, and before
-    the message is stored on disk. Filtering content managers may change any details, and messages will be added to the database with
+    the message is stored on the file system. Filtering content managers may change any details, and messages will be added to the database with
     the changes. As messages are not in the database, they will not have an id -- and setting one is invalid. Filtering content managers
-    are not notified when a message is deleted, so they should be careful not to leak diskspace. Filtering content managers
+    are not notified when a message is deleted, so they should be careful not to leak file system space. Filtering content managers
     should only return errors in fatal errors, not to indicate they filtered a message or not.
 
     IndexRole: A content manager may be defined as an indexing content manager by returning IndexRole from
@@ -284,7 +284,7 @@ QStringList QMailContentManagerPlugin::keys() const
 
     StorageRole: A content manager may be defined as a storage content manager by returning StorageRole from
     \l{QMailContentManager::role()}{Role} (the default). Storage content managers are used for saving and
-    loading messages from disk. The particular storage content managed used for a message is determined by
+    loading messages from the file system. The particular storage content managed used for a message is determined by
     the \l{QMailMessageMetaData::contentScheme()}{contentScheme} function of a QMailMessage object.  The identifier of
     the message content is provided by the corresponding \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
     function; this property is provided for the use of the storage content manager code, and is opaque to the remainder of the
