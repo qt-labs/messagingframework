@@ -60,6 +60,7 @@ public:
     static bool updatesOutstanding(const QMailAccountId &mailAccountId);
     static void moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder);
     static void moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
+    static void moveToFolder(QMailMessageMetaData *message, const QMailFolderId &folderId);
     static void copyToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder);
     static void copyToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
     static void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask, const QString& description);

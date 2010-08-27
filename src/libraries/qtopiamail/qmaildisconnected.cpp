@@ -360,30 +360,41 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
     Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
     folder flags as appropriate.
 
+    Moving to another accounts are not supported.
+
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
 */
 void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
-    if (!folderId.isValid())
-        return;
+    Q_ASSERT(folderId.isValid());
 
-    QMailFolder folder(folderId);
-
-    if(!folder.parentAccountId().isValid())
-        return;
-
-    QMailMessageKey key(QMailMessageKey::id(ids) & QMailMessageKey::parentAccountId(folder.parentAccountId()));
-    QMailMessageIdList messageIds = QMailStore::instance()->queryMessages(key);
-    foreach(const QMailMessageId& messageId, messageIds) {
+    foreach (const QMailMessageId& messageId, ids) {
         QMailMessageMetaData msg(messageId);
-        if (msg.parentFolderId() == folderId)
-            continue;
-        if (!(msg.status() & QMailMessage::LocalOnly) && !msg.serverUid().isEmpty() && !msg.previousParentFolderId().isValid())
-            msg.setPreviousParentFolderId(msg.parentFolderId());
-        msg.setParentFolderId(folderId);
-        syncStatusWithFolder(msg);
+        moveToFolder(&msg, folderId);
         QMailStore::instance()->updateMessage(&msg);
     }
+}
+
+/*!
+    Disconnected updates \a message to be a moved message. This function does NOT update the message in QMailStore,
+    and should be done with \sa QMailStore::updateMessage() if changes are to propagate to the server.
+
+    Moving to another account is not supported.
+*/
+void QMailDisconnected::moveToFolder(QMailMessageMetaData *message, const QMailFolderId &folderId)
+{
+    Q_ASSERT(message);
+    Q_ASSERT(folderId.isValid());
+    Q_ASSERT(message->parentAccountId().isValid());
+    Q_ASSERT(folderId == QMailFolder::LocalStorageFolderId ||
+             message->parentAccountId() == QMailFolder(folderId).parentAccountId());
+
+    if (message->parentFolderId() == folderId)
+        return;
+    if (!(message->status() & QMailMessage::LocalOnly) && !message->serverUid().isEmpty() && !message->previousParentFolderId().isValid())
+        message->setPreviousParentFolderId(message->parentFolderId());
+    message->setParentFolderId(folderId);
+    syncStatusWithFolder(*message);
 }
 
 /*!

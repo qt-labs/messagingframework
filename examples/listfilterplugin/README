@@ -1,0 +1,8 @@
+listfilterplugin is an simple example of making a filtering QMailContentManagerPlugin. 
+
+If an incoming message, that comes from a mailing list (as identified by QMailMessageMetaData::listId()) is automatically
+moved into a folder that contains the same name (if it exists).
+
+e.g. If you have a folder dev@meego.com and an email with listId of 'dev@meego.com' comes in, it'll automatically get moved. 
+
+This example is NOT built by default, to avoid it accidentally getting deployed.

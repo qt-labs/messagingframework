@@ -2044,7 +2044,7 @@ void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
 
         IntegerRegion missingUids = fp.mExpectedMessages.subtract(fp.mReceivedMessages);
         foreach(const QString &uid, missingUids.toStringList()) {
-            qMailLog(IMAP) << "Message not found " << uid;
+            qWarning() << "Message not found " << uid;
             emit nonexistentUid(messageUid(c->mailbox().id, uid));
         } 
     } 
