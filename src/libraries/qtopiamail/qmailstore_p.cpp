@@ -437,6 +437,7 @@ static AccountPropertyMap accountPropertyMap()
     map.insert(QMailAccountKey::MessageType,"type");
     map.insert(QMailAccountKey::FromAddress,"emailaddress");
     map.insert(QMailAccountKey::Status,"status");
+    map.insert(QMailAccountKey::LastSynchronized, "lastsynchronized");
 
     return map;
 }
@@ -2607,6 +2608,7 @@ QMailAccount QMailStorePrivate::extractAccount(const QSqlRecord& r)
     result.setStatus(record.status());
     result.setSignature(record.signature());
     result.setFromAddress(QMailAddress(record.fromAddress()));
+    result.setLastSynchronized(record.lastSynchronized());
 
     return result;
 }
