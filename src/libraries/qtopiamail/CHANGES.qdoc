@@ -91,6 +91,9 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 32. Added 'QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint minimum)'
 
+33. Added 'QMailAccount::lastSynchronized() const' and
+          'QMailAccount::setSynchronized(const QMailTimeStamp &synced)'
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
