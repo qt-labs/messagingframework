@@ -2,6 +2,12 @@ Latest Changes
 ---------------
 
 201034
+  * Fixes: NB#182255 crash @QList<QMailMessageId>::at with "Sig 6" when moving messages back to Inbox in Server and synced to Client
+  * Fixes: NB#181550 Random messageserver crash with SIGSEGV @ "QWaitCondition::wait"
+  * Fixes: NB#184248 Random messageserver crash @ "SmtpClient::nextAction" while panning through mails.
+  * Fixes: NB#187136 Sig 11 - Random messageserver crash @ "~SysLog"
+  * Fixes: NB#187138 Sig 7 - Random messageserver crash @ "ImapRetrieveMessageListStrategy::handleUidSearch"
+  * Fixes: NB#185487 Random messageserver abort at "MessageServer"
   * Fixes: NB#170187 "Updated" string in the Main view does not show the time stamp
   * Fixes: NB#186282 Removing a part from a multipart message does not update the locations of the remaining parts
   * Fixes: NB#167917 POP/IMAP: Attachments missing in case of 'Mail as attachment'
