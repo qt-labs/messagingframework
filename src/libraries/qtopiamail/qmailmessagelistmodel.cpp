@@ -275,30 +275,34 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
     QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
     QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
 
-    int additionCount = newIds.count() - _idList.count();
-    if (additionCount <= 0) {
-        // Nothing has been added
-        return true;
+    QList<int> insertIndices;
+    QMap<QMailMessageId, int> newPositions;
+
+    int index = 0;
+    foreach (const QMailMessageId &id, newIds) {
+        newPositions.insert(id, index);
+        ++index;
     }
 
-    // Find the locations for these messages by comparing to the existing list
-    QList<QMailMessageId>::const_iterator nit = newIds.begin(), nend = newIds.end();
-    QList<QMailMessageId>::const_iterator iit = _idList.begin(), iend = _idList.end();
-
-    QList<int> insertIndices;
     QMap<int, QMailMessageId> indexId;
-    for (int index = 0; nit != nend; ++nit, ++index) {
-        const QMailMessageId &id(*nit);
+    foreach (const QMailMessageId &id, ids) {
+        int newIndex = -1;
+        QMap<QMailMessageId, int>::const_iterator it = newPositions.find(id);
+        if (it != newPositions.end()) {
+            newIndex = it.value();
+        }
 
-        if ((iit == iend) || (*iit != id)) {
-            // We need to insert this item here
-            insertIndices.append(index);
-            indexId.insert(index, id);
-        } else {
-            ++iit;
+        int oldIndex(indexOf(id));
+        if (oldIndex == -1) {
+            // This message was not previously in our set - add it
+            if (newIndex != -1) {
+                insertIndices.append(newIndex);
+                indexId.insert(newIndex, id);
+            }
         }
     }
 
+    qSort(insertIndices);
     foreach (int index, insertIndices) {
         _model.emitBeginInsertRows(QModelIndex(), index, index);
         insertItemAt(index, QModelIndex(), indexId[index]);
