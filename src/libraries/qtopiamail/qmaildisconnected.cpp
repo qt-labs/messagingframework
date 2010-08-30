@@ -181,7 +181,7 @@ static quint64 messageStatusSetMaskForFolder(QMailFolder::StandardFolder standar
 static quint64 messageStatusUnsetMaskForFolder(QMailFolder::StandardFolder standardFolder)
 {
     return messageStatusSetMaskForFolder(standardFolder)
-            ^ ~(QMailMessage::Draft | QMailMessage::Sent | QMailMessage::Trash | QMailMessage::Junk | QMailMessage::Outbox);
+            ^ (QMailMessage::Draft | QMailMessage::Sent | QMailMessage::Trash | QMailMessage::Junk | QMailMessage::Outbox);
 }
 
 static void syncStatusWithFolder(QMailMessageMetaData& message, QMailFolder::StandardFolder standardFolder)
