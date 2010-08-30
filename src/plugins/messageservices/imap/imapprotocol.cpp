@@ -3341,7 +3341,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     } else {
         // No structure - we're fetching the body of a message we already know about
         mail.setStatus( QMailMessage::ContentAvailable, true );
-        mail.setStatus( QMailMessage::New, false );
     }
 
     if (mail.status() & QMailMessage::ContentAvailable) {
@@ -3368,7 +3367,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
     // The file we wrote to is detached, and the mailstore can assume ownership
 
-    emit messageFetched(mail, detachedFile);
+    emit messageFetched(mail, detachedFile, !structure.isEmpty());
 
     // Remove the detached file if it is still present
     QFile::remove(detachedFile);

@@ -211,7 +211,7 @@ public:
 
 signals:
     void mailboxListed(const QString &flags, const QString &name);
-    void messageFetched(QMailMessage& mail, const QString &detachedFilename);
+    void messageFetched(QMailMessage& mail, const QString &detachedFilename, bool structureOnly);
     void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void downloadSize(const QString &uid, int);
     void nonexistentUid(const QString& uid);

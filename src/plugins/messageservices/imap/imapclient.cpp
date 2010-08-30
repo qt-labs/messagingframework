@@ -384,8 +384,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(commandCompleted(ImapCommand, OperationStatus)) );
     connect(&_protocol, SIGNAL(mailboxListed(QString,QString)),
             this, SLOT(mailboxListed(QString,QString)));
-    connect(&_protocol, SIGNAL(messageFetched(QMailMessage&, const QString &)),
-            this, SLOT(messageFetched(QMailMessage&, const QString &)) );
+    connect(&_protocol, SIGNAL(messageFetched(QMailMessage&, const QString &, bool)),
+            this, SLOT(messageFetched(QMailMessage&, const QString &, bool)) );
     connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
             this, SLOT(dataFetched(QString, QString, QString, int)) );
     connect(&_protocol, SIGNAL(nonexistentUid(QString)),
@@ -770,9 +770,9 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     }
 }
 
-void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilename)
+void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilename, bool structureOnly)
 {
-    if (mail.status() & QMailMessage::New) {
+    if (structureOnly) {
         mail.setParentAccountId(_config.id());
 
         // Some properties are inherited from the folder
