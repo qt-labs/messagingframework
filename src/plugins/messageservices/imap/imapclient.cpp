@@ -805,6 +805,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             // Record the status fields that may have been updated
             bool replied(mail.status() & QMailMessage::Replied);
             bool readElsewhere(mail.status() & QMailMessage::ReadElsewhere);
+            bool importantElsewhere(mail.status() & QMailMessage::ImportantElsewhere);
             bool contentAvailable(mail.status() & QMailMessage::ContentAvailable);
             bool partialContentAvailable(mail.status() & QMailMessage::PartialContentAvailable);
 
@@ -824,6 +825,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             // Preserve the status flags determined by the protocol
             mail.setStatus(QMailMessage::Replied, replied);
             mail.setStatus(QMailMessage::ReadElsewhere, readElsewhere);
+            mail.setStatus(QMailMessage::ImportantElsewhere, importantElsewhere);
             if ((mail.status() & QMailMessage::ContentAvailable) || contentAvailable) {
                 mail.setStatus(QMailMessage::ContentAvailable, true);
             }
