@@ -179,11 +179,10 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     return map;
 }
 
-namespace {
-    quint64 newLocalActionId() {
-        static quint64 id(QCoreApplication::applicationPid() << 32);
-        return ++id;
-    }
+quint64 newLocalActionId() {
+    static quint64 id(QCoreApplication::applicationPid() << 32);
+    return ++id;
+}
 
 struct ResolverSet
 {
@@ -220,8 +219,6 @@ struct ResolverSet
         return true;
     }
 };
-
-}
 
 QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > messageResolvers(const QMailMessageIdList &ids)
 {
@@ -297,8 +294,6 @@ QSet<QMailAccountId> keyAccounts(const QMailMessageKey &key, const QSet<QMailAcc
     return include;
 }
 
-namespace {
-
 struct TextPartSearcher
 {
     QString text;
@@ -317,8 +312,6 @@ struct TextPartSearcher
         return true;
     }
 };
-
-}
 
 bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 {
