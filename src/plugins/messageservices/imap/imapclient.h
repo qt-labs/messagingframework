@@ -151,6 +151,7 @@ private:
 
 private:
     enum { InactivityPeriod = 60 * 1000 }; // 1 minute
+    enum { StayAliveCount = 5 }; // send 5 noops
 
     QMailAccountConfiguration _config;
 

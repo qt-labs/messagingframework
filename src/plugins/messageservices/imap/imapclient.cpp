@@ -528,8 +528,8 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
-    if (command != IMAP_Noop) {
-        _closeCount = 5; // 5 minutes
+    if ((command != IMAP_Noop) && (command != IMAP_Logout)) {
+        _closeCount = StayAliveCount; // 5 minutes
         _inactiveTimer.start(InactivityPeriod);
     }
     switch( command ) {
@@ -1266,7 +1266,7 @@ void ImapClient::retrieveOperationCompleted()
 
 void ImapClient::deactivateConnection()
 {
-    _closeCount = 5; // 5 minutes
+    _closeCount = StayAliveCount; // 5 minutes
     _inactiveTimer.start(InactivityPeriod);
 }
 
