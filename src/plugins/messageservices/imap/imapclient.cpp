@@ -530,7 +530,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
     if (command != IMAP_Noop) {
         _closeCount = 5; // 5 minutes
-        _inactiveTimer.start();
+        _inactiveTimer.start(InactivityPeriod);
     }
     switch( command ) {
         case IMAP_Init:
