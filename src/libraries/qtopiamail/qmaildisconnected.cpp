@@ -159,42 +159,52 @@ QMap<QMailFolderId, QMailMessageIdList> QMailDisconnected::restoreMap(const QMai
     return result;
 }
 
-static QMap<QMailFolder::StandardFolder,quint64> flagMap()
+static quint64 messageStatusSetMaskForFolder(QMailFolder::StandardFolder standardFolder)
 {
-    static QMap<QMailFolder::StandardFolder,quint64> sFlagMap;
-    if(sFlagMap.isEmpty())
-    {
-        sFlagMap.insert(QMailFolder::DraftsFolder,QMailMessage::Draft);
-        sFlagMap.insert(QMailFolder::TrashFolder,QMailMessage::Trash);
-        sFlagMap.insert(QMailFolder::SentFolder,QMailMessage::Sent);
-        sFlagMap.insert(QMailFolder::JunkFolder,QMailMessage::Junk);
+    switch (standardFolder) {
+    case QMailFolder::DraftsFolder:
+        return QMailMessage::Draft;
+    case QMailFolder::TrashFolder:
+        return QMailMessage::Trash;
+    case QMailFolder::SentFolder:
+        return QMailMessage::Sent;
+    case QMailFolder::JunkFolder:
+        return QMailMessage::Junk;
+    case QMailFolder::OutboxFolder:
+        return QMailMessage::Outbox;
+    case QMailFolder::InboxFolder:
+         ; // Don't do anything
     }
-    return sFlagMap;
+    return 0;
+}
+
+static quint64 messageStatusUnsetMaskForFolder(QMailFolder::StandardFolder standardFolder)
+{
+    return messageStatusSetMaskForFolder(standardFolder)
+            ^ ~(QMailMessage::Draft | QMailMessage::Sent | QMailMessage::Trash | QMailMessage::Junk | QMailMessage::Outbox);
 }
 
 static void syncStatusWithFolder(QMailMessageMetaData& message, QMailFolder::StandardFolder standardFolder)
 {
-    quint64 clearFolderStatus = message.status() &~ (QMailMessage::Draft | QMailMessage::Sent | QMailMessage::Trash | QMailMessage::Junk);
-    message.setStatus(clearFolderStatus);
-    message.setStatus(flagMap().value(standardFolder),true);
+    message.setStatus(messageStatusUnsetMaskForFolder(standardFolder), false);
+    message.setStatus(messageStatusSetMaskForFolder(standardFolder), true);
 }
 
 static void syncStatusWithFolder(QMailMessageMetaData& message)
 {
-    if (!message.parentAccountId().isValid())
-        return;
+    Q_ASSERT(message.parentAccountId().isValid() && message.parentFolderId().isValid());
 
     QMailAccount messageAccount(message.parentAccountId());
 
-    foreach(QMailFolder::StandardFolder sf, flagMap().keys()) {
-        if (message.parentFolderId().isValid() 
-            && messageAccount.standardFolder(sf) == message.parentFolderId()) {
-            syncStatusWithFolder(message, sf);
-            return;
+    for( QMap<QMailFolder::StandardFolder, QMailFolderId>::iterator it(messageAccount.standardFolders().begin())
+        ; it != messageAccount.standardFolders().end() ; it++)
+    {
+        if (message.parentFolderId() == it.value()) {
+            syncStatusWithFolder(message, it.key());
         }
     }
-}
 
+}
 /*!
     Returns true if disconnected operations have been applied to the message store since 
     the most recent synchronization with the account specified by \a mailAccountId.
@@ -346,13 +356,24 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
 */
 void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
 {
-    QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
+    QList<QMailMessageMetaData *> messages; // Using this for efficient update
 
-    foreach(const QMailAccountId& id, allAccounts) {
-        QMailAccount account(id);
-        QMailFolderId standardFolderId = account.standardFolder(standardFolder);
-        if (standardFolderId.isValid())
-            moveToFolder(ids,standardFolderId);
+    foreach(const QMailMessageId &id, ids) {
+        QMailMessageMetaData *msg = new QMailMessageMetaData(id);
+        QMailFolderId folderId(QMailAccount(msg->parentAccountId()).standardFolder(standardFolder)); // will be cached
+        if (folderId.isValid()) {
+            moveToFolder(msg, folderId);
+            messages.append(msg);
+        } else {
+            delete msg;
+        }
+    }
+
+    if (!messages.isEmpty()) {
+        QMailStore::instance()->updateMessages(messages);
+        foreach(QMailMessageMetaData *messagePointer, messages) {
+            delete messagePointer;
+        }
     }
 }
 
@@ -367,11 +388,19 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
 void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
     Q_ASSERT(folderId.isValid());
+    QList<QMailMessageMetaData *> messages;  // Using this for efficient update
 
-    foreach (const QMailMessageId& messageId, ids) {
-        QMailMessageMetaData msg(messageId);
-        moveToFolder(&msg, folderId);
-        QMailStore::instance()->updateMessage(&msg);
+    foreach (const QMailMessageId &id, ids) {
+        QMailMessageMetaData *msg = new QMailMessageMetaData(id);
+        moveToFolder(msg, folderId);
+        messages.append(msg);
+    }
+
+    if (!messages.empty()) {
+        QMailStore::instance()->updateMessages(messages);
+        foreach(QMailMessageMetaData *messagePointer, messages) {
+            delete messagePointer;
+        }
     }
 }
 
