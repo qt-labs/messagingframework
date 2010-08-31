@@ -1320,10 +1320,14 @@ QMailMessageSink &QMailMessageService::sink() const
 
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
-void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId)
+void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
-        emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+        if (action) {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId), action);
+        } else {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+        }
     } else {
         static ErrorMap mailErrorMap(mailErrorInit());
 
@@ -1331,7 +1335,11 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
         QString message(text);
         decorate(&message, code, (ErrorSet() << mailErrorMap));
 
-        emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId));
+        if (action) {
+            emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId), action);
+        } else {
+            emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId));
+        }
     }
 }
 
@@ -1340,10 +1348,14 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
 
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
-void QMailMessageService::updateStatus(int code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId)
+void QMailMessageService::updateStatus(int code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
-        emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+        if (action) {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId), action);
+        }  else {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+        }
     } else {
         static ErrorMap socketErrorMap(socketErrorInit());
 
@@ -1354,7 +1366,11 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
         QString message(text);
         decorate(&message, code, (ErrorSet() << socketErrorMap));
 
-        emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId));
+        if (action) {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId), action);
+        } else {
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId));
+        }
     }
 }
 
@@ -1443,3 +1459,244 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
 */
 #endif
 
+
+bool QMailMessageSource::concurrentActionsSupported() const
+{
+    return false;
+}
+
+bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(accountId)
+    Q_UNUSED(folderId)
+    Q_UNUSED(descending)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(accountId)
+    Q_UNUSED(folderId)
+    Q_UNUSED(minimum)
+    Q_UNUSED(sort)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(messageIds)
+    Q_UNUSED(spec)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &partLocation, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(partLocation)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, uint minimum, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(messageId)
+    Q_UNUSED(minimum)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(partLocation)
+    Q_UNUSED(minimum)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(accountId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+    
+    Q_UNUSED(accountId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::synchronize(const QMailAccountId &accountId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(accountId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(destinationId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(destinationId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(setMask)
+    Q_UNUSED(unsetMask)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(name)
+    Q_UNUSED(accountId)
+    Q_UNUSED(parentId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(folderId)
+    Q_UNUSED(name)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(folderId)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(filter)
+    Q_UNUSED(bodyText)
+    Q_UNUSED(sort)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::cancelSearch(quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(accountId)
+    Q_UNUSED(request)
+    Q_UNUSED(data)
+    Q_UNUSED(action)
+}
+
+void QMailMessageSource::notImplemented(quint64 action)
+{
+    notImplemented();
+
+    Q_UNUSED(action)
+}
+
+bool QMailMessageSink::concurrentActionsSupported() const
+{
+    return false;
+}
+
+bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids, quint64 action)
+{
+    notImplemented(action);
+    return false;
+
+    Q_UNUSED(ids)
+    Q_UNUSED(action)
+}
+
+void QMailMessageSink::notImplemented(quint64 action)
+{
+    notImplemented();
+
+    Q_UNUSED(action)
+}
+
+bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action)
+{
+    Q_ASSERT(0);
+    return false;
+
+    Q_UNUSED(code)
+    Q_UNUSED(text)
+    Q_UNUSED(action)
+}

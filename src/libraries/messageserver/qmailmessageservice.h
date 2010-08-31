@@ -122,52 +122,82 @@ public:
     virtual ~QMailMessageSource();
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const;
+    virtual bool concurrentActionsSupported() const;
 
 public slots:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
+    virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action);
+
     virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
+    virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort, quint64 action);
 
     virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
+    virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action);
     virtual bool retrieveMessagePart(const QMailMessagePart::Location &partLocation);
+    virtual bool retrieveMessagePart(const QMailMessagePart::Location &partLocation, quint64 action);
 
     virtual bool retrieveMessageRange(const QMailMessageId &messageId, uint minimum);
+    virtual bool retrieveMessageRange(const QMailMessageId &messageId, uint minimum, quint64 action);
     virtual bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
+    virtual bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action);
 
     virtual bool retrieveAll(const QMailAccountId &accountId);
+    virtual bool retrieveAll(const QMailAccountId &accountId, quint64 action);
     virtual bool exportUpdates(const QMailAccountId &accountId);
+    virtual bool exportUpdates(const QMailAccountId &accountId, quint64 action);
 
     virtual bool synchronize(const QMailAccountId &accountId);
+    virtual bool synchronize(const QMailAccountId &accountId, quint64 action);
 
     virtual bool deleteMessages(const QMailMessageIdList &ids);
+    virtual bool deleteMessages(const QMailMessageIdList &ids, quint64 action);
 
     virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action);
     virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action);
     virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+    virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, quint64 action);
 
     virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
+    virtual bool renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action);
     virtual bool deleteFolder(const QMailFolderId &folderId);
+    virtual bool deleteFolder(const QMailFolderId &folderId, quint64 action);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
+    virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action);
     virtual bool cancelSearch();
+    virtual bool cancelSearch(quint64 action);
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
+    virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action);
 
     virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
+    virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action);
 
 signals:
     void newMessagesAvailable();
+    void newMessagesAvailable(quint64 action);
 
     void messagesDeleted(const QMailMessageIdList &ids);
+    void messagesDeleted(const QMailMessageIdList &ids, quint64 action);
     void messagesCopied(const QMailMessageIdList &ids);
+    void messagesCopied(const QMailMessageIdList &ids, quint64 action);
     void messagesMoved(const QMailMessageIdList &ids);
+    void messagesMoved(const QMailMessageIdList &ids, quint64 action);
     void messagesFlagged(const QMailMessageIdList &ids);
+    void messagesFlagged(const QMailMessageIdList &ids, quint64 action);
 
     void matchingMessageIds(const QMailMessageIdList &ids);
+    void matchingMessageIds(const QMailMessageIdList &ids, quint64 action);
 
     void messagesPrepared(const QMailMessageIdList &ids);
+    void messagesPrepared(const QMailMessageIdList &ids, quint64 action);
 
     void protocolResponse(const QString &response, const QVariant &data);
+    void protocolResponse(const QString &response, const QVariant &data, quint64 action);
 
 protected slots:
     void deleteMessages();
@@ -179,6 +209,7 @@ protected:
     QMailMessageSource(QMailMessageService *service);
 
     void notImplemented();
+    void notImplemented(quint64 action);
     bool modifyMessageFlags(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
 private:
@@ -197,18 +228,23 @@ class MESSAGESERVER_EXPORT QMailMessageSink : public QObject
 
 public:
     ~QMailMessageSink();
+    virtual bool concurrentActionsSupported() const;
 
 public slots:
     virtual bool transmitMessages(const QMailMessageIdList &ids);
+    virtual bool transmitMessages(const QMailMessageIdList &ids, quint64 action);
 
 signals:
     void messagesTransmitted(const QMailMessageIdList &ids);
+    void messagesTransmitted(const QMailMessageIdList &ids, quint64 action);
     void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
+    void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode, quint64 action);
 
 protected:
     QMailMessageSink(QMailMessageService *service);
 
     void notImplemented();
+    void notImplemented(quint64 action);
 
 private:
     QMailMessageSink();
@@ -241,30 +277,39 @@ public:
     virtual bool requiresReregistration() const { return true; }
 public slots:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
+    virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action);
     bool cancelOperation() { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user")); }
+    bool cancelOperation(quint64 action) { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"), action); }
 
 signals:
     void availabilityChanged(bool available);
 
     void connectivityChanged(QMailServiceAction::Connectivity connectivity);
+    void connectivityChanged(QMailServiceAction::Connectivity connectivity, quint64 action);
     void activityChanged(QMailServiceAction::Activity activity);
+    void activityChanged(QMailServiceAction::Activity activity, quint64 action);
     void statusChanged(const QMailServiceAction::Status status);
+    void statusChanged(const QMailServiceAction::Status status, quint64 action);
     void progressChanged(uint progress, uint total);
+    void progressChanged(uint progress, uint total, quint64 action);
 
     void actionCompleted(bool success);
+    void actionCompleted(bool success, quint64 action);
 
 protected:
     void updateStatus(QMailServiceAction::Status::ErrorCode code, 
                       const QString &text = QString(), 
                       const QMailAccountId &accountId = QMailAccountId(),
                       const QMailFolderId &folderId = QMailFolderId(), 
-                      const QMailMessageId &messageId = QMailMessageId());
+                      const QMailMessageId &messageId = QMailMessageId(),
+                      quint64 action = 0);
 
     void updateStatus(int code, 
                       const QString &text = QString(), 
                       const QMailAccountId &accountId = QMailAccountId(),
                       const QMailFolderId &folderId = QMailFolderId(), 
-                      const QMailMessageId &messageId = QMailMessageId());
+                      const QMailMessageId &messageId = QMailMessageId(),
+                      quint64 action = 0);
 
 private:
     friend class QMailMessageSource;
