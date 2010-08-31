@@ -436,13 +436,12 @@ void ImapClient::newConnection()
 {
     if (_protocol.loggingOut())
         _protocol.close();
-    if (_protocol.inUse()) {
-        _inactiveTimer.stop();
-    } else {
+    if (!_protocol.inUse()) {
         // Reload the account configuration
         _config = QMailAccountConfiguration(_config.id());
         _qresyncEnabled = false;
     }
+    _inactiveTimer.stop();
 
     ImapConfiguration imapCfg(_config);
     if ( imapCfg.mailServer().isEmpty() ) {
@@ -528,10 +527,6 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
-    if ((command != IMAP_Noop) && (command != IMAP_Logout)) {
-        _closeCount = StayAliveCount; // 5 minutes
-        _inactiveTimer.start(InactivityPeriod);
-    }
     switch( command ) {
         case IMAP_Init:
         {
@@ -637,7 +632,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Noop:
         {
-            // Nothing to do
+            _inactiveTimer.start(InactivityPeriod);
             break;
         }
 
@@ -1279,7 +1274,6 @@ void ImapClient::connectionInactive()
         closeConnection();
     } else {
         _protocol.sendNoop();
-        _inactiveTimer.start(InactivityPeriod);
     }
 }
 
