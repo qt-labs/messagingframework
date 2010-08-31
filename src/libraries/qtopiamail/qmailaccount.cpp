@@ -497,8 +497,10 @@ void QMailAccount::setSignature(const QString &str)
 
 /*!
     Returns the time the account was last succesfully synchronized.
+    
+    Should be updated by QMailRetrievalAction::retrieveMessageList() when an account is synchronized.
 
-    \sa setLastSynchronized()
+    \sa setLastSynchronized(), QMailRetrievalAction::retrieveMessageList()
 */
 QMailTimeStamp QMailAccount::lastSynchronized() const
 {

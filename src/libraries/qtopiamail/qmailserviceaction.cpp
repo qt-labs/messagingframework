@@ -870,9 +870,9 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
     If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved.  If \a minimum is non-zero,
-    then that value will be used to restrict the number of messages to be retrieved from
-    each folder; otherwise, all messages will be retrieved.
+    messages within all folders in the account should be retrieved, and the lastSynchronized() time 
+    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the 
+    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
     
     If \a sort is not empty, the external service will report the discovered messages in the 
     ordering indicated by the sort criterion, if possible.  Services are not required to support 
@@ -893,6 +893,8 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
     marked with the \l QMailMessage::New status flag. Messages that are present
     in the mail store but found to be no longer available are marked with the 
     \l QMailMessage::Removed status flag.
+    
+    \sa QMailAccount::lastSynchronized()
 */
 void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
@@ -1045,8 +1047,10 @@ void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
     may perform optimizations such as retrieving the folder list at the same time as 
     retrieving messages, and retrieving messages in multiple folder simultaneously by using 
     multiple connections to the server.
+    
+    On a successful synchronization the lastSynchronized() value of the account should be updated.
 
-    \sa exportUpdates(), retrieveMessageList(), retrieveFolderList()
+    \sa exportUpdates(), retrieveMessageList(), retrieveFolderList(), QMailAccount::lastSynchronized() 
 */
 void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint minimum)
 {

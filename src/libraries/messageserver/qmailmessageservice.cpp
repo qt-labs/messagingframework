@@ -428,22 +428,20 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
 }
 
 /*!
-    Invoked by the message server to initiate a folder listing operation.
-
-    Retrieve the set of folders available for the account \a accountId.  
-    If \a folderId is valid, only the identified folder is searched for child folders; 
-    otherwise the search begins at the root of the account.  If \a descending is true, 
-    the search should also recursively search for child folders within folders 
-    discovered during the search.
+    Retrieve the list of folders available for the 
+    account \a accountId.  If \a folderId is valid, only the identified folder is 
+    searched for child folders; otherwise the search begins at the root of the
+    account.  If \a descending is true, the search should also recursively search 
+    for child folders within folders discovered during the search.
 
     The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for each 
-    folder that is searched for child folders; these properties need not be updated 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each 
+    folder that is searched for child folders; these properties are not updated 
     for folders that are merely discovered by searching.
-
+    
     Return true if an operation is initiated.
 
-    \sa retrieveAll()
+    \sa retrieveMessageList()
 */
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
@@ -456,36 +454,35 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 }
 
 /*!
-    Invoked by the message server to initiate a message listing operation.
-
     Retrieve the list of messages available for the account \a accountId.
     If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved.  If \a minimum is non-zero,
-    then that value will be used to restrict the number of messages to be retrieved from
-    each folder; otherwise, all messages will be retrieved.
+    messages within all folders in the account should be retrieved, and the lastSynchronized() time 
+    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the 
+    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
     
-    If \a sort is not empty, reported the discovered messages in the ordering indicated by the 
-    sort criterion, if possible.  Message sources are not required to support this facility.
+    If \a sort is not empty, the external service will report the discovered messages in the 
+    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+    this facility.
 
     If a folder messages are being retrieved from contains at least \a minimum messages then the 
     messageserver should ensure that at least \a minimum messages are available from the mail 
     store for that folder; otherwise if the folder contains less than \a minimum messages the 
     messageserver should ensure all the messages for that folder are available from the mail store.
-    If a folder has messages locally available, then all previously undiscovered messages should be
+    If a folder has messages locally available, then all previously undiscovered messages will be
     retrieved for that folder, even if that number exceeds \a minimum.
     
     The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
     from which messages are retrieved.
     
-    New messages should be added to the mail store in meta data form as they are discovered, 
-    and marked with the \l QMailMessage::New status flag.  Messages that are present
-    in the mail store but found to be no longer available should be marked with the 
-    \l QMailMessage::Removed status flag.  
-
+    New messages will be added to the mail store as they are discovered, and 
+    marked with the \l QMailMessage::New status flag. Messages that are present
+    in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag.
+    
     Return true if an operation is initiated.
 
-    \sa retrieveAll()
+    \sa QMailAccount::lastSynchronized()
 */
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
@@ -596,9 +593,9 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
     Retrieve all folders and meta data for all messages available for the account \a accountId. 
 
     All folders within the account should be discovered and searched for child folders.
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
     QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
-    in the account.
+    in the account, and the lastSynchronized() time of the account updated.
 
     New messages should be added to the mail store in meta data form as they are discovered, 
     and marked with the \l QMailMessage::New status flag.  Messages that are present
@@ -607,7 +604,7 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
 
     Return true if an operation is initiated.
     
-    \sa retrieveFolderList(), retrieveMessageList(), synchronize()
+    \sa QMailAccount::lastSynchronized(), retrieveFolderList(), retrieveMessageList(), synchronize()
 */
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
 {
@@ -650,11 +647,12 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
 
     The folder structure of the account should be synchronized with that available from 
     the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder.
-
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder, and
+    the lastSynchronized() time of the account updated.
+     
     Return true if an operation is initiated.
 
-    \sa retrieveAll(), exportUpdates()
+    \sa QMailAccount::lastSynchronized(), retrieveAll(), exportUpdates()
 */
 bool QMailMessageSource::synchronize(const QMailAccountId &accountId)
 {
