@@ -115,7 +115,8 @@
 <p>See also <a href="qmailaccount.html#setId">setId</a>().</p>
 <h3 class="fn"><a name="lastSynchronized"></a><a href="qmailtimestamp.html">QMailTimeStamp</a> QMailAccount::lastSynchronized () const</h3>
 <p>Returns the time the account was last succesfully synchronized.</p>
-<p>See also <a href="qmailaccount.html#setLastSynchronized">setLastSynchronized</a>().</p>
+<p>Should be updated by <a href="qmailretrievalaction.html#retrieveMessageList">QMailRetrievalAction::retrieveMessageList</a>() when an account is synchronized.</p>
+<p>See also <a href="qmailaccount.html#setLastSynchronized">setLastSynchronized</a>() and <a href="qmailretrievalaction.html#retrieveMessageList">QMailRetrievalAction::retrieveMessageList</a>().</p>
 <h3 class="fn"><a name="messageSinks"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSinks () const</h3>
 <p>Returns the list of protocol tags identifying the message sink implementations that can transmit messages for this account.</p>
 <h3 class="fn"><a name="messageSources"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSources () const</h3>

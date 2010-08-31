@@ -81,7 +81,7 @@
 <p>Moving to another accounts are not supported.</p>
 <p>The move operation will be propagated to the server by a successful call to <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <h3 class="fn"><a name="moveToFolder-2"></a>void QMailDisconnected::moveToFolder ( <a href="qmailmessagemetadata.html">QMailMessageMetaData</a> * <i>message</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
-<p>Disconnected updates <i>message</i> to be moved to the folder identified <i>folderId</i>. This function does NOT update the message in <a href="qmailstore.html">QMailStore</a>, and should be done with <a href="qmailstore.html#updateMessage">QMailStore::updateMessage</a>() if changes are to propagate to the server.</p>
+<p>Disconnected updates <i>message</i> to be moved to the folder identified <i>folderId</i>. This function does NOT update the message in <a href="qmailstore.html">QMailStore</a>, <a href="qmailstore.html#updateMessage">QMailStore::updateMessage</a>() should be used to ensure that changes are to propagated to the server.</p>
 <p>Moving to another account is not supported.</p>
 <h3 class="fn"><a name="moveToStandardFolder"></a>void QMailDisconnected::moveToStandardFolder ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmailfolder.html#StandardFolder-enum">QMailFolder::StandardFolder</a> <i>standardFolder</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected moves the list of messages identified by <i>ids</i> into the standard folder <i>standardFolder</i>, setting standard folder flags as appropriate.</p>
