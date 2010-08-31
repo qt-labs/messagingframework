@@ -167,6 +167,7 @@ The QMF package contains some example programs that demonstrate how to use the l
 \header \o Name \o Description
 \row \o qtmail \o Demonstrates how to build a mail client application.
 \row \o messagingaccounts \o Demonstrates how to build a stand alone accounts configuration application.
+\row \o serverobserver \o Demonstrates how to build a stand alone application that observes actions being performed by the messageserver process.
 \endtable
 
 \section1 Changes Between Versions
