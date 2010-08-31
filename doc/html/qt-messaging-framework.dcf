@@ -40,6 +40,7 @@
         <keyword ref="qmailaccount.html#customFields">customFields</keyword>
         <keyword ref="qmailaccount.html#fromAddress">fromAddress</keyword>
         <keyword ref="qmailaccount.html#id">id</keyword>
+        <keyword ref="qmailaccount.html#lastSynchronized">lastSynchronized</keyword>
         <keyword ref="qmailaccount.html#messageSinks">messageSinks</keyword>
         <keyword ref="qmailaccount.html#messageSources">messageSources</keyword>
         <keyword ref="qmailaccount.html#messageType">messageType</keyword>
@@ -49,6 +50,7 @@
         <keyword ref="qmailaccount.html#setCustomFields">setCustomFields</keyword>
         <keyword ref="qmailaccount.html#setFromAddress">setFromAddress</keyword>
         <keyword ref="qmailaccount.html#setId">setId</keyword>
+        <keyword ref="qmailaccount.html#setLastSynchronized">setLastSynchronized</keyword>
         <keyword ref="qmailaccount.html#setMessageType">setMessageType</keyword>
         <keyword ref="qmailaccount.html#setName">setName</keyword>
         <keyword ref="qmailaccount.html#setSignature">setSignature</keyword>
@@ -101,6 +103,7 @@
         <keyword ref="qmailaccountkey.html">QMailAccountKey</keyword>
         <keyword ref="qmailaccountkey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailaccountkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::LastSynchronized</keyword>
         <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::FromAddress</keyword>
         <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Id</keyword>
         <keyword ref="qmailaccountkey.html#Property-enum">QMailAccountKey::Name</keyword>
@@ -116,6 +119,7 @@
         <keyword ref="qmailaccountkey.html#isEmpty">isEmpty</keyword>
         <keyword ref="qmailaccountkey.html#isNegated">isNegated</keyword>
         <keyword ref="qmailaccountkey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailaccountkey.html#lastSynchronized">lastSynchronized</keyword>
         <keyword ref="qmailaccountkey.html#messageType">messageType</keyword>
         <keyword ref="qmailaccountkey.html#name">name</keyword>
         <keyword ref="qmailaccountkey.html#nonMatchingKey">nonMatchingKey</keyword>
@@ -167,6 +171,7 @@
         <keyword ref="qmailaccountsortkey.html">QMailAccountSortKey</keyword>
         <keyword ref="qmailaccountsortkey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailaccountsortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::LastSynchronized</keyword>
         <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::Id</keyword>
         <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::Name</keyword>
         <keyword ref="qmailaccountsortkey.html#Property-enum">QMailAccountSortKey::MessageType</keyword>
@@ -175,6 +180,7 @@
         <keyword ref="qmailaccountsortkey.html#deserialize">deserialize</keyword>
         <keyword ref="qmailaccountsortkey.html#id">id</keyword>
         <keyword ref="qmailaccountsortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailaccountsortkey.html#lastSynchronized">lastSynchronized</keyword>
         <keyword ref="qmailaccountsortkey.html#messageType">messageType</keyword>
         <keyword ref="qmailaccountsortkey.html#name">name</keyword>
         <keyword ref="qmailaccountsortkey.html#serialize">serialize</keyword>

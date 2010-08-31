@@ -306,7 +306,7 @@
 <p>This flag indicates that a message forwarding the content of this message has been created.</p>
 <h3 class="fn"><a name="HasAttachments-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::HasAttachments</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;HasAttachments&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>
-<p>This flag indicates that the message contains at least one sub-part with 'Attachment' disposition.</p>
+<p>This flag indicates that the message contains at least one sub-part with 'Attachment' disposition, or a &quot;X-MS-Has-Attach&quot; headerfield with value yes.</p>
 <p>See also <a href="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</a>.</p>
 <h3 class="fn"><a name="HasReferences-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::HasReferences</h3>
 <p>The status mask needed for testing the value of the registered status flag named <tt>&quot;HasReferences&quot;</tt> against the result of <a href="qmailmessagemetadata.html#status">QMailMessage::status</a>().</p>

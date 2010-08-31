@@ -30,6 +30,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">const QMap&lt;QString, QString&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#customFields">customFields</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailAddress </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#fromAddress">fromAddress</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#id">id</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailTimeStamp </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#lastSynchronized">lastSynchronized</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageSinks">messageSinks</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageSources">messageSources</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageMetaDataFwd::MessageType </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#messageType">messageType</a></b> () const</td></tr>
@@ -39,6 +40,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setCustomFields">setCustomFields</a></b> ( const QMap&lt;QString, QString&gt; &amp; <i>fields</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setFromAddress">setFromAddress</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setId">setId</a></b> ( const QMailAccountId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setLastSynchronized">setLastSynchronized</a></b> ( const QMailTimeStamp &amp; <i>synced</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setMessageType">setMessageType</a></b> ( QMailMessageMetaDataFwd::MessageType <i>type</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setName">setName</a></b> ( const QString &amp; <i>str</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccount.html#setSignature">setSignature</a></b> ( const QString &amp; <i>str</i> )</td></tr>
@@ -111,6 +113,9 @@
 <h3 class="fn"><a name="id"></a><a href="qmailaccountid.html">QMailAccountId</a> QMailAccount::id () const</h3>
 <p>Returns the storage id for this account.</p>
 <p>See also <a href="qmailaccount.html#setId">setId</a>().</p>
+<h3 class="fn"><a name="lastSynchronized"></a><a href="qmailtimestamp.html">QMailTimeStamp</a> QMailAccount::lastSynchronized () const</h3>
+<p>Returns the time the account was last succesfully synchronized.</p>
+<p>See also <a href="qmailaccount.html#setLastSynchronized">setLastSynchronized</a>().</p>
 <h3 class="fn"><a name="messageSinks"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSinks () const</h3>
 <p>Returns the list of protocol tags identifying the message sink implementations that can transmit messages for this account.</p>
 <h3 class="fn"><a name="messageSources"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMailAccount::messageSources () const</h3>
@@ -136,6 +141,9 @@
 <h3 class="fn"><a name="setId"></a>void QMailAccount::setId ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i> )</h3>
 <p>Sets the storage id for this account to <i>id</i>.</p>
 <p>See also <a href="qmailaccount.html#id">id</a>().</p>
+<h3 class="fn"><a name="setLastSynchronized"></a>void QMailAccount::setLastSynchronized ( const <a href="qmailtimestamp.html">QMailTimeStamp</a> &amp; <i>synced</i> )</h3>
+<p>Sets the last successful synchronized time to <i>synced</i></p>
+<p>See also <a href="qmailaccount.html#lastSynchronized">lastSynchronized</a>().</p>
 <h3 class="fn"><a name="setMessageType"></a>void QMailAccount::setMessageType ( <a href="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::MessageType</a> <i>type</i> )</h3>
 <p>Sets the types of messages this account deals with to <i>type</i>.</p>
 <p>See also <a href="qmailaccount.html#messageType">messageType</a>().</p>

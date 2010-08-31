@@ -396,7 +396,7 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="listId" fullname="QMailMessageSortKey::listId" href="qmailmessagesortkey.html#listId" location="qmailmessagesortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageSortKey" signature="listId(Qt::SortOrder order)">
                 <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="rfcId" fullname="QMailMessageSortKey::rfcId" href="qmailmessagesortkey.html#rfcId" location="qmailmessagesortkey.cpp" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageSortKey" signature="rfcId(Qt::SortOrder order)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="rfcId" fullname="QMailMessageSortKey::rfcId" href="qmailmessagesortkey.html#rfcId" location="qmailmessagesortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageSortKey" signature="rfcId(Qt::SortOrder order)">
                 <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="status" fullname="QMailMessageSortKey::status" href="qmailmessagesortkey.html#status" location="qmailmessagesortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageSortKey" signature="status(quint64 mask, Qt::SortOrder order)">
@@ -1577,6 +1577,7 @@
                 <value name="FromAddress" value="( 1&lt;&lt;3 )"/>
                 <value name="Status" value="( 1&lt;&lt;4 )"/>
                 <value name="Custom" value="( 1&lt;&lt;5 )"/>
+                <value name="LastSynchronized" value="( 1&lt;&lt;6 )"/>
             </enum>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailAccountKey::ArgumentType" href="qmailaccountkey.html#ArgumentType-typedef" location="qmailaccountkey.h"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailAccountKey" fullname="QMailAccountKey::QMailAccountKey" href="qmailaccountkey.html#QMailAccountKey" location="qmailaccountkey.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailAccountKey()"/>
@@ -1659,6 +1660,14 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="fromAddress" fullname="QMailAccountKey::fromAddress" href="qmailaccountkey.html#fromAddress-2" location="qmailaccountkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="QMailAccountKey" signature="fromAddress(const QString &amp; value, QMailDataComparator::InclusionComparator cmp)">
                 <parameter left="const QString &amp;" right="" name="value" default=""/>
                 <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lastSynchronized" fullname="QMailAccountKey::lastSynchronized" href="qmailaccountkey.html#lastSynchronized" location="qmailaccountkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailAccountKey" signature="lastSynchronized(const QDateTime &amp; value, QMailDataComparator::EqualityComparator cmp)">
+                <parameter left="const QDateTime &amp;" right="" name="value" default=""/>
+                <parameter left="QMailDataComparator::EqualityComparator" right="" name="cmp" default="QMailDataComparator::Equal"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lastSynchronized" fullname="QMailAccountKey::lastSynchronized" href="qmailaccountkey.html#lastSynchronized-2" location="qmailaccountkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="QMailAccountKey" signature="lastSynchronized(const QDateTime &amp; value, QMailDataComparator::RelationComparator cmp)">
+                <parameter left="const QDateTime &amp;" right="" name="value" default=""/>
+                <parameter left="QMailDataComparator::RelationComparator" right="" name="cmp" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="status" fullname="QMailAccountKey::status" href="qmailaccountkey.html#status" location="qmailaccountkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailAccountKey" signature="status(quint64 mask, QMailDataComparator::InclusionComparator cmp)">
                 <parameter left="quint64" right="" name="mask" default=""/>
@@ -1980,6 +1989,7 @@
                 <value name="Name" value="1"/>
                 <value name="MessageType" value="2"/>
                 <value name="Status" value="3"/>
+                <value name="LastSynchronized" value="4"/>
             </enum>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailAccountSortKey::ArgumentType" href="qmailaccountsortkey.html#ArgumentType-typedef" location="qmailaccountsortkey.h"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailAccountSortKey" fullname="QMailAccountSortKey::QMailAccountSortKey" href="qmailaccountsortkey.html#QMailAccountSortKey" location="qmailaccountsortkey.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailAccountSortKey()"/>
@@ -2017,6 +2027,9 @@
                 <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="messageType" fullname="QMailAccountSortKey::messageType" href="qmailaccountsortkey.html#messageType" location="qmailaccountsortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailAccountSortKey" signature="messageType(Qt::SortOrder order)">
+                <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lastSynchronized" fullname="QMailAccountSortKey::lastSynchronized" href="qmailaccountsortkey.html#lastSynchronized" location="qmailaccountsortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailAccountSortKey" signature="lastSynchronized(Qt::SortOrder order)">
                 <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="status" fullname="QMailAccountSortKey::status" href="qmailaccountsortkey.html#status" location="qmailaccountsortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailAccountSortKey" signature="status(quint64 mask, Qt::SortOrder order)">
@@ -2264,6 +2277,10 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="signature" fullname="QMailAccount::signature" href="qmailaccount.html#signature" location="qmailaccount.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="signature() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="setSignature" fullname="QMailAccount::setSignature" href="qmailaccount.html#setSignature" location="qmailaccount.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setSignature(const QString &amp; str)">
                 <parameter left="const QString &amp;" right="" name="str" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lastSynchronized" fullname="QMailAccount::lastSynchronized" href="qmailaccount.html#lastSynchronized" location="qmailaccount.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailTimeStamp" signature="lastSynchronized() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setLastSynchronized" fullname="QMailAccount::setLastSynchronized" href="qmailaccount.html#setLastSynchronized" location="qmailaccount.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setLastSynchronized(const QMailTimeStamp &amp; synced)">
+                <parameter left="const QMailTimeStamp &amp;" right="" name="synced" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="messageType" fullname="QMailAccount::messageType" href="qmailaccount.html#messageType" location="qmailaccount.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessageMetaDataFwd::MessageType" signature="messageType() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="setMessageType" fullname="QMailAccount::setMessageType" href="qmailaccount.html#setMessageType" location="qmailaccount.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setMessageType(QMailMessageMetaDataFwd::MessageType type)">
@@ -3091,6 +3108,10 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="moveToFolder" fullname="QMailDisconnected::moveToFolder" href="qmaildisconnected.html#moveToFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="moveToFolder(const QMailMessageIdList &amp; ids, const QMailFolderId &amp; folderId)">
                 <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="moveToFolder" fullname="QMailDisconnected::moveToFolder" href="qmaildisconnected.html#moveToFolder-2" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="void" signature="moveToFolder(QMailMessageMetaData * message, const QMailFolderId &amp; folderId)">
+                <parameter left="QMailMessageMetaData *" right="" name="message" default=""/>
                 <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="copyToStandardFolder" fullname="QMailDisconnected::copyToStandardFolder" href="qmaildisconnected.html#copyToStandardFolder" location="qmaildisconnected.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="void" signature="copyToStandardFolder(const QMailMessageIdList &amp; ids, QMailFolder::StandardFolder standardFolder)">

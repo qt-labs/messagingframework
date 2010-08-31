@@ -303,6 +303,7 @@
             <keyword name="customFields" id="QMailAccount::customFields" ref="qmailaccount.html#customFields"/>
             <keyword name="fromAddress" id="QMailAccount::fromAddress" ref="qmailaccount.html#fromAddress"/>
             <keyword name="id" id="QMailAccount::id" ref="qmailaccount.html#id"/>
+            <keyword name="lastSynchronized" id="QMailAccount::lastSynchronized" ref="qmailaccount.html#lastSynchronized"/>
             <keyword name="messageSinks" id="QMailAccount::messageSinks" ref="qmailaccount.html#messageSinks"/>
             <keyword name="messageSources" id="QMailAccount::messageSources" ref="qmailaccount.html#messageSources"/>
             <keyword name="messageType" id="QMailAccount::messageType" ref="qmailaccount.html#messageType"/>
@@ -313,6 +314,7 @@
             <keyword name="setCustomFields" id="QMailAccount::setCustomFields" ref="qmailaccount.html#setCustomFields"/>
             <keyword name="setFromAddress" id="QMailAccount::setFromAddress" ref="qmailaccount.html#setFromAddress"/>
             <keyword name="setId" id="QMailAccount::setId" ref="qmailaccount.html#setId"/>
+            <keyword name="setLastSynchronized" id="QMailAccount::setLastSynchronized" ref="qmailaccount.html#setLastSynchronized"/>
             <keyword name="setMessageType" id="QMailAccount::setMessageType" ref="qmailaccount.html#setMessageType"/>
             <keyword name="setName" id="QMailAccount::setName" ref="qmailaccount.html#setName"/>
             <keyword name="setSignature" id="QMailAccount::setSignature" ref="qmailaccount.html#setSignature"/>
@@ -354,6 +356,7 @@
             <keyword name="QMailAccountKey::FromAddress" id="QMailAccountKey::FromAddress" ref="qmailaccountkey.html#Property-enum"/>
             <keyword name="QMailAccountKey::Status" id="QMailAccountKey::Status" ref="qmailaccountkey.html#Property-enum"/>
             <keyword name="QMailAccountKey::Custom" id="QMailAccountKey::Custom" ref="qmailaccountkey.html#Property-enum"/>
+            <keyword name="QMailAccountKey::LastSynchronized" id="QMailAccountKey::LastSynchronized" ref="qmailaccountkey.html#Property-enum"/>
             <keyword name="arguments" id="QMailAccountKey::arguments" ref="qmailaccountkey.html#arguments"/>
             <keyword name="combiner" id="QMailAccountKey::combiner" ref="qmailaccountkey.html#combiner"/>
             <keyword name="customField" id="QMailAccountKey::customField" ref="qmailaccountkey.html#customField"/>
@@ -363,6 +366,7 @@
             <keyword name="isEmpty" id="QMailAccountKey::isEmpty" ref="qmailaccountkey.html#isEmpty"/>
             <keyword name="isNegated" id="QMailAccountKey::isNegated" ref="qmailaccountkey.html#isNegated"/>
             <keyword name="isNonMatching" id="QMailAccountKey::isNonMatching" ref="qmailaccountkey.html#isNonMatching"/>
+            <keyword name="lastSynchronized" id="QMailAccountKey::lastSynchronized" ref="qmailaccountkey.html#lastSynchronized"/>
             <keyword name="messageType" id="QMailAccountKey::messageType" ref="qmailaccountkey.html#messageType"/>
             <keyword name="name" id="QMailAccountKey::name" ref="qmailaccountkey.html#name"/>
             <keyword name="nonMatchingKey" id="QMailAccountKey::nonMatchingKey" ref="qmailaccountkey.html#nonMatchingKey"/>
@@ -411,10 +415,12 @@
             <keyword name="QMailAccountSortKey::Name" id="QMailAccountSortKey::Name" ref="qmailaccountsortkey.html#Property-enum"/>
             <keyword name="QMailAccountSortKey::MessageType" id="QMailAccountSortKey::MessageType" ref="qmailaccountsortkey.html#Property-enum"/>
             <keyword name="QMailAccountSortKey::Status" id="QMailAccountSortKey::Status" ref="qmailaccountsortkey.html#Property-enum"/>
+            <keyword name="QMailAccountSortKey::LastSynchronized" id="QMailAccountSortKey::LastSynchronized" ref="qmailaccountsortkey.html#Property-enum"/>
             <keyword name="arguments" id="QMailAccountSortKey::arguments" ref="qmailaccountsortkey.html#arguments"/>
             <keyword name="deserialize" id="QMailAccountSortKey::deserialize" ref="qmailaccountsortkey.html#deserialize"/>
             <keyword name="id" id="QMailAccountSortKey::id" ref="qmailaccountsortkey.html#id"/>
             <keyword name="isEmpty" id="QMailAccountSortKey::isEmpty" ref="qmailaccountsortkey.html#isEmpty"/>
+            <keyword name="lastSynchronized" id="QMailAccountSortKey::lastSynchronized" ref="qmailaccountsortkey.html#lastSynchronized"/>
             <keyword name="messageType" id="QMailAccountSortKey::messageType" ref="qmailaccountsortkey.html#messageType"/>
             <keyword name="name" id="QMailAccountSortKey::name" ref="qmailaccountsortkey.html#name"/>
             <keyword name="operator!=" id="QMailAccountSortKey::operator!=" ref="qmailaccountsortkey.html#operator-not-eq"/>

@@ -23,7 +23,7 @@
 <h2>Public Types</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#ArgumentType-typedef">ArgumentType</a></b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#Property-enum">Property</a></b> { Id, Name, MessageType, Status }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#Property-enum">Property</a></b> { Id, Name, MessageType, Status, LastSynchronized }</td></tr>
 </table>
 <hr />
 <a name="public-functions"></a>
@@ -47,6 +47,7 @@
 <h2>Static Public Members</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">QMailAccountSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#id">id</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailAccountSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#lastSynchronized">lastSynchronized</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailAccountSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#messageType">messageType</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailAccountSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#name">name</a></b> ( Qt::SortOrder <i>order</i> = Qt::AscendingOrder )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailAccountSortKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailaccountsortkey.html#status">status</a></b> ( quint64 <i>mask</i>, Qt::SortOrder <i>order</i> = Qt::DescendingOrder )</td></tr>
@@ -72,6 +73,7 @@
 <tr><td valign="top"><tt>QMailAccountSortKey::Name</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">The name of the account.</td></tr>
 <tr><td valign="top"><tt>QMailAccountSortKey::MessageType</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">The type of messages handled by the account.</td></tr>
 <tr><td valign="top"><tt>QMailAccountSortKey::Status</tt></td><td align="center" valign="top"><tt>3</tt></td><td valign="top">The status value of the account.</td></tr>
+<tr><td valign="top"><tt>QMailAccountSortKey::LastSynchronized</tt></td><td align="center" valign="top"><tt>4</tt></td><td valign="top">The most recent time that a check for new mail in all folders of the account occurred.</td></tr>
 </table></p>
 <hr />
 <h2>Member Function Documentation</h2>
@@ -93,6 +95,9 @@
 <p>See also <a href="qmailaccount.html#id">QMailAccount::id</a>().</p>
 <h3 class="fn"><a name="isEmpty"></a>bool QMailAccountSortKey::isEmpty () const</h3>
 <p>Returns true if the key remains empty after default construction; otherwise returns false.</p>
+<h3 class="fn"><a name="lastSynchronized"></a>QMailAccountSortKey QMailAccountSortKey::lastSynchronized ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key that sorts accounts by the message type they handle, according to <i>order</i>.</p>
+<p>See also <a href="qmailaccount.html#lastSynchronized">QMailAccount::lastSynchronized</a>().</p>
 <h3 class="fn"><a name="messageType"></a>QMailAccountSortKey QMailAccountSortKey::messageType ( <a href="http://doc.trolltech.com/4.5/qt.html#SortOrder-enum">Qt::SortOrder</a> <i>order</i> = Qt::AscendingOrder )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that sorts accounts by the message type they handle, according to <i>order</i>.</p>
 <p>See also <a href="qmailaccount.html#messageType">QMailAccount::messageType</a>().</p>
