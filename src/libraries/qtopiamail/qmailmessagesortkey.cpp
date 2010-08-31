@@ -379,6 +379,11 @@ QMailMessageSortKey QMailMessageSortKey::listId(Qt::SortOrder order)
     return QMailMessageSortKey(ListId, order);
 }
 
+/*!
+    Returns a key that sorts messages by message-id headerfield according to \a order.
+
+    \sa QMailMessage::listId()
+*/
 QMailMessageSortKey QMailMessageSortKey::rfcId(Qt::SortOrder order)
 {
     return QMailMessageSortKey(RfcId, order);

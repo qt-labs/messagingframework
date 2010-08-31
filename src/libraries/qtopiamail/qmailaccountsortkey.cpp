@@ -73,6 +73,7 @@
     \value Name The name of the account.
     \value MessageType The type of messages handled by the account.
     \value Status The status value of the account.
+    \value LastSynchronized The most recent time that a check for new mail in all folders of the account was completed successfully.
 */
 
 /*!
@@ -239,7 +240,7 @@ QMailAccountSortKey QMailAccountSortKey::messageType(Qt::SortOrder order)
 /*!
     Returns a key that sorts accounts by the message type they handle, according to \a order.
 
-    \sa QMailAccount::lastSynchronized(()
+    \sa QMailAccount::lastSynchronized()
 */
 QMailAccountSortKey QMailAccountSortKey::lastSynchronized(Qt::SortOrder order)
 {

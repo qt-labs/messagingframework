@@ -92,6 +92,7 @@ using namespace QMailDataComparator;
     \value FromAddress The address from which the account's outgoing messages should be reported as originating.
     \value Status The status value of the account.
     \value Custom The custom fields of the account.
+    \value LastSynchronized The most recent time that a check for new mail in all folders of the account was completed successfully.
 */
 
 /*!
@@ -434,12 +435,22 @@ QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComp
     return QMailAccountKey(FromAddress, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
+/*! 
+    Returns a key matching accounts whose last synchronization time matches the time \a value, according to \a cmp.
+
+    \sa QMailAccount::lastSynchronized()
+*/
 QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
 {
     // An invalid QDateTime does not exist-compare correctly, so use a substitute value
     return QMailAccountKey(LastSynchronized, (value.isNull() ? QDateTime::fromTime_t(0) : value), QMailKey::comparator(cmp));
 }
 
+/*!
+    Returns a key matching accounts whose last synchronization timestamp has the relation to \a value that is specified by \a cmp.
+
+    \sa QMailAccount::lastSynchronized()
+*/
 QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailDataComparator::RelationComparator cmp)
 {
     return QMailAccountKey(LastSynchronized, value, QMailKey::comparator(cmp));

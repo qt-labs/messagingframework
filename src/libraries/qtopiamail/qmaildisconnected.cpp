@@ -409,8 +409,8 @@ void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailF
 }
 
 /*!
-    Disconnected updates \a message to be a moved message. This function does NOT update the message in QMailStore,
-    and should be done with \sa QMailStore::updateMessage() if changes are to propagate to the server.
+    Disconnected updates \a message to be moved to the folder identified \a folderId. This function does NOT update the message in QMailStore,
+    QMailStore::updateMessage() should be used to ensure that changes are to propagated to the server.
 
     Moving to another account is not supported.
 */
