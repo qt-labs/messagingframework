@@ -285,7 +285,6 @@ signals:
     void availabilityChanged(bool available);
 
     void connectivityChanged(QMailServiceAction::Connectivity connectivity);
-    void connectivityChanged(QMailServiceAction::Connectivity connectivity, quint64 action);
     void activityChanged(QMailServiceAction::Activity activity);
     void activityChanged(QMailServiceAction::Activity activity, quint64 action);
     void statusChanged(const QMailServiceAction::Status status);
