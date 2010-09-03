@@ -123,7 +123,7 @@ inline Comparator comparator(QMailDataComparator::PresenceComparator cmp)
 inline QString stringValue(const QString &value)
 {
     if (value.isNull()) {
-        return QString("");
+        return QLatin1String("");
     } else {
         return value;
     }
