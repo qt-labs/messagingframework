@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201035
+  * Fixes: NB#187756 Compilation error if compiling QMF client with QT_NO_CAST_FROM_ASCII defined
+  * Fixes: NB#185403 responseType not set properly for updated messages
+
 201034
   * Fixes: NB#182255 crash @QList<QMailMessageId>::at with "Sig 6" when moving messages back to Inbox in Server and synced to Client
   * Fixes: NB#181550 Random messageserver crash with SIGSEGV @ "QWaitCondition::wait"
