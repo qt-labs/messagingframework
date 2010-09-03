@@ -6663,9 +6663,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         if (predecessorId) {
             metaData->setInResponseTo(QMailMessageId(predecessorId));
 
-            // TODO: What kind of response is this?  If the predecessor is from the same
-            // account as the new message then it is probably a reply.  Otherwise, forward?
-            metaData->setResponseType(QMailMessage::Reply);
+            if (metaData->responseType() == QMailMessageMetaData::NoResponse)
+                metaData->setResponseType(QMailMessageMetaData::UnspecifiedResponse);
         }
     }
 

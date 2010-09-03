@@ -223,6 +223,7 @@
     \value Forward      The message was created to forward the content of another message.
     \value ForwardPart  The message was created to forward part of the content of another message.
     \value Redirect     The message was created to redirect another message to a different address.
+    \value UnspecifiedResponse The message was created to respond to another message in an unspecified manner.
 */
 
 /*!

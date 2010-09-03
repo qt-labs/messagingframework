@@ -173,7 +173,8 @@ public:
         ReplyToAll          = 2,
         Forward             = 3,
         ForwardPart         = 4,
-        Redirect            = 5
+        Redirect            = 5,
+        UnspecifiedResponse = 6
     };
 };
 
