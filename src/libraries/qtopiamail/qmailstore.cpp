@@ -791,7 +791,7 @@ const QMailMessageMetaDataList QMailStore::messagesMetaData(const QMailMessageKe
 
 /*!
     Retrieves a list of QMailMessageRemovalRecord objects containing information about messages
-    that have been removed from local storage. Records are retrived for messages whose account IDs 
+    that have been removed from local storage. Records are retrieved for messages whose account IDs 
     match \a accountId and optionally, whose folder IDs match \a folderId.
     This information is primarily for synchronization of local changes to remote message storage 
     services such as IMAP servers.
@@ -1025,6 +1025,7 @@ void QMailStore::emitErrorNotification(QMailStore::ErrorCode code)
 /*! \internal */
 void QMailStore::emitAccountNotification(ChangeType type, const QMailAccountIdList &ids)
 {
+    Q_ASSERT(!ids.contains(QMailAccountId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
         QMailAccountIdList idList(ids.toSet().toList());
@@ -1054,6 +1055,7 @@ void QMailStore::emitAccountNotification(ChangeType type, const QMailAccountIdLi
 /*! \internal */
 void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList &ids)
 {
+    Q_ASSERT(!ids.contains(QMailFolderId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
         QMailFolderIdList idList(ids.toSet().toList());
@@ -1083,6 +1085,7 @@ void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList
 /*! \internal */
 void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdList &ids)
 {
+    Q_ASSERT(!ids.contains(QMailMessageId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
         QMailMessageIdList idList(ids.toSet().toList());
