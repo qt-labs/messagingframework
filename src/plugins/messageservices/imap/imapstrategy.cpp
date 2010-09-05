@@ -2601,6 +2601,24 @@ ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
     setOptions(ExportChanges);
 }
 
+static void updateFolderExportsMap(QMap<QMailFolderId, QStringList > *folderExportMap, QMailMessageKey filter)
+{
+    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid);
+    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(filter, props)) {
+        if (!metaData.serverUid().isEmpty() && metaData.parentFolderId().isValid()) {
+            (*folderExportMap)[metaData.parentFolderId()] +=  metaData.serverUid();
+        } else {
+            qWarning() << "Unable to export status change to message" << metaData.id();
+            QMailMessageMetaData m(metaData.id());
+            QMailMessageKey key(QMailMessageKey::id(m.id()));
+            if (!QMailStore::instance()->updateMessagesMetaData(key, QMailMessage::ReadElsewhere, m.status() & QMailMessage::Read)
+                || !QMailStore::instance()->updateMessagesMetaData(key, QMailMessage::ImportantElsewhere, m.status() & QMailMessage::Important)) {
+                qWarning() << "Unable to revert malformed status update for message" << metaData.id();
+            }
+        }
+    }
+}
+
 void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
 {
     _transferState = List;
@@ -2629,24 +2647,35 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     _folderMessageUids.clear();
 
     ImapClient *c(context->client());
-    foreach (const QMailFolderId &folderId, context->client()->mailboxIds()) {
-        QMailMessageKey folderKey(c->messagesKey(folderId) | c->trashKey(folderId));
-
-        // Find messages marked as read locally
-        QStringList deletedUids;
-        QStringList readUids = c->serverUids(folderKey & readStatusKey);
-        QStringList unreadUids = c->serverUids(folderKey & unreadStatusKey);
-        QStringList importantUids = c->serverUids(folderKey & importantStatusKey);
-        QStringList unimportantUids = c->serverUids(folderKey & unimportantStatusKey);        
-
-        if (imapCfg.canDeleteMail()) {
-            // Also find messages deleted locally
-            deletedUids = context->client()->deletedMessages(folderId);
+    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(c->account()));
+    QMap<QMailFolderId, QStringList > read;
+    QMap<QMailFolderId, QStringList > unread;
+    QMap<QMailFolderId, QStringList > important;
+    QMap<QMailFolderId, QStringList > unimportant;
+    QMap<QMailFolderId, QStringList > deleted;
+    
+    updateFolderExportsMap(&read, accountKey & readStatusKey);
+    updateFolderExportsMap(&unread, accountKey & unreadStatusKey);
+    updateFolderExportsMap(&important, accountKey & importantStatusKey);
+    updateFolderExportsMap(&unimportant, accountKey & unimportantStatusKey);
+    if (imapCfg.canDeleteMail()) {
+        // Also find messages deleted locally
+        foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(c->account())) {
+            if (!r.serverUid().isEmpty() && r.parentFolderId().isValid()) {
+                deleted[r.parentFolderId()] += r.serverUid();
+            } else {
+                qWarning() << "Unable to process malformed message removal record for account" << c->account();
+                if (!QMailStore::instance()->purgeMessageRemovalRecords(c->account(), QStringList() << r.serverUid())) {
+                    qWarning() << "Unable to purge message records for account:" << c->account();
+                }
+            }
         }
+    }
 
-        if (!readUids.isEmpty() || !unreadUids.isEmpty() || !importantUids.isEmpty() || !unimportantUids.isEmpty() || !deletedUids.isEmpty()) {
+    foreach (const QMailFolderId &folderId, context->client()->mailboxIds()) {
+        if (read[folderId].count() || unread[folderId].count() || important[folderId].count() || unimportant[folderId].count() || deleted[folderId].count()) {
             QList<QStringList> entry;
-            entry << readUids << unreadUids << importantUids << unimportantUids << deletedUids;
+            entry << read[folderId] << unread[folderId] << important[folderId] << unimportant[folderId] << deleted[folderId];
             _folderMessageUids.insert(folderId, entry);
         }
     }
