@@ -5082,9 +5082,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
 
     if (parentFolderId != folder->parentFolderId()) {
         // QMailAccount contains a copy of the folder data; we need to tell it to reload
-        if (parentFolderId.isValid())
-            modifiedAccountIds->append(parentAccountId);
-        if (folder->parentFolderId().isValid() && !modifiedAccountIds->contains(folder->parentAccountId()))
+        if (parentFolderId.isValid()) {
+            if (parentAccountId.isValid()) {
+                modifiedAccountIds->append(parentAccountId);
+            } else {
+                qWarning() << "Unable to find parent account for folder" << folder->id();
+            }
+        }
+        if (folder->parentFolderId().isValid() && folder->parentAccountId().isValid() && !modifiedAccountIds->contains(folder->parentAccountId()))
             modifiedAccountIds->append(folder->parentAccountId());
 
         {
@@ -6316,8 +6321,12 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAccountIds(cons
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
-    while (query.next())
-        result->append(QMailAccountId(extractValue<quint64>(query.value(0))));
+    while (query.next()) {
+        QMailAccountId accountId(extractValue<quint64>(query.value(0)));
+        if (accountId.isValid()) { // local folders don't have a parent account
+            result->append(accountId);
+        }
+    }
 
     return Success;
 }
@@ -6332,8 +6341,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAncestorIds(con
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
-    while (query.next())
-        result->append(QMailFolderId(extractValue<quint64>(query.value(0))));
+    while (query.next()) {
+        QMailFolderId folderId(extractValue<quint64>(query.value(0)));
+        if (folderId.isValid()) {
+            result->append(folderId);
+        } else {
+            qWarning() << "Unable to find parent account for folder" << folderId;
+        }
+    }
 
     return Success;
 }
@@ -7032,8 +7047,13 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 expiredContent.append(contentUri);
 
             QMailAccountId parentAccountId(extractValue<quint64>(query.value(2)));
-            if (!modifiedAccountIds.contains(parentAccountId))
-                modifiedAccountIds.append(parentAccountId);
+            if (parentAccountId.isValid()) {
+                if (!modifiedAccountIds.contains(parentAccountId)) {
+                    modifiedAccountIds.append(parentAccountId);
+                }
+            } else {
+                qWarning() << "Unable to find parent account";
+            }
 
             QMailFolderId folderId(extractValue<quint64>(query.value(3)));
             if (!modifiedFolderIds.contains(folderId))
