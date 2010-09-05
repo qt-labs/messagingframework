@@ -1329,14 +1329,12 @@ void ImapFetchSelectedMessagesStrategy::handleLogin(ImapStrategyContextBase *con
 void ImapFetchSelectedMessagesStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
     --_outstandingFetches;
-    if (_outstandingFetches == 0) {
-        messageListMessageAction(context);
-    }
+    messageListMessageAction(context);
 }
 
 void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    if (messageListFolderActionRequired()) {
+    if (!_outstandingFetches && messageListFolderActionRequired()) {
         // We need to change folders
         selectNextMessageSequence(context, 1, true);
         return;
@@ -1359,6 +1357,8 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
         }
 
         ++_outstandingFetches;
+        if (_outstandingFetches >= MaxPipeliningDepth)
+            break;
     }
 }
 
@@ -1779,9 +1779,7 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
 {
     if (_transferState == Preview) {    //getting headers
         --_outstandingPreviews;
-        if (_outstandingPreviews == 0) {
-            fetchNextMailPreview(context);
-        }
+        fetchNextMailPreview(context);
     } else if (_transferState == Complete) {
         ImapFetchSelectedMessagesStrategy::handleUidFetch(context);
     }
@@ -1857,7 +1855,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
 
 void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *context)
 {
-    if (!_newUids.isEmpty()) {
+    if (!_newUids.isEmpty() || _outstandingPreviews) {
         while (!_newUids.isEmpty()) {
             QStringList uidList;
             foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
@@ -1868,6 +1866,8 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
             ++_outstandingPreviews;
 
             _newUids = _newUids.mid(uidList.count());
+            if (_outstandingPreviews > MaxPipeliningDepth)
+                break;
         }
     } else {
         // We have previewed all messages from the current folder

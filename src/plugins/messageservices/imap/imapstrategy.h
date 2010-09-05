@@ -258,6 +258,7 @@ public:
 
 protected:
     enum { DefaultBatchSize = 50 };
+    enum { MaxPipeliningDepth = 4 };
 
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey);
