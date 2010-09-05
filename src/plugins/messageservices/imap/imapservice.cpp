@@ -180,6 +180,7 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
 
     _service->_client.strategyContext()->foldersOnlyStrategy.clearSelection();
     _service->_client.strategyContext()->foldersOnlyStrategy.setBase(folderId);
+    _service->_client.strategyContext()->foldersOnlyStrategy.setQuickList(!folderId.isValid());
     _service->_client.strategyContext()->foldersOnlyStrategy.setDescending(descending);
     appendStrategy(&_service->_client.strategyContext()->foldersOnlyStrategy);
     if(!_unavailable)
@@ -336,6 +337,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
 
     _service->_client.strategyContext()->retrieveAllStrategy.clearSelection();
     _service->_client.strategyContext()->retrieveAllStrategy.setBase(QMailFolderId());
+    _service->_client.strategyContext()->retrieveAllStrategy.setQuickList(false);
     _service->_client.strategyContext()->retrieveAllStrategy.setDescending(true);
     _service->_client.strategyContext()->retrieveAllStrategy.setOperation(QMailRetrievalAction::MetaData);
     appendStrategy(&_service->_client.strategyContext()->retrieveAllStrategy);
@@ -399,6 +401,7 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
 
     _service->_client.strategyContext()->synchronizeAccountStrategy.clearSelection();
     _service->_client.strategyContext()->synchronizeAccountStrategy.setBase(QMailFolderId());
+    _service->_client.strategyContext()->synchronizeAccountStrategy.setQuickList(false);
     _service->_client.strategyContext()->synchronizeAccountStrategy.setDescending(true);
     _service->_client.strategyContext()->synchronizeAccountStrategy.setOperation(QMailRetrievalAction::MetaData);
     appendStrategy(&_service->_client.strategyContext()->synchronizeAccountStrategy);

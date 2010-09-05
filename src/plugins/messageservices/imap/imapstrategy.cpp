@@ -2004,6 +2004,14 @@ void ImapRetrieveFolderListStrategy::setBase(const QMailFolderId &folderId)
     _baseId = folderId;
 }
 
+void ImapRetrieveFolderListStrategy::setQuickList(bool quickList)
+{
+    // Ideally clients wouldn't request listing all folders in an account as some accounts can be huge
+    // but if the client does request this then do it as efficiently as possible
+    // Doesn't work for search, synchronizeAll and retrieveAll subclasses.
+    _quickList = quickList;
+}
+
 void ImapRetrieveFolderListStrategy::setDescending(bool descending)
 {
     _descending = descending;
@@ -2037,7 +2045,11 @@ void ImapRetrieveFolderListStrategy::handleLogin(ImapStrategyContextBase *contex
         ImapSynchronizeBaseStrategy::handleLogin(context);
     } else {
         // We need to search for folders at the account root
-        context->protocol().sendList(QMailFolder(), QString('%'));
+        if (_quickList) {
+            context->protocol().sendList(QMailFolder(), QString('*'));
+        } else {
+            context->protocol().sendList(QMailFolder(), QString('%'));
+        }
     }
 }
 
@@ -2097,7 +2109,9 @@ void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *cont
                     (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
                     (path.startsWith(_baseFolder + context->protocol().delimiter(), Qt::CaseInsensitive))) {
                     // We need to list this folder's contents, too
-                    selectedFoldersAppend(QMailFolderIdList() << folder.id());
+                    if (!_quickList) {
+                        selectedFoldersAppend(QMailFolderIdList() << folder.id());
+                    }
                 }
             }
         } else {

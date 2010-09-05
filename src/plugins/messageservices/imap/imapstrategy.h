@@ -451,10 +451,11 @@ private:
 class ImapRetrieveFolderListStrategy : public ImapSynchronizeBaseStrategy
 {
 public:
-    ImapRetrieveFolderListStrategy() : _descending(false) {}
+    ImapRetrieveFolderListStrategy() : _quickList(false), _descending(false) {}
     virtual ~ImapRetrieveFolderListStrategy() {}
 
     virtual void setBase(const QMailFolderId &folderId);
+    virtual void setQuickList(bool quickList);
     virtual void setDescending(bool descending);
 
     virtual void newConnection(ImapStrategyContextBase *context);
@@ -471,6 +472,7 @@ protected:
     void removeDeletedMailboxes(ImapStrategyContextBase *context);
 
     QMailFolderId _baseId;
+    bool _quickList;
     bool _descending;
     QStringList _mailboxPaths;
     QSet<QString> _ancestorPaths;
