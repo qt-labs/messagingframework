@@ -2995,7 +2995,11 @@ void ImapRetrieveMessageListStrategy::selectFolder(ImapStrategyContextBase *cont
 
 void ImapRetrieveMessageListStrategy::handleLogin(ImapStrategyContextBase *context)
 {
-    context->updateStatus(QObject::tr("Scanning folder"));
+    if (_accountCheck) {
+        context->updateStatus(QObject::tr("Scanning folders"));
+    } else {
+        context->updateStatus(QObject::tr("Scanning folder"));
+    }
     _transferState = List;
     _fillingGap = false;
     _completionList.clear();
