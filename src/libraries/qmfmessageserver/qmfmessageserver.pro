@@ -1,7 +1,7 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG += qtopiamail
-TARGET = messageserver
+CONFIG += qmf
+TARGET = qmfmessageserver
 
 target.path += $$QMF_INSTALL_ROOT/lib
 
@@ -16,10 +16,10 @@ DEFINES += MESSAGESERVER_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../qtopiamail ../qtopiamail/support
+INCLUDEPATH += . ../qmf ../qmf/support
 
-LIBS += -L../qtopiamail/build
-macx:LIBS += -F../qtopiamail/build
+LIBS += -L../qmf/build
+macx:LIBS += -F../qmf/build
 
 PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailmessageclassifier.h \
@@ -37,7 +37,7 @@ SOURCES += qmailauthenticator.cpp \
            qmailstoreaccountfilter.cpp \
            qmailtransport.cpp
 
-header_files.path=$$QMF_INSTALL_ROOT/include/messageserver
+header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files
