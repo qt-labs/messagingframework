@@ -1,6 +1,6 @@
 TEMPLATE = app
 CONFIG += qtestlib unittest 
-CONFIG += messageserver qtopiamail
+CONFIG += qmfmessageserver qmf
 
 TARGET = tst_messageserver 
 target.path += $$QMF_INSTALL_ROOT/tests
@@ -20,17 +20,17 @@ DEFINES += PLUGIN_STATIC_LINK
 IMAP_PLUGIN=$$BASE/src/plugins/messageservices/imap/
 MESSAGE_SERVER=$$BASE/src/tools/messageserver
 
-INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qtopiamail \
-                 $$BASE/src/libraries/qtopiamail/support \
-                 $$BASE/src/libraries/messageserver \
+INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmf \
+                 $$BASE/src/libraries/qmf/support \
+                 $$BASE/src/libraries/qmfmessageserver \
                  $$IMAP_PLUGIN \
                  $$MESSAGE_SERVER 
 
-LIBS += -L$$BASE/src/libraries/messageserver/build \
-        -L$$BASE/src/libraries/qtopiamail/build
+LIBS += -L$$BASE/src/libraries/qmfmessageserver/build \
+        -L$$BASE/src/libraries/qmf/build
 
-QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qtopiamail \
-    -Wl,-rpath,$$BASE/src/libraries/messageserver
+QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmf \
+    -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
 
 HEADERS += benchmarkcontext.h \
            qscopedconnection.h \

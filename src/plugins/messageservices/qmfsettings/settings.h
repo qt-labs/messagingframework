@@ -45,12 +45,12 @@
 #include "ui_settings.h"
 #include <qmailmessageservice.h>
 
-class QtopiamailfileSettings : public QMailMessageServiceEditor, private Ui::QtopiamailfileSettings
+class QmfSettings : public QMailMessageServiceEditor, private Ui::QtopiamailfileSettings
 {
     Q_OBJECT
 
 public:
-    QtopiamailfileSettings();
+    QmfSettings();
 
     void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
     bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);

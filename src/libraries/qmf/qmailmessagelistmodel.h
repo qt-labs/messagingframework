@@ -47,7 +47,7 @@
 
 class QMailMessageListModelPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageListModel : public QMailMessageModelBase
+class QMF_EXPORT QMailMessageListModel : public QMailMessageModelBase
 {
     Q_OBJECT 
 

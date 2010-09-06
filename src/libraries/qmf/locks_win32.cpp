@@ -61,7 +61,7 @@ QString pathIdentifier(const QString &path, int id)
     key.replace(QChar('\\'), QChar('/'));
 
     // Object names do not need to correspond to paths that actually exist on Win32
-    return QString("qtopiamail-%1-%2").arg(key).arg(id);
+    return QString("qmf-%1-%2").arg(key).arg(id);
 }
 
 }

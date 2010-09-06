@@ -51,7 +51,7 @@
 
 class QMailAddressPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAddress
+class QMF_EXPORT QMailAddress
 {
 public:
     QMailAddress();

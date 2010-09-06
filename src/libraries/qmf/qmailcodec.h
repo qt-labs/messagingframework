@@ -48,7 +48,7 @@
 #include <QString>
 #include <QTextStream>
 
-class QTOPIAMAIL_EXPORT QMailCodec
+class QMF_EXPORT QMailCodec
 {
 public:
     enum { ChunkCharacters = 8192 };
@@ -83,7 +83,7 @@ protected:
     virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) = 0;
 };
 
-class QTOPIAMAIL_EXPORT QMailBase64Codec : public QMailCodec
+class QMF_EXPORT QMailBase64Codec : public QMailCodec
 {
 public:
     enum ContentType { Text, Binary };
@@ -111,7 +111,7 @@ private:
     unsigned char _lastChar;
 };
 
-class QTOPIAMAIL_EXPORT QMailQuotedPrintableCodec : public QMailCodec
+class QMF_EXPORT QMailQuotedPrintableCodec : public QMailCodec
 {
 public:
     enum ContentType { Text, Binary };
@@ -137,7 +137,7 @@ private:
     unsigned char _decodeLastChar;
 };
 
-class QTOPIAMAIL_EXPORT QMailPassThroughCodec : public QMailCodec
+class QMF_EXPORT QMailPassThroughCodec : public QMailCodec
 {
     virtual QString name() const;
 
@@ -146,7 +146,7 @@ protected:
     virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk);
 };
 
-class QTOPIAMAIL_EXPORT QMailLineEndingCodec : public QMailCodec
+class QMF_EXPORT QMailLineEndingCodec : public QMailCodec
 {
     virtual QString name() const;
 

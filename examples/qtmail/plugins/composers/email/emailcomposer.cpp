@@ -831,7 +831,7 @@ QMailMessage EmailComposerInterface::message() const
 
                 // Store the location of this file for future reference
                 const QMailMessagePart &mailPart(mail.partAt(mail.partCount() - 1));
-                QString name("qtopiamail-file-location-" + mailPart.location().toString(false));
+                QString name("qmf-file-location-" + mailPart.location().toString(false));
                 mail.setCustomField(name, filePath);
             }
         }
@@ -935,7 +935,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
             const QMailMessagePart &part(sourceMail.partAt(i));
 
             // See if we have a filename to link to
-            QString name("qtopiamail-file-location-" + part.location().toString(false));
+            QString name("qmf-file-location-" + part.location().toString(false));
             QString contentLocation = sourceMail.customField(name);
             if (contentLocation.isEmpty()) {
                 // See if we can use the value in the message (remove any folded whitespace)

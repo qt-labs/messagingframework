@@ -63,7 +63,7 @@ class QDataStream;
 
 QT_END_NAMESPACE;
 
-class QTOPIAMAIL_EXPORT LongStream
+class QMF_EXPORT LongStream
 {
 public:
     LongStream();

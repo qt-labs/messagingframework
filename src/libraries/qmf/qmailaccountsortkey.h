@@ -50,7 +50,7 @@
 
 class QMailAccountSortKeyPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAccountSortKey
+class QMF_EXPORT QMailAccountSortKey
 {
 public:
     enum Property

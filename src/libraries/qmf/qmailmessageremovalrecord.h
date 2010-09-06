@@ -49,7 +49,7 @@
 
 class QMailMessageRemovalRecordPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageRemovalRecord
+class QMF_EXPORT QMailMessageRemovalRecord
 {
 public:
     QMailMessageRemovalRecord();

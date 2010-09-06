@@ -47,7 +47,7 @@
 
 class QMailMessageThreadedModelPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageThreadedModel : public QMailMessageModelBase
+class QMF_EXPORT QMailMessageThreadedModel : public QMailMessageModelBase
 {
     Q_OBJECT 
 

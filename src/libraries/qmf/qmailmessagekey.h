@@ -62,7 +62,7 @@ template <typename Key>
 class MailKeyImpl;
 
 
-class QTOPIAMAIL_EXPORT QMailMessageKey
+class QMF_EXPORT QMailMessageKey
 {
 public:
     enum Property

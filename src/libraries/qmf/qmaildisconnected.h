@@ -46,7 +46,7 @@
 #include "qmailmessagekey.h"
 #include "qmailfolder.h"
 
-class QTOPIAMAIL_EXPORT QMailDisconnected
+class QMF_EXPORT QMailDisconnected
 {
 public:
     static QMailMessageKey destinationKey(const QMailFolderId &folderId);

@@ -52,13 +52,13 @@ extern QList<QPair<QString, QString> > storageLocations();
 
 namespace { 
 
-const QString serviceKey("qtopiamailfile"); 
+const QString serviceKey("qmfsettings");
 
 const QList<QPair<QString, QString> > locations(storageLocations());
 
 }
 
-QtopiamailfileSettings::QtopiamailfileSettings()
+QmfSettings::QmfSettings()
     : QMailMessageServiceEditor()
 {
     setupUi(this);
@@ -69,7 +69,7 @@ QtopiamailfileSettings::QtopiamailfileSettings()
         locationSelector->addItem((*it).first);
 }
 
-void QtopiamailfileSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
+void QmfSettings::displayConfiguration(const QMailAccount &, const QMailAccountConfiguration &config)
 {
     if (!config.services().contains(serviceKey)) {
         // New account
@@ -87,7 +87,7 @@ void QtopiamailfileSettings::displayConfiguration(const QMailAccount &, const QM
     }
 }
 
-bool QtopiamailfileSettings::updateAccount(QMailAccount *, QMailAccountConfiguration *config)
+bool QmfSettings::updateAccount(QMailAccount *, QMailAccountConfiguration *config)
 {
     if (!config->services().contains(serviceKey))
         config->addServiceConfiguration(serviceKey);

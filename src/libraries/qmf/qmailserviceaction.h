@@ -54,7 +54,7 @@
 
 class QMailServiceActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailServiceAction
+class QMF_EXPORT QMailServiceAction
     : public QObject,
       public QPrivatelyNoncopyable<QMailServiceActionPrivate>
 {
@@ -82,7 +82,7 @@ public:
         Failed
     };
 
-    class QTOPIAMAIL_EXPORT Status 
+    class QMF_EXPORT Status
     {
     public: 
         enum ErrorCode {
@@ -156,7 +156,7 @@ protected:
 
 class QMailRetrievalActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailRetrievalAction : public QMailServiceAction
+class QMF_EXPORT QMailRetrievalAction : public QMailServiceAction
 {
     Q_OBJECT
 
@@ -192,7 +192,7 @@ public slots:
 
 class QMailTransmitActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailTransmitAction : public QMailServiceAction
+class QMF_EXPORT QMailTransmitAction : public QMailServiceAction
 {
     Q_OBJECT
 
@@ -214,7 +214,7 @@ public slots:
 
 class QMailStorageActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailStorageAction : public QMailServiceAction
+class QMF_EXPORT QMailStorageAction : public QMailServiceAction
 {
     Q_OBJECT
 
@@ -241,7 +241,7 @@ public slots:
 
 class QMailSearchActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailSearchAction : public QMailServiceAction
+class QMF_EXPORT QMailSearchAction : public QMailServiceAction
 {
     Q_OBJECT
 
@@ -269,7 +269,7 @@ public slots:
 
 class QMailActionInfoPrivate;
 
-class QTOPIAMAIL_EXPORT  QMailActionInfo : public QMailServiceAction {
+class QMF_EXPORT  QMailActionInfo : public QMailServiceAction {
     Q_OBJECT
 //    If needed properties can be enabled by uncommenting this code
 //    and won't break api/abi
@@ -315,7 +315,7 @@ protected:
 
 class QMailActionObserverPrivate;
 
-class QTOPIAMAIL_EXPORT QMailActionObserver : public QMailServiceAction
+class QMF_EXPORT QMailActionObserver : public QMailServiceAction
 {
     Q_OBJECT
 //  Q_PROPERTY(QList< QSharedPointer<QMailActionInfo> > actions READ actions NOTIFY actionsChanged)
@@ -332,7 +332,7 @@ signals:
 
 class QMailProtocolActionPrivate;
 
-class QTOPIAMAIL_EXPORT QMailProtocolAction : public QMailServiceAction
+class QMF_EXPORT QMailProtocolAction : public QMailServiceAction
 {
     Q_OBJECT
 

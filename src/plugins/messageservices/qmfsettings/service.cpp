@@ -46,14 +46,14 @@
 #include <QtPlugin>
 #include <QCoreApplication>
 
-namespace { const QString serviceKey("qtopiamailfile"); }
+namespace { const QString serviceKey("qmfsettings"); }
 
 
-class QtopiamailfileConfigurator : public QMailMessageServiceConfigurator
+class QmfConfigurator : public QMailMessageServiceConfigurator
 {
 public:
-    QtopiamailfileConfigurator();
-    ~QtopiamailfileConfigurator();
+    QmfConfigurator();
+    ~QmfConfigurator();
 
     virtual QString service() const;
     virtual QString displayName() const;
@@ -63,64 +63,64 @@ public:
 #endif
 };
 
-QtopiamailfileConfigurator::QtopiamailfileConfigurator()
+QmfConfigurator::QmfConfigurator()
 {
 }
 
-QtopiamailfileConfigurator::~QtopiamailfileConfigurator()
+QmfConfigurator::~QmfConfigurator()
 {
 }
 
-QString QtopiamailfileConfigurator::service() const
+QString QmfConfigurator::service() const
 {
     return serviceKey;
 }
 
-QString QtopiamailfileConfigurator::displayName() const
+QString QmfConfigurator::displayName() const
 {
     return QCoreApplication::instance()->translate("QMailMessageService", "Mailfile");
 }
 
 #ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
-QMailMessageServiceEditor *QtopiamailfileConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
+QMailMessageServiceEditor *QmfConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Storage)
-        return new QtopiamailfileSettings;
+        return new QmfSettings;
 
     return 0;
 }
 #endif
 
-Q_EXPORT_PLUGIN2(qtopiamailfile,QtopiamailfileServicePlugin)
+Q_EXPORT_PLUGIN2(qmfsettings,QmfServicePlugin)
 
-QtopiamailfileServicePlugin::QtopiamailfileServicePlugin()
+QmfServicePlugin::QmfServicePlugin()
     : QMailMessageServicePlugin()
 {
 }
 
-QString QtopiamailfileServicePlugin::key() const
+QString QmfServicePlugin::key() const
 {
     return serviceKey;
 }
 
-bool QtopiamailfileServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) const
+bool QmfServicePlugin::supports(QMailMessageServiceFactory::ServiceType type) const
 {
     return (type == QMailMessageServiceFactory::Storage);
 }
 
-bool QtopiamailfileServicePlugin::supports(QMailMessage::MessageType) const
+bool QmfServicePlugin::supports(QMailMessage::MessageType) const
 {
     return true;
 }
 
-QMailMessageService *QtopiamailfileServicePlugin::createService(const QMailAccountId &)
+QMailMessageService *QmfServicePlugin::createService(const QMailAccountId &)
 {
     return 0;
 }
 
-QMailMessageServiceConfigurator *QtopiamailfileServicePlugin::createServiceConfigurator()
+QMailMessageServiceConfigurator *QmfServicePlugin::createServiceConfigurator()
 {
-    return new QtopiamailfileConfigurator();
+    return new QmfConfigurator();
 }
 
 

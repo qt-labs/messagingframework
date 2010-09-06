@@ -59,7 +59,7 @@ class QMailStore;
 
 class QMailMessageSetContainerPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSetContainer : public QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>
+class QMF_EXPORT QMailMessageSetContainer : public QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>
 {
 public:
     typedef QMailMessageSetContainerPrivate ImplementationType;
@@ -96,7 +96,7 @@ private:
 
 class QMailMessageSetPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSet : public QObject, public QMailMessageSetContainer
+class QMF_EXPORT QMailMessageSet : public QObject, public QMailMessageSetContainer
 {
     Q_OBJECT
 
@@ -130,7 +130,7 @@ protected:
 
 class QMailFolderMessageSetPrivate;
 
-class QTOPIAMAIL_EXPORT QMailFolderMessageSet : public QMailMessageSet
+class QMF_EXPORT QMailFolderMessageSet : public QMailMessageSet
 {
     Q_OBJECT
 
@@ -167,7 +167,7 @@ protected:
 
 class QMailAccountMessageSetPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAccountMessageSet : public QMailMessageSet
+class QMF_EXPORT QMailAccountMessageSet : public QMailMessageSet
 {
     Q_OBJECT
 
@@ -205,7 +205,7 @@ protected:
 
 class QMailFilterMessageSetPrivate;
 
-class QTOPIAMAIL_EXPORT QMailFilterMessageSet : public QMailMessageSet
+class QMF_EXPORT QMailFilterMessageSet : public QMailMessageSet
 {
     Q_OBJECT
 
@@ -238,7 +238,7 @@ protected:
 
 class QMailMessageSetModelPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageSetModel : public QAbstractItemModel, public QMailMessageSetContainer
+class QMF_EXPORT QMailMessageSetModel : public QAbstractItemModel, public QMailMessageSetContainer
 {
     Q_OBJECT
 

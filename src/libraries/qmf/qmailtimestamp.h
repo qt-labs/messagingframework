@@ -50,7 +50,7 @@
 
 class QMailTimeStampPrivate;
 
-class QTOPIAMAIL_EXPORT QMailTimeStamp
+class QMF_EXPORT QMailTimeStamp
 {
 public:
     enum OutputFormat {

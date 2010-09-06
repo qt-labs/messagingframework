@@ -19,25 +19,25 @@ qhp.QMF.extraFiles      = \
 
 imagedirs               = images
 
-headerdirs              = ../../src/libraries/qtopiamail \
-                          ../../src/libraries/messageserver \
+headerdirs              = ../../src/libraries/qmf \
+                          ../../src/libraries/qmfmessageserver \
                           ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
-                          ../../src/plugins/messageservices/qtopiamailfile \
-                          ../../src/plugins/contentmanagers/qtopiamailfile \
+                          ../../src/plugins/messageservices/qmfsettings \
+                          ../../src/plugins/contentmanagers/qmfstoragemanager \
                           ../../examples/messagingaccounts \
                           ../../src/tools/messageserver
  
-sourcedirs              = ../../src/libraries/qtopiamail \
-                          ../../src/libraries/messageserver \
+sourcedirs              = ../../src/libraries/qmf \
+                          ../../src/libraries/qmfmessageserver \
                           ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \
                           ../../src/plugins/messageservices/pop \
                           ../../src/plugins/messageservices/smtp \
-                          ../../src/plugins/messageservices/qtopiamailfile \
-                          ../../src/plugins/contentmanagers/qtopiamailfile \
+                          ../../src/plugins/messageservices/qmfsettings \
+                          ../../src/plugins/contentmanagers/qmfstoragemanager \
                           ../../examples/messagingaccounts \
                           ../../src/tools/messageserver \
                           ../../examples/messagenavigator \
@@ -111,7 +111,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           QTOPIA_ENABLE_EXPORT \
                           QTOPIAAUDIO_EXPORT \
                           QTOPIABASE_EXPORT \
-                          QTOPIAMAIL_EXPORT \
+                          QMF_EXPORT \
                           QTOPIAMEDIA_EXPORT \
                           QTOPIAPIM_EXPORT \
                           QTOPIAPHONE_EXPORT \

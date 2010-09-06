@@ -1,13 +1,13 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS = src/libraries/qtopiamail \
-          src/libraries/messageserver \
+SUBDIRS = src/libraries/qmf \
+          src/libraries/qmfmessageserver \
           src/plugins/messageservices/imap \
           src/plugins/messageservices/pop \
           src/plugins/messageservices/smtp \
-          src/plugins/messageservices/qtopiamailfile \
-          src/plugins/contentmanagers/qtopiamailfile \
+          src/plugins/messageservices/qmfsettings \
+          src/plugins/contentmanagers/qmfstoragemanager \
           src/tools/messageserver \
           tests \
           examples/qtmail/libs/qmfutil \

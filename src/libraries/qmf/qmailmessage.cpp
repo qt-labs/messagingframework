@@ -73,7 +73,7 @@
 
 static const QByteArray internalPrefix()
 {
-    static const QByteArray prefix("X-qtopiamail-internal-");
+    static const QByteArray prefix("X-qmf-internal-");
     return prefix;
 }
 
@@ -5410,7 +5410,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     \class QMailMessageMetaData
 
     \preliminary
-    \brief The QMailMessageMetaData class provides information about a message stored by Qtopia.
+    \brief The QMailMessageMetaData class provides information about a message stored by QMF.
     
     \ingroup messaginglibrary
    
@@ -5830,7 +5830,7 @@ QMailMessageId QMailMessageMetaData::id() const
 
 /*!
     Sets the QMailMessageId of the message to \a id.
-    \a id should be different for each message known to Qtopia.
+    \a id should be different for each message known to QMF.
 */
 void QMailMessageMetaData::setId(const QMailMessageId &id)
 {
@@ -6482,7 +6482,7 @@ static int randomNumber()
 
 static QByteArray gBoundaryString;
 
-void QTOPIAMAIL_EXPORT setQMailMessageBoundaryString(const QByteArray &boundary)
+void QMF_EXPORT setQMailMessageBoundaryString(const QByteArray &boundary)
 {
     gBoundaryString = boundary;
 }
@@ -6496,7 +6496,7 @@ static QByteArray boundaryString(const QByteArray &hash)
         return gBoundaryString;
 
     // Formulate a boundary that is very unlikely to clash with the content
-    return boundaryLeader + "qtopiamail:" + QByteArray::number(randomNumber()) + hash.toBase64() + boundaryTrailer;
+    return boundaryLeader + "qmf:" + QByteArray::number(randomNumber()) + hash.toBase64() + boundaryTrailer;
 }
 
 template <typename F>

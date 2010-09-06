@@ -72,31 +72,31 @@ void QPrivateImplementationPointer<T>::decrement(T*& p)
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p)
+QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p)
     : d(p)
 {
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(const QPrivatelyImplemented& other)
+QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(const QPrivatelyImplemented& other)
     : d(other.d)
 {
 }
 
 template<typename ImplementationType>
 template<typename A1>
-QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p, A1 a1)
+QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p, A1 a1)
     : d(p, a1)
 {
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT QPrivatelyImplemented<ImplementationType>::~QPrivatelyImplemented()
+QMF_EXPORT QPrivatelyImplemented<ImplementationType>::~QPrivatelyImplemented()
 {
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT const QPrivatelyImplemented<ImplementationType>& QPrivatelyImplemented<ImplementationType>::operator=(const QPrivatelyImplemented<ImplementationType>& other)
+QMF_EXPORT const QPrivatelyImplemented<ImplementationType>& QPrivatelyImplemented<ImplementationType>::operator=(const QPrivatelyImplemented<ImplementationType>& other)
 {
     d = other.d;
     return *this;
@@ -110,20 +110,20 @@ QPrivateNoncopyablePointer<T>::~QPrivateNoncopyablePointer()
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT QPrivatelyNoncopyable<ImplementationType>::QPrivatelyNoncopyable(ImplementationType* p)
+QMF_EXPORT QPrivatelyNoncopyable<ImplementationType>::QPrivatelyNoncopyable(ImplementationType* p)
     : d(p)
 {
 }
 
 template<typename ImplementationType>
 template<typename A1>
-QTOPIAMAIL_EXPORT QPrivatelyNoncopyable<ImplementationType>::QPrivatelyNoncopyable(ImplementationType* p, A1 a1)
+QMF_EXPORT QPrivatelyNoncopyable<ImplementationType>::QPrivatelyNoncopyable(ImplementationType* p, A1 a1)
     : d(p, a1)
 {
 }
 
 template<typename ImplementationType>
-QTOPIAMAIL_EXPORT QPrivatelyNoncopyable<ImplementationType>::~QPrivatelyNoncopyable()
+QMF_EXPORT QPrivatelyNoncopyable<ImplementationType>::~QPrivatelyNoncopyable()
 {
 }
 

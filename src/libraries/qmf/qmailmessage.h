@@ -67,7 +67,7 @@ QT_END_NAMESPACE;
 
 class QMailMessageHeaderFieldPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageHeaderField : public QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>, public QMailMessageHeaderFieldFwd
+class QMF_EXPORT QMailMessageHeaderField : public QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>, public QMailMessageHeaderFieldFwd
 {
 public:
     typedef QMailMessageHeaderFieldPrivate ImplementationType;
@@ -132,7 +132,7 @@ template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessageHeaderField& field) { field.deserialize(stream); return stream; }
 
 
-class QTOPIAMAIL_EXPORT QMailMessageContentType : public QMailMessageHeaderField
+class QMF_EXPORT QMailMessageContentType : public QMailMessageHeaderField
 {
 public:
     QMailMessageContentType();
@@ -160,7 +160,7 @@ private:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageContentDisposition : public QMailMessageHeaderField, public QMailMessageContentDispositionFwd
+class QMF_EXPORT QMailMessageContentDisposition : public QMailMessageHeaderField, public QMailMessageContentDispositionFwd
 {
 public:
     QMailMessageContentDisposition();
@@ -234,7 +234,7 @@ Stream& operator>>(Stream &stream, QMailMessageHeader& header) { header.deserial
 class QMailMessageBodyPrivate;
 class LongString;
 
-class QTOPIAMAIL_EXPORT QMailMessageBody : public QPrivatelyImplemented<QMailMessageBodyPrivate>, public QMailMessageBodyFwd
+class QMF_EXPORT QMailMessageBody : public QPrivatelyImplemented<QMailMessageBodyPrivate>, public QMailMessageBodyFwd
 {
 public:
     typedef QMailMessageBodyPrivate ImplementationType;
@@ -284,7 +284,7 @@ Stream& operator<<(Stream &stream, const QMailMessageBody& body) { body.serializ
 template <typename Stream> 
 Stream& operator>>(Stream &stream, QMailMessageBody& body) { body.deserialize(stream); return stream; }
 
-class QTOPIAMAIL_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>, public QMailMessagePartContainerFwd
+class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>, public QMailMessagePartContainerFwd
 {
 public:
     typedef QMailMessagePartContainerPrivate ImplementationType;
@@ -364,14 +364,14 @@ private:
 
 class QMailMessagePartPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessagePart : public QMailMessagePartContainer, public QMailMessagePartFwd
+class QMF_EXPORT QMailMessagePart : public QMailMessagePartContainer, public QMailMessagePartFwd
 {
 public:
     typedef QMailMessagePartPrivate ImplementationType;
 
     class LocationPrivate;
 
-    class QTOPIAMAIL_EXPORT Location
+    class QMF_EXPORT Location
     {
     public:
         Location();
@@ -523,7 +523,7 @@ bool QMailMessagePartContainer::foreachPart(F func) const
 
 class QMailMessageMetaDataPrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>, public QMailMessageMetaDataFwd
+class QMF_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>, public QMailMessageMetaDataFwd
 {
 public:
     typedef QMailMessageMetaDataPrivate ImplementationType;
@@ -677,7 +677,7 @@ public:
 
 class QMailMessagePrivate;
 
-class QTOPIAMAIL_EXPORT QMailMessage : public QMailMessageMetaData, public QMailMessagePartContainer, public QMailMessageFwd
+class QMF_EXPORT QMailMessage : public QMailMessageMetaData, public QMailMessagePartContainer, public QMailMessageFwd
 {
 public:
     using QMailMessageMetaData::MessageType;

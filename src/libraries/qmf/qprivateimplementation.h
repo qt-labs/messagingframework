@@ -248,14 +248,14 @@ public:
 };
 
 template<typename ImplementationType>
-class QTOPIAMAIL_EXPORT QPrivatelyImplemented
+class QMF_EXPORT QPrivatelyImplemented
 {
 public:
     QPrivatelyImplemented(ImplementationType* p);
     QPrivatelyImplemented(const QPrivatelyImplemented& other);
 
     template<typename A1>
-    QTOPIAMAIL_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
+    QMF_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyImplemented();
 
@@ -373,13 +373,13 @@ public:
 };
 
 template<typename ImplementationType>
-class QTOPIAMAIL_EXPORT QPrivatelyNoncopyable
+class QMF_EXPORT QPrivatelyNoncopyable
 {
 public:
     QPrivatelyNoncopyable(ImplementationType* p);
 
     template<typename A1>
-    QTOPIAMAIL_EXPORT QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
+    QMF_EXPORT QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyNoncopyable();
 

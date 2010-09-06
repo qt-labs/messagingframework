@@ -58,7 +58,7 @@ class QMailFolderKeyPrivate;
 template <typename Key>
 class MailKeyImpl;
 
-class QTOPIAMAIL_EXPORT QMailFolderKey
+class QMF_EXPORT QMailFolderKey
 {
 public:
     enum Property

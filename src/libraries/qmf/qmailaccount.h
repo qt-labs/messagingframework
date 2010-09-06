@@ -65,7 +65,7 @@ class QTimer;
 
 QT_END_NAMESPACE;
 
-class QTOPIAMAIL_EXPORT QMailAccount
+class QMF_EXPORT QMailAccount
 {
 public:
     static const quint64 &SynchronizationEnabled;

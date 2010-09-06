@@ -62,7 +62,7 @@ class QMailStoreImplementation;
 static QMailStore* QMailStoreInstance();
 #endif
 
-class QTOPIAMAIL_EXPORT QMailStore : public QObject
+class QMF_EXPORT QMailStore : public QObject
 {
     Q_OBJECT
 

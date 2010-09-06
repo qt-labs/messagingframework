@@ -1,6 +1,6 @@
 TEMPLATE = lib 
-TARGET = qtopiamailfilemanager 
-CONFIG += qtopiamail plugin
+TARGET = qmfstoragemanager
+CONFIG += qmf plugin
 QT = core
 
 target.path += $$QMF_INSTALL_ROOT/plugins/contentmanagers
@@ -9,14 +9,14 @@ DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qtopiamail \
-               ../../../libraries/qtopiamail/support
+INCLUDEPATH += . ../../../libraries/qmf \
+               ../../../libraries/qmf/support
 
-LIBS += -L../../../libraries/qtopiamail/build
-macx:LIBS += -F../../../libraries/qtopiamail/build
+LIBS += -L../../../libraries/qmf/build
+macx:LIBS += -F../../../libraries/qmf/build
 
-HEADERS += qtopiamailfilemanager.h
+HEADERS += qmfstoragemanager.h
 
-SOURCES += qtopiamailfilemanager.cpp
+SOURCES += qmfstoragemanager.cpp
 
 include(../../../../common.pri)

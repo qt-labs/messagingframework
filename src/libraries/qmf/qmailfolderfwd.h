@@ -44,7 +44,7 @@
 
 #include "qmailglobal.h"
 
-class QTOPIAMAIL_EXPORT QMailFolderFwd
+class QMF_EXPORT QMailFolderFwd
 {
 public:
     enum PredefinedFolderId { LocalStorageFolderId = 1 };

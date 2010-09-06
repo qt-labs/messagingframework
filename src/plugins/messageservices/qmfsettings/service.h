@@ -44,12 +44,12 @@
 
 #include <qmailmessageservice.h>
 
-class QtopiamailfileServicePlugin : public QMailMessageServicePlugin
+class QmfServicePlugin : public QMailMessageServicePlugin
 {
     Q_OBJECT
 
 public:
-    QtopiamailfileServicePlugin();
+    QmfServicePlugin();
 
     virtual QString key() const;
     virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;

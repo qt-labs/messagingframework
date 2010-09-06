@@ -48,7 +48,7 @@
 
 class QMailPluginManagerPrivate;
 
-class QTOPIAMAIL_EXPORT QMailPluginManager : public QObject
+class QMF_EXPORT QMailPluginManager : public QObject
 {
     Q_OBJECT
 

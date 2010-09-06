@@ -48,7 +48,7 @@
 
 class QMailAccountListModelPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAccountListModel : public QAbstractListModel
+class QMF_EXPORT QMailAccountListModel : public QAbstractListModel
 {
     Q_OBJECT
 

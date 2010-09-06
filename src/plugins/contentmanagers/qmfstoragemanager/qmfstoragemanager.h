@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QTOPIAMAILFILEMANAGER_H
-#define QTOPIAMAILFILEMANAGER_H
+#ifndef QMFSTORAGEMANAGER_H
+#define QMFSTORAGEMANAGER_H
 
 #include <qmailid.h>
 #include <qmailcontentmanager.h>
@@ -57,13 +57,13 @@ class QFile;
 
 QT_END_NAMESPACE;
 
-class QtopiamailfileManager : public QObject, public QMailContentManager
+class QmfStorageManager : public QObject, public QMailContentManager
 {
     Q_OBJECT
 
 public:
-    QtopiamailfileManager(QObject *parent = 0);
-    ~QtopiamailfileManager();
+    QmfStorageManager(QObject *parent = 0);
+    ~QmfStorageManager();
 
     QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
     QMailStore::ErrorCode update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
@@ -97,12 +97,12 @@ private:
 };
 
 
-class QtopiamailfileManagerPlugin : public QMailContentManagerPlugin
+class QmfStorageManagerPlugin : public QMailContentManagerPlugin
 {
     Q_OBJECT
 
 public:
-    QtopiamailfileManagerPlugin();
+    QmfStorageManagerPlugin();
 
     virtual QString key() const;
     QMailContentManager *create();

@@ -73,7 +73,7 @@ void SysLog::write(const QString& message)
     syslog(LOG_INFO,message.toLocal8Bit().data());
 }
 
-QTOPIAMAIL_EXPORT SysLog QLogBase::log(const char* category)
+QMF_EXPORT SysLog QLogBase::log(const char* category)
 {
     SysLog r;
     if ( category )
@@ -83,7 +83,7 @@ QTOPIAMAIL_EXPORT SysLog QLogBase::log(const char* category)
 
 #else
 
-QTOPIAMAIL_EXPORT QDebug QLogBase::log(const char* category)
+QMF_EXPORT QDebug QLogBase::log(const char* category)
 {
     QDebug r(QtDebugMsg);
     if ( category )
@@ -164,7 +164,7 @@ void RuntimeLoggingManager::handleSigHup()
 Q_GLOBAL_STATIC(RuntimeLoggingManager, runtimeLoggingManager)
 
 // Register the flag variable so it can be reset later
-QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag)
+QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
     RuntimeLoggingManager *rlm = runtimeLoggingManager();
     if (!rlm->cache.contains(flag))
@@ -172,7 +172,7 @@ QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag)
 }
 
 // Reset the logging flags
-QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags()
+QMF_EXPORT void qmf_resetLoggingFlags()
 {
     RuntimeLoggingManager *rlm = runtimeLoggingManager();
 
@@ -206,20 +206,20 @@ QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags()
 #define LOGGING_DEFAULT 0
 #endif
 
-QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
 {
     RuntimeLoggingManager *rlm = runtimeLoggingManager();
     return rlm->settings.value(QLatin1String(category),LOGGING_DEFAULT).toBool();
 }
 
 #else
-QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag)
+QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
     Q_UNUSED(flag);
 }
-QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags() { }
+QMF_EXPORT void qmf_resetLoggingFlags() { }
 
-QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
 {
     Q_UNUSED(category);
     return false;

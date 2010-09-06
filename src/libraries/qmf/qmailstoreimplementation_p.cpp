@@ -90,14 +90,14 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
             foreach (const Segment& segment, segmentList) {
                 IDListType idSegment = ids.mid(segment.first, (segment.second - segment.first));
 
-                QCopAdaptor a("QPE/Qtopiamail");
+                QCopAdaptor a("QPE/qmf");
                 QCopAdaptorEnvelope e = a.send(sig.toLatin1());
 				e << pid;
                 e << idSegment; 
             }
         } else {
 
-            QCopAdaptor a("QPE/Qtopiamail");
+            QCopAdaptor a("QPE/qmf");
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
             e << pid;
             e << ids;
@@ -131,7 +131,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 {
     Q_ASSERT(q);
 
-    QCopChannel* ipcChannel = new QCopChannel("QPE/Qtopiamail", this);
+    QCopChannel* ipcChannel = new QCopChannel("QPE/qmf", this);
 
     connect(ipcChannel,
             SIGNAL(received(QString,QByteArray)),
@@ -202,7 +202,7 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     flushNotifications();
 
     // Tell the recipients to process the notifications synchronously
-    QCopAdaptor a("QPE/Qtopiamail");
+    QCopAdaptor a("QPE/qmf");
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
     e << pid;
 

@@ -831,7 +831,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _config.id();
         }
     }
-    mail.setCustomField("qtopiamail-detached-filename", detachedFilename);
+    mail.setCustomField("qmf-detached-filename", detachedFilename);
 
     _classifier.classifyMessage(mail);
 
@@ -864,7 +864,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
     if (part.multipartType() == QMailMessage::MultipartNone) {
         // The body data is for this part only
         part.setBody(QMailMessageBody::fromData(bodyData, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-        part.removeHeaderField("X-qtopiamail-internal-partial-content");
+        part.removeHeaderField("X-qmf-internal-partial-content");
     } else {
         const QByteArray &boundary(part.contentType().boundary());
 
@@ -1131,10 +1131,10 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 const int totalSize(existingSize + size);
                 if (totalSize >= part.contentDisposition().size()) {
                     // We have all the data for this part
-                    part.removeHeaderField("X-qtopiamail-internal-partial-content");
+                    part.removeHeaderField("X-qmf-internal-partial-content");
                 } else {
                     // We only have a portion of the part data
-                    part.setHeaderField("X-qtopiamail-internal-partial-content", "true");
+                    part.setHeaderField("X-qmf-internal-partial-content", "true");
                 }
             } else {
                 // Find the part bodies in the retrieved data
@@ -1160,8 +1160,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 }
 
                 // These updates cannot be effected by storing the data file directly
-                if (!mail.customField("qtopiamail-detached-filename").isEmpty()) {
-                    mail.removeCustomField("qtopiamail-detached-filename");
+                if (!mail.customField("qmf-detached-filename").isEmpty()) {
+                    mail.removeCustomField("qmf-detached-filename");
                 }
             }
         }

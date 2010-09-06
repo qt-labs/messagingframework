@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/QtopiaSql/QSQLITE">
+    <qresource prefix="/QmfSql/QSQLITE">
         <file alias="mailaccounts">resources/mailaccounts.sqlite.sql</file>
         <file alias="mailaccounts-100-101">resources/mailaccounts-100-101.sqlite.sql</file>
         <file alias="mailaccounts-101-102">resources/mailaccounts-101-102.sqlite.sql</file>
@@ -27,7 +27,9 @@
         <file alias="mailmessages-107-108">resources/mailmessages-107-108.sqlite.sql</file>
         <file alias="mailmessages-108-109">resources/mailmessages-108-109.sqlite.sql</file>
         <file alias="mailmessages-109-110">resources/mailmessages-109-110.sqlite.sql</file>
+        <file alias="mailmessages-110-111">resources/mailmessages-110-111.sqlite.sql</file>
         <file alias="mailmessagecustom">resources/mailmessagecustom.sqlite.sql</file>
+        <file alias="mailmessagecustom-100-101">resources/mailmessages-100-101.sqlite.sql</file>
         <file alias="deletedmessages">resources/deletedmessages.sqlite.sql</file>
         <file alias="deletedmessages-100-101">resources/deletedmessages-100-101.sqlite.sql</file>
         <file alias="mailstatusflags">resources/mailstatusflags.sqlite.sql</file>

@@ -365,7 +365,7 @@ static void loadExtensions()
         return;
     }
 
-    QFile file(":qtopiamail/mime.types");
+    QFile file(":qmf/mime.types");
     if ( file.open(QIODevice::ReadOnly) ) {
         char line[1024];
 

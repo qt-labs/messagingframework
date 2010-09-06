@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qtopiamailfilemanager.h"
+#include "qmfstoragemanager.h"
 #include "qmailmessage.h"
 #include "qmailstore.h"
 #include "qmailnamespace.h"
@@ -60,7 +60,7 @@
 
 namespace {
 
-const QString gKey("qtopiamailfile");
+const QString gKey("qmfstoragemanager");
 
 QMap<QMailAccountId, QString> gAccountPath;
 
@@ -109,7 +109,7 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
 
     QString path;
     do {
-        path = QtopiamailfileManager::messageFilePath(filename + randomString(5), accountId);
+        path = QmfStorageManager::messageFilePath(filename + randomString(5), accountId);
     } while (QFile::exists(path));
 
     return path;
@@ -155,7 +155,7 @@ bool migrateAccountToVersion101(const QMailAccountId &accountId)
             QStringList entries(path.entryList());
             if (!entries.isEmpty()) {
                 // Does the part directory exist?
-                QString partDirectory(QtopiamailfileManager::messagePartDirectory(fileName));
+                QString partDirectory(QmfStorageManager::messagePartDirectory(fileName));
                 if (!QDir(partDirectory).exists()) {
                     if (!QDir::root().mkpath(partDirectory)) {
                         qMailLog(Messaging) << "Unable to create directory for message part content:" << partDirectory;
@@ -204,7 +204,7 @@ void syncFile(QSharedPointer<QFile> file)
 }
 
 
-QtopiamailfileManager::QtopiamailfileManager(QObject *parent)
+QmfStorageManager::QmfStorageManager(QObject *parent)
     : QObject(parent),
       _useFullSync(false)
 {
@@ -222,35 +222,35 @@ QtopiamailfileManager::QtopiamailfileManager(QObject *parent)
     }
 }
 
-QtopiamailfileManager::~QtopiamailfileManager()
+QmfStorageManager::~QmfStorageManager()
 {
     // Finalise any changes we have pending
     ensureDurability();
 }
 
-void QtopiamailfileManager::clearAccountPath(const QMailAccountIdList &ids)
+void QmfStorageManager::clearAccountPath(const QMailAccountIdList &ids)
 {
     foreach (const QMailAccountId &id, ids)
         gAccountPath.remove(id);
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
+QMailStore::ErrorCode QmfStorageManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 {
     return addOrRename(message, QString(), (durability == QMailContentManager::EnsureDurability));
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
+QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
 {
     // Use the supplied identifier as a filename
     QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier());
 
     message->setContentIdentifier(filePath);
 
-    QString detachedFile = message->customField("qtopiamail-detached-filename");
+    QString detachedFile = message->customField("qmf-detached-filename");
     if (!detachedFile.isEmpty() && (message->multipartType() == QMailMessagePartContainer::MultipartNone)) {
         // Try to take ownership of the file
         if (QFile::rename(detachedFile, filePath)) {
-            message->removeCustomField("qtopiamail-detached-filename");
+            message->removeCustomField("qmf-detached-filename");
             return QMailStore::NoError;
         }
     }
@@ -288,11 +288,11 @@ QMailStore::ErrorCode QtopiamailfileManager::addOrRename(QMailMessage *message, 
         syncLater(file);
     }
 
-    message->removeCustomField("qtopiamail-detached-filename");
+    message->removeCustomField("qmf-detached-filename");
     return QMailStore::NoError;
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
+QMailStore::ErrorCode QmfStorageManager::update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 {
     QString existingIdentifier(message->contentIdentifier());
 
@@ -316,7 +316,7 @@ QMailStore::ErrorCode QtopiamailfileManager::update(QMailMessage *message, QMail
     return QMailStore::NoError;
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
+QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 {
     if (_useFullSync) {
         // More than one file needs to be synchronized
@@ -336,7 +336,7 @@ QMailStore::ErrorCode QtopiamailfileManager::ensureDurability()
     return QMailStore::NoError;
 }
 
-QMailStore::ErrorCode QtopiamailfileManager::remove(const QString &identifier)
+QMailStore::ErrorCode QmfStorageManager::remove(const QString &identifier)
 {
     QMailStore::ErrorCode result(QMailStore::NoError);
 
@@ -366,7 +366,7 @@ struct ReferenceLoader
         QString loc = part.location().toString(false);
 
         // See if this part is a reference
-        QString name("qtopiamail-reference-location-" + loc);
+        QString name("qmf-reference-location-" + loc);
         QString value(message->customField(name));
         if (!value.isEmpty()) {
             // This part is a reference
@@ -389,7 +389,7 @@ struct ReferenceLoader
             }
 
             // Is this reference resolved?
-            name = QString("qtopiamail-reference-resolution-" + loc);
+            name = QString("qmf-reference-resolution-" + loc);
             value = message->customField(name);
             if (!value.isEmpty()) {
                 part.setReferenceResolution(value);
@@ -416,7 +416,7 @@ struct PartLoader
             if (localAttachment)
                 partFilePath = QUrl(part.contentLocation()).toLocalFile();
             else
-                partFilePath = QtopiamailfileManager::messagePartFilePath(part, fileName);
+                partFilePath = QmfStorageManager::messagePartFilePath(part, fileName);
 
             if (QFile::exists(partFilePath)) {
                 // Is the file content in encoded or decoded form?  Since we're delivering
@@ -432,7 +432,7 @@ struct PartLoader
     }
 };
 
-QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMailMessage *message)
+QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMessage *message)
 {
     QString path(identifier);
     if (!QFile::exists(path)) {
@@ -469,10 +469,10 @@ QMailStore::ErrorCode QtopiamailfileManager::load(const QString &identifier, QMa
     return QMailStore::NoError;
 }
 
-bool QtopiamailfileManager::init()
+bool QmfStorageManager::init()
 {
     // It used to be possible for accounts to not have a storage service configured.
-    // If so, add a configuration to those accounts for qtopiamailfile
+    // If so, add a configuration to those accounts for QmfStorageManager
     foreach (const QMailAccountId &accountId, QMailStore::instance()->queryAccounts()) {
         QMailAccountConfiguration config(accountId);
 
@@ -542,7 +542,7 @@ bool QtopiamailfileManager::init()
     return true;
 }
 
-void QtopiamailfileManager::clearContent()
+void QmfStorageManager::clearContent()
 {
     // Delete all content files
     recursivelyRemovePath(messagesBodyPath(QMailAccountId()));
@@ -555,7 +555,7 @@ void QtopiamailfileManager::clearContent()
     }
 }
 
-const QString &QtopiamailfileManager::messagesBodyPath(const QMailAccountId &accountId)
+const QString &QmfStorageManager::messagesBodyPath(const QMailAccountId &accountId)
 {
     static QString path(defaultPath());
 
@@ -582,17 +582,17 @@ const QString &QtopiamailfileManager::messagesBodyPath(const QMailAccountId &acc
     return path;
 }
 
-QString QtopiamailfileManager::messageFilePath(const QString &fileName, const QMailAccountId &accountId)
+QString QmfStorageManager::messageFilePath(const QString &fileName, const QMailAccountId &accountId)
 {
     return messagesBodyPath(accountId) + '/' + fileName;
 }
 
-QString QtopiamailfileManager::messagePartFilePath(const QMailMessagePart &part, const QString &fileName)
+QString QmfStorageManager::messagePartFilePath(const QMailMessagePart &part, const QString &fileName)
 {
     return messagePartDirectory(fileName) + '/' + part.location().toString(false); 
 }
 
-QString QtopiamailfileManager::messagePartDirectory(const QString &fileName)
+QString QmfStorageManager::messagePartDirectory(const QString &fileName)
 {
     return fileName + "-parts";
 }
@@ -612,11 +612,11 @@ struct PartStorer
             (part.multipartType() == QMailMessagePartContainer::MultipartNone) &&
             part.hasBody()) {
             // We need to store this part
-            QString partFilePath(QtopiamailfileManager::messagePartFilePath(part, fileName));
+            QString partFilePath(QmfStorageManager::messagePartFilePath(part, fileName));
 
             if (!part.contentModified() && !existing.isEmpty()) {
                 // This part is not modified; see if we can simply move the existing file to the new identifier
-                QString existingPath(QtopiamailfileManager::messagePartFilePath(part, existing));
+                QString existingPath(QmfStorageManager::messagePartFilePath(part, existing));
                 if (QFile::rename(existingPath, partFilePath)) {
                     return true;
                 }
@@ -625,7 +625,7 @@ struct PartStorer
             // We can only write the content in decoded form if it is complete
             QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
 
-            QString detachedFile = message->customField("qtopiamail-detached-filename");
+            QString detachedFile = message->customField("qmf-detached-filename");
             if (!detachedFile.isEmpty()) {
                 // We can take ownership of the file if that helps
                 if ((outputFormat == QMailMessageBody::Encoded) ||
@@ -634,7 +634,7 @@ struct PartStorer
                      (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
                     // Try to take ownership of the file
                     if (QFile::rename(detachedFile, partFilePath)) {
-                        message->removeCustomField("qtopiamail-detached-filename");
+                        message->removeCustomField("qmf-detached-filename");
                         return true;
                     }
                 }
@@ -669,7 +669,7 @@ struct PartStorer
     }
 };
 
-bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable)
+bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable)
 {
     // Ensure that the part directory exists
     QString partDirectory(messagePartDirectory(fileName));
@@ -693,7 +693,7 @@ bool QtopiamailfileManager::addOrRenameParts(QMailMessage *message, const QStrin
     return true;
 }
 
-bool QtopiamailfileManager::removeParts(const QString &fileName)
+bool QmfStorageManager::removeParts(const QString &fileName)
 {
     bool result(true);
 
@@ -720,7 +720,7 @@ bool QtopiamailfileManager::removeParts(const QString &fileName)
     return result;
 }
 
-void QtopiamailfileManager::syncLater(QSharedPointer<QFile> file)
+void QmfStorageManager::syncLater(QSharedPointer<QFile> file)
 {
 #ifdef USE_FSYNC_PER_FILE
     _openFiles.append(file);
@@ -739,20 +739,20 @@ void QtopiamailfileManager::syncLater(QSharedPointer<QFile> file)
 }
 
 
-Q_EXPORT_PLUGIN2(qtopiamailfilemanager,QtopiamailfileManagerPlugin)
+Q_EXPORT_PLUGIN2(QmfStorageManager,QmfStorageManagerPlugin)
 
-QtopiamailfileManagerPlugin::QtopiamailfileManagerPlugin()
+QmfStorageManagerPlugin::QmfStorageManagerPlugin()
     : QMailContentManagerPlugin()
 {
 }
 
-QString QtopiamailfileManagerPlugin::key() const
+QString QmfStorageManagerPlugin::key() const
 {
     return gKey;
 }
 
-QMailContentManager *QtopiamailfileManagerPlugin::create()
+QMailContentManager *QmfStorageManagerPlugin::create()
 {
-    return new QtopiamailfileManager(this);
+    return new QmfStorageManager(this);
 }
 

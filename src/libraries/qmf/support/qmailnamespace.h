@@ -58,26 +58,26 @@ QT_END_NAMESPACE;
 
 namespace QMail
 {
-    QTOPIAMAIL_EXPORT QString lastSystemErrorMessage();
-    QTOPIAMAIL_EXPORT void usleep(unsigned long usecs);
-    QTOPIAMAIL_EXPORT QString dataPath();
-    QTOPIAMAIL_EXPORT QString tempPath();
-    QTOPIAMAIL_EXPORT QString pluginsPath();
-    QTOPIAMAIL_EXPORT QString sslCertsPath();
-    QTOPIAMAIL_EXPORT QString messageServerPath();
-    QTOPIAMAIL_EXPORT QString messageSettingsPath();
-    QTOPIAMAIL_EXPORT QString mimeTypeFromFileName(const QString& filename);
-    QTOPIAMAIL_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
+    QMF_EXPORT QString lastSystemErrorMessage();
+    QMF_EXPORT void usleep(unsigned long usecs);
+    QMF_EXPORT QString dataPath();
+    QMF_EXPORT QString tempPath();
+    QMF_EXPORT QString pluginsPath();
+    QMF_EXPORT QString sslCertsPath();
+    QMF_EXPORT QString messageServerPath();
+    QMF_EXPORT QString messageSettingsPath();
+    QMF_EXPORT QString mimeTypeFromFileName(const QString& filename);
+    QMF_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
-    QTOPIAMAIL_EXPORT int fileLock(const QString& filePath);
-    QTOPIAMAIL_EXPORT bool fileUnlock(int id);
+    QMF_EXPORT int fileLock(const QString& filePath);
+    QMF_EXPORT bool fileUnlock(int id);
 
-    QTOPIAMAIL_EXPORT QSqlDatabase createDatabase();
+    QMF_EXPORT QSqlDatabase createDatabase();
 #endif
 
-    QTOPIAMAIL_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
-    QTOPIAMAIL_EXPORT QStringList messageIdentifiers(const QString& str);
+    QMF_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
+    QMF_EXPORT QStringList messageIdentifiers(const QString& str);
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)

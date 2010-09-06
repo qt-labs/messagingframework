@@ -47,7 +47,7 @@
 
 class QMailMessageHeaderField;
 
-class QTOPIAMAIL_EXPORT QMailMessageHeaderFieldFwd
+class QMF_EXPORT QMailMessageHeaderFieldFwd
 {
 public:
     enum FieldType
@@ -59,7 +59,7 @@ public:
 
 class QMailMessageContentDisposition;
 
-class QTOPIAMAIL_EXPORT QMailMessageContentDispositionFwd
+class QMF_EXPORT QMailMessageContentDispositionFwd
 {
 public:
     enum DispositionType
@@ -72,7 +72,7 @@ public:
 
 class QMailMessageBody;
 
-class QTOPIAMAIL_EXPORT QMailMessageBodyFwd
+class QMF_EXPORT QMailMessageBodyFwd
 {
 public:
     enum TransferEncoding 
@@ -100,7 +100,7 @@ public:
 
 class QMailMessagePartContainer;
 
-class QTOPIAMAIL_EXPORT QMailMessagePartContainerFwd
+class QMF_EXPORT QMailMessagePartContainerFwd
 {
 public:
     enum MultipartType 
@@ -120,7 +120,7 @@ public:
 
 class QMailMessagePart;
 
-class QTOPIAMAIL_EXPORT QMailMessagePartFwd
+class QMF_EXPORT QMailMessagePartFwd
 {
 public:
     enum ReferenceType {
@@ -132,7 +132,7 @@ public:
         
 class QMailMessageMetaData;
 
-class QTOPIAMAIL_EXPORT QMailMessageMetaDataFwd
+class QMF_EXPORT QMailMessageMetaDataFwd
 {
 public:
     enum MessageType
@@ -180,7 +180,7 @@ public:
 
 class QMailMessage;
 
-class QTOPIAMAIL_EXPORT QMailMessageFwd
+class QMF_EXPORT QMailMessageFwd
 {
 public:
     enum AttachmentsAction {

@@ -2192,8 +2192,8 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 105)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 110)
-                                            << tableInfo("mailmessagecustom", 100)
+                                            << tableInfo("mailmessages", 111)
+                                            << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
                                             << tableInfo("mailsubjects", 100)
@@ -2514,7 +2514,7 @@ QString numericPtrValue<false>(const void *ptr)
 QString QMailStorePrivate::temporaryTableName(const QMailMessageKey::ArgumentType& arg)
 {
     const QMailMessageKey::ArgumentType *ptr = &arg;
-    return QString("qtopiamail_idmatch_%1").arg(numericPtrValue<(sizeof(void*) > sizeof(unsigned long))>(ptr));
+    return QString("qmf_idmatch_%1").arg(numericPtrValue<(sizeof(void*) > sizeof(unsigned long))>(ptr));
 }
 
 void QMailStorePrivate::createTemporaryTable(const QMailMessageKey::ArgumentType& arg, const QString &dataType) const
@@ -3191,7 +3191,7 @@ qint64 QMailStorePrivate::incrementTableVersion(const QString &name, qint64 curr
     qint64 next = current + 1;
 
     QString versionInfo("-" + QString::number(current) + "-" + QString::number(next));
-    QString scriptName(":/QtopiaSql/" + database.driverName() + '/' + name + versionInfo);
+    QString scriptName(":/QmfSql/" + database.driverName() + '/' + name + versionInfo);
 
     QFile data(scriptName);
     if (!data.open(QIODevice::ReadOnly)) {
@@ -3227,7 +3227,7 @@ bool QMailStorePrivate::createTable(const QString &name)
     bool result = true;
 
     // load schema.
-    QFile data(":/QtopiaSql/" + database.driverName() + '/' + name);
+    QFile data(":/QmfSql/" + database.driverName() + '/' + name);
     if (!data.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to load table schema resource:" << name;
         result = false;
@@ -4474,13 +4474,13 @@ struct ReferenceStorer
             QString loc(part.location().toString(false));
 
             // Store the reference location into the message
-            QString key("qtopiamail-reference-location-" + loc);
+            QString key("qmf-reference-location-" + loc);
             if (message->customField(key) != value) {
                 message->setCustomField(key, value);
             }
 
             // Store the reference resolution into the message
-            key = "qtopiamail-reference-resolution-" + loc;
+            key = "qmf-reference-resolution-" + loc;
             value = part.referenceResolution();
             if (message->customField(key) != value) {
                 message->setCustomField(key, value);

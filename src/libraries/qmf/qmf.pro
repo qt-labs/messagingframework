@@ -1,10 +1,10 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-TARGET = qtopiamail
+TARGET = qmf
 
 target.path += $$QMF_INSTALL_ROOT/lib 
 
-DEFINES += QT_BUILD_QCOP_LIB QTOPIAMAIL_INTERNAL
+DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
 win32: {
     # QLocalSocket is broken on win32 prior to 4.5.2
     lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
@@ -137,9 +137,9 @@ win32: {
     SOURCES += locks.cpp
 }
 
-RESOURCES += qtopiamail.qrc \
-             qtopiamail_icons.qrc \
-             qtopiamail_qt.qrc
+RESOURCES += qmf.qrc \
+             qmf_icons.qrc \
+             qmf_qt.qrc
 
 TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-de.ts \
@@ -155,7 +155,7 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
-header_files.path=$$QMF_INSTALL_ROOT/include/qtopiamail
+header_files.path=$$QMF_INSTALL_ROOT/include/qmf
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files 

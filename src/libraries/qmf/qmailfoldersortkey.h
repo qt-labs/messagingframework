@@ -50,7 +50,7 @@
 
 class QMailFolderSortKeyPrivate;
 
-class QTOPIAMAIL_EXPORT QMailFolderSortKey
+class QMF_EXPORT QMailFolderSortKey
 {
 public:
     enum Property

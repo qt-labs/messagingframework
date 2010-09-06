@@ -4,12 +4,12 @@ macx {
 
 target.path+=$$QMF_INSTALL_ROOT/tests
 
-QTOPIAMAIL=../../src/libraries/qtopiamail
+QMFPATH=../../src/libraries/qmf
 DEPENDPATH += .
-INCLUDEPATH += . $$QTOPIAMAIL $$QTOPIAMAIL/support
-LIBS += -L$$QTOPIAMAIL/build
-macx:LIBS += -F$$QTOPIAMAIL/build
-QMAKE_LFLAGS += -Wl,-rpath,$$QTOPIAMAIL
+INCLUDEPATH += . $$QMFPATH $$QMFPATH/support
+LIBS += -L$$QMFPATH/build
+macx:LIBS += -F$$QMFPATH/build
+QMAKE_LFLAGS += -Wl,-rpath,$$QMFPATH
 
 include(../common.pri)
 

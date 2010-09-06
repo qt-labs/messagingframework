@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = imap 
-CONFIG += messageserver qtopiamail plugin
+CONFIG += qmfmessageserver qmf plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
@@ -8,15 +8,15 @@ QT = core network
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qtopiamail \
-               ../../../libraries/messageserver \
-               ../../../libraries/qtopiamail/support
+INCLUDEPATH += . ../../../libraries/qmf \
+               ../../../libraries/qmfmessageserver \
+               ../../../libraries/qmf/support
 
-LIBS += -L../../../libraries/qtopiamail/build \
-        -L../../../libraries/messageserver/build \
+LIBS += -L../../../libraries/qmf/build \
+        -L../../../libraries/qmfmessageserver/build \
 
-macx:LIBS += -F../../../libraries/qtopiamail/build \
-        -F../../../libraries/messageserver/build \
+macx:LIBS += -F../../../libraries/qmf/build \
+        -F../../../libraries/qmfmessageserver/build \
 
 
 HEADERS += imapclient.h \

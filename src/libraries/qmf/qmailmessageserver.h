@@ -59,7 +59,7 @@ class QMailMessageServerPrivate;
 
 typedef QMap<QMailMessage::MessageType, int> QMailMessageCountMap;
 
-class QTOPIAMAIL_EXPORT QMailMessageServer : public QObject
+class QMF_EXPORT QMailMessageServer : public QObject
 {
     Q_OBJECT
 

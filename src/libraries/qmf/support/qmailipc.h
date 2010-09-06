@@ -78,8 +78,8 @@ struct QMetaTypeRegister
 
 #define Q_DECLARE_USER_METATYPE(TYPE) \
     Q_DECLARE_USER_METATYPE_NO_OPERATORS(TYPE) \
-    QTOPIAMAIL_EXPORT QDataStream &operator<<(QDataStream &stream, const TYPE &var); \
-    QTOPIAMAIL_EXPORT QDataStream &operator>>( QDataStream &stream, TYPE &var );
+    QMF_EXPORT QDataStream &operator<<(QDataStream &stream, const TYPE &var); \
+    QMF_EXPORT QDataStream &operator>>( QDataStream &stream, TYPE &var );
 
 #define Q_DECLARE_USER_METATYPE_TYPEDEF(TAG,TYPE)       \
     template <typename T> \

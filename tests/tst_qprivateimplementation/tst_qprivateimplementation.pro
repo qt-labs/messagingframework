@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qtestlib unittest qtopiamail
+CONFIG += qtestlib unittest qmf
 TARGET = tst_qprivateimplementation
 
 SOURCES += tst_qprivateimplementation.cpp

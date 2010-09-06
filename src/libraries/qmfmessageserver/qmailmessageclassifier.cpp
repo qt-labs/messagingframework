@@ -58,7 +58,7 @@
     Messages of type \l{QMailMessageMetaDataFwd::Email}{QMailMessage::Email} may be classified as having 
     \l{QMailMessageMetaDataFwd::VoicemailContent}{QMailMessage::VoicemailContent} or 
     \l{QMailMessageMetaDataFwd::VideomailContent}{QMailMessage::VideomailContent} content if their 
-    \l{QMailMessage::from()} address matches any of those configured in the \c{Trolltech/messageserver.conf} file.
+    \l{QMailMessage::from()} address matches any of those configured in the \c{Nokia/messageserver.conf} file.
 */
 
 /*!
@@ -66,7 +66,7 @@
 */
 QMailMessageClassifier::QMailMessageClassifier()
 {
-    QSettings settings("Trolltech", "messageserver");
+    QSettings settings("Nokia", "messageserver");
 
     settings.beginGroup("global");
 

@@ -632,7 +632,7 @@ bool WriteMail::largeAttachments()
     static int limit = 0;
     if (limit == 0) {
         const QString key("emailattachlimitkb");
-        QSettings mailconf("Trolltech","qtmail");
+        QSettings mailconf("Nokia","qtmail");
 
         mailconf.beginGroup("qtmailglobal");
         if (mailconf.contains(key))

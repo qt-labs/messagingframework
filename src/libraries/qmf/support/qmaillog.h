@@ -49,7 +49,7 @@
 
 #include <QTextStream>
 
-class QTOPIAMAIL_EXPORT SysLog
+class QMF_EXPORT SysLog
 {
 public:
     SysLog();
@@ -95,7 +95,7 @@ SysLog& SysLog::operator<<(const T& item)
 }
 #endif //QMAIL_SYSLOG
 
-class QTOPIAMAIL_EXPORT QLogBase {
+class QMF_EXPORT QLogBase {
 public:
 #ifdef QMAIL_SYSLOG
     static SysLog log(const char*);
@@ -115,9 +115,9 @@ public:
         static inline bool enabled() { return 1; }\
     };
 
-QTOPIAMAIL_EXPORT void qmf_registerLoggingFlag(char *flag);
-QTOPIAMAIL_EXPORT void qmf_resetLoggingFlags();
-QTOPIAMAIL_EXPORT bool qmf_checkLoggingEnabled(const char *category);
+QMF_EXPORT void qmf_registerLoggingFlag(char *flag);
+QMF_EXPORT void qmf_resetLoggingFlags();
+QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category);
 #define QLOG_RUNTIME(dbgcat) \
     class dbgcat##_QLog : public QLogBase { \
     public: \

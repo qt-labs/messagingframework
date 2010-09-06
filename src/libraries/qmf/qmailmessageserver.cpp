@@ -50,7 +50,7 @@ static bool connectIpc( QObject *sender, const QByteArray& signal,
     return QCopAdaptor::connect(sender,signal,receiver,member);
 }
 
-class QTOPIAMAIL_EXPORT QMailMessageServerPrivate : public QObject
+class QMF_EXPORT QMailMessageServerPrivate : public QObject
 {
     Q_OBJECT
 

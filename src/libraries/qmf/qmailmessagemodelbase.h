@@ -81,7 +81,7 @@ public:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageModelBase : public QAbstractItemModel
+class QMF_EXPORT QMailMessageModelBase : public QAbstractItemModel
 {
     Q_OBJECT
 

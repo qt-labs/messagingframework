@@ -47,11 +47,11 @@
 #include <ctype.h>
 
 // Allow these values to be reduced from test harness code:
-int QTOPIAMAIL_EXPORT MaxCharacters = QMailCodec::ChunkCharacters;
+int QMF_EXPORT MaxCharacters = QMailCodec::ChunkCharacters;
 // Must be an even multiple of 4:
-int QTOPIAMAIL_EXPORT Base64MaxLineLength = 76;
+int QMF_EXPORT Base64MaxLineLength = 76;
 // Can be any number:
-int QTOPIAMAIL_EXPORT QuotedPrintableMaxLineLength = 74;
+int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
 
 
 /*!

@@ -152,8 +152,8 @@ QString QMailContentManagerFactory::defaultScheme()
     if (list.isEmpty())
         return QString();
 
-    if (list.contains("qtopiamailfile"))
-        return "qtopiamailfile";
+    if (list.contains("qmfstoragemanager"))
+        return "qmfstoragemanager";
     else 
         return list.first();
 }

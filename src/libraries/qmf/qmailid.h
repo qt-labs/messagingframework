@@ -51,7 +51,7 @@
 
 class MailIdPrivate;
 
-class QTOPIAMAIL_EXPORT MailId
+class QMF_EXPORT MailId
 {
 private:
     friend class QMailAccountId;
@@ -81,7 +81,7 @@ public:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailAccountId : private MailId
+class QMF_EXPORT QMailAccountId : private MailId
 {
 public:
     QMailAccountId();
@@ -103,12 +103,12 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailAccountId&);
-    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailAccountId&);
+    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailAccountId&);
+    friend QMF_EXPORT QTextStream& operator <<(QTextStream&, const QMailAccountId&);
 };
 
 
-class QTOPIAMAIL_EXPORT QMailFolderId : private MailId
+class QMF_EXPORT QMailFolderId : private MailId
 {
 public:
     QMailFolderId();
@@ -131,12 +131,12 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailFolderId&);
-    friend QTOPIAMAIL_EXPORT QTextStream& operator<<(QTextStream&, const QMailFolderId&);
+    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailFolderId&);
+    friend QMF_EXPORT QTextStream& operator<<(QTextStream&, const QMailFolderId&);
 };
 
 
-class QTOPIAMAIL_EXPORT QMailMessageId : private MailId
+class QMF_EXPORT QMailMessageId : private MailId
 {
 public:
     QMailMessageId();
@@ -158,8 +158,8 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    friend QTOPIAMAIL_EXPORT QDebug& operator<<(QDebug&, const QMailMessageId&);
-    friend QTOPIAMAIL_EXPORT QTextStream& operator <<(QTextStream&, const QMailMessageId&);
+    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailMessageId&);
+    friend QMF_EXPORT QTextStream& operator <<(QTextStream&, const QMailMessageId&);
 };
 
 
@@ -167,15 +167,15 @@ typedef QList<QMailAccountId> QMailAccountIdList;
 typedef QList<QMailFolderId> QMailFolderIdList;
 typedef QList<QMailMessageId> QMailMessageIdList;
 
-QTOPIAMAIL_EXPORT QDebug& operator<< (QDebug& debug, const MailId &id);
-QTOPIAMAIL_EXPORT QDebug& operator<< (QDebug& debug, const QMailAccountId &id);
-QTOPIAMAIL_EXPORT QDebug& operator<< (QDebug& debug, const QMailFolderId &id);
-QTOPIAMAIL_EXPORT QDebug& operator<< (QDebug& debug, const QMailMessageId &id);
+QMF_EXPORT QDebug& operator<< (QDebug& debug, const MailId &id);
+QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailAccountId &id);
+QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailFolderId &id);
+QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailMessageId &id);
 
-QTOPIAMAIL_EXPORT QTextStream& operator<< (QTextStream& s, const MailId &id);
-QTOPIAMAIL_EXPORT QTextStream& operator<< (QTextStream& s, const QMailAccountId &id);
-QTOPIAMAIL_EXPORT QTextStream& operator<< (QTextStream& s, const QMailFolderId &id);
-QTOPIAMAIL_EXPORT QTextStream& operator<< (QTextStream& s, const QMailMessageId &id);
+QMF_EXPORT QTextStream& operator<< (QTextStream& s, const MailId &id);
+QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailAccountId &id);
+QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailFolderId &id);
+QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailMessageId &id);
 
 Q_DECLARE_USER_METATYPE(MailId);
 Q_DECLARE_USER_METATYPE(QMailAccountId);
@@ -190,8 +190,8 @@ Q_DECLARE_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageIdList, QMailMessageIdList)
 
-uint QTOPIAMAIL_EXPORT qHash(const QMailAccountId &id);
-uint QTOPIAMAIL_EXPORT qHash(const QMailFolderId &id);
-uint QTOPIAMAIL_EXPORT qHash(const QMailMessageId &id);
+uint QMF_EXPORT qHash(const QMailAccountId &id);
+uint QMF_EXPORT qHash(const QMailFolderId &id);
+uint QMF_EXPORT qHash(const QMailMessageId &id);
 
 #endif

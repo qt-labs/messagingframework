@@ -67,7 +67,7 @@ QT_END_NAMESPACE;
 
 class LongStringPrivate;
 
-class QTOPIAMAIL_EXPORT LongString
+class QMF_EXPORT LongString
 {
 public:
     LongString();

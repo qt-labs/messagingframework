@@ -51,7 +51,7 @@
 
 class QMailFolderPrivate;
 
-class QTOPIAMAIL_EXPORT QMailFolder : public QMailFolderFwd
+class QMF_EXPORT QMailFolder : public QMailFolderFwd
 {
 public:
     enum StandardFolder {

@@ -52,7 +52,7 @@ class QMailMessage;
 class QMailContentManager;
 
 
-class QTOPIAMAIL_EXPORT QMailContentManagerFactory
+class QMF_EXPORT QMailContentManagerFactory
 {
 public:
     static QStringList schemes();
@@ -67,7 +67,7 @@ public:
 };
 
 
-struct QTOPIAMAIL_EXPORT QMailContentManagerPluginInterface : public QFactoryInterface
+struct QMF_EXPORT QMailContentManagerPluginInterface : public QFactoryInterface
 {
     virtual QString key() const = 0;
     virtual QMailContentManager *create() = 0;
@@ -76,13 +76,13 @@ struct QTOPIAMAIL_EXPORT QMailContentManagerPluginInterface : public QFactoryInt
 
 QT_BEGIN_NAMESPACE
 
-#define QMailContentManagerPluginInterface_iid "com.trolltech.Qtopia.Qtopiamail.QMailContentManagerPluginInterface"
+#define QMailContentManagerPluginInterface_iid "com.nokia.QMailContentManagerPluginInterface"
 Q_DECLARE_INTERFACE(QMailContentManagerPluginInterface, QMailContentManagerPluginInterface_iid)
 
 QT_END_NAMESPACE;
 
 
-class QTOPIAMAIL_EXPORT QMailContentManagerPlugin : public QObject, public QMailContentManagerPluginInterface
+class QMF_EXPORT QMailContentManagerPlugin : public QObject, public QMailContentManagerPluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(QMailContentManagerPluginInterface:QFactoryInterface)
@@ -95,7 +95,7 @@ public:
 };
 
 
-class QTOPIAMAIL_EXPORT QMailContentManager
+class QMF_EXPORT QMailContentManager
 {
     friend class QMailManagerContentFactory;
 

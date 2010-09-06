@@ -51,13 +51,13 @@
 
 class QMailAccountConfigurationPrivate;
 
-class QTOPIAMAIL_EXPORT QMailAccountConfiguration
+class QMF_EXPORT QMailAccountConfiguration
 {
     class ConfigurationValues;
     class ServiceConfigurationPrivate;
 
 public:
-    class QTOPIAMAIL_EXPORT ServiceConfiguration
+    class QMF_EXPORT ServiceConfiguration
     {
     public:
         ServiceConfiguration();
