@@ -49,6 +49,7 @@
 #include <qmailaccountconfiguration.h>
 #include <qmailtransport.h>
 #include <QDialog>
+#include <QPointer>
 
 namespace {
 
@@ -196,10 +197,13 @@ void SmtpSettings::sigPressed()
         else
             sigText = signature;
 
-        SigEntry sigEntry(this, "sigEntry", static_cast<Qt::WFlags>(1));
-        sigEntry.setEntry(sigText);
-        if (sigEntry.exec() == QDialog::Accepted)
-            signature = sigEntry.entry();
+        QPointer<SigEntry> sigEntry(new SigEntry(this, "sigEntry", static_cast<Qt::WFlags>(1)));
+        sigEntry->setEntry(sigText);
+        if (sigEntry->exec() == QDialog::Accepted)
+            signature = sigEntry->entry();
+
+        delete sigEntry;
+
     }
 }
 
