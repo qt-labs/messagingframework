@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201036
+  * Fixes: NB#190343 messagserver invoking OOM killer and apparently its being killed
+  * Fixes: NB#181065 Lack of pkgconfig files for QMF
+
 201035
   * Fixes: NB#187756 Compilation error if compiling QMF client with QT_NO_CAST_FROM_ASCII defined
   * Fixes: NB#185403 responseType not set properly for updated messages
