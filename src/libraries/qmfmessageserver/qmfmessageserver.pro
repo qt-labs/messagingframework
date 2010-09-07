@@ -42,4 +42,10 @@ header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files
 
+unix: {
+	CONFIG += create_pc create_prl
+	QMAKE_PKGCONFIG_LIBDIR  = $$target.path
+	QMAKE_PKGCONFIG_INCDIR  = $$header_files.path
+	QMAKE_PKGCONFIG_DESTDIR = pkgconfig
+}
 include(../../../common.pri)
