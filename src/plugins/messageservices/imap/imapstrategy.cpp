@@ -3084,7 +3084,6 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
 
     QMailMessageKey sourceKey(QMailDisconnected::sourceKey(folder.id()));
     
-#if 1 // debugging
     IntegerRegion trueClientRegion;
     foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
         const QString uid(r.serverUid());
@@ -3098,7 +3097,6 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
         qWarning() << "WARNING server contains uids in contiguous region not on client!!!" << missingRegion.toString();
         qWarning() << "WARNING clientMin" << clientMin << "clientMax" << clientMax;
     }
-#endif    
     
     int serverMinimum = properties.uidNext;
     int serverMaximum = properties.uidNext;
@@ -3125,25 +3123,15 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
             }
         }
     }
-    
+
     IntegerRegion serverRange(serverMinimum, serverMaximum);
-    IntegerRegion serverComplement(serverRange.subtract(rawServerRegion));
-    QStringList removedOnServerUids;
-    foreach(QString uid, serverComplement.toStringList()) {
-        removedOnServerUids.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
+    IntegerRegion clientRegionWithinServerRange(serverRange.intersect(trueClientRegion));
+    IntegerRegion clientRemovedRegion(clientRegionWithinServerRange.subtract(rawServerRegion).toStringList());
+    QStringList removed;
+    foreach(QString uid, clientRemovedRegion.toStringList()) {
+        removed.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
     }
 
-    QMailMessageKey onClientButNotServerKey(QMailMessageKey::serverUid(removedOnServerUids));
-    onClientButNotServerKey &= sourceKey;
-    QStringList removed;
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(onClientButNotServerKey, QMailMessageKey::ServerUid)) {
-        const QString uid(r.serverUid());
-        int serverUid(stripFolderPrefix(uid).toUInt());
-        if ((serverUid >= serverMinimum) && (serverUid <= serverMaximum)) {
-            removed += uid;
-        }
-    }
-    
     // The list of existing messages on the server can be used to update the status of
     // messages on the client i.e. mark messages on the client as removed for messages that have
     // been removed on the server
@@ -3197,9 +3185,7 @@ void ImapRetrieveMessageListStrategy::handleUidSearch(ImapStrategyContextBase *c
     _listAll = false;
     
     IntegerRegion difference(serverRegion.subtract(clientRegion));
-#if 1 // debugging
     difference = difference.add(missingRegion);
-#endif
     
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
