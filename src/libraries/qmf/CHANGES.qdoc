@@ -94,6 +94,25 @@ Changes since the QMF-1.0 release on 15/05/09:
 33. Added 'QMailAccount::lastSynchronized() const' and
           'QMailAccount::setSynchronized(const QMailTimeStamp &synced)'
 
+34. File Rename:
+      qmf.pro -> messagingframework.pro (To avoid it conflicting with its child project)
+
+    Library Renames:
+      libmessageserver -> libqmfmessageserver
+      libqtopiamail -> libqmf
+
+    Directory Changes:
+      src/libraries/messageserver -> src/libraries/qmfmessageserver
+      src/libraries/qtopiamail -> src/libraries/qmf
+      src/plugins/contentmanagers/qtopiamailfile -> qmfstoragemanager
+      src/plugins/messageservices/qtopiamailfile -> qmfsettings
+
+    Class changes:
+      QtopiamailfileConfigurator -> QmfConfigurator
+      QtopiamailfileSettings -> QmfSettings
+      QtopiamailfileServicePlugin -> QmfServicePlugin
+      QtopiamailfileManager -> QmfStorageManager
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
