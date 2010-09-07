@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = genericviewer 
-CONFIG += qtopiamail qmfutil plugin
+CONFIG += qmf qmfutil plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/viewers
 
@@ -13,13 +13,13 @@ contains(QT_CONFIG,webkit){
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libs/qmfutil \
-               ../../../../../src/libraries/qtopiamail \
-               ../../../../../src/libraries/qtopiamail/support
+               ../../../../../src/libraries/qmf \
+               ../../../../../src/libraries/qmf/support
 
-LIBS += -L../../../../../src/libraries/qtopiamail/build \
+LIBS += -L../../../../../src/libraries/qmf/build \
         -L../../../libs/qmfutil/build
 
-LIBS += -F../../../../../src/libraries/qtopiamail/build \
+LIBS += -F../../../../../src/libraries/qmf/build \
         -F../../../libs/qmfutil/build
 
 HEADERS += attachmentoptions.h browserwidget.h genericviewer.h

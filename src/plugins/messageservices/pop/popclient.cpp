@@ -1001,7 +1001,7 @@ void PopClient::createMail()
         mail.setStatus(QMailMessage::New, true);
         mail.setReceivedDate(QMailTimeStamp::currentDateTime());
     }
-    mail.setCustomField( "qtopiamail-detached-filename", detachedFile );
+    mail.setCustomField( "qmf-detached-filename", detachedFile );
 
     mail.setMessageType(QMailMessage::Email);
     mail.setParentAccountId(config.id());

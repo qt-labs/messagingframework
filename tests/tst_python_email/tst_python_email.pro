@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qtestlib unittest qtopiamail
+CONFIG += qtestlib unittest qmf
 TARGET = tst_python_email
 
 DEFINES += SRCDIR=\\\"$$_PRO_FILE_PWD_\\\"

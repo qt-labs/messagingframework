@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = messageserver
-CONFIG += messageserver qtopiamail
+CONFIG += qmfmessageserver qmf
 QT = core
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
 
@@ -8,14 +8,14 @@ target.path += $$QMF_INSTALL_ROOT/bin
 
 DEPENDPATH += . 
 
-INCLUDEPATH += . ../../libraries/qtopiamail \
-                 ../../libraries/qtopiamail/support \
-                 ../../libraries/messageserver
+INCLUDEPATH += . ../../libraries/qmf \
+                 ../../libraries/qmf/support \
+                 ../../libraries/qmfmessageserver
 
-LIBS += -L../../libraries/messageserver/build \
-        -L../../libraries/qtopiamail/build
-macx:LIBS += -F../../libraries/messageserver/build \
-        -F../../libraries/qtopiamail/build
+LIBS += -L../../libraries/qmfmessageserver/build \
+        -L../../libraries/qmf/build
+macx:LIBS += -F../../libraries/qmfmessageserver/build \
+        -F../../libraries/qmf/build
 
 
 HEADERS += mailmessageclient.h \

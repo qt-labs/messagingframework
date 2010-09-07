@@ -228,6 +228,7 @@ void ReadMail::linkClicked(const QUrl &lnk)
         // strip leading 'mailto:'
         emit sendMessageTo( QMailAddress(str.mid(7)), mail.messageType() );
     } else if (mail.messageType() == QMailMessage::System && str.startsWith(QLatin1String("qtopiaservice:"))) {
+        // TODO: This relevant anymore?
         int commandPos  = str.indexOf( QLatin1String( "::" ) ) + 2;
         int argPos      = str.indexOf( '?' ) + 1;
         QString service = str.mid( 14, commandPos - 16 );

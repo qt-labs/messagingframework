@@ -256,9 +256,9 @@ static bool transferMessageData(QMailMessage &message, const QMailMessage &sourc
     if (!transferPartBodies(message, source))
         return false;
 
-    if (!message.customField("qtopiamail-detached-filename").isEmpty()) {
+    if (!message.customField("qmf-detached-filename").isEmpty()) {
         // We have modified the content, so the detached file data is no longer sufficient
-        message.removeCustomField("qtopiamail-detached-filename");
+        message.removeCustomField("qmf-detached-filename");
     }
 
     if (source.status() & QMailMessage::ContentAvailable) {

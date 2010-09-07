@@ -539,7 +539,7 @@ void EmailClient::displayCachedMail()
 
 void EmailClient::resumeInterruptedComposition()
 {
-    QSettings mailconf("Trolltech", "qtmail");
+    QSettings mailconf("Nokia", "qtmail");
     mailconf.beginGroup("restart");
 
     QVariant var = mailconf.value("lastDraftId");
@@ -1550,7 +1550,7 @@ void EmailClient::accessError(const QString &folderName)
 
 void EmailClient::readSettings()
 {
-    QSettings mailconf("Trolltech","qtmail");
+    QSettings mailconf("Nokia","qtmail");
     mailconf.beginGroup("qtmailglobal");
     mailconf.endGroup();
 
@@ -1567,7 +1567,7 @@ void EmailClient::readSettings()
 bool EmailClient::saveSettings()
 {
     const int QTMAIL_CONFIG_VERSION = 100;
-    QSettings mailconf("Trolltech","qtmail");
+    QSettings mailconf("Nokia","qtmail");
 
     mailconf.beginGroup("qtmailglobal");
     mailconf.remove("");
@@ -2296,7 +2296,7 @@ void EmailClient::quit()
 
         if (lastDraftId.isValid()) {
             // Store this value to remind the user on next startup
-            QSettings mailconf("Trolltech", "qtmail");
+            QSettings mailconf("Nokia", "qtmail");
             mailconf.beginGroup("restart");
             mailconf.setValue("lastDraftId", lastDraftId.toULongLong() );
             mailconf.endGroup();

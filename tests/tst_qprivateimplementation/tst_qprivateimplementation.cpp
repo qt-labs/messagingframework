@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-// We're effectively part of the QTOPIAMAIL library for this test:
-#define QTOPIAMAIL_INTERNAL
+// We're effectively part of the QMF library for this test:
+#define QMF_INTERNAL
 #include "qprivateimplementationdef.h"
 
 #include <QObject>

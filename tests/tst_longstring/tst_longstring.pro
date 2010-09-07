@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_longstring
-CONFIG += qtestlib unittest qtopiamail
+CONFIG += qtestlib unittest qmf
 
 SOURCES += tst_longstring.cpp
 

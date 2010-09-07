@@ -227,7 +227,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 #ifndef QT_NO_OPENSSL
     if ((smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
         // We have entered TLS mode - restart the SMTP dialog
-        sendCommand("EHLO qtopia-messageserver");
+        sendCommand("EHLO qmf-messageserver");
         status = Helo;
     }
 #endif
@@ -325,7 +325,7 @@ void SmtpClient::nextAction(const QString &response)
             capabilities.clear();
 
             // We need to know if extensions are supported
-            sendCommand("EHLO qtopia-messageserver");
+            sendCommand("EHLO qmf-messageserver");
             status = Helo;
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
@@ -336,7 +336,7 @@ void SmtpClient::nextAction(const QString &response)
     {
         if (responseCode == 500) {
             // EHLO is not implemented by this server - fallback to HELO
-            sendCommand("HELO qtopia-messageserver");
+            sendCommand("HELO qmf-messageserver");
         } else if (responseCode == 250) {
             if (domainName.isEmpty()) {
                 // Extract the domain name from the greeting
@@ -599,7 +599,7 @@ void SmtpClient::nextAction(const QString &response)
             QDir dir;
             if (!dir.exists(tempPath))
                 dir.mkpath(tempPath);
-            temporaryFile = new QTemporaryFile(tempPath + QLatin1String("/qtopiamail.XXXXXX"));
+            temporaryFile = new QTemporaryFile(tempPath + QLatin1String("smtptmp.XXXXXX"));
             bool ok = temporaryFile->open();
             Q_ASSERT(ok);
             {

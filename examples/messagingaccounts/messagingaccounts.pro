@@ -1,23 +1,23 @@
 TEMPLATE = app
 TARGET = messagingaccounts
 target.path += $$QMF_INSTALL_ROOT/bin
-CONFIG += qtopiamail messageserver
+CONFIG += qmf qmfmessageserver
 
 DEPENDPATH += .
 
 QTMAIL_EXAMPLE=../qtmail
 
-INCLUDEPATH += . ../../src/libraries/qtopiamail \
-                 ../../src/libraries/qtopiamail/support \
-                 ../../src/libraries/messageserver \
+INCLUDEPATH += . ../../src/libraries/qmf \
+                 ../../src/libraries/qmf/support \
+                 ../../src/libraries/qmfmessageserver \
                  $$QTMAIL_EXAMPLE/app \
                  $$QTMAIL_EXAMPLE/libs/qmfutil
 
-LIBS += -L../../src/libraries/qtopiamail/build \
-        -L../../src/libraries/messageserver/build
+LIBS += -L../../src/libraries/qmf/build \
+        -L../../src/libraries/qmfmessageserver/build
 
-macx:LIBS += -F../../src/libraries/qtopiamail/build \
-        -F../../src/libraries/messageserver/build
+macx:LIBS += -F../../src/libraries/qmf/build \
+        -F../../src/libraries/qmfmessageserver/build
 
 HEADERS += $$QTMAIL_EXAMPLE/app/accountsettings.h \
            $$QTMAIL_EXAMPLE/app/editaccount.h \

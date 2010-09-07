@@ -470,7 +470,7 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
             QMailAccountConfiguration config(id);
             
             // See if this account is configured to use a master account
-            QMailServiceConfiguration internalCfg(&config, "qtopiamail");
+            QMailServiceConfiguration internalCfg(&config, "qmf");
             QString masterId(internalCfg.value("masterAccountId", ""));
             if (!masterId.isEmpty()) {
                 QMailAccount master(QMailAccountId(masterId.toInt()));

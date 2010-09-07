@@ -77,7 +77,7 @@ Other protocols can be supported by providing implementations as plugins.
  
 \section1 Interface
 
-MessageServer communicates with clients via a QtopiaChannel.  The recommended method of passing messages over this channel is for each client to instantiate an object of the QMailMessageServer class, which converts between IPC messages and local signals and slots.
+MessageServer communicates with clients via QCop. The only supported method of passing messages over this channel is for each client to instantiate an object of the QMailMessageServer class, which converts between IPC messages and local signals and slots.
 
 Some actions of the MessageServer process affect the Messaging Framework data store directly.  A client can respond to these actions by connecting to the relevant signals of the QMailStore class, such as QMailStore::messagesAdded(), and QMailStore::messagesRemoved().
 

@@ -1,22 +1,22 @@
 TEMPLATE = app
 TARGET = qtmail 
-CONFIG += qmfutil qtopiamail messageserver
+CONFIG += qmfutil qmf qmfmessageserver
 target.path += $$QMF_INSTALL_ROOT/bin
 
 DEPENDPATH += . 
 
-INCLUDEPATH += . ../../../src/libraries/qtopiamail \
-                 ../../../src/libraries/qtopiamail/support \
+INCLUDEPATH += . ../../../src/libraries/qmf \
+                 ../../../src/libraries/qmf/support \
                  ../libs/qmfutil \
-                 ../../../src/libraries/messageserver
+                 ../../../src/libraries/qmfmessageserver
 
-LIBS += -L../../../src/libraries/qtopiamail/build \
+LIBS += -L../../../src/libraries/qmf/build \
         -L../libs/qmfutil/build \
-        -L../../../src/libraries/messageserver/build
+        -L../../../src/libraries/qmfmessageserver/build
 
-macx:LIBS += -F../../../src/libraries/qtopiamail/build \
+macx:LIBS += -F../../../src/libraries/qmf/build \
         -F../../libs/qmfutil/build \
-        -F../../../src/libraries/messageserver/build
+        -F../../../src/libraries/qmf/build
 
 HEADERS += emailclient.h \
            messagelistview.h \
