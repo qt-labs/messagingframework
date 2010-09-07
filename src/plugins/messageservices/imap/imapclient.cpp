@@ -1439,14 +1439,9 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
 {
     if (_protocol.inUse()) { // Setting up new idle connection may be in progress
-        const int oneHour = 60*60;
-        if (idleProtocol->idleRetryDelay() == oneHour) {
-            operationFailed(QMailServiceAction::Status::ErrTimeout, tr("No response"));
-        } else {
-            qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
-                "busy. Retrying to establish IDLE state in" << idleProtocol->idleRetryDelay()/2 << "seconds.";
-            return;
-        }
+        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
+            "busy. Retrying to establish IDLE state in" << idleProtocol->idleRetryDelay()/2 << "seconds.";
+        return;
     }
     _protocol.close();
     foreach(const QMailFolderId &id, _monitored.keys()) {
