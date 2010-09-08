@@ -46,7 +46,7 @@
 QList<QPair<QString, QString> > storageLocations()
 {
     QList<QPair<QString, QString> > locations;
-    locations.append(qMakePair(QString("qmfsettings"),QString("")));
+    locations.append(qMakePair(QString("qmfstoragemanager"),QString("")));
     return locations;
 }
 

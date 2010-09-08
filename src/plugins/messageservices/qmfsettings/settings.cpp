@@ -52,7 +52,7 @@ extern QList<QPair<QString, QString> > storageLocations();
 
 namespace { 
 
-const QString serviceKey("qmfsettings");
+const QString serviceKey("qmfstoragemanager");
 
 const QList<QPair<QString, QString> > locations(storageLocations());
 
