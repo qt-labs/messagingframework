@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = qmfstoragemanager
-CONFIG += qmf plugin
+CONFIG += qmfclient plugin
 QT = core
 
 target.path += $$QMF_INSTALL_ROOT/plugins/contentmanagers
@@ -9,11 +9,11 @@ DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qmf \
-               ../../../libraries/qmf/support
+INCLUDEPATH += . ../../../libraries/qmfclient \
+               ../../../libraries/qmfclient/support
 
-LIBS += -L../../../libraries/qmf/build
-macx:LIBS += -F../../../libraries/qmf/build
+LIBS += -L../../../libraries/qmfclient/build
+macx:LIBS += -F../../../libraries/qmfclient/build
 
 HEADERS += qmfstoragemanager.h
 

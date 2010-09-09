@@ -79,7 +79,7 @@ mac:contains(QT_CONFIG,qt_framework):!plugin {
     QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
 }
 
-qmf:qtAddLibrary(qmf)
+qmfclient:qtAddLibrary(qmfclient)
 qmfmessageserver:qtAddLibrary(qmfmessageserver)
 qmfutil:qtAddLibrary(qmfutil)
 

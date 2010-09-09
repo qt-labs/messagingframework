@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-TARGET = qmf
+TARGET = qmfclient
 
 target.path += $$QMF_INSTALL_ROOT/lib 
 
@@ -155,7 +155,7 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
-header_files.path=$$QMF_INSTALL_ROOT/include/qmf
+header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files 

@@ -1,17 +1,17 @@
 TEMPLATE = app
 TARGET = serverobserver
 target.path += $$QMF_INSTALL_ROOT/bin
-CONFIG += qmf qmfmessageserver
+CONFIG += qmfclient qmfmessageserver
 
 DEPENDPATH += .
-INCLUDEPATH += . ../../src/libraries/qmf \
-                 ../../src/libraries/qmf/support \
+INCLUDEPATH += . ../../src/libraries/qmfclient \
+                 ../../src/libraries/qmfclient/support \
                  ../../src/libraries/qmfmessageserver \
 
-LIBS += -L../../src/libraries/qmf/build \
+LIBS += -L../../src/libraries/qmfclient/build \
         -L../../src/libraries/qmfmessageserver/build
 
-macx:LIBS += -F../../src/libraries/qmf/build \
+macx:LIBS += -F../../src/libraries/qmfclient/build \
         -F../../src/libraries/qmfmessageserver/build
 
 HEADERS += serverobserver.h

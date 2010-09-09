@@ -1,6 +1,6 @@
 TEMPLATE = app
 CONFIG += qtestlib unittest 
-CONFIG += qmfmessageserver qmf
+CONFIG += qmfmessageserver qmfclient
 
 TARGET = tst_messageserver 
 target.path += $$QMF_INSTALL_ROOT/tests
@@ -20,16 +20,16 @@ DEFINES += PLUGIN_STATIC_LINK
 IMAP_PLUGIN=$$BASE/src/plugins/messageservices/imap/
 MESSAGE_SERVER=$$BASE/src/tools/messageserver
 
-INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmf \
-                 $$BASE/src/libraries/qmf/support \
+INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmfclient \
+                 $$BASE/src/libraries/qmfclient/support \
                  $$BASE/src/libraries/qmfmessageserver \
                  $$IMAP_PLUGIN \
                  $$MESSAGE_SERVER 
 
 LIBS += -L$$BASE/src/libraries/qmfmessageserver/build \
-        -L$$BASE/src/libraries/qmf/build
+        -L$$BASE/src/libraries/qmfclient/build
 
-QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmf \
+QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
     -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
 
 HEADERS += benchmarkcontext.h \

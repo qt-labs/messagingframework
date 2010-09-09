@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG += qmf
+CONFIG += qmfclient
 TARGET = qmfmessageserver
 
 target.path += $$QMF_INSTALL_ROOT/lib
@@ -16,10 +16,10 @@ DEFINES += MESSAGESERVER_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../qmf ../qmf/support
+INCLUDEPATH += . ../qmfclient ../qmfclient/support
 
-LIBS += -L../qmf/build
-macx:LIBS += -F../qmf/build
+LIBS += -L../qmfclient/build
+macx:LIBS += -F../qmfclient/build
 
 PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailmessageclassifier.h \

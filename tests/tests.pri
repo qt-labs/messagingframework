@@ -4,7 +4,7 @@ macx {
 
 target.path+=$$QMF_INSTALL_ROOT/tests
 
-QMFPATH=../../src/libraries/qmf
+QMFPATH=../../src/libraries/qmfclient
 DEPENDPATH += .
 INCLUDEPATH += . $$QMFPATH $$QMFPATH/support
 LIBS += -L$$QMFPATH/build

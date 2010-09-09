@@ -46,7 +46,7 @@
 #include <QtPlugin>
 #include <QCoreApplication>
 
-namespace { const QString serviceKey("qmfsettings"); }
+namespace { const QString serviceKey("qmfstoragemanager"); }
 
 
 class QmfConfigurator : public QMailMessageServiceConfigurator

@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qtestlib unittest qmf
+CONFIG += qtestlib unittest qmfclient
 TARGET = tst_qmailstore
 
 QT += sql

@@ -1,7 +1,7 @@
 TEMPLATE = lib 
 TARGET = smtp 
 
-CONFIG += qmf qmfmessageserver plugin
+CONFIG += qmfclient qmfmessageserver plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/messageservices
 
@@ -9,13 +9,13 @@ QT = core network
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libraries/qmf \
+INCLUDEPATH += . ../../../libraries/qmfclient \
                ../../../libraries/qmfmessageserver \
-               ../../../libraries/qmf/support
+               ../../../libraries/qmfclient/support
 
-LIBS += -L../../../libraries/qmf/build \
+LIBS += -L../../../libraries/qmfclient/build \
         -L../../../libraries/qmfmessageserver/build
-macx:LIBS += -F../../../libraries/qmf/build \
+macx:LIBS += -F../../../libraries/qmfclient/build \
         -F../../../libraries/qmfmessageserver/build
 
 HEADERS += smtpauthenticator.h \

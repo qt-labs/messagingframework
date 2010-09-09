@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = messageserver
-CONFIG += qmfmessageserver qmf
+CONFIG += qmfmessageserver qmfclient
 QT = core
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
 
@@ -8,14 +8,14 @@ target.path += $$QMF_INSTALL_ROOT/bin
 
 DEPENDPATH += . 
 
-INCLUDEPATH += . ../../libraries/qmf \
-                 ../../libraries/qmf/support \
+INCLUDEPATH += . ../../libraries/qmfclient \
+                 ../../libraries/qmfclient/support \
                  ../../libraries/qmfmessageserver
 
 LIBS += -L../../libraries/qmfmessageserver/build \
-        -L../../libraries/qmf/build
+        -L../../libraries/qmfclient/build
 macx:LIBS += -F../../libraries/qmfmessageserver/build \
-        -F../../libraries/qmf/build
+        -F../../libraries/qmfclient/build
 
 
 HEADERS += mailmessageclient.h \

@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG += qmf
+CONFIG += qmfclient
 TARGET = qmfutil 
 
 target.path += $$QMF_INSTALL_ROOT/lib
@@ -12,10 +12,10 @@ symbian: {
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../../src/libraries/qmf ../../../../src/libraries/qmf/support
+INCLUDEPATH += . ../../../../src/libraries/qmfclient ../../../../src/libraries/qmfclient/support
 
-macx:LIBS += -F../../../../libraries/qmf/build
-LIBS += -L../../../../src/libraries/qmf/build
+macx:LIBS += -F../../../../libraries/qmfclient/build
+LIBS += -L../../../../src/libraries/qmfclient/build
 
 HEADERS += emailfoldermodel.h \
            emailfolderview.h \

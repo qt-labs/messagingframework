@@ -19,7 +19,7 @@ qhp.QMF.extraFiles      = \
 
 imagedirs               = images
 
-headerdirs              = ../../src/libraries/qmf \
+headerdirs              = ../../src/libraries/qmfclient \
                           ../../src/libraries/qmfmessageserver \
                           ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \
@@ -30,7 +30,7 @@ headerdirs              = ../../src/libraries/qmf \
                           ../../examples/messagingaccounts \
                           ../../src/tools/messageserver
  
-sourcedirs              = ../../src/libraries/qmf \
+sourcedirs              = ../../src/libraries/qmfclient \
                           ../../src/libraries/qmfmessageserver \
                           ../../examples/qtmail/lib/qmfutil \
                           ../../src/plugins/messageservices/imap \

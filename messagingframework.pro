@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-SUBDIRS = src/libraries/qmf \
+SUBDIRS = src/libraries/qmfclient \
           src/libraries/qmfmessageserver \
           src/plugins/messageservices/imap \
           src/plugins/messageservices/pop \

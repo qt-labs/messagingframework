@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = emailcomposer 
-CONFIG += qmf qmfutil plugin
+CONFIG += qmfclient qmfutil plugin
 
 target.path += $$QMF_INSTALL_ROOT/plugins/composers
 
@@ -9,13 +9,13 @@ DEFINES += PLUGIN_INTERNAL
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libs/qmfutil \
-               ../../../../../src/libraries/qmf \
-               ../../../../../src/libraries/qmf/support
+               ../../../../../src/libraries/qmfclient \
+               ../../../../../src/libraries/qmfclient/support
 
-LIBS += -L../../../../../src/libraries/qmf/build \
+LIBS += -L../../../../../src/libraries/qmfclient/build \
         -L../../../libs/qmfutil/build
 
-macx:LIBS += -F../../../../../libraries/qmf/build \
+macx:LIBS += -F../../../../../libraries/qmfclient/build \
         -F../../../libs/qmfutil/build
 
 
