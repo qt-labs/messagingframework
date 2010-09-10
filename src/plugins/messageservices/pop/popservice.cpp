@@ -138,6 +138,14 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
     
     _service->_client.setOperation(QMailRetrievalAction::MetaData);
     _service->_client.setAdditional(minimum - existing);
+
+    if (!_service->_client.synchronizationEnabled(folderId)) {
+        // Just report success
+        _service->updateStatus("");
+        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        return true;
+    }
+    
     _service->_client.newConnection();
     _unavailable = true;
     return true;

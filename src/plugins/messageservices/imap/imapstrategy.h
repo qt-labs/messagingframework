@@ -356,6 +356,7 @@ protected:
     virtual void processNextFolder(ImapStrategyContextBase *context);
     virtual bool nextFolder();
     virtual void processFolder(ImapStrategyContextBase *context);
+    virtual bool synchronizationEnabled(const QMailFolder &folder) const;
 
     void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
@@ -504,6 +505,8 @@ protected:
 
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
     virtual void qresyncFolderListFolderAction(ImapStrategyContextBase *context);
+
+    virtual bool synchronizationEnabled(const QMailFolder &folder) const;
 
     uint _minimum;
     bool _accountCheck;

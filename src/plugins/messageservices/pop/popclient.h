@@ -71,6 +71,7 @@ public:
 
     void setAccount(const QMailAccountId &accountId);
     QMailAccountId accountId() const;
+    bool synchronizationEnabled(const QMailFolderId &id) const;
 
     void newConnection();
     void closeConnection();

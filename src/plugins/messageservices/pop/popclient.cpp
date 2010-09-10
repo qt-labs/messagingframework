@@ -152,6 +152,12 @@ QMailAccountId PopClient::accountId() const
     return config.id();
 }
 
+bool PopClient::synchronizationEnabled(const QMailFolderId &id) const
+{
+    return id.isValid() // not accountChecking
+        || (QMailFolder(folderId).status() & QMailFolder::SynchronizationEnabled);
+}
+
 void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
 {
     selected = false;

@@ -1669,7 +1669,7 @@ bool ImapFolderListStrategy::nextFolder()
         setCurrentMailbox(folderId);
 
         // Bypass any folder for which synchronization is disabled
-        if (_currentMailbox.status() & QMailFolder::SynchronizationEnabled)
+        if (synchronizationEnabled(_currentMailbox))
             return true;
     }
 
@@ -1685,6 +1685,11 @@ void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
         selectFolder(context, _currentMailbox);
 
     context->progressChanged(++_processed, _processable);
+}
+
+bool ImapFolderListStrategy::synchronizationEnabled(const QMailFolder &folder) const 
+{
+    return folder.status() & QMailFolder::SynchronizationEnabled;
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -3427,6 +3432,11 @@ void ImapRetrieveMessageListStrategy::qresyncFolderListFolderAction(ImapStrategy
     // Nothing to do
     processNextFolder(context);
     return;
+}
+
+bool ImapRetrieveMessageListStrategy::synchronizationEnabled(const QMailFolder &folder) const
+{
+    return ImapSynchronizeBaseStrategy::synchronizationEnabled(folder) || !_accountCheck;
 }
 
 void ImapRetrieveMessageListStrategy::processUidSearchResults(ImapStrategyContextBase *context)
