@@ -451,8 +451,6 @@ bool QMailStore::updateAccount(QMailAccount* account, QMailAccountConfiguration 
 */
 bool QMailStore::updateAccountConfiguration(QMailAccountConfiguration *config)
 {
-    asm("int3");
-
     QMailAccountIdList updatedAccounts;
 
     d->setLastError(NoError);
