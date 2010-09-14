@@ -1471,11 +1471,10 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
         qWarning() << "what is id??"; //TODO:
         break;
     case QMailMessageKey::Type:
-        qWarning() << "What is type??"; //TODO:
-        break;
+        return "ALL"; // TODO: Why are search keys coming in with "message must equal no type"
     case QMailMessageKey::Sender: {
         QString sender = value.toString();
-        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
+        if (comparer == QMailKey::Equal || comparer == QMailKey::Includes)
             return QString("FROM \"%1\"").arg(sender);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
             return QString("NOT (FROM \"%1\")").arg(sender);
@@ -1483,6 +1482,8 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
             qWarning() << "Comparer " << comparer << " is unhandled for sender comparison";
         break;
     }
+    case QMailMessageKey::ParentFolderId:
+        return "ALL";
     case QMailMessageKey::Recipients: {
         QString recipients = ImapProtocol::quoteString(value.toString());
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
@@ -1533,10 +1534,10 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
         break;
     }
     case QMailMessageKey::ParentAccountId:
-        qWarning() << "Not handling parent account id? We're in the account? no?";
+        return "ALL";
         break;
     case QMailMessageKey::AncestorFolderIds:
-        qWarning() << "Not handling ancestor folder ids for IMAP search..";
+        return "ALL";
         break;
     case QMailMessageKey::ContentType:
         break;
