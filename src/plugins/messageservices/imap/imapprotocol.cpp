@@ -1476,9 +1476,9 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
     case QMailMessageKey::Sender: {
         QString sender = value.toString();
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("FROM %1").arg(sender);
+            return QString("FROM \"%1\"").arg(sender);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (FROM %1)").arg(sender);
+            return QString("NOT (FROM \"%1\")").arg(sender);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for sender comparison";
         break;
@@ -1486,9 +1486,9 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
     case QMailMessageKey::Recipients: {
         QString recipients = ImapProtocol::quoteString(value.toString());
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("OR BCC %1 (OR CC %1 TO %1)").arg(recipients);
+            return QString("OR (BCC \"%1\") (OR CC \"%1\" TO \"%1\")").arg(recipients);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (OR BCC %1 (OR CC %1 TO %1))").arg(recipients);
+            return QString("NOT (OR (BCC \"%1\") (OR CC \"%1\" TO \"%1\"))").arg(recipients);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for recipients comparison";
         break;
@@ -1496,9 +1496,9 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
     case QMailMessageKey::Subject: {
         QString subject = ImapProtocol::quoteString(value.toString());
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("SUBJECT %1").arg(subject);
+            return QString("SUBJECT \"%1\"").arg(subject);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (SUBJECT %1)").arg(subject);
+            return QString("NOT (SUBJECT \"%1\")").arg(subject);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for subject comparison";
         break;
