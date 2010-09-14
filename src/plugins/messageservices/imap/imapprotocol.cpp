@@ -1589,23 +1589,19 @@ QString SearchMessageState::convertKey(const QMailMessageKey &key) const
 QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKey::Combiner &combiner) const
 {
     if(combiner == QMailKey::And) {
-        //IMAP uses AND by default, so just add a space and we're good to go!
+        // IMAP uses AND by default, so just add a space and we're good to go!
         return searchKeys.join(QString(' '));
     } else if(combiner == QMailKey::Or) {
-        //IMAP uses OR (value-1 value-2)
-        int left = searchKeys.count(); //how many are we joining
         QString result;
 
-        //TODO: this is wrong
-        foreach(QString searchKey, searchKeys) {
-            if(left >= 3)
-                result += "OR (";
-            else if(left == 2)
-                result += "OR ";
-
-            result += searchKey;
+        for (int i = 0 ; i < searchKeys.count() ; i++)
+        {
+            if (i == searchKeys.count() - 1) // the last one
+                result += searchKeys[i] + QString(')').repeated(searchKeys.count() - 1);
+            else
+                result += "OR (" + searchKeys[i] + ") (";
         }
-        result += QString(')').repeated(searchKeys.count() - 2); //add closing parenthesis
+
         return result;
     } else if(combiner == QMailKey::None) {
         if(searchKeys.count() != 1)
