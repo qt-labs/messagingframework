@@ -1471,24 +1471,25 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
         qWarning() << "what is id??"; //TODO:
         break;
     case QMailMessageKey::Type:
-        qWarning() << "What is type??"; //TODO:
-        break;
+        return "ALL"; // TODO: Why are search keys coming in with "message must equal no type"
     case QMailMessageKey::Sender: {
         QString sender = value.toString();
-        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("FROM %1").arg(sender);
+        if (comparer == QMailKey::Equal || comparer == QMailKey::Includes)
+            return QString("FROM \"%1\"").arg(sender);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (FROM %1)").arg(sender);
+            return QString("NOT (FROM \"%1\")").arg(sender);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for sender comparison";
         break;
     }
+    case QMailMessageKey::ParentFolderId:
+        return "ALL";
     case QMailMessageKey::Recipients: {
         QString recipients = ImapProtocol::quoteString(value.toString());
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("OR BCC %1 (OR CC %1 TO %1)").arg(recipients);
+            return QString("OR (BCC \"%1\") (OR CC \"%1\" TO \"%1\")").arg(recipients);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (OR BCC %1 (OR CC %1 TO %1))").arg(recipients);
+            return QString("NOT (OR (BCC \"%1\") (OR CC \"%1\" TO \"%1\"))").arg(recipients);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for recipients comparison";
         break;
@@ -1496,9 +1497,9 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
     case QMailMessageKey::Subject: {
         QString subject = ImapProtocol::quoteString(value.toString());
         if(comparer == QMailKey::Equal || comparer == QMailKey::Includes)
-            return QString("SUBJECT %1").arg(subject);
+            return QString("SUBJECT \"%1\"").arg(subject);
         else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes)
-            return QString("NOT (SUBJECT %1)").arg(subject);
+            return QString("NOT (SUBJECT \"%1\")").arg(subject);
         else
             qWarning() << "Comparer " << comparer << " is unhandled for subject comparison";
         break;
@@ -1533,10 +1534,10 @@ QString SearchMessageState::convertValue(const QVariant &value, const QMailMessa
         break;
     }
     case QMailMessageKey::ParentAccountId:
-        qWarning() << "Not handling parent account id? We're in the account? no?";
+        return "ALL";
         break;
     case QMailMessageKey::AncestorFolderIds:
-        qWarning() << "Not handling ancestor folder ids for IMAP search..";
+        return "ALL";
         break;
     case QMailMessageKey::ContentType:
         break;
@@ -1589,23 +1590,19 @@ QString SearchMessageState::convertKey(const QMailMessageKey &key) const
 QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKey::Combiner &combiner) const
 {
     if(combiner == QMailKey::And) {
-        //IMAP uses AND by default, so just add a space and we're good to go!
+        // IMAP uses AND by default, so just add a space and we're good to go!
         return searchKeys.join(QString(' '));
     } else if(combiner == QMailKey::Or) {
-        //IMAP uses OR (value-1 value-2)
-        int left = searchKeys.count(); //how many are we joining
         QString result;
 
-        //TODO: this is wrong
-        foreach(QString searchKey, searchKeys) {
-            if(left >= 3)
-                result += "OR (";
-            else if(left == 2)
-                result += "OR ";
-
-            result += searchKey;
+        for (int i = 0 ; i < searchKeys.count() ; i++)
+        {
+            if (i == searchKeys.count() - 1) // the last one
+                result += searchKeys[i] + QString(')').repeated(searchKeys.count() - 1);
+            else
+                result += "OR (" + searchKeys[i] + ") (";
         }
-        result += QString(')').repeated(searchKeys.count() - 2); //add closing parenthesis
+
         return result;
     } else if(combiner == QMailKey::None) {
         if(searchKeys.count() != 1)
