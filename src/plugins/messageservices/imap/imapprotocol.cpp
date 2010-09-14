@@ -3324,9 +3324,9 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 {
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
-        setMessageContentFromStructure( structure, &mail );
+        bool wellFormed = setMessageContentFromStructure( structure, &mail );
 
-        if (mail.multipartType() != QMailMessage::MultipartNone) {
+        if (wellFormed && (mail.multipartType() != QMailMessage::MultipartNone)) {
             mail.setStatus( QMailMessage::ContentAvailable, true );
             mail.setSize( size );
 

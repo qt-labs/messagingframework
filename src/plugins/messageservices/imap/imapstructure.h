@@ -47,7 +47,7 @@
 
 class QMailMessage;
 
-void setMessageContentFromStructure(const QStringList &structure, QMailMessage *message);
+bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *message);
 
 QStringList getMessageStructure(const QString &field);
 

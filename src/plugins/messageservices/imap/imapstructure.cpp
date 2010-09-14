@@ -299,7 +299,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
     return disposition;
 }
 
-void setBodyFromDescription(const QStringList &details, QMailMessagePartContainer *container, uint *size)
+void setBodyFromDescription(const QStringList &details, QMailMessagePartContainer *container, uint *size, bool *wellFormed)
 {
     QMailMessageContentType type;
 
@@ -310,8 +310,12 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
 
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
-    if (parameters.count() % 2)
+    if (parameters.count() % 2) {
         qWarning() << "Incorrect setBodyFromDescription parameters:" << parameters;
+        if (wellFormed) {
+            *wellFormed = false;
+        }
+    }
     QStringList::const_iterator it = parameters.begin(), end = parameters.end();
     for ( ; (it != end) && ((it + 1) != end); it += 2) {
         type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
@@ -325,13 +329,17 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
 
     // [6]: size
     if (size) {
-        *size = details.at(6).toUInt();
+        bool ok;
+        *size = details.at(6).toUInt(&ok);
+        if (!ok && wellFormed) {
+            *wellFormed = false;
+        }
     }
 
     container->setBody(QMailMessageBody::fromData(QByteArray(), type, encoding, QMailMessageBody::AlreadyEncoded));
 }
 
-void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size);
+void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size, bool *wellFormed);
 
 void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
 {
@@ -396,7 +404,7 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     ++next;
 }
 
-void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part, uint *size)
+void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part, uint *size, bool *wellFormed)
 {
     QStringList details = decomposeElements(structure.last());
 
@@ -407,8 +415,12 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
     if (details.count() > 1) {
         const QStringList parameters(decomposeElements(details.at(1)));
         QStringList::const_iterator it = parameters.begin(), end = parameters.end();
-        if (parameters.count() % 2)
+        if (parameters.count() % 2) {
             qWarning() << "Incorrect setMultipartFromDescription parameter count" << parameters.last();
+            if (wellFormed) {
+                *wellFormed = false;
+            }
+        }
         for ( ; (it != end) && ((it + 1) != end); it += 2) {
             if ((*it).trimmed().toUpper() == "BOUNDARY") {
                 container->setBoundary((*(it + 1)).toAscii());
@@ -451,7 +463,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         QMailMessagePart part;
         uint partSize = 0;
 
-        setPartContentFromStructure(decomposeStructure(structure.at(i), 0), &part, &partSize);
+        setPartContentFromStructure(decomposeStructure(structure.at(i), 0), &part, &partSize, wellFormed);
         container->appendPart(part);
 
         if (size) {
@@ -460,7 +472,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
     }
 }
 
-void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size)
+void setPartContentFromStructure(const QStringList &structure, QMailMessagePart *part, uint *size, bool *wellFormed)
 {
     if (!structure.isEmpty()) {
         // The last element is the message
@@ -470,8 +482,11 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
                 QStringList details(decomposeElements(message));
                 if (details.count() < 7) {
                     qWarning() << "Ill-formed part structure:" << details;
+                    if (wellFormed) {
+                        *wellFormed = false;
+                    }
                 } else {
-                    setBodyFromDescription(details, part, size);
+                    setBodyFromDescription(details, part, size, wellFormed);
 
                     if (details.count() > 7) {
                         setPartFromDescription(details, part);
@@ -479,7 +494,7 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
                 }
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, part, part, size);
+                setMultipartFromDescription(structure, part, part, size, wellFormed);
             }
         }
     }
@@ -487,9 +502,11 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
 
 }
 
-void setMessageContentFromStructure(const QStringList &structure, QMailMessage *message)
+bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *message)
 {
+    bool wellFormed = false;
     if (!structure.isEmpty()) {
+        wellFormed = true;
         // The last element is the message description
         const QString &description = structure.last();
         if (!description.isEmpty()) {
@@ -498,17 +515,24 @@ void setMessageContentFromStructure(const QStringList &structure, QMailMessage *
                 QStringList details(decomposeElements(description));
                 if (details.count() < 7) {
                     qWarning() << "Ill-formed body structure:" << details;
+                    wellFormed = false;
                 } else {
-                    setBodyFromDescription(details, message, &size);
+                    setBodyFromDescription(details, message, &size, &wellFormed);
                 }
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, message, 0, &size);
+                setMultipartFromDescription(structure, message, 0, &size, &wellFormed);
             }
 
             message->setContentSize(size);
+            if (!wellFormed) {
+                // Ill-formed message set status of message as not retrieved
+                message->setStatus(QMailMessage::ContentAvailable, false);
+                message->setStatus(QMailMessage::PartialContentAvailable, false);
+            }
         }
     }
+    return wellFormed;
 }
 
 QStringList getMessageStructure(const QString &field)
