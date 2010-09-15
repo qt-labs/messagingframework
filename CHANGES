@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201037
+  * Fixes: NB#188374 Mails cannot be sent via AOL mailbox
+
 201036
   * Fixes: NB#190343 messagserver invoking OOM killer and apparently its being killed
   * Fixes: NB#181065 Lack of pkgconfig files for QMF
