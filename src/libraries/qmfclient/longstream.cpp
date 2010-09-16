@@ -61,6 +61,7 @@
 
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
+    : mStatus(Ok)
 {
     QString tmpName( LongStream::tempDir() + QLatin1String( "longstream" ) );
 
@@ -74,7 +75,7 @@ LongStream::LongStream()
     } else {
         qWarning() << "Unable to open temporary file:" << tmpFile->fileName();
         ts = 0;
-        setStatus( LongStream::OutOfSpace );
+        setStatus(OutOfSpace);
     }
 }
 
