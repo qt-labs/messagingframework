@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 201037
+  * Fixes: NB#168820 QMailRetrievalAction::retrieveMessageList() default "minimum" value returns no messages
   * Fixes: NB#188374 Mails cannot be sent via AOL mailbox
 
 201036
