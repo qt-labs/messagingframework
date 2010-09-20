@@ -55,10 +55,11 @@
 #include <QDir>
 
 
-static const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
-static const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
+namespace {
+const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;
+const int ContentFetchFlags = F_Uid | F_Rfc822_Size | F_Rfc822;
 
-static QString stripFolderPrefix(const QString &str)
+QString stripFolderPrefix(const QString &str)
 {
     QString result;
     int index;
@@ -67,7 +68,7 @@ static QString stripFolderPrefix(const QString &str)
     return str;
 }
 
-static QStringList stripFolderPrefix(const QStringList &list)
+QStringList stripFolderPrefix(const QStringList &list)
 {
     QStringList result;
     foreach(const QString &uid, list) {
@@ -76,7 +77,7 @@ static QStringList stripFolderPrefix(const QStringList &list)
     return result;
 }
 
-static QStringList inFirstAndSecond(const QStringList &first, const QStringList &second)
+QStringList inFirstAndSecond(const QStringList &first, const QStringList &second)
 {
     // TODO: this may be more efficient if we convert both inputs to sets and perform set operations
     QStringList result;
@@ -88,7 +89,7 @@ static QStringList inFirstAndSecond(const QStringList &first, const QStringList 
     return result;
 }
 
-static QStringList inFirstButNotSecond(const QStringList &first, const QStringList &second)
+QStringList inFirstButNotSecond(const QStringList &first, const QStringList &second)
 {
     QStringList result;
 
@@ -99,7 +100,7 @@ static QStringList inFirstButNotSecond(const QStringList &first, const QStringLi
     return result;
 }
 
-static bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &rhs)
+bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &rhs)
 {
     // Any full message sorts before any message element
     if (lhs._properties.isEmpty() && !rhs._properties.isEmpty()) {
@@ -129,7 +130,7 @@ static bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSel
     return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
 }
 
-static bool updateMessagesMetaData(ImapStrategyContextBase *context, 
+bool updateMessagesMetaData(ImapStrategyContextBase *context,
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
                                    const QMailMessageKey &seenKey,
@@ -199,7 +200,7 @@ static bool updateMessagesMetaData(ImapStrategyContextBase *context,
     return result;
 }
 
-static bool findFetchContinuationStart(const QMailMessage &message, const QMailMessagePart::Location &location, int *start)
+bool findFetchContinuationStart(const QMailMessage &message, const QMailMessagePart::Location &location, int *start)
 {
     if (message.id().isValid()) {
         *start = 0;
@@ -219,7 +220,7 @@ static bool findFetchContinuationStart(const QMailMessage &message, const QMailM
     return false;
 }
 
-static QString numericUidSequence(const QStringList &uids)
+QString numericUidSequence(const QStringList &uids)
 {
     QStringList numericUids;
     foreach (const QString &uid, uids) {
@@ -229,7 +230,7 @@ static QString numericUidSequence(const QStringList &uids)
     return IntegerRegion(numericUids).toString();
 }
 
-static bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
+bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessagePartContainer &source)
 {
     if (destination.partCount() != source.partCount()) {
         qWarning() << "transferPartBodies detected copy failure, aborting transfer. Part count, destination" << destination.partCount() << "source" << source.partCount();
@@ -249,7 +250,7 @@ static bool transferPartBodies(QMailMessagePartContainer &destination, const QMa
     return true;
 }
 
-static bool transferMessageData(QMailMessage &message, const QMailMessage &source)
+bool transferMessageData(QMailMessage &message, const QMailMessage &source)
 {
     // TODO: this whole concept is wrong - we might lose data by replacing the original message...
 
@@ -270,12 +271,121 @@ static bool transferMessageData(QMailMessage &message, const QMailMessage &sourc
     return true;
 }
 
-static void updateAccountLastSynchronized(ImapStrategyContextBase *context)
+void updateAccountLastSynchronized(ImapStrategyContextBase *context)
 {
     QMailAccount account(context->config().id());
     account.setLastSynchronized(QMailTimeStamp::currentDateTime());
     if (!QMailStore::instance()->updateAccount(&account))
         qWarning() << "Unable to update account" << account.id() << "to set lastSynchronized";
+}
+
+QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<QMailFolderId> const& total)
+{
+    typedef QPair< QSet<QMailFolderId>, QSet<QMailFolderId> >  IncludedExcludedPair;
+
+    struct L {
+        static IncludedExcludedPair extractFolders(QMailMessageKey const& key)
+        {
+            bool isNegated(key.isNegated());
+            IncludedExcludedPair r;
+
+            QSet<QMailFolderId> & included = isNegated ? r.second : r.first;
+            QSet<QMailFolderId> & excluded = isNegated ? r.first : r.second;
+
+            foreach(QMailMessageKey::ArgumentType const& arg, key.arguments())
+            {
+                switch (arg.property)
+                {
+                case QMailMessageKey::ParentFolderId:
+                    if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        included.insert(arg.valueList[0].value<QMailFolderId>());
+                    } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        excluded.insert(arg.valueList[0].value<QMailFolderId>());
+                    } else {
+                        Q_ASSERT(false);
+                    }
+                    break;
+                case QMailMessageKey::AncestorFolderIds:
+                    if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        included.unite(QMailStore::instance()->queryFolders(
+                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>())).toSet());
+                    } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        excluded.unite(QMailStore::instance()->queryFolders(
+                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>())).toSet());
+                    } else {
+                        Q_ASSERT(false);
+                    }
+                    break;
+
+                case QMailMessageKey::ParentAccountId:
+                    if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
+                        included.unite(QMailStore::instance()->queryFolders(
+                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>())).toSet());
+                    } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
+                        excluded.unite(QMailStore::instance()->queryFolders(
+                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>())).toSet());
+                    } else {
+                        Q_ASSERT(false);
+                    }
+                default:
+                    break;
+                }
+            }
+
+            if (key.combiner() == QMailKey::None) {
+                qDebug() << "No combiner";
+                Q_ASSERT(key.subKeys().size() == 0);
+                Q_ASSERT(key.arguments().size() == 1);
+            } else if (key.combiner() == QMailKey::Or) {
+                qDebug() << "Or combiner";
+                foreach (QMailMessageKey const& k, key.subKeys()) {
+                    IncludedExcludedPair v(extractFolders(k));
+                    included.unite(v.first);
+                    excluded.unite(v.second);
+                }
+            } else if (key.combiner() == QMailKey::And) {
+                bool filled(included.size() == 0 && excluded.size() == 0 ? false : true);
+
+                for (QList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
+                    IncludedExcludedPair next(extractFolders(*it));
+                    if (next.first.size() != 0 || next.second.size() != 0) {
+                        if (filled) {
+                            included.intersect(next.first);
+                            excluded.intersect(next.second);
+                        } else {
+                            filled = true;
+                            included.unite(next.first);
+                            excluded.unite(next.second);
+                        }
+                    }
+                }
+            } else {
+                Q_ASSERT(false);
+            }
+            return r;
+        }
+    };
+
+    IncludedExcludedPair result(L::extractFolders(messagekey));
+    if (result.first.isEmpty()) {
+        return total - result.second;
+    } else {
+        return (total & result.first) - result.second;
+    }
+}
+
 }
 
 
@@ -1418,10 +1528,10 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
 
 void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
 {
-   SearchData search;
-   search.criteria = searchCriteria;
-   search.bodyText = bodyText;
-   search.sort = sort;
+    SearchData search;
+    search.criteria = searchCriteria;
+    search.bodyText = bodyText;
+    search.sort = sort;
 
     _searches.append(search);
     _canceled = false;
@@ -1444,19 +1554,37 @@ void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapComma
     }
 }
 
+void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *context)
+{
+    _mailboxList = context->client()->mailboxIds();
+
+    ImapRetrieveFolderListStrategy::folderListCompleted(context);
+    if(!_currentMailbox.id().isValid())
+    {
+
+        QSet<QMailFolderId> accountFolders(_mailboxList.toSet());
+
+        QMailFolderIdList foldersToSearch(foldersApplicableTo(_searches.first().criteria, accountFolders).toList());
+
+        if (foldersToSearch.isEmpty())
+            ImapRetrieveFolderListStrategy::folderListCompleted(context);
+        else {
+            selectedFoldersAppend(foldersToSearch);
+            processNextFolder(context);
+        }
+    }
+
+
+}
+
+
 void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     if(_canceled)
         return; //stop it searching
 
-    //if there are messages, lets search it
-    const ImapMailboxProperties &properties(context->mailbox());
-    if(properties.exists > 0) {
-        const SearchData &search = _searches.first();
-        context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
-    } else {
-        processNextFolder(context);
-    }
+    SearchData search(_searches.first());
+    context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
 }
 
 void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
@@ -1510,10 +1638,10 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
 
 void ImapSearchMessageStrategy::messageListCompleted(ImapStrategyContextBase *context)
  {
-    if(_canceled)
-        return;
-     _searches.removeFirst();
-     context->operationCompleted();
+    if(_currentMailbox.id().isValid()) {
+        _searches.removeFirst();
+        context->operationCompleted();
+    }
  }
 
 /* A strategy that provides an interface for processing a set of folders.

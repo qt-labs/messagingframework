@@ -591,13 +591,14 @@ public:
 class ImapSearchMessageStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
-    ImapSearchMessageStrategy() : _canceled(false) { setBase(QMailFolderId()); setDescending(true); }
+    ImapSearchMessageStrategy() : _canceled(false) { setBase(QMailFolderId()); setQuickList(true); setDescending(true); }
     virtual ~ImapSearchMessageStrategy() {}
 
     virtual void cancelSearch();
     virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
 protected:
+    virtual void folderListCompleted(ImapStrategyContextBase *context);
     virtual void handleSearchMessage(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     virtual void folderListFolderAction(ImapStrategyContextBase *context);

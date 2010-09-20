@@ -241,57 +241,94 @@ QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::L
     return set.map;
 }
 
-void extractAccounts(const QMailMessageKey &key, bool parentNegated, QSet<QMailAccountId> &include, QSet<QMailAccountId> &exclude)
+QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMailAccountId> const& total)
 {
-    bool isNegated(parentNegated);
-    if (key.isNegated())
-        isNegated = !isNegated;
+    typedef QPair< QSet<QMailAccountId>, QSet<QMailAccountId> >  IncludedExcludedPair;
 
-    // Process the child keys
-    const QList<QMailMessageKey> &subKeys(key.subKeys());
-    foreach (const QMailMessageKey &subKey, subKeys)
-        extractAccounts(subKey, key.isNegated(), include, exclude);
+    struct L {
+        static IncludedExcludedPair extractAccounts(QMailMessageKey const& key)
+        {
+            bool isNegated(key.isNegated());
 
-    // Process any arguments
-    const QList<QMailMessageKey::ArgumentType> &args(key.arguments());
-    foreach (const QMailMessageKey::ArgumentType &arg, args) {
-        if (arg.property == QMailMessageKey::ParentAccountId) {
-            QSet<QMailAccountId> *set = 0;
+            IncludedExcludedPair r;
 
-            //TODO: handle ranges
-            if ((arg.op == QMailKey::Equal) || (arg.op == QMailKey::Includes)) {
-                set = (isNegated ? &exclude : &include);
-            } else if ((arg.op == QMailKey::NotEqual) || (arg.op == QMailKey::Excludes)) {
-                set = (isNegated ? &include : &exclude);
+            QSet<QMailAccountId> & included = isNegated ? r.second : r.first;
+            QSet<QMailAccountId> & excluded = isNegated ? r.first : r.second;
+
+            foreach(QMailMessageKey::ArgumentType const& arg, key.arguments())
+            {
+                switch (arg.property)
+                {
+                case QMailMessageKey::ParentFolderId:
+                case QMailMessageKey::AncestorFolderIds:
+                    if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        included.insert(QMailFolder(arg.valueList[0].value<QMailFolderId>()).parentAccountId());
+                    } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
+                        excluded.insert(QMailFolder(arg.valueList[0].value<QMailFolderId>()).parentAccountId());
+                    } else {
+                        Q_ASSERT(false);
+                    }
+                    break;
+                case QMailMessageKey::ParentAccountId:
+                    if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
+                        included.insert(arg.valueList[0].value<QMailAccountId>());
+                    } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
+                        Q_ASSERT(arg.valueList.count() == 1);
+                        Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
+                        excluded.insert(arg.valueList[0].value<QMailAccountId>());
+                    } else {
+                        Q_ASSERT(false);
+                    }
+                default:
+                    break;
+                }
             }
 
-            if (set)
-                foreach (const QVariant &v, arg.valueList)
-                    set->insert(qVariantValue<QMailAccountId>(v));
+            if (key.combiner() == QMailKey::None) {
+                Q_ASSERT(key.subKeys().size() == 0);
+                Q_ASSERT(key.arguments().size() == 1);
+            } else if (key.combiner() == QMailKey::Or) {
+                foreach (QMailMessageKey const& k, key.subKeys()) {
+                    IncludedExcludedPair v(extractAccounts(k));
+                    included.unite(v.first);
+                    excluded.unite(v.second);
+                }
+            } else if (key.combiner() == QMailKey::And) {
+                bool filled(included.size() == 0 && excluded.size() == 0 ? false : true);
+
+                for (QList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
+                    IncludedExcludedPair next(extractAccounts(*it));
+                    if (next.first.size() != 0 || next.second.size() != 0) {
+                        if (filled) {
+                            included.intersect(next.first);
+                            excluded.intersect(next.second);
+                        } else {
+                            filled = true;
+                            included.unite(next.first);
+                            excluded.unite(next.second);
+                        }
+                    }
+                }
+            } else {
+                Q_ASSERT(false);
+            }
+
+            return r;
         }
+    };
+
+    IncludedExcludedPair result(L::extractAccounts(messagekey));
+    if (result.first.isEmpty()) {
+        return total - result.second;
+    } else {
+        return (total & result.first) - result.second;
     }
-}
-
-QSet<QMailAccountId> keyAccounts(const QMailMessageKey &key, const QSet<QMailAccountId> &complete)
-{
-    QSet<QMailAccountId> include;
-    QSet<QMailAccountId> exclude;
-
-    // Find all accounts that are relevant to this key
-    extractAccounts(key, key.isNegated(), include, exclude);
-
-    if (!exclude.isEmpty()) {
-        // We have to consider all accounts apart from the exclusions, and 
-        // any specific inclusions should be re-added
-        return ((complete - exclude) + include);
-    }
-
-    if (include.isEmpty()) {
-        // No accounts qualifications were specified at all
-        return complete;
-    }
-
-    return include;
 }
 
 struct TextPartSearcher
@@ -1751,7 +1788,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
 {
     if (spec == QMailSearchAction::Remote) {
         // Find the accounts that we need to search within from the criteria
-        QSet<QMailAccountId> searchAccountIds(keyAccounts(filter, sourceMap.keys().toSet()));
+        QSet<QMailAccountId> searchAccountIds(accountsApplicableTo(filter, sourceMap.keys().toSet()));
 
         QSet<QMailMessageService*> sources(sourceServiceSet(searchAccountIds));
         if (sources.isEmpty()) {
