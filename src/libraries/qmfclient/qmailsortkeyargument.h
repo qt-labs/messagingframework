@@ -67,6 +67,7 @@ public:
     quint64 mask;
 
     QMailSortKeyArgument()
+        : mask(0)
     {
     }
 

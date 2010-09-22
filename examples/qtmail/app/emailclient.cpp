@@ -650,13 +650,8 @@ void EmailClient::setVisible(bool visible)
     {
         QPoint p(0, 0);
         int extraw = 0, extrah = 0, scrn = 0;
-        QWidget* w = 0;
-        if (w)
-            w = w->window();
         QRect desk;
-        if (w) {
-            scrn = QApplication::desktop()->screenNumber(w);
-        } else if (QApplication::desktop()->isVirtualDesktop()) {
+        if (QApplication::desktop()->isVirtualDesktop()) {
             scrn = QApplication::desktop()->screenNumber(QCursor::pos());
         } else {
             scrn = QApplication::desktop()->screenNumber(this);

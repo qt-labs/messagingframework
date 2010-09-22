@@ -1304,6 +1304,9 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                    ((addressPos == -1) || (addressPos >= filePos))) {
             matchPos = &filePos;
             matchPattern = &filePattern;
+        } else {
+            Q_ASSERT(false);
+            return QString();
         }
 
         QString replacement;

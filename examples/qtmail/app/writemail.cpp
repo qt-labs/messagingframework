@@ -588,9 +588,8 @@ void WriteMail::messageModified()
 
     if (m_composerInterface) {
         m_draftAction->setEnabled( hasContent() );
+        m_sendAction->setEnabled(m_composerInterface->isReadyToSend());
     }
-
-    m_sendAction->setEnabled(m_composerInterface->isReadyToSend());
 }
 
 bool WriteMail::forcedClosure()

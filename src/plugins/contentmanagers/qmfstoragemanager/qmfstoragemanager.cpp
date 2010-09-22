@@ -194,7 +194,11 @@ void syncFile(QSharedPointer<QFile> file)
     ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file->handle())));
 #elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
-    ::fdatasync(file->handle());
+    int handle(file->handle());
+    if (handle != -1)
+        ::fdatasync(handle);
+    else
+        qWarning() << "Could not get file handle for fdatasync";
 #else
     ::fsync(file->handle());
 #endif

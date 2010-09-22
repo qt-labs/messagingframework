@@ -270,7 +270,9 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         authentication->setCurrentIndex(authenticationIndex(smtpConfig.smtpAuthentication()));
         encryption->setCurrentIndex(static_cast<int>(smtpConfig.smtpEncryption()));
 
-        SmtpConfiguration::AuthType type = authenticationType[authentication->currentIndex()];
+        int index(authentication->currentIndex());
+        Q_ASSERT(index >= 0);
+        SmtpConfiguration::AuthType type = authenticationType[index];
         const bool enableCredentials(type == SmtpConfiguration::Auth_LOGIN || type == SmtpConfiguration::Auth_PLAIN);
         smtpUsernameInput->setEnabled(enableCredentials);
         lblSmtpUsername->setEnabled(enableCredentials);
@@ -324,7 +326,9 @@ bool SmtpSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
 #ifndef QT_NO_OPENSSL
     smtpConfig.setSmtpUsername(smtpUsernameInput->text());
     smtpConfig.setSmtpPassword(smtpPasswordInput->text());
-    smtpConfig.setSmtpAuthentication(authenticationType[authentication->currentIndex()]);
+    int index(authentication->currentIndex());
+    Q_ASSERT(index >= 0);
+    smtpConfig.setSmtpAuthentication(authenticationType[index]);
     smtpConfig.setSmtpEncryption(static_cast<QMailTransport::EncryptType>(encryption->currentIndex()));
 #endif
 

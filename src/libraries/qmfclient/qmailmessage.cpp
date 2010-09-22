@@ -3193,11 +3193,10 @@ void QMailMessagePartContainerPrivate::outputBody(QDataStream& out, bool include
 static QString decodedContent(const QString& id, const QByteArray& content)
 {
     // TODO: Potentially, we should disallow decoding here based on the specific header field
-    bool permitDecoding(true);
-    //QByteArray id(fieldId(to7BitAscii(id)));
-    Q_UNUSED(id)
+    // return (permitDecoding ? QMailMessageHeaderField::decodeContent(content) : QString(content));
 
-    return (permitDecoding ? QMailMessageHeaderField::decodeContent(content) : QString(content));
+    return QMailMessageHeaderField::decodeContent(content);
+    Q_UNUSED(id);
 }
 
 /*!
@@ -3368,11 +3367,11 @@ void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, c
 static QByteArray encodedContent(const QByteArray& id, const QString& content)
 {
     // TODO: Potentially, we should disallow encoding here based on the specific header field
-    bool permitEncoding(true);
-    //QByteArray name(fieldId(id));
-    Q_UNUSED(id)
+    // return (permitEncoding ? QMailMessageHeaderField::encodeContent(content) : to7BitAscii(content));
 
-    return (permitEncoding ? QMailMessageHeaderField::encodeContent(content) : to7BitAscii(content));
+
+    return QMailMessageHeaderField::encodeContent(content);
+    Q_UNUSED(id)
 }
 
 void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, const QString &content)

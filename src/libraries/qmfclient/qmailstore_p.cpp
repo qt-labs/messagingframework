@@ -134,7 +134,7 @@ public:
     Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
     explicit Key(const QMailMessageSortKey &key, const QString &alias = QString()) : m_type(MessageSort), m_key(&key), m_alias(&alias), m_field(0) {}
 
-    explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text) {}
+    explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text), m_field(0) {}
 
     template<typename KeyType>
     bool isType() const { return isType(reinterpret_cast<KeyType*>(0)); }

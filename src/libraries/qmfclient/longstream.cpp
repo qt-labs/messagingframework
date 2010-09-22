@@ -236,7 +236,10 @@ bool LongStream::freeSpace( const QString &path, int min)
 #elif !defined(Q_OS_WIN)
     struct statfs stats;
 
-    statfs(partitionPath.toLocal8Bit(), &stats);
+    if (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {
+        qWarning() << "Could not stat filesystem";
+        return true;
+    }
     unsigned long long bavail = ((unsigned long long)stats.f_bavail);
     unsigned long long bsize = ((unsigned long long)stats.f_bsize);
 
