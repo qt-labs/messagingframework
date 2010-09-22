@@ -2541,6 +2541,7 @@ void QMailStorePrivate::destroyTemporaryTables()
 
 QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessageId &id)
 {
+    Q_ASSERT(id.isValid());
     QMap<QString, QString> fields;
     customFields(id.toULongLong(), &fields, "mailmessagecustom");
     return fields;

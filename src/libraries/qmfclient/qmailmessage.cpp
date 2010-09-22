@@ -5277,8 +5277,12 @@ quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 
 void QMailMessageMetaDataPrivate::ensureCustomFieldsLoaded() const
 {
-    if (!_customFields.isInitialized())
-        _customFields = QMailStore::instance()->messageCustomFields(_id);
+    if (!_customFields.isInitialized()) {
+        if (_id.isValid())
+            _customFields = QMailStore::instance()->messageCustomFields(_id);
+        else
+            _customFields = QMap<QString, QString>();
+    }
 }
 
 const QMap<QString, QString> &QMailMessageMetaDataPrivate::customFields() const
