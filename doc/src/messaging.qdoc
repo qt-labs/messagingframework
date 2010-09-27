@@ -50,10 +50,10 @@ For detailed information refer to:
 
 \section1 Building and Compiling 
 
-To build the Messaging Framework, run \c qmake on the top level \c messagingframework.pro file as follows:
+To build the Messaging Framework, run \c qmake on the top level \c qmf.pro file as follows:
 
 \code 
-qmake "QMF_INSTALL_ROOT=<image directory path>" messagingframework.pro 
+qmake "QMF_INSTALL_ROOT=<image directory path>" qmf.pro 
 \endcode
 
 Where \c <image \c directory \c path> is the location that \c make \c install will put the resultant binary files. It is optional but 
@@ -71,11 +71,11 @@ It is also recommended to build in a separate path to the source tree. This is j
 of running the above commands from within a separate build directory.
 
 \bold Note: If there are build errors referring to valgrind (tst_messageserver), please ensure that valgrind development headers are installed,
-or optionally remove unwanted tests from the messagingframework.pro. 
+or optionally remove unwanted tests from the qmf.pro. 
 
 \bold Note: By default the QMF libraries, messageserver and protocol plugins depend on the QtGui library. This is so that protocol plugins (e.g. IMAP/SMTP/POP) can provide GUI account editors. To remove this dependency use the define QMF_NO_MESSAGE_SERVICE_EDITOR e.g:
 \code
-qmake -r messagingframework.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR
+qmake -r qmf.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR
 \endcode
 
 \section1 Running Messaging Framework 
