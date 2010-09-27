@@ -7135,46 +7135,71 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
-        // Find any messages that need to updated
-        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
-                                    Key("responseid", QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages mailmessages updated query"));
+        QMap<QMailMessageId, QMailMessageId> update_map;
+
+        {
+            // Find any messages that need to updated
+            QSqlQuery query(simpleQuery("SELECT id, responseid FROM mailmessages",
+                                        Key("responseid", QMailMessageKey::id(deletedMessageIds)),
+                                        "deleteMessages mailmessages updated query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+
+            while (query.next()) {
+                QMailMessageId from(QMailMessageId(extractValue<quint64>(query.value(0))));
+                QMailMessageId to(QMailMessageId(extractValue<quint64>(query.value(1))));
+
+                update_map.insert(from, to);
+            }
+        }
+
+        QMap<QMailMessageId, QMailMessageId> predecessors;
+
+        // Find the predecessors for any messages we're removing
+        QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
+                                    Key(QMailMessageKey::id(deletedMessageIds)),
+                                    "deleteMessages mailmessages predecessor query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
-            updatedMessageIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
-    }
-
-    {
-        QMap<QMailMessageId, quint64> predecessors;
-
-        {
-            // Find the predecessors for any messages we're removing
-            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
-                                        Key(QMailMessageKey::id(deletedMessageIds)),
-                                        "deleteMessages mailmessages predecessor query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
-
-            while (query.next())
-                predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), extractValue<quint64>(query.value(1)));
+        while (query.next()) {
+            predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), QMailMessageId(extractValue<quint64>(query.value(1))));
         }
 
         {
-            QVariantList newPredecessorValues;
-            QVariantList deletedValues;
-            foreach (const QMailMessageId &id, deletedMessageIds) {
-                newPredecessorValues.append(QVariant(predecessors[id]));
-                deletedValues.append(QVariant(id));
+            QVariantList messageIdList;
+            QVariantList newResponseIdList;
+            for (QMap<QMailMessageId, QMailMessageId>::iterator it(update_map.begin()) ; it != update_map.end() ; ++it) {
+                QMailMessageId to_update(it.key());
+
+                if (!deletedMessageIds.contains(to_update)) {
+                    updatedMessageIds.append(to_update);
+                    messageIdList.push_back(QVariant(to_update));
+
+                    QMailMessageId to;
+
+                    QMap<QMailMessageId, QMailMessageId>::iterator it(predecessors.find(it.value()));
+                    Q_ASSERT(it != predecessors.end());
+                    // This code makes the assumption of noncyclic dependencies
+                    do {
+                        to = *it;
+                        it = predecessors.find(to);
+                    } while (it != predecessors.end());
+
+                    newResponseIdList.push_back(to);
+                }
             }
 
-            // Link any descendants of the messages to the deleted messages' predecessor
-            QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
-                                       QVariantList() << QVariant(newPredecessorValues) << QVariant(deletedValues),
-                                       "deleteMessages mailmessages update query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
+            Q_ASSERT(messageIdList.size() == newResponseIdList.size());
+            if (messageIdList.size())
+            {
+                // Link any descendants of the messages to the deleted messages' predecessor
+                QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE id=?",
+                                           QVariantList() << QVariant(newResponseIdList) << QVariant(messageIdList),
+                                           "deleteMessages mailmessages update query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return false;
+            }
         }
     }
 
@@ -7218,15 +7243,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                         "deleteMessages mailthreadsubjects delete query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
-        }
-    }
-
-    // Do not report any deleted entities as updated
-    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
-        if (deletedMessageIds.contains(*mit)) {
-            mit = updatedMessageIds.erase(mit);
-        } else {
-            ++mit;
         }
     }
 
