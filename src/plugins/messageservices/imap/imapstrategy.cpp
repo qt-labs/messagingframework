@@ -526,10 +526,6 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase * /*context*/, QMailMe
 void ImapStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
 {
     bool folder = _folder.take(message.serverUid());
-    // Remove the detached file if it is still present
-    QString detachedFile = message.customField("qtopiamail-detached-filename");
-    if (!detachedFile.isEmpty())
-        QFile::remove(detachedFile);
     if (_error) return;
 
     if (folder) {
@@ -551,10 +547,6 @@ void ImapStrategy::dataFetched(ImapStrategyContextBase * /*context*/, QMailMessa
 
 void ImapStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &/*section*/)
 {
-    // Remove the detached file if it is still present
-    QString detachedFile = message.customField("qtopiamail-detached-filename");
-    if (!detachedFile.isEmpty())
-        QFile::remove(detachedFile);
     if (_error) return;
 
     context->completedMessageAction(uid);

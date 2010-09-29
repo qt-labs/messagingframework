@@ -1059,23 +1059,11 @@ void PopClient::createMail()
 
     dataStream->reset();
 
-    // Workaround for message buffer file being deleted 
-    QFileInfo newFile(dataStream->fileName());
-    if (!newFile.exists()) {
-        qWarning() << "Unable to find message buffer file, pop protocol";
-        dataStream->detach();
-    }
-    
     MessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
 }
 
 void PopClient::messageFlushed(QMailMessage &message, bool isComplete)
 {
-    QString detachedFile = message.customField("qtopiamail-detached-filename");
-    // Remove the detached file if it is still present
-    if (!detachedFile.isEmpty())
-        QFile::remove(detachedFile);
-
     if (isComplete && !message.serverUid().isEmpty()) {
         // We have now retrieved the entire message
         messageProcessed(message.serverUid());
