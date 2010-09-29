@@ -5736,8 +5736,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFold
 
     if (!folderIdSet.isEmpty()) {
         QMailFolderIdList folderIds;
-        foreach (quint64 id, folderIdSet)
-            folderIds.append(QMailFolderId(id));
+        foreach (quint64 id, folderIdSet) {
+	    QMailFolderId folderId(id);
+	    if (folderId.isValid())
+                folderIds.append(folderId);
+	}
 
         // Find the set of folders and accounts whose contents are modified by this update
         AttemptResult result = affectedByFolderIds(folderIds, modifiedFolderIds, modifiedAccountIds);
