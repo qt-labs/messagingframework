@@ -7181,13 +7181,13 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
                     QMailMessageId to;
 
-                    QMap<QMailMessageId, QMailMessageId>::iterator it(predecessors.find(it.value()));
-                    Q_ASSERT(it != predecessors.end());
+                    QMap<QMailMessageId, QMailMessageId>::iterator toIterator(predecessors.find(it.value()));
+                    Q_ASSERT(toIterator != predecessors.end());
                     // This code makes the assumption of noncyclic dependencies
                     do {
-                        to = *it;
-                        it = predecessors.find(to);
-                    } while (it != predecessors.end());
+                        to = *toIterator;
+                        toIterator = predecessors.find(to);
+                    } while (toIterator != predecessors.end());
 
                     newResponseIdList.push_back(to);
                 }
