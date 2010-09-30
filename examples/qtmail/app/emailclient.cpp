@@ -796,6 +796,12 @@ void EmailClient::initActions()
         workOfflineAction->setChecked(false);
         workOfflineAction->setIconText(QString());
 
+        notificationAction = new QAction(tr("Enable Notifications"), this);
+        connect(notificationAction, SIGNAL(triggered()), this, SLOT(notificationStateChanged()));
+        notificationAction->setCheckable(true);
+        notificationAction->setChecked(false);
+        notificationAction->setIconText(false);
+
         emptyTrashAction = new QAction( Qtmail::icon("trashfolder"), tr("Empty trash"), this );
         connect(emptyTrashAction, SIGNAL(triggered()), this, SLOT(emptyTrashFolder()));
         setActionVisible(emptyTrashAction, false);
@@ -886,6 +892,7 @@ void EmailClient::initActions()
         fileMenu->addAction( emptyTrashAction );
         fileMenu->addAction( settingsAction );
         fileMenu->addAction( workOfflineAction );
+        fileMenu->addAction( notificationAction );
         fileMenu->addSeparator();
 
         QAction* quitAction = fileMenu->addAction(Qtmail::icon("quit"),"Quit");
@@ -2494,6 +2501,28 @@ void EmailClient::settings()
     settingsDialog.exec();
 }
 
+void EmailClient::notificationStateChanged()
+{
+    if (!NotificationTray::isSystemTrayAvailable()) {
+        QMessageBox::warning(this, tr("Unable to enable notification"), tr("System tray was undetected"));
+        notificationAction->setChecked(false);
+        return;
+    }
+
+    if (!NotificationTray::supportsMessages()) {
+        QMessageBox::warning(this, tr("Unable to enable notification"), tr("System tray doesn't support messages"));
+        notificationAction->setChecked(false);
+        return;
+    }
+
+    static QScopedPointer<NotificationTray> tray(new NotificationTray());
+
+    if (notificationAction->isChecked())
+        tray->show();
+    else
+        tray->hide();
+}
+
 void EmailClient::connectionStateChanged()
 {
     if (workOfflineAction->isChecked())
@@ -2868,6 +2897,29 @@ void EmailClient::readerMarkMessageAsNotImportant()
     quint64 unsetMask(QMailMessage::Important);
     QMailMessageId id(readMailWidget()->displayedMessage());
     flagMessage(id, setMask, unsetMask);
+}
+
+NotificationTray::NotificationTray(QObject *parent)
+    : QSystemTrayIcon(QIcon(":icon/qtmail"), parent)
+{
+    connect(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)), this, SLOT(messagesAdded(QMailMessageIdList)));
+}
+
+void NotificationTray::messagesAdded(const QMailMessageIdList &ids)
+{
+    Q_ASSERT(ids.size());
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+    Q_ASSERT(QSystemTrayIcon::supportsMessages());
+
+    if (isVisible()) {
+        if (ids.size() == 1) {
+            QMailMessage msg(ids.first());
+            showMessage(tr("New message from: %1").arg(msg.from().toString()), msg.subject());
+        } else {
+            Q_ASSERT(ids.size() > 1);
+            showMessage(tr("New messages"), tr("Received %1 new messages").arg(ids.size()));
+        }
+    }
 }
 
 
