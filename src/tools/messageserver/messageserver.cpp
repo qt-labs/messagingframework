@@ -185,6 +185,8 @@ MessageServer::MessageServer(QObject *parent)
 
         //clean up any temporary messages that were not cleaned up by clients
         QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
+
+        emit client->actionsListed(QMailActionDataList());
     }
 }
 
