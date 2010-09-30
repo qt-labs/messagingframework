@@ -271,25 +271,8 @@ class QMailActionInfoPrivate;
 
 class QMF_EXPORT  QMailActionInfo : public QMailServiceAction {
     Q_OBJECT
-//    If needed properties can be enabled by uncommenting this code
-//    and won't break api/abi
-
-//    Q_PROPERTY(QMailServerRequestType requestType READ requestType)
-//    Q_ENUMS(QMailServerRequestType)
-//    Q_PROPERTY(QMailServiceAction::Activity activity READ activity NOTIFY activityChanged)
-//    Q_PROPERTY(QMailActionId id READ id)
-//    Q_PROPERTY(float totalProgress READ totalProgress NOTIFY totalprogressChanged)
 public:
     typedef Status::ErrorCode StatusErrorCode; // moc hack
-// private:
-//    Q_PROPERTY(StatusErrorCode statusErrorCode READ statusErrorCode NOTIFY statusErrorCodeChanged)
-//    Q_ENUMS(StatusErrorCode)
-
-//    Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
-//    Q_PROPERTY(QMailAccountId statusAccountId READ statusAccountId NOTIFY statusAccountIdChanged)
-//    Q_PROPERTY(QMailFolderId statusFolderId READ statusFolderId NOTIFY statusFolderActionChanged)
-//    Q_PROPERTY(QMailMessageId statusMessageId READ statusMessageId NOTIFY statusMessageIdChanged)
-// public:
     typedef QMailActionInfoPrivate ImplementationType;
 
     QMailActionId id() const;
@@ -318,7 +301,6 @@ class QMailActionObserverPrivate;
 class QMF_EXPORT QMailActionObserver : public QMailServiceAction
 {
     Q_OBJECT
-//  Q_PROPERTY(QList< QSharedPointer<QMailActionInfo> > actions READ actions NOTIFY actionsChanged)
 public:   
     typedef QMailActionObserverPrivate ImplementationType;
 
