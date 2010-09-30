@@ -545,7 +545,7 @@ void ImapStrategy::dataFetched(ImapStrategyContextBase * /*context*/, QMailMessa
     }
 }
 
-void ImapStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &/*section*/)
+void ImapStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &, const QString &uid, const QString &/*section*/)
 {
     if (_error) return;
 
