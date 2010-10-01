@@ -65,5 +65,9 @@ public:
     static void copyToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
     static void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask, const QString& description);
     static void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask, const QString& description);
+
+    static bool restoreToPreviousFolder(const QMailMessageId& id);
+    static bool restoreToPreviousFolder(const QMailMessageKey& key);
+
 };
 #endif

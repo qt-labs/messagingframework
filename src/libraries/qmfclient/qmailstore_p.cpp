@@ -3749,15 +3749,6 @@ void QMailStorePrivate::unlock()
     }
 }
 
-bool QMailStorePrivate::restoreToPreviousFolder(const QMailMessageKey &key,
-                                                QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
-{
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRestoreToPreviousFolder, this, 
-                                        cref(key), 
-                                        updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
-                                   "restoreToPreviousFolder");
-}
-
 bool QMailStorePrivate::purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids)
 {
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptPurgeMessageRemovalRecords, this, 
@@ -5706,66 +5697,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
             quint64 newStatus = cachedMetaData.status();
             newStatus = set ? (newStatus | status) : (newStatus & ~status);
             cachedMetaData.setStatus(newStatus);
-            cachedMetaData.setUnmodified();
-            messageCache.insert(cachedMetaData);
-            uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
-        }
-    }
-
-    return Success;
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
-                                                                                   QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                                                   Transaction &t, bool commitOnSuccess)
-{
-    // Find the message and folders that are affected by this update
-    QSqlQuery query(simpleQuery("SELECT t0.id, t0.parentfolderid, t0.previousparentfolderid FROM mailmessages t0",
-                                Key(key, "t0"),
-                                "restoreToPreviousFolder info query"));
-    if (query.lastError().type() != QSqlError::NoError)
-        return DatabaseFailure;
-
-    QSet<quint64> folderIdSet;
-    while (query.next()) {
-        updatedMessageIds->append(QMailMessageId(extractValue<quint64>(query.value(0))));
-
-        folderIdSet.insert(extractValue<quint64>(query.value(1)));
-        folderIdSet.insert(extractValue<quint64>(query.value(2)));
-    }
-
-    if (!folderIdSet.isEmpty()) {
-        QMailFolderIdList folderIds;
-        foreach (quint64 id, folderIdSet) {
-	    QMailFolderId folderId(id);
-	    if (folderId.isValid())
-                folderIds.append(folderId);
-	}
-
-        // Find the set of folders and accounts whose contents are modified by this update
-        AttemptResult result = affectedByFolderIds(folderIds, modifiedFolderIds, modifiedAccountIds);
-        if (result != Success)
-            return result;
-
-        // Update the message records
-        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentfolderid=previousparentfolderid, previousparentfolderid=0",
-                                    Key(QMailMessageKey::id(*updatedMessageIds) & ~QMailMessageKey::previousParentFolderId(QMailFolderId())),
-                                    "restoreToPreviousFolder update query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
-    }
-
-    if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message folder restoration to database";
-        return DatabaseFailure;
-    }
-
-    // Update the header cache
-    foreach (const QMailMessageId &id, *updatedMessageIds) {
-        if (messageCache.contains(id)) {
-            QMailMessageMetaData cachedMetaData = messageCache.lookup(id);
-            cachedMetaData.setParentFolderId(cachedMetaData.previousParentFolderId());
-            cachedMetaData.setPreviousParentFolderId(QMailFolderId());
             cachedMetaData.setUnmodified();
             messageCache.insert(cachedMetaData);
             uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
