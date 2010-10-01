@@ -208,21 +208,21 @@ bool LongStream::freeSpace( const QString &path, int min)
     RFs fsSession;
     TInt rv;
     if ((rv = fsSession.Connect()) != KErrNone) {
-        qDebug() << "Unable to connect to FS:" << rv;
+        qWarning() << "Unable to connect to FS:" << rv;
     } else {
         TParse parse;
         TPtrC name(path.utf16(), path.length());
 
         if ((rv = fsSession.Parse(name, parse)) != KErrNone) {
-            qDebug() << "Unable to parse:" << path << rv;
+            qWarning() << "Unable to parse:" << path << rv;
         } else {
             TInt drive;
             if ((rv = fsSession.CharToDrive(parse.Drive()[0], drive)) != KErrNone) {
-                qDebug() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
+                qWarning() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
             } else {
                 TVolumeInfo info;
                 if ((rv = fsSession.Volume(info, drive)) != KErrNone) {
-                    qDebug() << "Unable to volume:" << drive << rv;
+                    qWarning() << "Unable to volume:" << drive << rv;
                 } else {
                     result = (info.iFree > boundary);
                 }
