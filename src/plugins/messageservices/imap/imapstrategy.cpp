@@ -244,7 +244,9 @@ bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessa
             const QMailMessagePart &sourcePart = source.partAt(i);
             QMailMessagePart &destinationPart = destination.partAt(i);
 
-            return transferPartBodies(destinationPart, sourcePart);
+            bool result = transferPartBodies(destinationPart, sourcePart);
+            if (!result)
+                return false;
         }
     }
     return true;
