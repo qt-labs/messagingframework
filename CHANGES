@@ -4,6 +4,7 @@ Latest Changes
 201039
   * Fixes: NB#195615 <coverity> Bugs reported by coverity in QMF
   * Batched add/update enabled for IMAP & POP accounts
+  * IMAP server side searching optimized and much more comprehensive
 
 201037
   * Fixes: NB#168820 QMailRetrievalAction::retrieveMessageList() default "minimum" value returns no messages
