@@ -793,6 +793,11 @@ bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey 
     return false;
 }
 
+bool QMailStoreNullImplementation::restoreToPreviousFolder(const QMailMessageKey &, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
 void QMailStoreNullImplementation::lock()
 {
 }

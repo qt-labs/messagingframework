@@ -131,6 +131,9 @@ public:
     void lock();
     void unlock();
 
+    bool restoreToPreviousFolder(const QMailMessageKey &key,
+                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+
     bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);
 
     int countAccounts(const QMailAccountKey &key) const;
@@ -361,6 +364,10 @@ private:
     AttemptResult attemptUpdateMessagesStatus(const QMailMessageKey &key, quint64 status, bool set, 
                                               QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                               Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
+                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+                                                 Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
                                                     Transaction &t, bool commitOnSuccess);

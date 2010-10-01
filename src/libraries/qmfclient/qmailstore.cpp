@@ -854,6 +854,39 @@ bool QMailStore::purgeMessageRemovalRecords(const QMailAccountId& accountId, con
 }
 
 /*!
+    Updates the QMailMessage with QMailMessageId \a id to move the message back to the
+    previous folder it was contained by.
+
+    Returns \c true if the operation completed successfully, \c false otherwise. 
+*/
+bool QMailStore::restoreToPreviousFolder(const QMailMessageId& id)
+{
+    return restoreToPreviousFolder(QMailMessageKey::id(id));
+}
+
+/*!
+    Updates all QMailMessages identified by the key \a key to move the messages back to the
+    previous folder they were contained by.
+
+    Returns \c true if the operation completed successfully, \c false otherwise. 
+*/
+bool QMailStore::restoreToPreviousFolder(const QMailMessageKey& key)
+{
+    QMailMessageIdList updatedMessages;
+    QMailFolderIdList modifiedFolders;
+    QMailAccountIdList modifiedAccounts;
+
+    d->setLastError(NoError);
+    if (!d->restoreToPreviousFolder(key, &updatedMessages, &modifiedFolders, &modifiedAccounts))
+        return false;
+
+    emitMessageNotification(Updated, updatedMessages);
+    emitFolderNotification(ContentsModified, modifiedFolders);
+    emitAccountNotification(ContentsModified, modifiedAccounts);
+    return true;
+}
+
+/*!
     Registers a status flag for QMailAccount objects, with the identifier \a name.
     Returns true if the flag is already registered, or if it is successfully registered; otherwise returns false.
 

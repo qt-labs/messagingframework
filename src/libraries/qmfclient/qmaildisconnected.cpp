@@ -426,7 +426,6 @@ void QMailDisconnected::moveToFolder(QMailMessageMetaData *message, const QMailF
         return;
     if (!(message->status() & QMailMessage::LocalOnly) && !message->serverUid().isEmpty() && !message->previousParentFolderId().isValid())
         message->setPreviousParentFolderId(message->parentFolderId());
-    message->setRestoreFolderId(message->parentFolderId());
     message->setParentFolderId(folderId);
     syncStatusWithFolder(*message);
 }
@@ -525,70 +524,5 @@ void QMailDisconnected::flagMessages(const QMailMessageIdList &ids, quint64 setM
 void QMailDisconnected::flagMessage(const QMailMessageId &id, quint64 setMask, quint64 unsetMask, const QString& description)
 {
     flagMessages(QMailMessageIdList() << id, setMask, unsetMask, description);
-}
-
-/*!
-    Updates the QMailMessage with QMailMessageId \a id to move the message back to the
-    previous folder it was contained by.
-
-    Returns \c true if the operation completed successfully, \c false otherwise.
-*/
-bool QMailDisconnected::restoreToPreviousFolder(const QMailMessageId& id)
-{
-    return restoreToPreviousFolder(QMailMessageKey::id(id));
-}
-
-/*!
-    Updates all QMailMessages identified by the key \a key to move the messages back to the
-    previous folder they were contained by.
-
-    Returns \c true if the operation completed successfully, \c false otherwise.
-*/
-bool QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)
-{
-    if (key.isEmpty())
-        return false;
-
-    QMailMessageIdList results(QMailStore::instance()->queryMessages(key));
-
-    if (results.isEmpty())
-        return false;
-
-    bool aMessageFailedToRestore = false;
-
-    foreach (const QMailMessageId &id, results) {
-        if (!id.isValid())
-            continue;
-
-        QMailMessage message(QMailStore::instance()->message(id));
-
-        QMailFolderId restoreFolderId(message.restoreFolderId());
-
-        // if there's no valid folder to restore to, we'll simply do nothing, return false at the end,
-        // then leave the user to do a manual move
-        if (!restoreFolderId.isValid()) {
-            aMessageFailedToRestore = true;
-            continue;
-        }
-
-        // if we're already in the right folder, which shouldn't happen, do nothing
-        if (restoreFolderId == message.parentFolderId())
-            continue;
-
-        // if the previousParentFolderId is the same as our soon-to-be-parentFolderId, we need to clear
-        // it so it doesn't re-synchronise with the server
-        if (restoreFolderId == message.previousParentFolderId())
-            message.setPreviousParentFolderId(QMailFolderId());
-
-        message.setParentFolderId(restoreFolderId);
-
-        message.setRestoreFolderId(QMailFolderId());
-
-        QMailStore::instance()->updateMessage(&message);
-        syncStatusWithFolder(message);
-
-    }
-
-    return aMessageFailedToRestore;
 }
 

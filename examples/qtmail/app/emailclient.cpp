@@ -1836,7 +1836,7 @@ void EmailClient::restoreSelectedMessages()
         return;
 
     AcknowledgmentBox::show(tr("Restoring"), tr("Restoring %n message(s)", "%1: number of messages", restoreIds.count()));
-    QMailDisconnected::restoreToPreviousFolder(QMailMessageKey::id(restoreIds));
+    QMailStore::instance()->restoreToPreviousFolder(QMailMessageKey::id(restoreIds));
     QMailDisconnected::flagMessages(restoreIds,0,QMailMessage::Trash,"Restoring messages");
     exportPendingChanges();
 }

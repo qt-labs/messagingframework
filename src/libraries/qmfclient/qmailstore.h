@@ -168,6 +168,9 @@ public:
 
     bool purgeMessageRemovalRecords(const QMailAccountId& parentAccountId, const QStringList& serverUid = QStringList());
 
+    bool restoreToPreviousFolder(const QMailMessageId& id);
+    bool restoreToPreviousFolder(const QMailMessageKey& key);
+
     bool registerAccountStatusFlag(const QString& name);
     quint64 accountStatusMask(const QString& name) const;
 
