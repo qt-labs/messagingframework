@@ -228,6 +228,11 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
     return rlm->settings.value(QLatin1String(category),LOGGING_DEFAULT).toBool();
 }
 
+QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method)
+{
+    RuntimeLoggingManager *rlm = runtimeLoggingManager();
+    QObject::connect(rlm, SIGNAL(callOtherHandlers()), receiver, method);
+}
 #else
 QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
@@ -240,12 +245,12 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
     Q_UNUSED(category);
     return false;
 }
-#endif
 
 QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method)
 {
-    RuntimeLoggingManager *rlm = runtimeLoggingManager();
-    QObject::connect(rlm, SIGNAL(callOtherHandlers()), receiver, method);
+    Q_UNUSED(receiver);
+    Q_UNUSED(method);
 }
+#endif
 
 #include "qmaillog.moc"
