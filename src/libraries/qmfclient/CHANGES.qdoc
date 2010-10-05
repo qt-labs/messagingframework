@@ -119,6 +119,11 @@ Changes since the QMF-1.0 release on 15/05/09:
     Directory Changes:
       src/libraries/qmf -> src/libraries/qmfclient
 
+36. Changed 'bool QMailStore::restoreToPreviousFolder(const QMailMessageId& id)' and
+            'bool QMailStore::restoreToPreviousFolder(const QMailMessageKey& key)' to
+            'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId& id)' and
+            'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)'
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:

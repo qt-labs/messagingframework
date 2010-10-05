@@ -3844,6 +3844,8 @@ void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QM
     message.setStatus(QMailMessage::Trash, source.status() & QMailMessage::Trash); // shouldn't standard flags be set correctly when retrieving?
     message.setStatus(QMailMessage::Read, source.status() & QMailMessage::Read);
     message.setStatus(QMailMessage::Important, source.status() & QMailMessage::Important);
+
+    message.setRestoreFolderId(source.restoreFolderId());
 }
 
 void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)

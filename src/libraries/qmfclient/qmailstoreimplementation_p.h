@@ -226,9 +226,6 @@ public:
     virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
-    virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
-                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
-
     virtual void lock() = 0;
     virtual void unlock() = 0;
 
@@ -314,9 +311,6 @@ public:
 
     virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
-
-    virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
-                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual void lock();
     virtual void unlock();
