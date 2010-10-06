@@ -39,16 +39,16 @@
 </ul>
 <a name="building-and-compiling"></a>
 <h2>Building and Compiling</h2>
-<p>To build the Messaging Framework, run <tt>qmake</tt> on the top level <tt>qmf.pro</tt> file as follows:</p>
-<pre>    qmake &quot;QMF_INSTALL_ROOT=&lt;image directory path&gt;&quot; qmf.pro</pre>
+<p>To build the Messaging Framework, run <tt>qmake</tt> on the top level <tt>messagingframework.pro</tt> file as follows:</p>
+<pre>    qmake &quot;QMF_INSTALL_ROOT=&lt;image directory path&gt;&quot; messagingframework.pro</pre>
 <p>Where <tt>&lt;image</tt> <tt>directory</tt> <tt>path&gt;</tt> is the location that <tt>make</tt> <tt>install</tt> will put the resultant binary files. It is optional but desirable to set this variable as it is not possible to run the applications from within their build directories due to dependencies. The <tt>debug</tt> configuration parameter is also optional.</p>
 <p>Following this simply run:</p>
 <pre>    make
     make install</pre>
 <p>It is also recommended to build in a separate path to the source tree. This is just a matter of running the above commands from within a separate build directory.</p>
-<p><b>Note</b>: If there are build errors referring to valgrind (tst_messageserver), please ensure that valgrind development headers are installed, or optionally remove unwanted tests from the qmf.pro.</p>
+<p><b>Note</b>: If there are build errors referring to valgrind (tst_messageserver), please ensure that valgrind development headers are installed, or optionally remove unwanted tests from the messagingframework.pro.</p>
 <p><b>Note</b>: By default the QMF libraries, messageserver and protocol plugins depend on the <a href="http://doc.trolltech.com/4.5/qtgui.html">QtGui</a> library. This is so that protocol plugins (e.g&#x2e; IMAP/SMTP/POP) can provide GUI account editors. To remove this dependency use the define QMF_NO_MESSAGE_SERVICE_EDITOR e.g:</p>
-<pre>    qmake -r qmf.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR</pre>
+<pre>    qmake -r messagingframework.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR</pre>
 <a name="running-messaging-framework"></a>
 <h2>Running Messaging Framework</h2>
 <p>After <tt>make install</tt> has run, the following layout should exist in your image directory:</p>

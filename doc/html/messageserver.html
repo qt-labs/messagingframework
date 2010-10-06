@@ -65,7 +65,7 @@
 </table></p>
 <a name="interface"></a>
 <h2>Interface</h2>
-<p>MessageServer communicates with clients via a QtopiaChannel. The recommended method of passing messages over this channel is for each client to instantiate an object of the <a href="qmailmessageserver.html">QMailMessageServer</a> class, which converts between IPC messages and local signals and slots.</p>
+<p>MessageServer communicates with clients via QCop. The only supported method of passing messages over this channel is for each client to instantiate an object of the <a href="qmailmessageserver.html">QMailMessageServer</a> class, which converts between IPC messages and local signals and slots.</p>
 <p>Some actions of the MessageServer process affect the Messaging Framework data store directly. A client can respond to these actions by connecting to the relevant signals of the <a href="qmailstore.html">QMailStore</a> class, such as <a href="qmailstore.html#messagesAdded">QMailStore::messagesAdded</a>(), and <a href="qmailstore.html#messagesRemoved">QMailStore::messagesRemoved</a>().</p>
 <a name="dependencies"></a>
 <h2>Dependencies</h2>

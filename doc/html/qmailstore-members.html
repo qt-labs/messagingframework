@@ -78,15 +78,19 @@
 <li><div class="fn"><b><a href="qmailstore.html#lastError">lastError</a></b> () const : QMailStore::ErrorCode</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#lock">lock</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#message">message</a></b> ( const QMailMessageId &amp; ) const : QMailMessage</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#message-2">message</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessage</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#messageContentsModified">messageContentsModified</a></b> ( const QMailMessageIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#messageDataAdded">messageDataAdded</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#messageDataUpdated">messageDataUpdated</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData">messageMetaData</a></b> ( const QMailMessageId &amp; ) const : QMailMessageMetaData</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData-2">messageMetaData</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessageMetaData</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#messagePropertyUpdated">messagePropertyUpdated</a></b> ( const QMailMessageIdList &amp;, const QMailMessageKey::Properties &amp;, const QMailMessageMetaData &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageRemovalRecords">messageRemovalRecords</a></b> ( const QMailAccountId &amp;, const QMailFolderId &amp; ) const : const QMailMessageRemovalRecordList</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageRemovalRecordsAdded">messageRemovalRecordsAdded</a></b> ( const QMailAccountIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageRemovalRecordsRemoved">messageRemovalRecordsRemoved</a></b> ( const QMailAccountIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageStatusMask">messageStatusMask</a></b> ( const QString &amp; ) const : quint64</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#messageStatusUpdated">messageStatusUpdated</a></b> ( const QMailMessageIdList &amp;, quint64, bool )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messagesAdded">messagesAdded</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messagesMetaData">messagesMetaData</a></b> ( const QMailMessageKey &amp;, const QMailMessageKey::Properties &amp;, ReturnOption ) const : const QMailMessageMetaDataList</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messagesRemoved">messagesRemoved</a></b> ( const QMailMessageIdList &amp; )</div></li>
@@ -111,8 +115,6 @@
 <li><div class="fn"><b><a href="qmailstore.html#removeFolders">removeFolders</a></b> ( const QMailFolderKey &amp;, MessageRemovalOption ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#removeMessage">removeMessage</a></b> ( const QMailMessageId &amp;, MessageRemovalOption ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#removeMessages">removeMessages</a></b> ( const QMailMessageKey &amp;, MessageRemovalOption ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailstore.html#restoreToPreviousFolder">restoreToPreviousFolder</a></b> ( const QMailMessageId &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailstore.html#restoreToPreviousFolder-2">restoreToPreviousFolder</a></b> ( const QMailMessageKey &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#retrievalInProgress">retrievalInProgress</a></b> ( const QMailAccountIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#sender">sender</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">setObjectName</a></b> ( const QString &amp; )</div></li>
