@@ -2124,6 +2124,7 @@ ProcessMutex* QMailStorePrivate::contentMutex = 0;
 
 QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     : QMailStoreImplementation(parent),
+      q_ptr(parent),
       messageCache(messageCacheSize),
       uidCache(uidCacheSize),
       folderCache(folderCacheSize),
@@ -7528,5 +7529,150 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpd
     }
 
     QMailStoreImplementation::emitIpcNotification(signal, ids);
+}
+
+void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data)
+{
+    if(!data.isEmpty()) {
+
+        QMailMessageIdList ids;
+
+        foreach(const QMailMessageMetaData& metaData, data)
+        {
+            messageCache.insert(metaData);
+            uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
+
+            ids.append(metaData.id());
+        }
+
+        QMailStoreImplementation::emitIpcNotification(signal, data);
+
+        if (signal == &QMailStore::messageDataAdded) {
+            q_ptr->messagesAdded(ids);
+        } else if (signal == &QMailStore::messageDataUpdated) {
+            q_ptr->messagesUpdated(ids);
+        } else
+            Q_ASSERT (false);
+    }
+
+}
+
+void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                     const QMailMessageMetaData& data)
+{
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+
+    foreach(const QMailMessageId& id, ids) {
+
+        if(messageCache.contains(id)) {
+            QMailMessageMetaData metaData = messageCache.lookup(id);
+            foreach (QMailMessageKey::Property p, messagePropertyList()) {
+                switch (properties & p)
+                {
+                    case QMailMessageKey::Id:
+                        metaData.setId(data.id());
+                        break;
+
+                    case QMailMessageKey::Type:
+                        metaData.setMessageType(data.messageType());
+                        break;
+
+                    case QMailMessageKey::ParentFolderId:
+                        metaData.setParentFolderId(data.parentFolderId());
+                        break;
+
+                    case QMailMessageKey::Sender:
+                        metaData.setFrom(data.from());
+                        break;
+
+                    case QMailMessageKey::Recipients:
+                        metaData.setTo(data.to());
+                        break;
+
+                    case QMailMessageKey::Subject:
+                        metaData.setSubject(data.subject());
+                        break;
+
+                    case QMailMessageKey::TimeStamp:
+                        metaData.setDate(data.date());
+                        break;
+
+                    case QMailMessageKey::ReceptionTimeStamp:
+                        metaData.setReceivedDate(data.receivedDate());
+                        break;
+
+                    case QMailMessageKey::Status:
+                        metaData.setStatus(data.status());
+                        break;
+
+                    case QMailMessageKey::ParentAccountId:
+                        metaData.setParentAccountId(data.parentAccountId());
+                        break;
+
+                    case QMailMessageKey::ServerUid:
+                        metaData.setServerUid(data.serverUid());
+                        break;
+
+                    case QMailMessageKey::Size:
+                        metaData.setSize(data.size());
+                        break;
+
+                    case QMailMessageKey::ContentType:
+                        metaData.setContent(data.content());
+                        break;
+
+                    case QMailMessageKey::PreviousParentFolderId:
+                        metaData.setPreviousParentFolderId(data.previousParentFolderId());
+                        break;
+
+                    case QMailMessageKey::ContentScheme:
+                        metaData.setContentScheme(data.contentScheme());
+                        break;
+
+                    case QMailMessageKey::ContentIdentifier:
+                        metaData.setContentIdentifier(data.contentIdentifier());
+                        break;
+
+                    case QMailMessageKey::InResponseTo:
+                        metaData.setInResponseTo(data.inResponseTo());
+                        break;
+
+                    case QMailMessageKey::ResponseType:
+                        metaData.setResponseType(data.responseType());
+                        break;
+                }
+            }
+
+            if (properties != allMessageProperties()) {
+                // This message is not completely loaded
+                metaData.setStatus(QMailMessage::UnloadedData, true);
+            }
+
+            metaData.setUnmodified();
+            messageCache.insert(metaData);
+
+        }
+    }
+
+    QMailStoreImplementation::emitIpcNotification(ids, properties, data);
+    q_ptr->messagesUpdated(ids);
+}
+
+void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set)
+{
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+
+    foreach(const QMailMessageId& id, ids) {
+
+        if(messageCache.contains(id)) {
+            QMailMessageMetaData metaData = messageCache.lookup(id);
+            metaData.setStatus(status, set);
+            metaData.setUnmodified();
+            messageCache.insert(metaData);
+        }
+    }
+
+    QMailStoreImplementation::emitIpcNotification(ids, status, set);
+    q_ptr->messagesUpdated(ids);
 }
 

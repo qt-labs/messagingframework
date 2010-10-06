@@ -262,8 +262,11 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 
     emitMessageNotification(Added, addedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
+    emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
+    emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
+
     return true;
 }
 
@@ -285,6 +288,8 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
 
     emitMessageNotification(Added, addedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
+    emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
+    emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
@@ -538,8 +543,16 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
     if (!d->updateMessages(messages, &updatedMessages, &modifiedMessages, &modifiedFolders, &modifiedAccounts))
         return false;
 
-    emitMessageNotification(ContentsModified, modifiedMessages);
+    QList<QMailMessageMetaData*> data;
+    typedef QPair<QMailMessageMetaData*, QMailMessage*> Pair;
+    foreach(const Pair& pair, messages) {
+        Q_ASSERT (pair.first);
+        data.append(pair.first);
+    }
+
     emitMessageNotification(Updated, updatedMessages);
+    emitMessageNotification(ContentsModified, modifiedMessages);
+    emitMessageDataNotification(Updated, dataList(data, updatedMessages));
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;
@@ -564,6 +577,7 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
         return false;
 
     emitMessageNotification(Updated, updatedMessages);
+    emitMessageDataNotification(updatedMessages, properties, data);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;
@@ -586,6 +600,7 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key, quint64 stat
         return false;
 
     emitMessageNotification(Updated, updatedMessages);
+    emitMessageDataNotification(updatedMessages, status, set);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;
@@ -1080,6 +1095,48 @@ void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdLi
 }
 
 /*! \internal */
+void QMailStore::emitMessageDataNotification(ChangeType type, const QMailMessageMetaDataList &data)
+{
+    if (!data.isEmpty()) {
+        // Ensure there are no duplicates in the list
+        d->notifyMessagesDataChange(type, data);
+
+        switch (type) {
+        case Added:
+            emit messageDataAdded(data);
+            break;
+
+        case Updated:
+            emit messageDataUpdated(data);
+            break;
+
+        default:
+            Q_ASSERT (false);
+        }
+
+    }
+}
+
+/*! \internal */
+void QMailStore::emitMessageDataNotification(const QMailMessageIdList &ids, const QMailMessageKey::Properties &properties,
+                                             const QMailMessageMetaData &data)
+{
+    if (!ids.isEmpty()) {
+        d->notifyMessagesDataChange(ids, properties, data);
+        emit messagePropertyUpdated(ids, properties, data);
+    }
+}
+
+/*! \internal */
+void QMailStore::emitMessageDataNotification(const QMailMessageIdList& ids, quint64 status, bool set)
+{
+    if (!ids.isEmpty()) {
+        d->notifyMessagesDataChange(ids, status, set);
+        emit messageStatusUpdated(ids, status, set);
+    }
+}
+
+/*! \internal */
 void QMailStore::emitRemovalRecordNotification(ChangeType type, const QMailAccountIdList &ids)
 {
     if (!ids.isEmpty()) {
@@ -1118,6 +1175,66 @@ void QMailStore::emitTransmissionInProgress(const QMailAccountIdList &ids)
     d->notifyTransmissionInProgress(ids);
 
     emit transmissionInProgress(ids);
+}
+
+/*! \internal */
+QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* message)
+{
+    Q_ASSERT (message);
+    QMailMessageMetaData metaData;
+    // init all the fields except custom fields
+    metaData.setId(message->id());
+    metaData.setFrom(message->from());
+    metaData.setTo(message->to());
+    metaData.setSubject(message->subject());
+    metaData.setStatus(message->status());
+    metaData.setDate(message->date());
+    metaData.setParentAccountId(message->parentAccountId());
+    metaData.setParentFolderId(message->parentFolderId());
+    metaData.setReceivedDate(message->receivedDate());
+    metaData.setServerUid(message->serverUid());
+    metaData.setPreviousParentFolderId(message->previousParentFolderId());
+    metaData.setSize(message->size());
+    metaData.setContent(message->content());
+    metaData.setResponseType(message->responseType());
+    metaData.setRestoreFolderId(message->restoreFolderId());
+    metaData.setRfcId(message->rfcId());
+    metaData.setCopyServerUid(message->copyServerUid());
+
+    metaData.setStatus(QMailMessage::UnloadedData, true);
+    metaData.setUnmodified();
+
+    return metaData;
+}
+
+/*! \internal */
+QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessage*>& messages, const QMailMessageIdList& ids)
+{
+    QMailMessageMetaDataList data;
+
+    foreach (QMailMessage* message, messages) {
+        Q_ASSERT (message);
+        if(ids.contains(message->id())) {
+            data.append(dataToTransfer(message));
+        }
+    }
+
+    return data;
+}
+
+/*! \internal */
+QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessageMetaData*>& messages, const QMailMessageIdList& ids)
+{
+    QMailMessageMetaDataList data;
+
+    foreach (QMailMessageMetaData* message, messages) {
+        Q_ASSERT (message);
+        if(ids.contains(message->id())) {
+            data.append(dataToTransfer(message));
+        }
+    }
+
+    return data;
 }
 
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
@@ -1298,6 +1415,43 @@ QMailStore* QMailStore::instance()
     ignore updates associated with these accounts whilst they are engaged in transmitting.
 
     \sa retrievalInProgress()
+*/
+
+/*!
+    \fn void QMailStore::messageDataAdded(const QMailMessageMetaDataList &data)
+
+    Signal that is emitted when messages are added to the mail store 
+    using addMessage(), addMessages() or an overload of one of these functions.
+    \a data is a list of the metadata of the added messages.
+
+    \sa addMessages()
+*/
+
+/*!
+    \fn void QMailStore::messageDataUpdated(const QMailMessageMetaDataList &data)
+
+    Signal that is emitted when messages within the mail store are updated using
+    using updateMessages(), updateMessages(), addMessage(), addMessages() or an overload of one of these functions.
+    \a data is a list of the metadata of the updated messages.
+*/
+
+/*!
+    \fn void QMailStore::messagePropertyUpdated(const QMailMessageIdList& ids, 
+                                    const QMailMessageKey::Properties& properties,
+                                    const QMailMessageMetaData& data);
+
+    Signal that is emitted when messages within the mail store are updated using 
+    \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data)}.
+    \a ids is a list of ids of messages that have been updated, message properties defined in \a properties have been updated using 
+    the respective element contained in the \a data.
+*/
+
+/*!
+    \fn void QMailStore::messageStatusUpdated(const QMailMessageIdList& ids, quint64 status, bool set);
+
+    Signal that is emitted when messages within the mail store are updated using 
+    \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, quint64, bool)}.
+    \a ids is a list of ids of messages that have been updated, \a status is the status flags set according to \a set.
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

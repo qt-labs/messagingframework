@@ -124,6 +124,15 @@ Changes since the QMF-1.0 release on 15/05/09:
             'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId& id)' and
             'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)'
 
+37. Added 'QMailStore::messageDataAdded(const QMailMessageMetaDataList &data)'
+          'QMailStore::messageDataUpdated(const QMailMessageMetaDataList &data)
+          'QMailStore::messagePropertyUpdated(const QMailMessageIdList& ids, 
+                                              const QMailMessageKey::Properties& properties,
+                                              const QMailMessageMetaData& data)'
+          'QMailStore::messageStatusUpdated(const QMailMessageIdList& ids, 
+                                            quint64 status, bool set)' signals.
+
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
