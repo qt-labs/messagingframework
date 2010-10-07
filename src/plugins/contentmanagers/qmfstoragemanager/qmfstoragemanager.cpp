@@ -293,6 +293,10 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     }
 
     message->removeCustomField("qmf-detached-filename");
+    if (!detachedFile.isEmpty()) {
+        QFile::remove(detachedFile);
+    }
+        
     return QMailStore::NoError;
 }
 
