@@ -5583,14 +5583,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
         if (properties & QMailMessageKey::ParentFolderId) {
             if (!modifiedFolderIds->contains(data.parentFolderId()))
                 modifiedFolderIds->append(data.parentFolderId());
-
-            // All these messages need to have previousparentfolderid updated, where it will change
-            QSqlQuery query(simpleQuery("UPDATE mailmessages SET previousparentfolderid=parentfolderid",
-                                        QVariantList(),
-                                        QList<Key>() << Key(modifiedMessageKey),
-                                        "updateMessagesMetaData mailmessages previousparentfolderid update query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
         }
 
         if (properties & QMailMessageKey::Custom) {
