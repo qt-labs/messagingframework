@@ -159,7 +159,8 @@ void MessageBuffer::messageFlush()
         if (item->add)
             work.append(item->message);
     }
-    store->addMessages(work);
+    if (work.count())
+        store->addMessages(work);
     foreach (BufferItem *item, m_waitingForFlush) {
         if (item->add)
             item->callback->messageFlushed(item->message);
@@ -171,7 +172,8 @@ void MessageBuffer::messageFlush()
         if (!item->add)
             work.append(item->message);
     }
-    store->updateMessages(work);
+    if (work.count())
+        store->updateMessages(work);
     foreach (BufferItem *item, m_waitingForFlush) {
         if (!item->add)
             item->callback->messageFlushed(item->message);
