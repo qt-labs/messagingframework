@@ -1651,11 +1651,12 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
     IntegerRegion uidsToFetch;
 
     foreach(const QString &uidString, properties.uidList) {
-        int uid(stripFolderPrefix(uidString).toInt());
-        if(QMailStore::instance()->countMessages(QMailMessageKey::serverUid(uidString) & QMailMessageKey::parentAccountId(context->config().id())) == 1)
-            searchResults.append(QMailMessageId(uid));
+        QMailMessageIdList ids(QMailStore::instance()->queryMessages(QMailMessageKey::serverUid(uidString) & QMailMessageKey::parentAccountId(context->config().id())));
+        Q_ASSERT(ids.size() == 1 || ids.size() == 0);
+        if (ids.size())
+            searchResults.append(ids.first());
         else
-            uidsToFetch.add(uid);
+            uidsToFetch.add(stripFolderPrefix(uidString).toInt());
     }
 
     if(!searchResults.isEmpty())
