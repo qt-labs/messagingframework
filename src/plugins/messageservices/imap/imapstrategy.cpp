@@ -431,6 +431,9 @@ void ImapStrategyContextBase::completedMessageCopy(QMailMessage &message, const 
 
 void ImapStrategyContextBase::operationCompleted()
 { 
+    // Flush any pending messages now so we have a proper list of modified folders
+    MessageBuffer::instance()->flush();
+
     // Update the status on any folders we modified
     foreach (const QMailFolderId &folderId, _modifiedFolders) {
         QMailFolder folder(folderId);

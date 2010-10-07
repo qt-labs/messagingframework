@@ -504,12 +504,6 @@ void ImapClient::setStrategy(ImapStrategy *strategy)
 
 void ImapClient::commandCompleted(ImapCommand command, OperationStatus status)
 {
-    // Ignore command IMAP_UIDFetch or we won't be batching anything
-    if (command != IMAP_UIDFetch) {
-        // Flush now because code assumes that the messages have all been processed
-        MessageBuffer::instance()->flush();
-    }
-
     checkCommandResponse(command, status);
     if (status == OpOk)
         commandTransition(command, status);
