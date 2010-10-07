@@ -6226,6 +6226,28 @@ void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType ty
 }
 
 /*!
+    Returns the preview text of this message.
+
+    \sa setPreview()
+*/  
+QString QMailMessageMetaData::preview() const
+{
+    //TODO implement this
+    return QString();
+}
+
+/*!
+    Sets the preview text of this message to \a s.
+
+    \sa preview()
+*/
+void QMailMessageMetaData::setPreview(const QString &s)
+{
+    //TODO implement this
+    Q_UNUSED(s)
+}
+
+/*!
     Returns true if the entire content of this message is available; otherwise returns false.
 */
 bool QMailMessageMetaData::contentAvailable() const
