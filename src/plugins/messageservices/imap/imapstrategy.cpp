@@ -1505,7 +1505,7 @@ void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *co
 
                 // Update the progress figure to count the retrieved portion of this message
                 uint partialSize = values.first.first * percentage / 100;
-                context->progressChanged(_progressRetrievalSize + partialSize, _totalRetrievalSize);
+                MessageBuffer::instance()->progressChanged(context, _progressRetrievalSize + partialSize, _totalRetrievalSize);
             }
         }
     }
@@ -1543,7 +1543,7 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
     if (it != _retrievalSize.end()) {
         // Update the progress figure
         _progressRetrievalSize += it.value().first.first;
-        context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
+        MessageBuffer::instance()->progressChanged(context, _progressRetrievalSize, _totalRetrievalSize);
 
         it = _retrievalSize.erase(it);
     }
