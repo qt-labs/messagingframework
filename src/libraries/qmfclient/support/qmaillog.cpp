@@ -40,50 +40,18 @@
 ****************************************************************************/
 
 #include "qmaillog.h"
+#include "qlogsystem.h"
+#include "qloggers.h"
+
 #include <QString>
-#include <QSocketNotifier>
 #include <QSettings>
+#include <QHash>
+#include <QStringList>
+
 #include <sys/types.h>
 #ifndef Q_OS_WIN
 #include <sys/socket.h>
 #endif
-#include <signal.h>
-#include <errno.h>
-#include <stdio.h>
-
-#ifdef QMAIL_SYSLOG
-
-#include <syslog.h>
-
-static const char* SysLogId = "QMF";
-
-SysLog::SysLog(){}
-
-SysLog::~SysLog()
-{
-    write(buffer);
-}
-
-void SysLog::write(const QString& message)
-{
-    static bool open = false;
-    if(!open)
-    {
-        openlog(SysLogId,(LOG_CONS | LOG_PID),LOG_LOCAL1);
-        open = true;
-    }
-    syslog(LOG_INFO,message.toLocal8Bit().data());
-}
-
-QMF_EXPORT SysLog QLogBase::log(const char* category)
-{
-    SysLog r;
-    if ( category )
-        r << category << ": ";
-    return r;
-}
-
-#else
 
 QMF_EXPORT QDebug QLogBase::log(const char* category)
 {
@@ -93,111 +61,93 @@ QMF_EXPORT QDebug QLogBase::log(const char* category)
     return r;
 }
 
-#endif //QMAIL_SYSLOG
+/// This hash stores the logging categories which are explicitly enabled or disabled in config file.
+/// It is being updated when configuration is re-read (QMailLoggersReCreate is called)
+static QHash<QString, bool> LogCatsMode;
 
-#ifndef Q_OS_WIN
-// Singleton that manages the runtime logging housekeeping
-class RuntimeLoggingManager : public QObject
+namespace
 {
-    Q_OBJECT
+    void addLoggerIfReady(BaseLoggerFoundation* logger)
+    {
+        Q_ASSERT(logger);
+        LogSystem& loggers = LogSystem::getInstance();
 
-public:
-    RuntimeLoggingManager(QObject *parent = 0);
-    ~RuntimeLoggingManager();
-
-    static void hupSignalHandler(int unused);
-
-signals:
-    void callOtherHandlers();
-
-public slots:
-    void handleSigHup();
-
-private:
-    static int sighupFd[2];
-    QSocketNotifier *snHup;
-
-public:
-    QSettings settings;
-    QList<char*> cache;
+        QString err;
+        const bool isReady = logger->isReady(err);
+        if(!isReady) {
+            // Need to print to stderr in case no loggers are acting now
+            fprintf(stderr, "%s: Can't initialize logger, error: '%s'\n", Q_FUNC_INFO, qPrintable(err));
+            // Printing through the log subsystem
+            qWarning() << Q_FUNC_INFO << "Can't initialize logger, error: " << err;
+            delete logger;
+        } else {
+            logger->setMinLogLvl(LlDbg);
+            loggers.addLogger(logger);
+        };
+    };
 };
 
-int RuntimeLoggingManager::sighupFd[2];
-
-RuntimeLoggingManager::RuntimeLoggingManager(QObject *parent)
-    : QObject(parent)
-    , settings("Nokia", "QMF") // This is ~/.config/Nokia/QMF.conf
+QMF_EXPORT
+void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {
-    settings.beginGroup("Logging");
-    // Use a socket and notifier because signal handlers can't call Qt code
-    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
-        qFatal("Couldn't create HUP socketpair");
-    snHup = new QSocketNotifier(sighupFd[1], QSocketNotifier::Read, this);
-    connect(snHup, SIGNAL(activated(int)), this, SLOT(handleSigHup()));
+    QSettings settings(organization, application);
 
-    struct sigaction hup;
-    hup.sa_handler = RuntimeLoggingManager::hupSignalHandler;
-    sigemptyset(&hup.sa_mask);
-    hup.sa_flags = 0;
-    hup.sa_flags |= SA_RESTART;
-    if (sigaction(SIGHUP, &hup, 0) > 0)
-        qFatal("Couldn't register HUP handler");
-}
+    bool defaultStdError(
+#ifdef QMF_ENABLE_LOGGING
+     true
+#else
+     false
+#endif
+     );
 
-RuntimeLoggingManager::~RuntimeLoggingManager()
-{
-}
+    const bool syslogEnabled = settings.value("Syslog/Enabled", false).toBool();
+    const bool stderrEnabled = settings.value("StdStreamLog/StdErrEnabled", defaultStdError).toBool();
+    const QString filePath = settings.value("FileLog/Path").toString();
 
-void RuntimeLoggingManager::hupSignalHandler(int)
-{
-    // Can't call Qt code. Write to the socket and the notifier will fire from the Qt event loop
-    char a = 1;
-    int ret;
-    do {
-        ret = ::write(sighupFd[0], &a, sizeof(a));
-    } while (ret == -1 && errno == EINTR);
-    if (ret != 1) {
-        fprintf(stderr, "Could not notify eventloop. HUP ignored.\n");
-    }
-}
+    LogSystem& loggers = LogSystem::getInstance();
+    loggers.clear();
 
-void RuntimeLoggingManager::handleSigHup()
-{
-    snHup->setEnabled(false);
-    char tmp;
-    int ret;
-    do {
-        ret = ::read(sighupFd[1], &tmp, sizeof(tmp));
-    } while (ret == -1 && errno == EINTR);
+    if(syslogEnabled) {
+        SysLogger<LvlLogPrefix>* sl = new SysLogger<LvlLogPrefix>(ident, LOG_PID, LOG_LOCAL7);
+        addLoggerIfReady(sl);
+    };
+
+    if(!filePath.isEmpty()) {
+        FileLogger<LvlTimePidLogPrefix>* fl = new FileLogger<LvlTimePidLogPrefix>(filePath);
+        addLoggerIfReady(fl);
+    };
+
+    if(stderrEnabled) {
+        FileLogger<LvlTimePidLogPrefix>* el = new FileLogger<LvlTimePidLogPrefix>(stderr);
+        addLoggerIfReady(el);
+    };
+
+    // Filling the LogCatsEnabled list
+    settings.beginGroup("Log categories");
+    LogCatsMode.clear();
+    foreach(const QString& key, settings.allKeys()) {
+        LogCatsMode[key] = settings.value(key).toBool();
+    };
 
     qmf_resetLoggingFlags();
+};
 
-    emit callOtherHandlers();
-
-    snHup->setEnabled(true);
-}
-
-Q_GLOBAL_STATIC(RuntimeLoggingManager, runtimeLoggingManager)
+#ifndef Q_OS_WIN
+static QList<char*> LogFlagsCache;
 
 // Register the flag variable so it can be reset later
 QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
-    RuntimeLoggingManager *rlm = runtimeLoggingManager();
-    if (!rlm->cache.contains(flag))
-        rlm->cache.append(flag);
+    if (!LogFlagsCache.contains(flag))
+        LogFlagsCache.append(flag);
 }
 
 // Reset the logging flags
 QMF_EXPORT void qmf_resetLoggingFlags()
 {
-    RuntimeLoggingManager *rlm = runtimeLoggingManager();
-
-    // re-read the .conf file
-    rlm->settings.sync();
-
     // force everyone to re-check their logging status
-    foreach (char *flag, rlm->cache)
-        (*flag) = 0;
+    foreach (char *flag, LogFlagsCache)
+            (*flag) = 0;
 }
 
 // Check if a given category is enabled.
@@ -216,23 +166,13 @@ QMF_EXPORT void qmf_resetLoggingFlags()
 
 // Note that in debug mode (CONFIG+=debug), runtime categories default
 // to on instead of off due to the defines here.
-#ifdef QMF_ENABLE_LOGGING
-#define LOGGING_DEFAULT 1
-#else
-#define LOGGING_DEFAULT 0
-#endif
-
-QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValue)
 {
-    RuntimeLoggingManager *rlm = runtimeLoggingManager();
-    return rlm->settings.value(QLatin1String(category),LOGGING_DEFAULT).toBool();
+    const bool r = LogCatsMode.value(QLatin1String(category), defValue);
+
+    return r;
 }
 
-QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method)
-{
-    RuntimeLoggingManager *rlm = runtimeLoggingManager();
-    QObject::connect(rlm, SIGNAL(callOtherHandlers()), receiver, method);
-}
 #else
 QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
@@ -245,12 +185,4 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
     Q_UNUSED(category);
     return false;
 }
-
-QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method)
-{
-    Q_UNUSED(receiver);
-    Q_UNUSED(method);
-}
 #endif
-
-#include "qmaillog.moc"

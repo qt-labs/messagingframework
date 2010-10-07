@@ -6,8 +6,6 @@
 #include <QTimer>
 #include <QFile>
 
-QMF_EXPORT void qmf_registerHupHandler(QObject *receiver, const char *method);
-
 class BufferItem
 {
 public:
@@ -40,7 +38,6 @@ MessageBuffer::MessageBuffer(QObject *parent)
     m_progressCallback = 0;
 
     readConfig();
-    qmf_registerHupHandler(this, SLOT(readConfig()));
 }
 
 MessageBuffer::~MessageBuffer()

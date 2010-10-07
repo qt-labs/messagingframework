@@ -55,6 +55,8 @@ PUBLIC_HEADERS += qmailaccount.h \
                   qprivateimplementationdef.h \
                   support/qmailglobal.h \
                   support/qmaillog.h \
+                  support/qlogsystem.h \
+                  support/qloggers.h \
                   support/qmailnamespace.h \
                   support/qmailpluginmanager.h \
                   support/qmailipc.h
@@ -124,6 +126,8 @@ SOURCES += longstream.cpp \
            qprivateimplementation.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
+           support/qlogsystem.cpp \
+           support/qloggers.cpp \
            support/qcopadaptor.cpp \
            support/qcopapplicationchannel.cpp \
            support/qcopchannel.cpp \

@@ -43,9 +43,13 @@
 #include <qmailnamespace.h>
 #include "emailclient.h"
 #include <QIcon>
+#include <qmaillog.h>
 
 int main(int argc, char** argv)
 {
+    // This is ~/.config/Nokia/Qtmail.conf
+    qMailLoggersRecreate("Nokia", "Qtmail", "Qtmail");
+
     if(QMail::fileLock("qtmail-instance.lock") == -1)
         qFatal("Qtmail already running!\n");
 
