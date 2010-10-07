@@ -2387,6 +2387,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
 
         // The Unseen search command was pipelined
         _searchState = Unseen;
+        context->protocol().sendUidSearch(MFlag_Unseen);
         break;
     }
     case Unseen:
@@ -2395,6 +2396,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
 
         // The Flagged search command was pipelined
         _searchState = Flagged;
+        context->protocol().sendUidSearch(MFlag_Flagged);
         break;
     }
     case Flagged:
@@ -2520,8 +2522,6 @@ void ImapSynchronizeAllStrategy::folderListFolderAction(ImapStrategyContextBase 
     if (context->mailbox().exists > 0) {
         // Start by looking for previously-seen and unseen messages
         context->protocol().sendUidSearch(MFlag_Seen);
-        context->protocol().sendUidSearch(MFlag_Unseen);
-        context->protocol().sendUidSearch(MFlag_Flagged);
     } else {
         // No messages, so no need to perform search
         processUidSearchResults(context);
@@ -3012,16 +3012,16 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
     {
         _unseenUids = properties.uidList;
 
-        // The Seen search command was pipelined
         _searchState = Seen;
+        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
         break;
     }
     case Seen:
     {
         _seenUids = properties.uidList;
 
-        // The Flagged search command was pipelined
         _searchState = Flagged;
+        context->protocol().sendUidSearch(MFlag_Flagged, "UID " + _filter);
         break;
     }
     case Flagged:
@@ -3059,8 +3059,6 @@ void ImapUpdateMessagesFlagsStrategy::folderListFolderAction(ImapStrategyContext
         // miss this change by searching Unseen first; if, however, we were to search Seen first,
         // then we would miss the message altogether and mark it as deleted...
         context->protocol().sendUidSearch(MFlag_Unseen, "UID " + _filter);
-        context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
-        context->protocol().sendUidSearch(MFlag_Flagged, "UID " + _filter);
     } else {
         processUidSearchResults(context);
     }
