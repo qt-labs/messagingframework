@@ -250,7 +250,7 @@ void MessageBuffer::readConfig()
 
     m_maxPending = settings.value("maxPending", 1000).toInt();
     m_idleTimeout = settings.value("idleTimeout", 1000).toInt();
-    m_maxTimeout = settings.value("maxTimeout", 64000).toInt();
+    m_maxTimeout = settings.value("maxTimeout", 8000).toInt();
     m_timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
     m_progressTimeout = settings.value("progressTimeout", 1000).toInt();
 
