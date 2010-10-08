@@ -7,17 +7,36 @@
 #include <QFile>
 
 
+class QMailMessageBufferPrivate
+{
+    friend class QMailMessageBuffer;
+    QList<QMailMessageBuffer::BufferItem*> waitingForCallback;
+    QList<QMailMessageBuffer::BufferItem*> waitingForFlush;
+
+    // Limits/Tunables
+    int maxPending;
+    int idleTimeout;
+    int maxTimeout;
+    qreal timeoutScale;
+
+    // Flush the buffer periodically
+    QTimer *messageTimer;
+    int lastFlushTimePerMessage;
+
+};
+
+
 
 Q_GLOBAL_STATIC(QMailMessageBuffer, messageBuffer)
 
 QMailMessageBuffer::QMailMessageBuffer(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d(new QMailMessageBufferPrivate)
 {
-    m_messageTimer = new QTimer(this);
-    m_messageTimer->setSingleShot(true);
-    connect(m_messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
+    d->messageTimer = new QTimer(this);
+    d->messageTimer->setSingleShot(true);
+    connect(d->messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
 
-    m_lastFlushTimePerMessage = 0;
+    d->lastFlushTimePerMessage = 0;
 
     readConfig();
 }
@@ -33,21 +52,21 @@ QMailMessageBuffer *QMailMessageBuffer::instance()
 
 bool QMailMessageBuffer::addMessage(QMailMessage *message)
 {
-    m_waitingForCallback.append(new BufferItem(true, 0, message));
+    d->waitingForCallback.append(new BufferItem(true, 0, message));
     return true;
 }
 
 bool QMailMessageBuffer::updateMessage(QMailMessage *message)
 {
-    m_waitingForCallback.append(new BufferItem(false, 0, message));
+    d->waitingForCallback.append(new BufferItem(false, 0, message));
     return true;
 }
 
 QMailMessageBuffer::BufferItem *QMailMessageBuffer::get_item(QMailMessage *message)
 {
-    foreach (BufferItem *item, m_waitingForCallback) {
+    foreach (BufferItem *item, d->waitingForCallback) {
         if (item->message == message) {
-            m_waitingForCallback.removeOne(item);
+            d->waitingForCallback.removeOne(item);
             return item;
         }
     }
@@ -68,9 +87,9 @@ bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFl
 
     item->callback = callback;
     item->message = new QMailMessage(*message);
-    m_waitingForFlush.append(item);
+    d->waitingForFlush.append(item);
 
-    if (isFull() || !m_messageTimer->isActive()) {
+    if (isFull() || !d->messageTimer->isActive()) {
         // If the buffer is full we flush.
         // If the timer isn't running we flush.
         messageFlush();
@@ -84,8 +103,8 @@ void QMailMessageBuffer::messageTimeout()
     if (messagePending()) {
         messageFlush();
     } else {
-        m_lastFlushTimePerMessage = 0;
-        m_messageTimer->setInterval(m_idleTimeout);
+        d->lastFlushTimePerMessage = 0;
+        d->messageTimer->setInterval(d->idleTimeout);
     }
 }
 
@@ -98,48 +117,48 @@ void QMailMessageBuffer::messageFlush()
     commitTimer.start();
 
     // Start by processing all the new messages
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         if (item->add)
             work.append(item->message);
     }
     if (work.count())
         store->addMessages(work);
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         if (item->add)
             item->callback->messageFlushed(item->message);
     }
 
     // Now we process all tne updated messages
     work.clear();
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         if (!item->add)
             work.append(item->message);
     }
     if (work.count())
         store->updateMessages(work);
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         if (!item->add)
             item->callback->messageFlushed(item->message);
     }
 
     // Delete all the temporarily memory
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         delete item->message;
         delete item->callback;
         delete item;
     }
-    m_waitingForFlush.clear();
+    d->waitingForFlush.clear();
 
     int timePerMessage = commitTimer.elapsed() / processed;
-    if (timePerMessage > m_lastFlushTimePerMessage && m_messageTimer->interval() < m_maxTimeout) {
+    if (timePerMessage > d->lastFlushTimePerMessage && d->messageTimer->interval() < d->maxTimeout) {
         // increase the timeout
-        int interval = m_messageTimer->interval() * m_timeoutScale;
-        int actual = (interval > m_maxTimeout)?m_maxTimeout:interval;
-        m_messageTimer->setInterval(actual);
+        int interval = d->messageTimer->interval() * d->timeoutScale;
+        int actual = (interval > d->maxTimeout)? d->maxTimeout:interval;
+        d->messageTimer->setInterval(actual);
     }
-    m_lastFlushTimePerMessage = timePerMessage;
+    d->lastFlushTimePerMessage = timePerMessage;
 
-    m_messageTimer->start();
+    d->messageTimer->start();
 
     if (processed)
         emit flushed();
@@ -151,24 +170,32 @@ void QMailMessageBuffer::flush()
         messageFlush();
 }
 
+int QMailMessageBuffer::messagePending() {
+    return d->waitingForFlush.size();
+}
+
+bool QMailMessageBuffer::isFull() {
+    return messagePending() >= d->maxPending;
+}
+
 void QMailMessageBuffer::readConfig()
 {
     QSettings settings("Nokia", "QMF");
     settings.beginGroup("MessageBuffer");
 
-    m_maxPending = settings.value("maxPending", 1000).toInt();
-    m_idleTimeout = settings.value("idleTimeout", 1000).toInt();
-    m_maxTimeout = settings.value("maxTimeout", 8000).toInt();
-    m_timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
+    d->maxPending = settings.value("maxPending", 1000).toInt();
+    d->idleTimeout = settings.value("idleTimeout", 1000).toInt();
+    d->maxTimeout = settings.value("maxTimeout", 8000).toInt();
+    d->timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
 
-    m_messageTimer->setInterval(m_idleTimeout);
+    d->messageTimer->setInterval(d->idleTimeout);
 }
 
 void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callback)
 {
-    foreach (BufferItem *item, m_waitingForFlush) {
+    foreach (BufferItem *item, d->waitingForFlush) {
         if (item->callback == callback) {
-            m_waitingForCallback.removeOne(item);
+            d->waitingForCallback.removeOne(item);
             delete item->message;
             delete item->callback;
             delete item;

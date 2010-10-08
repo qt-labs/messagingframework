@@ -7,6 +7,7 @@
 #include <QVariant>
 
 class QMailMessage;
+class QMailMessageBufferPrivate;
 class QTimer;
 
 #include <qmailglobal.h>
@@ -44,7 +45,7 @@ private slots:
     void readConfig();
 
 private:
-
+    friend class QMailMessageBufferPrivate;
     struct BufferItem
     {
         BufferItem(bool _add, QMailMessageBufferFlushCallback *_callback, QMailMessage *_message)
@@ -59,22 +60,11 @@ private:
     };
 
     void messageFlush();
-    int messagePending() { return m_waitingForFlush.size(); }
-    bool isFull() { return messagePending() >= m_maxPending; }
+    int messagePending();
+    bool isFull();
     BufferItem *get_item(QMailMessage *message);
 
-    QList<BufferItem*> m_waitingForCallback;
-    QList<BufferItem*> m_waitingForFlush;
-
-    // Limits/Tunables
-    int m_maxPending;
-    int m_idleTimeout;
-    int m_maxTimeout;
-    qreal m_timeoutScale;
-
-    // Flush the buffer periodically
-    QTimer *m_messageTimer;
-    int m_lastFlushTimePerMessage;
+    QScopedPointer<QMailMessageBufferPrivate> d;
 };
 
 #endif
