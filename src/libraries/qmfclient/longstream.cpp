@@ -57,6 +57,7 @@
 #include <sys/mount.h>
 #else
 #include <sys/vfs.h>
+#include <errno.h>
 #endif
 
 /*  Helper class to reduce memory usage while downloading large mails */
@@ -236,9 +237,11 @@ bool LongStream::freeSpace( const QString &path, int min)
 #elif !defined(Q_OS_WIN)
     struct statfs stats;
 
-    if (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {
-        qWarning() << "Could not stat filesystem";
-        return true;
+    while (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {
+        if (errno != EINTR) {
+            qWarning() << "Could not stat filesystem";
+            return true;
+        }
     }
     unsigned long long bavail = ((unsigned long long)stats.f_bavail);
     unsigned long long bsize = ((unsigned long long)stats.f_bsize);
