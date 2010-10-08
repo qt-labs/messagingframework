@@ -30,12 +30,7 @@ MessageBuffer::MessageBuffer(QObject *parent)
     m_messageTimer->setSingleShot(true);
     connect(m_messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
 
-    m_progressTimer = new QTimer(this);
-    m_progressTimer->setSingleShot(true);
-    connect(m_progressTimer, SIGNAL(timeout()), this, SLOT(progressTimeout()));
-
     m_lastFlushTimePerMessage = 0;
-    m_progressCallback = 0;
 
     readConfig();
 }
@@ -199,48 +194,10 @@ void MessageBuffer::messageFlush()
     m_messageTimer->start();
 }
 
-void MessageBuffer::progressChanged(MessageBufferProgressCallback *callback, uint progress, uint total)
-{
-    if (m_progressCallback && m_progressCallback != callback)
-        progressFlush();
-
-    uint oldtotal = m_total;
-
-    m_progress = progress;
-    m_total = total;
-    m_progressCallback = callback;
-
-    if (oldtotal != m_total || !m_progressTimer->isActive()) {
-        // If the total changes we send the progress.
-        // If the timer isn't running we send the progress.
-        progressFlush();
-        // Start the timer. We won't send progress again until it expires.
-        m_progressTimer->start();
-    }
-}
-
-void MessageBuffer::progressTimeout()
-{
-    if (progressPending()) {
-        progressFlush();
-    }
-}
-
-void MessageBuffer::progressFlush()
-{
-    if (m_progressCallback) {
-        m_progressCallback->progressChanged(m_progress, m_total);
-        m_progressCallback = 0;
-    }
-    m_progressTimer->start();
-}
-
 void MessageBuffer::flush()
 {
     if (messagePending())
         messageFlush();
-    if (progressPending())
-        progressFlush();
 }
 
 void MessageBuffer::readConfig()
@@ -252,9 +209,7 @@ void MessageBuffer::readConfig()
     m_idleTimeout = settings.value("idleTimeout", 1000).toInt();
     m_maxTimeout = settings.value("maxTimeout", 8000).toInt();
     m_timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
-    m_progressTimeout = settings.value("progressTimeout", 1000).toInt();
 
     m_messageTimer->setInterval(m_idleTimeout);
-    m_progressTimer->setInterval(m_progressTimeout);
 }
 
