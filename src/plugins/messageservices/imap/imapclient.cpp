@@ -464,6 +464,9 @@ ImapClient::~ImapClient()
             protocol->close();
         delete protocol;
     }
+    foreach(MessageBufferFlushCallback *callback, callbacks) {
+        MessageBuffer::instance()->removeCallback(callback);
+    }
     delete _strategyContext;
 }
 
@@ -871,7 +874,9 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
     _classifier.classifyMessage(mail);
 
     _strategyContext->messageFetched(mail);
-    MessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(_strategyContext));
+    MessageBufferFlushCallback *callback = new MessageFlushedWrapper(_strategyContext);
+    callbacks << callback;
+    MessageBuffer::instance()->setCallback(&mail, callback);
 }
 
 
@@ -1203,7 +1208,9 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         }
 
         _strategyContext->dataFetched(mail, uid, section);
-        MessageBuffer::instance()->setCallback(&mail, new DataFlushedWrapper(_strategyContext, uid, section));
+        MessageBufferFlushCallback *callback = new DataFlushedWrapper(_strategyContext, uid, section);
+        callbacks << callback;
+        MessageBuffer::instance()->setCallback(&mail, callback);
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));

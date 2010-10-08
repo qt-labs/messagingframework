@@ -58,6 +58,7 @@
 class ImapStrategy;
 class ImapStrategyContext;
 class IdleProtocol;
+class MessageBufferFlushCallback;
 
 class ImapClient : public QObject
 {
@@ -169,6 +170,7 @@ private:
     ImapStrategyContext *_strategyContext;
 
     QMap<QMailFolderId, IdleProtocol*> _monitored;
+    QList<MessageBufferFlushCallback*> callbacks;
 };
 
 #endif
