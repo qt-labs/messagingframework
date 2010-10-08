@@ -1,5 +1,5 @@
-#ifndef MESSAGEBUFFER_H
-#define MESSAGEBUFFER_H
+#ifndef QMAILMESSAGEBUFFER_H
+#define QMAILMESSAGEBUFFER_H
 
 #include <QObject>
 #include <QList>
@@ -7,39 +7,34 @@
 #include <QVariant>
 
 class QMailMessage;
-class QMailMessageKey;
-class QMailAccountId;
-class QMailMessageKey;
-class QMailStore;
-class BufferItem;
 class QTimer;
 
-class MessageBufferFlushCallback
+#include <qmailglobal.h>
+
+
+class MESSAGESERVER_EXPORT QMailMessageBufferFlushCallback
 {
 public:
-    virtual ~MessageBufferFlushCallback() {}
+    virtual ~QMailMessageBufferFlushCallback() {}
     virtual void messageFlushed(QMailMessage *message) = 0;
 };
 
-class MessageBuffer : public QObject
+class MESSAGESERVER_EXPORT QMailMessageBuffer : public QObject
 {
     Q_OBJECT
 public:
-    MessageBuffer(QObject *parent = 0);
-    ~MessageBuffer();
+    QMailMessageBuffer(QObject *parent = 0);
+    virtual ~QMailMessageBuffer();
 
-    static MessageBuffer *instance();
+    static QMailMessageBuffer *instance();
 
     bool addMessage(QMailMessage *message);
     bool updateMessage(QMailMessage *message);
-    bool setCallback(QMailMessage *message, MessageBufferFlushCallback *callback);
-
-    bool removeMessages(const QMailMessageKey &key);
-    int countMessages(const QMailMessageKey &key);
+    bool setCallback(QMailMessage *message, QMailMessageBufferFlushCallback *callback);
 
     void flush();
 
-    void removeCallback(MessageBufferFlushCallback *callback);
+    void removeCallback(QMailMessageBufferFlushCallback *callback);
 
 signals:
     void flushed();
@@ -49,6 +44,20 @@ private slots:
     void readConfig();
 
 private:
+
+    struct BufferItem
+    {
+        BufferItem(bool _add, QMailMessageBufferFlushCallback *_callback, QMailMessage *_message)
+            : add(_add)
+            , callback(_callback)
+            , message(_message)
+        {}
+
+        bool add;
+        QMailMessageBufferFlushCallback *callback;
+        QMailMessage *message;
+    };
+
     void messageFlush();
     int messagePending() { return m_waitingForFlush.size(); }
     bool isFull() { return messagePending() >= m_maxPending; }

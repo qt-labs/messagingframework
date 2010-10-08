@@ -432,7 +432,7 @@ void ImapStrategyContextBase::completedMessageCopy(QMailMessage &message, const 
 void ImapStrategyContextBase::operationCompleted()
 { 
     // Flush any pending messages now so that _modifiedFolders is up to date
-    MessageBuffer::instance()->flush();
+    QMailMessageBuffer::instance()->flush();
 
     // Update the status on any folders we modified
     foreach (const QMailFolderId &folderId, _modifiedFolders) {
@@ -504,19 +504,19 @@ void ImapStrategy::messageFetched(ImapStrategyContextBase * /*context*/, QMailMe
     _folder[message.serverUid()] = false;
     // Store this message to the mail store
     if (message.id().isValid()) {
-        if (!MessageBuffer::instance()->updateMessage(&message)) {
+        if (!QMailMessageBuffer::instance()->updateMessage(&message)) {
             _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
     } else {
         QMailMessageKey duplicateKey(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
-        if (!MessageBuffer::instance()->removeMessages(duplicateKey)) {
+        if (!QMailStore::instance()->removeMessages(duplicateKey)) {
             _error = true;
             qWarning() << "Unable to remove duplicate message(s) for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
         }
-        if (!MessageBuffer::instance()->addMessage(&message)) {
+        if (!QMailMessageBuffer::instance()->addMessage(&message)) {
             _error = true;
             qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
             return;
@@ -541,7 +541,7 @@ void ImapStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage
 void ImapStrategy::dataFetched(ImapStrategyContextBase * /*context*/, QMailMessage &message, const QString &/*uid*/, const QString &/*section*/)
 {
     // Store the updated message
-    if (!MessageBuffer::instance()->updateMessage(&message)) {
+    if (!QMailMessageBuffer::instance()->updateMessage(&message)) {
         _error = true;
         qWarning() << "Unable to update message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
         return;
@@ -1552,6 +1552,7 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
         int count = qMin(++_messageCountIncremental + 1, _listSize);
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
     }
+    Q_UNUSED(uid)
 }
 /* A strategy to search all folders */
 
@@ -1949,7 +1950,7 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
         --_outstandingPreviews;
         if (!_outstandingPreviews) {
             // Flush any pending messages now so that _completionList is up to date
-            MessageBuffer::instance()->flush();
+            QMailMessageBuffer::instance()->flush();
         }
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {

@@ -49,7 +49,7 @@
 #include <qlist.h>
 #include <qmap.h>
 #include <qmailfolder.h>
-#include "messagebuffer.h"
+#include <qmailmessagebuffer.h>
 
 struct SectionProperties {
     enum MinimumType {

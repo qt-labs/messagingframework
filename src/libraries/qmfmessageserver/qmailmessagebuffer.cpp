@@ -1,4 +1,4 @@
-#include "messagebuffer.h"
+#include "qmailmessagebuffer.h"
 #include "qmailstore.h"
 
 #include <QSettings>
@@ -6,24 +6,11 @@
 #include <QTimer>
 #include <QFile>
 
-class BufferItem
-{
-public:
-    BufferItem(bool _add, MessageBufferFlushCallback *_callback, QMailMessage *_message)
-        : add(_add)
-        , callback(_callback)
-        , message(_message)
-    {
-    }
 
-    bool add;
-    MessageBufferFlushCallback *callback;
-    QMailMessage *message;
-};
 
-Q_GLOBAL_STATIC(MessageBuffer, messageBuffer)
+Q_GLOBAL_STATIC(QMailMessageBuffer, messageBuffer)
 
-MessageBuffer::MessageBuffer(QObject *parent)
+QMailMessageBuffer::QMailMessageBuffer(QObject *parent)
     : QObject(parent)
 {
     m_messageTimer = new QTimer(this);
@@ -35,28 +22,28 @@ MessageBuffer::MessageBuffer(QObject *parent)
     readConfig();
 }
 
-MessageBuffer::~MessageBuffer()
+QMailMessageBuffer::~QMailMessageBuffer()
 {
 }
 
-MessageBuffer *MessageBuffer::instance()
+QMailMessageBuffer *QMailMessageBuffer::instance()
 {
     return messageBuffer();
 }
 
-bool MessageBuffer::addMessage(QMailMessage *message)
+bool QMailMessageBuffer::addMessage(QMailMessage *message)
 {
     m_waitingForCallback.append(new BufferItem(true, 0, message));
     return true;
 }
 
-bool MessageBuffer::updateMessage(QMailMessage *message)
+bool QMailMessageBuffer::updateMessage(QMailMessage *message)
 {
     m_waitingForCallback.append(new BufferItem(false, 0, message));
     return true;
 }
 
-BufferItem *MessageBuffer::get_item(QMailMessage *message)
+QMailMessageBuffer::BufferItem *QMailMessageBuffer::get_item(QMailMessage *message)
 {
     foreach (BufferItem *item, m_waitingForCallback) {
         if (item->message == message) {
@@ -69,11 +56,12 @@ BufferItem *MessageBuffer::get_item(QMailMessage *message)
 }
 
 // We "own" the callback instance (makes the error case simpler for the client to handle)
-bool MessageBuffer::setCallback(QMailMessage *message, MessageBufferFlushCallback *callback)
+bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFlushCallback *callback)
 {
     BufferItem *item = get_item(message);
     if (!message) {
         // This message was not scheduled for adding or updating
+        qWarning() << "Adding null message to buffer";
         delete callback;
         return false;
     }
@@ -91,47 +79,7 @@ bool MessageBuffer::setCallback(QMailMessage *message, MessageBufferFlushCallbac
     return true;
 }
 
-bool MessageBuffer::removeMessages(const QMailMessageKey &key)
-{
-    foreach (BufferItem *item, m_waitingForCallback) {
-        QMailMessageKey itemKey(QMailMessageKey::serverUid(item->message->serverUid()) & QMailMessageKey::parentAccountId(item->message->parentAccountId()));
-        if (key == itemKey) {
-            m_waitingForCallback.removeOne(item);
-            delete item->message;
-            delete item->callback;
-            delete item;
-        }
-    }
-    foreach (BufferItem *item, m_waitingForFlush) {
-        QMailMessageKey itemKey(QMailMessageKey::serverUid(item->message->serverUid()) & QMailMessageKey::parentAccountId(item->message->parentAccountId()));
-        if (key == itemKey) {
-            m_waitingForCallback.removeOne(item);
-            delete item->message;
-            delete item->callback;
-            delete item;
-        }
-    }
-    return QMailStore::instance()->removeMessages(key);
-}
-
-int MessageBuffer::countMessages(const QMailMessageKey &key)
-{
-    int count = 0;
-    foreach (BufferItem *item, m_waitingForCallback) {
-        QMailMessageKey check = QMailMessageKey::serverUid(item->message->serverUid()) & QMailMessageKey::parentAccountId(item->message->parentAccountId());
-        if (check == key)
-            ++count;
-    }
-    foreach (BufferItem *item, m_waitingForFlush) {
-        QMailMessageKey check = QMailMessageKey::serverUid(item->message->serverUid()) & QMailMessageKey::parentAccountId(item->message->parentAccountId());
-        if (check == key)
-            ++count;
-    }
-    count += QMailStore::instance()->countMessages(key);
-    return count;
-}
-
-void MessageBuffer::messageTimeout()
+void QMailMessageBuffer::messageTimeout()
 {
     if (messagePending()) {
         messageFlush();
@@ -141,7 +89,7 @@ void MessageBuffer::messageTimeout()
     }
 }
 
-void MessageBuffer::messageFlush()
+void QMailMessageBuffer::messageFlush()
 {
     QMailStore *store = QMailStore::instance();
     QList<QMailMessage*> work;
@@ -197,13 +145,13 @@ void MessageBuffer::messageFlush()
         emit flushed();
 }
 
-void MessageBuffer::flush()
+void QMailMessageBuffer::flush()
 {
     if (messagePending())
         messageFlush();
 }
 
-void MessageBuffer::readConfig()
+void QMailMessageBuffer::readConfig()
 {
     QSettings settings("Nokia", "QMF");
     settings.beginGroup("MessageBuffer");
@@ -216,7 +164,7 @@ void MessageBuffer::readConfig()
     m_messageTimer->setInterval(m_idleTimeout);
 }
 
-void MessageBuffer::removeCallback(MessageBufferFlushCallback *callback)
+void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callback)
 {
     foreach (BufferItem *item, m_waitingForFlush) {
         if (item->callback == callback) {

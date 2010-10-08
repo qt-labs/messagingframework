@@ -46,14 +46,15 @@
 #include <longstream_p.h>
 #include <longstring_p.h>
 #include <qmailstore.h>
+#include <qmailmessagebuffer.h>
 #include <qmailtransport.h>
 #include <qmaillog.h>
 #include <qmaildisconnected.h>
 
 #include <limits.h>
-#include "messagebuffer.h"
 
-class MessageFlushedWrapper : public MessageBufferFlushCallback
+
+class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {
     PopClient *context;
     bool isComplete;
@@ -1050,16 +1051,16 @@ void PopClient::createMail()
 
     // Store this message to the mail store
     if (mail.id().isValid()) {
-        MessageBuffer::instance()->updateMessage(&mail);
+        QMailMessageBuffer::instance()->updateMessage(&mail);
     } else {
         QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
-        MessageBuffer::instance()->removeMessages(duplicateKey);
-        MessageBuffer::instance()->addMessage(&mail);
+        QMailStore::instance()->removeMessages(duplicateKey);
+        QMailMessageBuffer::instance()->addMessage(&mail);
     }
 
     dataStream->reset();
 
-    MessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
+    QMailMessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
 }
 
 void PopClient::messageFlushed(QMailMessage &message, bool isComplete)
@@ -1088,7 +1089,7 @@ void PopClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const
 void PopClient::retrieveOperationCompleted()
 {
     // Flush any batched writes now
-    MessageBuffer::instance()->flush();
+    QMailMessageBuffer::instance()->flush();
 
     if (!deleting && !selected) {
         // Only update PartialContent flag when retrieving message list
