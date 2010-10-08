@@ -1528,15 +1528,6 @@ void ImapFetchSelectedMessagesStrategy::dataFetched(ImapStrategyContextBase *con
 { 
     ImapMessageListStrategy::dataFetched(context, message, uid, section);
 
-    RetrievalMap::iterator it = _retrievalSize.find(uid);
-    if (it != _retrievalSize.end()) {
-        // Update the progress figure
-        _progressRetrievalSize += it.value().first.first;
-        context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
-
-        it = _retrievalSize.erase(it);
-    }
-
     itemFetched(context, message.serverUid());
 }
 
@@ -1548,11 +1539,19 @@ void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *context, const QString &uid)
 { 
+    RetrievalMap::iterator it = _retrievalSize.find(uid);
+    if (it != _retrievalSize.end()) {
+        // Update the progress figure
+        _progressRetrievalSize += it.value().first.first;
+        context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
+
+        it = _retrievalSize.erase(it);
+    }
+
     if (_listSize) {
         int count = qMin(++_messageCountIncremental + 1, _listSize);
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
     }
-    Q_UNUSED(uid)
 }
 /* A strategy to search all folders */
 
