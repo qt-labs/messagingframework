@@ -1514,14 +1514,14 @@ void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *co
 void ImapFetchSelectedMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapMessageListStrategy::messageFetched(context, message);
+
+    itemFetched(context, message.serverUid());
 }
 
 void ImapFetchSelectedMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
 {
     ImapMessageListStrategy::messageFlushed(context, message);
     if (_error) return;
-
-    itemFetched(context, message.serverUid());
 }
 
 void ImapFetchSelectedMessagesStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
@@ -1536,14 +1536,14 @@ void ImapFetchSelectedMessagesStrategy::dataFetched(ImapStrategyContextBase *con
 
         it = _retrievalSize.erase(it);
     }
+
+    itemFetched(context, message.serverUid());
 }
 
 void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
 { 
     ImapMessageListStrategy::dataFlushed(context, message, uid, section);
     if (_error) return;
-
-    itemFetched(context, message.serverUid());
 }
 
 void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *context, const QString &uid)
