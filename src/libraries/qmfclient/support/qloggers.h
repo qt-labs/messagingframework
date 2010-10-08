@@ -43,7 +43,10 @@
 #define QLOGGERS_H
 
 #include <qlogsystem.h>
+#include <qglobal.h>
+#ifndef Q_OS_WIN
 #include <syslog.h>
+#endif
 
 /*!
  * \brief The very basic foundations of the "base" logger

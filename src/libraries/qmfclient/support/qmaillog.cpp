@@ -87,6 +87,7 @@ namespace
     };
 };
 
+#ifndef Q_OS_WIN
 QMF_EXPORT
 void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {
@@ -132,7 +133,6 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
     qmf_resetLoggingFlags();
 };
 
-#ifndef Q_OS_WIN
 static QList<char*> LogFlagsCache;
 
 // Register the flag variable so it can be reset later
@@ -174,15 +174,24 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValu
 }
 
 #else
+
+QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
+{
+    Q_UNUSED(organization);
+    Q_UNUSED(application);
+    Q_UNUSED(ident);
+}
+
 QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
     Q_UNUSED(flag);
 }
 QMF_EXPORT void qmf_resetLoggingFlags() { }
 
-QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category)
+QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValue)
 {
     Q_UNUSED(category);
+    Q_UNUSED(defValue);
     return false;
 }
 #endif

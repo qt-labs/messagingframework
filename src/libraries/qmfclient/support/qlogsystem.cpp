@@ -43,10 +43,14 @@
 
 #include <QDateTime>
 
+#ifndef Q_OS_WIN
 extern "C"
 {
 #include <unistd.h>
 }
+#else
+#include <QCoreApplication>
+#endif
 
 /// singleton access
 LogSystem& LogSystem::getInstance()
@@ -149,7 +153,11 @@ const QString& LvlTimeLogPrefix::operator()(const LogLevel& lvl)
 
 LvlTimePidLogPrefix::LvlTimePidLogPrefix()
 {
+#ifndef Q_OS_WIN
     stPid = QString("[%1] ").arg(getpid());
+#else
+    stPid = QString("[%1] ").arg(qApp->applicationPid());
+#endif
 }
 
 const QString& LvlTimePidLogPrefix::operator ()(const LogLevel& lvl)
