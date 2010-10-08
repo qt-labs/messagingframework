@@ -1505,7 +1505,7 @@ void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *co
 
                 // Update the progress figure to count the retrieved portion of this message
                 uint partialSize = values.first.first * percentage / 100;
-                MessageBuffer::instance()->progressChanged(context, _progressRetrievalSize + partialSize, _totalRetrievalSize);
+                context->progressChanged(_progressRetrievalSize + partialSize, _totalRetrievalSize);
             }
         }
     }
@@ -1527,6 +1527,15 @@ void ImapFetchSelectedMessagesStrategy::messageFlushed(ImapStrategyContextBase *
 void ImapFetchSelectedMessagesStrategy::dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
 { 
     ImapMessageListStrategy::dataFetched(context, message, uid, section);
+
+    RetrievalMap::iterator it = _retrievalSize.find(uid);
+    if (it != _retrievalSize.end()) {
+        // Update the progress figure
+        _progressRetrievalSize += it.value().first.first;
+        context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
+
+        it = _retrievalSize.erase(it);
+    }
 }
 
 void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section)
@@ -1539,15 +1548,6 @@ void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *context, const QString &uid)
 { 
-    RetrievalMap::iterator it = _retrievalSize.find(uid);
-    if (it != _retrievalSize.end()) {
-        // Update the progress figure
-        _progressRetrievalSize += it.value().first.first;
-        MessageBuffer::instance()->progressChanged(context, _progressRetrievalSize, _totalRetrievalSize);
-
-        it = _retrievalSize.erase(it);
-    }
-
     if (_listSize) {
         int count = qMin(++_messageCountIncremental + 1, _listSize);
         context->updateStatus(QObject::tr("Completing %1 / %2").arg(count).arg(_listSize));
@@ -1972,7 +1972,7 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
     }
 
     _progress = 0;
-    MessageBuffer::instance()->progressChanged(context, _progress, _total);
+    context->progressChanged(_progress, _total);
 
     _transferState = Preview;
 
@@ -2142,6 +2142,8 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
 void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapFolderListStrategy::messageFetched(context, message);
+    if (_transferState == Preview)
+        context->progressChanged(_progress++, _total);
 }
 
 void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -2150,8 +2152,6 @@ void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *contex
     if (_error) return;
 
     if (_transferState == Preview) {
-        MessageBuffer::instance()->progressChanged(context, _progress++, _total);
-
         if (message.size() < _headerLimit) {
             _completionList.append(message.id());
         } else {

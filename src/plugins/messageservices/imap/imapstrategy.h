@@ -102,7 +102,7 @@ class QMailAccount;
 class QMailAccountConfiguration;
 class ImapClient;
 
-class ImapStrategyContextBase : public MessageBufferProgressCallback
+class ImapStrategyContextBase
 {
 public:
     ImapStrategyContextBase(ImapClient *client) { _client = client; }
