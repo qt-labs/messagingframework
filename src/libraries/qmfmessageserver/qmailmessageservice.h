@@ -122,7 +122,6 @@ public:
     virtual ~QMailMessageSource();
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const;
-    virtual bool concurrentActionsSupported() const;
 
 public slots:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
@@ -228,7 +227,6 @@ class MESSAGESERVER_EXPORT QMailMessageSink : public QObject
 
 public:
     ~QMailMessageSink();
-    virtual bool concurrentActionsSupported() const;
 
 public slots:
     virtual bool transmitMessages(const QMailMessageIdList &ids);
@@ -275,6 +273,7 @@ public:
     virtual bool available() const = 0;
 
     virtual bool requiresReregistration() const { return true; }
+    virtual bool usesConcurrentActions() const { return false; }
 public slots:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action);
