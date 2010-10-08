@@ -41,6 +41,9 @@ public:
 
     void removeCallback(MessageBufferFlushCallback *callback);
 
+signals:
+    void flushed();
+
 private slots:
     void messageTimeout();
     void readConfig();

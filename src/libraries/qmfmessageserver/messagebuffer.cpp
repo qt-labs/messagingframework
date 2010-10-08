@@ -192,6 +192,9 @@ void MessageBuffer::messageFlush()
     m_lastFlushTimePerMessage = timePerMessage;
 
     m_messageTimer->start();
+
+    if (processed)
+        emit flushed();
 }
 
 void MessageBuffer::flush()
