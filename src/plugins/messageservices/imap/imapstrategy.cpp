@@ -431,7 +431,7 @@ void ImapStrategyContextBase::completedMessageCopy(QMailMessage &message, const 
 
 void ImapStrategyContextBase::operationCompleted()
 { 
-    // Flush any pending messages now so we have a proper list of modified folders
+    // Flush any pending messages now so that _modifiedFolders is up to date
     MessageBuffer::instance()->flush();
 
     // Update the status on any folders we modified
@@ -1947,6 +1947,10 @@ void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *contex
 {
     if (_transferState == Preview) {    //getting headers
         --_outstandingPreviews;
+        if (!_outstandingPreviews) {
+            // Flush any pending messages now so that _completionList is up to date
+            MessageBuffer::instance()->flush();
+        }
         fetchNextMailPreview(context);
     } else if (_transferState == Complete) {
         ImapFetchSelectedMessagesStrategy::handleUidFetch(context);
