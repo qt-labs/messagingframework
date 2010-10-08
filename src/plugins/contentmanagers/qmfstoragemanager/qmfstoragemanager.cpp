@@ -633,7 +633,7 @@ struct PartStorer
             // We can only write the content in decoded form if it is complete
             QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
 
-            QString detachedFile = message->customField("qmf-detached-filename");
+            QString detachedFile = message->customField("qmf-detached-part-filename");
             if (!detachedFile.isEmpty()) {
                 // We can take ownership of the file if that helps
                 if ((outputFormat == QMailMessageBody::Encoded) ||
@@ -642,7 +642,7 @@ struct PartStorer
                      (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
                     // Try to take ownership of the file
                     if (QFile::rename(detachedFile, partFilePath)) {
-                        message->removeCustomField("qmf-detached-filename");
+                        message->removeCustomField("qmf-detached-part-filename");
                         return true;
                     }
                 }
