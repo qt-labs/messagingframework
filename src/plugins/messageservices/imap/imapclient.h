@@ -138,6 +138,7 @@ protected slots:
     void commandTransition(const ImapCommand, const OperationStatus);
     void transportStatus(const QString& status);
     void idleOpenRequested(IdleProtocol*);
+    void messageBufferFlushed();
 
 private:
     friend class ImapStrategyContextBase;

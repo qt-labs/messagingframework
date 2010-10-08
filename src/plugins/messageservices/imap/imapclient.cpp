@@ -451,6 +451,8 @@ ImapClient::ImapClient(QObject* parent)
     _inactiveTimer.setSingleShot(true);
     connect(&_inactiveTimer, SIGNAL(timeout()),
             this, SLOT(connectionInactive()));
+
+    connect(MessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
 }
 
 ImapClient::~ImapClient()
@@ -1497,6 +1499,12 @@ void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
     _idlesEstablished = false;
     qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
     emit restartPushEmail();
+}
+
+void ImapClient::messageBufferFlushed()
+{
+    // We know this is now empty
+    callbacks.clear();
 }
 
 #include "imapclient.moc"
