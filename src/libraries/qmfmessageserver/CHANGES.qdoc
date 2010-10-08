@@ -20,6 +20,13 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 4. Added 'bool QMailMessageSink::cancelOperation()'
 
+5. Added concurrent version to QMailMessageSource and QMailMessageSink
+
+6. Added QMailMessageBuffer
+
+7. Added QMailMessageService::useConcurrentActions()
+
+
 
 *****************************************************************************
 
