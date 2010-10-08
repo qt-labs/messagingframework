@@ -213,3 +213,15 @@ void MessageBuffer::readConfig()
     m_messageTimer->setInterval(m_idleTimeout);
 }
 
+void MessageBuffer::removeCallback(MessageBufferFlushCallback *callback)
+{
+    foreach (BufferItem *item, m_waitingForFlush) {
+        if (item->callback == callback) {
+            m_waitingForCallback.removeOne(item);
+            delete item->message;
+            delete item->callback;
+            delete item;
+        }
+    }
+}
+
