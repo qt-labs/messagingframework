@@ -132,6 +132,9 @@ Changes since the QMF-1.0 release on 15/05/09:
           'QMailStore::messageStatusUpdated(const QMailMessageIdList& ids, 
                                             quint64 status, bool set)' signals.
 
+38. Remove unintentionally exported QMailId that should not have been included in the public API.
+
+
 
 *****************************************************************************
 
