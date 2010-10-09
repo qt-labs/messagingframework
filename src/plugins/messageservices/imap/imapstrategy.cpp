@@ -1423,6 +1423,8 @@ void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *c
     ImapConfiguration imapCfg(context->config());
     if (!imapCfg.isAutoDownload()) {
         _headerLimit = imapCfg.maxMailSize() * 1024;
+    } else {
+        _headerLimit = INT_MAX;
     }
 
     ImapMessageListStrategy::newConnection(context);
@@ -2086,6 +2088,9 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
                                                            int &partsToRetrieve, 
                                                            int &bytesLeft)
 {
+    if (bytesLeft <= 0)
+        return;
+    
     if (partContainer.multipartType() == QMailMessage::MultipartAlternative) {
         // See if there is a preferred sub-part to retrieve
         ImapConfiguration imapCfg(context->config());
@@ -2155,7 +2160,7 @@ void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *contex
     ImapFolderListStrategy::messageFlushed(context, message);
     if (_error) return;
 
-    if (_transferState == Preview) {
+    if ((_transferState == Preview) && (_headerLimit > 0)) {
         if (message.size() < _headerLimit) {
             _completionList.append(message.id());
         } else {
