@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201040
+  * Fixes: NB#194887 QMailRetrievalAction::retrieveMessages() retrieves/creates plain text part badly
+
 201039
   * Fixes: NB#195615 <coverity> Bugs reported by coverity in QMF
   * Batched add/update enabled for IMAP & POP accounts
