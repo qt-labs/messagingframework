@@ -21,6 +21,7 @@ class QMailMessageBufferPrivate
 
     // Flush the buffer periodically
     QTimer *messageTimer;
+    QTime secondaryTimer;
     int lastFlushTimePerMessage;
 
 };
@@ -93,7 +94,11 @@ bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFl
         // If the buffer is full we flush.
         // If the timer isn't running we flush.
         messageFlush();
+    } else if (d->secondaryTimer.elapsed() > d->messageTimer->interval()) {
+        // message timer is overdue to fire, force a flush
+        messageFlush();
     }
+    
 
     return true;
 }
@@ -159,6 +164,7 @@ void QMailMessageBuffer::messageFlush()
     d->lastFlushTimePerMessage = timePerMessage;
 
     d->messageTimer->start();
+    d->secondaryTimer.start();
 
     if (processed)
         emit flushed();
