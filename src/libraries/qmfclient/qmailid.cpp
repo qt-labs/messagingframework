@@ -41,88 +41,95 @@
 
 #include "qmailid.h"
 
-class MailIdPrivate
+struct QMailIdPrivate
 {
-public:
-    MailIdPrivate()
-        : id(0) {}
-    MailIdPrivate(quint64 value)
-        : id(value) {}
+    QMailIdPrivate();
+    QMailIdPrivate(quint64 value);
+    QMailIdPrivate(const QMailIdPrivate& other);
 
-    quint64 id;
+    QMailIdPrivate& operator=(const QMailIdPrivate& other);
+
+    bool isValid() const;
+    quint64 toULongLong() const;
+
+    bool operator!=(const QMailIdPrivate& other) const;
+    bool operator==(const QMailIdPrivate& other) const;
+    bool operator<(const QMailIdPrivate& other) const;
+
+    template <typename Stream> void serialize(Stream &stream) const;
+    template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    quint64 _value;
 };
 
-Q_IMPLEMENT_USER_METATYPE(MailId);
+QMailIdPrivate::QMailIdPrivate()
+    : _value(0)
 
-MailId::MailId()
-    : d(new MailIdPrivate())
 {
 }
 
-MailId::MailId(quint64 value)
-    : d(new MailIdPrivate(value))
+QMailIdPrivate::QMailIdPrivate(quint64 value)
+    : _value(value)
 {
 }
 
-MailId::MailId(const MailId& other)
-    : d(new MailIdPrivate(other.d->id))
+QMailIdPrivate::QMailIdPrivate(QMailIdPrivate const& other)
+    : _value(other._value)
 {
 }
 
-MailId::~MailId()
+QMailIdPrivate& QMailIdPrivate::operator=(const QMailIdPrivate& other)
 {
-}
-
-MailId& MailId::operator=(const MailId& other) 
-{
-    d->id = other.d->id;
+    _value = other._value;
     return *this;
 }
 
-bool MailId::isValid() const
+bool QMailIdPrivate::isValid() const
 {
-    return d->id != 0;
+    return _value != 0;
 }
 
-quint64 MailId::toULongLong() const
+quint64 QMailIdPrivate::toULongLong() const
 {
-    return d->id;
+    return _value;
 }
 
-bool MailId::operator!= (const MailId & other) const
+bool QMailIdPrivate::operator!=(const QMailIdPrivate & other) const
 {
-    return d->id != other.d->id;
+    return _value != other._value;
 }
 
-bool MailId::operator== (const MailId& other) const
+bool QMailIdPrivate::operator==(const QMailIdPrivate& other) const
 {
-    return d->id == other.d->id;
+    return _value == other._value;
 }
 
-bool MailId::operator< (const MailId& other) const
+bool QMailIdPrivate::operator<(const QMailIdPrivate& other) const
 {
-    return d->id < other.d->id;
+    return _value < other._value;
 }
 
-template <typename Stream> void MailId::serialize(Stream &stream) const
+template <typename Stream> void QMailIdPrivate::serialize(Stream &stream) const
 {
-    stream << d->id;
+    stream << _value;
 }
 
-template <typename Stream> void MailId::deserialize(Stream &stream)
+template <typename Stream> void QMailIdPrivate::deserialize(Stream &stream)
 {
-    stream >> d->id;
+    stream >> _value;
 }
 
-
-QDebug& operator<< (QDebug& debug, const MailId &id)
+QDebug& operator<<(QDebug& debug, const QMailIdPrivate &id)
 {
-    return debug << id.toULongLong();
+    id.serialize(debug);
+    return debug;
 }
 
-QTextStream& operator<< (QTextStream& s, const MailId &id)
+QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
 {
-    return s << id.toULongLong();
+    id.serialize(s);
+    return s;
 }
 
 /*!
@@ -153,7 +160,7 @@ Q_IMPLEMENT_USER_METATYPE(QMailAccountId);
     Construct an uninitialized QMailAccountId, for which isValid() returns false.
 */
 QMailAccountId::QMailAccountId()
-    : MailId()
+    : d(new QMailIdPrivate)
 {
 }
 
@@ -161,13 +168,13 @@ QMailAccountId::QMailAccountId()
     Construct a QMailAccountId with the supplied numeric identifier \a value.
 */
 QMailAccountId::QMailAccountId(quint64 value)
-    : MailId(value)
+    : d(new QMailIdPrivate(value))
 {
 }
 
 /*! \internal */
 QMailAccountId::QMailAccountId(const QMailAccountId& other)
-    : MailId(other)
+    : d(new QMailIdPrivate(*other.d))
 {
 }
 
@@ -179,7 +186,7 @@ QMailAccountId::~QMailAccountId()
 /*! \internal */
 QMailAccountId& QMailAccountId::operator=(const QMailAccountId& other) 
 {
-    MailId::operator=(other);
+    *d = *other.d;
     return *this;
 }
 
@@ -188,13 +195,13 @@ QMailAccountId& QMailAccountId::operator=(const QMailAccountId& other)
 */
 bool QMailAccountId::isValid() const
 {
-    return MailId::isValid();
+    return d->isValid();
 }
 
 /*! \internal */
 quint64 QMailAccountId::toULongLong() const
 {
-    return MailId::toULongLong();
+    return d->toULongLong();
 }
 
 /*!
@@ -208,25 +215,25 @@ QMailAccountId::operator QVariant() const
 /*!
     Returns true if this object's identifier value differs from that of \a other.
 */
-bool QMailAccountId::operator!= (const QMailAccountId& other) const
+bool QMailAccountId::operator!=(const QMailAccountId& other) const
 {
-    return MailId::operator!=(other);
+    return *d != *other.d;
 }
 
 /*!
     Returns true if this object's identifier value is equal to that of \a other.
 */
-bool QMailAccountId::operator== (const QMailAccountId& other) const
+bool QMailAccountId::operator==(const QMailAccountId& other) const
 {
-    return MailId::operator==(other);
+    return *d == *other.d;
 }
 
 /*!
     Returns true if this object's identifier value is less than that of \a other.
 */
-bool QMailAccountId::operator< (const QMailAccountId& other) const
+bool QMailAccountId::operator<(const QMailAccountId& other) const
 {
-    return MailId::operator<(other);
+    return *d < *other.d;
 }
 
 /*! 
@@ -235,7 +242,7 @@ bool QMailAccountId::operator< (const QMailAccountId& other) const
 */
 template <typename Stream> void QMailAccountId::serialize(Stream &stream) const
 {
-    MailId::serialize(stream);
+    d->serialize(stream);
 }
 
 /*! 
@@ -244,21 +251,22 @@ template <typename Stream> void QMailAccountId::serialize(Stream &stream) const
 */
 template <typename Stream> void QMailAccountId::deserialize(Stream &stream)
 {
-    MailId::deserialize(stream);
+    d->deserialize(stream);
 }
 
 /*! \internal */
-QDebug& operator<< (QDebug& debug, const QMailAccountId &id)
+QDebug& operator<<(QDebug& debug, const QMailAccountId &id)
 {
-    return debug << static_cast<const MailId&>(id);
+    id.serialize(debug);
+    return debug;
 }
 
 /*! \internal */
 QTextStream& operator<< (QTextStream& s, const QMailAccountId &id)
 {
-    return s << static_cast<const MailId&>(id);
+    id.serialize(s);
+    return s;
 }
-
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 
@@ -290,7 +298,7 @@ Q_IMPLEMENT_USER_METATYPE(QMailFolderId);
     Construct an uninitialized QMailFolderId, for which isValid() returns false.
 */
 QMailFolderId::QMailFolderId()
-    : MailId()
+    : d(new QMailIdPrivate)
 {
 }
 
@@ -298,7 +306,7 @@ QMailFolderId::QMailFolderId()
     Construct a QMailFolderId corresponding to the predefined folder identifier \a id.
 */
 QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
-    : MailId(static_cast<quint64>(id))
+    : d(new QMailIdPrivate(static_cast<quint64>(id)))
 {
 }
 
@@ -306,13 +314,13 @@ QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
     Construct a QMailFolderId with the supplied numeric identifier \a value.
 */
 QMailFolderId::QMailFolderId(quint64 value)
-    : MailId(value)
+    : d(new QMailIdPrivate(value))
 {
 }
 
 /*! \internal */
 QMailFolderId::QMailFolderId(const QMailFolderId& other)
-    : MailId(other)
+    : d(new QMailIdPrivate(*other.d))
 {
 }
 
@@ -324,7 +332,7 @@ QMailFolderId::~QMailFolderId()
 /*! \internal */
 QMailFolderId& QMailFolderId::operator=(const QMailFolderId& other) 
 {
-    MailId::operator=(other);
+    *d = *other.d;
     return *this;
 }
 
@@ -333,13 +341,13 @@ QMailFolderId& QMailFolderId::operator=(const QMailFolderId& other)
 */
 bool QMailFolderId::isValid() const
 {
-    return MailId::isValid();
+    return d->isValid();
 }
 
 /*! \internal */
 quint64 QMailFolderId::toULongLong() const
 {
-    return MailId::toULongLong();
+    return d->toULongLong();
 }
 
 /*!
@@ -353,25 +361,25 @@ QMailFolderId::operator QVariant() const
 /*!
     Returns true if this object's identifier value differs from that of \a other.
 */
-bool QMailFolderId::operator!= (const QMailFolderId& other) const
+bool QMailFolderId::operator!=(const QMailFolderId& other) const
 {
-    return MailId::operator!=(other);
+    return *d != *other.d;
 }
 
 /*!
     Returns true if this object's identifier value is equal to that of \a other.
 */
-bool QMailFolderId::operator== (const QMailFolderId& other) const
+bool QMailFolderId::operator==(const QMailFolderId& other) const
 {
-    return MailId::operator==(other);
+    return *d == *other.d;
 }
 
 /*!
     Returns true if this object's identifier value is less than that of \a other.
 */
-bool QMailFolderId::operator< (const QMailFolderId& other) const
+bool QMailFolderId::operator<(const QMailFolderId& other) const
 {
-    return MailId::operator<(other);
+    return *d < *other.d;
 }
 
 /*! 
@@ -380,7 +388,7 @@ bool QMailFolderId::operator< (const QMailFolderId& other) const
 */
 template <typename Stream> void QMailFolderId::serialize(Stream &stream) const
 {
-    MailId::serialize(stream);
+    d->serialize(stream);
 }
 
 /*! 
@@ -389,19 +397,21 @@ template <typename Stream> void QMailFolderId::serialize(Stream &stream) const
 */
 template <typename Stream> void QMailFolderId::deserialize(Stream &stream)
 {
-    MailId::deserialize(stream);
+    d->deserialize(stream);
 }
 
 /*! \internal */
 QDebug& operator<< (QDebug& debug, const QMailFolderId &id)
 {
-    return debug << static_cast<const MailId&>(id);
+    id.serialize(debug);
+    return debug;
 }
 
 /*! \internal */
 QTextStream& operator<< (QTextStream& s, const QMailFolderId &id)
 {
-    return s << static_cast<const MailId&>(id);
+    id.serialize(s);
+    return s;
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
@@ -435,7 +445,7 @@ Q_IMPLEMENT_USER_METATYPE(QMailMessageId);
     Construct an uninitialized QMailMessageId, for which isValid() returns false.
 */
 QMailMessageId::QMailMessageId()
-    : MailId()
+    : d(new QMailIdPrivate)
 {
 }
 
@@ -443,13 +453,13 @@ QMailMessageId::QMailMessageId()
     Construct a QMailMessageId with the supplied numeric identifier \a value.
 */
 QMailMessageId::QMailMessageId(quint64 value)
-    : MailId(value)
+    : d(new QMailIdPrivate(value))
 {
 }
 
 /*! \internal */
 QMailMessageId::QMailMessageId(const QMailMessageId& other)
-    : MailId(other)
+    : d(new QMailIdPrivate(*other.d))
 {
 }
 
@@ -461,7 +471,7 @@ QMailMessageId::~QMailMessageId()
 /*! \internal */
 QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other) 
 {
-    MailId::operator=(other);
+    *d = *other.d;
     return *this;
 }
 
@@ -470,13 +480,13 @@ QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other)
 */
 bool QMailMessageId::isValid() const
 {
-    return MailId::isValid();
+    return d->isValid();
 }
 
 /*! \internal */
 quint64 QMailMessageId::toULongLong() const
 {
-    return MailId::toULongLong();
+    return d->toULongLong();
 }
 
 /*!
@@ -492,7 +502,7 @@ QMailMessageId::operator QVariant() const
 */
 bool QMailMessageId::operator!= (const QMailMessageId& other) const
 {
-    return MailId::operator!=(other);
+    return *d != *other.d;
 }
 
 /*!
@@ -500,7 +510,7 @@ bool QMailMessageId::operator!= (const QMailMessageId& other) const
 */
 bool QMailMessageId::operator== (const QMailMessageId& other) const
 {
-    return MailId::operator==(other);
+    return *d == *other.d;
 }
 
 /*!
@@ -508,7 +518,7 @@ bool QMailMessageId::operator== (const QMailMessageId& other) const
 */
 bool QMailMessageId::operator< (const QMailMessageId& other) const
 {
-    return MailId::operator<(other);
+    return *d < *other.d;
 }
 
 /*! 
@@ -517,7 +527,7 @@ bool QMailMessageId::operator< (const QMailMessageId& other) const
 */
 template <typename Stream> void QMailMessageId::serialize(Stream &stream) const
 {
-    MailId::serialize(stream);
+    d->serialize(stream);
 }
 
 /*! 
@@ -526,19 +536,21 @@ template <typename Stream> void QMailMessageId::serialize(Stream &stream) const
 */
 template <typename Stream> void QMailMessageId::deserialize(Stream &stream)
 {
-    MailId::deserialize(stream);
+    d->deserialize(stream);
 }
 
 /*! \internal */
-QDebug& operator<< (QDebug& debug, const QMailMessageId &id)
+QDebug& operator<<(QDebug& debug, const QMailMessageId &id)
 {
-    return debug << static_cast<const MailId&>(id);
+    id.serialize(debug);
+    return debug;
 }
 
 /*! \internal */
-QTextStream& operator<< (QTextStream& s, const QMailMessageId &id)
+QTextStream& operator<<(QTextStream& s, const QMailMessageId &id)
 {
-    return s << static_cast<const MailId&>(id);
+    id.serialize(s);
+    return s;
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageIdList, QMailMessageIdList)

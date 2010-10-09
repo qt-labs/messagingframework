@@ -46,43 +46,15 @@
 #include "qmailipc.h"
 #include "qmailfolderfwd.h"
 #include <QDebug>
+#include <QScopedPointer>
 #include <QString>
 #include <QVariant>
 
-class MailIdPrivate;
+class QMailIdPrivate;
 
-class QMF_EXPORT MailId
+class QMF_EXPORT QMailAccountId
 {
-private:
-    friend class QMailAccountId;
-    friend class QMailFolderId;
-    friend class QMailMessageId;
-
-    explicit MailId(quint64 value);
-
-    QScopedPointer<MailIdPrivate> d;
-
-public:
-    MailId();
-    MailId(const MailId& other);
-    virtual ~MailId();
-
-    MailId& operator=(const MailId& other);
-
-    bool isValid() const;
-    quint64 toULongLong() const;
-
-    bool operator!=(const MailId& other) const;
-    bool operator==(const MailId& other) const;
-    bool operator<(const MailId& other) const;
-
-    template <typename Stream> void serialize(Stream &stream) const;
-    template <typename Stream> void deserialize(Stream &stream);
-};
-
-
-class QMF_EXPORT QMailAccountId : private MailId
-{
+    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailAccountId();
     explicit QMailAccountId(quint64 value);
@@ -102,14 +74,12 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-
-    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailAccountId&);
-    friend QMF_EXPORT QTextStream& operator <<(QTextStream&, const QMailAccountId&);
 };
 
 
-class QMF_EXPORT QMailFolderId : private MailId
+class QMF_EXPORT QMailFolderId
 {
+    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailFolderId();
     QMailFolderId(QMailFolderFwd::PredefinedFolderId id);
@@ -130,14 +100,12 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-
-    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailFolderId&);
-    friend QMF_EXPORT QTextStream& operator<<(QTextStream&, const QMailFolderId&);
 };
 
 
-class QMF_EXPORT QMailMessageId : private MailId
+class QMF_EXPORT QMailMessageId
 {
+    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailMessageId();
     explicit QMailMessageId(quint64 value);
@@ -157,9 +125,6 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
-
-    friend QMF_EXPORT QDebug& operator<<(QDebug&, const QMailMessageId&);
-    friend QMF_EXPORT QTextStream& operator <<(QTextStream&, const QMailMessageId&);
 };
 
 
@@ -167,17 +132,14 @@ typedef QList<QMailAccountId> QMailAccountIdList;
 typedef QList<QMailFolderId> QMailFolderIdList;
 typedef QList<QMailMessageId> QMailMessageIdList;
 
-QMF_EXPORT QDebug& operator<< (QDebug& debug, const MailId &id);
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailAccountId &id);
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailFolderId &id);
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailMessageId &id);
 
-QMF_EXPORT QTextStream& operator<< (QTextStream& s, const MailId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailAccountId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailFolderId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailMessageId &id);
 
-Q_DECLARE_USER_METATYPE(MailId);
 Q_DECLARE_USER_METATYPE(QMailAccountId);
 Q_DECLARE_USER_METATYPE(QMailFolderId);
 Q_DECLARE_USER_METATYPE(QMailMessageId);
