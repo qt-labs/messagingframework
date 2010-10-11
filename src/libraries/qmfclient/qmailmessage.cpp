@@ -8247,6 +8247,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     const QByteArray terminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
 
     QMailMessage mail;
+    mail.setMessageType(QMailMessage::Email);
 
     int pos = ls.indexOf(terminator);
     if (pos == -1) {
