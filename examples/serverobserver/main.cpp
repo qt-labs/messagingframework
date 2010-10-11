@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     while (!messageServerRunning()) {
-        qDebug() << "Message server is not running. Waiting.";
+        qWarning() << "Message server is not running. Waiting.";
         fakeSleep(5000);
     }
 

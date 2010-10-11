@@ -34,6 +34,8 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#moveToStandardFolder">moveToStandardFolder</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailFolder::StandardFolder <i>standardFolder</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey::Properties </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#parentFolderProperties">parentFolderProperties</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMap&lt;QMailFolderId, QMailMessageIdList&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#restoreMap">restoreMap</a></b> ( const QMailMessageIdList &amp; <i>messageIds</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#restoreToPreviousFolder">restoreToPreviousFolder</a></b> ( const QMailMessageId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#restoreToPreviousFolder-2">restoreToPreviousFolder</a></b> ( const QMailMessageKey &amp; <i>key</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#rollBackUpdates">rollBackUpdates</a></b> ( const QMailAccountId &amp; <i>mailAccountId</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#sourceFolderId">sourceFolderId</a></b> ( const QMailMessageMetaData &amp; <i>metaData</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmaildisconnected.html#sourceKey">sourceKey</a></b> ( const QMailFolderId &amp; <i>folderId</i> )</td></tr>
@@ -91,6 +93,12 @@
 <h3 class="fn"><a name="restoreMap"></a><a href="http://doc.trolltech.com/4.5/qmap.html">QMap</a>&lt;<a href="qmailfolderid.html">QMailFolderId</a>, <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a>&gt; QMailDisconnected::restoreMap ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>messageIds</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a map of originating folders for a list of messages that are in the disconnected moved state as identified by <i>messageIds</i>.</p>
 <p>The map contains a key for each originating folder, and for each key the value is a list of messages moved out of the folder.</p>
+<h3 class="fn"><a name="restoreToPreviousFolder"></a>void QMailDisconnected::restoreToPreviousFolder ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Updates the <a href="qmailmessage.html">QMailMessage</a> with <a href="qmailmessageid.html">QMailMessageId</a> <i>id</i> to move the message back to the previous folder it was contained by.</p>
+<p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<h3 class="fn"><a name="restoreToPreviousFolder-2"></a>void QMailDisconnected::restoreToPreviousFolder ( const <a href="qmailmessagekey.html">QMailMessageKey</a> &amp; <i>key</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Updates all QMailMessages identified by the key <i>key</i> to move the messages back to the previous folder they were contained by.</p>
+<p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
 <h3 class="fn"><a name="rollBackUpdates"></a>void QMailDisconnected::rollBackUpdates ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>mailAccountId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Rolls back all disconnected move and copy operations that have been applied to the message store since the most recent synchronization of the message with the account specified by <i>mailAccountId</i>.</p>
 <p>See also <a href="qmaildisconnected.html#updatesOutstanding">updatesOutstanding</a>().</p>

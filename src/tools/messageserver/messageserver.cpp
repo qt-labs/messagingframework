@@ -52,6 +52,17 @@
 #include <newcountnotifier.h>
 #include <qcopserver.h>
 
+extern "C" {
+#ifndef Q_OS_WIN
+#include <sys/socket.h>
+#endif
+#include <signal.h>
+}
+
+#if defined(Q_OS_UNIX)
+int MessageServer::sighupFd[2];
+#endif
+
 MessageServer::MessageServer(QObject *parent)
     : QObject(parent),
       handler(0),
@@ -62,6 +73,25 @@ MessageServer::MessageServer(QObject *parent)
 {
     qMailLog(Messaging) << "MessageServer ctor begin";
     new QCopServer(this);
+
+#if defined(Q_OS_UNIX)
+    // SIGHUP handler. We use the trick described here: http://doc.trolltech.com/4.7-snapshot/unix-signals.html
+    // Looks shocking but the trick has certain reasons stated in Steven's book: http://cr.yp.to/docs/selfpipe.html
+    // Use a socket and notifier because signal handlers can't call Qt code
+
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
+        qFatal("Couldn't create HUP socketpair");
+    snHup = new QSocketNotifier(sighupFd[1], QSocketNotifier::Read, this);
+    connect(snHup, SIGNAL(activated(int)), this, SLOT(handleSigHup()));
+
+    struct sigaction hup;
+    hup.sa_handler = MessageServer::hupSignalHandler;
+    sigemptyset(&hup.sa_mask);
+    hup.sa_flags = 0;
+    hup.sa_flags |= SA_RESTART;
+    if (sigaction(SIGHUP, &hup, 0) > 0)
+        qFatal("Couldn't register HUP handler");
+#endif // defined(Q_OS_UNIX)
 
     QMailMessageCountMap::iterator it = messageCounts.begin(), end = messageCounts.end();
     for ( ; it != end; ++it)
@@ -185,6 +215,8 @@ MessageServer::MessageServer(QObject *parent)
 
         //clean up any temporary messages that were not cleaned up by clients
         QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
+
+        emit client->actionsListed(QMailActionDataList());
     }
 }
 
@@ -426,3 +458,26 @@ void MessageServer::cleanupTemporaryMessages()
 {
     QMailStore::instance()->removeMessages(QMailMessageKey::status(QMailMessage::Temporary), QMailStore::NoRemovalRecord);
 }
+
+#if defined(Q_OS_UNIX)
+
+void MessageServer::hupSignalHandler(int)
+{
+    // Can't call Qt code. Write to the socket and the notifier will fire from the Qt event loop
+    char a = 1;
+    ::write(sighupFd[0], &a, sizeof(a));
+}
+
+void MessageServer::handleSigHup()
+{
+    snHup->setEnabled(false);
+    char tmp;
+    ::read(sighupFd[1], &tmp, sizeof(tmp));
+
+    // This is ~/.config/Nokia/Messageserver.conf
+    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
+
+    snHup->setEnabled(true);
+}
+
+#endif // defined(Q_OS_UNIX)

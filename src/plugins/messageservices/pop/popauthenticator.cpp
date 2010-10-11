@@ -50,6 +50,8 @@
 bool PopAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
 #ifdef QT_NO_OPENSSL
+    Q_UNUSED(svcCfg)
+    Q_UNUSED(capabilities)
     return false;
 #else
     PopConfiguration popCfg(svcCfg);

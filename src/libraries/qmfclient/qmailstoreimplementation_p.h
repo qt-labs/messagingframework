@@ -81,6 +81,10 @@ public:
 
     void notifyAccountsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
     void notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids);
+    void notifyMessagesDataChange(QMailStore::ChangeType changeType, const QMailMessageMetaDataList& data);
+    void notifyMessagesDataChange(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                                                const QMailMessageMetaData& data);
+    void notifyMessagesDataChange(const QMailMessageIdList& ids, quint64 status, bool set);
     void notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids);
     void notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
     void notifyRetrievalInProgress(const QMailAccountIdList& ids);
@@ -98,6 +102,11 @@ public:
     static QString messageRemovedSig();
     static QString messageUpdatedSig();
     static QString messageContentsModifiedSig();
+
+    static QString messageMetaDataAddedSig();
+    static QString messageMetaDataUpdatedSig();
+    static QString messagePropertyUpdatedSig();
+    static QString messageStatusUpdatedSig();
 
     static QString folderAddedSig();
     static QString folderUpdatedSig();
@@ -131,11 +140,19 @@ protected:
     typedef QMap<QString, MessageUpdateSignal> MessageUpdateSignalMap;
     static MessageUpdateSignalMap initMessageUpdateSignals();
 
+    typedef void (QMailStore::*MessageDataPreCacheSignal)(const QMailMessageMetaDataList&);
+    typedef QMap<QString, MessageDataPreCacheSignal> MessageDataPreCacheSignalMap;
+    static MessageDataPreCacheSignalMap initMessageDataPreCacheSignals();
+
     static QMailStore::InitializationState initState;
     
     virtual void emitIpcNotification(AccountUpdateSignal signal, const QMailAccountIdList &ids);
     virtual void emitIpcNotification(FolderUpdateSignal signal, const QMailFolderIdList &ids);
     virtual void emitIpcNotification(MessageUpdateSignal signal, const QMailMessageIdList &ids);
+    virtual void emitIpcNotification(MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data);
+    virtual void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                     const QMailMessageMetaData& data);
+    virtual void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set);
 
 private:
     virtual bool initStore() = 0;
@@ -156,6 +173,17 @@ private:
     QSet<QMailMessageId> addMessagesBuffer;
     QSet<QMailAccountId> addMessageRemovalRecordsBuffer;
 
+    QMailMessageMetaDataList addMessagesDataBuffer;
+    QMailMessageMetaDataList updateMessagesDataBuffer;
+
+    typedef QPair<QPair<QMailMessageKey::Properties, QMailMessageMetaData>, QSet<QMailMessageId> > MessagesProperties;
+    typedef QList<MessagesProperties> MessagesPropertiesBuffer;
+    MessagesPropertiesBuffer messagesPropertiesBuffer;
+	
+    typedef QPair<quint64, bool> MessagesStatus;
+    typedef QMap<MessagesStatus, QSet<QMailMessageId> > MessagesStatusBuffer;
+    MessagesStatusBuffer messagesStatusBuffer;
+	
     QSet<QMailMessageId> updateMessagesBuffer;
     QSet<QMailFolderId> updateFoldersBuffer;
     QSet<QMailAccountId> updateAccountsBuffer;
@@ -225,9 +253,6 @@ public:
 
     virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
-
-    virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
-                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual void lock() = 0;
     virtual void unlock() = 0;
@@ -314,9 +339,6 @@ public:
 
     virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
-
-    virtual bool restoreToPreviousFolder(const QMailMessageKey &key,
-                                         QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual void lock();
     virtual void unlock();

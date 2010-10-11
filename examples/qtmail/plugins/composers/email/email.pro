@@ -15,7 +15,7 @@ INCLUDEPATH += . ../../../libs/qmfutil \
 LIBS += -L../../../../../src/libraries/qmfclient/build \
         -L../../../libs/qmfutil/build
 
-macx:LIBS += -F../../../../../libraries/qmfclient/build \
+macx:LIBS += -F../../../../../src/libraries/qmfclient/build \
         -F../../../libs/qmfutil/build
 
 

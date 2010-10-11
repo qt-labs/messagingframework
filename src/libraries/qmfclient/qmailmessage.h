@@ -627,6 +627,9 @@ public:
     virtual ResponseType responseType() const;
     virtual void setResponseType(ResponseType type);
 
+    virtual QString preview() const;
+    virtual void setPreview(const QString &s);
+
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 

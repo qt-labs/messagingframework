@@ -14,7 +14,7 @@ DEPENDPATH += .
 
 INCLUDEPATH += . ../../../../src/libraries/qmfclient ../../../../src/libraries/qmfclient/support
 
-macx:LIBS += -F../../../../libraries/qmfclient/build
+macx:LIBS += -F../../../../src/libraries/qmfclient/build
 LIBS += -L../../../../src/libraries/qmfclient/build
 
 HEADERS += emailfoldermodel.h \

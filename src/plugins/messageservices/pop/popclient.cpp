@@ -46,11 +46,30 @@
 #include <longstream_p.h>
 #include <longstring_p.h>
 #include <qmailstore.h>
+#include <qmailmessagebuffer.h>
 #include <qmailtransport.h>
 #include <qmaillog.h>
 #include <qmaildisconnected.h>
 
 #include <limits.h>
+
+
+class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
+{
+    PopClient *context;
+    bool isComplete;
+public:
+    MessageFlushedWrapper(PopClient *_context, bool _isComplete)
+        : context(_context)
+        , isComplete(_isComplete)
+    {
+    }
+
+    void messageFlushed(QMailMessage *message)
+    {
+        context->messageFlushed(*message, isComplete);
+    }
+};
 
 PopClient::PopClient(QObject* parent)
     : QObject(parent),
@@ -1032,34 +1051,28 @@ void PopClient::createMail()
 
     // Store this message to the mail store
     if (mail.id().isValid()) {
-        QMailStore::instance()->updateMessage(&mail);
+        QMailMessageBuffer::instance()->updateMessage(&mail);
     } else {
         QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
         QMailStore::instance()->removeMessages(duplicateKey);
-        QMailStore::instance()->addMessage(&mail);
-    }
-
-    if (isComplete && !mail.serverUid().isEmpty()) {
-        // We have now retrieved the entire message
-        messageProcessed(mail.serverUid());
-
-        if (retrieveUid == mail.serverUid()) {
-            retrieveUid.clear();
-        }
+        QMailMessageBuffer::instance()->addMessage(&mail);
     }
 
     dataStream->reset();
 
-    // Catch all cleanup of detached file
-    QFile::remove(detachedFile);
-    
-    // Workaround for message buffer file being deleted 
-    QFileInfo newFile(dataStream->fileName());
-    if (!newFile.exists()) {
-        qWarning() << "Unable to find message buffer file, pop protocol";
-        dataStream->detach();
+    QMailMessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
+}
+
+void PopClient::messageFlushed(QMailMessage &message, bool isComplete)
+{
+    if (isComplete && !message.serverUid().isEmpty()) {
+        // We have now retrieved the entire message
+        messageProcessed(message.serverUid());
+
+        if (retrieveUid == message.serverUid()) {
+            retrieveUid.clear();
+        }
     }
-    
 }
 
 void PopClient::checkForNewMessages()
@@ -1075,6 +1088,9 @@ void PopClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const
 
 void PopClient::retrieveOperationCompleted()
 {
+    // Flush any batched writes now
+    QMailMessageBuffer::instance()->flush();
+
     if (!deleting && !selected) {
         // Only update PartialContent flag when retrieving message list
         QMailFolder folder(folderId);

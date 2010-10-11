@@ -1460,11 +1460,6 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
 #endif
 
 
-bool QMailMessageSource::concurrentActionsSupported() const
-{
-    return false;
-}
-
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action)
 {
     notImplemented(action);
@@ -1668,11 +1663,6 @@ void QMailMessageSource::notImplemented(quint64 action)
     notImplemented();
 
     Q_UNUSED(action)
-}
-
-bool QMailMessageSink::concurrentActionsSupported() const
-{
-    return false;
 }
 
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids, quint64 action)

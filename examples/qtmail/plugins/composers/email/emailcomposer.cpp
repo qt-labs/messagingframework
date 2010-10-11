@@ -842,10 +842,10 @@ QMailMessage EmailComposerInterface::message() const
 
     if (m_sourceStatus & QMailMessage::LocalOnly) {
         mail.setStatus(QMailMessage::LocalOnly, true);
-
-        // Set the size estimate
-        mail.setSize(mail.indicativeSize() * 1024);
     }
+    // Set the size estimate
+    mail.setSize(mail.indicativeSize() * 1024);
+    mail.setStatus(QMailMessage::HasAttachments, m_attachmentListWidget->attachments().count());
 
     return mail;
 }

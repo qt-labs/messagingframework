@@ -106,6 +106,36 @@
     33. Added 'QMailAccount::lastSynchronized() const' and
               'QMailAccount::setSynchronized(const QMailTimeStamp &amp;synced)'
 
+    34. File Rename:
+          qmf.pro -&gt; messagingframework.pro (To avoid it conflicting with its child project)
+
+        Library Renames:
+          libmessageserver -&gt; libqmfmessageserver
+          libqtopiamail -&gt; libqmf
+
+        Directory Changes:
+          src/libraries/messageserver -&gt; src/libraries/qmfmessageserver
+          src/libraries/qtopiamail -&gt; src/libraries/qmf
+          src/plugins/contentmanagers/qtopiamailfile -&gt; qmfstoragemanager
+          src/plugins/messageservices/qtopiamailfile -&gt; qmfsettings
+
+        Class changes:
+          QtopiamailfileConfigurator -&gt; QmfConfigurator
+          QtopiamailfileSettings -&gt; QmfSettings
+          QtopiamailfileServicePlugin -&gt; QmfServicePlugin
+          QtopiamailfileManager -&gt; QmfStorageManager
+
+    35. Library rename:
+          libqmf -&gt; libqmfclient
+
+        Directory Changes:
+          src/libraries/qmf -&gt; src/libraries/qmfclient
+
+    36. Changed 'bool QMailStore::restoreToPreviousFolder(const QMailMessageId&amp; id)' and
+                'bool QMailStore::restoreToPreviousFolder(const QMailMessageKey&amp; key)' to
+                'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId&amp; id)' and
+                'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey&amp; key)'
+
     *****************************************************************************
 
     Changes since the development preview release on 03/04/09:

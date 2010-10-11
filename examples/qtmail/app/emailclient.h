@@ -49,6 +49,7 @@
 #include <QList>
 #include <QMainWindow>
 #include <QStack>
+#include <QSystemTrayIcon>
 #include <QTime>
 #include <QTimer>
 #include <QProcess>
@@ -260,6 +261,7 @@ protected slots:
     void readReplyRequested(const QMailMessageMetaData&);
 
     void settings();
+    void notificationStateChanged();
     void connectionStateChanged();
     void exportPendingChanges();
     void exportPendingChanges(const QMailAccountId &accountId);
@@ -388,6 +390,7 @@ private:
     QAction *markAction;
     QAction *threadAction;
     QAction *workOfflineAction;
+    QAction *notificationAction;
     bool enableMessageActions;
 
     QMailAccountId selectedAccountId;
@@ -448,4 +451,12 @@ private:
     QMailAccountIdList m_queuedExports;
 };
 
+class NotificationTray : public QSystemTrayIcon {
+    Q_OBJECT
+public:
+    NotificationTray(QObject *parent = 0);
+
+private slots:
+    void messagesAdded(const QMailMessageIdList &ids);
+};
 #endif

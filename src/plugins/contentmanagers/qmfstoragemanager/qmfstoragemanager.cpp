@@ -194,7 +194,11 @@ void syncFile(QSharedPointer<QFile> file)
     ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file->handle())));
 #elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
-    ::fdatasync(file->handle());
+    int handle(file->handle());
+    if (handle != -1)
+        ::fdatasync(handle);
+    else
+        qWarning() << "Could not get file handle for fdatasync";
 #else
     ::fsync(file->handle());
 #endif
@@ -289,6 +293,10 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     }
 
     message->removeCustomField("qmf-detached-filename");
+    if (!detachedFile.isEmpty()) {
+        QFile::remove(detachedFile);
+    }
+        
     return QMailStore::NoError;
 }
 
@@ -625,7 +633,7 @@ struct PartStorer
             // We can only write the content in decoded form if it is complete
             QMailMessageBody::EncodingFormat outputFormat(part.contentAvailable() ? QMailMessageBody::Decoded : QMailMessageBody::Encoded);
 
-            QString detachedFile = message->customField("qmf-detached-filename");
+            QString detachedFile = message->customField("qmf-detached-part-filename");
             if (!detachedFile.isEmpty()) {
                 // We can take ownership of the file if that helps
                 if ((outputFormat == QMailMessageBody::Encoded) ||
@@ -634,7 +642,7 @@ struct PartStorer
                      (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
                     // Try to take ownership of the file
                     if (QFile::rename(detachedFile, partFilePath)) {
-                        message->removeCustomField("qmf-detached-filename");
+                        message->removeCustomField("qmf-detached-part-filename");
                         return true;
                     }
                 }

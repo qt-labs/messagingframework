@@ -200,8 +200,9 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     }
     
     QMailFolderIdList folderIds;
+    uint adjustedMinimum = minimum ? minimum : INT_MAX; // zero means retrieve all mail
     _service->_client.strategyContext()->retrieveMessageListStrategy.clearSelection();
-    _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(minimum);
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setMinimum(adjustedMinimum);
     if (folderId.isValid()) {
         folderIds.append(folderId);
         _service->_client.strategyContext()->retrieveMessageListStrategy.setAccountCheck(false);

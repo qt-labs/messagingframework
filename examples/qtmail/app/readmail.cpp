@@ -180,9 +180,7 @@ bool ReadMail::handleIncomingMessages(const QMailMessageIdList &list) const
         if (viewer->handleIncomingMessages(list)) {
             // Mark each of these messages as read
             quint64 status(QMailMessage::Read);
-            QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(list), status, true);
-
-            return true;
+            return QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(list), status, true);
         }
     }
 

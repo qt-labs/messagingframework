@@ -45,6 +45,7 @@
 #include <qmailmessageserver.h>
 #include <QObject>
 #include <QSet>
+#include <QSocketNotifier>
 #include <qcopadaptor.h>
 
 class ServiceHandler;
@@ -62,8 +63,16 @@ public:
     MessageServer(QObject *parent = 0);
     ~MessageServer();
 
+#if defined(Q_OS_UNIX)
+    static void hupSignalHandler(int unused); // Unix SIGHUP signal handler
+#endif
+
 signals:
     void messageCountUpdated();
+#if defined(Q_OS_UNIX)
+public slots:
+    void handleSigHup(); // Qt signal handler for UNIX SIGHUP signal.
+#endif
 
 private slots:
     void retrievalCompleted(quint64 action);
@@ -97,6 +106,11 @@ private:
 
     QSet<QMailMessageId> completionList;
     bool completionAttempted;
+#if defined(Q_OS_UNIX)
+    static int sighupFd[2];
+    QSocketNotifier *snHup;
+#endif
+
 };
 
 #endif

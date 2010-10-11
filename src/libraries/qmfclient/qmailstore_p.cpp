@@ -134,7 +134,7 @@ public:
     Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
     explicit Key(const QMailMessageSortKey &key, const QString &alias = QString()) : m_type(MessageSort), m_key(&key), m_alias(&alias), m_field(0) {}
 
-    explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text) {}
+    explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text), m_field(0) {}
 
     template<typename KeyType>
     bool isType() const { return isType(reinterpret_cast<KeyType*>(0)); }
@@ -2124,6 +2124,7 @@ ProcessMutex* QMailStorePrivate::contentMutex = 0;
 
 QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     : QMailStoreImplementation(parent),
+      q_ptr(parent),
       messageCache(messageCacheSize),
       uidCache(uidCacheSize),
       folderCache(folderCacheSize),
@@ -2541,6 +2542,7 @@ void QMailStorePrivate::destroyTemporaryTables()
 
 QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessageId &id)
 {
+    Q_ASSERT(id.isValid());
     QMap<QString, QString> fields;
     customFields(id.toULongLong(), &fields, "mailmessagecustom");
     return fields;
@@ -3746,15 +3748,6 @@ void QMailStorePrivate::unlock()
     } else {
         qWarning() << "Unable to unlock when lock was not called (in this process)";
     }
-}
-
-bool QMailStorePrivate::restoreToPreviousFolder(const QMailMessageKey &key,
-                                                QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
-{
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRestoreToPreviousFolder, this, 
-                                        cref(key), 
-                                        updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
-                                   "restoreToPreviousFolder");
 }
 
 bool QMailStorePrivate::purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids)
@@ -5590,14 +5583,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
         if (properties & QMailMessageKey::ParentFolderId) {
             if (!modifiedFolderIds->contains(data.parentFolderId()))
                 modifiedFolderIds->append(data.parentFolderId());
-
-            // All these messages need to have previousparentfolderid updated, where it will change
-            QSqlQuery query(simpleQuery("UPDATE mailmessages SET previousparentfolderid=parentfolderid",
-                                        QVariantList(),
-                                        QList<Key>() << Key(modifiedMessageKey),
-                                        "updateMessagesMetaData mailmessages previousparentfolderid update query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
         }
 
         if (properties & QMailMessageKey::Custom) {
@@ -5705,63 +5690,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
             quint64 newStatus = cachedMetaData.status();
             newStatus = set ? (newStatus | status) : (newStatus & ~status);
             cachedMetaData.setStatus(newStatus);
-            cachedMetaData.setUnmodified();
-            messageCache.insert(cachedMetaData);
-            uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
-        }
-    }
-
-    return Success;
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
-                                                                                   QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                                                   Transaction &t, bool commitOnSuccess)
-{
-    // Find the message and folders that are affected by this update
-    QSqlQuery query(simpleQuery("SELECT t0.id, t0.parentfolderid, t0.previousparentfolderid FROM mailmessages t0",
-                                Key(key, "t0"),
-                                "restoreToPreviousFolder info query"));
-    if (query.lastError().type() != QSqlError::NoError)
-        return DatabaseFailure;
-
-    QSet<quint64> folderIdSet;
-    while (query.next()) {
-        updatedMessageIds->append(QMailMessageId(extractValue<quint64>(query.value(0))));
-
-        folderIdSet.insert(extractValue<quint64>(query.value(1)));
-        folderIdSet.insert(extractValue<quint64>(query.value(2)));
-    }
-
-    if (!folderIdSet.isEmpty()) {
-        QMailFolderIdList folderIds;
-        foreach (quint64 id, folderIdSet)
-            folderIds.append(QMailFolderId(id));
-
-        // Find the set of folders and accounts whose contents are modified by this update
-        AttemptResult result = affectedByFolderIds(folderIds, modifiedFolderIds, modifiedAccountIds);
-        if (result != Success)
-            return result;
-
-        // Update the message records
-        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentfolderid=previousparentfolderid, previousparentfolderid=0",
-                                    Key(QMailMessageKey::id(*updatedMessageIds) & ~QMailMessageKey::previousParentFolderId(QMailFolderId())),
-                                    "restoreToPreviousFolder update query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
-    }
-
-    if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message folder restoration to database";
-        return DatabaseFailure;
-    }
-
-    // Update the header cache
-    foreach (const QMailMessageId &id, *updatedMessageIds) {
-        if (messageCache.contains(id)) {
-            QMailMessageMetaData cachedMetaData = messageCache.lookup(id);
-            cachedMetaData.setParentFolderId(cachedMetaData.previousParentFolderId());
-            cachedMetaData.setPreviousParentFolderId(QMailFolderId());
             cachedMetaData.setUnmodified();
             messageCache.insert(cachedMetaData);
             uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
@@ -7134,46 +7062,71 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
-        // Find any messages that need to updated
-        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
-                                    Key("responseid", QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages mailmessages updated query"));
+        QMap<QMailMessageId, QMailMessageId> update_map;
+
+        {
+            // Find any messages that need to updated
+            QSqlQuery query(simpleQuery("SELECT id, responseid FROM mailmessages",
+                                        Key("responseid", QMailMessageKey::id(deletedMessageIds)),
+                                        "deleteMessages mailmessages updated query"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return false;
+
+            while (query.next()) {
+                QMailMessageId from(QMailMessageId(extractValue<quint64>(query.value(0))));
+                QMailMessageId to(QMailMessageId(extractValue<quint64>(query.value(1))));
+
+                update_map.insert(from, to);
+            }
+        }
+
+        QMap<QMailMessageId, QMailMessageId> predecessors;
+
+        // Find the predecessors for any messages we're removing
+        QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
+                                    Key(QMailMessageKey::id(deletedMessageIds)),
+                                    "deleteMessages mailmessages predecessor query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
-            updatedMessageIds.append(QMailMessageId(extractValue<quint64>(query.value(0))));
-    }
-
-    {
-        QMap<QMailMessageId, quint64> predecessors;
-
-        {
-            // Find the predecessors for any messages we're removing
-            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
-                                        Key(QMailMessageKey::id(deletedMessageIds)),
-                                        "deleteMessages mailmessages predecessor query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
-
-            while (query.next())
-                predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), extractValue<quint64>(query.value(1)));
+        while (query.next()) {
+            predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), QMailMessageId(extractValue<quint64>(query.value(1))));
         }
 
         {
-            QVariantList newPredecessorValues;
-            QVariantList deletedValues;
-            foreach (const QMailMessageId &id, deletedMessageIds) {
-                newPredecessorValues.append(QVariant(predecessors[id]));
-                deletedValues.append(QVariant(id));
+            QVariantList messageIdList;
+            QVariantList newResponseIdList;
+            for (QMap<QMailMessageId, QMailMessageId>::iterator it(update_map.begin()) ; it != update_map.end() ; ++it) {
+                QMailMessageId to_update(it.key());
+
+                if (!deletedMessageIds.contains(to_update)) {
+                    updatedMessageIds.append(to_update);
+                    messageIdList.push_back(QVariant(to_update));
+
+                    QMailMessageId to;
+
+                    QMap<QMailMessageId, QMailMessageId>::iterator toIterator(predecessors.find(it.value()));
+                    Q_ASSERT(toIterator != predecessors.end());
+                    // This code makes the assumption of noncyclic dependencies
+                    do {
+                        to = *toIterator;
+                        toIterator = predecessors.find(to);
+                    } while (toIterator != predecessors.end());
+
+                    newResponseIdList.push_back(to);
+                }
             }
 
-            // Link any descendants of the messages to the deleted messages' predecessor
-            QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE responseid=?",
-                                       QVariantList() << QVariant(newPredecessorValues) << QVariant(deletedValues),
-                                       "deleteMessages mailmessages update query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return false;
+            Q_ASSERT(messageIdList.size() == newResponseIdList.size());
+            if (messageIdList.size())
+            {
+                // Link any descendants of the messages to the deleted messages' predecessor
+                QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE id=?",
+                                           QVariantList() << QVariant(newResponseIdList) << QVariant(messageIdList),
+                                           "deleteMessages mailmessages update query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return false;
+            }
         }
     }
 
@@ -7217,15 +7170,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                         "deleteMessages mailthreadsubjects delete query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
-        }
-    }
-
-    // Do not report any deleted entities as updated
-    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
-        if (deletedMessageIds.contains(*mit)) {
-            mit = updatedMessageIds.erase(mit);
-        } else {
-            ++mit;
         }
     }
 
@@ -7577,5 +7521,150 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpd
     }
 
     QMailStoreImplementation::emitIpcNotification(signal, ids);
+}
+
+void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data)
+{
+    if(!data.isEmpty()) {
+
+        QMailMessageIdList ids;
+
+        foreach(const QMailMessageMetaData& metaData, data)
+        {
+            messageCache.insert(metaData);
+            uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
+
+            ids.append(metaData.id());
+        }
+
+        QMailStoreImplementation::emitIpcNotification(signal, data);
+
+        if (signal == &QMailStore::messageDataAdded) {
+            q_ptr->messagesAdded(ids);
+        } else if (signal == &QMailStore::messageDataUpdated) {
+            q_ptr->messagesUpdated(ids);
+        } else
+            Q_ASSERT (false);
+    }
+
+}
+
+void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                     const QMailMessageMetaData& data)
+{
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+
+    foreach(const QMailMessageId& id, ids) {
+
+        if(messageCache.contains(id)) {
+            QMailMessageMetaData metaData = messageCache.lookup(id);
+            foreach (QMailMessageKey::Property p, messagePropertyList()) {
+                switch (properties & p)
+                {
+                    case QMailMessageKey::Id:
+                        metaData.setId(data.id());
+                        break;
+
+                    case QMailMessageKey::Type:
+                        metaData.setMessageType(data.messageType());
+                        break;
+
+                    case QMailMessageKey::ParentFolderId:
+                        metaData.setParentFolderId(data.parentFolderId());
+                        break;
+
+                    case QMailMessageKey::Sender:
+                        metaData.setFrom(data.from());
+                        break;
+
+                    case QMailMessageKey::Recipients:
+                        metaData.setTo(data.to());
+                        break;
+
+                    case QMailMessageKey::Subject:
+                        metaData.setSubject(data.subject());
+                        break;
+
+                    case QMailMessageKey::TimeStamp:
+                        metaData.setDate(data.date());
+                        break;
+
+                    case QMailMessageKey::ReceptionTimeStamp:
+                        metaData.setReceivedDate(data.receivedDate());
+                        break;
+
+                    case QMailMessageKey::Status:
+                        metaData.setStatus(data.status());
+                        break;
+
+                    case QMailMessageKey::ParentAccountId:
+                        metaData.setParentAccountId(data.parentAccountId());
+                        break;
+
+                    case QMailMessageKey::ServerUid:
+                        metaData.setServerUid(data.serverUid());
+                        break;
+
+                    case QMailMessageKey::Size:
+                        metaData.setSize(data.size());
+                        break;
+
+                    case QMailMessageKey::ContentType:
+                        metaData.setContent(data.content());
+                        break;
+
+                    case QMailMessageKey::PreviousParentFolderId:
+                        metaData.setPreviousParentFolderId(data.previousParentFolderId());
+                        break;
+
+                    case QMailMessageKey::ContentScheme:
+                        metaData.setContentScheme(data.contentScheme());
+                        break;
+
+                    case QMailMessageKey::ContentIdentifier:
+                        metaData.setContentIdentifier(data.contentIdentifier());
+                        break;
+
+                    case QMailMessageKey::InResponseTo:
+                        metaData.setInResponseTo(data.inResponseTo());
+                        break;
+
+                    case QMailMessageKey::ResponseType:
+                        metaData.setResponseType(data.responseType());
+                        break;
+                }
+            }
+
+            if (properties != allMessageProperties()) {
+                // This message is not completely loaded
+                metaData.setStatus(QMailMessage::UnloadedData, true);
+            }
+
+            metaData.setUnmodified();
+            messageCache.insert(metaData);
+
+        }
+    }
+
+    QMailStoreImplementation::emitIpcNotification(ids, properties, data);
+    q_ptr->messagesUpdated(ids);
+}
+
+void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set)
+{
+    Q_ASSERT(!ids.contains(QMailMessageId()));
+
+    foreach(const QMailMessageId& id, ids) {
+
+        if(messageCache.contains(id)) {
+            QMailMessageMetaData metaData = messageCache.lookup(id);
+            metaData.setStatus(status, set);
+            metaData.setUnmodified();
+            messageCache.insert(metaData);
+        }
+    }
+
+    QMailStoreImplementation::emitIpcNotification(ids, status, set);
+    q_ptr->messagesUpdated(ids);
 }
 

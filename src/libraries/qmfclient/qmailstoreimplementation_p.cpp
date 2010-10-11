@@ -107,6 +107,47 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
     }
 }
 
+void emitIpcUpdates(const QMailMessageMetaDataList& data, const QString& sig)
+{
+    if (!sig.isEmpty()) {
+            static QCopAdaptor a("QPE/qmf"); // do not want to recreate heavy objects
+            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
+            e << pid;
+            e << data;
+    } else {
+        qWarning() << "No signature for IPC updates!";
+    }
+}
+
+void emitIpcUpdates(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                    const QMailMessageMetaData& data, const QString& sig)
+{
+    if (!sig.isEmpty()) {
+            QCopAdaptor a("QPE/qmf"); // to do: not want to recreate heavy objects
+            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
+            e << pid;
+            e << ids;
+            e << int(properties);
+            e << data;
+    } else {
+        qWarning() << "No signature for IPC updates!";
+    }
+}
+
+void emitIpcUpdates(const QMailMessageIdList& ids,  quint64 status, bool set, const QString& sig)
+{
+    if (!sig.isEmpty()) {
+            QCopAdaptor a("QPE/qmf"); // to do: not want to recreate heavy objects
+            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
+            e << pid;
+            e << ids;
+            e << status;
+            e << set;
+    } else {
+        qWarning() << "No signature for IPC updates!";
+    }
+}
+
 template<typename IDSetType>
 void dispatchNotifications(IDSetType &ids, const QString &sig)
 {
@@ -115,6 +156,40 @@ void dispatchNotifications(IDSetType &ids, const QString &sig)
         ids.clear();
     }
 } 
+
+void dispatchNotifications(QMailMessageMetaDataList& data, const QString &sig)
+{
+    if (!data.isEmpty()) {
+        emitIpcUpdates(data, sig);
+        data.clear();
+    }
+}
+
+typedef QPair<QPair<QMailMessageKey::Properties, QMailMessageMetaData>, QSet<QMailMessageId> > MessagesProperties;
+typedef QList <MessagesProperties> MessagesPropertiesBuffer;
+
+void dispatchNotifications(MessagesPropertiesBuffer& data, const QString &sig)
+{
+    if (!data.isEmpty()) {
+        foreach (const MessagesProperties& props, data) {
+            emitIpcUpdates(props.second.toList(), props.first.first, props.first.second, sig);
+        }
+        data.clear();
+    }
+}
+
+typedef QPair<quint64, bool> MessagesStatus;
+typedef QMap<MessagesStatus, QSet<QMailMessageId> > MessagesStatusBuffer;
+
+void dispatchNotifications(MessagesStatusBuffer& data, const QString &sig)
+{
+    if (!data.isEmpty()) {
+        foreach (const MessagesStatus& status, data.keys()) {
+            emitIpcUpdates(data[status].toList(), status.first, status.second, sig);
+        }
+        data.clear();
+    }
+}
 
 } 
 
@@ -269,6 +344,14 @@ static NotifyFunctionMap initMessageRemovalRecordFunctions()
     return sig;
 }
 
+static NotifyFunctionMap initMessageDataFunctions()
+{
+    NotifyFunctionMap sig;
+    sig[QMailStore::Added] = QMailStoreImplementationBase::messageMetaDataAddedSig();
+    sig[QMailStore::Updated] = QMailStoreImplementationBase::messageMetaDataUpdatedSig();
+    return sig;
+}
+
 void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids)
 {
     static NotifyFunctionMap sig(initAccountFunctions());
@@ -338,6 +421,75 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
         }
     } else {
         emitIpcUpdates(ids, sig[changeType]);
+
+        preFlushTimer.start(preFlushTimeout);
+    }
+}
+
+void QMailStoreImplementationBase::notifyMessagesDataChange(QMailStore::ChangeType changeType, const QMailMessageMetaDataList& data)
+{
+    static NotifyFunctionMap sig(initMessageDataFunctions());
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
+        switch (changeType)
+        {
+        case QMailStore::Added:
+            addMessagesDataBuffer.append(data);
+            break;
+        case QMailStore::Updated:
+            updateMessagesDataBuffer.append(data);
+            break;
+        default:
+            qMailLog(Messaging) << "Unhandled folder notification received";
+            break;
+        }
+
+    } else {
+        emitIpcUpdates(data, sig[changeType]);
+
+        preFlushTimer.start(preFlushTimeout);
+    }
+}
+
+void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                                            const QMailMessageMetaData& data)
+{
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
+        MessagesProperties props(QPair<QMailMessageKey::Properties, QMailMessageMetaData>(properties, data), ids.toSet());
+        messagesPropertiesBuffer.append(props);;
+
+    } else {
+        emitIpcUpdates(ids, properties, data, messagePropertyUpdatedSig());
+
+        preFlushTimer.start(preFlushTimeout);
+    }
+}
+
+void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageIdList& ids,  quint64 status, bool set)
+{
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
+        MessagesStatus messageStatus(status, set);
+        messagesStatusBuffer[messageStatus] += ids.toSet();
+
+    } else {
+        emitIpcUpdates(ids, status, set, messageStatusUpdatedSig());
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -499,6 +651,30 @@ QString QMailStoreImplementationBase::messageContentsModifiedSig()
     return s;
 }
 
+QString QMailStoreImplementationBase::messageMetaDataAddedSig()
+{
+    static QString s("messageDataAdded(QMailMessageMetaDataList)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::messageMetaDataUpdatedSig()
+{
+    static QString s("messageDataUpdated(QMailMessageMetaDataList)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::messagePropertyUpdatedSig()
+{
+    static QString s("messagePropertyUpdated(QList<quint64>,QFlags,QMailMessageMetaData)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::messageStatusUpdatedSig()
+{
+    static QString s("messagePropertyUpdated(QList<quint64>,quint64,bool)");
+    return s;
+}
+
 QString QMailStoreImplementationBase::folderAddedSig()
 {
     static QString s("folderAdded(uint,QList<quint64>)");
@@ -580,12 +756,21 @@ QMailStoreImplementationBase::MessageUpdateSignalMap QMailStoreImplementationBas
     return sig;
 }
 
+QMailStoreImplementationBase::MessageDataPreCacheSignalMap QMailStoreImplementationBase::initMessageDataPreCacheSignals()
+{
+    MessageDataPreCacheSignalMap sig;
+    sig[QMailStoreImplementationBase::messageMetaDataAddedSig()] = &QMailStore::messageDataAdded;
+    sig[QMailStoreImplementationBase::messageMetaDataUpdatedSig()] = &QMailStore::messageDataUpdated;
+    return sig;
+}
+
 void QMailStoreImplementationBase::flushNotifications()
 {
     static NotifyFunctionMap sigAccount(initAccountFunctions());
     static NotifyFunctionMap sigFolder(initFolderFunctions());
     static NotifyFunctionMap sigMessage(initMessageFunctions());
     static NotifyFunctionMap sigRemoval(initMessageRemovalRecordFunctions());
+    static NotifyFunctionMap sigMessageData(initMessageDataFunctions());
  
     // There is no need to emit content modification notifications for items subsequently deleted
     folderContentsModifiedBuffer -= removeFoldersBuffer;
@@ -609,6 +794,12 @@ void QMailStoreImplementationBase::flushNotifications()
 
     dispatchNotifications(folderContentsModifiedBuffer, sigFolder[QMailStore::ContentsModified]);
     dispatchNotifications(accountContentsModifiedBuffer, sigAccount[QMailStore::ContentsModified]);
+
+    dispatchNotifications(addMessagesDataBuffer, sigMessageData[QMailStore::Added]);
+    dispatchNotifications(updateMessagesDataBuffer, sigMessageData[QMailStore::Updated]);
+
+    dispatchNotifications(messagesPropertiesBuffer, messagePropertyUpdatedSig());
+    dispatchNotifications(messagesStatusBuffer, messageStatusUpdatedSig());
 }
 
 void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByteArray& data) 
@@ -659,10 +850,12 @@ bool QMailStoreImplementationBase::emitIpcNotification()
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
     static FolderUpdateSignalMap folderUpdateSignals(initFolderUpdateSignals());
     static MessageUpdateSignalMap messageUpdateSignals(initMessageUpdateSignals());
+    static MessageDataPreCacheSignalMap messageDataPreCacheSignals(initMessageDataPreCacheSignals());
 
     AccountUpdateSignalMap::const_iterator ait;
     FolderUpdateSignalMap::const_iterator fit;
     MessageUpdateSignalMap::const_iterator mit;
+    MessageDataPreCacheSignalMap::const_iterator mdit;
 
     if ((ait = accountUpdateSignals.find(message)) != accountUpdateSignals.end()) {
         QMailAccountIdList ids;
@@ -682,6 +875,32 @@ bool QMailStoreImplementationBase::emitIpcNotification()
         messageQueue.removeFirst();
 
         emitIpcNotification(mit.value(), ids);
+    } else if ((mdit = messageDataPreCacheSignals.find(message)) != messageDataPreCacheSignals.end()) {
+        QMailMessageMetaDataList data;
+        ds >> data;
+        messageQueue.removeFirst();
+
+        emitIpcNotification(mdit.value(), data);
+    } else if (message == messagePropertyUpdatedSig()) {
+        QMailMessageIdList ids;
+        ds >> ids;
+        int props = 0;
+        ds >> props;
+        QMailMessageMetaData data;
+        ds >> data;
+        messageQueue.removeFirst();
+
+        emitIpcNotification(ids, static_cast<QMailMessageKey::Property>(props), data);
+    } else if (message == messageStatusUpdatedSig()) {
+        QMailMessageIdList ids;
+        ds >> ids;
+        quint64 status = 0;
+        ds >> status;
+        bool set = false;
+        ds >> set;
+        messageQueue.removeFirst();
+
+        emitIpcNotification(ids, status, set);
     } else {
         qWarning() << "No update signal for message:" << message;
         messageQueue.removeFirst();
@@ -711,6 +930,27 @@ void QMailStoreImplementationBase::emitIpcNotification(MessageUpdateSignal signa
     asyncEmission = false;
 }
 
+void QMailStoreImplementationBase::emitIpcNotification(MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data)
+{
+    asyncEmission = true;
+    emit (q->*signal)(data);
+    asyncEmission = false;
+}
+
+void QMailStoreImplementationBase::emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                 const QMailMessageMetaData& data)
+{
+    asyncEmission = true;
+    emit q->messagePropertyUpdated(ids, properties, data);
+    asyncEmission = false;
+}
+
+void QMailStoreImplementationBase::emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set)
+{
+    asyncEmission = true;
+    emit q->messageStatusUpdated(ids, status, set);
+    asyncEmission = false;
+}
 
 QMailStoreImplementation::QMailStoreImplementation(QMailStore* parent)
     : QMailStoreImplementationBase(parent)
@@ -789,11 +1029,6 @@ bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey 
 }
 
 bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
-{
-    return false;
-}
-
-bool QMailStoreNullImplementation::restoreToPreviousFolder(const QMailMessageKey &, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }

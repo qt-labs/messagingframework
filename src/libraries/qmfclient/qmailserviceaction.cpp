@@ -1846,13 +1846,19 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActi
 
 void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
 {
-    if (!_isReady) {
-        foreach(QMailActionData action, actions) {
-           addAction(action);
-        }
-        _isReady = true;
-        emit actionsChanged(runningActions());
+    if (_isReady)
+        _runningActions.clear();
+    else
+		_isReady = true;
+
+    Q_ASSERT(_runningActions.isEmpty());
+
+    foreach (QMailActionData const& action, actions) {
+       addAction(action);
     }
+
+    _isReady = true;
+    emit actionsChanged(runningActions());
 }
 
 void QMailActionObserverPrivate::removeOldActions()

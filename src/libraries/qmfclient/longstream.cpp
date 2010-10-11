@@ -57,10 +57,12 @@
 #include <sys/mount.h>
 #else
 #include <sys/vfs.h>
+#include <errno.h>
 #endif
 
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
+    : mStatus(Ok)
 {
     QString tmpName( LongStream::tempDir() + QLatin1String( "longstream" ) );
 
@@ -74,7 +76,7 @@ LongStream::LongStream()
     } else {
         qWarning() << "Unable to open temporary file:" << tmpFile->fileName();
         ts = 0;
-        setStatus( LongStream::OutOfSpace );
+        setStatus(OutOfSpace);
     }
 }
 
@@ -207,21 +209,21 @@ bool LongStream::freeSpace( const QString &path, int min)
     RFs fsSession;
     TInt rv;
     if ((rv = fsSession.Connect()) != KErrNone) {
-        qDebug() << "Unable to connect to FS:" << rv;
+        qWarning() << "Unable to connect to FS:" << rv;
     } else {
         TParse parse;
         TPtrC name(path.utf16(), path.length());
 
         if ((rv = fsSession.Parse(name, parse)) != KErrNone) {
-            qDebug() << "Unable to parse:" << path << rv;
+            qWarning() << "Unable to parse:" << path << rv;
         } else {
             TInt drive;
             if ((rv = fsSession.CharToDrive(parse.Drive()[0], drive)) != KErrNone) {
-                qDebug() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
+                qWarning() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
             } else {
                 TVolumeInfo info;
                 if ((rv = fsSession.Volume(info, drive)) != KErrNone) {
-                    qDebug() << "Unable to volume:" << drive << rv;
+                    qWarning() << "Unable to volume:" << drive << rv;
                 } else {
                     result = (info.iFree > boundary);
                 }
@@ -235,7 +237,12 @@ bool LongStream::freeSpace( const QString &path, int min)
 #elif !defined(Q_OS_WIN)
     struct statfs stats;
 
-    statfs(partitionPath.toLocal8Bit(), &stats);
+    while (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {
+        if (errno != EINTR) {
+            qWarning() << "Could not stat filesystem";
+            return true;
+        }
+    }
     unsigned long long bavail = ((unsigned long long)stats.f_bavail);
     unsigned long long bsize = ((unsigned long long)stats.f_bsize);
 

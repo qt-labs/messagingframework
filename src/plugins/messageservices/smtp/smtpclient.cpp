@@ -317,6 +317,13 @@ void SmtpClient::nextAction(const QString &response)
     if (!response.isEmpty())
         responseCode = response.left(3).toUInt();
 
+    // handle multi-line response, but 250 is a special case
+    if ((responseCode != 250) && (response.length() >= 4) && (response[3] == '-')) {
+        bufferedResponse += response.mid(4).trimmed();
+        bufferedResponse += ' ';
+        return;
+    }
+    
     switch (status) {
     case Init:  
     {
@@ -470,6 +477,7 @@ void SmtpClient::nextAction(const QString &response)
             if (!response.isEmpty()) {
                 // Send the response as Base64 encoded
                 sendCommand(response.toBase64());
+                bufferedResponse.clear();
                 return;
             }
         } else if (responseCode == 235) {
@@ -727,6 +735,7 @@ void SmtpClient::nextAction(const QString &response)
     }
 
     }
+    bufferedResponse.clear();
 }
 
 void SmtpClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text)
@@ -758,7 +767,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
         sendSize.clear();
     }
 
-    emit errorOccurred(code, text);
+    emit errorOccurred(code, bufferedResponse + text);
 }
 
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
@@ -780,6 +789,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
             msg = smtpCfg.smtpServer() + ": ";
         }
     }
+    msg.append(bufferedResponse);
     msg.append(text);
 
     emit errorOccurred(code, msg);

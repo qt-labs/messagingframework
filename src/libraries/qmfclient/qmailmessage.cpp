@@ -3193,11 +3193,10 @@ void QMailMessagePartContainerPrivate::outputBody(QDataStream& out, bool include
 static QString decodedContent(const QString& id, const QByteArray& content)
 {
     // TODO: Potentially, we should disallow decoding here based on the specific header field
-    bool permitDecoding(true);
-    //QByteArray id(fieldId(to7BitAscii(id)));
-    Q_UNUSED(id)
+    // return (permitDecoding ? QMailMessageHeaderField::decodeContent(content) : QString(content));
 
-    return (permitDecoding ? QMailMessageHeaderField::decodeContent(content) : QString(content));
+    return QMailMessageHeaderField::decodeContent(content);
+    Q_UNUSED(id);
 }
 
 /*!
@@ -3368,11 +3367,11 @@ void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, c
 static QByteArray encodedContent(const QByteArray& id, const QString& content)
 {
     // TODO: Potentially, we should disallow encoding here based on the specific header field
-    bool permitEncoding(true);
-    //QByteArray name(fieldId(id));
-    Q_UNUSED(id)
+    // return (permitEncoding ? QMailMessageHeaderField::encodeContent(content) : to7BitAscii(content));
 
-    return (permitEncoding ? QMailMessageHeaderField::encodeContent(content) : to7BitAscii(content));
+
+    return QMailMessageHeaderField::encodeContent(content);
+    Q_UNUSED(id)
 }
 
 void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, const QString &content)
@@ -5278,8 +5277,12 @@ quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 
 void QMailMessageMetaDataPrivate::ensureCustomFieldsLoaded() const
 {
-    if (!_customFields.isInitialized())
-        _customFields = QMailStore::instance()->messageCustomFields(_id);
+    if (!_customFields.isInitialized()) {
+        if (_id.isValid())
+            _customFields = QMailStore::instance()->messageCustomFields(_id);
+        else
+            _customFields = QMap<QString, QString>();
+    }
 }
 
 const QMap<QString, QString> &QMailMessageMetaDataPrivate::customFields() const
@@ -6220,6 +6223,28 @@ QMailMessageMetaData::ResponseType QMailMessageMetaData::responseType() const
 void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType type)
 {
     impl(this)->setResponseType(type);
+}
+
+/*!
+    Returns the preview text of this message.
+
+    \sa setPreview()
+*/  
+QString QMailMessageMetaData::preview() const
+{
+    //TODO implement this
+    return QString();
+}
+
+/*!
+    Sets the preview text of this message to \a s.
+
+    \sa preview()
+*/
+void QMailMessageMetaData::setPreview(const QString &s)
+{
+    //TODO implement this
+    Q_UNUSED(s)
 }
 
 /*!

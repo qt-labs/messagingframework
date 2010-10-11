@@ -22,15 +22,17 @@ LIBS += -L../qmfclient/build
 macx:LIBS += -F../qmfclient/build
 
 PUBLIC_HEADERS += qmailauthenticator.h \
+                  qmailmessagebuffer.h \
                   qmailmessageclassifier.h \
                   qmailmessageservice.h \
                   qmailserviceconfiguration.h \
                   qmailstoreaccountfilter.h \
                   qmailtransport.h
 
-HEADERS += $$PUBLIC_HEADERS
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
 SOURCES += qmailauthenticator.cpp \
+           qmailmessagebuffer.cpp \
            qmailmessageclassifier.cpp \
            qmailmessageservice.cpp \
            qmailserviceconfiguration.cpp \

@@ -11,7 +11,7 @@
         <filterAttribute>qmf</filterAttribute>
         <toc>
             <section ref="index.html" title="Qt Messaging Framework">
-                <section ref="changes-qtopiamail.html" title=""/>
+                <section ref="changes-messageserver.html" title=""/>
                 <section ref="annotated.html" title="Annotated Class List"/>
                 <section ref="classes.html" title="Class Index"/>
                 <section ref="groups.html" title="Grouped Classes"/>
@@ -540,6 +540,7 @@
             <keyword name="moveToStandardFolder" id="QMailDisconnected::moveToStandardFolder" ref="qmaildisconnected.html#moveToStandardFolder"/>
             <keyword name="parentFolderProperties" id="QMailDisconnected::parentFolderProperties" ref="qmaildisconnected.html#parentFolderProperties"/>
             <keyword name="restoreMap" id="QMailDisconnected::restoreMap" ref="qmaildisconnected.html#restoreMap"/>
+            <keyword name="restoreToPreviousFolder" id="QMailDisconnected::restoreToPreviousFolder" ref="qmaildisconnected.html#restoreToPreviousFolder"/>
             <keyword name="rollBackUpdates" id="QMailDisconnected::rollBackUpdates" ref="qmaildisconnected.html#rollBackUpdates"/>
             <keyword name="sourceFolderId" id="QMailDisconnected::sourceFolderId" ref="qmaildisconnected.html#sourceFolderId"/>
             <keyword name="sourceKey" id="QMailDisconnected::sourceKey" ref="qmaildisconnected.html#sourceKey"/>
@@ -988,6 +989,7 @@
             <keyword name="QMailMessageMetaDataFwd::Forward" id="QMailMessageMetaDataFwd::Forward" ref="qmailmessagemetadatafwd.html#ResponseType-enum"/>
             <keyword name="QMailMessageMetaDataFwd::ForwardPart" id="QMailMessageMetaDataFwd::ForwardPart" ref="qmailmessagemetadatafwd.html#ResponseType-enum"/>
             <keyword name="QMailMessageMetaDataFwd::Redirect" id="QMailMessageMetaDataFwd::Redirect" ref="qmailmessagemetadatafwd.html#ResponseType-enum"/>
+            <keyword name="QMailMessageMetaDataFwd::UnspecifiedResponse" id="QMailMessageMetaDataFwd::UnspecifiedResponse" ref="qmailmessagemetadatafwd.html#ResponseType-enum"/>
             <keyword name="QMailMessageModelBase" id="QMailMessageModelBase" ref="qmailmessagemodelbase.html"/>
             <keyword name="QMailMessageModelBase::Roles" id="QMailMessageModelBase::Roles" ref="qmailmessagemodelbase.html#Roles-enum"/>
             <keyword name="QMailMessageModelBase::MessageAddressTextRole" id="QMailMessageModelBase::MessageAddressTextRole" ref="qmailmessagemodelbase.html#Roles-enum"/>
@@ -1243,8 +1245,10 @@
             <keyword name="setIgnoreMailStoreUpdates" id="QMailMessageSetModel::setIgnoreMailStoreUpdates" ref="qmailmessagesetmodel.html#setIgnoreMailStoreUpdates"/>
             <keyword name="updated" id="QMailMessageSetModel::updated" ref="qmailmessagesetmodel.html#updated"/>
             <keyword name="QMailMessageSink" id="QMailMessageSink" ref="qmailmessagesink.html"/>
+            <keyword name="concurrentActionsSupported" id="QMailMessageSink::concurrentActionsSupported" ref="qmailmessagesink.html#concurrentActionsSupported"/>
             <keyword name="messagesFailedTransmission" id="QMailMessageSink::messagesFailedTransmission" ref="qmailmessagesink.html#messagesFailedTransmission"/>
             <keyword name="messagesTransmitted" id="QMailMessageSink::messagesTransmitted" ref="qmailmessagesink.html#messagesTransmitted"/>
+            <keyword name="notImplemented" id="QMailMessageSink::notImplemented" ref="qmailmessagesink.html#notImplemented"/>
             <keyword name="transmitMessages" id="QMailMessageSink::transmitMessages" ref="qmailmessagesink.html#transmitMessages"/>
             <keyword name="QMailMessageSortKey" id="QMailMessageSortKey" ref="qmailmessagesortkey.html"/>
             <keyword name="QMailMessageSortKey::ArgumentType" id="QMailMessageSortKey::ArgumentType" ref="qmailmessagesortkey.html#ArgumentType-typedef"/>
@@ -1297,6 +1301,7 @@
             <keyword name="~QMailMessageSortKey" id="QMailMessageSortKey::~QMailMessageSortKey" ref="qmailmessagesortkey.html#dtor.QMailMessageSortKey"/>
             <keyword name="QMailMessageSource" id="QMailMessageSource" ref="qmailmessagesource.html"/>
             <keyword name="cancelSearch" id="QMailMessageSource::cancelSearch" ref="qmailmessagesource.html#cancelSearch"/>
+            <keyword name="concurrentActionsSupported" id="QMailMessageSource::concurrentActionsSupported" ref="qmailmessagesource.html#concurrentActionsSupported"/>
             <keyword name="copyMessages" id="QMailMessageSource::copyMessages" ref="qmailmessagesource.html#copyMessages"/>
             <keyword name="createFolder" id="QMailMessageSource::createFolder" ref="qmailmessagesource.html#createFolder"/>
             <keyword name="deleteFolder" id="QMailMessageSource::deleteFolder" ref="qmailmessagesource.html#deleteFolder"/>
@@ -1312,6 +1317,7 @@
             <keyword name="messagesPrepared" id="QMailMessageSource::messagesPrepared" ref="qmailmessagesource.html#messagesPrepared"/>
             <keyword name="moveMessages" id="QMailMessageSource::moveMessages" ref="qmailmessagesource.html#moveMessages"/>
             <keyword name="newMessagesAvailable" id="QMailMessageSource::newMessagesAvailable" ref="qmailmessagesource.html#newMessagesAvailable"/>
+            <keyword name="notImplemented" id="QMailMessageSource::notImplemented" ref="qmailmessagesource.html#notImplemented"/>
             <keyword name="prepareMessages" id="QMailMessageSource::prepareMessages" ref="qmailmessagesource.html#prepareMessages"/>
             <keyword name="protocolRequest" id="QMailMessageSource::protocolRequest" ref="qmailmessagesource.html#protocolRequest"/>
             <keyword name="protocolResponse" id="QMailMessageSource::protocolResponse" ref="qmailmessagesource.html#protocolResponse"/>
@@ -1496,11 +1502,15 @@
             <keyword name="lock" id="QMailStore::lock" ref="qmailstore.html#lock"/>
             <keyword name="message" id="QMailStore::message" ref="qmailstore.html#message"/>
             <keyword name="messageContentsModified" id="QMailStore::messageContentsModified" ref="qmailstore.html#messageContentsModified"/>
+            <keyword name="messageDataAdded" id="QMailStore::messageDataAdded" ref="qmailstore.html#messageDataAdded"/>
+            <keyword name="messageDataUpdated" id="QMailStore::messageDataUpdated" ref="qmailstore.html#messageDataUpdated"/>
             <keyword name="messageMetaData" id="QMailStore::messageMetaData" ref="qmailstore.html#messageMetaData"/>
+            <keyword name="messagePropertyUpdated" id="QMailStore::messagePropertyUpdated" ref="qmailstore.html#messagePropertyUpdated"/>
             <keyword name="messageRemovalRecords" id="QMailStore::messageRemovalRecords" ref="qmailstore.html#messageRemovalRecords"/>
             <keyword name="messageRemovalRecordsAdded" id="QMailStore::messageRemovalRecordsAdded" ref="qmailstore.html#messageRemovalRecordsAdded"/>
             <keyword name="messageRemovalRecordsRemoved" id="QMailStore::messageRemovalRecordsRemoved" ref="qmailstore.html#messageRemovalRecordsRemoved"/>
             <keyword name="messageStatusMask" id="QMailStore::messageStatusMask" ref="qmailstore.html#messageStatusMask"/>
+            <keyword name="messageStatusUpdated" id="QMailStore::messageStatusUpdated" ref="qmailstore.html#messageStatusUpdated"/>
             <keyword name="messagesAdded" id="QMailStore::messagesAdded" ref="qmailstore.html#messagesAdded"/>
             <keyword name="messagesMetaData" id="QMailStore::messagesMetaData" ref="qmailstore.html#messagesMetaData"/>
             <keyword name="messagesRemoved" id="QMailStore::messagesRemoved" ref="qmailstore.html#messagesRemoved"/>
@@ -1518,7 +1528,6 @@
             <keyword name="removeFolders" id="QMailStore::removeFolders" ref="qmailstore.html#removeFolders"/>
             <keyword name="removeMessage" id="QMailStore::removeMessage" ref="qmailstore.html#removeMessage"/>
             <keyword name="removeMessages" id="QMailStore::removeMessages" ref="qmailstore.html#removeMessages"/>
-            <keyword name="restoreToPreviousFolder" id="QMailStore::restoreToPreviousFolder" ref="qmailstore.html#restoreToPreviousFolder"/>
             <keyword name="retrievalInProgress" id="QMailStore::retrievalInProgress" ref="qmailstore.html#retrievalInProgress"/>
             <keyword name="setRetrievalInProgress" id="QMailStore::setRetrievalInProgress" ref="qmailstore.html#setRetrievalInProgress"/>
             <keyword name="setTransmissionInProgress" id="QMailStore::setTransmissionInProgress" ref="qmailstore.html#setTransmissionInProgress"/>

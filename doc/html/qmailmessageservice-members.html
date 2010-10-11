@@ -19,12 +19,16 @@
 <li><div class="fn"><b><a href="qmailmessageservice.html#QMailMessageService">QMailMessageService</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#accountId">accountId</a></b> () const : QMailAccountId</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#actionCompleted">actionCompleted</a></b> ( bool )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#actionCompleted-2">actionCompleted</a></b> ( bool, quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#activityChanged">activityChanged</a></b> ( QMailServiceAction::Activity )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#activityChanged-2">activityChanged</a></b> ( QMailServiceAction::Activity, quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#availabilityChanged">availabilityChanged</a></b> ( bool )</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#available">available</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#blockSignals">blockSignals</a></b> ( bool )</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#cancelOperation">cancelOperation</a></b> ( QMailServiceAction::Status::ErrorCode, const QString &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessageservice.html#cancelOperation-2">cancelOperation</a></b> () : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#cancelOperation-2">cancelOperation</a></b> ( QMailServiceAction::Status::ErrorCode, const QString &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#cancelOperation-3">cancelOperation</a></b> () : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#cancelOperation-4">cancelOperation</a></b> ( quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#childEvent">childEvent</a></b> ( QChildEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#children">children</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connect">connect</a></b> ( const QObject *, const char *, const QObject *, const char *, Qt::ConnectionType )</div></li>
@@ -47,8 +51,8 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChild">findChild</a></b> ( const QString &amp; ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren">findChildren</a></b> ( const QString &amp; ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren-2">findChildren</a></b> ( const QRegExp &amp; ) const</div></li>
-<li><div class="fn"><b><a href="qmailmessageservice.html#hasSink">hasSink</a></b> () const : bool</div></li>
 </ul></td><td valign="top"><ul>
+<li><div class="fn"><b><a href="qmailmessageservice.html#hasSink">hasSink</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#hasSource">hasSource</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#inherits">inherits</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#installEventFilter">installEventFilter</a></b> ( QObject * )</div></li>
@@ -59,6 +63,7 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">objectName</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#parent">parent</a></b> () const</div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#progressChanged">progressChanged</a></b> ( uint, uint )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#progressChanged-2">progressChanged</a></b> ( uint, uint, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#property">property</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#removeEventFilter">removeEventFilter</a></b> ( QObject * )</div></li>
@@ -75,12 +80,13 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#staticMetaObject-var">staticMetaObject</a></b> : </div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#staticQtMetaObject-var">staticQtMetaObject</a></b> : </div></li>
 <li><div class="fn"><b><a href="qmailmessageservice.html#statusChanged">statusChanged</a></b> ( const QMailServiceAction::Status )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#statusChanged-2">statusChanged</a></b> ( const QMailServiceAction::Status, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#thread">thread</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#timerEvent">timerEvent</a></b> ( QTimerEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#tr">tr</a></b> ( const char *, const char *, int )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#trUtf8">trUtf8</a></b> ( const char *, const char *, int )</div></li>
-<li><div class="fn"><b><a href="qmailmessageservice.html#updateStatus">updateStatus</a></b> ( QMailServiceAction::Status::ErrorCode, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp;, const QMailMessageId &amp; )</div></li>
-<li><div class="fn"><b><a href="qmailmessageservice.html#updateStatus-2">updateStatus</a></b> ( int, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp;, const QMailMessageId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#updateStatus">updateStatus</a></b> ( QMailServiceAction::Status::ErrorCode, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp;, const QMailMessageId &amp;, quint64 )</div></li>
+<li><div class="fn"><b><a href="qmailmessageservice.html#updateStatus-2">updateStatus</a></b> ( int, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp;, const QMailMessageId &amp;, quint64 )</div></li>
 </ul>
 </td></tr>
 </table></p>

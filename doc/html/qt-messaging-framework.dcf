@@ -330,6 +330,7 @@
         <keyword ref="qmaildisconnected.html#moveToStandardFolder">moveToStandardFolder</keyword>
         <keyword ref="qmaildisconnected.html#parentFolderProperties">parentFolderProperties</keyword>
         <keyword ref="qmaildisconnected.html#restoreMap">restoreMap</keyword>
+        <keyword ref="qmaildisconnected.html#restoreToPreviousFolder">restoreToPreviousFolder</keyword>
         <keyword ref="qmaildisconnected.html#rollBackUpdates">rollBackUpdates</keyword>
         <keyword ref="qmaildisconnected.html#sourceFolderId">sourceFolderId</keyword>
         <keyword ref="qmaildisconnected.html#sourceKey">sourceKey</keyword>
@@ -881,6 +882,7 @@
         <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::AnyType</keyword>
         <keyword ref="qmailmessagemetadatafwd.html#MessageType-enum">QMailMessageMetaDataFwd::Mms</keyword>
         <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">ResponseType</keyword>
+        <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::UnspecifiedResponse</keyword>
         <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::ReplyToAll</keyword>
         <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::Redirect</keyword>
         <keyword ref="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::Reply</keyword>
@@ -1187,8 +1189,10 @@
     </section>
     <section ref="qmailmessagesink.html" title="QMailMessageSink Class Reference">
         <keyword ref="qmailmessagesink.html">QMailMessageSink</keyword>
+        <keyword ref="qmailmessagesink.html#concurrentActionsSupported">concurrentActionsSupported</keyword>
         <keyword ref="qmailmessagesink.html#messagesFailedTransmission">messagesFailedTransmission</keyword>
         <keyword ref="qmailmessagesink.html#messagesTransmitted">messagesTransmitted</keyword>
+        <keyword ref="qmailmessagesink.html#notImplemented">notImplemented</keyword>
         <keyword ref="qmailmessagesink.html#transmitMessages">transmitMessages</keyword>
         <section ref="qmailmessagesink-members.html" title="List of all members"/>
     </section>
@@ -1246,6 +1250,7 @@
     <section ref="qmailmessagesource.html" title="QMailMessageSource Class Reference">
         <keyword ref="qmailmessagesource.html">QMailMessageSource</keyword>
         <keyword ref="qmailmessagesource.html#cancelSearch">cancelSearch</keyword>
+        <keyword ref="qmailmessagesource.html#concurrentActionsSupported">concurrentActionsSupported</keyword>
         <keyword ref="qmailmessagesource.html#copyMessages">copyMessages</keyword>
         <keyword ref="qmailmessagesource.html#createFolder">createFolder</keyword>
         <keyword ref="qmailmessagesource.html#deleteFolder">deleteFolder</keyword>
@@ -1261,6 +1266,7 @@
         <keyword ref="qmailmessagesource.html#messagesPrepared">messagesPrepared</keyword>
         <keyword ref="qmailmessagesource.html#moveMessages">moveMessages</keyword>
         <keyword ref="qmailmessagesource.html#newMessagesAvailable">newMessagesAvailable</keyword>
+        <keyword ref="qmailmessagesource.html#notImplemented">notImplemented</keyword>
         <keyword ref="qmailmessagesource.html#prepareMessages">prepareMessages</keyword>
         <keyword ref="qmailmessagesource.html#protocolRequest">protocolRequest</keyword>
         <keyword ref="qmailmessagesource.html#protocolResponse">protocolResponse</keyword>
@@ -1454,11 +1460,15 @@
         <keyword ref="qmailstore.html#lock">lock</keyword>
         <keyword ref="qmailstore.html#message">message</keyword>
         <keyword ref="qmailstore.html#messageContentsModified">messageContentsModified</keyword>
+        <keyword ref="qmailstore.html#messageDataAdded">messageDataAdded</keyword>
+        <keyword ref="qmailstore.html#messageDataUpdated">messageDataUpdated</keyword>
         <keyword ref="qmailstore.html#messageMetaData">messageMetaData</keyword>
+        <keyword ref="qmailstore.html#messagePropertyUpdated">messagePropertyUpdated</keyword>
         <keyword ref="qmailstore.html#messageRemovalRecords">messageRemovalRecords</keyword>
         <keyword ref="qmailstore.html#messageRemovalRecordsAdded">messageRemovalRecordsAdded</keyword>
         <keyword ref="qmailstore.html#messageRemovalRecordsRemoved">messageRemovalRecordsRemoved</keyword>
         <keyword ref="qmailstore.html#messageStatusMask">messageStatusMask</keyword>
+        <keyword ref="qmailstore.html#messageStatusUpdated">messageStatusUpdated</keyword>
         <keyword ref="qmailstore.html#messagesAdded">messagesAdded</keyword>
         <keyword ref="qmailstore.html#messagesMetaData">messagesMetaData</keyword>
         <keyword ref="qmailstore.html#messagesRemoved">messagesRemoved</keyword>
@@ -1476,7 +1486,6 @@
         <keyword ref="qmailstore.html#removeFolders">removeFolders</keyword>
         <keyword ref="qmailstore.html#removeMessage">removeMessage</keyword>
         <keyword ref="qmailstore.html#removeMessages">removeMessages</keyword>
-        <keyword ref="qmailstore.html#restoreToPreviousFolder">restoreToPreviousFolder</keyword>
         <keyword ref="qmailstore.html#retrievalInProgress">retrievalInProgress</keyword>
         <keyword ref="qmailstore.html#setRetrievalInProgress">setRetrievalInProgress</keyword>
         <keyword ref="qmailstore.html#setTransmissionInProgress">setTransmissionInProgress</keyword>

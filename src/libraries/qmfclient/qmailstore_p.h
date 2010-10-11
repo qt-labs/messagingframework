@@ -131,9 +131,6 @@ public:
     void lock();
     void unlock();
 
-    bool restoreToPreviousFolder(const QMailMessageKey &key,
-                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
-
     bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);
 
     int countAccounts(const QMailAccountKey &key) const;
@@ -365,10 +362,6 @@ private:
                                               QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
                                               Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptRestoreToPreviousFolder(const QMailMessageKey &key, 
-                                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
-                                                 Transaction &t, bool commitOnSuccess);
-
     AttemptResult attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
                                                     Transaction &t, bool commitOnSuccess);
 
@@ -479,6 +472,10 @@ private:
     virtual void emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal, const QMailAccountIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal, const QMailFolderIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids);
+    virtual void emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data);
+    virtual void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                     const QMailMessageMetaData& data);
+    virtual void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set);
 
     static const int messageCacheSize = 100;
     static const int uidCacheSize = 500;
@@ -498,6 +495,9 @@ private:
     static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 
 private:
+    Q_DECLARE_PUBLIC (QMailStore);
+    QMailStore * const q_ptr;
+
     template <typename T, typename KeyType> 
     class Cache
     {

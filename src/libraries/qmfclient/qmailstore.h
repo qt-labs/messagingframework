@@ -168,9 +168,6 @@ public:
 
     bool purgeMessageRemovalRecords(const QMailAccountId& parentAccountId, const QStringList& serverUid = QStringList());
 
-    bool restoreToPreviousFolder(const QMailMessageId& id);
-    bool restoreToPreviousFolder(const QMailMessageKey& key);
-
     bool registerAccountStatusFlag(const QString& name);
     quint64 accountStatusMask(const QString& name) const;
 
@@ -205,6 +202,12 @@ signals:
     void messagesUpdated(const QMailMessageIdList& ids);
     void messageContentsModified(const QMailMessageIdList& ids);
 
+    void messageDataAdded(const QMailMessageMetaDataList &data);
+    void messageDataUpdated(const QMailMessageMetaDataList &data);
+    void messagePropertyUpdated(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                            const QMailMessageMetaData& data);
+    void messageStatusUpdated(const QMailMessageIdList& ids, quint64 status, bool set);
+
     void foldersAdded(const QMailFolderIdList& ids);
     void foldersRemoved(const QMailFolderIdList& ids);
     void foldersUpdated(const QMailFolderIdList& ids);
@@ -234,9 +237,17 @@ private:
     void emitAccountNotification(ChangeType type, const QMailAccountIdList &ids);
     void emitFolderNotification(ChangeType type, const QMailFolderIdList &ids);
     void emitMessageNotification(ChangeType type, const QMailMessageIdList &ids);
+    void emitMessageDataNotification(ChangeType type, const QMailMessageMetaDataList &data);
+    void emitMessageDataNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                                     const QMailMessageMetaData& data);
+    void emitMessageDataNotification(const QMailMessageIdList& ids, quint64 status, bool set);
     void emitRemovalRecordNotification(ChangeType type, const QMailAccountIdList &ids);
     void emitRetrievalInProgress(const QMailAccountIdList &ids);
     void emitTransmissionInProgress(const QMailAccountIdList &ids);
+
+    QMailMessageMetaData dataToTransfer(const QMailMessageMetaData* message);
+    QMailMessageMetaDataList dataList(const QList<QMailMessage*>& messages, const QMailMessageIdList& ids);
+    QMailMessageMetaDataList dataList(const QList<QMailMessageMetaData*>& messages, const QMailMessageIdList& ids);
 
     QMailStoreImplementation* d;
 };

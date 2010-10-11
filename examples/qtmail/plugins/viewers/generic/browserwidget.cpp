@@ -875,12 +875,6 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
                 trailer = replaceLast(trailer, "DOWNLOAD_TEXT", tr("Retrieve more data"));
 
                 bodyText += trailer;
-            } else if (bodyText.isEmpty()) {
-                // Possibly a badly formatted mail, give user option to completely download
-                qWarning() << "Mail with empty body detected";
-                QString trailer = "<br><a href=\"download\">DOWNLOAD_TEXT</a>";
-                trailer = replaceLast(trailer, "DOWNLOAD_TEXT", tr("Retrieve complete mail"));
-                bodyText += trailer;
             }
         }
     }
@@ -1310,6 +1304,9 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                    ((addressPos == -1) || (addressPos >= filePos))) {
             matchPos = &filePos;
             matchPattern = &filePattern;
+        } else {
+            Q_ASSERT(false);
+            return QString();
         }
 
         QString replacement;

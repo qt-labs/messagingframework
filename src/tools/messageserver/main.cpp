@@ -44,6 +44,7 @@
 #include <QDebug>
 #include <qmailnamespace.h>
 #include <qmaillog.h>
+#include <qloggers.h>
 
 #if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
 #include <signal.h>
@@ -57,6 +58,8 @@ static void shutdown(int n)
 
 int main(int argc, char** argv)
 {
+    // This is ~/.config/Nokia/Messageserver.conf
+    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
 
     if(QMail::fileLock("messageserver-instance.lock") == -1)
         qFatal("Could not get messageserver lock. Messageserver might already be running!");

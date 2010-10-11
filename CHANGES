@@ -1,6 +1,18 @@
 Latest Changes
 ---------------
 
+201040
+  * Fixes: NB#194887 QMailRetrievalAction::retrieveMessages() retrieves/creates plain text part badly
+
+201039
+  * Fixes: NB#195615 <coverity> Bugs reported by coverity in QMF
+  * Batched add/update enabled for IMAP & POP accounts
+  * IMAP server side searching optimized and much more comprehensive
+
+201037
+  * Fixes: NB#168820 QMailRetrievalAction::retrieveMessageList() default "minimum" value returns no messages
+  * Fixes: NB#188374 Mails cannot be sent via AOL mailbox
+
 201036
   * Fixes: NB#190343 messagserver invoking OOM killer and apparently its being killed
   * Fixes: NB#181065 Lack of pkgconfig files for QMF
