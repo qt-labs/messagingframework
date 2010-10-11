@@ -83,7 +83,7 @@ public:
 
           \return true if logger is ready for logging, otherwise returns false.
         */
-        inline bool isReady() const { return is_ready; };
+        bool isReady() const { return is_ready; };
 
         /// Empty destructor
         virtual ~BaseLoggerFoundation()  { };
@@ -290,7 +290,7 @@ inline void BaseLogger<Host, Prefix>::log(const LogLevel _lvl, const char* _fmt,
 /**********************************************************************************************************/
 
 template <class Prefix>
-FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flush_period, const LogLevel _min_lvl)
+inline FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flush_period, const LogLevel _min_lvl)
            : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(_name), should_close(true), do_cntr(0), flush_period(_flush_period)
 {
     f = fopen(qPrintable(_name), "a" );
@@ -302,13 +302,13 @@ FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flush_perio
 };
 
 template <class Prefix>
-FileLogger<Prefix>::FileLogger(FILE* _f, const unsigned _flush_period, const LogLevel _min_lvl, bool _owner)
+inline FileLogger<Prefix>::FileLogger(FILE* _f, const unsigned _flush_period, const LogLevel _min_lvl, bool _owner)
     : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(""), f(_f), should_close(_owner), flush_period(_flush_period)
 {
 };
 
 template <class Prefix>
-FileLogger<Prefix>::~FileLogger()
+inline FileLogger<Prefix>::~FileLogger()
 {
     if(should_close)
         fclose(f);
