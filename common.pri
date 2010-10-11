@@ -27,7 +27,7 @@ win32 | macx {
         CONFIG -= debug release debug_and_release build_all
 
         contains(RELEASEMODE,unspecified) {
-            contains(QT_CONFIG,debug):contains(QT_CONFIG,release) | (macx:contains(QT_CONFIG,qt_framework):contains(TEMPLATE,.*lib)) {
+            contains(QT_CONFIG,debug):contains(QT_CONFIG,release) | if(macx:contains(QT_CONFIG,qt_framework):contains(TEMPLATE,.*lib)) {
                 CONFIG += debug_and_release build_all
             } else {
                 contains(QT_CONFIG,debug): CONFIG+=debug
