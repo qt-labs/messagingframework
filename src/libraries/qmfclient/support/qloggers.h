@@ -131,7 +131,7 @@ private:
   method which should be used to check loggers's "ready for the mission" (successfull initialization) status.
   #SetUnReady is protected method which should be called by derived class's constructors instead of exception throwing.
 */
-template <class Host, class Prefix = NoLogPrefix> class QMF_EXPORT BaseLogger: public BaseLoggerFoundation
+template <class Host, class Prefix = NoLogPrefix> class BaseLogger: public BaseLoggerFoundation
 {
 public:
         /*!
@@ -174,7 +174,7 @@ private:
   This class can be used for logging into files. See also documentation on BaseLogger for additional useful remarks.
 */
 template <class Prefix = LvlTimeLogPrefix>
-class QMF_EXPORT FileLogger : public BaseLogger<FileLogger<Prefix>, Prefix>
+class FileLogger : public BaseLogger<FileLogger<Prefix>, Prefix>
 {
 public:
         /*!
@@ -227,7 +227,7 @@ private:
   This class can be used for logging via syslog. See also documentation on #BaseLogger for additional useful remarks.
 */
 template <class Prefix = LvlTimePidLogPrefix>
-class QMF_EXPORT SysLogger : public BaseLogger<SysLogger<Prefix>, Prefix>
+class SysLogger : public BaseLogger<SysLogger<Prefix>, Prefix>
 {
 public:
         /*!
