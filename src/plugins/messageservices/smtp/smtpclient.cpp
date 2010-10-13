@@ -49,6 +49,7 @@
 #include <QTemporaryFile>
 #include <QCoreApplication>
 #include <QDir>
+#include <QHostInfo>
 #ifndef QT_NO_OPENSSL
 #include <QSslSocket>
 #endif
@@ -87,6 +88,13 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
             '>').toAscii();
 }
 
+static QByteArray localName()
+{
+    QByteArray result(QHostInfo::localDomainName().toLatin1());
+    if (!result.isEmpty())
+        return result;
+    return "localhost";
+}
 
 SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
@@ -227,7 +235,8 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 #ifndef QT_NO_OPENSSL
     if ((smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
         // We have entered TLS mode - restart the SMTP dialog
-        sendCommand("EHLO qmf-messageserver");
+        QByteArray ehlo("EHLO " + localName());
+        sendCommand(ehlo);
         status = Helo;
     }
 #endif
@@ -332,7 +341,8 @@ void SmtpClient::nextAction(const QString &response)
             capabilities.clear();
 
             // We need to know if extensions are supported
-            sendCommand("EHLO qmf-messageserver");
+            QByteArray ehlo("EHLO " + localName());
+            sendCommand(ehlo);
             status = Helo;
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
@@ -343,7 +353,8 @@ void SmtpClient::nextAction(const QString &response)
     {
         if (responseCode == 500) {
             // EHLO is not implemented by this server - fallback to HELO
-            sendCommand("HELO qmf-messageserver");
+            QByteArray ehlo("HELO " + localName());
+            sendCommand(ehlo);
         } else if (responseCode == 250) {
             if (domainName.isEmpty()) {
                 // Extract the domain name from the greeting
