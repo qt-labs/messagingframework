@@ -204,7 +204,7 @@ public:
           \param fmt  Format of log string.  See (v)printf manual for details.
           \param args Arguments related to format.  See vprintf manual for additional information.
         */
-        void doLog(const LogLevel lvl, const char* fmt, va_list args);
+        virtual void doLog(const LogLevel lvl, const char* fmt, va_list args);
         /// Closes file if this object is it's owner.
         ~FileLogger();
 private:
@@ -246,7 +246,7 @@ public:
           \param fmt  Format of log string.  See (v)printf manual for details.
           \param args Arguments related to format.  See vprintf manual for additional information.
         */
-        void doLog(const LogLevel lvl, const char* fmt, va_list args);
+        virtual void doLog(const LogLevel lvl, const char* fmt, va_list args);
         /// Disconnects from the syslog
         ~SysLogger();
 private:

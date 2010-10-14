@@ -22,6 +22,7 @@ SUBDIRS = \
       tst_storagemanager \
       tst_qmaildisconnected \
       tst_qmailnamespace \
+      tst_qlogsystem \
 
 
 CONFIG += unittest
