@@ -189,7 +189,10 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
 
     it = td->clientMap.insert(channel, QList<QCopChannelPrivatePointer>());
     it.value().append(QCopChannelPrivatePointer(d));
-
+    QCopClient* client = td->clientConnection();
+    Q_ASSERT (client);
+    connect(client, SIGNAL(connected()), this, SIGNAL(connected()));
+    connect(client, SIGNAL(connectionFailed()), this, SIGNAL(connectionFailed()));
     // Inform the server about this channel
     td->clientConnection()->registerChannel(channel);
 }
@@ -291,6 +294,24 @@ QString QCopChannel::channel() const
 void QCopChannel::receive(const QString& msg, const QByteArray &data)
 {
     emit received(msg, data);
+}
+
+bool QCopChannel::isConnected() const
+{
+    QCopThreadData *td = qcopThreadData();
+    Q_ASSERT (td);
+    QCopClient* client = td->clientConnection();
+    Q_ASSERT (client);
+    return client->isConnectionEstablished;
+}
+
+void QCopChannel::connectRepeatedly()
+{
+    QCopThreadData *td = qcopThreadData();
+    Q_ASSERT (td);
+    QCopClient* client = td->clientConnection();
+    Q_ASSERT (client);
+    client->reconnect();
 }
 
 /* !
@@ -698,6 +719,7 @@ void QCopClient::init()
         connectSignals();
 
     isStartupComplete = false;
+    isConnectionEstablished = false;
 
     inBufferUsed = 0;
     inBufferExpected = minPacketSize;
@@ -1021,6 +1043,7 @@ void QCopClient::readyRead()
 
 void QCopClient::disconnected()
 {
+    isConnectionEstablished = false;
     if (connecting)
         return;
     if (!finished) {
@@ -1060,6 +1083,9 @@ int QCopThreadData::listenPort()
 
 void QCopClient::connectToServer()
 {
+    if (isConnectionEstablished)
+        return;
+
     if (!socket)  {
         // We are retrying the socket connection.
         socket = new QCopLocalSocket(this);
@@ -1086,7 +1112,13 @@ void QCopClient::connectToServer()
             device->write(pendingData.constData(), pendingData.size());
             pendingData = QByteArray();
         }
+        isConnectionEstablished = true;
+        emit connected();
     } else {
+#ifndef SUPPRESS_QCOP_SERVER_WARNING
+        qWarning() << Q_FUNC_INFO << socket->error() << socket->errorString();
+#endif
+        isConnectionEstablished = false;
         connecting = false;
         delete socket;
         socket = 0;
@@ -1098,6 +1130,7 @@ void QCopClient::connectToServer()
                 qWarning() << "Cannot connect to QCop server; retrying...";
 #endif
             } else {
+                emit connectionFailed();
 #ifndef SUPPRESS_QCOP_SERVER_WARNING
                 qWarning() << "Could not connect to QCop server; probably not running.";
 #endif

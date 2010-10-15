@@ -196,6 +196,8 @@ public:
 
     void flushIpcNotifications();
 
+    bool isIpcConnectionEstablished() const;
+
     static QMailStore* instance();
 #ifdef QMAILSTOREINSTANCE_DEFINED_HERE
     friend QMailStore* QMailStoreInstance();
@@ -235,6 +237,8 @@ signals:
 
     void retrievalInProgress(const QMailAccountIdList &ids);
     void transmissionInProgress(const QMailAccountIdList &ids);
+
+    void ipcConnectionEstablished();
 
 private:
     friend class QMailStoreImplementationBase;

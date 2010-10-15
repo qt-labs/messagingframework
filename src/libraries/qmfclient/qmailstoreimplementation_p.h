@@ -94,6 +94,8 @@ public:
     bool setRetrievalInProgress(const QMailAccountIdList &ids);
     bool setTransmissionInProgress(const QMailAccountIdList &ids);
 
+    bool isIpcConnectionEstablished() const;
+
     static QString accountAddedSig();
     static QString accountRemovedSig();
     static QString accountUpdatedSig();
@@ -132,6 +134,8 @@ public slots:
     void ipcMessage(const QString& message, const QByteArray& data);
     void flushNotifications();
     void aboutToQuit();
+    void ipcConnectionFailed();
+    void lockFileUpdated();
 
 protected:
     typedef void (QMailStore::*AccountUpdateSignal)(const QMailAccountIdList&);
@@ -215,6 +219,8 @@ private:
 
     QTimer queueTimer;
     QList<QPair<QString, QByteArray> > messageQueue;
+    class QCopChannel* ipcChannel;
+    class QFileSystemWatcher* watcher;
 };
 
 

@@ -168,11 +168,14 @@ public:
     static const int minPacketSize = 256;
 
     bool isStartupComplete;
+    bool isConnectionEstablished;
 
     void reconnect();
 
 signals:
     void startupComplete();
+    void connected();
+    void connectionFailed();
 
 private slots:
     void readyRead();

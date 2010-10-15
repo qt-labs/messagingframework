@@ -128,7 +128,7 @@ int QMail::fileLock(const QString& lockFile)
                                  GENERIC_READ,
                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
                                  NULL,
-                                 OPEN_EXISTING,
+                                 OPEN_EXISTING | TRUNCATE_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL,
                                  NULL);
     if (handle == INVALID_HANDLE_VALUE) {
@@ -153,7 +153,7 @@ int QMail::fileLock(const QString& lockFile)
     fl.l_len = 0;
 
     int fdlock = -1;
-    if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT, 0666)) == -1)
+    if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
         return -1;
 
     if(::fcntl(fdlock, F_SETLK, &fl) == -1)
@@ -289,6 +289,13 @@ QString QMail::messageSettingsPath()
         return settingsEnv + '/';
     return QCoreApplication::applicationDirPath() + '/';
 }
+
+QString QMail::messageServerLockFilePath()
+{
+    static QString path(QDir::tempPath() + QString("/messageserver-instance.lock"));
+    return path;
+}
+
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!

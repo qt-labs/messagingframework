@@ -1119,6 +1119,14 @@ void QMailStore::flushIpcNotifications()
 }
 
 /*!
+    Returns true if connection to QQopServer is established
+*/
+bool QMailStore::isIpcConnectionEstablished() const
+{
+    return d->isIpcConnectionEstablished();
+}
+
+/*!
     Returns true if the running process is in the act of emitting an asynchronous QMailStore 
     signal caused by another process.  This can only be true when called from a slot
     invoked by a QMailStore signal.

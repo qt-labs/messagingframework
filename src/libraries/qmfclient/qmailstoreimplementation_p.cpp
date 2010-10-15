@@ -45,7 +45,10 @@
 #include <qcopadaptor.h>
 #include <qcopchannel.h>
 #include <qcopserver.h>
+#include <qmailnamespace.h>
 #include <QCoreApplication>
+#include <QFileSystemWatcher>
+#include <QFile>
 
 namespace {
 
@@ -202,11 +205,14 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
       errorCode(QMailStore::NoError),
       asyncEmission(false),
       retrievalSetInitialized(false),
-      transmissionSetInitialized(false)
+      transmissionSetInitialized(false),
+      watcher(0)
 {
     Q_ASSERT(q);
 
-    QCopChannel* ipcChannel = new QCopChannel("QPE/qmf", this);
+    ipcChannel = new QCopChannel("QPE/qmf", this);
+    ENFORCE (connect (ipcChannel, SIGNAL(connected()), q, SIGNAL(ipcConnectionEstablished())));
+    ENFORCE (connect (ipcChannel, SIGNAL(connectionFailed()), this, SLOT(ipcConnectionFailed())));
 
     connect(ipcChannel,
             SIGNAL(received(QString,QByteArray)),
@@ -302,6 +308,31 @@ void QMailStoreImplementationBase::aboutToQuit()
 {
     // Ensure that any pending updates are flushed
     flushNotifications();
+}
+
+void QMailStoreImplementationBase::ipcConnectionFailed()
+{    
+    if (!watcher) {
+        watcher = new QFileSystemWatcher(this);
+        ENFORCE (connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(lockFileUpdated())));
+        const QString& path = QMail::messageServerLockFilePath();
+        if (!QFile::exists(path)) {
+            QFile file(path);
+            file.open(QIODevice::WriteOnly);
+            file.close();
+        }
+        watcher->addPath(path);       
+    }
+}
+
+void QMailStoreImplementationBase::lockFileUpdated()
+{
+    if (!ipcChannel->isConnected()) {
+        ipcChannel->connectRepeatedly();
+        // should be invoked only once, then it will reconnect automatically
+        Q_ASSERT (watcher);
+        ENFORCE (watcher->disconnect(this, SLOT(lockFileUpdated())));
+    }
 }
 
 typedef QMap<QMailStore::ChangeType, QString> NotifyFunctionMap;
@@ -649,6 +680,11 @@ bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountI
     }
 
     return false;
+}
+
+bool QMailStoreImplementationBase::isIpcConnectionEstablished() const
+{
+    return ipcChannel->isConnected();
 }
 
 QString QMailStoreImplementationBase::accountAddedSig()

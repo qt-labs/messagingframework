@@ -70,6 +70,7 @@ namespace QMail
     QMF_EXPORT QString sslCertsPath();
     QMF_EXPORT QString messageServerPath();
     QMF_EXPORT QString messageSettingsPath();
+    QMF_EXPORT QString messageServerLockFilePath();    
     QMF_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QMF_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
 

@@ -77,9 +77,14 @@ public:
 
     virtual void receive(const QString& msg, const QByteArray &data);
 
+    bool isConnected() const;
+    void connectRepeatedly();
+
 Q_SIGNALS:
     void received(const QString& msg, const QByteArray &data);
     void forwarded(const QString& msg, const QByteArray &data, const QString& channel);
+    void connected();
+    void connectionFailed();
 
 protected:
     void connectNotify(const char *);
