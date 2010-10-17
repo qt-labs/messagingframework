@@ -89,6 +89,7 @@ enum ImapCommand
     IMAP_Rename,
     IMAP_Enable,
     IMAP_QResync,
+    IMAP_FetchFlags,
     IMAP_Noop
 };
 
@@ -188,6 +189,7 @@ public:
     void sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort);
     void sendSearch(MessageFlags flags, const QString &range = QString());
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
+    void sendFetchFlags(const QString &range, const QString &prefix = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);
     void sendUidFetchSection(const QString &uid, const QString &section, int start, int end);
     void sendUidStore(MessageFlags flags, bool set, const QString &range);

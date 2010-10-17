@@ -503,6 +503,7 @@ public:
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
+    virtual void handleFetchFlags(ImapStrategyContextBase *context);
     virtual void qresyncHandleUidSearch(ImapStrategyContextBase *context);
 
     virtual void messageListCompleted(ImapStrategyContextBase *context);

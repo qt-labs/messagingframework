@@ -345,8 +345,8 @@ public:
     void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
     void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
     void setPermanentFlags(const QStringList &flags) { mProtocol->_mailbox.permanentFlags = flags; }
-    void setVanished(const QString &vanished) { mProtocol->_mailbox.qresyncVanished = vanished; }
-    void setChanges(const QList<QResyncChange> &changes) { mProtocol->_mailbox.qresyncChanges = changes; }
+    void setVanished(const QString &vanished) { mProtocol->_mailbox.vanished = vanished; }
+    void setChanges(const QList<FlagChange> &changes) { mProtocol->_mailbox.flagChanges = changes; }
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
@@ -1333,7 +1333,7 @@ public:
 
 protected:
     QString vanished;
-    QList<QResyncChange> changes;
+    QList<FlagChange> changes;
 };
 
 void QResyncState::enter(ImapContext *c)
@@ -1376,7 +1376,7 @@ void QResyncState::untaggedResponse(ImapContext *c, const QString &line)
         if (!uid.isEmpty()) {
             MessageFlags flags = 0;
             parseFlags(str, flags);
-            changes.append(QResyncChange(uid, flags));
+            changes.append(FlagChange(uid, flags));
         }
     } else if (vanishResponsePattern.indexIn(str) == 0) {
         vanished = vanishResponsePattern.cap(1);
@@ -1392,6 +1392,82 @@ void QResyncState::taggedResponse(ImapContext *c, const QString &line)
     vanished.clear();
     changes.clear();
     SelectState::taggedResponse(c, line);
+}
+
+
+// Flag fetching, 
+// doesn't call createMail, instead updates properties.flagChanges
+class FetchFlagsState : public SelectedState
+{
+    Q_OBJECT
+
+public:
+    FetchFlagsState() : SelectedState(IMAP_FetchFlags, "FetchFlags") { FetchFlagsState::init(); }
+
+    void setProperties(const QString &range, const QString &prefix);
+
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+
+protected:
+    QList<FlagChange> mChanges;
+    IntegerRegion mReceivedMessages;
+    QString mRange;
+    QString mPrefix;
+};
+
+void FetchFlagsState::setProperties(const QString &range, const QString &prefix)
+{
+    mRange = range;
+    mPrefix = prefix;
+}
+
+void FetchFlagsState::init() 
+{ 
+    SelectedState::init();
+    mChanges.clear();
+}
+
+void FetchFlagsState::untaggedResponse(ImapContext *c, const QString &line)
+{
+    QString str = line;
+    QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
+        QString uid = extractUid(str, c->mailbox().id);
+        if (!uid.isEmpty()) {
+            MessageFlags flags = 0;
+            parseFlags(str, flags);
+            
+            bool ok;
+            int uidStripped = messageId(uid).toInt(&ok);
+            if (!ok)
+                return;
+            
+            mChanges.append(FlagChange(uid, flags));
+            mReceivedMessages.add(uidStripped);
+        }
+    } else {
+        SelectedState::untaggedResponse(c, line);
+    }
+}
+
+void FetchFlagsState::taggedResponse(ImapContext *c, const QString &line)
+{
+    c->setChanges(mChanges);
+    mChanges.clear();
+    c->setUidList(mReceivedMessages.toStringList());
+    mReceivedMessages.clear();
+    SelectedState::taggedResponse(c, line);
+}
+
+QString FetchFlagsState::transmit(ImapContext *c)
+{
+    QString command = QString("FETCH %1 %2").arg(mRange).arg("(FLAGS UID)");
+    if (!mPrefix.isEmpty())
+        command = mPrefix.simplified() + " " + command;
+    return c->sendCommand(command);
 }
 
 
@@ -2458,6 +2534,7 @@ public:
     AppendState appendState;
     SelectState selectState;
     QResyncState qresyncState;
+    FetchFlagsState uidFetchFlagsState;
     ExamineState examineState;
     CreateState createState;
     DeleteState deleteState;
@@ -2872,6 +2949,12 @@ void ImapProtocol::sendUidSearch(MessageFlags flags, const QString &range)
 {
     _fsm->uidSearchState.setParameters(flags, range);
     _fsm->setState(&_fsm->uidSearchState);
+}
+
+void ImapProtocol::sendFetchFlags(const QString &range, const QString &prefix)
+{
+    _fsm->uidFetchFlagsState.setProperties(range, prefix);
+    _fsm->setState(&_fsm->uidFetchFlagsState);
 }
 
 void ImapProtocol::sendUidFetch(FetchItemFlags items, const QString &uidList)
