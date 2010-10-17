@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201041
+  * Fixes: NB#167708 IMAP: Message(s) marked as read/unread on Server not updated on Client 
+
 201040
   * Fixes: NB#194887 QMailRetrievalAction::retrieveMessages() retrieves/creates plain text part badly
 
