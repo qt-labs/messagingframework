@@ -685,6 +685,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Select:
         case IMAP_Examine:
+        case IMAP_QResync:
         {
             if (_protocol.mailbox().isSelected()) {
                 const ImapMailboxProperties &properties(_protocol.mailbox());
