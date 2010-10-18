@@ -348,7 +348,7 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
 
             if (key.combiner() == QMailKey::None) {
                 Q_ASSERT(key.subKeys().size() == 0);
-                Q_ASSERT(key.arguments().size() == 1);
+                Q_ASSERT(key.arguments().size() <= 1);
             } else if (key.combiner() == QMailKey::Or) {
                 foreach (QMailMessageKey const& k, key.subKeys()) {
                     IncludedExcludedPair v(extractFolders(k));

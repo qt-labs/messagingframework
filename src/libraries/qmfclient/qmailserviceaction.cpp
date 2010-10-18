@@ -96,6 +96,7 @@ QMailServiceActionPrivate::~QMailServiceActionPrivate()
 
 void QMailServiceActionPrivate::cancelOperation()
 {
+    Q_ASSERT(_action != 0 && _isValid);
     if (_isValid) {
         clearSubActions();
         _server->cancelTransfer(_action);
@@ -1450,7 +1451,8 @@ void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, con
 
 void QMailSearchActionPrivate::cancelOperation()
 {
-    if (_action != 0)
+    Q_ASSERT(_isValid && _action != 0);
+    if (_isValid)
         _server->cancelSearch(_action);
 }
 

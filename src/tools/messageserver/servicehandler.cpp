@@ -292,7 +292,7 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
 
             if (key.combiner() == QMailKey::None) {
                 Q_ASSERT(key.subKeys().size() == 0);
-                Q_ASSERT(key.arguments().size() == 1);
+                Q_ASSERT(key.arguments().size() <= 1);
             } else if (key.combiner() == QMailKey::Or) {
                 foreach (QMailMessageKey const& k, key.subKeys()) {
                     IncludedExcludedPair v(extractAccounts(k));
@@ -514,7 +514,7 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
                 if (master.id().isValid()) {
                     masterAccount.insert(id, master.id());
                 } else {
-                    qMailLog(Messaging) << "Unable to locate master account:" << masterId << "for account:" << id;
+                    qWarning() << "Unable to locate master account:" << masterId << "for account:" << id;
                 }
             } else {
                 foreach (const QString& service, config.services()) {
@@ -647,7 +647,18 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     sourceMap.insert(accountId, source);
     sourceService.insert(source, service);
 
+    connect(source, SIGNAL(newMessagesAvailable(quint64)), this, SIGNAL(newMessagesAvailable())); // TODO: <- I don't this this makes much sense..
     connect(source, SIGNAL(newMessagesAvailable()), this, SIGNAL(newMessagesAvailable()));
+
+    // if (service->usesConcurrentActions()) {  // This can be uncommented to be stricter.
+    connect(source, SIGNAL(messagesDeleted(QMailMessageIdList,quint64)), this, SLOT(messagesDeleted(QMailMessageIdList,quint64)));
+    connect(source, SIGNAL(messagesCopied(QMailMessageIdList, quint64)), this, SLOT(messagesCopied(QMailMessageIdList, quint64)));
+    connect(source, SIGNAL(messagesMoved(QMailMessageIdList, quint64)), this, SLOT(messagesMoved(QMailMessageIdList, quint64)));
+    connect(source, SIGNAL(messagesFlagged(QMailMessageIdList, quint64)), this, SLOT(messagesFlagged(QMailMessageIdList, quint64)));
+    connect(source, SIGNAL(messagesPrepared(QMailMessageIdList, quint64)), this, SLOT(messagesPrepared(QMailMessageIdList, quint64)));
+    connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList, quint64)), this, SLOT(matchingMessageIds(QMailMessageIdList, quint64)));
+    connect(source, SIGNAL(protocolResponse(QString, QVariant, quint64)), this, SLOT(protocolResponse(QString, QVariant, quint64)));
+    // } else {
     connect(source, SIGNAL(messagesDeleted(QMailMessageIdList)), this, SLOT(messagesDeleted(QMailMessageIdList)));
     connect(source, SIGNAL(messagesCopied(QMailMessageIdList)), this, SLOT(messagesCopied(QMailMessageIdList)));
     connect(source, SIGNAL(messagesMoved(QMailMessageIdList)), this, SLOT(messagesMoved(QMailMessageIdList)));
@@ -655,6 +666,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(messagesPrepared(QMailMessageIdList)), this, SLOT(messagesPrepared(QMailMessageIdList)));
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SLOT(matchingMessageIds(QMailMessageIdList)));
     connect(source, SIGNAL(protocolResponse(QString, QVariant)), this, SLOT(protocolResponse(QString, QVariant)));
+    // }
 }
 
 QMailMessageSource *ServiceHandler::accountSource(const QMailAccountId &accountId) const
@@ -671,9 +683,16 @@ void ServiceHandler::registerAccountSink(const QMailAccountId &accountId, QMailM
     sinkMap.insert(accountId, sink);
     sinkService.insert(sink, service);
 
+    // if (service->usesConcurrentActions()) { // this can be uncommented to be stricter
+    connect(sink, SIGNAL(messagesTransmitted(QMailMessageIdList, quint64)), this, SLOT(messagesTransmitted(QMailMessageIdList, quint64)));
+    connect(sink, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode, quint64)),
+            this, SLOT(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode, quint64)));
+
+    // } else {
     connect(sink, SIGNAL(messagesTransmitted(QMailMessageIdList)), this, SLOT(messagesTransmitted(QMailMessageIdList)));
     connect(sink, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
             this, SLOT(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
+    // }
 }
 
 QMailMessageSink *ServiceHandler::accountSink(const QMailAccountId &accountId) const
@@ -688,14 +707,23 @@ QMailMessageSink *ServiceHandler::accountSink(const QMailAccountId &accountId) c
 QMailMessageService *ServiceHandler::createService(const QString &name, const QMailAccountId &accountId)
 {
     QMailMessageService *service = QMailMessageServiceFactory::createService(name, accountId);
+    connect(service, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
+    connect(service, SIGNAL(availabilityChanged(bool)), this, SLOT(availabilityChanged(bool)));
+
+
 
     if (service) {
-        connect(service, SIGNAL(availabilityChanged(bool)), this, SLOT(availabilityChanged(bool)));
-        connect(service, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)), this, SLOT(connectivityChanged(QMailServiceAction::Connectivity)));
+        // if (service->usesConcurrentActions()) { // this can be uncommented to be stricter
+        connect(service, SIGNAL(activityChanged(QMailServiceAction::Activity, quint64)), this, SLOT(activityChanged(QMailServiceAction::Activity, quint64)));
+        connect(service, SIGNAL(statusChanged(const QMailServiceAction::Status, quint64)), this, SLOT(statusChanged(const QMailServiceAction::Status, quint64)));
+        connect(service, SIGNAL(progressChanged(uint, uint, quint64)), this, SLOT(progressChanged(uint, uint, quint64)));
+        connect(service, SIGNAL(actionCompleted(bool, quint64)), this, SLOT(actionCompleted(bool, quint64)));
+        // } else {
         connect(service, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
         connect(service, SIGNAL(statusChanged(const QMailServiceAction::Status)), this, SLOT(statusChanged(const QMailServiceAction::Status)));
         connect(service, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
         connect(service, SIGNAL(actionCompleted(bool)), this, SLOT(actionCompleted(bool)));
+        // }
     }
 
     return service;
@@ -719,7 +747,7 @@ void ServiceHandler::registerAccountService(const QMailAccountId &accountId, con
             if (!service->available())
                 mUnavailableServices.insert(service);
         } else {
-            qMailLog(Messaging) << "Unable to instantiate service:" << svcCfg.service();
+            qWarning() << "Unable to instantiate service:" << svcCfg.service();
         }
     }
 }
@@ -735,7 +763,7 @@ bool ServiceHandler::servicesAvailable(const Request &req) const
 
 bool ServiceHandler::serviceAvailable(QPointer<QMailMessageService> service) const
 {
-    if (mServiceAction.contains(service) || mUnavailableServices.contains(service))
+    if ((!service->usesConcurrentActions() && mServiceAction.contains(service)) || mUnavailableServices.contains(service))
         return false;
 
     return true;
@@ -749,7 +777,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QMailAccountId
     if (QMailMessageSource *source = accountSource(id)) {
         services.insert(sourceService.value(source));
     } else {
-        qMailLog(Messaging) << "Unable to find message source for account:" << id;
+        qWarning() << "Unable to find message source for account:" << id;
     }
 
     return services;
@@ -764,7 +792,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QSet<QMailAcco
         if (QMailMessageSource *source = accountSource(id)) {
             services.insert(sourceService.value(source));
         } else {
-            qMailLog(Messaging) << "Unable to find message source for account:" << id;
+            qWarning() << "Unable to find message source for account:" << id;
             return QSet<QMailMessageService*>();
         }
     }
@@ -779,7 +807,7 @@ QSet<QMailMessageService*> ServiceHandler::sinkServiceSet(const QMailAccountId &
     if (QMailMessageSink *sink = accountSink(id)) {
         services.insert(sinkService[sink]);
     } else {
-        qMailLog(Messaging) << "Unable to find message sink for account:" << id;
+        qWarning() << "Unable to find message sink for account:" << id;
     }
 
     return services;
@@ -793,7 +821,7 @@ QSet<QMailMessageService*> ServiceHandler::sinkServiceSet(const QSet<QMailAccoun
         if (QMailMessageSink *sink = accountSink(id)) {
             services.insert(sinkService[sink]);
         } else {
-            qMailLog(Messaging) << "Unable to find message sink for account:" << id;
+            qWarning() << "Unable to find message sink for account:" << id;
             return QSet<QMailMessageService*>();
         }
     }
@@ -897,7 +925,7 @@ void ServiceHandler::dispatchRequest()
         } else {
             mActiveActions.remove(request->action);
 
-            qMailLog(Messaging) << "Unable to dispatch request:" << request->action << "to services:" << request->services;
+            qWarning() << "Unable to dispatch request:" << request->action << "to services:" << request->services;
             emit activityChanged(request->action, QMailServiceAction::Failed);
 
             foreach (QMailMessageService *service, request->services)
@@ -934,7 +962,7 @@ void ServiceHandler::expireAction()
 
             // Is the oldest action expired?
             if (data.unixTimeExpiry <= now) {
-                qMailLog(Messaging) << "Expired request:" << action;
+                qWarning() << "Expired request:" << action;
                 reportFailure(action, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
                 emit activityChanged(action, QMailServiceAction::Failed);
 
@@ -1009,6 +1037,7 @@ void ServiceHandler::expireAction()
 // Cancelled by user
 void ServiceHandler::cancelTransfer(quint64 action)
 {
+    cancelLocalSearch(action);
     QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
     if (it != mActiveActions.end()) {
         bool retrievalSetModified(false);
@@ -1016,11 +1045,15 @@ void ServiceHandler::cancelTransfer(quint64 action)
 
         const ActionData &data(it.value());
         foreach (QMailMessageService *service, data.services) {
-            if (service)
-                service->cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+            if (service) {
+                if (service->usesConcurrentActions())
+                    service->cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"), it.key());
+                else
+                    service->cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+            }
             mServiceAction.remove(service);
             if (!service) {
-                qMailLog(Messaging) << "Unable to cancel null service for action:" << action;
+                qWarning() << "Unable to cancel null service for action:" << action;
                 continue;
             }
 
@@ -1112,7 +1145,7 @@ bool ServiceHandler::dispatchPrepareMessages(quint64 action, const QByteArray &d
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
             if (!source->prepareMessages(it.value())) {
-                qMailLog(Messaging) << "Unable to service request to prepare messages for account:" << it.key();
+                qWarning() << "Unable to service request to prepare messages for account:" << it.key();
                 return false;
             } else {
                 // This account is now transmitting
@@ -1138,12 +1171,18 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
         QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
 
-        if (!sink->transmitMessages(QMailStore::instance()->queryMessages(accountKey & outboxKey))) {
-            qMailLog(Messaging) << "Unable to service request to add messages to sink for account:" << accountId;
-            return false;
-        } else {
+        QMailMessageIdList toTransmit(QMailStore::instance()->queryMessages(accountKey & outboxKey));
+
+        bool success(sinkService.value(sink)->usesConcurrentActions()
+                     ? sink->transmitMessages(toTransmit, action)
+                     : sink->transmitMessages(toTransmit));
+
+        if (success) {
             // This account is now transmitting
             setTransmissionInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to add messages to sink for account:" << accountId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate sink for account"), accountId);
@@ -1172,12 +1211,16 @@ bool ServiceHandler::dispatchRetrieveFolderListAccount(quint64 action, const QBy
     deserialize(data, accountId, folderId, descending);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->retrieveFolderList(accountId, folderId, descending)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve folder list for account:" << accountId;
-            return false;
-        } else {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+                            ? source->retrieveFolderList(accountId, folderId, descending, action)
+                            : source->retrieveFolderList(accountId, folderId, descending));
+
+        if (success) {
             // This account is now retrieving (arguably...)
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve folder list for account:" << accountId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1207,12 +1250,15 @@ bool ServiceHandler::dispatchRetrieveMessageList(quint64 action, const QByteArra
     deserialize(data, accountId, folderId, minimum, sort);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->retrieveMessageList(accountId, folderId, minimum, sort)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve message list for folder:" << folderId;
-            return false;
-        } else {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+                            ? source->retrieveMessageList(accountId, folderId, minimum, sort, action)
+                            : source->retrieveMessageList(accountId, folderId, minimum, sort));
+        if (success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve message list for folder:" << folderId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1244,14 +1290,18 @@ bool ServiceHandler::dispatchRetrieveMessages(quint64 action, const QByteArray &
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
-            if (!source->retrieveMessages(it.value(), spec)) {
-                qMailLog(Messaging) << "Unable to service request to retrieve messages for account:" << it.key();
-                return false;
-            } else if (spec != QMailRetrievalAction::Flags) {
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                                ? source->retrieveMessages(it.value(), spec, action)
+                                : source->retrieveMessages(it.value(), spec));
+
+            if (success) {
                 // This account is now retrieving
                 if (!_retrievalAccountIds.contains(it.key())) {
                     _retrievalAccountIds.insert(it.key());
                 }
+            } else {
+                qWarning() << "Unable to service request to retrieve messages for account:" << it.key() << "with spec" << spec;
+                return false;
             }
         } else {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), it.key());
@@ -1282,12 +1332,16 @@ bool ServiceHandler::dispatchRetrieveMessagePart(quint64 action, const QByteArra
     deserialize(data, accountId, partLocation);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->retrieveMessagePart(partLocation)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve part for message:" << partLocation.containingMessageId();
-            return false;
-        } else {
-            // This account is now retrieving
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->retrieveMessagePart(partLocation, action)
+            : source->retrieveMessagePart(partLocation));
+
+        if (success) {
+           // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve part for message:" << partLocation.containingMessageId();
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1317,12 +1371,16 @@ bool ServiceHandler::dispatchRetrieveMessageRange(quint64 action, const QByteArr
     deserialize(data, accountId, messageId, minimum);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->retrieveMessageRange(messageId, minimum)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve range:" << minimum << "for message:" << messageId;
-            return false;
-        } else {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->retrieveMessageRange(messageId, minimum, action)
+            : source->retrieveMessageRange(messageId, minimum));
+
+        if (success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve range:" << minimum << "for message:" << messageId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1352,12 +1410,17 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(quint64 action, const QByt
     deserialize(data, accountId, partLocation, minimum);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->retrieveMessagePartRange(partLocation, minimum)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve range:" << minimum << "for part in message:" << partLocation.containingMessageId();
-            return false;
-        } else {
+
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->retrieveMessagePartRange(partLocation, minimum, action)
+            : source->retrieveMessagePartRange(partLocation, minimum));
+
+        if (!success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve range:" << minimum << "for part in message:" << partLocation.containingMessageId();
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1383,13 +1446,17 @@ bool ServiceHandler::dispatchRetrieveAll(quint64 action, const QByteArray &data)
 
     deserialize(data, accountId);
 
-    if (QMailMessageSource *source = accountSource(accountId)){
-        if (!source->retrieveAll(accountId)) {
-            qMailLog(Messaging) << "Unable to service request to retrieve all messages for account:" << accountId;
-            return false;
-        } else {
+    if (QMailMessageSource *source = accountSource(accountId)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->retrieveAll(accountId, action)
+            : source->retrieveAll(accountId));
+
+        if (success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve all messages for account:" << accountId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1416,8 +1483,12 @@ bool ServiceHandler::dispatchExportUpdates(quint64 action, const QByteArray &dat
     deserialize(data, accountId);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->exportUpdates(accountId)) {
-            qMailLog(Messaging) << "Unable to service request to export updates for account:" << accountId;
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->exportUpdates(accountId, action)
+            : source->exportUpdates(accountId));
+
+        if (!success) {
+            qWarning() << "Unable to service request to export updates for account:" << accountId;
             return false;
         }
     } else {
@@ -1445,12 +1516,17 @@ bool ServiceHandler::dispatchSynchronize(quint64 action, const QByteArray &data)
     deserialize(data, accountId);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->synchronize(accountId)) {
-            qMailLog(Messaging) << "Unable to service request to synchronize account:" << accountId;
-            return false;
-        } else {
+
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->exportUpdates(accountId, action)
+            : source->exportUpdates(accountId));
+
+        if (success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to synchronize account:" << accountId;
+            return false;
         }
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
@@ -1494,7 +1570,7 @@ bool ServiceHandler::dispatchDiscardMessages(quint64 action, const QByteArray &d
 
     // Just delete all these messages
     if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
-        qMailLog(Messaging) << "Unable to service request to discard messages";
+        qWarning() << "Unable to service request to discard messages";
 
         reportFailure(action, QMailServiceAction::Status::ErrEnqueueFailed, tr("Unable to discard messages"));
         return false;
@@ -1514,8 +1590,12 @@ bool ServiceHandler::dispatchDeleteMessages(quint64 action, const QByteArray &da
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
-            if (!source->deleteMessages(it.value())) {
-                qMailLog(Messaging) << "Unable to service request to delete messages for account:" << it.key();
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                ? source->deleteMessages(it.value(), action)
+                : source->deleteMessages(it.value()));
+
+            if (!success) {
+                qWarning() << "Unable to service request to delete messages for account:" << it.key();
                 return false;
             }
         } else {
@@ -1564,8 +1644,13 @@ bool ServiceHandler::dispatchCopyMessages(quint64 action, const QByteArray &data
     } else {
         QMailAccountId accountId(*accountIds.begin());
         if (QMailMessageSource *source = accountSource(accountId)) {
-            if (!source->copyMessages(messageIds, destination)) {
-                qMailLog(Messaging) << "Unable to service request to copy messages to folder:" << destination << "for account:" << accountId;
+
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                ? source->copyMessages(messageIds, destination, action)
+                : source->copyMessages(messageIds, destination));
+
+            if (!success) {
+                qWarning() << "Unable to service request to copy messages to folder:" << destination << "for account:" << accountId;
                 return false;
             }
         } else {
@@ -1600,7 +1685,7 @@ bool ServiceHandler::dispatchCopyToLocal(quint64 action, const QByteArray &data)
         message.setParentFolderId(destination);
 
         if (!QMailStore::instance()->addMessage(&message)) {
-            qMailLog(Messaging) << "Unable to service request to copy messages to folder:" << destination << "for account:" << message.parentAccountId();
+            qWarning() << "Unable to service request to copy messages to folder:" << destination << "for account:" << message.parentAccountId();
 
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to copy messages for account"), message.parentAccountId());
             return false;
@@ -1634,10 +1719,15 @@ bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data
     deserialize(data, messageLists, destination);
 
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
-    for ( ; it != end; ++it) {
+    for ( ; it != end; ++it) {       
         if (QMailMessageSource *source = accountSource(it.key())) {
-            if (!source->moveMessages(it.value(), destination)) {
-                qMailLog(Messaging) << "Unable to service request to move messages to folder:" << destination << "for account:" << it.key();
+
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                ? source->moveMessages(it.value(), destination, action)
+                : source->moveMessages(it.value(), destination));
+
+            if (!success) {
+                qWarning() << "Unable to service request to move messages to folder:" << destination << "for account:" << it.key();
                 return false;
             }
         } else {
@@ -1673,8 +1763,12 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
-            if (!source->flagMessages(it.value(), setMask, unsetMask)) {
-                qMailLog(Messaging) << "Unable to service request to flag messages for account:" << it.key();
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                ? source->flagMessages(it.value(), setMask, unsetMask, action)
+                : source->flagMessages(it.value(), setMask, unsetMask));
+
+            if (!success) {
+                qWarning() << "Unable to service request to flag messages for account:" << it.key();
                 return false;
             }
         } else {
@@ -1707,10 +1801,13 @@ bool ServiceHandler::dispatchCreateFolder(quint64 action, const QByteArray &data
     deserialize(data, name, accountId, parentId);
 
     if(QMailMessageSource *source = accountSource(accountId)) {
-        if(source->createFolder(name, accountId, parentId)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->createFolder(name, accountId, parentId, action)
+            : source->createFolder(name, accountId, parentId));
+        if (success) {
             return true;
         } else {
-            qMailLog(Messaging) << "Unable to service request to create folder for account:" << accountId;
+            qWarning() << "Unable to service request to create folder for account:" << accountId;
             return false;
         }
 
@@ -1740,10 +1837,13 @@ bool ServiceHandler::dispatchRenameFolder(quint64 action, const QByteArray &data
     deserialize(data, folderId, newFolderName);
 
     if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
-        if(source->renameFolder(folderId, newFolderName)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->renameFolder(folderId, newFolderName, action)
+            : source->renameFolder(folderId, newFolderName));
+        if (success) {
             return true;
         } else {
-            qMailLog(Messaging) << "Unable to service request to rename folder id:" << folderId;
+            qWarning() << "Unable to service request to rename folder id:" << folderId;
             return false;
         }
 
@@ -1775,7 +1875,7 @@ bool ServiceHandler::dispatchDeleteFolder(quint64 action, const QByteArray &data
         if(source->deleteFolder(folderId)) {
             return true;
         } else {
-            qMailLog(Messaging) << "Unable to service request to delete folder id:" << folderId;
+            qWarning() << "Unable to service request to delete folder id:" << folderId;
             return false;
         }
     } else {
@@ -1798,7 +1898,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
         }
     } else {
         // Find the messages that match the filter criteria
-        QMailMessageIdList searchIds = QMailStore::instance()->queryMessages(filter, sort);
+        QMailMessageIdList searchIds(QMailStore::instance()->queryMessages(filter, sort));
 
         // Schedule this search
         mSearches.append(MessageSearch(action, searchIds, bodyText));
@@ -1819,12 +1919,15 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
+            bool success(sourceService.value(source)->usesConcurrentActions()
+                ? source->searchMessages(filter, bodyText, sort, action)
+                : source->searchMessages(filter, bodyText, sort));
             //only dispatch to appropriate account
-            if (source->searchMessages(filter, bodyText, sort)) {
+            if (success) {
                 sentSearch = true; //we've at least sent one
             } else {
                 //do it locally instead
-                qMailLog(Messaging) << "Unable to do remote search, doing it locally instead";
+                qWarning() << "Unable to do remote search, doing it locally instead";
                 mSearches.append(MessageSearch(action, QMailStore::instance()->queryMessages(filter, sort), bodyText));
                 QTimer::singleShot(0, this, SLOT(continueSearch()));
             }
@@ -1836,52 +1939,21 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
     return sentSearch;
 }
 
-void ServiceHandler::cancelSearch(quint64 action)
+
+void ServiceHandler::cancelLocalSearch(quint64 action) // cancel local search
 {
-    QSet<QMailAccountId> accounts(sourceMap.keys().toSet());
-
-    QSet<QMailMessageService*> sources(sourceServiceSet(accounts));
-    if (!sources.isEmpty()) {
-        enqueueRequest(action, serialize(accounts), sources, &ServiceHandler::dispatchCancelSearch, &ServiceHandler::searchCompleted, CancelSearchRequestType);
-    }
-
     QList<MessageSearch>::iterator it = mSearches.begin(), end = mSearches.end();
     for ( ; it != end; ++it) {
         if ((*it).action() == action) {
-            bool currentSearch(it == mSearches.begin());
-
-            if (currentSearch && !mMatchingIds.isEmpty())
+            if (!mMatchingIds.isEmpty())
                 emit matchingMessageIds(action, mMatchingIds);
 
             emit searchCompleted(action);
 
             mSearches.erase(it);
-
-            if (currentSearch) {
-                // Tell the sources to stop searching also
-                cancelTransfer(action);
-            }
             return;
         }
     }
-}
-
-bool ServiceHandler::dispatchCancelSearch(quint64 action, const QByteArray &data)
-{
-    QSet<QMailAccountId> accounts;
-
-    deserialize(data, accounts);
-
-    foreach (const QMailAccountId &accountId, accounts) {
-        if (QMailMessageSource *source = accountSource(accountId)) {
-            source->cancelSearch();
-        } else {
-            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
-            return false;
-        }
-    }
-
-    return true;
 }
 
 void ServiceHandler::shutdown()
@@ -1902,6 +1974,85 @@ void ServiceHandler::listActions()
     emit actionsListed(list);
 }
 
+// concurrent actions
+void ServiceHandler::statusChanged(const QMailServiceAction::Status s, quint64 a)
+{
+    emit statusChanged(a, s);
+}
+
+void ServiceHandler::availabilityChanged(bool b, quint64 a)
+{
+    emit availabilityChanged(a, b);
+}
+
+void ServiceHandler::connectivityChanged(QMailServiceAction::Connectivity c, quint64 a)
+{
+    emit connectivityChanged(a, c);
+}
+
+void ServiceHandler::activityChanged(QMailServiceAction::Activity act, quint64 a)
+{
+    emit activityChanged(a, act);
+}
+
+void ServiceHandler::progressChanged(uint p, uint t, quint64 a)
+{
+    emit progressChanged(a, p, t);
+}
+
+void ServiceHandler::actionCompleted(bool b, quint64 a)
+{
+    emit actionCompleted(b, a);
+}
+
+void ServiceHandler::messagesTransmitted(const QMailMessageIdList& ml, quint64 a)
+{
+    emit messagesTransmitted(a, ml);
+}
+
+void ServiceHandler::messagesFailedTransmission(const QMailMessageIdList& ml, QMailServiceAction::Status::ErrorCode err, quint64 a)
+{
+    emit messagesFailedTransmission(a, ml, err);
+}
+
+void ServiceHandler::messagesDeleted(const QMailMessageIdList& ml, quint64 a)
+{
+    emit messagesDeleted(a, ml);
+}
+
+void ServiceHandler::messagesCopied(const QMailMessageIdList& ml, quint64 a)
+{
+    emit messagesCopied(a, ml);
+}
+
+void ServiceHandler::messagesMoved(const QMailMessageIdList& ml, quint64 a)
+{
+    emit messagesMoved(a, ml);
+}
+
+void ServiceHandler::messagesFlagged(const QMailMessageIdList& ml, quint64 a)
+{
+    emit messagesFlagged(a, ml);
+}
+
+void ServiceHandler::messagesPrepared(const QMailMessageIdList& ml, quint64 a)
+{
+    Q_UNUSED(ml);
+    Q_UNUSED(a);
+}
+
+void ServiceHandler::matchingMessageIds(const QMailMessageIdList& ml, quint64 a)
+{
+    emit matchingMessageIds(a, ml);
+}
+
+void ServiceHandler::protocolResponse(const QString &response, const QVariant &data, quint64 a)
+{
+    emit protocolResponse(a, response, data);
+}
+
+// end concurrent actions
+
 void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data)
 {
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
@@ -1921,8 +2072,11 @@ bool ServiceHandler::dispatchProtocolRequest(quint64 action, const QByteArray &d
     deserialize(data, accountId, request, requestData);
 
     if (QMailMessageSource *source = accountSource(accountId)) {
-        if (!source->protocolRequest(accountId, request, requestData)) {
-            qMailLog(Messaging) << "Unable to service request to forward protocol-specific request to account:" << accountId;
+        bool success(sourceService.value(source)->usesConcurrentActions()
+                     ? source->protocolRequest(accountId, request, requestData, action)
+                     : source->protocolRequest(accountId, request, requestData));
+        if (!success) {
+            qWarning() << "Unable to service request to forward protocol-specific request to account:" << accountId;
             return false;
         }
     } else {
@@ -2063,7 +2217,7 @@ void ServiceHandler::actionCompleted(bool success)
                         if (!QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true) ||
                             !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false))
                         {
-                            qMailLog(Messaging) << "Unable to flag messages:" << mSentIds;
+                            qWarning() << "Unable to flag messages:" << mSentIds;
                         }
 
                         enqueueRequest(newLocalActionId(),
@@ -2187,27 +2341,6 @@ void ServiceHandler::continueSearch()
             }
         } else {
             QTimer::singleShot(0, this, SLOT(continueSearch()));
-        }
-    }
-}
-
-void ServiceHandler::finaliseSearch(quint64 action)
-{
-    if (mSearches.isEmpty()) {
-        qWarning() << "Remote search complete but none pending!" << action;
-    } else {
-        MessageSearch &currentSearch(mSearches.first());
-
-        if (currentSearch.action() != action) {
-            qWarning() << "Remote search complete but not current!" << action;
-        } else {
-            if (currentSearch.isEmpty()) {
-                // This search is now finished
-                emit searchCompleted(currentSearch.action());
-                mSearches.removeFirst();
-                if (!mSearches.isEmpty())
-                    QTimer::singleShot(0, this, SLOT(continueSearch()));
-            }
         }
     }
 }

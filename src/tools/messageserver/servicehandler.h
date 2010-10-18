@@ -85,7 +85,7 @@ public slots:
     void deleteFolder(quint64 action, const QMailFolderId &folderId);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void cancelSearch(quint64 action);
+    void cancelLocalSearch(quint64 action);
     void shutdown();
     void listActions();
     void protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data);
@@ -129,30 +129,44 @@ signals:
 
 private slots:
     void statusChanged(const QMailServiceAction::Status);
+    void statusChanged(const QMailServiceAction::Status, quint64);
     void availabilityChanged(bool);
+    void availabilityChanged(bool, quint64);
     void connectivityChanged(QMailServiceAction::Connectivity);
+    void connectivityChanged(QMailServiceAction::Connectivity, quint64);
     void activityChanged(QMailServiceAction::Activity);
+    void activityChanged(QMailServiceAction::Activity, quint64);
     void progressChanged(uint, uint );
+    void progressChanged(uint, uint, quint64);
     void actionCompleted(bool);
+    void actionCompleted(bool, quint64);
 
     void messagesTransmitted(const QMailMessageIdList&);
+    void messagesTransmitted(const QMailMessageIdList&, quint64);
     void messagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
+    void messagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode, quint64);
 
     void messagesDeleted(const QMailMessageIdList&);
+    void messagesDeleted(const QMailMessageIdList& , quint64);
     void messagesCopied(const QMailMessageIdList&);
+    void messagesCopied(const QMailMessageIdList&, quint64);
     void messagesMoved(const QMailMessageIdList&);
+    void messagesMoved(const QMailMessageIdList&, quint64);
     void messagesFlagged(const QMailMessageIdList&);
+    void messagesFlagged(const QMailMessageIdList&, quint64);
     void messagesPrepared(const QMailMessageIdList&);
+    void messagesPrepared(const QMailMessageIdList&, quint64);
     void matchingMessageIds(const QMailMessageIdList&);
+    void matchingMessageIds(const QMailMessageIdList&, quint64);
 
     void protocolResponse(const QString &response, const QVariant &data);
+    void protocolResponse(const QString &response, const QVariant &data, quint64);
 
     void accountsAdded(const QMailAccountIdList &);
     void accountsUpdated(const QMailAccountIdList &);
     void accountsRemoved(const QMailAccountIdList &);
 
     void continueSearch();
-    void finaliseSearch(quint64 action);
 
     void dispatchRequest();
 
@@ -220,7 +234,6 @@ private:
     bool dispatchDeleteFolder(quint64 action, const QByteArray &data);
     bool dispatchRenameFolder(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
-    bool dispatchCancelSearch(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 
     void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(), const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(), const QMailMessageId& = QMailMessageId());
