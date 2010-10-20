@@ -435,12 +435,13 @@ void ImapStrategyContextBase::operationCompleted()
     QMailMessageBuffer::instance()->flush();
 
     // Update the status on any folders we modified
-    foreach (const QMailFolderId &folderId, _modifiedFolders) {
-        QMailFolder folder(folderId);
+    for (QSet<QMailFolderId>::iterator it(_modifiedFolders.begin()) ; it != _modifiedFolders.end(); it = _modifiedFolders.erase(it))
+    {
+        QMailFolder folder(*it);
         _client->updateFolderCountStatus(&folder);
 
         if (!QMailStore::instance()->updateFolder(&folder)) {
-            qWarning() << "Unable to update folder for account:" << _client->_config.id();
+            qWarning() << "Unable to update folder " << *it << " for account:" << _client->_config.id();
         }
     }
 
