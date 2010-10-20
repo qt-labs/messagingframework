@@ -393,6 +393,8 @@ public:
     void setInResponseTo(const QMailMessageId &id);
     void setResponseType(QMailMessage::ResponseType type);
 
+    void setPreview(const QString &s);
+
     uint indicativeSize() const;
 
     bool dataModified() const;
@@ -438,6 +440,7 @@ public:
 
     QMailMessageId _responseId;
     QMailMessage::ResponseType _responseType;
+    QString _preview;
 
     mutable Maybe< QMap<QString, QString> > _customFields;
     bool _customFieldsModified;

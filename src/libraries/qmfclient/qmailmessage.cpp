@@ -5245,6 +5245,11 @@ void QMailMessageMetaDataPrivate::setResponseType(QMailMessageMetaData::Response
     updateMember(_responseType, type);
 }
 
+void QMailMessageMetaDataPrivate::setPreview(const QString &s)
+{
+    updateMember(_preview, s);
+}
+
 uint QMailMessageMetaDataPrivate::indicativeSize() const
 {
     uint size = (_size / QMailMessageBodyPrivate::IndicativeSizeUnit);
@@ -5365,6 +5370,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << customFields();
     stream << _customFieldsModified;
     stream << _dirty;
+    stream << _preview;
 }
 
 template <typename Stream> 
@@ -5405,7 +5411,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     _customFields = customFields;
     stream >> _customFieldsModified;
     stream >> _dirty;
-
+    stream >> _preview;
 }
 
 
@@ -6232,8 +6238,7 @@ void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType ty
 */  
 QString QMailMessageMetaData::preview() const
 {
-    //TODO implement this
-    return QString();
+    return impl(this)->_preview;
 }
 
 /*!
@@ -6243,8 +6248,7 @@ QString QMailMessageMetaData::preview() const
 */
 void QMailMessageMetaData::setPreview(const QString &s)
 {
-    //TODO implement this
-    Q_UNUSED(s)
+    impl(this)->setPreview(s);
 }
 
 /*!
