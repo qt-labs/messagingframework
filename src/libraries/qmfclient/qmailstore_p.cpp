@@ -324,6 +324,8 @@ public:
     QVariant inResponseTo() const { return _data.inResponseTo().toULongLong(); }
 
     QVariant responseType() const { return static_cast<int>(_data.responseType()); }
+
+    QVariant preview() const { return _data.preview(); }
 };
 
 // Class to extract QMailMessageMetaData properties from QVariant object
@@ -376,6 +378,8 @@ public:
     QString listId() const { return QMailStorePrivate::extractValue<QString>(_value); }
 
     QString rfcId() const { return QMailStorePrivate::extractValue<QString>(_value); }
+
+    QString preview() const { return QMailStorePrivate::extractValue<QString>(_value); }
 };
 
 
@@ -407,6 +411,7 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::RestoreFolderId, "restorefolderid");
     map.insert(QMailMessageKey::ListId, "listid");
     map.insert(QMailMessageKey::RfcId, "rfcid");
+    map.insert(QMailMessageKey::Preview, "preview");
     return map;
 }
 
@@ -892,6 +897,8 @@ public:
 
     QString rfcId() const { return value<QString>(QMailMessageKey::RfcId); }
 
+    QString preview() const { return value<QString>(QMailMessageKey::Preview); }
+
 private:
     int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
     {
@@ -988,6 +995,8 @@ public:
     QVariantList restoreFolderId() const { return idValues<QMailFolderKey>(); }
 
     QVariantList rfcId() const { return stringValues(); }
+
+    QVariantList preview() const { return stringValues(); }
 };
 
 template<>
@@ -1104,6 +1113,9 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
     case QMailMessageKey::RfcId:
         values += extractor.rfcId();
         break;
+
+    case QMailMessageKey::Preview:
+        values += extractor.preview();
     }
 }
 
@@ -1718,6 +1730,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
         case QMailMessageKey::ResponseType:
         case QMailMessageKey::ListId:
         case QMailMessageKey::RfcId:
+        case QMailMessageKey::Preview:
             q << expression;
             break;
         }
@@ -2086,7 +2099,8 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
                                            QMailMessageKey::CopyServerUid |
                                            QMailMessageKey::RestoreFolderId |
                                            QMailMessageKey::ListId |
-                                           QMailMessageKey::RfcId;
+                                           QMailMessageKey::RfcId |
+                                           QMailMessageKey::Preview;
     return p;
 }
 
@@ -2193,7 +2207,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 105)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 111)
+                                            << tableInfo("mailmessages", 112)
                                             << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
@@ -2719,17 +2733,25 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
             case QMailMessageKey::ResponseType:
                 metaData->setResponseType(messageRecord.responseType());
                 break;
+
             case QMailMessageKey::CopyServerUid:
                 metaData->setCopyServerUid(messageRecord.copyServerUid());
                 break;
-        case QMailMessageKey::RestoreFolderId:
+
+            case QMailMessageKey::RestoreFolderId:
                 metaData->setRestoreFolderId(messageRecord.restoreFolderId());
                 break;
-        case QMailMessageKey::ListId:
+
+            case QMailMessageKey::ListId:
                 metaData->setListId(messageRecord.listId());
                 break;
-        case QMailMessageKey::RfcId:
+
+            case QMailMessageKey::RfcId:
                 metaData->setRfcId(messageRecord.rfcId());
+                break;
+
+            case QMailMessageKey::Preview:
+                metaData->setPreview(messageRecord.preview());
                 break;
         }
     }
@@ -2969,6 +2991,10 @@ QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties&
             case QMailMessageKey::RfcId:
                 values.append(extractor.rfcId());
                 break;
+
+            case QMailMessageKey::Preview:
+                values.append(extractor.preview());
+                break;
         }
     }
 
@@ -3075,15 +3101,23 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
             case QMailMessageKey::CopyServerUid:
                 metaData.setCopyServerUid(extractor.copyServerUid());
                 break;
+
             case QMailMessageKey::RestoreFolderId:
                 metaData.setRestoreFolderId((extractor.restoreFolderId()));
                 break;
+
             case QMailMessageKey::ListId:
                 metaData.setListId(extractor.listId());
                 break;
+
             case QMailMessageKey::RfcId:
                 metaData.setRfcId(extractor.rfcId());
                 break;
+
+            case QMailMessageKey::Preview:
+                metaData.setPreview(extractor.preview());
+                break;
+
             default:
                 valueConsumed = false;
                 break;
@@ -4626,6 +4660,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         values.insert("restorefolderid", metaData->restoreFolderId().toULongLong());
         values.insert("listid", metaData->listId());
         values.insert("rfcID", metaData->rfcId());
+        values.insert("preview", metaData->preview());
 
         const QStringList &list(values.keys());
         QString columns = list.join(",");

@@ -21,6 +21,7 @@ CREATE TABLE mailmessages (
     restorefolderid INTEGER NOT NULL DEFAULT 0,
     listid VARCHAR NOT NULL DEFAULT '',
     rfcid VARCHAR NOT NULL DEFAULT '',
+    preview VARCHAR NOT NULL DEFAULT '',
     FOREIGN KEY (parentfolderid) REFERENCES mailfolders(id),
     FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id));
 

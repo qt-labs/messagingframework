@@ -91,7 +91,8 @@ public:
         CopyServerUid = (1 << 21),
         RestoreFolderId = (1 << 22),
         ListId = (1 << 23),
-        RfcId = (1 << 24)
+        RfcId = (1 << 24),
+        Preview = (1 << 25)
     };
     Q_DECLARE_FLAGS(Properties,Property)
 

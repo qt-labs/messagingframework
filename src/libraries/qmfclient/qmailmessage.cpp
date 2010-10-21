@@ -5087,6 +5087,7 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
       _listId(""),
       _rfcId(""),
       _responseType(QMailMessage::NoResponse),
+      _preview(""),
       _customFieldsModified(false),
       _dirty(false)
 {
