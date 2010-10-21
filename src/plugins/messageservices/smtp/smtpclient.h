@@ -107,6 +107,7 @@ private:
 
     void operationFailed(int code, const QString &text);
     void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
+    void stopTransferring();
 
 private:
     enum TransferStatus

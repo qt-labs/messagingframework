@@ -98,6 +98,7 @@ static QByteArray localName()
 
 SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
+    , messageLength(0)
     , sending(false)
     , transport(0)
     , temporaryFile(0)
@@ -108,8 +109,7 @@ SmtpClient::SmtpClient(QObject* parent)
 SmtpClient::~SmtpClient()
 {
     delete transport;
-    if (temporaryFile)
-        delete temporaryFile;
+    delete temporaryFile;
 }
 
 QMailMessage::MessageType SmtpClient::messageType() const
@@ -604,14 +604,18 @@ void SmtpClient::nextAction(const QString &response)
     case Body:  
     {
         if (responseCode == 354) {
+
+            if (temporaryFile) {
+                operationFailed(QMailServiceAction::Status::ErrInvalidData, tr("Received response 354 while sending."));
+                break;
+            }
+
             linestart = true;
             sendingId = mailItr->mail.id();
             sentLength = 0;
 
             // Set the message's message ID
             mailItr->mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
-
-            Q_ASSERT(temporaryFile == 0);
 
             // Buffer the message to a temporary file.
             QString tempPath = QMail::tempPath();
@@ -769,6 +773,7 @@ void SmtpClient::messageProcessed(const QMailMessageId &id)
 void SmtpClient::operationFailed(int code, const QString &text)
 {
     if (sending) {
+        stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text << flush;
         
@@ -784,6 +789,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
     if (sending) {
+        stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text << flush;
         
@@ -830,15 +836,9 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 
     // No more data to send
     if (temporaryFile->atEnd()) {
-        if (transport->isEncrypted())
-            disconnect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
-        else
-            disconnect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
-        delete temporaryFile;
-        temporaryFile = 0;
-        transport->stream().writeRawData("\r\n.\r\n", 5);
+        stopTransferring();
         qMailLog(SMTP) << "Body: sent:" << messageLength << "bytes";
-        status = Sent;
+        transport->stream().writeRawData("\r\n.\r\n", 5);
         return;
     }
 
@@ -847,7 +847,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     qint64 bytes = temporaryFile->read(buffer, SENDING_BUFFER_SIZE);
     
     QByteArray dotstuffed;
-    dotstuffed.reserve(SENDING_BUFFER_SIZE + 10); // more than 10 stuffs and array will be autoresized
+    dotstuffed.reserve(SENDING_BUFFER_SIZE + 10); // more than 10 stuffs and array may be autoresized
     for (int i = 0; i < bytes; ++i) {
         if (linestart && (buffer[i] == '.')) {
             dotstuffed.append("..");
@@ -866,3 +866,16 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
 }
 
+void SmtpClient::stopTransferring()
+{
+    if (temporaryFile)
+    {
+        if (transport->isEncrypted())
+            disconnect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+        else
+            disconnect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+        delete temporaryFile;
+        temporaryFile = 0;
+        status = Sent;
+    }
+}
