@@ -1,5 +1,7 @@
 Latest Changes
 ---------------
+201042
+  * Fixes: QTSOL-166 Make disable and enabling accounts robust
 
 201041
   * Fixes: NB#167708 IMAP: Message(s) marked as read/unread on Server not updated on Client 
