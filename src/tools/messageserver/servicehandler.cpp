@@ -589,22 +589,22 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids, QM
     }
 }
 
-void ServiceHandler::reregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text)
+void ServiceHandler::reregisterAccountServices(QMailAccountIdList ids, QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
     // Remove and re-create these accounts' services
-    QMailAccountIdList reregisterIds;
+
     QMap<QPair<QMailAccountId, QString>,  QPointer<QMailMessageService> >::iterator it = serviceMap.begin();
     while (it != serviceMap.end()) {
         if (ids.contains(it.key().first)) {
            QMailMessageService *service = it.value();
-           if (service && service->requiresReregistration()) {
-               reregisterIds.append(it.key().first);
+           if (service && !service->requiresReregistration()) {
+               ids.removeAll(it.key().first);
            }
         }
         ++it;
     }
-    deregisterAccountServices(reregisterIds, code, text);
-    registerAccountServices(reregisterIds);
+    deregisterAccountServices(ids, code, text);
+    registerAccountServices(ids);
 }
 
 void ServiceHandler::accountsAdded(const QMailAccountIdList &ids)

@@ -181,7 +181,7 @@ private:
     void deregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text);
     void removeServiceFromActions(QMailMessageService *removeService);
 
-    void reregisterAccountServices(const QMailAccountIdList &ids, QMailServiceAction::Status::ErrorCode code, const QString &text);
+    void reregisterAccountServices(QMailAccountIdList ids, QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void registerAccountSource(const QMailAccountId &accountId, QMailMessageSource *source, QMailMessageService *service);
     QMailMessageSource *accountSource(const QMailAccountId &accountId) const;
