@@ -5073,6 +5073,7 @@ static quint64 importantElsewhereFlag = 0;
 static quint64 importantFlag = 0;
 static quint64 highPriorityFlag = 0;
 static quint64 lowPriorityFlag = 0;
+static quint64 calendarInvitationFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -5128,6 +5129,7 @@ void QMailMessageMetaDataPrivate::initializeFlags()
         importantFlag = registerFlag("Important");
         highPriorityFlag = registerFlag("HighPriority");
         lowPriorityFlag = registerFlag("LowPriority");
+        calendarInvitationFlag = registerFlag("CalendarInvitation");
     }
 }
 #endif
@@ -5750,6 +5752,7 @@ const quint64 &QMailMessageMetaData::ImportantElsewhere = importantElsewhereFlag
 const quint64 &QMailMessageMetaData::Important = importantFlag;
 const quint64 &QMailMessageMetaData::HighPriority = highPriorityFlag;
 const quint64 &QMailMessageMetaData::LowPriority = lowPriorityFlag;
+const quint64 &QMailMessageMetaData::CalendarInvitation = calendarInvitationFlag;
 
 /*!
     Constructs an empty message meta data object.
