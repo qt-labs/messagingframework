@@ -58,6 +58,7 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
 {
     setObjectName(name);
     setWindowTitle("Edit account");
+    enabledCheckbox->setChecked(true);
 
     QTabWidget* tabWidget = new QTabWidget;
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
