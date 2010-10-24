@@ -263,6 +263,14 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
         return false;
     }
 
+    QMailMessage msg(partLocation.containingMessageId());
+    if (!msg.contains(partLocation) || msg.partAt(partLocation).contentAvailable()) {
+        // Already retrieved (or invalid)
+        if (!_unavailable)
+            QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        return true;
+    }
+    
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
     _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
     _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation);
@@ -286,6 +294,14 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
     if (!minimum) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No minimum specified"));
         return false;
+    }
+    
+    QMailMessage msg(messageId);
+    if (msg.contentAvailable()) {
+        // Already retrieved
+        if (!_unavailable)
+            QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        return true;
     }
     
     QMailMessagePart::Location location;
@@ -319,6 +335,14 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
         return false;
     }
 
+    QMailMessage msg(partLocation.containingMessageId());
+    if (!msg.contains(partLocation) || msg.partAt(partLocation).contentAvailable()) {
+        // Already retrieved (or invalid)
+        if (!_unavailable)
+            QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        return true;
+    }
+    
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
     _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
     _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
