@@ -829,7 +829,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 }
 
 /*!
-    This method is obselete. It is no longer invoked. QMailMessageService::cancelOperation is used instead.
+    This method is obsolete. It is no longer invoked. QMailMessageService::cancelOperation is used instead.
 
     Previously was invoked by the message server to initiate a request to stop remote searching.
 

@@ -765,7 +765,7 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 /*!
     Requests that the MessageServer cancel any pending search operations for the request identified by \a action.
 
-    This method is obselete, use cancel transfer instead.
+    This method is obsolete, use cancel transfer instead.
 */
 void QMailMessageServer::cancelSearch(quint64 action)
 {
