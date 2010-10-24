@@ -1,6 +1,7 @@
 Latest Changes
 ---------------
 201042
+  * Fixes: NB#194441 QMailRetrievalAction::retrieveMessagePart() does not check for already downloaded parts
   * Fixes: QTSOL-166 Make disable and enabling accounts robust
 
 201041
