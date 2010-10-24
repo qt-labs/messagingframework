@@ -48,6 +48,7 @@
 
 #include <QTemporaryFile>
 #include <QFileInfo>
+#include <QUrl>
 #include <qmaillog.h>
 #include <longstring_p.h>
 #include <qmailaccountconfiguration.h>
@@ -2874,7 +2875,6 @@ void ImapProtocol::sendDiscoverDelimiter()
 void ImapProtocol::sendGenUrlAuth(const QMailMessagePart::Location &location, bool bodyOnly, const QString &mechanism)
 {
     QString dataUrl(url(location, true, bodyOnly));
-    dataUrl.append(";urlauth=anonymous");
 
     _fsm->genUrlAuthState.setUrl(dataUrl, mechanism);
     _fsm->setState(&_fsm->genUrlAuthState);
@@ -3310,19 +3310,19 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
 
     QMailMessageId id(location.containingMessageId());
     QMailMessageMetaData metaData(id);
+    QMailAccountConfiguration config(metaData.parentAccountId());
+    ImapConfiguration imapCfg(config);
 
     if (metaData.parentAccountId().isValid()) {
         if (absolute) {
             result.append("imap://");
 
-            QMailAccountConfiguration config(metaData.parentAccountId());
-            ImapConfiguration imapCfg(config);
-
             if (!imapCfg.mailUserName().isEmpty()) {
-                result.append(imapCfg.mailUserName()).append('@');
+                result.append(QUrl::toPercentEncoding(imapCfg.mailUserName()));
+                result.append('@');
             }
-
             result.append(imapCfg.mailServer());
+            
             if (imapCfg.mailPort() != 143) {
                 result.append(':').append(QString::number(imapCfg.mailPort()));
             }
@@ -3342,6 +3342,13 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
             result.append("/;section=").append(location.toString(false));
         } else if (bodyOnly) {
             result.append("/;section=TEXT");
+        }
+        
+        if (!imapCfg.mailUserName().isEmpty()) {
+            result.append(";urlauth=submit+");
+            result.append(QUrl::toPercentEncoding(imapCfg.mailUserName()));
+        } else {
+            qWarning() << "url auth, no user name found";
         }
     }
 
