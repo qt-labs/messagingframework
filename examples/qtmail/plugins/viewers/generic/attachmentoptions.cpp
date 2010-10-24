@@ -505,7 +505,7 @@ void AttachmentOptions::viewAttachment()
             display.setImage(_decodedData);
             display.exec();
         }
-    } else if (_part->contentType().content() == "message/rfc822") {
+    } else if (_part->contentType().content().toLower() == "message/rfc822") {
         QDialog display(this);
         QGridLayout *gl = new QGridLayout(&display);
         GenericViewer *viewer = new GenericViewer(&display);
