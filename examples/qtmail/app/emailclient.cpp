@@ -1301,6 +1301,12 @@ void EmailClient::storageActionCompleted()
 
 void EmailClient::getNewMail()
 {
+    if (isRetrieving()) {
+        QString msg(tr("Cannot synchronize account because a synchronize operation is currently in progress"));
+        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
+        return;
+    }
+    
     // Try to preserve the message list selection
     selectedMessageId = messageListView()->current();
     if (!selectedMessageId.isValid())
