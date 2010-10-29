@@ -1436,17 +1436,8 @@ QMailSearchActionPrivate::~QMailSearchActionPrivate()
 
 void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
-    if ((spec == QMailSearchAction::Remote) || !bodyText.isEmpty()) {
-        _server->searchMessages(newAction(), filter, bodyText, spec, sort);
-    } else {
-        // An action value is necessary, even if we're not communicating with the server
-        newAction();
-
-        // This search can be performed in the local process
-        _matchingIds = QMailStore::instance()->queryMessages(filter, sort);
-        setActivity(QMailServiceAction::InProgress);
-        QTimer::singleShot(0, this, SLOT(finaliseSearch()));
-    }
+    _server->searchMessages(newAction(), filter, bodyText, spec, sort);
+    emitChanges();
 }
 
 void QMailSearchActionPrivate::cancelOperation()
