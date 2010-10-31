@@ -7909,6 +7909,16 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
     return; // Normal Priority
 }
 
+static void setMessagePreview(QMailMessage *mail) 
+{
+    const int maxPreviewLength = 120;
+    QMailMessagePartContainer *plainTextContainer = mail->findPlainTextContainer();
+    if (plainTextContainer) {
+        mail->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
+    }
+    return;
+}
+
 /*! \internal */
 QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 {
@@ -7929,6 +7939,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     }
 
     setMessagePriorityFromHeaderFields(&mail);
+    setMessagePreview(&mail);
     return mail;
 }
 
