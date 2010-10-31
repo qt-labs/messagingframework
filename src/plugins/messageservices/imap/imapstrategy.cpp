@@ -2659,7 +2659,7 @@ bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
 {
     if (!_readUids.isEmpty()) {
         QStringList msgUidl = _readUids.mid(0, batchSize);
-        QString msg = QObject::tr("Marking message %1 read").arg(msgUidl.first());
+        QString msg = QObject::tr("Marking message as read");
         foreach(QString uid, msgUidl) {
             _readUids.removeAll(uid);
             _storedReadUids.append(uid);
@@ -2678,7 +2678,7 @@ bool ImapSynchronizeAllStrategy::setNextNotSeen(ImapStrategyContextBase *context
 {
     if (!_unreadUids.isEmpty()) {
         QStringList msgUidl = _unreadUids.mid(0, batchSize);
-        QString msg = QObject::tr("Marking message %1 unread").arg(msgUidl.first());
+        QString msg = QObject::tr("Marking message as unread");
         foreach(QString uid, msgUidl) {
             _unreadUids.removeAll(uid);
             _storedUnreadUids.append(uid);
@@ -2697,7 +2697,7 @@ bool ImapSynchronizeAllStrategy::setNextImportant(ImapStrategyContextBase *conte
 {
     if (!_importantUids.isEmpty()) {
         QStringList msgUidl = _importantUids.mid(0, batchSize);
-        QString msg = QObject::tr("Marking message %1 important").arg(msgUidl.first());
+        QString msg = QObject::tr("Marking message as important");
         foreach(QString uid, msgUidl) {
             _importantUids.removeAll(uid);
             _storedImportantUids.append(uid);
@@ -2716,7 +2716,7 @@ bool ImapSynchronizeAllStrategy::setNextNotImportant(ImapStrategyContextBase *co
 {
     if (!_unimportantUids.isEmpty()) {
         QStringList msgUidl = _unimportantUids.mid(0, batchSize);
-        QString msg = QObject::tr("Marking message %1 unimportant").arg(msgUidl.first());
+        QString msg = QObject::tr("Marking message as unimportant");
         foreach(QString uid, msgUidl) {
             _unimportantUids.removeAll(uid);
             _storedUnimportantUids.append(uid);
@@ -2737,7 +2737,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
     if (imapCfg.canDeleteMail()) {
         if (!_removedUids.isEmpty()) {
             QStringList msgUidl = _removedUids.mid(0, batchSize);
-            QString msg = QObject::tr("Deleting message %1").arg(msgUidl.first());
+            QString msg = QObject::tr("Deleting message");
             foreach(QString uid, msgUidl) {
                 _removedUids.removeAll(uid);
                 _storedRemovedUids.append(uid);
