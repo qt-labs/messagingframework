@@ -3390,29 +3390,6 @@ QByteArray ImapProtocol::quoteString(const QByteArray& input)
     return quoteString(QString(input)).toAscii();
 }
 
-namespace {
-
-struct AttachmentDetector 
-{
-    bool operator()(const QMailMessagePart &part)
-    {
-        // Return false if there is an attachment to stop traversal
-        QMailMessageContentDisposition disposition(part.contentDisposition());
-        return (disposition.isNull() || (disposition.type() != QMailMessageContentDisposition::Attachment));
-    }
-};
-
-bool hasAttachments(const QMailMessagePartContainer &partContainer)
-{
-    if (partContainer.headerFieldText("X-MS-Has-Attach").toLower() == "yes")
-        return true;
-    
-    // If foreachPart yields false there is at least one attachment
-    return (partContainer.foreachPart(AttachmentDetector()) == false);
-}
-
-}
-
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
 {
     QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
@@ -3424,7 +3401,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
             mail.setSize( size );
 
             // See if any of the parts are attachments
-            if (hasAttachments(mail)) {
+            if (mail.hasAttachments()) {
                 mail.setStatus( QMailMessage::HasAttachments, true );
             }
         }

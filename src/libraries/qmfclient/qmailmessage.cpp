@@ -806,6 +806,527 @@ QDataStream& operator<<(QDataStream& out, const DataString& dataString)
 }
 
 
+
+/* Utility namespaces for message part detection, finding and building */
+
+const static char* textContentType = "text";
+const static char* plainContentSubtype = "plain";
+const static char* htmlContentSubtype = "html";
+
+namespace findBody
+{
+    struct Context
+    {
+        Context() : found (0), alternateParent (0), contentType (textContentType) {}
+        QMailMessagePartContainer *found;
+        QMailMessagePartContainer *alternateParent;
+        QByteArray contentType;
+        QByteArray contentSubtype;
+    };
+
+    // Forward declaration
+    bool inMultipartRelated(const QMailMessagePartContainer &container, Context &ctx);
+
+    bool inMultipartNone(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        if (!ctx.contentType.isEmpty()
+        && ctx.contentType != container.contentType().type().toLower())
+            return false;
+        if (!ctx.contentSubtype.isEmpty()
+        && ctx.contentSubtype != container.contentType().subType().toLower())
+            return false;
+        ctx.found = const_cast<QMailMessagePartContainer*>(&container);
+        return true;
+    }
+
+    bool inMultipartNone(const QMailMessagePart &part, Context &ctx)
+    {
+        if (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment)
+            return false;
+
+        if (!ctx.contentType.isEmpty()
+        && ctx.contentType != part.contentType().type().toLower())
+            return false;
+
+        if (!ctx.contentSubtype.isEmpty()
+        && ctx.contentSubtype != part.contentType().subType().toLower())
+            return false;
+
+        ctx.found = const_cast<QMailMessagePart*> (&part);
+        return true;
+    }
+
+
+    bool inMultipartAlternative(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        for (int i = (int)container.partCount() - 1; i >= 0; i--) {
+            const QMailMessagePart &part = container.partAt(i);
+            switch (part.multipartType()) {
+            case QMailMessagePart::MultipartNone:
+                if (inMultipartNone(part, ctx)) {
+                    ctx.alternateParent = const_cast<QMailMessagePartContainer*> (&container);
+                    return true;
+                }
+                break;
+            case QMailMessagePart::MultipartRelated:
+                if (inMultipartRelated(part, ctx)) {
+                    ctx.alternateParent = const_cast<QMailMessagePartContainer*> (&container);
+                    return true;
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
+        return false;
+    }
+
+    bool inMultipartRelated(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        for (int i = (int)container.partCount() - 1; i >= 0; i--) {
+            const QMailMessagePart &part = container.partAt(i);
+            switch (part.multipartType()) {
+            case QMailMessagePart::MultipartNone:
+                if (inMultipartNone(part, ctx))
+                    return true;
+                break;
+            case QMailMessagePart::MultipartAlternative:
+                if (inMultipartAlternative(part, ctx))
+                    return true;
+                break;
+            default:
+                qWarning() << Q_FUNC_INFO << "Multipart related message with unexpected subpart";
+                break;
+            }
+        }
+        return false;
+    }
+
+    bool inMultipartSigned(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        // Multipart/signed defined in RFC 1847, Section 2.1
+
+        if (container.partCount() < 1)
+            return false;
+
+        const QMailMessagePart &part = container.partAt(0);
+
+        switch (part.multipartType()) {
+
+        case QMailMessagePart::MultipartNone:
+            return inMultipartNone(part, ctx);
+
+        case QMailMessagePart::MultipartAlternative:
+            return inMultipartAlternative(part, ctx);
+
+        case QMailMessagePart::MultipartRelated:
+            return inMultipartRelated(part, ctx);
+
+        case QMailMessagePart::MultipartSigned:
+            return inMultipartSigned(part, ctx);
+
+        default:
+            qWarning() << Q_FUNC_INFO << "Multipart signed message with unexpected multipart type";
+            return false;
+        }
+    }
+
+    bool inMultipartMixed(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        for (uint i = 0; i < container.partCount(); i++) {
+            const QMailMessagePart &part = container.partAt(i);
+            if (part.referenceType() == QMailMessagePartFwd::MessageReference)
+                continue;
+            switch (part.multipartType()) {
+            case QMailMessagePart::MultipartNone:
+                if (inMultipartNone(part, ctx))
+                    return true;
+                break;
+            case QMailMessagePart::MultipartAlternative:
+                if (inMultipartAlternative(part, ctx))
+                    return true;
+                break;
+            case QMailMessagePart::MultipartRelated:
+                if (inMultipartRelated(part, ctx))
+                    return true;
+                break;
+            case QMailMessagePart::MultipartSigned:
+                if (inMultipartSigned(part, ctx))
+                    return true;
+                break;
+            default:
+                qWarning() << Q_FUNC_INFO << "Multipart mixed message with unexpected multipart type";
+                break;
+            }
+            // we haven't found what we looking for..
+        }
+        return false;
+    }
+
+    bool inPartContainer(const QMailMessagePartContainer &container, Context &ctx)
+    {
+        if (container.multipartType() == QMailMessagePart::MultipartNone)
+            return inMultipartNone(container, ctx);
+        if (container.multipartType() == QMailMessagePart::MultipartMixed)
+            return inMultipartMixed(container, ctx);
+        if (container.multipartType() == QMailMessagePart::MultipartRelated)
+            return inMultipartRelated(container, ctx);
+        if (container.multipartType() == QMailMessagePart::MultipartAlternative)
+            return inMultipartAlternative(container, ctx);
+        if (container.multipartType() == QMailMessagePart::MultipartSigned)
+            return inMultipartSigned(container, ctx);
+
+        // Not implemented multipartTypes ...
+        qWarning() << Q_FUNC_INFO
+                   << "Found unhandled multipart type:"
+                   << container.contentType().toString();
+
+        return false;
+    }
+
+}
+
+namespace findAttachments
+{
+    class AttachmentFindStrategy;
+
+    typedef QList<findAttachments::AttachmentFindStrategy*> AttachmentFindStrategies;
+    typedef QList<QMailMessagePart::Location> Locations;
+
+    class AttachmentFindStrategy
+    {
+    public:
+        // Returns true if the strategy was applyable to this kind of container
+        virtual bool findAttachmentLocations(const QMailMessagePartContainer& container,
+                                             Locations* found,
+                                             bool *hasAttachments) const = 0;
+    protected:
+        AttachmentFindStrategy() { }
+    };
+
+    class DefaultAttachmentFindStrategy : public AttachmentFindStrategy
+    {
+    public:
+        DefaultAttachmentFindStrategy() { }
+        bool findAttachmentLocations(const QMailMessagePartContainer& container,
+                                     Locations* found,
+                                     bool* hasAttachments) const
+        {
+            if (hasAttachments) {
+                *hasAttachments = false;
+            }
+            if (found) {
+                found->clear();
+            }
+            if (container.multipartType() == QMailMessagePart::MultipartMixed)
+                inMultipartMixed(container, found, hasAttachments);
+
+            // In any case, the default strategy wins, even if there are no attachments
+            return true;
+        }
+    private:
+        void inMultipartNone(const QMailMessagePart &part,
+                             Locations* found,
+                             bool* hasAttachments) const
+        {
+            QMailMessageContentType contentType = part.contentType();
+
+            // Attached messages are considered as attachments even if content disposition
+            // is inline instead of attachment, but only if they aren't text/plain nor text/html
+            if (!part.contentDisposition().isNull()
+                && (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment
+                    || (part.contentDisposition().type() == QMailMessageContentDisposition::Inline
+                        && !(contentType.type().toLower() == "text"
+                             && contentType.subType().toLower() == "plain")
+                        && !(contentType.type().toLower() == "text"
+                             && contentType.subType().toLower() == "html")))) {
+                if (found) {
+                    *found << part.location();
+                }
+                if (hasAttachments) {
+                    *hasAttachments = true;
+                }
+            }
+        }
+
+        void inMultipartMixed(const QMailMessagePartContainer &container,
+                              Locations* found,
+                              bool* hasAttachments) const
+        {
+            for (uint i = 0; i < container.partCount(); i++) {
+                const QMailMessagePart &part = container.partAt(i);
+                switch (part.multipartType()) {
+                case QMailMessagePart::MultipartNone:
+                    inMultipartNone(part, found, hasAttachments);
+                    break;
+                default:
+                    break;
+                }
+
+                // We only want to know if there are attachments, not to really
+                // get them, and we've already found one, so we break the loop
+                if (!found && hasAttachments && *hasAttachments) {
+                    break;
+                }
+            }
+        }
+    };
+
+    class TnefAttachmentFindStrategy : public AttachmentFindStrategy
+    {
+    public:
+        TnefAttachmentFindStrategy() { }
+        bool findAttachmentLocations(const QMailMessagePartContainer& container,
+                                     Locations* found,
+                                     bool* hasAttachments) const
+        {
+            if (hasAttachments) {
+                *hasAttachments = false;
+            }
+            if (found) {
+                found->clear();
+            }
+
+            if (container.headerFieldText("X-MS-Has-Attach").toLower() == "yes") {
+                if (hasAttachments) {
+                    *hasAttachments = true;
+
+                    // We only want to know if there are attachments, not to really
+                    // get them, and we've already know that there are, we return
+                    if (!found) {
+                        return true;
+                    }
+                }
+            } else {
+                return false;
+            }
+
+            bool firstPartIsTextPlain = false;
+            for (uint i = 0; i < container.partCount(); i++) {
+                const QMailMessagePart &part = container.partAt(i);
+
+                // Skip parts of the message body
+                const QString contentType = QString(part.contentType().content()).toLower();
+                switch (i) {
+                case 0:
+                    if (contentType == QString("text/plain")) {
+                        firstPartIsTextPlain = true;
+                        continue;
+                    } else if (contentType == QString("text/html")) {
+                        continue;
+                    }
+                    break;
+                case 1:
+                    if (firstPartIsTextPlain && contentType == QString("text/html")) {
+                        continue;
+                    }
+                    break;
+                default:
+                    break;
+                }
+
+                // Mark not skipped single parts as attachments
+                if (part.multipartType() == QMailMessagePart::MultipartNone) {
+                    if (found) {
+                        *found << part.location();
+                    }
+                }
+            }
+
+            return true;
+        }
+    };
+
+    static const AttachmentFindStrategies allStrategies(AttachmentFindStrategies()
+                                                  << new findAttachments::TnefAttachmentFindStrategy()
+                                                  << new findAttachments::DefaultAttachmentFindStrategy());
+}
+
+namespace attachments
+{
+    static int maxDepth = 8;
+
+    // Remove unnecessary parts of a message:
+    // * empty containers,
+    // * containers with a single child
+    int cleanup(QMailMessagePartContainer &message, int depth)
+    {
+        // TODO: Check this cleanup code to see if it is applicable
+        // to all the multipart types.
+        if (message.multipartType() == QMailMessagePart::MultipartSigned ||
+            message.multipartType() == QMailMessagePart::MultipartEncrypted) {
+            // Do not mess with signed/encrypted containers.
+            return -2;
+        }
+        if (depth > maxDepth) {
+            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            return -1;
+        }
+        int diff;
+        int end = message.partCount();
+        for (int i = 0; i < end; ++i) {
+            QMailMessagePartContainer &part = message.partAt(i);
+            switch (cleanup(part, depth + 1)) {
+            case 1:
+                // This part has only one child. Adopt the child and remove from the part.
+                message.appendPart(part.partAt(0));
+                part.clearParts();
+                // Fall through.
+            case 0:
+                // This part is empty. Let's remove it.
+                message.removePartAt(i);
+                --i;
+                diff = end - message.partCount();
+                end -= diff;
+                break;
+            default:
+                break;
+            }
+        }
+        return message.partCount();
+    }
+
+    QMailMessagePart* partAt(QMailMessagePartContainer& container, QMailMessagePart::Location& location)
+    {
+        uint n = container.partCount();
+        for (uint i = 0; i<n; i++) {
+            QMailMessagePart& part = container.partAt(i);
+            if (part.location().toString(false) == location.toString(false)) {
+                return &part;
+            }
+        }
+        return 0;
+    }
+
+    void removeAttachments(QMailMessagePartContainer &message, int depth)
+    {
+        if (message.multipartType() == QMailMessagePart::MultipartSigned ||
+            message.multipartType() == QMailMessagePart::MultipartEncrypted) {
+            // Do not mess with signed/encrypted containers.
+            return;
+        }
+        if (depth > maxDepth) {
+            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            return;
+        }
+        int diff;
+        int end = message.partCount();
+
+        // Locations change when messages are removed, so better have a
+        // list of pointers to the parts
+        QList<QMailMessagePart*> attachmentParts;
+        foreach (QMailMessagePart::Location location, message.findAttachmentLocations()) {
+            QMailMessagePart *part = partAt(message, location);
+            if (part) {
+                attachmentParts << part;
+            } else {
+                qWarning() << Q_FUNC_INFO << "location"
+                           << location.toString(true)
+                           << "not found in container";
+            }
+        }
+
+        for (int i = 0; i < end; ++i) {
+            QMailMessagePart& part = message.partAt(i);
+            if (attachmentParts.contains(&part)) {
+                // Remove it.
+                message.removePartAt(i);
+                --i;
+                // This is just a safeguard in case multiple parts are removed
+                // starting at i.
+                diff = end - message.partCount();
+                end -= diff;
+            } else {
+                removeAttachments(part, depth + 1);
+            }
+        }
+    }
+
+    void removeAll(QMailMessagePartContainer &message)
+    {
+        removeAttachments(message, 0);
+        // Not sure if "cleaning up" is a good idea.
+        //cleanup(message, 0);
+    }
+
+    void convertMessageToMultipart(QMailMessagePartContainer &message)
+    {
+        if (message.multipartType() != QMailMessagePartContainer::MultipartMixed) {
+            // Convert the message to multipart/mixed.
+            QMailMessagePart subpart;
+            if (message.multipartType() == QMailMessagePartContainer::MultipartNone) {
+                // Move the body
+                subpart.setBody(message.body());
+            } else {
+                // Copy relevant data of the message to subpart
+                subpart.setMultipartType(message.multipartType());
+                for (uint i=0; i < message.partCount(); i++) {
+                    subpart.appendPart(message.partAt(i));
+                }
+            }
+            message.clearParts();
+            message.setMultipartType(QMailMessagePartContainer::MultipartMixed);
+            message.appendPart(subpart);
+        }
+    }
+
+    void addAttachmentsToMultipart(QMailMessagePartContainer *container, const QStringList &attachmentPaths)
+    {
+        Q_ASSERT (NULL != container);
+        Q_ASSERT (QMailMessagePartContainer::MultipartMixed == container->multipartType());
+
+        bool addedSome = false;
+
+        foreach (const QString &attachmentPath, attachmentPaths) {
+
+            const QFileInfo fi(attachmentPath);
+            if (!fi.isFile()) {
+                qWarning() << Q_FUNC_INFO << ":" << attachmentPath << "is not regular file. Cannot attach.";
+                continue;
+            }
+
+            const QString &partName = fi.fileName();
+            const QString &filePath = fi.absoluteFilePath();
+
+            QMailMessageContentType attach_type(QMail::mimeTypeFromFileName(attachmentPath).toLatin1());
+            attach_type.setName(partName.toLatin1());
+
+            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
+            disposition.setFilename(partName.toLatin1());
+            disposition.setSize(fi.size());
+            container->appendPart(QMailMessagePart::fromFile(filePath, disposition,
+                                                             attach_type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding));
+            addedSome = true;
+        }
+
+        QMailMessage* message = dynamic_cast<QMailMessage*>(container);
+        if (message && addedSome) {
+            message->setStatus(QMailMessage::HasAttachments, true);
+        }
+    }
+
+    void addAttachmentsToMultipart(QMailMessagePartContainer *container,
+                                   const QList<const QMailMessagePart*> attachmentParts)
+    {
+        Q_ASSERT (NULL != container);
+        Q_ASSERT (QMailMessagePartContainer::MultipartMixed == container->multipartType());
+
+        bool addedSome = false;
+
+        foreach (const QMailMessagePart *attachmentPart, attachmentParts) {
+            Q_ASSERT(NULL != attachmentPart);
+            container->appendPart(*attachmentPart);
+            addedSome = true;
+        }
+
+        QMailMessage* message = dynamic_cast<QMailMessage*>(container);
+        if (message && addedSome) {
+            message->setStatus(QMailMessage::HasAttachments, true);
+        }
+    }
+}
+
 /* QMailMessageHeaderField */
 
 QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate()
@@ -4080,6 +4601,201 @@ QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartConta
     return QByteArray();
 }
 
+/*!
+  Searches for the container that encapsulates the plain text body of this container, returning a pointer to it or 0 if it's not present.
+ */
+QMailMessagePartContainer* QMailMessagePartContainer::findPlainTextContainer() const
+{
+    QMailMessagePartContainer* result;
+    findBody::Context ctx;
+
+    ctx.contentSubtype = plainContentSubtype;
+
+    if (findBody::inPartContainer(*this, ctx)) {
+        result = ctx.found;
+    } else {
+        result = 0;
+    }
+    return result;
+}
+
+/*!
+  Searches for the container that encapsulates the HTML body of this container, returning a pointer to it or 0 if it's not present.
+ */
+QMailMessagePartContainer* QMailMessagePartContainer::findHtmlContainer() const
+{
+    QMailMessagePartContainer* result;
+    findBody::Context ctx;
+    ctx.contentSubtype = htmlContentSubtype;
+
+    if (findBody::inPartContainer(*this, ctx)) {
+        result = ctx.found;
+    } else {
+        result = 0;
+    }
+    return result;
+}
+
+/*!
+  Returns the locations of the attachments in a container, dealing with a range of different message structures and exceptions.
+ */
+QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocations() const
+{
+    QList<QMailMessagePart::Location> found;
+
+    foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
+        if (strategy->findAttachmentLocations(*this, &found, 0)) {
+            break;
+        } else {
+            found = QList<QMailMessagePart::Location>();
+        }
+    }
+    return found;
+}
+
+/*!
+  Returns true if a plain text body is present in the container.
+ */
+bool QMailMessagePartContainer::hasPlainTextBody() const
+{
+    return (findPlainTextContainer() != 0);
+}
+
+/*!
+  Returns true if an HTML body is present in the container.
+ */
+bool QMailMessagePartContainer::hasHtmlBody() const
+{
+    return (findHtmlContainer() != 0);
+}
+
+/*!
+  Returns true if attachments are present in the container, dealing with a range of different message structures and exceptions.
+ */
+bool QMailMessagePartContainer::hasAttachments() const
+{
+    bool hasAttachments;
+    foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
+        if (strategy->findAttachmentLocations(*this, 0, &hasAttachments)) {
+            return hasAttachments;
+        }
+    }
+    return false;
+}
+
+/*!
+  Sets the plain text body of a container.
+ */
+void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTextBody)
+{
+    findBody::Context ctx;
+    if (findBody::inPartContainer(*this, ctx)) {
+        if (0 == ctx.alternateParent) {
+            ctx.found->setBody(plainTextBody);
+        } else {
+            ctx.alternateParent->clearParts();
+            ctx.alternateParent->setMultipartType(QMailMessagePartContainer::MultipartNone);
+            ctx.alternateParent->setBody(plainTextBody);
+        }
+    } else {
+        if (partCount() == 0) {
+            setMultipartType(QMailMessagePartContainer::MultipartNone);
+            setBody(plainTextBody);
+        } else {
+            setMultipartType(QMailMessagePartContainer::MultipartMixed);
+            QMailMessagePart plainTextPart;
+            plainTextPart.setBody(plainTextBody);
+            prependPart(plainTextPart);
+        }
+    }
+}
+
+/*!
+  Simultaneously sets the html and plain text body of a container.
+ */
+void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
+{
+    QMailMessagePartContainer *bodyContainer = 0;
+
+    findBody::Context ctx;
+    if (findBody::inPartContainer(*this, ctx)) {
+        Q_ASSERT (0 != ctx.found);
+        if (0 != ctx.alternateParent) {
+            bodyContainer = ctx.alternateParent;
+        } else {
+            bodyContainer = ctx.found;
+        }
+        bodyContainer->clearParts();
+    } else {
+        if (multipartType() == QMailMessagePartContainer::MultipartNone) {
+            bodyContainer = this;
+        } else {
+            // No body part found and message is not MultipartNone? Should not happen!
+            Q_ASSERT (false);
+        }
+    }
+    Q_ASSERT (NULL != bodyContainer);
+    bodyContainer->setMultipartType(QMailMessagePartContainer::MultipartAlternative);
+
+    QMailMessagePart plainTextBodyPart;
+    plainTextBodyPart.setBody(plainTextBody);
+    bodyContainer->appendPart(plainTextBodyPart);
+
+    QMailMessagePart htmlBodyPart;
+    htmlBodyPart.setBody(htmlBody);
+    bodyContainer->appendPart(htmlBodyPart);
+}
+
+/*!
+  Sets the attachment list of a container.
+  \param attachments String paths to local files to be attached
+ */
+void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
+{
+    attachments::removeAll(*this);
+
+    if (attachments.isEmpty()) {
+        return;
+    }
+
+    // Add attachments
+    if (multipartType() != QMailMessagePartContainer::MultipartMixed) {
+        // Convert the message to multipart/mixed.
+        QMailMessagePart subpart;
+        if (multipartType() == QMailMessagePartContainer::MultipartNone) {
+            // Move the body
+            subpart.setBody(body());
+        } else {
+            // Copy relevant data of the message to subpart
+            subpart.setMultipartType(multipartType());
+            for (uint i=0; i < partCount(); i++) {
+                subpart.appendPart(partAt(i));
+            }
+        }
+        clearParts();
+        setMultipartType(QMailMessagePartContainer::MultipartMixed);
+        appendPart(subpart);
+    }
+    attachments::addAttachmentsToMultipart(this, attachments);
+}
+
+/*!
+  Sets the attachment list of a container.
+  \param attachments List of already created message parts representing the attachments (might come from other existing messages)
+ */
+void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePart*> attachments)
+{
+    attachments::removeAll(*this);
+
+    if (attachments.isEmpty()) {
+        return;
+    }
+
+    // Add attachments
+    attachments::convertMessageToMultipart(*this);
+    attachments::addAttachmentsToMultipart(this, attachments);
+}
+
 /*! \internal */
 uint QMailMessagePartContainer::indicativeSize() const
 {
@@ -4337,7 +5053,7 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 /*!
     Creates an empty part location object.
 */
-QMailMessagePart::Location::Location()
+QMailMessagePartContainer::Location::Location()
     : d(new QMailMessagePart::LocationPrivate)
 {
 }
@@ -4347,7 +5063,7 @@ QMailMessagePart::Location::Location()
 
     \sa toString()
 */
-QMailMessagePart::Location::Location(const QString& description)
+QMailMessagePartContainer::Location::Location(const QString& description)
     : d(new QMailMessagePart::LocationPrivate)
 {
     QString indices;
@@ -4372,7 +5088,7 @@ QMailMessagePart::Location::Location(const QString& description)
 /*!
     Creates a part location object containing a copy of \a other.
 */
-QMailMessagePart::Location::Location(const Location& other)
+QMailMessagePartContainer::Location::Location(const Location& other)
     : d(new QMailMessagePart::LocationPrivate)
 {
     *this = other;
@@ -4381,7 +5097,7 @@ QMailMessagePart::Location::Location(const Location& other)
 /*!
     Creates a location object containing the location of \a part.
 */
-QMailMessagePart::Location::Location(const QMailMessagePart& part)
+QMailMessagePartContainer::Location::Location(const QMailMessagePart& part)
     : d(new QMailMessagePart::LocationPrivate)
 {
     const QMailMessagePartContainerPrivate* partImpl = part.impl<const QMailMessagePartContainerPrivate>();
@@ -4391,13 +5107,13 @@ QMailMessagePart::Location::Location(const QMailMessagePart& part)
 }
 
 /*! \internal */
-QMailMessagePart::Location::~Location()
+QMailMessagePartContainer::Location::~Location()
 {
     delete d;
 }
 
 /*! \internal */
-const QMailMessagePart::Location &QMailMessagePart::Location::operator=(const QMailMessagePart::Location &other)
+const QMailMessagePartContainer::Location &QMailMessagePartContainer::Location::operator=(const QMailMessagePartContainer::Location &other)
 {
     d->_messageId = other.d->_messageId;
     d->_indices = other.d->_indices;
@@ -4409,7 +5125,7 @@ const QMailMessagePart::Location &QMailMessagePart::Location::operator=(const QM
     Returns true if the location object contains the location of a valid message part.
     If \a extended is true, the location must also contain a valid message identifier.
 */
-bool QMailMessagePart::Location::isValid(bool extended) const
+bool QMailMessagePartContainer::Location::isValid(bool extended) const
 {
     return ((!extended || d->_messageId.isValid()) && !d->_indices.isEmpty());
 }
@@ -4417,7 +5133,7 @@ bool QMailMessagePart::Location::isValid(bool extended) const
 /*! 
     Returns the identifier of the message that contains the part with this location.
 */
-QMailMessageId QMailMessagePart::Location::containingMessageId() const
+QMailMessageId QMailMessagePartContainer::Location::containingMessageId() const
 {
     return d->_messageId;
 }
@@ -4425,7 +5141,7 @@ QMailMessageId QMailMessagePart::Location::containingMessageId() const
 /*! 
     Sets the identifier of the message that contains the part with this location to \a id.
 */
-void QMailMessagePart::Location::setContainingMessageId(const QMailMessageId &id)
+void QMailMessagePartContainer::Location::setContainingMessageId(const QMailMessageId &id)
 {
     d->_messageId = id;
 }
@@ -4434,7 +5150,7 @@ void QMailMessagePart::Location::setContainingMessageId(const QMailMessageId &id
     Returns a textual representation of the part location.
     If \a extended is true, the representation contains the identifier of the containing message.
 */
-QString QMailMessagePart::Location::toString(bool extended) const
+QString QMailMessagePartContainer::Location::toString(bool extended) const
 {
     QString result;
     if (extended)
@@ -4448,30 +5164,30 @@ QString QMailMessagePart::Location::toString(bool extended) const
 }
 
 /*! 
-    \fn QMailMessagePart::Location::serialize(Stream&) const
+    \fn QMailMessagePartContainer::Location::serialize(Stream&) const
     \internal 
 */
 template <typename Stream> 
-void QMailMessagePart::Location::serialize(Stream &stream) const
+void QMailMessagePartContainer::Location::serialize(Stream &stream) const
 {
     stream << d->_messageId;
     stream << d->_indices;
 }
 
-template void QMailMessagePart::Location::serialize(QDataStream &) const;
+template void QMailMessagePartContainer::Location::serialize(QDataStream &) const;
 
 /*! 
-    \fn QMailMessagePart::Location::deserialize(Stream&)
+    \fn QMailMessagePartContainer::Location::deserialize(Stream&)
     \internal 
 */
 template <typename Stream> 
-void QMailMessagePart::Location::deserialize(Stream &stream)
+void QMailMessagePartContainer::Location::deserialize(Stream &stream)
 {
     stream >> d->_messageId;
     stream >> d->_indices;
 }
 
-template void QMailMessagePart::Location::deserialize(QDataStream &);
+template void QMailMessagePartContainer::Location::deserialize(QDataStream &);
 
 /*!
     Constructs an empty message part object.

@@ -288,6 +288,37 @@ class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailM
 {
 public:
     typedef QMailMessagePartContainerPrivate ImplementationType;
+    class LocationPrivate;
+
+    class QMF_EXPORT Location
+    {
+    public:
+        Location();
+        Location(const QString& description);
+        Location(const Location& other);
+
+        ~Location();
+
+        const QMailMessagePartContainer::Location &operator=(const QMailMessagePartContainer::Location &other);
+
+        bool isValid(bool extended = true) const;
+
+        QMailMessageId containingMessageId() const;
+        void setContainingMessageId(const QMailMessageId &id);
+
+        QString toString(bool extended) const;
+
+        template <typename Stream> void serialize(Stream &stream) const;
+        template <typename Stream> void deserialize(Stream &stream);
+
+    private:
+        friend class QMailMessagePartContainerPrivate;
+        friend class QMailMessagePart;
+
+        Location(const QMailMessagePart& part);
+
+        LocationPrivate *d;
+    };
 
     // Parts management interface:
     MultipartType multipartType() const;
@@ -347,6 +378,17 @@ public:
     static MultipartType multipartTypeForName(const QByteArray &name);
     static QByteArray nameForMultipartType(MultipartType type);
 
+    QMailMessagePartContainer* findPlainTextContainer() const;
+    QMailMessagePartContainer* findHtmlContainer() const;
+    QList<QMailMessagePartContainer::Location> findAttachmentLocations() const;
+    bool hasPlainTextBody() const;
+    bool hasHtmlBody() const;
+    bool hasAttachments() const;
+    void setPlainTextBody(const QMailMessageBody& plainTextBody);
+    void setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody);
+    void setAttachments(const QStringList& attachments);
+    void setAttachments(const QList<const QMailMessagePart*> attachments);
+
 protected:
     template<typename Subclass>
     QMailMessagePartContainer(Subclass* p);
@@ -368,38 +410,6 @@ class QMF_EXPORT QMailMessagePart : public QMailMessagePartContainer, public QMa
 {
 public:
     typedef QMailMessagePartPrivate ImplementationType;
-
-    class LocationPrivate;
-
-    class QMF_EXPORT Location
-    {
-    public:
-        Location();
-        Location(const QString& description);
-        Location(const Location& other);
-
-        ~Location();
-
-        const QMailMessagePart::Location &operator=(const QMailMessagePart::Location &other);
-
-        bool isValid(bool extended = true) const;
-
-        QMailMessageId containingMessageId() const;
-        void setContainingMessageId(const QMailMessageId &id);
-
-        QString toString(bool extended) const;
-
-        template <typename Stream> void serialize(Stream &stream) const;
-        template <typename Stream> void deserialize(Stream &stream);
-
-    private:
-        friend class QMailMessagePartContainerPrivate;
-        friend class QMailMessagePart;
-
-        Location(const QMailMessagePart& part);
-
-        LocationPrivate *d;
-    };
 
     QMailMessagePart();
 
