@@ -134,6 +134,19 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 38. Remove unintentionally exported QMailId that should not have been included in the public API.
 
+39. Move Location inner class from QMailMessagePart to QMailMessagePartContainer
+
+    Added following functions to QMailMessagePartContainer:
+    'QMailMessagePartContainer* findPlainTextContainer() const'
+    'QMailMessagePartContainer* findHtmlContainer() const'
+    'QList<QMailMessagePartContainer::Location> findAttachmentLocations() const'
+    'bool hasPlainTextBody() const'
+    'bool hasHtmlBody() const'
+    'bool hasAttachments() const'
+    'void setPlainTextBody(const QMailMessageBody& plainTextBody)'
+    'void setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)'
+    'void setAttachments(const QStringList& attachments)'
+    'void setAttachments(const QList<const QMailMessagePart*> attachments)'
 
 
 *****************************************************************************
