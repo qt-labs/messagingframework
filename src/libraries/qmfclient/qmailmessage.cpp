@@ -3493,7 +3493,7 @@ void QMailMessageBody::deserialize(Stream &stream)
 }
 
 
-class QMailMessagePart::LocationPrivate
+class QMailMessagePartContainer::LocationPrivate
 {
 public:
     QMailMessageId _messageId;
@@ -5054,7 +5054,7 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
     Creates an empty part location object.
 */
 QMailMessagePartContainer::Location::Location()
-    : d(new QMailMessagePart::LocationPrivate)
+    : d(new QMailMessagePartContainer::LocationPrivate)
 {
 }
 
@@ -5064,7 +5064,7 @@ QMailMessagePartContainer::Location::Location()
     \sa toString()
 */
 QMailMessagePartContainer::Location::Location(const QString& description)
-    : d(new QMailMessagePart::LocationPrivate)
+    : d(new QMailMessagePartContainer::LocationPrivate)
 {
     QString indices;
 
@@ -5089,7 +5089,7 @@ QMailMessagePartContainer::Location::Location(const QString& description)
     Creates a part location object containing a copy of \a other.
 */
 QMailMessagePartContainer::Location::Location(const Location& other)
-    : d(new QMailMessagePart::LocationPrivate)
+    : d(new QMailMessagePartContainer::LocationPrivate)
 {
     *this = other;
 }
@@ -5098,7 +5098,7 @@ QMailMessagePartContainer::Location::Location(const Location& other)
     Creates a location object containing the location of \a part.
 */
 QMailMessagePartContainer::Location::Location(const QMailMessagePart& part)
-    : d(new QMailMessagePart::LocationPrivate)
+    : d(new QMailMessagePartContainer::LocationPrivate)
 {
     const QMailMessagePartContainerPrivate* partImpl = part.impl<const QMailMessagePartContainerPrivate>();
 
