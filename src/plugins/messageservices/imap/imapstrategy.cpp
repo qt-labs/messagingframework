@@ -3250,7 +3250,7 @@ static void markMessages(IntegerRegion region, quint64 flag, bool set, const QMa
     foreach(QString uid, region.toStringList()) {
         uidList.append(QString::number(folderId.toULongLong()) + UID_SEPARATOR + uid);
     }
-    QMailMessageKey uidKey(QMailMessageKey::serverUid(uidList));
+    QMailMessageKey uidKey(QMailMessageKey::serverUid(uidList) & QMailMessageKey::status(flag, set ? QMailDataComparator::Excludes : QMailDataComparator::Includes));
     if (!QMailStore::instance()->updateMessagesMetaData(uidKey, flag, set)) {
         qWarning() << "Unable to update message metadata for folder:" << folderId << "flag" << flag << "set" << set;
         *error = true;
