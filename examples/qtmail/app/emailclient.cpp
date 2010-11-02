@@ -1064,19 +1064,29 @@ void EmailClient::cancelOperation()
     retrievalAccountIds.clear();
 
     if (isSending()) {
-        m_transmitAction->cancelOperation();
+        if ((m_transmitAction->activity() == QMailServiceAction::InProgress)
+            || (m_transmitAction->activity() == QMailServiceAction::Pending)) {
+            m_transmitAction->cancelOperation();
+        }
         setSendingInProgress( false );
     }
     if (isRetrieving()) {
-        m_retrievalAction->cancelOperation();
+        if ((m_retrievalAction->activity() == QMailServiceAction::InProgress)
+            || (m_retrievalAction->activity() == QMailServiceAction::Pending)) {
+            m_retrievalAction->cancelOperation();
+        }
         setRetrievalInProgress( false );
     }
 
-    if (m_flagRetrievalAction && m_flagRetrievalAction->activity() == QMailServiceAction::InProgress) {
+    if (m_flagRetrievalAction 
+        && ((m_flagRetrievalAction->activity() == QMailServiceAction::InProgress)
+            || (m_flagRetrievalAction->activity() == QMailServiceAction::Pending))) {
         m_flagRetrievalAction->cancelOperation();
     }
 
-    if (m_exportAction && m_exportAction->activity() == QMailServiceAction::InProgress) {
+    if (m_exportAction 
+        && ((m_exportAction->activity() == QMailServiceAction::InProgress)
+            || (m_exportAction->activity() == QMailServiceAction::Pending))) {
         m_exportAction->cancelOperation();
     }
 }
@@ -1301,12 +1311,6 @@ void EmailClient::storageActionCompleted()
 
 void EmailClient::getNewMail()
 {
-    if (isRetrieving()) {
-        QString msg(tr("Cannot synchronize account because a synchronize operation is currently in progress"));
-        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
-        return;
-    }
-    
     // Try to preserve the message list selection
     selectedMessageId = messageListView()->current();
     if (!selectedMessageId.isValid())
@@ -1318,6 +1322,12 @@ void EmailClient::getNewMail()
 
 void EmailClient::getAllNewMail()
 {
+    if (isRetrieving()) {
+        QString msg(tr("Cannot synchronize accounts because a synchronize operation is currently in progress"));
+        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
+        return;
+    }
+    
     retrievalAccountIds.clear();
 
     QMailAccountKey retrieveKey(QMailAccountKey::status(QMailAccount::CanRetrieve, QMailDataComparator::Includes));
@@ -1330,6 +1340,12 @@ void EmailClient::getAllNewMail()
 
 void EmailClient::getAccountMail()
 {
+    if (isRetrieving()) {
+        QString msg(tr("Cannot synchronize account because a synchronize operation is currently in progress"));
+        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
+        return;
+    }
+    
     retrievalAccountIds.clear();
 
     if (const QAction* action = static_cast<const QAction*>(sender())) {
@@ -1450,7 +1466,7 @@ void EmailClient::receiveFailure(const QMailAccountId &accountId)
 
     // Try the next account if we're working through a set of accounts
     if (!retrievalAccountIds.isEmpty())
-        getNextNewMail();
+        QTimer::singleShot(0, this, SLOT(getNextNewMail()));
 
     Q_UNUSED(accountId)
 }
