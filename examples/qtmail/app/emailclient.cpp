@@ -1078,13 +1078,13 @@ void EmailClient::cancelOperation()
         setRetrievalInProgress( false );
     }
 
-    if (m_flagRetrievalAction 
+    if (m_flagRetrievalAction
         && ((m_flagRetrievalAction->activity() == QMailServiceAction::InProgress)
             || (m_flagRetrievalAction->activity() == QMailServiceAction::Pending))) {
         m_flagRetrievalAction->cancelOperation();
     }
 
-    if (m_exportAction 
+    if (m_exportAction
         && ((m_exportAction->activity() == QMailServiceAction::InProgress)
             || (m_exportAction->activity() == QMailServiceAction::Pending))) {
         m_exportAction->cancelOperation();
@@ -1327,7 +1327,7 @@ void EmailClient::getAllNewMail()
         QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
         return;
     }
-    
+
     retrievalAccountIds.clear();
 
     QMailAccountKey retrieveKey(QMailAccountKey::status(QMailAccount::CanRetrieve, QMailDataComparator::Includes));
@@ -1345,7 +1345,7 @@ void EmailClient::getAccountMail()
         QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
         return;
     }
-    
+
     retrievalAccountIds.clear();
 
     if (const QAction* action = static_cast<const QAction*>(sender())) {
