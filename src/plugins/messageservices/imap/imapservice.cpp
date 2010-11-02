@@ -149,6 +149,8 @@ public slots:
     void queueFlagsChangedCheck();
 
 private:
+    bool doDelete(const QMailMessageIdList & ids);
+
     virtual bool setStrategy(ImapStrategy *strategy, const char *signal = 0);
 
     virtual void appendStrategy(ImapStrategy *strategy, const char *signal = 0);
@@ -437,37 +439,55 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
 
 bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
 {
-    QMailMessageIdList messageIds;
-
     // If a server crash has occurred duplicate messages may exist in the store.
     // A duplicate message is one that refers to the same serverUid as another message in the same account & folder.
     // Ensure that when a duplicate message is deleted no message is deleted from the server.
-    QMailMessageIdList duplicateIds;
-    QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ServerUid);
+
+    QMailMessageKey::Properties props(QMailMessageKey::ServerUid);
+    QStringList serverUids;
+
     foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
-        QMailMessageKey uidKey(QMailMessageKey::serverUid(metaData.serverUid()));
-        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(_service->accountId()));
-        if (QMailStore::instance()->countMessages(accountKey & uidKey) != 1) {
-            duplicateIds.append(metaData.id());
-        } else {
-            messageIds.append(metaData.id());
-        }
+       serverUids.push_back(metaData.serverUid());
     }
-    if (!duplicateIds.isEmpty()) {
+    Q_ASSERT(serverUids.size() == ids.size());
+
+    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(_service->accountId()));
+    int matching(QMailStore::instance()->countMessages(QMailMessageKey::serverUid(serverUids, QMailDataComparator::Includes) & accountKey));
+    Q_ASSERT(matching >= ids.size());
+
+    if (matching == ids.size()) { // no dupes, lets go
+        return doDelete(ids);
+    } else {
+        QMailMessageIdList duplicateIds;
+        QMailMessageIdList singularIds;
+
+        for (int i(0) ; i < ids.size() ; ++i) {
+            if (QMailStore::instance()->countMessages(QMailMessageKey::serverUid(serverUids[i]) & accountKey) > 1) {
+                duplicateIds.push_back(ids[i]);
+            } else {
+                singularIds.push_back(ids[i]);
+            }
+        }
+        Q_ASSERT(!duplicateIds.empty());
+
         if (!QMailMessageSource::deleteMessages(duplicateIds)) {
             _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Could not delete messages"));
             return false;
         }
+
+        return doDelete(singularIds);
     }
-    
-    // Proceed with normal deletion for non-duplicate messages
+}
+
+bool ImapService::Source::doDelete(const QMailMessageIdList &ids)
+{
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
     if (imapCfg.canDeleteMail()) {
         // Delete the messages from the server
         _service->_client.strategyContext()->deleteMessagesStrategy.clearSelection();
         _service->_client.strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(true);
-        _service->_client.strategyContext()->deleteMessagesStrategy.selectedMailsAppend(messageIds);
+        _service->_client.strategyContext()->deleteMessagesStrategy.selectedMailsAppend(ids);
         appendStrategy(&_service->_client.strategyContext()->deleteMessagesStrategy, SIGNAL(messagesDeleted(QMailMessageIdList)));
         if(!_unavailable)
             return initiateStrategy();
@@ -475,7 +495,7 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &ids)
     }
 
     // Just delete the local copies
-    return QMailMessageSource::deleteMessages(messageIds);
+    return QMailMessageSource::deleteMessages(ids);
 }
 
 bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, const QMailFolderId &destinationId)
