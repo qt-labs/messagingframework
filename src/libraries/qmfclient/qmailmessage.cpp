@@ -7915,8 +7915,21 @@ static void setMessagePreview(QMailMessage *mail)
     QMailMessagePartContainer *plainTextContainer = mail->findPlainTextContainer();
     if (plainTextContainer) {
         mail->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
+        return;
     }
-    return;
+    QMailMessagePartContainer *htmlContainer = mail->findHtmlContainer();
+    if (htmlContainer) {
+        QString markup = htmlContainer->body().data();
+        markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
+        markup.remove(QRegExp("<(.)[^>]*>"));
+        markup.replace("&quot;", "\"");
+        markup.replace("&nbsp;", " ");
+        markup.replace("&amp;", "*");
+        markup.replace("&lt;", "<");
+        markup.replace("&gt;", "<");
+        mail->setPreview(markup.simplified().left(maxPreviewLength));
+        return;
+    }
 }
 
 /*! \internal */
