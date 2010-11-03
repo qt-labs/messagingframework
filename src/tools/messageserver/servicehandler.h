@@ -140,6 +140,7 @@ private slots:
     void progressChanged(uint, uint, quint64);
     void actionCompleted(bool);
     void actionCompleted(bool, quint64);
+    void actionCompleted(bool, QMailMessageService *, quint64);
 
     void messagesTransmitted(const QMailMessageIdList&);
     void messagesTransmitted(const QMailMessageIdList&, quint64);

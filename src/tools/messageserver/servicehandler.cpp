@@ -2000,9 +2000,98 @@ void ServiceHandler::progressChanged(uint p, uint t, quint64 a)
     emit progressChanged(a, p, t);
 }
 
-void ServiceHandler::actionCompleted(bool b, quint64 a)
+void ServiceHandler::actionCompleted(bool success, quint64 action)
 {
-    emit actionCompleted(b, a);
+   QMailMessageService *service = qobject_cast<QMailMessageService*>(sender());
+   Q_ASSERT(service);
+
+   actionCompleted(success, service, action);
+}
+
+void ServiceHandler::actionCompleted(bool success, QMailMessageService *service, quint64 action)
+{
+    QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
+    if (it != mActiveActions.end()) {
+        ActionData &data(it.value());
+
+        if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
+            if (accountSource(service->accountId())) {
+                // Mark these message as Sent
+                quint64 setMask(QMailMessage::Sent);
+                quint64 unsetMask(QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly);
+
+                QMailMessageKey idsKey(QMailMessageKey::id(mSentIds));
+
+                bool failed = QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true);
+                failed = QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false) || failed;
+
+                if (failed) {
+                    qWarning() << "Unable to flag messages:" << mSentIds;
+                }
+
+                enqueueRequest(newLocalActionId(),
+                    serialize(accountMessages(mSentIds), setMask, unsetMask),
+                    sourceServiceSet(service->accountId()),
+                    &ServiceHandler::dispatchFlagMessages,
+                    &ServiceHandler::storageActionCompleted,
+                    FlagMessagesRequestType);
+
+            }
+
+            mSentIds.clear();
+        }
+
+        QSet<QPointer<QMailMessageService> >::iterator sit = data.services.find(service);
+        if (sit != data.services.end()) {
+            // Remove this service from the set for the action
+            data.services.erase(sit);
+
+            // This account is no longer retrieving/transmitting
+            QMailAccountId accountId(service->accountId());
+            if (accountId.isValid()) {
+                if (data.completion == &ServiceHandler::retrievalCompleted) {
+                    setRetrievalInProgress(accountId, false);
+                } else if (data.completion == &ServiceHandler::transmissionCompleted) {
+                    setTransmissionInProgress(accountId, false);
+                }
+            }
+
+            if (success) {
+                if (data.services.isEmpty() && data.completion && (data.reported == false)) {
+                    // Report success
+                    emit (this->*data.completion)(action);
+                    data.reported = true;
+                }
+            } else {
+                // This action has failed - mark it so that it can't be reported as successful
+                data.reported = true;
+            }
+        }
+
+        if (data.services.isEmpty()) {
+            // This action is finished
+            mActiveActions.erase(it);
+            emit activityChanged(action, success ? QMailServiceAction::Successful : QMailServiceAction::Failed);
+        }
+    }
+
+    if (_outstandingRequests.contains(action)) {
+        _outstandingRequests.remove(action);
+
+        // Ensure this request is no longer in the file
+        _requestsFile.resize(0);
+        foreach (quint64 req, _outstandingRequests) {
+            QByteArray requestNumber(QByteArray::number(req));
+            _requestsFile.write(requestNumber.append('\n'));
+        }
+        _requestsFile.flush();
+    }
+
+    mServiceAction.remove(service);
+
+
+    // See if there are pending requests
+    QTimer::singleShot(0, this, SLOT(dispatchRequest()));
 }
 
 void ServiceHandler::messagesTransmitted(const QMailMessageIdList& ml, quint64 a)
@@ -2202,86 +2291,12 @@ void ServiceHandler::actionCompleted(bool success)
 {
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender())) {
         if (quint64 action = serviceAction(service)) {
-            QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
-            if (it != mActiveActions.end()) {
-                ActionData &data(it.value());
-
-                if (!mSentIds.isEmpty() && (data.completion == &ServiceHandler::transmissionCompleted)) {
-                    if (accountSource(service->accountId())) {
-                        // Mark these message as Sent
-                        quint64 setMask(QMailMessage::Sent);
-                        quint64 unsetMask((QMailMessage::Outbox | QMailMessage::Draft | QMailMessage::LocalOnly));
-
-                        QMailMessageKey idsKey(QMailMessageKey::id(mSentIds));
-
-                        if (!QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true) ||
-                            !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false))
-                        {
-                            qWarning() << "Unable to flag messages:" << mSentIds;
-                        }
-
-                        enqueueRequest(newLocalActionId(),
-                                       serialize(accountMessages(mSentIds), setMask, unsetMask),
-                                        sourceServiceSet(service->accountId()),
-                                        &ServiceHandler::dispatchFlagMessages,
-                                        &ServiceHandler::storageActionCompleted,
-                                        FlagMessagesRequestType);
-
-                    }
-
-                    mSentIds.clear();
-                }
-
-                QSet<QPointer<QMailMessageService> >::iterator sit = data.services.find(service);
-                if (sit != data.services.end()) {
-                    // Remove this service from the set for the action
-                    data.services.erase(sit);
-
-                    // This account is no longer retrieving/transmitting
-                    QMailAccountId accountId(service->accountId());
-                    if (accountId.isValid()) {
-                        if (data.completion == &ServiceHandler::retrievalCompleted) {
-                            setRetrievalInProgress(accountId, false);
-                        } else if (data.completion == &ServiceHandler::transmissionCompleted) {
-                            setTransmissionInProgress(accountId, false);
-                        } 
-                    }
-
-                    if (success) {
-                        if (data.services.isEmpty() && data.completion && (data.reported == false)) {
-                            // Report success
-                            emit (this->*data.completion)(action);
-                            data.reported = true;
-                        }
-                    } else {
-                        // This action has failed - mark it so that it can't be reported as successful
-                        data.reported = true;
-                    }
-                }
-
-                if (data.services.isEmpty()) {
-                    // This action is finished
-                    mActiveActions.erase(it);
-                    emit activityChanged(action, success ? QMailServiceAction::Successful : QMailServiceAction::Failed);
-                }
-            }
-
-            if (_outstandingRequests.contains(action)) {
-                _outstandingRequests.remove(action);
-
-                // Ensure this request is no longer in the file
-                _requestsFile.resize(0);
-                foreach (quint64 req, _outstandingRequests) {
-                    QByteArray requestNumber(QByteArray::number(req));
-                    _requestsFile.write(requestNumber.append('\n'));
-                }
-                _requestsFile.flush();
-            }
-
-            mServiceAction.remove(service);
+            actionCompleted(success, service, action);
+            return;
         }
     }
 
+    qWarning() << "Would not determine server/action completing";
     // See if there are pending requests
     QTimer::singleShot(0, this, SLOT(dispatchRequest()));
 }
