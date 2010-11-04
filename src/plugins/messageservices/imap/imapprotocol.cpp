@@ -1530,7 +1530,7 @@ QString SearchMessageState::transmit(ImapContext *c)
     const SearchArgument &search = _searches.last();
     QString searchQuery = convertKey(search.key);
     //searchQuery =  ImapProtocol::quoteString(searchQuery);
-    searchQuery = "UID SEARCH" + searchQuery;
+    searchQuery = "UID SEARCH " + searchQuery;
     if(!search.body.isEmpty())
         searchQuery += " BODY " + ImapProtocol::quoteString(search.body);
     searchQuery += " NOT DELETED"; //needed because of limitations in fetching deleted messages
@@ -1671,12 +1671,12 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
 {
     Q_ASSERT(searchKeys.size() >= 1);
     if (searchKeys.size() == 1)
-        return " " + searchKeys.first();
+        return searchKeys.first();
     else if(combiner == QMailKey::And) {
         // IMAP uses AND so just add a space and we're good to go!
-        return " " + searchKeys.join(QString(' '));
+        return searchKeys.join(QString(' '));
     } else if(combiner == QMailKey::Or) {
-        QString result(" ");
+        QString result;
 
         for (int i = 0 ; i < searchKeys.count() ; i++)
         {
@@ -1688,9 +1688,12 @@ QString SearchMessageState::combine(const QStringList &searchKeys, const QMailKe
 
         return result;
     } else if(combiner == QMailKey::None) {
-        if(searchKeys.count() != 1)
+        if(searchKeys.count() != 1) {
             qWarning() << "Attempting to combine more than thing, without a combiner?";
             return QString();
+        } else {
+            return searchKeys.first();
+        }
     } else {
         qWarning() << "Unable to combine with an unknown combiner: " << combiner;
         return QString();
