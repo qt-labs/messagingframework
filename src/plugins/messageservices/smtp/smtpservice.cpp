@@ -88,13 +88,15 @@ bool SmtpService::Sink::transmitMessages(const QMailMessageIdList &ids)
             }
         }
     }
-    
+
     if (failedMessages.count()) {
         emit messagesFailedTransmission(failedMessages, QMailServiceAction::Status::ErrInvalidAddress);
     }
 
-    if (messageQueued) {
+    QMailAccount account(_service->accountId());
+    if (messageQueued || (account.customField("qmf-smtp-capabilities-listed") != "true")) {
         // At least one message could be queued for sending
+        // or the smtp server capabilities (e.g. forward without download capable) are not known
         _service->_client.newConnection();
     } else {
         // No messages to send, so sending completed successfully

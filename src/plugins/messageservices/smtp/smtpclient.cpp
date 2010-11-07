@@ -405,7 +405,9 @@ void SmtpClient::nextAction(const QString &response)
 
                 QMailAccount account(config.id());
                 if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences) ||
-                    (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences)) {
+                    (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences) ||
+                    (account.customField("qmf-smtp-capabilities-listed") != "true")) {
+                    account.setCustomField("qmf-smtp-capabilities-listed", "true");
                     account.setStatus(QMailAccount::CanTransmitViaReference, supportsReferences);
                     if (!QMailStore::instance()->updateAccount(&account)) {
                         qWarning() << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
