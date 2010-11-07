@@ -1202,11 +1202,11 @@ QModelIndex QMailMessageSetModel::index(int row, int column, const QModelIndex &
 {
     if (parentIndex.isValid()) {
         if (QMailMessageSetContainer *parent = itemFromIndex(parentIndex))
-            if (parent->count() > row)
+            if ((parent->count() > row) && (row >= 0))
                 return createIndex(row, column, parent->at(row));
     } else {
         // From the top level
-        if (count() > row)
+        if ((count() > row) && (row >= 0))
             return createIndex(row, column, at(row));
     }
 
