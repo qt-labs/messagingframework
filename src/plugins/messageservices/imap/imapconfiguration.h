@@ -66,6 +66,7 @@ public:
     QString mailServer() const;
     int mailPort() const;
     int mailEncryption() const;
+    int mailAuthentication() const;
 
     bool canDeleteMail() const;
     bool isAutoDownload() const;
@@ -93,6 +94,7 @@ public:
     void setMailPort(int i);
 #ifndef QT_NO_OPENSSL
     void setMailEncryption(int t);
+    void setMailAuthentication(int t);
 #endif
 
     void setDeleteMail(bool b);

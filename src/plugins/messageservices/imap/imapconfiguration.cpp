@@ -78,6 +78,11 @@ int ImapConfiguration::mailEncryption() const
     return value("encryption", "0").toInt();
 }
 
+int ImapConfiguration::mailAuthentication() const
+{
+    return value("authentication", "0").toInt();
+}
+
 bool ImapConfiguration::canDeleteMail() const
 {
     return (value("canDelete", "1").toInt() != 0);
@@ -154,6 +159,11 @@ void ImapConfigurationEditor::setMailPort(int i)
 void ImapConfigurationEditor::setMailEncryption(int t)
 {
     setValue("encryption", QString::number(t));
+}
+
+void ImapConfigurationEditor::setMailAuthentication(int t)
+{
+    setValue("authentication", QString::number(t));
 }
 
 #endif

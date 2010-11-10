@@ -124,8 +124,15 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
         && (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
         foreach(QString capa, capabilities) {
+            capa = capa.toUpper();
             capa += " ";
             if (capa.startsWith("AUTH") && capa.contains(" CRAM-MD5 ")) {
+                return "CRAM-MD5";
+            }
+        }
+    } else if (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism)) {
+        foreach(QString capa, capabilities) {
+            if (capa.toUpper() == "AUTH=CRAM-MD5") {
                 return "CRAM-MD5";
             }
         }
@@ -151,6 +158,9 @@ QByteArray QMailAuthenticator::getResponse(const QMailAccountConfiguration::Serv
         && (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
         return cramMd5Response(challenge, configuration.value("smtpusername").toUtf8(), QByteArray::fromBase64(configuration.value("smtppassword").toUtf8()));
+    } else if (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism)) {
+        // IMAP/POP server CRAM-MD5 authentication
+        return cramMd5Response(challenge, configuration.value("username").toUtf8(), QByteArray::fromBase64(configuration.value("password").toUtf8()));
     }
 
     // Unknown service type and/or authentication type

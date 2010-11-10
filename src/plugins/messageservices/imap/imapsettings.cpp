@@ -45,6 +45,7 @@
 #include <qmailaccount.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailtransport.h>
+#include <qmailnamespace.h>
 #include <selectfolder.h>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -395,6 +396,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         mailPortInput->setText(QString::number(imapConfig.mailPort()));
 #ifndef QT_NO_OPENSSL
         encryptionIncoming->setCurrentIndex(static_cast<int>(imapConfig.mailEncryption()));
+        authentication->setCurrentIndex(imapConfig.mailAuthentication());
 #endif
         deleteCheckBox->setChecked(imapConfig.canDeleteMail());
         maxSize->setValue(imapConfig.maxMailSize());
@@ -456,6 +458,9 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setMailPort(port == -1 ? 143 : port);
 #ifndef QT_NO_OPENSSL
     imapConfig.setMailEncryption(static_cast<QMailTransport::EncryptType>(encryptionIncoming->currentIndex()));
+    int index(authentication->currentIndex());
+    Q_ASSERT(index >= 0);
+    imapConfig.setMailAuthentication(index);
 #endif
     imapConfig.setDeleteMail(deleteCheckBox->isChecked());
     imapConfig.setMaxMailSize(thresholdCheckBox->isChecked() ? maxSize->value() : -1);
