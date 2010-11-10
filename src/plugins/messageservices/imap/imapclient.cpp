@@ -607,11 +607,6 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
                 emit updateStatus( tr("Logging in" ) );
                 _protocol.sendLogin(_config);
-                if (_protocol.capabilities().contains("QRESYNC")) {
-                    // pipeline enable command
-                    _protocol.sendEnable("QRESYNC CONDSTORE");
-                    _qresyncEnabled = true;
-                }
             }
             break;
         }
@@ -620,11 +615,6 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         {
             emit updateStatus( tr("Logging in" ) );
             _protocol.sendLogin(_config);
-            if (_protocol.capabilities().contains("QRESYNC")) {
-                // pipeline enable command
-                _protocol.sendEnable("QRESYNC CONDSTORE");
-                _qresyncEnabled = true;
-            }
             break;
         }
         
