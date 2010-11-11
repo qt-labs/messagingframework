@@ -81,6 +81,11 @@ public:
 
     int checkInterval() const;
     bool intervalCheckRoamingEnabled() const;
+
+    QStringList capabilities() const;
+    void setCapabilities(const QStringList &s);
+    bool pushCapable() const;
+    void setPushCapable(bool b);
 };
 
 class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration

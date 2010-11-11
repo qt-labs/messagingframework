@@ -634,11 +634,17 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
 
             QMailAccount account(_config.id());
+            ImapConfiguration imapCfg(_config);
             if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
-                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)) {
+                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences) ||
+                (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE")) ||
+                (imapCfg.capabilities() != _protocol.capabilities())) {
                 account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
-                if (!QMailStore::instance()->updateAccount(&account)) {
-                    qWarning() << "Unable to update account" << account.id() << "to set CanReferenceExternalData";
+                imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
+                imapCfg.setCapabilities(_protocol.capabilities());
+                if ((!QMailStore::instance()->updateAccount(&account)) ||
+                    (!QMailStore::instance()->updateAccount(&account, &_config))) {
+                    qWarning() << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
 

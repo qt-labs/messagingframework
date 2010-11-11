@@ -128,6 +128,25 @@ bool ImapConfiguration::intervalCheckRoamingEnabled() const
     return (value("intervalCheckRoamingEnabled", "0").toInt() != 0);
 }
 
+QStringList ImapConfiguration::capabilities() const
+{
+    return value("capabilities").split(QChar(' '), QString::SkipEmptyParts);
+}
+
+void ImapConfiguration::setCapabilities(const QStringList &s)
+{
+    setValue("capabilities", QString("") + s.join(QChar(' '))); // can't setValue to null string
+}
+
+bool ImapConfiguration::pushCapable() const
+{
+    return (value("pushCapable", "0").toInt() != 0);
+}
+
+void ImapConfiguration::setPushCapable(bool b)
+{
+    setValue("pushCapable", QString::number(b ? 1 : 0));
+}
 
 ImapConfigurationEditor::ImapConfigurationEditor(QMailAccountConfiguration *config)
     : ImapConfiguration(*config)
