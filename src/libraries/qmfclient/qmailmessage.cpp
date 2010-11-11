@@ -7911,7 +7911,7 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
 
 static void setMessagePreview(QMailMessage *mail) 
 {
-    const int maxPreviewLength = 120;
+    const int maxPreviewLength = 280;
     QMailMessagePartContainer *plainTextContainer = mail->findPlainTextContainer();
     if (plainTextContainer) {
         mail->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
