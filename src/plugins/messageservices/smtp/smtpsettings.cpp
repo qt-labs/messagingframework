@@ -273,7 +273,7 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         int index(authentication->currentIndex());
         Q_ASSERT(index >= 0);
         SmtpConfiguration::AuthType type = authenticationType[index];
-        const bool enableCredentials(type == SmtpConfiguration::Auth_LOGIN || type == SmtpConfiguration::Auth_PLAIN);
+        const bool enableCredentials(type == SmtpConfiguration::Auth_LOGIN || type == SmtpConfiguration::Auth_PLAIN || type == SmtpConfiguration::Auth_CRAMMD5);
         smtpUsernameInput->setEnabled(enableCredentials);
         lblSmtpUsername->setEnabled(enableCredentials);
         smtpPasswordInput->setEnabled(enableCredentials);
