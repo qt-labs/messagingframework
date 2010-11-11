@@ -4,6 +4,7 @@ Latest Changes
 201045
   * Fixes: NB#203241 Can't receive/fetch emails
   * Fixes: NB#189791 Message content preview as metadata
+  * Fixes: NB#203640 Unable to detect whether IMAP server supports IDLE mode or not
 
 201042
   * Fixes: NB#194441 QMailRetrievalAction::retrieveMessagePart() does not check for already downloaded parts
