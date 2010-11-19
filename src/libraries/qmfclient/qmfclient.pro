@@ -2,7 +2,7 @@ TEMPLATE = lib
 CONFIG += warn_on
 TARGET = qmfclient
 
-macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
+simulator:macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
 else:target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
