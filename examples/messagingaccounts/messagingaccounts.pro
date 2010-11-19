@@ -7,6 +7,9 @@ DEPENDPATH += .
 
 QTMAIL_EXAMPLE=../qtmail
 
+#Required to build on windows
+DEFINES += QMFUTIL_INTERNAL
+
 INCLUDEPATH += . ../../src/libraries/qmfclient \
                  ../../src/libraries/qmfclient/support \
                  ../../src/libraries/qmfmessageserver \
