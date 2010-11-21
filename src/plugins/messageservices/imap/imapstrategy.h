@@ -708,6 +708,7 @@ public:
     virtual ~ImapMoveMessagesStrategy() {}
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
     virtual void handleUidCopy(ImapStrategyContextBase *context);
@@ -718,11 +719,11 @@ protected:
 
     virtual void messageListFolderAction(ImapStrategyContextBase *context);
     virtual void messageListMessageAction(ImapStrategyContextBase *context);
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
 
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
 
     QMailFolder _lastMailbox;
+    QMap<QString, QMailMessageId> _messagesToRemove;
 };
 
 class ImapExternalizeMessagesStrategy : public ImapCopyMessagesStrategy

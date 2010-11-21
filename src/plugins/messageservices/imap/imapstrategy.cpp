@@ -254,7 +254,8 @@ bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessa
 
 bool transferMessageData(QMailMessage &message, const QMailMessage &source)
 {
-    // TODO: this whole concept is wrong - we might lose data by replacing the original message...
+    // TODO: Perform sanity checking to ensure message and source message refer to the same message
+    // e.g. same subject, rfcid, date, content-type, no of parts
 
     if (!transferPartBodies(message, source))
         return false;
@@ -267,6 +268,7 @@ bool transferMessageData(QMailMessage &message, const QMailMessage &source)
     if (source.status() & QMailMessage::ContentAvailable) {
         message.setStatus(QMailMessage::ContentAvailable, true);
     }
+
     if (source.status() & QMailMessage::PartialContentAvailable) {
         message.setStatus(QMailMessage::PartialContentAvailable, true);
     }
@@ -3982,6 +3984,22 @@ void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, Imap
     }
 }
 
+void ImapMoveMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
+{
+    ImapCopyMessagesStrategy::messageFlushed(context, message);
+    if (_error)
+        return;
+
+    QMailMessageId sourceId = _messagesToRemove.take(message.serverUid());
+    if (!sourceId.isValid())
+        return;
+
+    if (!QMailStore::instance()->removeMessage(sourceId, QMailStore::NoRemovalRecord)) {
+        _error = true;
+        qWarning() << "Unable to remove message for account:" << context->config().id() << "ID:" << sourceId;
+    }
+}
+
 void ImapMoveMessagesStrategy::handleUidCopy(ImapStrategyContextBase *context)
 {
     // Mark the copied message(s) as deleted
@@ -4039,36 +4057,10 @@ void ImapMoveMessagesStrategy::messageListMessageAction(ImapStrategyContextBase 
     copyNextMessage(context);
 }
 
-void ImapMoveMessagesStrategy::messageListCompleted(ImapStrategyContextBase *context)
-{
-    if (_transferState == Search) {
-        // We don't need to keep the source messages any longer
-        QStringList allSourceUids;
-        foreach (const QString &uid, (_sourceUids + _sourceUid.values())) {
-            if (!uid.startsWith("id:")) {
-                allSourceUids.append(uid);
-            } else {
-                // TODO: Are these messages removed?
-            }
-        }
-
-        if (!allSourceUids.isEmpty()) {
-            QMailMessageKey uidKey(QMailMessageKey::serverUid(allSourceUids));
-            QMailMessageKey accountKey(QMailMessageKey::parentAccountId(context->config().id()));
-
-            if (!QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord)) {
-                _error = true;
-                qWarning() << "Unable to remove message for account:" << context->config().id() << "UIDs:" << allSourceUids;
-            }
-        }
-    }
-
-    ImapCopyMessagesStrategy::messageListCompleted(context);
-}
-
 void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source)
 { 
     ImapCopyMessagesStrategy::updateCopiedMessage(context, message, source);
+    _messagesToRemove[message.serverUid()] = source.id();
 
     // Move the content of the source message to the new message
     if (!transferMessageData(message, source)) {
@@ -4078,13 +4070,6 @@ void ImapMoveMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *cont
     }
 
     QMailDisconnected::clearPreviousFolder(&message);
-    if (source.serverUid().isEmpty()) {
-        // This message has been moved to the external server - delete the local copy
-        if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(source.id()), QMailStore::NoRemovalRecord)) {
-            _error = true;
-            qWarning() << "Unable to remove moved message:" << source.id();
-        }
-    }
 }
 
 
