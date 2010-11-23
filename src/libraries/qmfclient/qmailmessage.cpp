@@ -5926,20 +5926,25 @@ static QString partFileName(const QMailMessagePart &part)
                 fileName.remove((last - first), 1);
     }
 
-    // If possible, create the file with a useful filename extension
-    QString existing;
-    int index = fileName.lastIndexOf('.');
-    if (index != -1)
-        existing = fileName.mid(index + 1);
+    // Application/octet-stream is a fallback for the case when mimetype
+    // is unknown by MUA, so it's treated exceptionally here, so the original
+    // attachment name is preserved
+    if (part.contentType().content()!=QString("application/octet-stream")) {
+        // If possible, create the file with a useful filename extension
+        QString existing;
+        int index = fileName.lastIndexOf('.');
+        if (index != -1)
+            existing = fileName.mid(index + 1);
 
-    QStringList extensions = QMail::extensionsForMimeType(part.contentType().content());
-    if (!extensions.isEmpty()) {
-        // See if the existing extension is a known one
-        if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
-            if (!fileName.endsWith('.')) {
-                fileName.append('.');
+        QStringList extensions = QMail::extensionsForMimeType(part.contentType().content());
+        if (!extensions.isEmpty()) {
+            // See if the existing extension is a known one
+            if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
+                if (!fileName.endsWith('.')) {
+                    fileName.append('.');
+                }
+                fileName.append(extensions.first());
             }
-            fileName.append(extensions.first());
         }
     }
 
