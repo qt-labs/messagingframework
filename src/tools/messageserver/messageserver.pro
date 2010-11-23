@@ -43,5 +43,10 @@ TRANSLATIONS += messageserver-ar.ts \
                 messageserver-pt_BR.ts \
                 messageserver-zh_CN.ts \
                 messageserver-zh_TW.ts
+                
+symbian: {
+    TARGET.CAPABILITY = ALL -TCB
+    TARGET.EPOCHEAPSIZE = 0x20000 0x1000000
+}                
 
 include(../../../common.pri)

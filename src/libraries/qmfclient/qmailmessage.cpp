@@ -269,13 +269,29 @@ static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool 
 
         case QMailMessageBody::SevenBit:
         case QMailMessageBody::EightBit:
-            return (textualData ? static_cast<QMailCodec*>(new QMailLineEndingCodec()) : new QMailPassThroughCodec());
+            if (textualData) {
+                return static_cast<QMailCodec*>(new QMailLineEndingCodec());
+            } else {
+                return new QMailPassThroughCodec();
+            }
 
         case QMailMessageBody::QuotedPrintable:
-            return new QMailQuotedPrintableCodec(textualData ? QMailQuotedPrintableCodec::Text : QMailQuotedPrintableCodec::Binary, QMailQuotedPrintableCodec::Rfc2045);
-
+            if (textualData) {
+                return new QMailQuotedPrintableCodec(
+                    QMailQuotedPrintableCodec::Text,
+                    QMailQuotedPrintableCodec::Rfc2045);
+            } else {
+                return new QMailQuotedPrintableCodec(
+                    QMailQuotedPrintableCodec::Binary, 
+                    QMailQuotedPrintableCodec::Rfc2045);
+            }
+            
         case QMailMessageBody::Base64:
-            return new QMailBase64Codec(textualData ? QMailBase64Codec::Text : QMailBase64Codec::Binary);
+            if (textualData) {
+                return new QMailBase64Codec(QMailBase64Codec::Text);
+            } else {
+                return new QMailBase64Codec(QMailBase64Codec::Binary);
+            }
     }
 
     return 0;

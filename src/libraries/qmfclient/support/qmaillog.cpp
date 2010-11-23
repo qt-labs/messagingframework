@@ -49,7 +49,7 @@
 #include <QStringList>
 
 #include <sys/types.h>
-#ifndef Q_OS_WIN
+#if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
 #include <sys/socket.h>
 #endif
 
@@ -87,7 +87,7 @@ namespace
     };
 };
 
-#ifndef Q_OS_WIN
+#if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
 QMF_EXPORT
 void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {

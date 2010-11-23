@@ -353,6 +353,17 @@ template <typename Stream> void QMailMessageKey::deserialize(Stream &stream)
     d->deserialize(stream);
 }
 
+// non-template version of serialization methods required for Symbian
+void QMailMessageKey::serialize(QDataStream& stream) const
+{
+    d->serialize(stream);
+}
+
+void QMailMessageKey::deserialize(QDataStream& stream)
+{
+    d->deserialize(stream);
+}
+
 /*!
     Returns a key that does not match any messages (unlike an empty key).
 
@@ -1033,8 +1044,10 @@ QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator
 }
 
 //create implementations for QDataStream
-template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
-template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+#ifndef Q_OS_SYMBIAN
+template void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+template void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+#endif
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);
 

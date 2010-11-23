@@ -55,7 +55,9 @@
 #include <io.h>
 #define USE_FSYNC_PER_FILE
 #elif defined(Q_OS_UNIX)
+#ifndef Q_OS_SYMBIAN
 #include <unistd.h>
+#endif
 #endif
 
 namespace {
@@ -190,9 +192,10 @@ void syncFile(QSharedPointer<QFile> file)
     // Ensure data is flushed to OS before attempting sync
     file->flush();
 
+    //TODO: Is a Symbian version of this code required?
 #if defined(Q_OS_WIN)
     ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file->handle())));
-#elif defined(Q_OS_UNIX)
+#elif (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     int handle(file->handle());
     if (handle != -1)
@@ -331,7 +334,9 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 #if defined(Q_OS_WIN)
         qWarning() << "Unable to call sync on Windows.";
 #else
+#ifndef Q_OS_SYMBIAN
         ::sync();
+#endif
 #endif
         _useFullSync = false;
     } else {

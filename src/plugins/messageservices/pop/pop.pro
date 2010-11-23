@@ -40,4 +40,21 @@ SOURCES += \
            popsettings.cpp \
 }
 
+symbian: {
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = ALL \
+        -TCB
+        
+    PLUGIN_STUB_PATH = /resource/qt/plugins/qtmail/messageservices
+    
+    deploy.path = C:
+    pluginstub.sources = $${TARGET}.dll
+    pluginstub.path = $$PLUGIN_STUB_PATH
+    DEPLOYMENT += pluginstub
+
+    qtplugins.path = $$PLUGIN_STUB_PATH
+    qtplugins.sources += qmakepluginstubs/$${TARGET}.qtplugin
+    for(qtplugin, qtplugins.sources):BLD_INF_RULES.prj_exports += "./$$qtplugin $$deploy.path$$qtplugins.path/$$basename(qtplugin)" 
+}
+
 include(../../../../common.pri)

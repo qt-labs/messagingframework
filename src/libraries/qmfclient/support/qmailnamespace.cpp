@@ -51,6 +51,7 @@
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 // Not available for windows mobile?
 #include <QSqlDatabase>
+#include <QSqlError>
 #endif
 
 #ifdef Q_OS_WIN
@@ -204,11 +205,14 @@ bool QMail::fileUnlock(int id)
 */
 QString QMail::dataPath()
 {
+#ifdef Q_OS_SYMBIAN
+    return QString("\\");
+#endif
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
-    return QDir::homePath() + "/.qmf/";
+    return QDir::homePath() + "/qmf/";
 }
 
 /*!
@@ -224,6 +228,10 @@ QString QMail::tempPath()
 */
 QString QMail::pluginsPath()
 {
+#if defined(Q_OS_SYMBIAN)
+    return QString("/resource/qt/plugins/qtmail");
+#endif
+    
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + '/';
@@ -279,6 +287,9 @@ QSqlDatabase QMail::createDatabase()
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
+
+        
+#ifndef Q_OS_SYMBIAN
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
@@ -297,8 +308,17 @@ QSqlDatabase QMail::createDatabase()
         }
 
         db.setDatabaseName(dataPath() + "database/qmailstore.db");
-        if(!db.open())
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+        db.setDatabaseName(dataPath() + "qmailstore.db");
+#endif
+        
+        if(!db.open()) {
+            QSqlError dbError = db.lastError();
             qCritical() << "Cannot open database";
+            qCritical() << dbError.text();
+        }
 
         QDir tp(tempPath());
         if(!tp.exists())

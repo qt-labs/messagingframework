@@ -1111,13 +1111,16 @@ QString AppendState::transmit(ImapContext *c)
 
     QMailMessage message(params.mMessageId);
 
-    QByteArray cmd("APPEND ");
-    cmd += ImapProtocol::quoteString(params.mDestination.path());
-    cmd += " (";
-    cmd += messageFlagsToString(flagsForMessage(message));
-    cmd += ") \"";
-    cmd += message.date().toString(QMailTimeStamp::Rfc3501);
-    cmd += "\"";
+    QByteArray cmd;
+    QString cmdString("APPEND ");;
+    cmdString += ImapProtocol::quoteString(params.mDestination.path());
+    cmdString += " (";
+    cmdString += messageFlagsToString(flagsForMessage(message));
+    cmdString += ") \"";
+    cmdString += message.date().toString(QMailTimeStamp::Rfc3501);
+    cmdString += "\"";
+    cmd = cmdString.toAscii();
+
 
     uint length = 0;
 

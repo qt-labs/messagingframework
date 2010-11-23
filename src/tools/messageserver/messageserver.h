@@ -69,11 +69,11 @@ public:
 
 signals:
     void messageCountUpdated();
-#if defined(Q_OS_UNIX)
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))
 public slots:
     void handleSigHup(); // Qt signal handler for UNIX SIGHUP signal.
 #endif
-
+    
 private slots:
     void retrievalCompleted(quint64 action);
 

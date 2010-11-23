@@ -115,6 +115,9 @@ QStringList pluginFilePatterns()
     QString debugSuffix;
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    return QStringList() << "*.qtplugin";
+#endif
 #ifdef Q_OS_WIN
 	return QStringList() << QString("*%1.dll").arg(debugSuffix) << QString("*%1.DLL").arg(debugSuffix);
 #elif defined(Q_OS_MAC)

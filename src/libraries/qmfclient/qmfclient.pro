@@ -13,6 +13,9 @@ win32: {
 
 QT = core sql network
 symbian: {
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = ALL \
+        -TCB
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN
 }

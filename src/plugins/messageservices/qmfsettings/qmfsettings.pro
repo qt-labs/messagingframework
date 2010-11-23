@@ -31,4 +31,10 @@ FORMS += settings.ui
 SOURCES += settings.cpp storagelocations.cpp
 }
 
+symbian: {
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = ALL \
+        -TCB
+}
+
 include(../../../../common.pri)

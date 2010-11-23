@@ -254,8 +254,13 @@ public:
     QPrivatelyImplemented(ImplementationType* p);
     QPrivatelyImplemented(const QPrivatelyImplemented& other);
 
+#if !defined(Q_OS_SYMBIAN)
     template<typename A1>
     QMF_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
+#else
+    template<typename A1>
+    /* QMF_EXPORT */ QPrivatelyImplemented(ImplementationType* p, A1 a1);
+#endif
 
     virtual ~QPrivatelyImplemented();
 
@@ -378,8 +383,13 @@ class QMF_EXPORT QPrivatelyNoncopyable
 public:
     QPrivatelyNoncopyable(ImplementationType* p);
 
+#if !defined(Q_OS_SYMBIAN)
     template<typename A1>
     QMF_EXPORT QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
+#else
+    template<typename A1>
+    /* QMF_EXPORT */ QPrivatelyNoncopyable(ImplementationType* p, A1 a1);
+#endif
 
     virtual ~QPrivatelyNoncopyable();
 

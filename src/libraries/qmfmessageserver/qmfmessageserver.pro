@@ -9,6 +9,9 @@ QT = core network
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
 
 symbian: {
+    TARGET.EPOCALLOWDLLDATA = 1
+    TARGET.CAPABILITY = ALL \
+        -TCB
     MMP_RULES += EXPORTUNFROZEN
 }
 

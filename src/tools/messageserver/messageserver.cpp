@@ -74,7 +74,7 @@ MessageServer::MessageServer(QObject *parent)
     qMailLog(Messaging) << "MessageServer ctor begin";
     new QCopServer(this);
 
-#if defined(Q_OS_UNIX)
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))    
     // SIGHUP handler. We use the trick described here: http://doc.trolltech.com/4.7-snapshot/unix-signals.html
     // Looks shocking but the trick has certain reasons stated in Steven's book: http://cr.yp.to/docs/selfpipe.html
     // Use a socket and notifier because signal handlers can't call Qt code
@@ -91,7 +91,7 @@ MessageServer::MessageServer(QObject *parent)
     hup.sa_flags |= SA_RESTART;
     if (sigaction(SIGHUP, &hup, 0) > 0)
         qFatal("Couldn't register HUP handler");
-#endif // defined(Q_OS_UNIX)
+#endif // defined(Q_OS_UNIX), Q_OS_SYMBIAN
 
     QMailMessageCountMap::iterator it = messageCounts.begin(), end = messageCounts.end();
     for ( ; it != end; ++it)
@@ -457,8 +457,7 @@ void MessageServer::cleanupTemporaryMessages()
     QMailStore::instance()->removeMessages(QMailMessageKey::status(QMailMessage::Temporary), QMailStore::NoRemovalRecord);
 }
 
-#if defined(Q_OS_UNIX)
-
+#if (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))    
 void MessageServer::hupSignalHandler(int)
 {
     // Can't call Qt code. Write to the socket and the notifier will fire from the Qt event loop
