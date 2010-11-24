@@ -451,6 +451,7 @@ private:
     QMailAccountIdList m_queuedExports;
 };
 
+#ifndef QT_NO_SYSTEMTRAYICON
 class NotificationTray : public QSystemTrayIcon {
     Q_OBJECT
 public:
@@ -459,4 +460,6 @@ public:
 private slots:
     void messagesAdded(const QMailMessageIdList &ids);
 };
+#endif // QT_NO_SYSTEMTRAYICON
+
 #endif

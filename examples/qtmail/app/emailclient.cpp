@@ -2525,6 +2525,7 @@ void EmailClient::settings()
 
 void EmailClient::notificationStateChanged()
 {
+#ifndef QT_NO_SYSTEMTRAYICON
     if (!NotificationTray::isSystemTrayAvailable()) {
         QMessageBox::warning(this, tr("Unable to enable notification"), tr("System tray was undetected"));
         notificationAction->setChecked(false);
@@ -2543,6 +2544,7 @@ void EmailClient::notificationStateChanged()
         tray->show();
     else
         tray->hide();
+#endif QT_NO_SYSTEMTRAYICON
 }
 
 void EmailClient::connectionStateChanged()
@@ -2921,6 +2923,7 @@ void EmailClient::readerMarkMessageAsNotImportant()
     flagMessage(id, setMask, unsetMask);
 }
 
+#ifndef QT_NO_SYSTEMTRAYICON
 NotificationTray::NotificationTray(QObject *parent)
     : QSystemTrayIcon(QIcon(":icon/qtmail"), parent)
 {
@@ -2943,7 +2946,7 @@ void NotificationTray::messagesAdded(const QMailMessageIdList &ids)
         }
     }
 }
-
+#endif // QT_NO_SYSTEMTRAYICON
 
 #include <emailclient.moc>
 
