@@ -2558,7 +2558,10 @@ QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessage
 {
     Q_ASSERT(id.isValid());
     QMap<QString, QString> fields;
-    customFields(id.toULongLong(), &fields, "mailmessagecustom");
+    AttemptResult res(customFields(id.toULongLong(), &fields, "mailmessagecustom"));
+    if (res != Success)
+        qWarning() << "Could not query custom fields for message id: " << id.toULongLong();
+
     return fields;
  }
 
