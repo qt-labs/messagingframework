@@ -2544,7 +2544,7 @@ void EmailClient::notificationStateChanged()
         tray->show();
     else
         tray->hide();
-#endif QT_NO_SYSTEMTRAYICON
+#endif // QT_NO_SYSTEMTRAYICON
 }
 
 void EmailClient::connectionStateChanged()
