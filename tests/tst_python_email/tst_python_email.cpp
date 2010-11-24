@@ -193,7 +193,7 @@ tst_python_email::~tst_python_email()
 QString tst_python_email::path(const QString& filename)
 {
     // SRCDIR is defined in the .pro file as the directory where the .pro is located
-    return QString(SRCDIR) + QString("/testdata/") + filename;
+    return QString(SRCDIR "/testdata/") + filename;
 }
 
 QMailMessage tst_python_email::fromFile(const QString& filename)
