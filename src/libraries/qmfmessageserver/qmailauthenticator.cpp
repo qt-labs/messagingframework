@@ -125,6 +125,8 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
 
     // Unknown service type and/or authentication type
     return QByteArray();
+
+    Q_UNUSED(capabilities)
 }
 
 /*!

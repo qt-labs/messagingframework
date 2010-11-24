@@ -173,10 +173,7 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
                                                                                                 QMailStore::ReturnAll)) {
             if (metaData.id().isValid() && metaData.parentAccountId().isValid())
                 map[metaData.parentAccountId()].append(metaData.id());
-            if (metaData.id().isValid() && metaData.parentAccountId().isValid()) //xxx
-                qWarning() << "XXX accountMessages account" << metaData.parentAccountId() << "id" << metaData.id();
         }
-
 
     return map;
 }
