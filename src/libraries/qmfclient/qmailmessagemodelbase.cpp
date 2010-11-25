@@ -302,32 +302,23 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         break;
 
         case MessageStatusIconRole:
-        {
-            if (incoming) { 
-                quint64 status = message.status();
-                if ( status & QMailMessage::Removed ) {
-                    return removedIcon;
-                } else if ( status & QMailMessage::PartialContentAvailable ) {
-                    if ( status & QMailMessage::Read ) {
-                        return readIcon;
-                    } else {
-                        return unreadIcon;
-                    }
+        if (incoming) {
+            quint64 status = message.status();
+            if ( status & QMailMessage::Removed ) {
+                return removedIcon;
+            } else if ( status & QMailMessage::PartialContentAvailable ) {
+                if ( status & QMailMessage::Read ) {
+                    return readIcon;
                 } else {
-                    return toGetIcon;
+                    return unreadIcon;
                 }
             } else {
-                if (sent) {
-                    return readIcon;
-                } else if ( message.to().isEmpty() ) {
-                    // Not strictly true - there could be CC or BCC addressees
-                    return unfinishedIcon;
-                } else {
-                    return toSendIcon;
-                }
+                return toGetIcon;
             }
+        } else {
+            return readIcon;
+            // TODO: use unfinishedIcon or toSendIcon depending on the message state
         }
-        break;
 
         case MessagePresenceIconRole:
         {
