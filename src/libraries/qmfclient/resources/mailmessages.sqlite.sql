@@ -22,6 +22,7 @@ CREATE TABLE mailmessages (
     listid VARCHAR NOT NULL DEFAULT '',
     rfcid VARCHAR NOT NULL DEFAULT '',
     preview VARCHAR NOT NULL DEFAULT '',
+    latestinconversation INTEGER NOT NULL,
     FOREIGN KEY (parentfolderid) REFERENCES mailfolders(id),
     FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id));
 

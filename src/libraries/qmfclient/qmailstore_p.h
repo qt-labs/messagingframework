@@ -306,6 +306,9 @@ private:
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
 
+    quint64 threadId(const QMailMessageId &id);
+    AttemptResult updateLatestInConversation(const QSet<quint64> &threadIds, QMailMessageIdList *messagesUpdated);
+
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult customFields(quint64 id, QMap<QString, QString> *fields, const QString &tableName);
@@ -453,6 +456,9 @@ private:
     AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
 
     AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
+
+    QMailMessageId latestInConversation(const QMailMessageId &id);
+    QMailMessageId latestInConversationByThread(quint64 threadId);
 
     AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences, bool *missingAncestor);
 

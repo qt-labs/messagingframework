@@ -894,7 +894,7 @@ namespace findBody
                 break;
             }
         }
-        qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
+        //qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
         return false;
     }
 
@@ -1799,7 +1799,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
                 ++lastIndex;
             } else {
                 // We couldn't find any high-level syntactic break either - just break at the last char
-                qWarning() << "Unable to break header field at white space or syntactic break";
+                //qWarning() << "Unable to break header field at white space or syntactic break";
                 lastIndex = remaining;
             }
         }
@@ -6073,6 +6073,11 @@ void QMailMessageMetaDataPrivate::setCustomFields(const QMap<QString, QString> &
     _customFieldsModified = true;
 }
 
+void QMailMessageMetaDataPrivate::setLatestInConversation(QMailMessageId const& id)
+{
+    updateMember(_latestInConversation, id);
+}
+
 template <typename Stream> 
 void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
 {
@@ -6106,6 +6111,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _customFieldsModified;
     stream << _dirty;
     stream << _preview;
+    stream << _latestInConversation;
 }
 
 template <typename Stream> 
@@ -6147,6 +6153,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _customFieldsModified;
     stream >> _dirty;
     stream >> _preview;
+    stream >> _latestInConversation;
 }
 
 
@@ -7094,11 +7101,27 @@ void QMailMessageMetaData::initStore()
 }
 #endif
 
+/*!
+  This is a hack that returns the latest messageId from the conversation this message is.
+*/
+QMailMessageId QMailMessageMetaData::latestInConversation() const
+{
+    return impl(this)->_latestInConversation;
+}
+
+/*!
+  This is a hack that sets the latest messageId in the conversation. No client should use this..
+*/
+void QMailMessageMetaData::setLatestInConversation(QMailMessageId const& id)
+{
+    return impl(this)->setLatestInConversation(id);
+}
+
 /*! 
     \fn QMailMessageMetaData::serialize(Stream&) const
     \internal 
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageMetaData::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
