@@ -800,7 +800,7 @@ void EmailClient::initActions()
         connect(notificationAction, SIGNAL(triggered()), this, SLOT(notificationStateChanged()));
         notificationAction->setCheckable(true);
         notificationAction->setChecked(false);
-        notificationAction->setIconText(false);
+        notificationAction->setIconText(QString());
 
         emptyTrashAction = new QAction( Qtmail::icon("trashfolder"), tr("Empty trash"), this );
         connect(emptyTrashAction, SIGNAL(triggered()), this, SLOT(emptyTrashFolder()));

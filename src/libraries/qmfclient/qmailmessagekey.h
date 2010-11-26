@@ -146,6 +146,7 @@ public:
 
     static QMailMessageKey sender(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey sender(const QString &value, QMailDataComparator::InclusionComparator cmp);
+    static QMailMessageKey sender(const QString &value, QMailDataComparator::RelationComparator cmp);
     static QMailMessageKey sender(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
     static QMailMessageKey recipients(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);

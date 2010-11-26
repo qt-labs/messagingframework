@@ -493,6 +493,14 @@ QMailMessageKey QMailMessageKey::sender(const QStringList &values, QMailDataComp
 }
 
 /*!
+    Return a key matching messages whose sender is alphabetically matches \value according to \cmp
+*/
+QMailMessageKey QMailMessageKey::sender(const QString &value, QMailDataComparator::RelationComparator cmp)
+{
+    return QMailMessageKey(Sender, value, QMailKey::comparator(cmp));
+}
+
+/*!
     Returns a key matching messages whose recipients include \a value, according to \a cmp.
 
     \sa QMailMessage::to(), QMailMessage::cc(), QMailMessage::bcc()
