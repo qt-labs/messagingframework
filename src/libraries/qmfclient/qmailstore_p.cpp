@@ -2114,14 +2114,13 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
                                            QMailMessageKey::RestoreFolderId |
                                            QMailMessageKey::ListId |
                                            QMailMessageKey::RfcId |
-                                           QMailMessageKey::Preview |
-                                           QMailMessageKey::LatestInConversation;
+                                           QMailMessageKey::Preview;
     return p;
 }
 
 const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
 {
-    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | updatableMessageProperties();
+    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | QMailMessageKey::LatestInConversation | updatableMessageProperties();
     return p;
 }
 
@@ -4733,10 +4732,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         if (insertQuery.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
-        AttemptResult res(updateLatestInConversation(QSet<quint64>() << threadId, all_updatedMessageIds));
+        quint64 newLatest;
+        AttemptResult res(updateLatestInConversation(threadId, all_updatedMessageIds, &newLatest));
 
         if (res != Success)
             return res;
+
+        Q_ASSERT(newLatest != 0);
+        metaData->setLatestInConversation(QMailMessageId(newLatest));
     } else {
         // Add a new thread for this message
         quint64 threadId;
@@ -4758,6 +4761,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
                 return DatabaseFailure;
         }
 
+        Q_ASSERT(insertId != 0);
+        metaData->setLatestInConversation(QMailMessageId(insertId));
         QString updateSql("UPDATE mailmessages SET latestinconversation = %1 WHERE id = %1");
         QSqlQuery updateQuery(simpleQuery(updateSql.arg(insertId), "addmessage latestinconversation selfupdate"));
 
@@ -6583,52 +6588,70 @@ quint64 QMailStorePrivate::threadId(const QMailMessageId &id)
     }
 }
 
+QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo)
+{
+    Q_ASSERT(threadId != 0);
+
+    QString messageIdsQuery("SELECT id FROM mailmessages WHERE id IN (SELECT messageid FROM mailthreadmessages WHERE threadid = %1) ORDER BY stamp DESC");
+
+    QSqlQuery query(simpleQuery(messageIdsQuery.arg(threadId), "updateLatestInConversation message list"));
+
+    if (query.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Error when listing messages in thread id" << threadId;
+        return DatabaseFailure;
+    }
+
+    QList<QMailMessageId> toUpdate; // exclusive of themostRecent
+
+    if (!query.next()) {
+        return Success; // nothing to do
+    }
+
+    QMailMessageId mostRecent(extractValue<quint64>(query.value(0)));
+    Q_ASSERT(mostRecent.isValid());
+
+    while (query.next()) {
+        toUpdate.push_back(QMailMessageId(extractValue<quint64>(query.value(0))));
+    }
+
+    // TODO: clean this up, but as they're all just ints -- it's not so bad
+    QString updateSql("UPDATE mailmessages SET latestinconversation=");
+    updateSql += QString::number(mostRecent.toULongLong());
+    updateSql += " WHERE id IN (";
+    updateSql += QString::number(mostRecent.toULongLong());
+
+    foreach (QMailMessageId const& updateId, toUpdate) {
+        updateSql += ", " + QString::number(updateId.toULongLong());
+    }
+
+    updateSql += ");";
+
+    QSqlQuery updateQuery(simpleQuery(updateSql, "updateLatestInConversation thread update"));
+
+    if (updateQuery.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Error when updating all messages in thread";
+        return DatabaseFailure;
+    }
+
+    APPEND_UNIQUE(messagesUpdated, mostRecent);
+    APPEND_UNIQUE(messagesUpdated, &toUpdate);
+
+    if (updatedTo) {
+        *updatedTo = mostRecent.toULongLong();
+    }
+
+    qDebug() << "Updated thread id: " << threadId << " to latestinconversation as: " << mostRecent.toULongLong() << " to " << toUpdate.size()+1 << " messages";
+
+    return Success;
+}
+
 QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(const QSet<quint64> & threadIds, QMailMessageIdList *messagesUpdated)
 {
     foreach (quint64 const& threadId, threadIds) {
-        QString messageIdsQuery("SELECT id FROM mailmessages WHERE id IN (SELECT messageid FROM mailthreadmessages WHERE threadid = %1) ORDER BY stamp DESC");
-
-        QSqlQuery query(simpleQuery(messageIdsQuery.arg(threadId), "updateLatestInConversation message list"));
-
-        if (query.lastError().type() != QSqlError::NoError) {
-            qWarning() << "Error when listing messages in thread id" << threadId;
-            return DatabaseFailure;
+        AttemptResult res(updateLatestInConversation(threadId, messagesUpdated));
+        if (res != Success) {
+            return res;
         }
-
-        QList<QMailMessageId> toUpdate; // excludes of themostRecent
-
-        if (!query.next()) {
-            return Success; // nothing to do
-        }
-
-        QMailMessageId mostRecent(extractValue<quint64>(query.value(0)));
-
-        while (query.next()) {
-            toUpdate.push_back(QMailMessageId(extractValue<quint64>(query.value(0))));
-        }
-
-        // TODO: clean this up, but as they're all just ints -- it's not so bad
-        QString updateSql("UPDATE mailmessages SET latestinconversation=");
-        updateSql += QString::number(mostRecent.toULongLong());
-        updateSql += " WHERE id IN (";
-        updateSql += QString::number(mostRecent.toULongLong());
-
-        foreach (QMailMessageId const& updateId, toUpdate) {
-            updateSql += ", " + QString::number(updateId.toULongLong());
-        }
-
-        updateSql += ");";
-
-        QSqlQuery updateQuery(simpleQuery(updateSql, "updateLatestInConversation thread update"));
-
-        if (updateQuery.lastError().type() != QSqlError::NoError) {
-            qWarning() << "Error when updating all messages in thread";
-            return DatabaseFailure;
-        }
-
-        APPEND_UNIQUE(messagesUpdated, mostRecent);
-        APPEND_UNIQUE(messagesUpdated, &toUpdate);
-
     }
 
     return Success;
