@@ -212,7 +212,7 @@ QString QMail::dataPath()
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
-    return QDir::homePath() + "./qmf/";
+    return QDir::homePath() + "/.qmf/";
 }
 
 /*!
@@ -296,8 +296,10 @@ QSqlDatabase QMail::createDatabase()
             QString path = dataPath();
             if (path.endsWith('/'))
                 path = path.left(path.length() - 1);
-            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1) 
+            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1) {
+                qDebug();
                 qCritical() << "Cannot create database directory";
+            }
 #endif
             if (!dbDir.mkpath(dataPath() + "database"))
                 qCritical() << "Cannot create database path";
