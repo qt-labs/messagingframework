@@ -212,7 +212,7 @@ QString QMail::dataPath()
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
-    return QDir::homePath() + "/qmf/";
+    return QDir::homePath() + "./qmf/";
 }
 
 /*!
