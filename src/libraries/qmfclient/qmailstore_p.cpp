@@ -4727,7 +4727,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         quint64 threadId(extractValue<quint64>(query.value(0)));
 
         // Use the thread of the parent message
-        QSqlQuery insertQuery(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) ?,?",
+        QSqlQuery insertQuery(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) VALUES (?,?)",
                                     QVariantList() << threadId << insertId,
                                     "addMessage mailthreadmessages insert query"));
         if (insertQuery.lastError().type() != QSqlError::NoError)
@@ -4759,7 +4759,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         }
 
         QString updateSql("UPDATE mailmessages SET latestinconversation = %1 WHERE id = %1");
-        QSqlQuery updateQuery(simpleQuery(updateSql.arg(insertId).arg(insertId), "addmessage latestinconversation selfupdate"));
+        QSqlQuery updateQuery(simpleQuery(updateSql.arg(insertId), "addmessage latestinconversation selfupdate"));
 
         if (updateQuery.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
