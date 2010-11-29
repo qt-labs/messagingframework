@@ -78,6 +78,7 @@ public:
     static const quint64 &DeletionPermitted;
     static const quint64 &NonMail;
     static const quint64 &MessagesPermitted;
+    static const quint64 &ReadOnly;
 
     QMailFolder();
 

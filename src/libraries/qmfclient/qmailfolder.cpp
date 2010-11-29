@@ -58,6 +58,7 @@ static quint64 renamePermittedFlag = 0;
 static quint64 deletionPermittedFlag = 0;
 static quint64 nonMailFlag = 0;
 static quint64 messagesPermittedFlag = 0;
+static quint64 readOnlyFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -146,6 +147,7 @@ public:
             deletionPermittedFlag = registerFlag("DeletionPermitted");
             nonMailFlag = registerFlag("NonMail");
             messagesPermittedFlag = registerFlag("MessagesPermitted");
+            readOnlyFlag = registerFlag("ReadOnly");
         }
     }
 
@@ -344,6 +346,7 @@ const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
 const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
 const quint64 &QMailFolder::NonMail = nonMailFlag;
 const quint64 &QMailFolder::MessagesPermitted = messagesPermittedFlag;
+const quint64 &QMailFolder::ReadOnly = readOnlyFlag;
 
 
 /*!
