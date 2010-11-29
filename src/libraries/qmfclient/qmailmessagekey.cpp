@@ -1053,8 +1053,8 @@ QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator
 
 //create implementations for QDataStream
 #ifndef Q_OS_SYMBIAN
-template void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
-template void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
 #endif
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);
