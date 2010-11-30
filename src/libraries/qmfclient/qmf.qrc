@@ -15,6 +15,7 @@
         <file alias="mailfolders-102-103">resources/mailfolders-102-103.sqlite.sql</file>
         <file alias="mailfolders-103-104">resources/mailfolders-103-104.sqlite.sql</file>
         <file alias="mailfolders-104-105">resources/mailfolders-104-105.sqlite.sql</file>
+        <file alias="mailfolders-105-106">resources/mailfolders-105-106.sqlite.sql</file>
         <file alias="mailfoldercustom">resources/mailfoldercustom.sqlite.sql</file>
         <file alias="mailfolderlinks">resources/mailfolderlinks.sqlite.sql</file>
         <file alias="mailmessages">resources/mailmessages.sqlite.sql</file>
