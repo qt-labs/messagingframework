@@ -1901,11 +1901,6 @@ QPair<QString, qint64> tableInfo(const QString &name, qint64 version)
     return qMakePair(name, version);
 }
 
-QPair<quint64, QString> folderInfo(quint64 id, const QString &name)
-{
-    return qMakePair(id, name);
-}
-
 QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
 {
     return (commitOnSuccess ? QMailContentManager::EnsureDurability : QMailContentManager::DeferDurability);
@@ -2204,7 +2199,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
-                                            << tableInfo("mailfolders", 105)
+                                            << tableInfo("mailfolders", 106)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
                                             << tableInfo("mailmessages", 112)
@@ -2218,8 +2213,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)
-                                            << tableInfo("obsoletefiles", 100)) ||
-            !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage")))) {
+                                            << tableInfo("obsoletefiles", 100))) {
             return false;
         }
 
@@ -2231,6 +2225,18 @@ bool QMailStorePrivate::initStore()
         QMailAccount::initStore();
         QMailFolder::initStore();
         QMailMessage::initStore();
+
+        Transaction t1(this);
+        if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage"), QMailFolder::MessagesPermitted))) {
+            qWarning() << "Error setting up folders";
+            return false;
+        }
+
+        if (!t1.commit()) {
+            qWarning() << "Could not commit folder setup to database";
+            return false;
+        }
+
     }
 
 #if defined(Q_USE_SQLITE)
@@ -3317,6 +3323,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     QSet<quint64> folderIds;
 
     {
+        // TODO: Perhaps we should search only for existing folders?
         QSqlQuery query(simpleQuery("SELECT id FROM mailfolders", 
                                     "folder ids query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -3327,15 +3334,15 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     }
 
     foreach (const FolderInfo &folder, folderList) {
-        if (folderIds.contains(folder.first))
+        if (folderIds.contains(folder.id()))
             continue;
         QSqlQuery query(simpleQuery("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?,?)",
-                                    QVariantList() << folder.first
-                                                   << folder.second
+                                    QVariantList() << folder.id()
+                                                   << folder.name()
                                                    << quint64(0)
                                                    << quint64(0)
                                                    << QString()
-                                                   << quint64(0)
+                                                   << folder.status()
                                                    << int(0)
                                                    << int(0)
                                                    << int(0),

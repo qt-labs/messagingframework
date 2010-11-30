@@ -214,7 +214,19 @@ private:
     typedef QPair<QString, qint64> TableInfo;
     bool setupTables(const QList<TableInfo> &tableList);
 
-    typedef QPair<quint64, QString> FolderInfo;
+    struct FolderInfo {
+        FolderInfo(quint64 id, QString const& name, quint64 status = 0)
+            : _id(id), _name(name), _status(status)
+        {}
+        quint64 id() const { return _id; }
+        QString name() const { return _name; }
+        quint64 status() const { return _status; }
+    private:
+        quint64 _id;
+        QString _name;
+        quint64 _status;
+    };
+
     bool setupFolders(const QList<FolderInfo> &folderList);
 
     bool purgeMissingAncestors();
