@@ -192,6 +192,6 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValu
 {
     Q_UNUSED(category);
     Q_UNUSED(defValue);
-    return false;
+    return true;
 }
 #endif
