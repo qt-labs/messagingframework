@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201048
+  * Fixes: NB#207235 QMailMessage::fromRfc2822*() does not set the HasAttachment flag
+  * Fixes: NB#204831 Messages in qmf cache are corrupted with IMAP disconnected moves
+  
 201045
   * Fixes: NB#203241 Can't receive/fetch emails
   * Fixes: NB#189791 Message content preview as metadata
