@@ -264,7 +264,6 @@ protected:
     enum { MaxPipeliningDepth = 4 };
 
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey);
     virtual void checkUidValidity(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleCreate(ImapStrategyContextBase *context);

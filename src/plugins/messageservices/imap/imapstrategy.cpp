@@ -130,6 +130,26 @@ bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &
     return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
 }
 
+bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
+{
+    bool result(true);
+    QStringList vanishedIds;
+    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
+        const QString &uid(r.serverUid()); 
+        // We might have a deletion record for this UID
+        vanishedIds << uid;
+    }
+    if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
+        result = false;
+        qWarning() << "Unable to purge message records for account:" << context->config().id();
+    }
+    if (!QMailStore::instance()->removeMessages(removedKey, QMailStore::NoRemovalRecord)) {
+        result = false;
+        qWarning() << "Unable to update folder after uidvalidity changed:" << QMailFolder(context->mailbox().id).displayName();
+    }
+    return result;
+}
+
 bool updateMessagesMetaData(ImapStrategyContextBase *context,
                                    const QMailMessageKey &storedKey, 
                                    const QMailMessageKey &unseenKey, 
@@ -147,9 +167,9 @@ bool updateMessagesMetaData(ImapStrategyContextBase *context,
     QMailMessageKey nonexistentKey(storedKey & ~reportedKey);
     QMailMessageIdList ids(QMailStore::instance()->queryMessages(nonexistentKey));
     
-    if (!QMailStore::instance()->updateMessagesMetaData(nonexistentKey, QMailMessage::Removed, true)) {
+    if (!purge(context, nonexistentKey)) {
         result = false;
-        qWarning() << "Unable to update removed message metadata for account:" << context->config().id();
+        qWarning() << "Unable to purge messages for account:" << context->config().id();
     }
     
     // Restore any messages thought to be unavailable that the server now reports
@@ -563,11 +583,8 @@ void ImapStrategy::nonexistentUid(ImapStrategyContextBase *context, const QStrin
     // Mark this message as deleted
     QMailMessage message(uid, context->config().id());
     if (message.id().isValid()) {
-        message.setStatus(QMailMessage::Removed, true);
-        if (!QMailStore::instance()->updateMessage(&message)) {
+        if (!purge(context, QMailMessageKey::id(message.id()))) {
             _error = true;
-            qWarning() << "Unable to update nonexistent message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-            return;
         }
     }
 
@@ -1034,24 +1051,6 @@ void ImapMessageListStrategy::initialAction(ImapStrategyContextBase *context)
     ImapStrategy::initialAction(context);
 }
 
-void ImapMessageListStrategy::purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
-{
-    QStringList vanishedIds;
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
-        const QString &uid(r.serverUid()); 
-        // We might have a deletion record for this UID
-        vanishedIds << uid;
-    }
-    if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
-        _error = true;
-        qWarning() << "Unable to purge message records for account:" << context->config().id();
-    }
-    if (!QMailStore::instance()->removeMessages(removedKey, QMailStore::NoRemovalRecord)) {
-        _error = true;
-        qWarning() << "Unable to update folder after uidvalidity changed:" << QMailFolder(context->mailbox().id).displayName();
-    }
-}
-
 void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
 {
     const ImapMailboxProperties &properties(context->mailbox());
@@ -1073,7 +1072,9 @@ void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
         }
         
         QMailMessageKey removedKey(QMailDisconnected::sourceKey(properties.id));
-        purge(context, removedKey);
+        if (!purge(context, removedKey)) {
+            _error = true;
+        }
     }
     if (!properties.uidValidity.isEmpty() &&
         (properties.uidValidity != oldUidValidity)) {
@@ -3354,9 +3355,10 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
             foreach(QString uid, beginningClientRegion.toStringList()) {
                 removedList.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
             }
+
             QMailMessageKey removedKey(QMailMessageKey::serverUid(removedList));
-            if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
-                qWarning() << "Unable to update removed message metadata for folder:" << folder.displayName();
+            if (!purge(context, removedKey)) {
+                _error = true;
             }
         }
     }
@@ -3373,8 +3375,8 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     // messages on the client i.e. mark messages on the client as removed for messages that have
     // been removed on the server
     QMailMessageKey removedKey(QMailMessageKey::serverUid(removed));
-    if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, true)) {
-        qWarning() << "Unable to update removed message metadata for folder:" << folder.displayName();
+    if (!purge(context, removedKey)) {
+        _error = true;
     }
     
     // Use an optimization/simplification because client region should be contiguous
@@ -3459,13 +3461,20 @@ void ImapRetrieveMessageListStrategy::folderListFolderAction(ImapStrategyContext
     uint minimum(_minimum);
     QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
 
+    // Purge messages marked as removed, facilitates detection of messages missign on client, and prevents cruft building up
+    if (!purge(context, sourceKey & QMailMessageKey::status(QMailMessage::Removed))) {
+        _error = true;
+    }
+
     // Could get flag changes mod sequences when CONDSTORE is available
     if ((properties.exists == 0) || (minimum <= 0)) {
         // No messages, so no need to perform search
         if (properties.exists == 0) {
             // Folder is completely empty mark all messages in it on client as removed
             QMailMessageKey removedKey(sourceKey);
-            purge(context, removedKey);
+            if (!purge(context, removedKey)) {
+                _error = true;
+            }
         }
         processUidSearchResults(context);
         return;
@@ -3584,7 +3593,9 @@ void ImapRetrieveMessageListStrategy::qresyncFolderListFolderAction(ImapStrategy
         }
         if (!removedList.isEmpty()) {
             QMailMessageKey removedKey(QMailMessageKey::serverUid(removedList));
-            purge(context, removedKey);
+            if (!purge(context, removedKey)) {
+                _error = true;
+            }
         }
         
         processFlagChanges(properties.flagChanges, properties.id, &_error);
