@@ -7992,6 +7992,9 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 
     setMessagePriorityFromHeaderFields(&mail);
     setMessagePreview(&mail);
+    if (mail.hasAttachments()) {
+        mail.setStatus( QMailMessage::HasAttachments, true );
+    }
     return mail;
 }
 

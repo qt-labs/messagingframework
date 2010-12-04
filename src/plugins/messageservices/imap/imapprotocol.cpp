@@ -3405,11 +3405,6 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         if (wellFormed && (mail.multipartType() != QMailMessage::MultipartNone)) {
             mail.setStatus( QMailMessage::ContentAvailable, true );
             mail.setSize( size );
-
-            // See if any of the parts are attachments
-            if (mail.hasAttachments()) {
-                mail.setStatus( QMailMessage::HasAttachments, true );
-            }
         }
 
         // If we're fetching the structure, this is the first we've seen of this message
