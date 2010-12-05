@@ -1072,6 +1072,8 @@ void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdLi
         // Ensure there are no duplicates in the list
         QMailMessageIdList idList(ids.toSet().toList());
 
+        d->notifyMessagesChange(type, idList);
+
         switch (type) {
         case Added:
             emit messagesAdded(idList);
