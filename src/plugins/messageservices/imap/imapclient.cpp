@@ -1130,8 +1130,6 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 mail.setStatus(QMailMessage::ContentAvailable, true);
             } 
 
-            // If this message was previously marked read, that is no longer true
-            mail.setStatus(QMailMessage::Read, false);
         } else {
             // This is data for a sub-part of the message
             QMailMessagePart::Location partLocation(section);
