@@ -4743,11 +4743,21 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
         }
         bodyContainer->clearParts();
     } else {
-        if (multipartType() == QMailMessagePartContainer::MultipartNone) {
+        switch (multipartType()) {
+        case QMailMessagePartContainer::MultipartNone:
             bodyContainer = this;
-        } else {
-            // No body part found and message is not MultipartNone? Should not happen!
-            Q_ASSERT (false);
+            break;
+        case QMailMessagePartContainer::MultipartMixed:
+            // Message with attachments but still without body (eg: being
+            // forwarded, still in composing stage)
+            // We make room for the new body container
+            prependPart(QMailMessagePart());
+            bodyContainer = &partAt(0);
+            break;
+        default:
+            qWarning() << Q_FUNC_INFO << "Wrong multipart type: " << multipartType();
+            Q_ASSERT(false);
+            break;
         }
     }
     Q_ASSERT (NULL != bodyContainer);
