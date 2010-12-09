@@ -18,6 +18,7 @@ symbian: {
         -TCB
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN
+    INCLUDEPATH += /epoc32/include/platform
 }
 
 DEPENDPATH += .
