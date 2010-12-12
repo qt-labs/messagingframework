@@ -557,8 +557,8 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             qFatal( "Logic error, IMAP_Full" );
             break;
         case IMAP_Unconnected:
-            qFatal( "Logic error, Unconnected" );
-            break;
+            operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
+            return;
         default:
             break;
     }
