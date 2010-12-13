@@ -87,6 +87,7 @@ public:
     ~QMailStorePrivate();
 
     virtual bool initStore();
+
     void clearContent();
 
     bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
@@ -459,7 +460,7 @@ private:
                                    int *result, 
                                    ReadLock &);
 
-    AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
+    AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, bool check, quint64 *number,
                                            Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId, 

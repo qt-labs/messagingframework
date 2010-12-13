@@ -125,41 +125,6 @@ public:
             customFieldsModified = true;
         }
     }
-
-    static void initializeFlags()
-    {
-        static bool flagsInitialized = false;
-        if (!flagsInitialized) {
-            flagsInitialized = true;
-
-            synchronizationEnabledFlag = registerFlag("SynchronizationEnabled");
-            synchronizedFlag = registerFlag("Synchronized");
-            partialContentFlag = registerFlag("PartialContent");
-            removedFlag = registerFlag("Removed");
-            incomingFlag = registerFlag("Incoming");
-            outgoingFlag = registerFlag("Outgoing");
-            sentFlag = registerFlag("Sent");
-            trashFlag = registerFlag("Trash");
-            draftsFlag = registerFlag("Drafts");
-            junkFlag = registerFlag("Junk");
-            childCreationPermittedFlag = registerFlag("ChildCreationPermitted");
-            renamePermittedFlag = registerFlag("RenamePermitted");
-            deletionPermittedFlag = registerFlag("DeletionPermitted");
-            nonMailFlag = registerFlag("NonMail");
-            messagesPermittedFlag = registerFlag("MessagesPermitted");
-            readOnlyFlag = registerFlag("ReadOnly");
-        }
-    }
-
-private:
-    static quint64 registerFlag(const QString &name)
-    {
-        if (!QMailStore::instance()->registerFolderStatusFlag(name)) {
-            qMailLog(Messaging) << "Unable to register folder status flag:" << name << "!";
-        }
-
-        return QMailFolder::statusMask(name);
-    }
 };
 
 /*!
@@ -687,10 +652,3 @@ void QMailFolder::setCustomFieldsModified(bool set)
 {
     d->customFieldsModified = set;
 }
-
-/*! \internal */
-void QMailFolder::initStore()
-{
-    QMailFolderPrivate::initializeFlags();
-}
-
