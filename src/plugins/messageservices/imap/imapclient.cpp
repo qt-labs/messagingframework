@@ -404,7 +404,7 @@ void IdleProtocol::idleErrorRecovery()
 
 ImapClient::ImapClient(QObject* parent)
     : QObject(parent),
-      _closeCount(5),
+      _closeCount(StayAliveCount),
       _waitingForIdle(false),
       _idlesEstablished(false),
       _qresyncEnabled(false)
@@ -1304,16 +1304,17 @@ void ImapClient::retrieveOperationCompleted()
 
 void ImapClient::deactivateConnection()
 {
-    _closeCount = StayAliveCount; // 5 minutes
+    _closeCount = StayAliveCount;
     _inactiveTimer.start(InactivityPeriod);
 }
 
 void ImapClient::connectionInactive()
 {
-    --_closeCount;
-    if (!_closeCount) {
+    Q_ASSERT(_closeCount >= 0);
+    if (_closeCount == 0) {
         closeConnection();
     } else {
+        --_closeCount;
         _protocol.sendNoop();
     }
 }

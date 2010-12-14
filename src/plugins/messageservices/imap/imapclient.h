@@ -152,8 +152,8 @@ private:
     void updateFolderCountStatus(QMailFolder *folder);
 
 private:
-    enum { InactivityPeriod = 60 * 1000 }; // 1 minute
-    enum { StayAliveCount = 5 }; // send 5 noops
+    static const int InactivityPeriod = 60 * 1000; // 1 minute
+    static const int StayAliveCount = 4; // send 4 noops
 
     QMailAccountConfiguration _config;
 
