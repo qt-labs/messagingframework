@@ -161,7 +161,6 @@ private:
     QTimer _inactiveTimer;
     int _closeCount;
 
-    QMailFolder _idleFolder;
     bool _waitingForIdle;
     QMailFolderIdList _waitingForIdleFolderIds;
     bool _idlesEstablished;
