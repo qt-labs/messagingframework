@@ -86,6 +86,9 @@ public:
     void setCapabilities(const QStringList &s);
     bool pushCapable() const;
     void setPushCapable(bool b);
+
+    int timeTillLogout() const;
+    void setTimeTillLogout(int milliseconds);
 };
 
 class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration

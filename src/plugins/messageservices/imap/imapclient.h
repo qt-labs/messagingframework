@@ -151,10 +151,7 @@ private:
 
     void updateFolderCountStatus(QMailFolder *folder);
 
-private:
-    static const int InactivityPeriod = 60 * 1000; // 1 minute
-    static const int StayAliveCount = 4; // send 4 noops
-
+    static const int MaxTimeBeforeNoop = 60 * 1000; // 1 minute (this must be >= 1ms)
     QMailAccountConfiguration _config;
 
     ImapProtocol _protocol;
