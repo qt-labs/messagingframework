@@ -5971,7 +5971,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const 
                                                                           int *result, 
                                                                           ReadLock &)
 {
-	QSqlQuery query(simpleQuery("SELECT SUM(size) FROM mailmessages",
+    QSqlQuery query(simpleQuery("SELECT SUM(size) FROM mailmessages",
                                 Key(key),
                                 "sizeOfMessages mailmessages query"));
     if (query.lastError().type() != QSqlError::NoError)
