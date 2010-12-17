@@ -1592,6 +1592,8 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
             this, SLOT(activityCompleted(quint64)));
     connect(_server, SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
+
+    init();
 }
 
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
@@ -1830,6 +1832,8 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
             this, SLOT(actionsListed(QMailActionDataList)));
 
     _server->listActions();
+
+    init();
 }
 
 QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActions() const
