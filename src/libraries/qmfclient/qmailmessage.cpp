@@ -7166,6 +7166,20 @@ void QMailMessagePrivate::fromRfc2822(const LongString &ls)
     if (ls.length()) {
         QMailMessageContentType contentType(headerField("Content-Type"));
 
+        QByteArray hDate(headerField("Date"));
+        if (hDate.isEmpty()) {
+            QByteArray hReceived(headerField("Received"));
+            if (!hReceived.isEmpty()) {
+                // From rfc2822 recieved is formatted: "Received:" name-val-list ";" date-time CRLF
+                // As the ";" is manditory this should never fail unless the email is badly formatted
+                QStringList sl(QString::fromAscii(hReceived.data()).split(";"));
+                Q_ASSERT(sl.length() == 2);
+                if (sl.length() == 2) {
+                    setDate(QMailTimeStamp(sl.at(1)));
+                }
+            }
+        }
+
         // Is this a simple mail or a multi-part collection?
         QByteArray mimeVersion = headerField("MIME-Version");
         QByteArray minimalVersion = QMailMessageHeaderField::removeWhitespace(QMailMessageHeaderField::removeComments(mimeVersion));
