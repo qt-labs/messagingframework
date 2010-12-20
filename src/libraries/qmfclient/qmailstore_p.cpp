@@ -859,7 +859,7 @@ public:
 
     QMailTimeStamp date() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::TimeStamp)); }
 
-    QMailTimeStamp receivedDate() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::TimeStamp)); }
+    QMailTimeStamp receivedDate() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::ReceptionTimeStamp)); }
 
     quint64 status() const { return value<quint64>(QMailMessageKey::Status, 0); }
 
