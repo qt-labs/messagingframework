@@ -1759,6 +1759,10 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
 
     deserialize(data, messageLists, setMask, unsetMask);
 
+    if (messageLists.empty()) {
+        return false; // we can't dispatch if we have no accounts
+    }
+
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
