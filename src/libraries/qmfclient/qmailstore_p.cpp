@@ -6594,7 +6594,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
                                     "mailstatusflags register insert"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
-        *result = extractValue<quint64>(query.lastInsertId());
+        *result = 1 << highest;
     }
 
     if (commitOnSuccess && !t.commit()) {
@@ -6740,8 +6740,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(q
     if (updatedTo) {
         *updatedTo = mostRecent.toULongLong();
     }
-
-    qDebug() << "Updated thread id: " << threadId << " to latestinconversation as: " << mostRecent.toULongLong() << " to " << toUpdate.size()+1 << " messages";
 
     return Success;
 }
