@@ -1594,24 +1594,21 @@ void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *con
     _mailboxList = context->client()->mailboxIds();
 
     ImapRetrieveFolderListStrategy::folderListCompleted(context);
-    if(!_currentMailbox.id().isValid())
-    {
-
+    if(_currentMailbox.id().isValid()) {
+        _searches.removeFirst();
+    } else {
         QSet<QMailFolderId> accountFolders(_mailboxList.toSet());
 
         QMailFolderIdList foldersToSearch(foldersApplicableTo(_searches.first().criteria, accountFolders).toList());
 
-        if (foldersToSearch.isEmpty())
+        if (foldersToSearch.isEmpty()) {
             ImapRetrieveFolderListStrategy::folderListCompleted(context);
-        else {
+        } else {
             selectedFoldersAppend(foldersToSearch);
             processNextFolder(context);
         }
     }
-
-
 }
-
 
 void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
@@ -1680,7 +1677,6 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
 void ImapSearchMessageStrategy::messageListCompleted(ImapStrategyContextBase *context)
  {
     if(_currentMailbox.id().isValid()) {
-        _searches.removeFirst();
         context->operationCompleted();
     }
  }
