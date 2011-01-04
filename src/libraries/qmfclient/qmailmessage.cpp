@@ -4071,6 +4071,11 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     partDelimiter.prepend(newLine);
 
     int endPos = body.indexOf(partTerminator, 0);
+    
+    // invalid message handling: handles truncated multipart messages
+    if (endPos == -1)
+        endPos = body.length() - 1;
+    
     while ((startPos != -1) && (startPos < endPos))
     {
         // Skip the boundary line
@@ -4080,6 +4085,11 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
         {
             // Parse the section up to the next boundary marker
             int nextPos = body.indexOf(partDelimiter, startPos);
+
+            // invalid message handling: handles truncated multipart messages
+            if (nextPos == -1)
+                nextPos = body.length() - 1;
+            
             multipartContainer->parseMimePart(body.mid(startPos, (nextPos - startPos)));
 
             // Try the next part
