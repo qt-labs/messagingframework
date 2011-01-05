@@ -4292,6 +4292,14 @@ void ImapDeleteMessagesStrategy::setLocalMessageRemoval(bool removal)
     setMessageFlags(MFlag_Deleted, true);
 }
 
+void ImapDeleteMessagesStrategy::clearSelection()
+{
+    _storedList.clear();
+    _lastMailbox = QMailFolder();
+
+    ImapFlagMessagesStrategy::clearSelection();
+}
+
 void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {

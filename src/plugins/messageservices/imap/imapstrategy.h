@@ -781,6 +781,7 @@ public:
     virtual ~ImapDeleteMessagesStrategy() {}
 
     void setLocalMessageRemoval(bool removal);
+    virtual void clearSelection();
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     

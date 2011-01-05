@@ -1483,6 +1483,7 @@ public:
     ExamineState() : SelectState(IMAP_Examine, "Examine") { ExamineState::init(); }
 
     virtual QString transmit(ImapContext *c);
+    virtual void enter(ImapContext *c);
 };
 
 QString ExamineState::transmit(ImapContext *c)
@@ -1494,6 +1495,12 @@ QString ExamineState::transmit(ImapContext *c)
     }
 
     return c->sendCommand(cmd);
+}
+
+void ExamineState::enter(ImapContext *c)
+{
+    // even though we're really in _mailboxList.first() folder, we can't do any (write) operations
+    c->setMailbox(QMailFolder());
 }
 
 class SearchMessageState : public SelectedState
