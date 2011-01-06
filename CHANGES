@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 201101
+  * Fixes: NB#207235 QMailMessage::fromRfc2822*() does not set the HasAttachment flag (regression)
   * Fixes: NB#209633 Message view failed to show inlined embedded images
 
 201048

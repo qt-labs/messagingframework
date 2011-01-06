@@ -531,6 +531,11 @@ bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *
                 message->setStatus(QMailMessage::PartialContentAvailable, false);
             }
         }
+        
+        // See if any of the parts are attachments
+        if (message->hasAttachments()) {
+            message->setStatus( QMailMessage::HasAttachments, true );
+        }
     }
     return wellFormed;
 }
