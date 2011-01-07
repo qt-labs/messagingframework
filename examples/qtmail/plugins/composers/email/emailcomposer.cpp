@@ -750,7 +750,7 @@ void EmailComposerInterface::setDetails(const QMailMessage& mail)
     m_recipientListWidget->setRecipients(Bcc,QMailAddress::toStringList(mail.bcc()));
 
     if ((mail.subject() != placeholder))
-       m_subjectEdit->setText(mail.subject());
+       m_subjectEdit->setText(mail.subject().simplified());
 }
 
 bool EmailComposerInterface::isEmpty() const
@@ -1059,18 +1059,18 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
 
         if ((subject.left(fwdIndicator.length() + 1) == (fwdIndicator.toLower() + ":")) ||
             (subject.left(shortFwdIndicator.length() + 1) == (shortFwdIndicator.toLower() + ":"))) {
-            subjectText = source.subject();
+            subjectText = source.subject().simplified();
         } else {
-            subjectText = fwdIndicator + ": " + source.subject();
+            subjectText = fwdIndicator + ": " + source.subject().simplified();
         }
     } else {
         // Maintain the same ID in case we need part locations
         mail.setId(source.id());
 
         if (subject.left(replyIndicator.length() + 1) == (replyIndicator.toLower() + ":")) {
-            subjectText = source.subject();
+            subjectText = source.subject().simplified();
         } else {
-            subjectText = replyIndicator + ": " + source.subject();
+            subjectText = replyIndicator + ": " + source.subject().simplified();
         }
 
         QMailAddress replyAddress(source.replyTo());
@@ -1094,7 +1094,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
         forwardBlock += "Date: " + source.date().toString() + '\n';
         forwardBlock += "From: " + source.from().toString() + '\n';
         forwardBlock += "To: " + QMailAddress::toStringList(source.to()).join(QLatin1String(", ")) + '\n';
-        forwardBlock += "Subject: " + source.subject() + '\n';
+        forwardBlock += "Subject: " + source.subject().simplified() + '\n';
 
         QMailAccount originAccount(source.parentAccountId());
         bool viaReference((originAccount.status() & QMailAccount::CanReferenceExternalData) &&
