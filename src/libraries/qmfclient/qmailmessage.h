@@ -676,9 +676,6 @@ private:
 
     void setLatestInConversation(QMailMessageId const& id);
 
-#ifndef QTOPIAMAIL_PARSING_ONLY
-    static void initStore();
-#endif
 public:
     virtual QString copyServerUid() const;
     virtual void setCopyServerUid(const QString &s);

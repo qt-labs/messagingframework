@@ -143,8 +143,6 @@ private:
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
 
-    static void initStore();
-
     QSharedDataPointer<QMailAccountPrivate> d;
 };
 

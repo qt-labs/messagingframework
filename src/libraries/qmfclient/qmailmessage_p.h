@@ -359,8 +359,6 @@ class QMailMessageMetaDataPrivate : public QPrivateImplementationBase
 public:
     QMailMessageMetaDataPrivate();
 
-    static void initializeFlags();
-
     void setMessageType(QMailMessage::MessageType type);
 #ifndef QTOPIAMAIL_PARSING_ONLY
     void setParentFolderId(const QMailFolderId& id);

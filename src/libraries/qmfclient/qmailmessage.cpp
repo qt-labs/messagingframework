@@ -5846,46 +5846,6 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
 {
 }
 
-#ifndef QTOPIAMAIL_PARSING_ONLY
-void QMailMessageMetaDataPrivate::initializeFlags()
-{
-    static bool flagsInitialized = false;
-    if (!flagsInitialized) {
-        flagsInitialized = true;
-
-        incomingFlag = registerFlag("Incoming");
-        outgoingFlag = registerFlag("Outgoing");
-        sentFlag = registerFlag("Sent");
-        repliedFlag = registerFlag("Replied");
-        repliedAllFlag = registerFlag("RepliedAll");
-        forwardedFlag = registerFlag("Forwarded");
-        contentAvailableFlag = registerFlag("ContentAvailable");
-        readFlag = registerFlag("Read");
-        removedFlag = registerFlag("Removed");
-        readElsewhereFlag = registerFlag("ReadElsewhere");
-        unloadedDataFlag = registerFlag("UnloadedData");
-        newFlag = registerFlag("New");
-        readReplyRequestedFlag = registerFlag("ReadReplyRequested");
-        trashFlag = registerFlag("Trash");
-        partialContentAvailableFlag = registerFlag("PartialContentAvailable");
-        hasAttachmentsFlag = registerFlag("HasAttachments");
-        hasReferencesFlag = registerFlag("HasReferences");
-        hasUnresolvedReferencesFlag = registerFlag("HasUnresolvedReferences");
-        draftFlag = registerFlag("Draft");
-        outboxFlag = registerFlag("Outbox");
-        junkFlag = registerFlag("Junk");
-        transmitFromExternalFlag = registerFlag("TransmitFromExternal");
-        localOnlyFlag = registerFlag("LocalOnly");
-        temporaryFlag = registerFlag("TemporaryFlag");
-        importantElsewhereFlag = registerFlag("ImportantElsewhere");
-        importantFlag = registerFlag("Important");
-        highPriorityFlag = registerFlag("HighPriority");
-        lowPriorityFlag = registerFlag("LowPriority");
-        calendarInvitationFlag = registerFlag("CalendarInvitation");
-    }
-}
-#endif
-
 void QMailMessageMetaDataPrivate::setMessageType(QMailMessage::MessageType type)
 {
     updateMember(_messageType, type);
@@ -7112,14 +7072,6 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
 {
     d->_customFieldsModified = set;
 }
-
-#ifndef QTOPIAMAIL_PARSING_ONLY
-/*! \internal */
-void QMailMessageMetaData::initStore()
-{
-    QMailMessageMetaDataPrivate::initializeFlags();
-}
-#endif
 
 /*!
   This is a hack that returns the latest messageId from the conversation this message is.
