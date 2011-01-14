@@ -148,6 +148,31 @@ void ImapConfiguration::setPushCapable(bool b)
     setValue("pushCapable", QString::number(b ? 1 : 0));
 }
 
+// how many ms of nothing to do, until imap will log out and close the connection
+// Note: starting new connections is very slow, and some operations are done in multiple
+// parts. So using no (or very low) timeToLogout is not recommended
+int ImapConfiguration::timeTillLogout() const
+{
+    const int fiveMinutes(5 * 60 * 1000);
+    QString t(value("timeTillLogout", QString::number(fiveMinutes)));
+
+    bool ok;
+    int val(t.toInt(&ok));
+    if (!ok) {
+        qWarning() << "Could not parse timeTillLogout";
+        return fiveMinutes;
+    } else {
+        return val;
+    }
+}
+
+void ImapConfiguration::setTimeTillLogout(int milliseconds)
+{
+    Q_ASSERT(milliseconds >= 0);
+
+    setValue("timeTillLogout", QString::number(milliseconds));
+}
+
 ImapConfigurationEditor::ImapConfigurationEditor(QMailAccountConfiguration *config)
     : ImapConfiguration(*config)
 {

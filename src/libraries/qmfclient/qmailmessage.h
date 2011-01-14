@@ -652,6 +652,8 @@ public:
     void setCustomField(const QString &name, const QString &value);
     void setCustomFields(const QMap<QString, QString> &fields);
 
+    QMailMessageId latestInConversation() const;
+
     void removeCustomField(const QString &name);
 
     const QMap<QString, QString> &customFields() const;
@@ -672,9 +674,8 @@ private:
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
 
-#ifndef QTOPIAMAIL_PARSING_ONLY
-    static void initStore();
-#endif
+    void setLatestInConversation(QMailMessageId const& id);
+
 public:
     virtual QString copyServerUid() const;
     virtual void setCopyServerUid(const QString &s);

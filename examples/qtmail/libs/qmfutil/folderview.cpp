@@ -153,7 +153,11 @@ static QByteArray arrayFromKey(const QMailMessageKey &key)
 {
     QByteArray array;
     QDataStream stream(&array, QIODevice::WriteOnly);
+#if defined(Q_OS_SYMBIAN)
+    key.serialize(stream);
+#else
     key.serialize<QDataStream>(stream);
+#endif
     return array;
 }
 

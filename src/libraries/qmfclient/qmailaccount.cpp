@@ -134,40 +134,6 @@ public:
             _customFieldsModified = true;
         }
     }
-
-    static void initializeFlags()
-    {
-        static bool flagsInitialized = false;
-        if (!flagsInitialized) {
-            flagsInitialized = true;
-
-            synchronizationEnabledFlag = registerFlag("SynchronizationEnabled");
-            synchronizedFlag = registerFlag("Synchronized");
-            appendSignatureFlag = registerFlag("AppendSignature");
-            userEditableFlag = registerFlag("UserEditable");
-            userRemovableFlag = registerFlag("UserRemovable");
-            preferredSenderFlag = registerFlag("PreferredSender");
-            messageSourceFlag = registerFlag("MessageSource");
-            canRetrieveFlag = registerFlag("CanRetrieve");
-            messageSinkFlag = registerFlag("MessageSink");
-            canTransmitFlag = registerFlag("CanTransmit");
-            enabledFlag = registerFlag("Enabled");
-            canReferenceExternalDataFlag = registerFlag("CanReferenceExternalData");
-            canTransmitViaReferenceFlag = registerFlag("CanTransmitViaReference");
-            canCreateFoldersFlag = registerFlag("CanCreateFolders");
-            useSmartReplyFlag = registerFlag("UseSmartReply");
-        }
-    }
-
-private:
-    static quint64 registerFlag(const QString &name)
-    {
-        if (!QMailStore::instance()->registerAccountStatusFlag(name)) {
-            qMailLog(Messaging) << "Unable to register account status flag:" << name << "!";
-        }
-
-        return QMailAccount::statusMask(name);
-    }
 };
 
 /*!
@@ -725,11 +691,5 @@ void QMailAccount::addMessageSource(const QString &source)
 void QMailAccount::addMessageSink(const QString &sink)
 {
     d->_sinks.append(sink);
-}
-
-/*! \internal */
-void QMailAccount::initStore()
-{
-    QMailAccountPrivate::initializeFlags();
 }
 

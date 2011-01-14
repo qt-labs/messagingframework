@@ -1017,13 +1017,6 @@ void PopClient::createMail()
         mail.setContentSize(mailSize - detachedSize);
     }
 
-    if (isComplete && (mail.multipartType() != QMailMessage::MultipartNone)) {
-        // See if any of the parts are attachments
-        if (mail.hasAttachments()) {
-            mail.setStatus( QMailMessage::HasAttachments, true );
-        }
-    }
-
     classifier.classifyMessage(mail);
 
     // Store this message to the mail store

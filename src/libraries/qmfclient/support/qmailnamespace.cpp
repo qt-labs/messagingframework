@@ -296,10 +296,8 @@ QSqlDatabase QMail::createDatabase()
             QString path = dataPath();
             if (path.endsWith('/'))
                 path = path.left(path.length() - 1);
-            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1) {
-                qDebug();
-                qCritical() << "Cannot create database directory";
-            }
+            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1)
+                qCritical() << "Cannot create database directory: " << errno;
 #endif
             if (!dbDir.mkpath(dataPath() + "database"))
                 qCritical() << "Cannot create database path";
@@ -318,8 +316,7 @@ QSqlDatabase QMail::createDatabase()
         
         if(!db.open()) {
             QSqlError dbError = db.lastError();
-            qCritical() << "Cannot open database";
-            qCritical() << dbError.text();
+            qCritical() << "Cannot open database: " << dbError.text();
         }
 
         QDir tp(tempPath());

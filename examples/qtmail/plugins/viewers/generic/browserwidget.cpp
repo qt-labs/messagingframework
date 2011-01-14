@@ -607,7 +607,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
     QString text;
 
     if ((mail->messageType() != QMailMessage::Sms) && (mail->messageType() != QMailMessage::Instant))
-        text += tr("Subject") +  QLatin1String(": ") + mail->subject() + '\n';
+        text += tr("Subject") +  QLatin1String(": ") + mail->subject().simplified() + '\n';
 
     QMailAddress fromAddress(mail->from());
     if (!fromAddress.isNull())

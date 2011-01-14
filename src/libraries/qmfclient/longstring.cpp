@@ -254,21 +254,22 @@ bool LongStringFileMapping::mapped() const {
 
 void LongStringFileMapping::init()
 {
-    if (!filename.isEmpty()) {
+    if (filename.isEmpty())
+        return;
+
+    QFileInfo fi(filename);
+    if (fi.exists() && fi.isFile() && fi.isReadable()) {
+        filename = fi.absoluteFilePath();
+
         QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
         if (it == fileMap.end()) {
             // This file is not referenced yet
-            QFileInfo fi(filename);
-            if (fi.exists() && fi.isFile() && fi.isReadable()) {
-                filename = fi.absoluteFilePath();
+            if (fi.size() > 0) {
+                QFileMapping fileMapping;
 
-                if (fi.size() > 0) {
-                    QFileMapping fileMapping;
-
-                    fileMapping.file = new QFile(filename);
-                    fileMapping.size = fi.size();
-                    it = fileMap.insert(filename, fileMapping);
-                }
+                fileMapping.file = new QFile(filename);
+                fileMapping.size = fi.size();
+                it = fileMap.insert(filename, fileMapping);
             }
         }
 
@@ -300,6 +301,8 @@ void LongStringFileMapping::map() const
             }
 
             buffer = fileMapping.mapping;
+        } else {
+            qWarning() << "Unable to find file in fileMap:" << filename;
         }
     } else {
         qWarning() << "Trying to map on a unspecified file?";

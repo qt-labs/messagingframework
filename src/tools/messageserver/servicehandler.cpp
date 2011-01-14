@@ -1759,6 +1759,8 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
 
     deserialize(data, messageLists, setMask, unsetMask);
 
+    Q_ASSERT(!messageLists.empty());
+
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
@@ -2028,13 +2030,16 @@ void ServiceHandler::actionCompleted(bool success, QMailMessageService *service,
                     qWarning() << "Unable to flag messages:" << mSentIds;
                 }
 
-                enqueueRequest(newLocalActionId(),
-                    serialize(accountMessages(mSentIds), setMask, unsetMask),
-                    sourceServiceSet(service->accountId()),
-                    &ServiceHandler::dispatchFlagMessages,
-                    &ServiceHandler::storageActionCompleted,
-                    FlagMessagesRequestType);
+                QMap<QMailAccountId, QMailMessageIdList> groupedMessages(accountMessages(mSentIds));
 
+                if (!groupedMessages.empty()) { // messages are still around
+                    enqueueRequest(newLocalActionId(),
+                        serialize(groupedMessages, setMask, unsetMask),
+                        sourceServiceSet(service->accountId()),
+                        &ServiceHandler::dispatchFlagMessages,
+                        &ServiceHandler::storageActionCompleted,
+                        FlagMessagesRequestType);
+                }
             }
 
             mSentIds.clear();

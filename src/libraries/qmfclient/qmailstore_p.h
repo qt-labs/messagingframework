@@ -87,6 +87,7 @@ public:
     ~QMailStorePrivate();
 
     virtual bool initStore();
+
     void clearContent();
 
     bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
@@ -214,7 +215,19 @@ private:
     typedef QPair<QString, qint64> TableInfo;
     bool setupTables(const QList<TableInfo> &tableList);
 
-    typedef QPair<quint64, QString> FolderInfo;
+    struct FolderInfo {
+        FolderInfo(quint64 id, QString const& name, quint64 status = 0)
+            : _id(id), _name(name), _status(status)
+        {}
+        quint64 id() const { return _id; }
+        QString name() const { return _name; }
+        quint64 status() const { return _status; }
+    private:
+        quint64 _id;
+        QString _name;
+        quint64 _status;
+    };
+
     bool setupFolders(const QList<FolderInfo> &folderList);
 
     bool purgeMissingAncestors();
@@ -305,6 +318,10 @@ private:
 
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
+
+    quint64 threadId(const QMailMessageId &id);
+    AttemptResult updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo = 0);
+    AttemptResult updateLatestInConversation(const QSet<quint64> &threadIds, QMailMessageIdList *messagesUpdated);
 
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
@@ -443,7 +460,7 @@ private:
                                    int *result, 
                                    ReadLock &);
 
-    AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
+    AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, bool check, quint64 *number,
                                            Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId, 

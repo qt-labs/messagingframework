@@ -264,7 +264,6 @@ protected:
     enum { MaxPipeliningDepth = 4 };
 
     virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey);
     virtual void checkUidValidity(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleCreate(ImapStrategyContextBase *context);
@@ -782,6 +781,7 @@ public:
     virtual ~ImapDeleteMessagesStrategy() {}
 
     void setLocalMessageRemoval(bool removal);
+    virtual void clearSelection();
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
     

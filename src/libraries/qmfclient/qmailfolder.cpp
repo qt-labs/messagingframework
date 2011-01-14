@@ -58,6 +58,7 @@ static quint64 renamePermittedFlag = 0;
 static quint64 deletionPermittedFlag = 0;
 static quint64 nonMailFlag = 0;
 static quint64 messagesPermittedFlag = 0;
+static quint64 readOnlyFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -123,40 +124,6 @@ public:
             customFields.erase(it);
             customFieldsModified = true;
         }
-    }
-
-    static void initializeFlags()
-    {
-        static bool flagsInitialized = false;
-        if (!flagsInitialized) {
-            flagsInitialized = true;
-
-            synchronizationEnabledFlag = registerFlag("SynchronizationEnabled");
-            synchronizedFlag = registerFlag("Synchronized");
-            partialContentFlag = registerFlag("PartialContent");
-            removedFlag = registerFlag("Removed");
-            incomingFlag = registerFlag("Incoming");
-            outgoingFlag = registerFlag("Outgoing");
-            sentFlag = registerFlag("Sent");
-            trashFlag = registerFlag("Trash");
-            draftsFlag = registerFlag("Drafts");
-            junkFlag = registerFlag("Junk");
-            childCreationPermittedFlag = registerFlag("ChildCreationPermitted");
-            renamePermittedFlag = registerFlag("RenamePermitted");
-            deletionPermittedFlag = registerFlag("DeletionPermitted");
-            nonMailFlag = registerFlag("NonMail");
-            messagesPermittedFlag = registerFlag("MessagesPermitted");
-        }
-    }
-
-private:
-    static quint64 registerFlag(const QString &name)
-    {
-        if (!QMailStore::instance()->registerFolderStatusFlag(name)) {
-            qMailLog(Messaging) << "Unable to register folder status flag:" << name << "!";
-        }
-
-        return QMailFolder::statusMask(name);
     }
 };
 
@@ -344,6 +311,7 @@ const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
 const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
 const quint64 &QMailFolder::NonMail = nonMailFlag;
 const quint64 &QMailFolder::MessagesPermitted = messagesPermittedFlag;
+const quint64 &QMailFolder::ReadOnly = readOnlyFlag;
 
 
 /*!
@@ -684,10 +652,3 @@ void QMailFolder::setCustomFieldsModified(bool set)
 {
     d->customFieldsModified = set;
 }
-
-/*! \internal */
-void QMailFolder::initStore()
-{
-    QMailFolderPrivate::initializeFlags();
-}
-

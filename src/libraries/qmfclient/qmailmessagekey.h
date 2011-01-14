@@ -92,7 +92,8 @@ public:
         RestoreFolderId = (1 << 22),
         ListId = (1 << 23),
         RfcId = (1 << 24),
-        Preview = (1 << 25)
+        Preview = (1 << 25),
+        LatestInConversation = (1 << 26)
     };
     Q_DECLARE_FLAGS(Properties,Property)
 
@@ -221,6 +222,10 @@ public:
 
     static QMailMessageKey rfcId(const QString &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey rfcId(const QString &id, QMailDataComparator::InclusionComparator cmp);
+
+    static QMailMessageKey latestInConversation(const QMailMessageId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey latestInConversation(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey latestInConversation(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
 private:
     QMailMessageKey(Property p, const QVariant& value, QMailKey::Comparator c);

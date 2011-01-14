@@ -326,6 +326,8 @@ public:
     QVariant responseType() const { return static_cast<int>(_data.responseType()); }
 
     QVariant preview() const { return _data.preview(); }
+
+    QVariant latestInConversation() const { return _data.latestInConversation().toULongLong(); }
 };
 
 // Class to extract QMailMessageMetaData properties from QVariant object
@@ -380,6 +382,8 @@ public:
     QString rfcId() const { return QMailStorePrivate::extractValue<QString>(_value); }
 
     QString preview() const { return QMailStorePrivate::extractValue<QString>(_value); }
+
+    QMailMessageId latestInConversation() const { return QMailMessageId(QMailStorePrivate::extractValue<quint64>(_value)); }
 };
 
 
@@ -412,6 +416,7 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::ListId, "listid");
     map.insert(QMailMessageKey::RfcId, "rfcid");
     map.insert(QMailMessageKey::Preview, "preview");
+    map.insert(QMailMessageKey::LatestInConversation, "latestinconversation");
     return map;
 }
 
@@ -854,7 +859,7 @@ public:
 
     QMailTimeStamp date() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::TimeStamp)); }
 
-    QMailTimeStamp receivedDate() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::TimeStamp)); }
+    QMailTimeStamp receivedDate() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::ReceptionTimeStamp)); }
 
     quint64 status() const { return value<quint64>(QMailMessageKey::Status, 0); }
 
@@ -898,6 +903,8 @@ public:
     QString rfcId() const { return value<QString>(QMailMessageKey::RfcId); }
 
     QString preview() const { return value<QString>(QMailMessageKey::Preview); }
+
+    QMailMessageId latestInConversation() const { return QMailMessageId(value<quint64>(QMailMessageKey::LatestInConversation)); }
 
 private:
     int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
@@ -997,6 +1004,8 @@ public:
     QVariantList rfcId() const { return stringValues(); }
 
     QVariantList preview() const { return stringValues(); }
+
+    QVariantList latestInConversation() const { return idValues<QMailMessageKey>(); }
 };
 
 template<>
@@ -1116,6 +1125,10 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
 
     case QMailMessageKey::Preview:
         values += extractor.preview();
+        break;
+
+    case QMailMessageKey::LatestInConversation:
+        values += extractor.latestInConversation();
     }
 }
 
@@ -1672,6 +1685,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::InResponseTo:
+        case QMailMessageKey::LatestInConversation:
             if (a.valueList.first().canConvert<QMailMessageKey>()) {
                 QMailMessageKey messageKey = a.valueList.first().value<QMailMessageKey>();
                 QString nestedAlias(incrementAlias(alias));
@@ -1901,11 +1915,6 @@ QPair<QString, qint64> tableInfo(const QString &name, qint64 version)
     return qMakePair(name, version);
 }
 
-QPair<quint64, QString> folderInfo(quint64 id, const QString &name)
-{
-    return qMakePair(id, name);
-}
-
 QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
 {
     return (commitOnSuccess ? QMailContentManager::EnsureDurability : QMailContentManager::DeferDurability);
@@ -2106,7 +2115,7 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
 
 const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
 {
-    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | updatableMessageProperties();
+    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | QMailMessageKey::LatestInConversation | updatableMessageProperties();
     return p;
 }
 
@@ -2204,22 +2213,93 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailaccountcustom", 100)
                                             << tableInfo("mailaccountconfig", 100)
                                             << tableInfo("mailaccountfolders", 100)
-                                            << tableInfo("mailfolders", 105)
+                                            << tableInfo("mailfolders", 106)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailmessages", 112)
+                                            << tableInfo("mailmessages", 113)
                                             << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
                                             << tableInfo("mailsubjects", 100)
                                             << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
-                                            << tableInfo("mailthreadmessages", 100)
+                                            << tableInfo("mailthreadmessages", 101)
                                             << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)
-                                            << tableInfo("obsoletefiles", 100)) ||
-            !setupFolders(QList<FolderInfo>() << folderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage")))) {
+                                            << tableInfo("obsoletefiles", 100))) {
+            return false;
+        }
+        /*static_*/Q_ASSERT(Success == 0);
+
+        bool res = attemptRegisterStatusBit("SynchronizationEnabled", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::Synchronized), t, false)
+                || attemptRegisterStatusBit("AppendSignature", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::AppendSignature), t, false)
+                || attemptRegisterStatusBit("UserEditable", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UserEditable), t, false)
+                || attemptRegisterStatusBit("UserRemovable", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UserRemovable), t, false)
+                || attemptRegisterStatusBit("PreferredSender", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::PreferredSender), t, false)
+                || attemptRegisterStatusBit("MessageSource", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::MessageSource), t, false)
+                || attemptRegisterStatusBit("CanRetrieve", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanRetrieve), t, false)
+                || attemptRegisterStatusBit("MessageSink", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::MessageSink), t, false)
+                || attemptRegisterStatusBit("CanTransmit", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanTransmit), t, false)
+                || attemptRegisterStatusBit("Enabled", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::Enabled), t, false)
+                || attemptRegisterStatusBit("CanReferenceExternalData", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanReferenceExternalData), t, false)
+                || attemptRegisterStatusBit("CanTransmitViaReference", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanTransmitViaReference), t, false)
+                || attemptRegisterStatusBit("CanCreateFolders", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanCreateFolders), t, false)
+                || attemptRegisterStatusBit("UseSmartReply", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
+                || attemptRegisterStatusBit("SynchronizationEnabled", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Synchronized), t, false)
+                || attemptRegisterStatusBit("PartialContent", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::PartialContent), t, false)
+                || attemptRegisterStatusBit("Removed", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Removed), t, false)
+                || attemptRegisterStatusBit("Incoming", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Sent), t, false)
+                || attemptRegisterStatusBit("Trash", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Trash), t, false)
+                || attemptRegisterStatusBit("Drafts", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
+                || attemptRegisterStatusBit("Junk", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
+                || attemptRegisterStatusBit("ChildCreationPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
+                || attemptRegisterStatusBit("RenamePermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::RenamePermitted), t, false)
+                || attemptRegisterStatusBit("DeletionPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::DeletionPermitted), t, false)
+                || attemptRegisterStatusBit("NonMail", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::NonMail), t, false)
+                || attemptRegisterStatusBit("MessagesPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::MessagesPermitted), t, false)
+                || attemptRegisterStatusBit("ReadOnly", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::ReadOnly), t, false)
+                || attemptRegisterStatusBit("Incoming", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Sent), t, false)
+                || attemptRegisterStatusBit("Replied", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Replied), t, false)
+                || attemptRegisterStatusBit("RepliedAll", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::RepliedAll), t, false)
+                || attemptRegisterStatusBit("Forwarded", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Forwarded), t, false)
+                || attemptRegisterStatusBit("ContentAvailable", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ContentAvailable), t, false)
+                || attemptRegisterStatusBit("Read", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Read), t, false)
+                || attemptRegisterStatusBit("Removed", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Removed), t, false)
+                || attemptRegisterStatusBit("ReadElsewhere", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ReadElsewhere), t, false)
+                || attemptRegisterStatusBit("UnloadedData", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::UnloadedData), t, false)
+                || attemptRegisterStatusBit("New", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::New), t, false)
+                || attemptRegisterStatusBit("ReadReplyRequested", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
+                || attemptRegisterStatusBit("Trash", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
+                || attemptRegisterStatusBit("PartialContentAvailable", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
+                || attemptRegisterStatusBit("HasAttachments", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasAttachments), t, false)
+                || attemptRegisterStatusBit("HasReferences", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasReferences), t, false)
+                || attemptRegisterStatusBit("HasUnresolvedReferences", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasUnresolvedReferences), t, false)
+                || attemptRegisterStatusBit("Draft", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Draft), t, false)
+                || attemptRegisterStatusBit("Outbox", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Outbox), t, false)
+                || attemptRegisterStatusBit("Junk", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Junk), t, false)
+                || attemptRegisterStatusBit("TransmitFromExternal", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::TransmitFromExternal), t, false)
+                || attemptRegisterStatusBit("LocalOnly", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::LocalOnly), t, false)
+                || attemptRegisterStatusBit("TemporaryFlag", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Temporary), t, false)
+                || attemptRegisterStatusBit("ImportantElsewhere", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ImportantElsewhere), t, false)
+                || attemptRegisterStatusBit("Important", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Important), t, false)
+                || attemptRegisterStatusBit("HighPriority", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
+                || attemptRegisterStatusBit("LowPriority", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
+                || attemptRegisterStatusBit("CalendarInvitation", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false);
+
+        if (res) {
+            qWarning() << "There was an error registering flags.";
+            return false;
+        }
+
+        if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage"), QMailFolder::MessagesPermitted))) {
+            qWarning() << "Error setting up folders";
             return false;
         }
 
@@ -2228,9 +2308,6 @@ bool QMailStorePrivate::initStore()
             return false;
         }
 
-        QMailAccount::initStore();
-        QMailFolder::initStore();
-        QMailMessage::initStore();
     }
 
 #if defined(Q_USE_SQLITE)
@@ -2665,97 +2742,100 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
     foreach (QMailMessageKey::Property p, messagePropertyList()) {
         switch (properties & p)
         {
-            case QMailMessageKey::Id:
-                metaData->setId(messageRecord.id());
-                break;
+        case QMailMessageKey::Id:
+            metaData->setId(messageRecord.id());
+            break;
 
-            case QMailMessageKey::Type:
-                metaData->setMessageType(messageRecord.messageType());
-                break;
+        case QMailMessageKey::Type:
+            metaData->setMessageType(messageRecord.messageType());
+            break;
 
-            case QMailMessageKey::ParentFolderId:
-                metaData->setParentFolderId(messageRecord.parentFolderId());
-                break;
+        case QMailMessageKey::ParentFolderId:
+            metaData->setParentFolderId(messageRecord.parentFolderId());
+            break;
 
-            case QMailMessageKey::Sender:
-                metaData->setFrom(messageRecord.from());
-                break;
+        case QMailMessageKey::Sender:
+            metaData->setFrom(messageRecord.from());
+            break;
 
-            case QMailMessageKey::Recipients:
-                metaData->setTo(messageRecord.to());
-                break;
+        case QMailMessageKey::Recipients:
+            metaData->setTo(messageRecord.to());
+            break;
 
-            case QMailMessageKey::Subject:
-                metaData->setSubject(messageRecord.subject());
-                break;
+        case QMailMessageKey::Subject:
+            metaData->setSubject(messageRecord.subject());
+            break;
 
-            case QMailMessageKey::TimeStamp:
-                metaData->setDate(messageRecord.date());
-                break;
+        case QMailMessageKey::TimeStamp:
+            metaData->setDate(messageRecord.date());
+            break;
 
-            case QMailMessageKey::ReceptionTimeStamp:
-                metaData->setReceivedDate(messageRecord.receivedDate());
-                break;
+        case QMailMessageKey::ReceptionTimeStamp:
+            metaData->setReceivedDate(messageRecord.receivedDate());
+            break;
 
-            case QMailMessageKey::Status:
-                metaData->setStatus(messageRecord.status());
-                break;
+        case QMailMessageKey::Status:
+            metaData->setStatus(messageRecord.status());
+            break;
 
-            case QMailMessageKey::ParentAccountId:
-                metaData->setParentAccountId(messageRecord.parentAccountId());
-                break;
+        case QMailMessageKey::ParentAccountId:
+            metaData->setParentAccountId(messageRecord.parentAccountId());
+            break;
 
-            case QMailMessageKey::ServerUid:
-                metaData->setServerUid(messageRecord.serverUid());
-                break;
+        case QMailMessageKey::ServerUid:
+            metaData->setServerUid(messageRecord.serverUid());
+            break;
 
-            case QMailMessageKey::Size:
-                metaData->setSize(messageRecord.size());
-                break;
+        case QMailMessageKey::Size:
+            metaData->setSize(messageRecord.size());
+            break;
 
-            case QMailMessageKey::ContentType:
-                metaData->setContent(messageRecord.content());
-                break;
+        case QMailMessageKey::ContentType:
+            metaData->setContent(messageRecord.content());
+            break;
 
-            case QMailMessageKey::PreviousParentFolderId:
-                metaData->setPreviousParentFolderId(messageRecord.previousParentFolderId());
-                break;
+        case QMailMessageKey::PreviousParentFolderId:
+            metaData->setPreviousParentFolderId(messageRecord.previousParentFolderId());
+            break;
 
-            case QMailMessageKey::ContentScheme:
-                metaData->setContentScheme(messageRecord.contentScheme());
-                break;
+        case QMailMessageKey::ContentScheme:
+            metaData->setContentScheme(messageRecord.contentScheme());
+            break;
 
-            case QMailMessageKey::ContentIdentifier:
-                metaData->setContentIdentifier(messageRecord.contentIdentifier());
-                break;
+        case QMailMessageKey::ContentIdentifier:
+            metaData->setContentIdentifier(messageRecord.contentIdentifier());
+            break;
 
-            case QMailMessageKey::InResponseTo:
-                metaData->setInResponseTo(messageRecord.inResponseTo());
-                break;
+        case QMailMessageKey::InResponseTo:
+            metaData->setInResponseTo(messageRecord.inResponseTo());
+            break;
 
-            case QMailMessageKey::ResponseType:
-                metaData->setResponseType(messageRecord.responseType());
-                break;
+        case QMailMessageKey::ResponseType:
+            metaData->setResponseType(messageRecord.responseType());
+            break;
 
-            case QMailMessageKey::CopyServerUid:
-                metaData->setCopyServerUid(messageRecord.copyServerUid());
-                break;
+        case QMailMessageKey::CopyServerUid:
+            metaData->setCopyServerUid(messageRecord.copyServerUid());
+            break;
 
-            case QMailMessageKey::RestoreFolderId:
-                metaData->setRestoreFolderId(messageRecord.restoreFolderId());
-                break;
+        case QMailMessageKey::RestoreFolderId:
+            metaData->setRestoreFolderId(messageRecord.restoreFolderId());
+            break;
 
-            case QMailMessageKey::ListId:
-                metaData->setListId(messageRecord.listId());
-                break;
+        case QMailMessageKey::ListId:
+            metaData->setListId(messageRecord.listId());
+            break;
 
-            case QMailMessageKey::RfcId:
-                metaData->setRfcId(messageRecord.rfcId());
-                break;
+        case QMailMessageKey::RfcId:
+            metaData->setRfcId(messageRecord.rfcId());
+            break;
 
-            case QMailMessageKey::Preview:
-                metaData->setPreview(messageRecord.preview());
-                break;
+        case QMailMessageKey::Preview:
+            metaData->setPreview(messageRecord.preview());
+            break;
+
+        case QMailMessageKey::LatestInConversation:
+            metaData->setLatestInConversation(messageRecord.latestInConversation());
         }
     }
     
@@ -2998,6 +3078,9 @@ QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties&
             case QMailMessageKey::Preview:
                 values.append(extractor.preview());
                 break;
+
+            case QMailMessageKey::LatestInConversation:
+                values.append(extractor.latestInConversation());
         }
     }
 
@@ -3119,6 +3202,10 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
 
             case QMailMessageKey::Preview:
                 metaData.setPreview(extractor.preview());
+                break;
+
+            case QMailMessageKey::LatestInConversation:
+                metaData.setLatestInConversation(extractor.latestInConversation());
                 break;
 
             default:
@@ -3317,6 +3404,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     QSet<quint64> folderIds;
 
     {
+        // TODO: Perhaps we should search only for existing folders?
         QSqlQuery query(simpleQuery("SELECT id FROM mailfolders", 
                                     "folder ids query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -3327,15 +3415,15 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     }
 
     foreach (const FolderInfo &folder, folderList) {
-        if (folderIds.contains(folder.first))
+        if (folderIds.contains(folder.id()))
             continue;
         QSqlQuery query(simpleQuery("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?,?)",
-                                    QVariantList() << folder.first
-                                                   << folder.second
+                                    QVariantList() << folder.id()
+                                                   << folder.name()
                                                    << quint64(0)
                                                    << quint64(0)
                                                    << QString()
-                                                   << quint64(0)
+                                                   << folder.status()
                                                    << int(0)
                                                    << int(0)
                                                    << int(0),
@@ -3984,9 +4072,11 @@ bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
     if (accountStatusMask(name) != 0)
         return true;
 
+    quint64 num;
+
     static const QString context("accountstatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64), 
+                                        cref(name), cref(context), 64, false, &num),
                                    "registerAccountStatusBit");
 }
 
@@ -4003,9 +4093,11 @@ bool QMailStorePrivate::registerFolderStatusFlag(const QString &name)
     if (folderStatusMask(name) != 0)
         return true;
 
+    quint64 num;
+
     static const QString context("folderstatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64), 
+                                        cref(name), cref(context), 64, false, &num),
                                    "registerFolderStatusBit");
 }
 
@@ -4022,9 +4114,11 @@ bool QMailStorePrivate::registerMessageStatusFlag(const QString &name)
     if (messageStatusMask(name) != 0)
         return true;
 
+    quint64 num;
+
     static const QString context("messagestatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64), 
+                                        cref(name), cref(context), 64, false, &num),
                                    "registerMessageStatusBit");
 }
 
@@ -4664,6 +4758,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         values.insert("listid", metaData->listId());
         values.insert("rfcID", metaData->rfcId());
         values.insert("preview", metaData->preview());
+        values.insert("latestinconversation", metaData->latestInConversation());
 
         const QStringList &list(values.keys());
         QString columns = list.join(",");
@@ -4680,18 +4775,41 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     // Insert any custom fields belonging to this message
-    AttemptResult result = addCustomFields(insertId, metaData->customFields(), "mailmessagecustom");
+    AttemptResult result(addCustomFields(insertId, metaData->customFields(), "mailmessagecustom"));
     if (result != Success)
         return result;
 
     // Attach this message to a thread
     if (metaData->inResponseTo().isValid()) {
-        // Use the thread of the parent message
-        QSqlQuery query(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
-                                    QVariantList() << insertId << metaData->inResponseTo().toULongLong(),
-                                    "addMessage mailthreadmessages insert query"));
+
+        QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid=%1");
+        QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
+
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
+
+        if (!query.next()) {
+            qWarning() << "Could not find thread id for inserted message";
+            return DatabaseFailure;
+        }
+
+        quint64 threadId(extractValue<quint64>(query.value(0)));
+
+        // Use the thread of the parent message
+        QSqlQuery insertQuery(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) VALUES (?,?)",
+                                    QVariantList() << threadId << insertId,
+                                    "addMessage mailthreadmessages insert query"));
+        if (insertQuery.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        quint64 newLatest;
+        AttemptResult res(updateLatestInConversation(threadId, all_updatedMessageIds, &newLatest));
+
+        if (res != Success)
+            return res;
+
+        Q_ASSERT(newLatest != 0);
+        metaData->setLatestInConversation(QMailMessageId(newLatest));
     } else {
         // Add a new thread for this message
         quint64 threadId;
@@ -4712,6 +4830,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
+
+        Q_ASSERT(insertId != 0);
+        metaData->setLatestInConversation(QMailMessageId(insertId));
+        QString updateSql("UPDATE mailmessages SET latestinconversation = %1 WHERE id = %1");
+        QSqlQuery updateQuery(simpleQuery(updateSql.arg(insertId), "addmessage latestinconversation selfupdate"));
+
+        if (updateQuery.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
     }
 
     if (!baseSubject.isEmpty()) {
@@ -5672,6 +5798,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
+
+        QSet<quint64> threadIds;
+        foreach(const QMailMessageId &id, *updatedMessageIds) {
+            threadIds.insert(threadId(id));
+        }
+
+        AttemptResult res(updateLatestInConversation(threadIds, updatedMessageIds));
+        if (res != Success)
+            return res;
     }
 
     if (commitOnSuccess && !t.commit()) {
@@ -5836,7 +5971,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const 
                                                                           int *result, 
                                                                           ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT SUM(size FROM mailmessages",
+    QSqlQuery query(simpleQuery("SELECT SUM(size) FROM mailmessages",
                                 Key(key),
                                 "sizeOfMessages mailmessages query"));
     if (query.lastError().type() != QSqlError::NoError)
@@ -6394,19 +6529,49 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptStatusBit(const QStri
     QSqlQuery query(simpleQuery("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?",
                                 QVariantList() << name << context,
                                 "mailstatusflags select"));
-    if (query.lastError().type() != QSqlError::NoError)
+    if (query.lastError().type() != QSqlError::NoError) {
+        *result = 0;
         return DatabaseFailure;
+    }
 
-    *result = 0;
+
     if (query.next())
         *result = extractValue<int>(query.value(0));
+    else
+        *result = 0;
 
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, bool check, quint64 *result,
                                                                              Transaction &t, bool commitOnSuccess)
 {
+    if (check) {
+        QSqlQuery query(simpleQuery("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?",
+                                    QVariantList() << name << context,
+                                    "attemptRegisterStatusBit select"));
+        if (query.lastError().type() != QSqlError::NoError) {
+            *result = 0;
+            return DatabaseFailure;
+        }
+
+
+        if (query.next())
+            *result = (1 << (extractValue<int>(query.value(0))-1));
+        else
+            *result = 0;
+
+        if (*result) {
+            if (commitOnSuccess && !t.commit()) {
+                qWarning() << "Could not commit aftering reading status flag";
+                return DatabaseFailure;
+            }
+            return Success;
+        }
+    } else {
+        *result = 0;
+    }
+
     int highest = 0;
 
     {
@@ -6429,6 +6594,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
                                     "mailstatusflags register insert"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
+        *result = 1 << highest;
     }
 
     if (commitOnSuccess && !t.commit()) {
@@ -6502,6 +6668,92 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
     result = self->attemptFolderAccountIds(QMailFolderKey::id(folderIds), &accountIds, l);
     APPEND_UNIQUE(all_accountIds, &accountIds);
     return result;
+}
+
+quint64 QMailStorePrivate::threadId(const QMailMessageId &id)
+{
+    Q_ASSERT(id.isValid());
+    QString sql("SELECT threadid FROM mailthreadmessages WHERE id = %1");
+    QSqlQuery query(simpleQuery(sql.arg(id.toULongLong()), "messagethreadid info query"));
+
+    if (query.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Error when locating thread information for message: " << id;
+        return 0;
+    }
+
+    if (query.next()) {
+        return extractValue<quint64>(query.value(0));
+    } else {
+        qWarning() << "Error when locating thread information for message: " << id;
+        return 0;
+    }
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo)
+{
+    Q_ASSERT(threadId != 0);
+
+    QString messageIdsQuery("SELECT id FROM mailmessages WHERE id IN (SELECT messageid FROM mailthreadmessages WHERE threadid = %1) ORDER BY stamp DESC");
+
+    QSqlQuery query(simpleQuery(messageIdsQuery.arg(threadId), "updateLatestInConversation message list"));
+
+    if (query.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Error when listing messages in thread id" << threadId;
+        return DatabaseFailure;
+    }
+
+    QList<QMailMessageId> toUpdate; // exclusive of themostRecent
+
+    if (!query.next()) {
+        return Success; // nothing to do
+    }
+
+    QMailMessageId mostRecent(extractValue<quint64>(query.value(0)));
+    Q_ASSERT(mostRecent.isValid());
+
+    while (query.next()) {
+        toUpdate.push_back(QMailMessageId(extractValue<quint64>(query.value(0))));
+    }
+
+    // TODO: clean this up, but as they're all just ints -- it's not so bad
+    QString updateSql("UPDATE mailmessages SET latestinconversation=");
+    updateSql += QString::number(mostRecent.toULongLong());
+    updateSql += " WHERE id IN (";
+    updateSql += QString::number(mostRecent.toULongLong());
+
+    foreach (QMailMessageId const& updateId, toUpdate) {
+        updateSql += ", " + QString::number(updateId.toULongLong());
+    }
+
+    updateSql += ");";
+
+    QSqlQuery updateQuery(simpleQuery(updateSql, "updateLatestInConversation thread update"));
+
+    if (updateQuery.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Error when updating all messages in thread";
+        return DatabaseFailure;
+    }
+
+    APPEND_UNIQUE(messagesUpdated, mostRecent);
+    APPEND_UNIQUE(messagesUpdated, &toUpdate);
+
+    if (updatedTo) {
+        *updatedTo = mostRecent.toULongLong();
+    }
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(const QSet<quint64> & threadIds, QMailMessageIdList *messagesUpdated)
+{
+    foreach (quint64 const& threadId, threadIds) {
+        AttemptResult res(updateLatestInConversation(threadId, messagesUpdated));
+        if (res != Success) {
+            return res;
+        }
+    }
+
+    return Success;
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool replyOrForward,
@@ -6988,13 +7240,15 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailAccountIdList& modifiedAccountIds)
 {
 
-    QString elements("id,mailfile,parentaccountid,parentfolderId");
+    QString elements("id,mailfile,parentaccountid,parentfolderid, latestinconversation");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";
 
     QVariantList removalAccountIds;
     QVariantList removalServerUids;
     QVariantList removalFolderIds;
+
+    QSet<quint64> threadsToUpdate;
 
     {
         // Get the information we need to delete these messages
@@ -7025,10 +7279,23 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             if (!modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
 
+            if (extractValue<quint64>(query.value(4) == messageId.toULongLong())) {
+
+                QSqlQuery threadIdQuery(simpleQuery(QString("SELECT threadid FROM mailthreadmessages WHERE messageid=%1").arg(messageId.toULongLong()),
+                                            "deleteMessages threadid info query"));
+                if (threadIdQuery.lastError().type() != QSqlError::NoError)
+                    return false;
+
+                int hasNext(threadIdQuery.next());
+                Q_ASSERT(hasNext);
+
+                threadsToUpdate.insert(extractValue<quint64>(threadIdQuery.value(0)));
+            }
+
             if (option == QMailStore::CreateRemovalRecord) {
                 // Extract the info needed to create removal records
                 removalAccountIds.append(parentAccountId.toULongLong());
-                removalServerUids.append(extractValue<QString>(query.value(4)));
+                removalServerUids.append(extractValue<QString>(query.value(5)));
                 removalFolderIds.append(folderId.toULongLong());
             }
         }
@@ -7191,6 +7458,11 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id NOT IN (SELECT threadid FROM mailthreadmessages)",
                                     "deleteMessages mailthreads delete query"));
         if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+    {
+        AttemptResult res(updateLatestInConversation(threadsToUpdate, &updatedMessageIds));
+        if (res != Success)
             return false;
     }
 
@@ -7599,77 +7871,81 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
             foreach (QMailMessageKey::Property p, messagePropertyList()) {
                 switch (properties & p)
                 {
-                    case QMailMessageKey::Id:
-                        metaData.setId(data.id());
-                        break;
+                case QMailMessageKey::Id:
+                    metaData.setId(data.id());
+                    break;
 
-                    case QMailMessageKey::Type:
-                        metaData.setMessageType(data.messageType());
-                        break;
+                case QMailMessageKey::Type:
+                    metaData.setMessageType(data.messageType());
+                    break;
 
-                    case QMailMessageKey::ParentFolderId:
-                        metaData.setParentFolderId(data.parentFolderId());
-                        break;
+                case QMailMessageKey::ParentFolderId:
+                    metaData.setParentFolderId(data.parentFolderId());
+                    break;
 
-                    case QMailMessageKey::Sender:
-                        metaData.setFrom(data.from());
-                        break;
+                case QMailMessageKey::Sender:
+                    metaData.setFrom(data.from());
+                    break;
 
-                    case QMailMessageKey::Recipients:
-                        metaData.setTo(data.to());
-                        break;
+                case QMailMessageKey::Recipients:
+                    metaData.setTo(data.to());
+                    break;
 
-                    case QMailMessageKey::Subject:
-                        metaData.setSubject(data.subject());
-                        break;
+                case QMailMessageKey::Subject:
+                    metaData.setSubject(data.subject());
+                    break;
 
-                    case QMailMessageKey::TimeStamp:
-                        metaData.setDate(data.date());
-                        break;
+                case QMailMessageKey::TimeStamp:
+                    metaData.setDate(data.date());
+                    break;
 
-                    case QMailMessageKey::ReceptionTimeStamp:
-                        metaData.setReceivedDate(data.receivedDate());
-                        break;
+                case QMailMessageKey::ReceptionTimeStamp:
+                    metaData.setReceivedDate(data.receivedDate());
+                    break;
 
-                    case QMailMessageKey::Status:
-                        metaData.setStatus(data.status());
-                        break;
+                case QMailMessageKey::Status:
+                    metaData.setStatus(data.status());
+                    break;
 
-                    case QMailMessageKey::ParentAccountId:
-                        metaData.setParentAccountId(data.parentAccountId());
-                        break;
+                case QMailMessageKey::ParentAccountId:
+                    metaData.setParentAccountId(data.parentAccountId());
+                    break;
 
-                    case QMailMessageKey::ServerUid:
-                        metaData.setServerUid(data.serverUid());
-                        break;
+                case QMailMessageKey::ServerUid:
+                    metaData.setServerUid(data.serverUid());
+                    break;
 
-                    case QMailMessageKey::Size:
-                        metaData.setSize(data.size());
-                        break;
+                case QMailMessageKey::Size:
+                    metaData.setSize(data.size());
+                    break;
 
-                    case QMailMessageKey::ContentType:
-                        metaData.setContent(data.content());
-                        break;
+                case QMailMessageKey::ContentType:
+                    metaData.setContent(data.content());
+                    break;
 
-                    case QMailMessageKey::PreviousParentFolderId:
-                        metaData.setPreviousParentFolderId(data.previousParentFolderId());
-                        break;
+                case QMailMessageKey::PreviousParentFolderId:
+                    metaData.setPreviousParentFolderId(data.previousParentFolderId());
+                    break;
 
-                    case QMailMessageKey::ContentScheme:
-                        metaData.setContentScheme(data.contentScheme());
-                        break;
+                case QMailMessageKey::ContentScheme:
+                    metaData.setContentScheme(data.contentScheme());
+                    break;
 
-                    case QMailMessageKey::ContentIdentifier:
-                        metaData.setContentIdentifier(data.contentIdentifier());
-                        break;
+                case QMailMessageKey::ContentIdentifier:
+                    metaData.setContentIdentifier(data.contentIdentifier());
+                    break;
 
-                    case QMailMessageKey::InResponseTo:
-                        metaData.setInResponseTo(data.inResponseTo());
-                        break;
+                case QMailMessageKey::InResponseTo:
+                    metaData.setInResponseTo(data.inResponseTo());
+                    break;
 
-                    case QMailMessageKey::ResponseType:
-                        metaData.setResponseType(data.responseType());
-                        break;
+                case QMailMessageKey::ResponseType:
+                    metaData.setResponseType(data.responseType());
+                    break;
+
+                case QMailMessageKey::LatestInConversation:
+                    metaData.setLatestInConversation(data.latestInConversation());
+                    break;
                 }
             }
 

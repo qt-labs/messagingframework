@@ -262,8 +262,6 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 
     emitMessageNotification(Added, addedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
-    emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
-    emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
 
@@ -286,8 +284,6 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     if (!d->addMessages(messages, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
         return false;
 
-    emitMessageNotification(Added, addedMessageIds);
-    emitMessageNotification(Updated, updatedMessageIds);
     emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
     emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitFolderNotification(ContentsModified, modifiedFolderIds);
@@ -576,7 +572,6 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
     if (!d->updateMessagesMetaData(key, properties, data, &updatedMessages, &modifiedFolders, &modifiedAccounts))
         return false;
 
-    emitMessageNotification(Updated, updatedMessages);
     emitMessageDataNotification(updatedMessages, properties, data);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);

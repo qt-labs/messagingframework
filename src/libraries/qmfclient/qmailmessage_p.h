@@ -359,8 +359,6 @@ class QMailMessageMetaDataPrivate : public QPrivateImplementationBase
 public:
     QMailMessageMetaDataPrivate();
 
-    static void initializeFlags();
-
     void setMessageType(QMailMessage::MessageType type);
 #ifndef QTOPIAMAIL_PARSING_ONLY
     void setParentFolderId(const QMailFolderId& id);
@@ -406,6 +404,8 @@ public:
     void removeCustomField(const QString &name);
     void setCustomFields(const QMap<QString, QString> &fields);
 
+    void setLatestInConversation(const QMailMessageId &id);
+
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
@@ -444,6 +444,8 @@ public:
 
     mutable Maybe< QMap<QString, QString> > _customFields;
     bool _customFieldsModified;
+
+    QMailMessageId _latestInConversation;
 
     template <typename T>
     void updateMember(T& value, const T& newValue)

@@ -542,7 +542,7 @@ void SmtpClient::nextAction(const QString &response)
         sendCommand("MAIL FROM: " + mailItr->from);
         status = Recv;
 
-        emit updateStatus(tr( "Sending: %1").arg(mailItr->mail.subject()) );
+        emit updateStatus(tr( "Sending: %1").arg(mailItr->mail.subject().simplified()) );
         break;
     }
     case Recv:  

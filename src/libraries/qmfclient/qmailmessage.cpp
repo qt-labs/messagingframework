@@ -894,7 +894,7 @@ namespace findBody
                 break;
             }
         }
-        qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
+        //qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
         return false;
     }
 
@@ -1799,7 +1799,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
                 ++lastIndex;
             } else {
                 // We couldn't find any high-level syntactic break either - just break at the last char
-                qWarning() << "Unable to break header field at white space or syntactic break";
+                //qWarning() << "Unable to break header field at white space or syntactic break";
                 lastIndex = remaining;
             }
         }
@@ -4071,6 +4071,11 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     partDelimiter.prepend(newLine);
 
     int endPos = body.indexOf(partTerminator, 0);
+    
+    // invalid message handling: handles truncated multipart messages
+    if (endPos == -1)
+        endPos = body.length() - 1;
+    
     while ((startPos != -1) && (startPos < endPos))
     {
         // Skip the boundary line
@@ -4080,6 +4085,11 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
         {
             // Parse the section up to the next boundary marker
             int nextPos = body.indexOf(partDelimiter, startPos);
+
+            // invalid message handling: handles truncated multipart messages
+            if (nextPos == -1)
+                nextPos = body.length() - 1;
+            
             multipartContainer->parseMimePart(body.mid(startPos, (nextPos - startPos)));
 
             // Try the next part
@@ -4743,11 +4753,21 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
         }
         bodyContainer->clearParts();
     } else {
-        if (multipartType() == QMailMessagePartContainer::MultipartNone) {
+        switch (multipartType()) {
+        case QMailMessagePartContainer::MultipartNone:
             bodyContainer = this;
-        } else {
-            // No body part found and message is not MultipartNone? Should not happen!
-            Q_ASSERT (false);
+            break;
+        case QMailMessagePartContainer::MultipartMixed:
+            // Message with attachments but still without body (eg: being
+            // forwarded, still in composing stage)
+            // We make room for the new body container
+            prependPart(QMailMessagePart());
+            bodyContainer = &partAt(0);
+            break;
+        default:
+            qWarning() << Q_FUNC_INFO << "Wrong multipart type: " << multipartType();
+            Q_ASSERT(false);
+            break;
         }
     }
     Q_ASSERT (NULL != bodyContainer);
@@ -5826,46 +5846,6 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
 {
 }
 
-#ifndef QTOPIAMAIL_PARSING_ONLY
-void QMailMessageMetaDataPrivate::initializeFlags()
-{
-    static bool flagsInitialized = false;
-    if (!flagsInitialized) {
-        flagsInitialized = true;
-
-        incomingFlag = registerFlag("Incoming");
-        outgoingFlag = registerFlag("Outgoing");
-        sentFlag = registerFlag("Sent");
-        repliedFlag = registerFlag("Replied");
-        repliedAllFlag = registerFlag("RepliedAll");
-        forwardedFlag = registerFlag("Forwarded");
-        contentAvailableFlag = registerFlag("ContentAvailable");
-        readFlag = registerFlag("Read");
-        removedFlag = registerFlag("Removed");
-        readElsewhereFlag = registerFlag("ReadElsewhere");
-        unloadedDataFlag = registerFlag("UnloadedData");
-        newFlag = registerFlag("New");
-        readReplyRequestedFlag = registerFlag("ReadReplyRequested");
-        trashFlag = registerFlag("Trash");
-        partialContentAvailableFlag = registerFlag("PartialContentAvailable");
-        hasAttachmentsFlag = registerFlag("HasAttachments");
-        hasReferencesFlag = registerFlag("HasReferences");
-        hasUnresolvedReferencesFlag = registerFlag("HasUnresolvedReferences");
-        draftFlag = registerFlag("Draft");
-        outboxFlag = registerFlag("Outbox");
-        junkFlag = registerFlag("Junk");
-        transmitFromExternalFlag = registerFlag("TransmitFromExternal");
-        localOnlyFlag = registerFlag("LocalOnly");
-        temporaryFlag = registerFlag("TemporaryFlag");
-        importantElsewhereFlag = registerFlag("ImportantElsewhere");
-        importantFlag = registerFlag("Important");
-        highPriorityFlag = registerFlag("HighPriority");
-        lowPriorityFlag = registerFlag("LowPriority");
-        calendarInvitationFlag = registerFlag("CalendarInvitation");
-    }
-}
-#endif
-
 void QMailMessageMetaDataPrivate::setMessageType(QMailMessage::MessageType type)
 {
     updateMember(_messageType, type);
@@ -6073,6 +6053,11 @@ void QMailMessageMetaDataPrivate::setCustomFields(const QMap<QString, QString> &
     _customFieldsModified = true;
 }
 
+void QMailMessageMetaDataPrivate::setLatestInConversation(QMailMessageId const& id)
+{
+    updateMember(_latestInConversation, id);
+}
+
 template <typename Stream> 
 void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
 {
@@ -6106,6 +6091,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _customFieldsModified;
     stream << _dirty;
     stream << _preview;
+    stream << _latestInConversation;
 }
 
 template <typename Stream> 
@@ -6147,6 +6133,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _customFieldsModified;
     stream >> _dirty;
     stream >> _preview;
+    stream >> _latestInConversation;
 }
 
 
@@ -7086,19 +7073,27 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
     d->_customFieldsModified = set;
 }
 
-#ifndef QTOPIAMAIL_PARSING_ONLY
-/*! \internal */
-void QMailMessageMetaData::initStore()
+/*!
+  This is a hack that returns the latest messageId from the conversation this message is.
+*/
+QMailMessageId QMailMessageMetaData::latestInConversation() const
 {
-    QMailMessageMetaDataPrivate::initializeFlags();
+    return impl(this)->_latestInConversation;
 }
-#endif
+
+/*!
+  This is a hack that sets the latest messageId in the conversation. No client should use this..
+*/
+void QMailMessageMetaData::setLatestInConversation(QMailMessageId const& id)
+{
+    return impl(this)->setLatestInConversation(id);
+}
 
 /*! 
     \fn QMailMessageMetaData::serialize(Stream&) const
     \internal 
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageMetaData::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
@@ -7967,8 +7962,26 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
         mail.partContainerImpl()->fromRfc2822( ls.mid(pos + 4) );
     }
 
+    if (mail.metaDataImpl()->_date.isNull()) {
+        QByteArray hReceived(mail.partContainerImpl()->headerField("Received"));
+        if (!hReceived.isEmpty()) {
+            // From rfc2822 recieved is formatted: "Received:" name-val-list ";" date-time CRLF
+            // As the ";" is manditory this should never fail unless the email is badly formatted
+            QStringList sl(QString::fromAscii(hReceived.data()).split(";"));
+            Q_ASSERT(sl.length() == 2);
+            if (sl.length() == 2) {
+                mail.metaDataImpl()->setDate(QMailTimeStamp(sl.at(1)));
+            }
+        } else {
+            mail.metaDataImpl()->setDate(QMailTimeStamp::currentDateTime());
+        }
+    }
+
     setMessagePriorityFromHeaderFields(&mail);
     setMessagePreview(&mail);
+    if (mail.hasAttachments()) {
+        mail.setStatus( QMailMessage::HasAttachments, true );
+    }
     return mail;
 }
 

@@ -404,7 +404,7 @@ void IdleProtocol::idleErrorRecovery()
 
 ImapClient::ImapClient(QObject* parent)
     : QObject(parent),
-      _closeCount(5),
+      _closeCount(0),
       _waitingForIdle(false),
       _idlesEstablished(false),
       _qresyncEnabled(false)
@@ -557,8 +557,8 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             qFatal( "Logic error, IMAP_Full" );
             break;
         case IMAP_Unconnected:
-            qFatal( "Logic error, Unconnected" );
-            break;
+            operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
+            return;
         default:
             break;
     }
@@ -668,7 +668,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Noop:
         {
-            _inactiveTimer.start(InactivityPeriod);
+            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : ImapConfiguration(_config).timeTillLogout() % MaxTimeBeforeNoop);
             break;
         }
 
@@ -1130,8 +1130,6 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 mail.setStatus(QMailMessage::ContentAvailable, true);
             } 
 
-            // If this message was previously marked read, that is no longer true
-            mail.setStatus(QMailMessage::Read, false);
         } else {
             // This is data for a sub-part of the message
             QMailMessagePart::Location partLocation(section);
@@ -1306,16 +1304,18 @@ void ImapClient::retrieveOperationCompleted()
 
 void ImapClient::deactivateConnection()
 {
-    _closeCount = StayAliveCount; // 5 minutes
-    _inactiveTimer.start(InactivityPeriod);
+    int time(ImapConfiguration(_config).timeTillLogout());
+    _closeCount = time / MaxTimeBeforeNoop;
+    _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : time);
 }
 
 void ImapClient::connectionInactive()
 {
-    --_closeCount;
-    if (!_closeCount) {
+    Q_ASSERT(_closeCount >= 0);
+    if (_closeCount == 0) {
         closeConnection();
     } else {
+        --_closeCount;
         _protocol.sendNoop();
     }
 }
