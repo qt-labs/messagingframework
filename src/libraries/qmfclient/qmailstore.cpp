@@ -1195,9 +1195,10 @@ QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* mess
     metaData.setRestoreFolderId(message->restoreFolderId());
     metaData.setRfcId(message->rfcId());
     metaData.setCopyServerUid(message->copyServerUid());
-    metaData.setStatus(QMailMessage::UnloadedData, true);
     metaData.setPreview(message->preview());
+    metaData.setLatestInConversation(message->latestInConversation());
     metaData.setUnmodified();
+
 
     return metaData;
 }
