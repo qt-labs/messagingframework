@@ -1,6 +1,15 @@
 Latest Changes
 ---------------
 
+201102
+  * Fixes: NB#206801 - Sync icon still spinning but there are not actions going on in the background
+  * Fixes: NB#207235 - QMailMessage::fromRfc2822*() does not set the HasAttachment flag
+  * Fixes: NB#181546 - IMAP: Next successive delete message(s) attempt fails and synchronization spinner never stops 
+  * Fixes: NB#213223 - QMailMessageMetaData::receivedDate() and QMailMessageMetaData::date() return the same date on an updated
+  * Fixes: NB#209479 - <UninitVar> qmailserviceaction.cpp:340
+  * Fixes: NB#209646 - Sending a message shows 'spinner' for a long time and not reliable all the time
+  * Fixes: QTSOL-185 - Triggering incoming email results in duplicate signal emission
+
 201101
   * Fixes: NB#207235 QMailMessage::fromRfc2822*() does not set the HasAttachment flag (regression)
   * Fixes: NB#209633 Message view failed to show inlined embedded images
