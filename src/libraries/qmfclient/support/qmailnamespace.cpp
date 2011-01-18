@@ -303,10 +303,6 @@ QSqlDatabase QMail::createDatabase()
                 qCritical() << "Cannot create database path";
         }
 
-        if (QFile::exists(dataPath() + "qmailstore.db")) { // TODO: remove this. It functions as an upgrade script
-            QFile::rename(dataPath() + "qmailstore.db", dataPath() + "database/qmailstore.db");
-        }
-
         db.setDatabaseName(dataPath() + "database/qmailstore.db");
 #endif
 
