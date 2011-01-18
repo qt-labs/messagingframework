@@ -6673,7 +6673,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
 quint64 QMailStorePrivate::threadId(const QMailMessageId &id)
 {
     Q_ASSERT(id.isValid());
-    QString sql("SELECT threadid FROM mailthreadmessages WHERE id = %1");
+    QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid = %1");
     QSqlQuery query(simpleQuery(sql.arg(id.toULongLong()), "messagethreadid info query"));
 
     if (query.lastError().type() != QSqlError::NoError) {
