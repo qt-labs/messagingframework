@@ -296,7 +296,7 @@ QSqlDatabase QMail::createDatabase()
             QString path = dataPath();
             if (path.endsWith('/'))
                 path = path.left(path.length() - 1);
-            if (::mkdir(QFile::encodeName(path), S_IRWXU) == -1)
+            if (!QDir(path).exists() && ::mkdir(QFile::encodeName(path), S_IRWXU) == -1)
                 qCritical() << "Cannot create database directory: " << errno;
 #endif
             if (!dbDir.mkpath(dataPath() + "database"))
