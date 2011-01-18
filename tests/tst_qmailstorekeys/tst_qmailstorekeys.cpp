@@ -1220,16 +1220,16 @@ void tst_QMailStoreKeys::folderStatus()
     // Status equality
     QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus1, Equal)), folderSet() << inboxId1);
     QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus1, Equal)), standardFolders + folderSet() << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
-    QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus2, Equal)), standardFolders + folderSet() << archivedId1 << inboxId2 << archivedId2);
-    QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus2, Equal)), folderSet() << inboxId1 << savedId1 << savedId2);
+    QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus2, Equal)), folderSet() << archivedId1 << inboxId2 << archivedId2);
+    QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus2, Equal)), standardFolders + folderSet() << inboxId1 << savedId1 << savedId2);
     QCOMPARE(folderSet(QMailFolderKey::status(allSet, Equal)), folderSet() << savedId1);
     QCOMPARE(folderSet(~QMailFolderKey::status(allSet, Equal)), standardFolders + folderSet() << inboxId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
 
     // Status inequality
     QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus1, NotEqual)), standardFolders + folderSet() << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus1, NotEqual)), folderSet() << inboxId1);
-    QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus2, NotEqual)), folderSet() << inboxId1 << savedId1 << savedId2);
-    QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus2, NotEqual)), standardFolders + folderSet() << archivedId1 << inboxId2 << archivedId2);
+    QCOMPARE(folderSet(QMailFolderKey::status(inboxStatus2, NotEqual)), standardFolders + folderSet() << inboxId1 << savedId1 << savedId2);
+    QCOMPARE(folderSet(~QMailFolderKey::status(inboxStatus2, NotEqual)), folderSet() << archivedId1 << inboxId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::status(allSet, NotEqual)), standardFolders + folderSet() << inboxId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::status(allSet, NotEqual)), folderSet() << savedId1);
 
