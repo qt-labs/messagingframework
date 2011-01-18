@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201102_2
+  * Fixes: QTSOL-197 - Thread id is not found for a new message
+
 201102
   * Fixes: NB#206801 - Sync icon still spinning but there are not actions going on in the background
   * Fixes: NB#207235 - QMailMessage::fromRfc2822*() does not set the HasAttachment flag
