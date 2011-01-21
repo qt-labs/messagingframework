@@ -2083,8 +2083,8 @@ void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase
 {
 }
 
-void ImapSynchronizeBaseStrategy::metaDataAnalysis(ImapStrategyContextBase *context, 
-                                                   const QMailMessagePartContainer &partContainer, 
+void ImapSynchronizeBaseStrategy::metaDataAnalysis(ImapStrategyContextBase *context,
+                                                   const QMailMessagePartContainer &partContainer,
                                                    QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                                    int &bytesLeft,
                                                    bool &foundBody)
@@ -2102,8 +2102,8 @@ void ImapSynchronizeBaseStrategy::metaDataAnalysis(ImapStrategyContextBase *cont
             const QMailMessageContentDisposition disposition(part.contentDisposition());
             const QMailMessageContentType contentType(part.contentType());
 
-            if (!preferred.isEmpty() 
-                && (contentType.type().toLower() == "text") 
+            if (!preferred.isEmpty()
+                && (contentType.type().toLower() == "text")
                 && (contentType.subType().toLower() == preferred)
                 && !foundBody) {
 
@@ -2135,14 +2135,14 @@ void ImapSynchronizeBaseStrategy::metaDataAnalysis(ImapStrategyContextBase *cont
             continue;
         } else if (disposition.size() <= 0) {
             continue;
-        } else if (!preferred.isEmpty() 
-                   && (contentType.type().toLower() == "text") 
+        } else if (!preferred.isEmpty()
+                   && (contentType.type().toLower() == "text")
                    && (contentType.subType().toLower() == preferred)
                    && !foundBody) {
             // There is a preferred text sub-part to retrieve
             if (bytesLeft >= disposition.size()) {
                 _completionSectionList.append(qMakePair(part.location(), 0u));
-                bytesLeft -= disposition.size(); 
+                bytesLeft -= disposition.size();
             } else {
                 _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
                 bytesLeft = 0;
@@ -2178,8 +2178,8 @@ void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *contex
             const QMailMessageContentType contentType(message.contentType());
             ImapConfiguration imapCfg(context->config());
             QString preferred(imapCfg.preferredTextSubtype().toLower());
-            if (!preferred.isEmpty() 
-                && (contentType.type().toLower() == "text") 
+            if (!preferred.isEmpty()
+                && (contentType.type().toLower() == "text")
                 && (contentType.subType().toLower() == preferred)) {
                 // We can retrieve the first portion of this message
                 QMailMessagePart::Location location;

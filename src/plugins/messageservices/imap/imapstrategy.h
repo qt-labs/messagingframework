@@ -441,9 +441,9 @@ protected:
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
-    virtual void metaDataAnalysis(ImapStrategyContextBase *context, 
+    virtual void metaDataAnalysis(ImapStrategyContextBase *context,
                                   const QMailMessagePartContainer &partContainer,
-                                  QList<QPair<QMailMessagePart::Location, uint> > &sectionList, 
+                                  QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                   int &bytesLeft,
                                   bool &foundBody);
 

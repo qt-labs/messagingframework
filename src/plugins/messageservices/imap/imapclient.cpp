@@ -1104,8 +1104,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
     QMailMessage *mail;
     bool inBuffer = false;
-    
-    foreach(QMailMessage *msg, _bufferedMessages) {
+
+    foreach (QMailMessage *msg, _bufferedMessages) {
         if (msg->serverUid() == uid) {
             mail = msg;
             inBuffer = true;
@@ -1225,7 +1225,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         if (inBuffer) {
             return;
         }
-        
+
         _bufferedMessages.append(mail);
         _strategyContext->dataFetched(*mail, uid, section);
         QMailMessageBufferFlushCallback *callback = new DataFlushedWrapper(_strategyContext, uid, section);
