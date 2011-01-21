@@ -26,6 +26,8 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 7. Added QMailMessageService::useConcurrentActions()
 
+8. Changed semantics of QMailMessageBuffer::setCallback(), this function no longer creates a copy of the QMailMessage
+   argument, the caller must now handle lifetime management.
 
 
 *****************************************************************************
