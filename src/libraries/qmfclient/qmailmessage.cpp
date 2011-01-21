@@ -441,23 +441,17 @@ static QString decodeWordSequence(const QByteArray& str)
         if (pos != -1) {
             int endPos = pos + encodedWord.matchedLength();
 
-            if ( ((pos == 0) || (::isspace(str[pos - 1]))) &&
-                 ((endPos == length) || (::isspace(str[endPos]))) ) {
+            QString preceding(str.mid(lastPos, (pos - lastPos)));
+            QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
 
-                QString preceding(str.mid(lastPos, (pos - lastPos)));
-                QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
+            // If there is only whitespace between two encoded words, it should not be included
+            if (!whitespace.exactMatch(preceding))
+                out.append(preceding);
 
-                // If there is only whitespace between two encoded words, it should not be included
-                if (!whitespace.exactMatch(preceding))
-                    out.append(preceding);
+            out.append(decoded);
 
-                out.append(decoded);
-
-                pos = endPos;
-                lastPos = pos;
-            }
-            else
-                pos = endPos;
+            pos = endPos;
+            lastPos = pos;
         }
     }
 
