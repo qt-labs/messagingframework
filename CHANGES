@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201103
+  * Fixes: QTSOL-196 - IMAP's recursivelyCompleteParts is faulty
+
 201102_2
   * Fixes: QTSOL-197 - Thread id is not found for a new message
 
