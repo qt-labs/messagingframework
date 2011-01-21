@@ -87,7 +87,7 @@ bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFl
     }
 
     item->callback = callback;
-    item->message = new QMailMessage(*message);
+    item->message = message;
     d->waitingForFlush.append(item);
 
     if (isFull() || !d->messageTimer->isActive()) {
@@ -148,7 +148,6 @@ void QMailMessageBuffer::messageFlush()
 
     // Delete all the temporarily memory
     foreach (BufferItem *item, d->waitingForFlush) {
-        delete item->message;
         delete item->callback;
         delete item;
     }
@@ -202,7 +201,6 @@ void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callbac
     foreach (BufferItem *item, d->waitingForFlush) {
         if (item->callback == callback) {
             d->waitingForCallback.removeOne(item);
-            delete item->message;
             delete item->callback;
             delete item;
         }

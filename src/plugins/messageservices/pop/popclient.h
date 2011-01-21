@@ -84,6 +84,7 @@ public:
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void messageFlushed(QMailMessage &message, bool isComplete);
+    void removeAllFromBuffer(QMailMessage *message);
 
 signals:
     void errorOccurred(int, const QString &);
@@ -179,6 +180,7 @@ private:
     QStringList capabilities;
     QList<QByteArray> authCommands;
     QTime lastStatusTimer;
+    QVector<QMailMessage*> _bufferedMessages;
 };
 
 #endif

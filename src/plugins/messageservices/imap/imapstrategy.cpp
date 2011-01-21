@@ -2083,40 +2083,44 @@ void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase
 {
 }
 
-void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
-                                                           const QMailMessagePartContainer &partContainer, 
-                                                           int &partsToRetrieve, 
-                                                           int &bytesLeft)
+void ImapSynchronizeBaseStrategy::metaDataAnalysis(ImapStrategyContextBase *context, 
+                                                   const QMailMessagePartContainer &partContainer, 
+                                                   QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
+                                                   int &bytesLeft,
+                                                   bool &foundBody)
 {
     if (bytesLeft <= 0)
         return;
     
+    ImapConfiguration imapCfg(context->config());
+    QString preferred(imapCfg.preferredTextSubtype().toLower());
+    
     if (partContainer.multipartType() == QMailMessage::MultipartAlternative) {
-        // See if there is a preferred sub-part to retrieve
-        ImapConfiguration imapCfg(context->config());
+        // See if there is a preferred text sub-part to retrieve
+        for (uint i = 0; i < partContainer.partCount(); ++i) {
+            const QMailMessagePart part(partContainer.partAt(i));
+            const QMailMessageContentDisposition disposition(part.contentDisposition());
+            const QMailMessageContentType contentType(part.contentType());
 
-        QString preferred(imapCfg.preferredTextSubtype().toLower());
-        if (!preferred.isEmpty()) {
-            for (uint i = 0; i < partContainer.partCount(); ++i) {
-                const QMailMessagePart part(partContainer.partAt(i));
-                const QMailMessageContentDisposition disposition(part.contentDisposition());
-                const QMailMessageContentType contentType(part.contentType());
+            if (!preferred.isEmpty() 
+                && (contentType.type().toLower() == "text") 
+                && (contentType.subType().toLower() == preferred)
+                && !foundBody) {
 
-                if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
-                    if (bytesLeft >= disposition.size()) {
-                        _completionSectionList.append(qMakePair(part.location(), 0u));
-                        bytesLeft -= disposition.size();
-                        ++partsToRetrieve;
-                    } else if (preferred == "plain") {
-                        // We can retrieve the first portion of this part
-                        _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
-                        bytesLeft = 0;
-                        ++partsToRetrieve;
-                    }
-                    return;
+                if (bytesLeft >= disposition.size()) {
+                    _completionSectionList.append(qMakePair(part.location(), 0u));
+                    bytesLeft -= disposition.size();
+                } else {
+                    // We can retrieve the first portion of this part
+                    _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+                    bytesLeft = 0;
                 }
+                foundBody = true;
+            } else {
+                sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
             }
         }
+        return;
     }
 
     // Otherwise, consider the subparts individually
@@ -2125,27 +2129,34 @@ void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBa
         const QMailMessageContentDisposition disposition(part.contentDisposition());
         const QMailMessageContentType contentType(part.contentType());
 
-        if (partsToRetrieve > 10) {
-            break; // sanity check, prevent DOS
-        } else if (part.partCount() > 0) {
-            recursivelyCompleteParts(context, part, partsToRetrieve, bytesLeft);
+        if (part.partCount() > 0) {
+            metaDataAnalysis(context, part, sectionList, bytesLeft, foundBody);
         } else if (part.partialContentAvailable()) {
             continue;
         } else if (disposition.size() <= 0) {
             continue;
-        } else if ((disposition.type() != QMailMessageContentDisposition::Inline) && (contentType.type().toLower() != "text")) {
-            continue;
-        } else if (bytesLeft >= disposition.size()) {
-            _completionSectionList.append(qMakePair(part.location(), 0u));
-            bytesLeft -= disposition.size();
-            ++partsToRetrieve;
-        } else if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
-            // We can retrieve the first portion of this part
-            _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
-            bytesLeft = 0;
-            ++partsToRetrieve;
+        } else if (!preferred.isEmpty() 
+                   && (contentType.type().toLower() == "text") 
+                   && (contentType.subType().toLower() == preferred)
+                   && !foundBody) {
+            // There is a preferred text sub-part to retrieve
+            if (bytesLeft >= disposition.size()) {
+                _completionSectionList.append(qMakePair(part.location(), 0u));
+                bytesLeft -= disposition.size(); 
+            } else {
+                _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+                bytesLeft = 0;
+            }
+            foundBody = true;
+        } else {
+            sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
         }
     }
+}
+
+bool qMailMessageImapStrategyLessThan(const QPair<QMailMessagePart::Location, uint> &l, const QPair<QMailMessagePart::Location, uint> &r)
+{
+    return l.second < r.second;
 }
 
 void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
@@ -2165,15 +2176,32 @@ void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *contex
             _completionList.append(message.id());
         } else {
             const QMailMessageContentType contentType(message.contentType());
-            if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
+            ImapConfiguration imapCfg(context->config());
+            QString preferred(imapCfg.preferredTextSubtype().toLower());
+            if (!preferred.isEmpty() 
+                && (contentType.type().toLower() == "text") 
+                && (contentType.subType().toLower() == preferred)) {
                 // We can retrieve the first portion of this message
                 QMailMessagePart::Location location;
                 location.setContainingMessageId(message.id());
                 _completionSectionList.append(qMakePair(location, static_cast<unsigned>(_headerLimit)));
             } else {
                 int bytesLeft = _headerLimit;
-                int partsToRetrieve = 1;
-                recursivelyCompleteParts(context, message, partsToRetrieve, bytesLeft);
+                int partsToRetrieve = 0;
+                const int maxParts = 100;
+                bool foundBody = false;
+                QList<QPair<QMailMessagePart::Location, uint> > sectionList;
+                metaDataAnalysis(context, message, sectionList, bytesLeft, foundBody);
+                qSort(sectionList.begin(), sectionList.end(), qMailMessageImapStrategyLessThan);
+                QList<QPair<QMailMessagePart::Location, uint> >::iterator it = sectionList.begin();
+                while (it != sectionList.end() && (bytesLeft > 0) && (partsToRetrieve < maxParts)) {
+                    if (it->second <= (uint)bytesLeft) {
+                        _completionSectionList.append(qMakePair(it->first, (uint)0));
+                    }
+                    bytesLeft -= it->second;
+                    ++it;
+                    ++partsToRetrieve;
+                }
             }
         }
     }

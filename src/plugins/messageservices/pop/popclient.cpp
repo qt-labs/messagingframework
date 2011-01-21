@@ -68,6 +68,7 @@ public:
     void messageFlushed(QMailMessage *message)
     {
         context->messageFlushed(*message, isComplete);
+        context->removeAllFromBuffer(message);
     }
 };
 
@@ -982,55 +983,56 @@ void PopClient::createMail()
 
     qMailLog(POP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
     
-    QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
+    QMailMessage *mail(new QMailMessage(QMailMessage::fromRfc2822File(detachedFile)));
+    _bufferedMessages.append(mail);
 
-    mail.setSize(mailSize);
-    mail.setServerUid(messageUid);
+    mail->setSize(mailSize);
+    mail->setServerUid(messageUid);
 
-    if (selectionMap.contains(mail.serverUid())) {
+    if (selectionMap.contains(mail->serverUid())) {
         // We need to update the message from the existing data
-        QMailMessageMetaData existing(selectionMap.value(mail.serverUid()));
+        QMailMessageMetaData existing(selectionMap.value(mail->serverUid()));
 
-        mail.setId(existing.id());
-        mail.setStatus(existing.status());
-        mail.setContent(existing.content());
-        QMailDisconnected::copyPreviousFolder(existing, &mail);
-        mail.setContentScheme(existing.contentScheme());
-        mail.setContentIdentifier(existing.contentIdentifier());
-        mail.setCustomFields(existing.customFields());
+        mail->setId(existing.id());
+        mail->setStatus(existing.status());
+        mail->setContent(existing.content());
+        QMailDisconnected::copyPreviousFolder(existing, mail);
+        mail->setContentScheme(existing.contentScheme());
+        mail->setContentIdentifier(existing.contentIdentifier());
+        mail->setCustomFields(existing.customFields());
     } else {
-        mail.setStatus(QMailMessage::Incoming, true);
-        mail.setStatus(QMailMessage::New, true);
-        mail.setReceivedDate(QMailTimeStamp::currentDateTime());
+        mail->setStatus(QMailMessage::Incoming, true);
+        mail->setStatus(QMailMessage::New, true);
+        mail->setReceivedDate(QMailTimeStamp::currentDateTime());
     }
-    mail.setCustomField( "qmf-detached-filename", detachedFile );
+    mail->setCustomField( "qmf-detached-filename", detachedFile );
 
-    mail.setMessageType(QMailMessage::Email);
-    mail.setParentAccountId(config.id());
+    mail->setMessageType(QMailMessage::Email);
+    mail->setParentAccountId(config.id());
 
-    mail.setParentFolderId(folderId);
+    mail->setParentFolderId(folderId);
 
     bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
-    mail.setStatus(QMailMessage::ContentAvailable, isComplete);
-    mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
+    mail->setStatus(QMailMessage::ContentAvailable, isComplete);
+    mail->setStatus(QMailMessage::PartialContentAvailable, isComplete);
     if (!isComplete) {
-        mail.setContentSize(mailSize - detachedSize);
+        mail->setContentSize(mailSize - detachedSize);
     }
 
-    classifier.classifyMessage(mail);
+    classifier.classifyMessage(*mail);
 
     // Store this message to the mail store
-    if (mail.id().isValid()) {
-        QMailMessageBuffer::instance()->updateMessage(&mail);
+    if (mail->id().isValid()) {
+        QMailMessageBuffer::instance()->updateMessage(mail);
     } else {
-        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
+        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail->serverUid()) & QMailMessageKey::parentAccountId(mail->parentAccountId()));
         QMailStore::instance()->removeMessages(duplicateKey);
-        QMailMessageBuffer::instance()->addMessage(&mail);
+        QMailMessageBuffer::instance()->addMessage(mail);
     }
 
     dataStream->reset();
 
-    QMailMessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
+    QMailMessageBuffer::instance()->setCallback(mail, new MessageFlushedWrapper(this, isComplete));
 }
 
 void PopClient::messageFlushed(QMailMessage &message, bool isComplete)
@@ -1139,3 +1141,11 @@ void PopClient::operationFailed(QMailServiceAction::Status::ErrorCode code, cons
     emit errorOccurred(code, msg);
 }
 
+void PopClient::removeAllFromBuffer(QMailMessage *message)
+{
+    int i = 0;
+    while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
+        delete _bufferedMessages.at(i);
+        _bufferedMessages.remove(i);
+    }
+}

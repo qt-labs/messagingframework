@@ -441,7 +441,11 @@ protected:
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
-    virtual void recursivelyCompleteParts(ImapStrategyContextBase *context, const QMailMessagePartContainer &partContainer, int &partsToRetrieve, int &bytesLeft);
+    virtual void metaDataAnalysis(ImapStrategyContextBase *context, 
+                                  const QMailMessagePartContainer &partContainer,
+                                  QList<QPair<QMailMessagePart::Location, uint> > &sectionList, 
+                                  int &bytesLeft,
+                                  bool &foundBody);
 
 protected:
     QStringList _newUids;
