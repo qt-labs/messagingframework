@@ -82,6 +82,11 @@ bool PopConfiguration::canDeleteMail() const
     return (value("canDelete", "1").toInt() != 0);
 }
 
+bool PopConfiguration::deleteRetrievedMailsFromServer() const
+{
+    return (value("deleteRetrievedMailsFromServer", "0").toInt() != 0);
+}
+
 bool PopConfiguration::isAutoDownload() const
 {
     return (value("autoDownload", "0").toInt() != 0);

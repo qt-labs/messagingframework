@@ -68,6 +68,7 @@ public:
     int mailEncryption() const;
 
     bool canDeleteMail() const;
+    bool deleteRetrievedMailsFromServer() const;
 
     bool isAutoDownload() const;
     int maxMailSize() const;

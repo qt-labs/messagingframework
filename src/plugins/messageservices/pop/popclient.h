@@ -131,8 +131,8 @@ private:
         StartTLS, TLS, Connected, Auth, 
         RequestUids, Uidl, UidList,
         RequestSizes, List, SizeList,
-        RequestMessage, Retr, MessageData,
-        DeleteMessage, Dele,
+        RequestMessage, Retr, Top, MessageDataRetr, MessageDataTop,
+        DeleteMessage, Dele, DeleAfterRetr,
         Done, Quit, Exit
     };
 

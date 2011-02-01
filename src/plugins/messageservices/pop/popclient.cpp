@@ -344,7 +344,7 @@ QString PopClient::readResponse()
 {
     QString response = transport->readLine();
 
-    if ((response.length() > 1) && (status != MessageData)) {
+    if ((response.length() > 1) && (status != MessageDataRetr) && (status != MessageDataTop)) {
         qMailLog(POP) << "RECV:" << qPrintable(response.left(response.length() - 2));
     }
 
@@ -491,13 +491,15 @@ void PopClient::processResponse(const QString &response)
         break;
     }
     case Retr:
+    case Top:
     {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
     }
-    case MessageData:
+    case MessageDataRetr:
+    case MessageDataTop:
     {
         if (response != QString(".\r\n")) {
             if (response.startsWith('.')) {
@@ -540,6 +542,7 @@ void PopClient::processResponse(const QString &response)
         }
         break;
     }
+    case DeleAfterRetr:
     case Dele:
     {
         if (response[0] != '+') {
@@ -693,13 +696,14 @@ void PopClient::nextAction()
                 emit updateStatus(tr("Completing %1 / %2").arg(messageCount).arg(selectionMap.count()));
             }
 
-            nextStatus = Retr;
             QString temp = QString::number(msgNum);
             if (selected || ((headerLimit > 0) && (mailSize <= headerLimit))) {
                 // Retrieve the whole message
                 nextCommand = ("RETR " + temp);
+                nextStatus = Retr;
             } else {                                //only header
                 nextCommand = ("TOP " + temp + " 0");
+                nextStatus = Top;
             }
         } else {
             // No more messages to be fetched - are there any to be deleted?
@@ -715,16 +719,37 @@ void PopClient::nextAction()
         break;
     }
     case Retr:
+    case Top:
     {
         // Message data will follow
         message = "";
         dataStream->reset();
 
-        nextStatus = MessageData;
+        nextStatus = (status == Retr) ? MessageDataRetr : MessageDataTop;
         waitForInput = true;
         break;
     }
-    case MessageData:
+    case MessageDataRetr:
+    {
+        PopConfiguration popCfg(config);
+        if (popCfg.deleteRetrievedMailsFromServer()) {
+        int pos = msgPosFromUidl(messageUid);
+            emit updateStatus(tr("Removing message from server"));
+            nextCommand = ("DELE " + QString::number(pos));
+            nextStatus = DeleAfterRetr;
+        } else {
+            // See if there are more messages to retrieve
+            nextStatus = RequestMessage;
+        }
+        break;
+    }
+    case MessageDataTop:
+    {
+        // See if there are more messages to retrieve
+        nextStatus = RequestMessage;
+        break;
+    }
+    case DeleAfterRetr:
     {
         // See if there are more messages to retrieve
         nextStatus = RequestMessage;
@@ -1018,6 +1043,16 @@ void PopClient::createMail()
     if (!isComplete) {
         mail->setContentSize(mailSize - detachedSize);
     }
+    if (isComplete) {
+        // Mark as LocalOnly if it will be removed from the server after
+        // retrieval. The original mail will be deleted from the server
+        // by the state machine.
+        PopConfiguration popCfg(config);
+        if (popCfg.deleteRetrievedMailsFromServer()) {
+            mail.setStatus(QMailMessage::LocalOnly, true);
+        }
+    }
+
 
     classifier.classifyMessage(*mail);
 
