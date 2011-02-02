@@ -1049,7 +1049,7 @@ void PopClient::createMail()
         // by the state machine.
         PopConfiguration popCfg(config);
         if (popCfg.deleteRetrievedMailsFromServer()) {
-            mail.setStatus(QMailMessage::LocalOnly, true);
+            mail->setStatus(QMailMessage::LocalOnly, true);
         }
     }
 
