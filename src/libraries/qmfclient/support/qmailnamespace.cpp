@@ -260,7 +260,12 @@ QString QMail::messageServerPath()
     static QString serverEnv(qgetenv(QMF_SERVER_ENV));
     if(!serverEnv.isEmpty())
         return serverEnv + '/';
+
+#if defined(Q_OS_SYMBIAN)
+    return "";
+#else
     return QCoreApplication::applicationDirPath() + '/';
+#endif
 }
 
 /*!

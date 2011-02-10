@@ -575,6 +575,8 @@ bool EmailClient::startMessageServer()
 
 #ifdef Q_OS_WIN
 	static const QString binary(QString("/messageserver%1.exe").arg(debugSuffix));
+#elif defined(Q_OS_SYMBIAN)
+    static const QString binary(QString("messageserver%1.exe").arg(debugSuffix));
 #else
 	static const QString binary(QString("/messageserver%1").arg(debugSuffix));
 #endif
