@@ -7270,7 +7270,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             if (!modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
 
-            if (extractValue<quint64>(query.value(4) == messageId.toULongLong())) {
+            if (extractValue<quint64>(query.value(4)) == messageId.toULongLong()) {
 
                 QSqlQuery threadIdQuery(simpleQuery(QString("SELECT threadid FROM mailthreadmessages WHERE messageid=%1").arg(messageId.toULongLong()),
                                             "deleteMessages threadid info query"));
