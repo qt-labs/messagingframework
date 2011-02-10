@@ -74,20 +74,17 @@ RESOURCES += imap.qrc
 }
 
 symbian: {
+    load(data_caging_paths)
+
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL \
-        -TCB
-        
-	PLUGIN_STUB_PATH = /resource/qt/plugins/qtmail/messageservices
-    
+    TARGET.CAPABILITY = ALL -TCB
+
     deploy.path = C:
     pluginstub.sources = $${TARGET}.dll
-    pluginstub.path = $$PLUGIN_STUB_PATH
+    pluginstub.path = $$QT_PLUGINS_BASE_DIR/qtmail/messageservices
     DEPLOYMENT += pluginstub
 
-    qtplugins.path = $$PLUGIN_STUB_PATH
-    qtplugins.sources += qmakepluginstubs/$${TARGET}.qtplugin
-    for(qtplugin, qtplugins.sources):BLD_INF_RULES.prj_exports += "./$$qtplugin $$deploy.path$$qtplugins.path/$$basename(qtplugin)" 
+    load(armcc_warnings)
 }
 
 include(../../../../common.pri)

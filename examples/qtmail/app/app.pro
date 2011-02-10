@@ -47,4 +47,8 @@ FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
 
+symbian {
+    TARGET.CAPABILITY += ALL -TCB
+}
+
 include(../../../common.pri)

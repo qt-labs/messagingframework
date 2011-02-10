@@ -9,6 +9,7 @@ SUBDIRS = src/libraries/qmfclient \
           src/plugins/messageservices/qmfsettings \
           src/plugins/contentmanagers/qmfstoragemanager \
           src/tools/messageserver \
+          tests \
           examples/qtmail/libs/qmfutil \
           examples/qtmail/app \
           examples/qtmail/plugins/viewers/generic \
@@ -16,11 +17,6 @@ SUBDIRS = src/libraries/qmfclient \
           examples/messagingaccounts \
           examples/serverobserver
           
-# disable tests on symbian until ported
-!symbian {
-          SUBDIRS += tests
-}
-
 # disable benchmark test on mac until ported
 !macx {
           SUBDIRS += benchmarks

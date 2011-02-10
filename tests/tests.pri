@@ -9,7 +9,7 @@ DEPENDPATH += .
 INCLUDEPATH += . $$QMFPATH $$QMFPATH/support
 LIBS += -L$$QMFPATH/build
 macx:LIBS += -F$$QMFPATH/build
-QMAKE_LFLAGS += -Wl,-rpath,$$QMFPATH
+!symbian:QMAKE_LFLAGS += -Wl,-rpath,$$QMFPATH
 
 include(../common.pri)
 

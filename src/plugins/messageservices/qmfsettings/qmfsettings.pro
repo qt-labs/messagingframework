@@ -32,9 +32,17 @@ SOURCES += settings.cpp storagelocations.cpp
 }
 
 symbian: {
+    load(data_caging_paths)
+
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL \
-        -TCB
+    TARGET.CAPABILITY = ALL -TCB
+
+    deploy.path = C:
+    pluginstub.sources = $${TARGET}.dll
+    pluginstub.path = $$QT_PLUGINS_BASE_DIR/qtmail/messageservices
+    DEPLOYMENT += pluginstub
+
+    load(armcc_warnings)
 }
 
 include(../../../../common.pri)

@@ -13,12 +13,16 @@ win32: {
 
 QT = core sql network
 symbian: {
+    INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL \
-        -TCB
+    TARGET.CAPABILITY = ALL -TCB
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN
-    INCLUDEPATH += /epoc32/include/platform
+
+    QMFClient.sources = $${TARGET}.dll
+    QMFClient.path = /sys/bin
+    DEPLOYMENT += QMFClient
 }
 
 DEPENDPATH += .

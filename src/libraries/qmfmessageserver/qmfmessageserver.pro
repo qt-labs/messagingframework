@@ -13,6 +13,10 @@ symbian: {
     TARGET.CAPABILITY = ALL \
         -TCB
     MMP_RULES += EXPORTUNFROZEN
+
+    QMFServer.sources = $${TARGET}.dll
+    QMFServer.path = /sys/bin
+    DEPLOYMENT += QMFServer
 }
 
 DEFINES += MESSAGESERVER_INTERNAL
