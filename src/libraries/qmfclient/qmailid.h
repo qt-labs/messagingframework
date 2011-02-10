@@ -140,9 +140,9 @@ QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailAccountId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailFolderId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailMessageId &id);
 
-Q_DECLARE_USER_METATYPE(QMailAccountId);
-Q_DECLARE_USER_METATYPE(QMailFolderId);
-Q_DECLARE_USER_METATYPE(QMailMessageId);
+Q_DECLARE_USER_METATYPE(QMailAccountId)
+Q_DECLARE_USER_METATYPE(QMailFolderId)
+Q_DECLARE_USER_METATYPE(QMailMessageId)
 
 Q_DECLARE_METATYPE(QMailAccountIdList)
 Q_DECLARE_METATYPE(QMailFolderIdList)

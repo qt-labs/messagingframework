@@ -87,7 +87,7 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValu
         static inline bool enabled() { static char mem=0; if (!mem) { qmf_registerLoggingFlag(&mem); mem=(qmf_checkLoggingEnabled(#dbgcat, deflvl))?3:2; } return mem&1; }\
     };
 
-#define qMailLog(dbgcat) if(!dbgcat##_QLog::enabled()); else dbgcat##_QLog::log(#dbgcat)
+#define qMailLog(dbgcat) if (!dbgcat##_QLog::enabled()) qt_noop(); else dbgcat##_QLog::log(#dbgcat)
 
 // By default, these categories are completely disabled.
 // Any logging statements for these categories will be compiled out of the executable.

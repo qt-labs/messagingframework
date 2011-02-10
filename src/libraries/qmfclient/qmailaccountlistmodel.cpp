@@ -263,19 +263,15 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
        case Qt::DisplayRole:
        case NameTextRole:
             return account.name();
-            break;
 
        case MessageTypeRole:
             return static_cast<int>(account.messageType());
-            break;
 
        case MessageSourcesRole:
             return account.messageSources();
-            break;
 
        case MessageSinksRole:
             return account.messageSinks();
-            break;
     }
 
     return QVariant();

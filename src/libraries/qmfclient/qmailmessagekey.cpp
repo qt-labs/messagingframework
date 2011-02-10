@@ -1057,5 +1057,5 @@ template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& st
 template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
 #endif
 
-Q_IMPLEMENT_USER_METATYPE(QMailMessageKey);
+Q_IMPLEMENT_USER_METATYPE(QMailMessageKey)
 

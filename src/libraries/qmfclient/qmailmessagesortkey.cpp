@@ -400,5 +400,5 @@ QMailMessageSortKey QMailMessageSortKey::status(quint64 mask, Qt::SortOrder orde
 }
 
         
-Q_IMPLEMENT_USER_METATYPE(QMailMessageSortKey);
+Q_IMPLEMENT_USER_METATYPE(QMailMessageSortKey)
 

@@ -85,7 +85,7 @@ namespace
             loggers.addLogger(logger);
         };
     };
-};
+}
 
 #if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
 QMF_EXPORT

@@ -56,7 +56,7 @@ class QSslSocket;
 class QSslError;
 #endif
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class MESSAGESERVER_EXPORT QMailTransport : public QObject
 {

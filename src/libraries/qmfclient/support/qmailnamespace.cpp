@@ -65,8 +65,10 @@
 #include <fcntl.h>
 #endif
 
+#ifndef Q_OS_SYMBIAN
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
+#endif
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
@@ -189,10 +191,12 @@ bool QMail::fileUnlock(int id)
 
     int result = -1;
 
-    if((result = ::fcntl(id,F_SETLK, &fl)) == -1)
+    result = ::fcntl(id,F_SETLK, &fl);
+    if (result == -1)
         return false;
 
-    if((result = ::close(id)) == -1)
+    result = ::close(id);
+    if (result == -1)
         return false;
 
     return true;
@@ -207,12 +211,13 @@ QString QMail::dataPath()
 {
 #ifdef Q_OS_SYMBIAN
     return QString("\\");
-#endif
+#else
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
     return QDir::homePath() + "/.qmf/";
+#endif
 }
 
 /*!
@@ -230,13 +235,13 @@ QString QMail::pluginsPath()
 {
 #if defined(Q_OS_SYMBIAN)
     return QString("/resource/qt/plugins/qtmail");
-#endif
-    
+#else
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + '/';
     //default to "." if no env set
     return pluginsEnv;
+#endif
 }
 
 /*!

@@ -512,7 +512,7 @@ private:
     static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 
 private:
-    Q_DECLARE_PUBLIC (QMailStore);
+    Q_DECLARE_PUBLIC (QMailStore)
     QMailStore * const q_ptr;
 
     template <typename T, typename KeyType> 

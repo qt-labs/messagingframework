@@ -163,10 +163,13 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
 static const int MoreMessagesIncrement = 20;
 
 // This is used regularly:
+#ifndef Q_OS_SYMBIAN
 static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
                                                                                              QMailMessage::Sms |
                                                                                              QMailMessage::Instant |
                                                                                              QMailMessage::System);
+#endif
+
 class AcknowledgmentBox : public QMessageBox
 {
     Q_OBJECT
@@ -1992,7 +1995,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         initActions();
         contextStatusUpdate();
 
-        bool atAccount(false);
         bool atFolder(false);
         bool showCreate(false);
         bool showDelete(false);
@@ -2002,7 +2004,6 @@ void EmailClient::folderSelected(QMailMessageSet *item)
         QMailFolderId folderId(item->data(EmailFolderModel::FolderIdRole).value<QMailFolderId>());
 
         if (accountId.isValid()) {
-            atAccount = true;
             selectedAccountId = accountId;
 
             QMailAccount account(accountId);

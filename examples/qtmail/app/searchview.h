@@ -62,7 +62,7 @@ class QRadioButton;
 class QStatusBar;
 class QToolButton;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class SearchView : public QMainWindow
 {

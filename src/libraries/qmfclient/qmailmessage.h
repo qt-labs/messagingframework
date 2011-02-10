@@ -63,7 +63,7 @@ class QDataStream;
 class QTextStream;
 class QFile;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class QMailMessageHeaderFieldPrivate;
 

@@ -163,6 +163,6 @@ private:
     QSharedDataPointer<QMailFolderKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailFolderKey);
+Q_DECLARE_USER_METATYPE(QMailFolderKey)
 
 #endif

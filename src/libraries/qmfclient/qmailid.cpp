@@ -154,7 +154,7 @@ QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
     \relates QMailAccountId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailAccountId);
+Q_IMPLEMENT_USER_METATYPE(QMailAccountId)
 
 /*! 
     Construct an uninitialized QMailAccountId, for which isValid() returns false.
@@ -292,7 +292,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
     \relates QMailFolderId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailFolderId);
+Q_IMPLEMENT_USER_METATYPE(QMailFolderId)
 
 /*! 
     Construct an uninitialized QMailFolderId, for which isValid() returns false.
@@ -439,7 +439,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
     \relates QMailMessageId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailMessageId);
+Q_IMPLEMENT_USER_METATYPE(QMailMessageId)
 
 /*! 
     Construct an uninitialized QMailMessageId, for which isValid() returns false.

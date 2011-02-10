@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QFile;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class QmfStorageManager : public QObject, public QMailContentManager
 {

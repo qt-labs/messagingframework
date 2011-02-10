@@ -163,11 +163,11 @@ int QMailMessageListModelPrivate::rowCount(const QModelIndex &idx) const
 
 int QMailMessageListModelPrivate::columnCount(const QModelIndex &idx) const
 {
+    Q_UNUSED(idx)
+
     init();
 
     return 1;
-    
-    Q_UNUSED(idx)
 }
 
 QMailMessageId QMailMessageListModelPrivate::idFromIndex(const QModelIndex& index) const
@@ -582,17 +582,17 @@ QModelIndex QMailMessageListModel::index(int row, int column, const QModelIndex 
 /*! \reimp */
 QModelIndex QMailMessageListModel::parent(const QModelIndex &idx) const
 {
-    return QModelIndex();
-
     Q_UNUSED(idx)
+
+    return QModelIndex();
 }
 
 /*! \reimp */
 QModelIndex QMailMessageListModel::generateIndex(int row, int column, void *ptr)
 {
-    return index(row, column, QModelIndex());
-
     Q_UNUSED(ptr)
+
+    return index(row, column, QModelIndex());
 }
 
 /*! \reimp */

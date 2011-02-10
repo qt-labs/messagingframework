@@ -57,7 +57,7 @@ class QComboBox;
 class QContent;
 class QStackedWidget;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class WriteMail : public QMainWindow
 {

@@ -445,12 +445,12 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
 */
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
     Q_UNUSED(descending)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -486,13 +486,13 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 */
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
     Q_UNUSED(minimum)
     Q_UNUSED(sort)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -519,11 +519,11 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
 */
 bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(spec)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -539,10 +539,10 @@ bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRe
 */
 bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
 {
+    Q_UNUSED(partLocation)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(partLocation)
 }
 
 /*!
@@ -559,11 +559,11 @@ bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &p
 */
 bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(messageId)
     Q_UNUSED(minimum)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -580,11 +580,11 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
 */
 bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(partLocation)
     Q_UNUSED(minimum)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -608,10 +608,10 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
 */
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
 {
+    Q_UNUSED(accountId)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(accountId)
 }
 
 /*!
@@ -626,10 +626,10 @@ bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
 */
 bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
 {
+    Q_UNUSED(accountId)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(accountId)
 }
 
 /*!
@@ -656,10 +656,10 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
 */
 bool QMailMessageSource::synchronize(const QMailAccountId &accountId)
 {
+    Q_UNUSED(accountId)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(accountId)
 }
 
 /*!
@@ -752,12 +752,12 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
 */
 bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(name)
     Q_UNUSED(accountId)
     Q_UNUSED(parentId)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -772,11 +772,11 @@ bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId 
 */
 bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QString &name)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(folderId)
     Q_UNUSED(name)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -791,10 +791,10 @@ bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QStri
 */
 bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
 {
+    Q_UNUSED(folderId)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(folderId)
 }
 
 
@@ -820,12 +820,12 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
 */
 bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
     Q_UNUSED(sort)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -857,10 +857,10 @@ bool QMailMessageSource::cancelSearch()
 */
 bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
 {
+    Q_UNUSED(ids)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(ids)
 }
 
 /*!
@@ -877,12 +877,12 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
 */
 bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data)
 {
-    notImplemented();
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(request)
     Q_UNUSED(data)
+
+    notImplemented();
+    return false;
 }
 
 /*!
@@ -1122,10 +1122,10 @@ QMailMessageSink::~QMailMessageSink()
 */
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids)
 {
+    Q_UNUSED(ids)
+
     notImplemented();
     return false;
-
-    Q_UNUSED(ids)
 }
 
 /*! \internal */
@@ -1464,231 +1464,231 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
 
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
     Q_UNUSED(descending)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
     Q_UNUSED(minimum)
     Q_UNUSED(sort)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(messageIds)
     Q_UNUSED(spec)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &partLocation, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(partLocation)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, uint minimum, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(messageId)
     Q_UNUSED(minimum)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(partLocation)
     Q_UNUSED(minimum)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-    
     Q_UNUSED(accountId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::synchronize(const QMailAccountId &accountId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(destinationId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(destinationId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(setMask)
     Q_UNUSED(unsetMask)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(name)
     Q_UNUSED(accountId)
     Q_UNUSED(parentId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(folderId)
     Q_UNUSED(name)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(folderId)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(filter)
     Q_UNUSED(bodyText)
     Q_UNUSED(sort)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::cancelSearch(quint64 action)
 {
+    Q_UNUSED(action)
+
     notImplemented(action);
     return false;
-
-    Q_UNUSED(action)
 }
 
 bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(accountId)
     Q_UNUSED(request)
     Q_UNUSED(data)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 void QMailMessageSource::notImplemented(quint64 action)
 {
-    notImplemented();
-
     Q_UNUSED(action)
+
+    notImplemented();
 }
 
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids, quint64 action)
 {
-    notImplemented(action);
-    return false;
-
     Q_UNUSED(ids)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
 }
 
 void QMailMessageSink::notImplemented(quint64 action)
 {
-    notImplemented();
-
     Q_UNUSED(action)
+
+    notImplemented();
 }
 
 bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action)
 {
-    Q_ASSERT(0);
-    return false;
-
     Q_UNUSED(code)
     Q_UNUSED(text)
     Q_UNUSED(action)
+
+    Q_ASSERT(0);
+    return false;
 }

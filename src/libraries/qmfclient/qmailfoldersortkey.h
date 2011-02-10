@@ -109,6 +109,6 @@ private:
     QSharedDataPointer<QMailFolderSortKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailFolderSortKey);
+Q_DECLARE_USER_METATYPE(QMailFolderSortKey)
 
 #endif

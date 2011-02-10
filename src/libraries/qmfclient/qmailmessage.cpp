@@ -1423,7 +1423,6 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
     bool malformed = false;
 
     const char* token = begin;
-    const char* firstToken = begin;
     const char* it = begin;
     const char* separator = 0;
     for (bool quoted = false; it != end; ++it)
@@ -1441,7 +1440,6 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
                 // If this is a structured header, there can be only one colon
                 token = (it + 1);
             }
-            firstToken = token;
         }
         else if (*it == '=' && !quoted && structured) {
             if (separator == 0) {
@@ -3725,9 +3723,9 @@ static QString decodedContent(const QString& id, const QByteArray& content)
 {
     // TODO: Potentially, we should disallow decoding here based on the specific header field
     // return (permitDecoding ? QMailMessageHeaderField::decodeContent(content) : QString(content));
+    Q_UNUSED(id);
 
     return QMailMessageHeaderField::decodeContent(content);
-    Q_UNUSED(id);
 }
 
 /*!
@@ -3899,10 +3897,9 @@ static QByteArray encodedContent(const QByteArray& id, const QString& content)
 {
     // TODO: Potentially, we should disallow encoding here based on the specific header field
     // return (permitEncoding ? QMailMessageHeaderField::encodeContent(content) : to7BitAscii(content));
-
+    Q_UNUSED(id)
 
     return QMailMessageHeaderField::encodeContent(content);
-    Q_UNUSED(id)
 }
 
 void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, const QString &content)
@@ -7229,9 +7226,9 @@ static bool seedRng()
 static int randomNumber()
 {
     static bool initialised = seedRng();
-    return qrand();
-
     Q_UNUSED(initialised)
+
+    return qrand();
 }
 
 static QByteArray gBoundaryString;

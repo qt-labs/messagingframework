@@ -117,7 +117,7 @@ using namespace QMailKey;
     Synonym for QMailKeyArgument<QMailFolderKey::Property>.
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailFolderKey);
+Q_IMPLEMENT_USER_METATYPE(QMailFolderKey)
 
 /*!
     Creates a QMailFolderKey without specifying matching parameters.

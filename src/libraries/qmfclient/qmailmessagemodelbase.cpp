@@ -202,11 +202,9 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
     {
     case MessageIdRole:
         return id;
-        break;
 
     case Qt::CheckStateRole:
         return impl()->checkState(index);
-        break;
 
     default:
         break;
@@ -251,11 +249,9 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
         case Qt::DisplayRole:
         case MessageAddressTextRole:
             return messageAddressText(message,incoming);
-        break;
 
         case MessageSizeTextRole:
             return messageSizeText(message);
-        break;
 
         case MessageTimeStampTextRole:
         {
@@ -276,15 +272,12 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
             QString sublabel(QString("%1 %2 %3").arg(action).arg(date).arg(time));
             return sublabel;
         }
-        break;
 
         case MessageSubjectTextRole:
             return message.subject();
-        break;
 
         case MessageFilterTextRole:
             return messageAddressText(message,incoming) + ' ' + message.subject();
-        break;
 
         case Qt::DecorationRole:
         case MessageTypeIconRole:
@@ -292,14 +285,12 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
             // Not currently implemented...
             return QString();
         }
-        break;
 
         case MessageDirectionIconRole:
         {
             QString mainIcon = incoming ? incomingIcon : outgoingIcon;
             return mainIcon;
         }
-        break;
 
         case MessageStatusIconRole:
         if (incoming) {
@@ -325,7 +316,6 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
             // Not currently implemented...
             return QString();
         }
-        break;
 
         case MessageBodyTextRole:
         {
@@ -342,7 +332,6 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
                 return QString();
             }
         }
-        break;
     }
 
     return QVariant();

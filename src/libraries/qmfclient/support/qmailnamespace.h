@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QSqlDatabase;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 #endif
 
 namespace QMail
