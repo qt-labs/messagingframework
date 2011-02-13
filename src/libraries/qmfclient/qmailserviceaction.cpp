@@ -829,7 +829,7 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     \value Flags        Changes to the state of the message should be retrieved.
     \value MetaData     Only the meta data of the message should be retrieved.
     \value Content      The entire content of the message should be retrieved.
-    \value Auto         Protocol specific settings are taken into account during download.
+    \value Auto         Account specific settings are used during synchronization.
                         For example, this may mean skipping the attachments.
 */
 
