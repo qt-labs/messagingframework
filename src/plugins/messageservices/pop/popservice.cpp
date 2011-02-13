@@ -136,7 +136,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
     uint existing = QMailStore::instance()->countMessages(countKey);
     existing = qMin(existing, minimum);
     
-    _service->_client.setOperation(QMailRetrievalAction::MetaData);
+    _service->_client.setOperation(QMailRetrievalAction::Auto);
     _service->_client.setAdditional(minimum - existing);
 
     if (!_service->_client.synchronizationEnabled(folderId)) {

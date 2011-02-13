@@ -299,10 +299,16 @@ public:
     ImapFetchSelectedMessagesStrategy() {}
     virtual ~ImapFetchSelectedMessagesStrategy() {}
     
-    virtual void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
+    virtual void setOperation(ImapStrategyContextBase *context,
+                              QMailRetrievalAction::RetrievalSpecification spec);
     virtual void clearSelection();
     virtual void selectedMailsAppend(const QMailMessageIdList &ids);
     virtual void selectedSectionsAppend(const QMailMessagePart::Location &, int = -1);
+    virtual void prepareCompletionList(
+                                  ImapStrategyContextBase *context,
+                                  const QMailMessage &message,
+                                  QMailMessageIdList &completionList,
+                                  QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -320,6 +326,16 @@ protected:
     virtual void messageListMessageAction(ImapStrategyContextBase *context);
 
     virtual void itemFetched(ImapStrategyContextBase *context, const QString &uid);
+
+    virtual void metaDataAnalysis(ImapStrategyContextBase *context,
+                                  const QMailMessagePartContainer &partContainer,
+                                  const QList<QMailMessagePartContainer::Location> &attachmentLocations,
+                                  QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
+                                  QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
+                                  uint &bytesLeft,
+                                  bool &foundBody);
+
+    QMailRetrievalAction::RetrievalSpecification _retrievalSpec;
 
     uint _headerLimit;
     int _listSize;
@@ -440,12 +456,6 @@ protected:
     virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
-
-    virtual void metaDataAnalysis(ImapStrategyContextBase *context,
-                                  const QMailMessagePartContainer &partContainer,
-                                  QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
-                                  int &bytesLeft,
-                                  bool &foundBody);
 
 protected:
     QStringList _newUids;

@@ -166,7 +166,8 @@ public:
     enum RetrievalSpecification {
         Flags,
         MetaData,
-        Content
+        Content,
+        Auto
     };
 
     QMailRetrievalAction(QObject *parent = 0);

@@ -183,20 +183,30 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     selected = false;
     deleting = false;
     additional = 0;
-    QMailAccount account(config.id());
 
-    if (spec == QMailRetrievalAction::MetaData) {
-        PopConfiguration popCfg(config);
+    switch (spec) {
+    case QMailRetrievalAction::Auto:
+        {
+            PopConfiguration popCfg(config);
 
-        if (popCfg.isAutoDownload()) {
-            // Just download everything
-            headerLimit = INT_MAX;
-        } else {
-            headerLimit = popCfg.maxMailSize() * 1024;
+            if (popCfg.isAutoDownload()) {
+                // Just download everything
+                headerLimit = UINT_MAX;
+            } else {
+                headerLimit = popCfg.maxMailSize() * 1024;
+            }
         }
-    } else {
+        break;
+    case QMailRetrievalAction::Content:
+        headerLimit = UINT_MAX;
+        break;
+    case QMailRetrievalAction::MetaData:
+    case QMailRetrievalAction::Flags:
+    default:
         headerLimit = 0;
+        break;
     }
+
     findInbox();
 }
 
@@ -239,7 +249,7 @@ void PopClient::setSelectedMails(const SelectionMap& data)
     // We shouldn't have anything left in our retrieval list...
     if (!retrievalSize.isEmpty()) {
         foreach (const QString& uid, retrievalSize.keys())
-            qMailLog(IMAP) << "Message" << uid << "still in retrieve map...";
+            qMailLog(POP) << "Message" << uid << "still in retrieve map...";
 
         retrievalSize.clear();
     }
@@ -697,7 +707,7 @@ void PopClient::nextAction()
             }
 
             QString temp = QString::number(msgNum);
-            if (selected || ((headerLimit > 0) && (mailSize <= headerLimit))) {
+            if ((headerLimit > 0) && (mailSize <= headerLimit)) {
                 // Retrieve the whole message
                 nextCommand = ("RETR " + temp);
                 nextStatus = Retr;
@@ -879,9 +889,9 @@ int PopClient::nextMsgServerPos()
         // if requested mail is not on server, try to get a new mail from the list
         while ( (thisMsg == -1) && !serverId.isEmpty() ) {
             int pos = msgPosFromUidl(serverId);
+            QMailMessage message(selectionMap[serverId]);
             if (pos == -1) {
                 // Mark this message as deleted
-                QMailMessage message(selectionMap[serverId]);
                 if (message.id().isValid()) {
                     message.setStatus(QMailMessage::Removed, true);
                     QMailStore::instance()->updateMessage(&message);
@@ -899,6 +909,9 @@ int PopClient::nextMsgServerPos()
                 thisMsg = pos;
                 messageUid = serverId;
                 mailSize = getSize(thisMsg);
+                if (mailSize == uint(-1) && message.id().isValid()) {
+                    mailSize = message.size();
+                }
             }
         }
 
@@ -1037,7 +1050,7 @@ void PopClient::createMail()
 
     mail->setParentFolderId(folderId);
 
-    bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
+    bool isComplete = ((headerLimit > 0) && (mailSize <= headerLimit));
     mail->setStatus(QMailMessage::ContentAvailable, isComplete);
     mail->setStatus(QMailMessage::PartialContentAvailable, isComplete);
     if (!isComplete) {
