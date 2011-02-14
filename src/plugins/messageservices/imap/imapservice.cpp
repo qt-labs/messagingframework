@@ -383,7 +383,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
     _service->_client.strategyContext()->retrieveAllStrategy.setBase(QMailFolderId());
     _service->_client.strategyContext()->retrieveAllStrategy.setQuickList(false);
     _service->_client.strategyContext()->retrieveAllStrategy.setDescending(true);
-    _service->_client.strategyContext()->retrieveAllStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::MetaData);
+    _service->_client.strategyContext()->retrieveAllStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Auto);
     appendStrategy(&_service->_client.strategyContext()->retrieveAllStrategy);
     if(!_unavailable)
         return initiateStrategy();
