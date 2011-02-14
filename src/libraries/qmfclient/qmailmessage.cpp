@@ -434,7 +434,6 @@ static QString decodeWordSequence(const QByteArray& str)
 
     int pos = 0;
     int lastPos = 0;
-    int length = str.length();
 
     while (pos != -1) {
         pos = encodedWord.indexIn(str, pos);
