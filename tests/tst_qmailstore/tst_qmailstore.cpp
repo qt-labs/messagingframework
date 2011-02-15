@@ -1001,20 +1001,20 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     // Temporary location for these tests:
-    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtopiamailfile")), 2);
-    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtopiamailfile")), 0);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qmfstoragemanager")), 2);
+    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qmfstoragemanager")), 0);
 
-    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtopiamailfile", QMailDataComparator::NotEqual)), 0);
-    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtopiamailfile", QMailDataComparator::NotEqual)), 2);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qmfstoragemanager", QMailDataComparator::NotEqual)), 0);
+    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qmfstoragemanager", QMailDataComparator::NotEqual)), 2);
 
-    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtopiamailfile", QMailDataComparator::Includes)), 2);
-    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtopiamailfile", QMailDataComparator::Includes)), 0);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qmfstoragemanager", QMailDataComparator::Includes)), 2);
+    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qmfstoragemanager", QMailDataComparator::Includes)), 0);
 
-    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtopia", QMailDataComparator::Includes)), 2);
-    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtopia", QMailDataComparator::Includes)), 0);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qmf", QMailDataComparator::Includes)), 2);
+    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qmf", QMailDataComparator::Includes)), 0);
 
-    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtopia", QMailDataComparator::Excludes)), 0);
-    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtopia", QMailDataComparator::Excludes)), 2);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qmf", QMailDataComparator::Excludes)), 0);
+    QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qmf", QMailDataComparator::Excludes)), 2);
 
     QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::contentScheme("qtexended", QMailDataComparator::Includes)), 0);
     QCOMPARE(QMailStore::instance()->countMessages(~QMailMessageKey::contentScheme("qtexended", QMailDataComparator::Includes)), 2);
@@ -1032,8 +1032,8 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->queryMessages(~QMailMessageKey::contentIdentifier(message1.contentIdentifier().remove(0, 1), QMailDataComparator::Includes)), QMailMessageIdList() << message3.id());
     QCOMPARE(QMailStore::instance()->queryMessages(~QMailMessageKey::contentIdentifier(message1.contentIdentifier().remove(0, 1), QMailDataComparator::Excludes)), QMailMessageIdList() << message1.id());
 
-    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey::contentScheme("qtopiamailfile") & QMailMessageKey::contentIdentifier(message1.contentIdentifier())), QMailMessageIdList() << message1.id());
-    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey::contentScheme("qtopiamailfile") & ~QMailMessageKey::contentIdentifier(message1.contentIdentifier())), QMailMessageIdList() << message3.id());
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey::contentScheme("qmfstoragemanager") & QMailMessageKey::contentIdentifier(message1.contentIdentifier())), QMailMessageIdList() << message1.id());
+    QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey::contentScheme("qmfstoragemanager") & ~QMailMessageKey::contentIdentifier(message1.contentIdentifier())), QMailMessageIdList() << message3.id());
 }
 
 void tst_QMailStore::updateMessages()
