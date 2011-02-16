@@ -1127,7 +1127,10 @@ void tst_python_email::test_nested_inner_contains_outer_boundary()
     And we don't support it, apart from accepting the input.
     */
     QMailMessage msg = fromFile("msg_38.txt");
-    QCOMPARE( msg.partCount(), 2u );
+
+    // MIME without headers/with invalid headers is considered as a single
+    // MIME part body. So effectively there are 3 parts in msg_38.txt
+    QCOMPARE( msg.partCount(), 3u );
 }
 
 void tst_python_email::test_nested_with_same_boundary()
