@@ -4324,7 +4324,7 @@ void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 
 void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    const int batchSize = 1000;
+    const int batchSize = 100;
     if (selectNextMessageSequence(context, batchSize)) {
         QString uidSequence(numericUidSequence(_messageUids));
         if (_setMask) {
@@ -4335,6 +4335,7 @@ void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase 
             context->protocol().sendUidStore(_unsetMask, false, uidSequence);
             ++_outstandingStores;
         }
+        context->progressChanged(0, 0); // Don't timeout
     }
 }
 
