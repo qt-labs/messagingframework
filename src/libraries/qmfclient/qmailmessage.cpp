@@ -5557,10 +5557,10 @@ QString QMailMessagePart::identifier() const
     QString id(contentID());
 
     if (id.isEmpty())
-        id = contentDisposition().filename();
+        id = decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
-        id = contentType().name();
+        id = decodeWordSequence(contentType().name());
 
     if (id.isEmpty())
         id = QString::number(impl(this)->partNumber());
