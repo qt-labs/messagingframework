@@ -430,7 +430,7 @@ static QString decodeWordSequence(const QByteArray& str)
 
     // Any idea why this isn't matching?
     //QRegExp encodedWord("\\b=\\?\\S+\\?\\S+\\?\\S*\\?=\\b");
-    QRegExp encodedWord("=\\?\\S+\\?\\S+\\?\\S*\\?=");
+    QRegExp encodedWord("\"?=\\?\\S+\\?\\S+\\?\\S*\\?=\"?");
 
     int pos = 0;
     int lastPos = 0;
@@ -6567,7 +6567,9 @@ void QMailMessageMetaData::setId(const QMailMessageId &id)
 */
 QMailAddress QMailMessageMetaData::from() const
 {
-    return QMailAddress(impl(this)->_from);
+    const QString& addr = impl(this)->_from;
+    const QString& decodedAddr = decodeWordSequence(addr.toUtf8());
+    return QMailAddress(decodedAddr);
 }
 
 /*!
