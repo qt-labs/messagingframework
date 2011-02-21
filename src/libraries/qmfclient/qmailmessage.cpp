@@ -6568,7 +6568,7 @@ void QMailMessageMetaData::setId(const QMailMessageId &id)
 QMailAddress QMailMessageMetaData::from() const
 {
     const QString& addr = impl(this)->_from;
-    const QString& decodedAddr = decodeWordSequence(addr.toUtf8());
+    const QString& decodedAddr = decodeWordSequence(addr.toAscii());
     return QMailAddress(decodedAddr);
 }
 
