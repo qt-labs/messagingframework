@@ -30,7 +30,8 @@ PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailmessageservice.h \
                   qmailserviceconfiguration.h \
                   qmailstoreaccountfilter.h \
-                  qmailtransport.h
+                  qmailtransport.h \
+                  qmailheartbeattimer.h
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
@@ -40,7 +41,8 @@ SOURCES += qmailauthenticator.cpp \
            qmailmessageservice.cpp \
            qmailserviceconfiguration.cpp \
            qmailstoreaccountfilter.cpp \
-           qmailtransport.cpp
+           qmailtransport.cpp \
+           qmailheartbeattimer.cpp
 
 header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
 header_files.files=$$PUBLIC_HEADERS
