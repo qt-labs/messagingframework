@@ -563,6 +563,12 @@ QString fieldName<QMailFolderKey::Property>(QMailFolderKey::Property property, c
 }
 
 template<>
+QString fieldName<QMailThreadKey::Property>(QMailThreadKey::Property property, const QString &alias)
+{
+    return qualifiedName(threadPropertyName(property), alias);
+}
+
+template<>
 QString fieldName<QMailAccountKey::Property>(QMailAccountKey::Property property, const QString& alias)
 {
     return qualifiedName(accountPropertyName(property), alias);
@@ -629,6 +635,24 @@ QMailFolderKey::Property matchingProperty<QMailFolderSortKey::Property, QMailFol
     static QMap<QMailFolderSortKey::Property, QMailFolderKey::Property> map(folderSortMapInit());
     return map.value(source);
 }
+
+static QMap<QMailThreadSortKey::Property, QMailThreadKey::Property> threadSortMapInit()
+{
+    QMap<QMailThreadSortKey::Property, QMailThreadKey::Property> map;
+
+    // Provide a mapping of sort key properties to the corresponding filter key
+    map.insert(QMailThreadSortKey::Id, QMailThreadKey::Id);
+    map.insert(QMailThreadSortKey::ServerUid, QMailThreadKey::ServerUid);
+    return map;
+}
+
+template<>
+QMailThreadKey::Property matchingProperty<QMailThreadSortKey::Property, QMailThreadKey::Property>(QMailThreadSortKey::Property source)
+{
+    static QMap<QMailThreadSortKey::Property, QMailThreadKey::Property> map(threadSortMapInit());
+    return map.value(source);
+}
+
 
 static QMap<QMailAccountSortKey::Property, QMailAccountKey::Property> accountSortMapInit()
 {
