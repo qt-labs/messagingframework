@@ -43,6 +43,7 @@
 #include "qmailmessagekey_p.h"
 
 #include "qmailaccountkey.h"
+#include "qmailthreadkey.h"
 #include "qmailfolderkey.h"
 #include <QDateTime>
 #include <QStringList>
@@ -1052,6 +1053,33 @@ QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator
 QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator::InclusionComparator cmp)
 {
     return QMailMessageKey(RfcId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose parent thread identifier matches \a id, according to \a cmp.
+*/
+
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadId &id, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(ParentThreadId, id, QMailKey::comparator(cmp));
+}
+
+
+/*!
+    Returns a key matching messages whose threadis a member of \a ids, according to \a cmp.
+*/
+
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ids, ParentThreadId, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose thread matched \a key, according to \a cmp.
+*/
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ParentThreadId, key, QMailKey::comparator(cmp));
 }
 
 //create implementations for QDataStream

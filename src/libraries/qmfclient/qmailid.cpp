@@ -692,5 +692,10 @@ uint qHash(const QMailMessageId &id)
 {
     return qHash(id.toULongLong());
 }
+/*! \internal */
+uint qHash(const QMailThreadId &id)
+{
+    return qHash(id.toULongLong());
+}
 
 

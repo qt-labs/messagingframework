@@ -219,6 +219,17 @@ uint QMailThread::messageCount() const
 {
     return d->messageCount;
 }
+
+void QMailThread::setMessageCount(uint value)
+{
+    d->messageCount = value;
+}
+
+void QMailThread::setUnreadCount(uint value)
+{
+    d->unreadCount = value;
+}
+
 /*!
     Returns the value recorded in the custom field named \a name.
 

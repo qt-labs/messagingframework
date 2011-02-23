@@ -114,6 +114,11 @@ public:
     static QString folderRemovedSig();
     static QString folderContentsModifiedSig();
 
+    static QString threadAddedSig();
+    static QString threadUpdatedSig();
+    static QString threadRemovedSig();
+    static QString threadContentsModifiedSig();
+
     static QString messageRemovalRecordsAddedSig();
     static QString messageRemovalRecordsRemovedSig();
 
@@ -171,6 +176,7 @@ private:
 
     QSet<QMailAccountId> addAccountsBuffer;
     QSet<QMailFolderId> addFoldersBuffer;
+    QSet<QMailThreadId> addThreadsBuffer;
     QSet<QMailMessageId> addMessagesBuffer;
     QSet<QMailAccountId> addMessageRemovalRecordsBuffer;
 
@@ -180,21 +186,24 @@ private:
     typedef QPair<QPair<QMailMessageKey::Properties, QMailMessageMetaData>, QSet<QMailMessageId> > MessagesProperties;
     typedef QList<MessagesProperties> MessagesPropertiesBuffer;
     MessagesPropertiesBuffer messagesPropertiesBuffer;
-	
+
     typedef QPair<quint64, bool> MessagesStatus;
     typedef QMap<MessagesStatus, QSet<QMailMessageId> > MessagesStatusBuffer;
     MessagesStatusBuffer messagesStatusBuffer;
-	
+
     QSet<QMailMessageId> updateMessagesBuffer;
     QSet<QMailFolderId> updateFoldersBuffer;
+    QSet<QMailThreadId> updateThreadsBuffer;
     QSet<QMailAccountId> updateAccountsBuffer;
 
     QSet<QMailAccountId> removeMessageRemovalRecordsBuffer;
     QSet<QMailMessageId> removeMessagesBuffer;
     QSet<QMailFolderId> removeFoldersBuffer;
+    QSet<QMailThreadId> removeThreadsBuffer;
     QSet<QMailAccountId> removeAccountsBuffer;
 
     QSet<QMailFolderId> folderContentsModifiedBuffer;
+    QSet<QMailThreadId> threadContentsModifiedBuffer;
     QSet<QMailAccountId> accountContentsModifiedBuffer;
     QSet<QMailMessageId> messageContentsModifiedBuffer;
 

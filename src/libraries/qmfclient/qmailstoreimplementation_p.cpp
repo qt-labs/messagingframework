@@ -336,6 +336,16 @@ static NotifyFunctionMap initFolderFunctions()
     return sig;
 }
 
+static NotifyFunctionMap initThreadFunctions()
+{
+    NotifyFunctionMap sig;
+    sig[QMailStore::Added] = QMailStoreImplementationBase::threadAddedSig();
+    sig[QMailStore::Updated] = QMailStoreImplementationBase::threadUpdatedSig();
+    sig[QMailStore::Removed] = QMailStoreImplementationBase::threadRemovedSig();
+    sig[QMailStore::ContentsModified] = QMailStoreImplementationBase::threadContentsModifiedSig();
+    return sig;
+}
+
 static NotifyFunctionMap initMessageRemovalRecordFunctions()
 {
     NotifyFunctionMap sig;
@@ -494,6 +504,44 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageId
         preFlushTimer.start(preFlushTimeout);
     }
 }
+
+void QMailStoreImplementationBase::notifyThreadsChange(QMailStore::ChangeType changeType, const QMailThreadIdList& ids)
+{
+    static NotifyFunctionMap sig(initThreadFunctions());
+
+    // Use the preFlushTimer to activate buffering when multiple changes occur proximately
+    if (preFlushTimer.isActive() || flushTimer.isActive()) {
+        if (!flushTimer.isActive()) {
+            // Wait for a period to batch up incoming changes
+            flushTimer.start(flushTimeout);
+        }
+
+        QSet<QMailThreadId> idsSet = QSet<QMailThreadId>::fromList(ids);
+        switch (changeType)
+        {
+        case QMailStore::Added:
+            addThreadsBuffer += idsSet;
+            break;
+        case QMailStore::Removed:
+            removeThreadsBuffer += idsSet;
+            break;
+        case QMailStore::Updated:
+            updateThreadsBuffer += idsSet;
+            break;
+        case QMailStore::ContentsModified:
+            threadContentsModifiedBuffer += idsSet;
+            break;
+        default:
+            qMailLog(Messaging) << "Unhandled folder notification received";
+            break;
+        }
+    } else {
+        emitIpcUpdates(ids, sig[changeType]);
+
+        preFlushTimer.start(preFlushTimeout);
+    }
+}
+
 
 void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids)
 {
@@ -696,6 +744,30 @@ QString QMailStoreImplementationBase::folderUpdatedSig()
 QString QMailStoreImplementationBase::folderContentsModifiedSig()
 {
     static QString s("folderContentsModified(uint,QList<quint64>)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::threadAddedSig()
+{
+    static QString s("threadAdded(uint,QList<quint64>)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::threadRemovedSig()
+{
+    static QString s("threadRemoved(uint,QList<quint64>)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::threadUpdatedSig()
+{
+    static QString s("threadUpdated(uint,QList<quint64>)");
+    return s;
+}
+
+QString QMailStoreImplementationBase::threadContentsModifiedSig()
+{
+    static QString s("threadContentsModified(uint,QList<quint64>)");
     return s;
 }
 

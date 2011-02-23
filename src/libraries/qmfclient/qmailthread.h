@@ -67,10 +67,10 @@ struct QMF_EXPORT QMailThread
     void setServerUid(const QString& serverUid);
 
     uint unreadCount() const;
-    uint setUnreadCount(uint value);
+    void setUnreadCount(uint value);
 
     uint messageCount() const;
-    uint setMessageCount(uint value);
+    void setMessageCount(uint value);
 
     QString customField(const QString &name) const;
     void setCustomField(const QString &name, const QString &value);
