@@ -978,27 +978,38 @@ bool QMailStoreNullImplementation::addFolder(QMailFolder *, QMailFolderIdList *,
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addThread(QMailThread *, QMailThreadIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+{
+    return false;
+}
+
+bool QMailStoreNullImplementation::removeThreads(const QMailThreadKey &, QMailStore::MessageRemovalOption ,
+                                                              QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -1033,6 +1044,11 @@ bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey 
     return false;
 }
 
+bool QMailStoreNullImplementation::updateThread(QMailThread *, QMailThreadIdList *)
+{
+    return false;
+}
+
 void QMailStoreNullImplementation::lock()
 {
 }
@@ -1061,6 +1077,11 @@ int QMailStoreNullImplementation::countMessages(const QMailMessageKey &) const
     return 0;
 }
 
+int QMailStoreNullImplementation::countThreads(const QMailThreadKey &) const
+{
+    return 0;
+}
+
 int QMailStoreNullImplementation::sizeOfMessages(const QMailMessageKey &) const
 {
     return 0;
@@ -1079,6 +1100,11 @@ QMailFolderIdList QMailStoreNullImplementation::queryFolders(const QMailFolderKe
 QMailMessageIdList QMailStoreNullImplementation::queryMessages(const QMailMessageKey &, const QMailMessageSortKey &, uint, uint) const
 {
     return QMailMessageIdList();
+}
+
+QMailThreadIdList QMailStoreNullImplementation::queryThreads(const QMailThreadKey &, const QMailThreadSortKey &, uint, uint) const
+{
+    return QMailThreadIdList();
 }
 
 QMailAccount QMailStoreNullImplementation::account(const QMailAccountId &) const
@@ -1104,6 +1130,11 @@ QMailMessage QMailStoreNullImplementation::message(const QMailMessageId &) const
 QMailMessage QMailStoreNullImplementation::message(const QString &, const QMailAccountId &) const
 {
     return QMailMessage();
+}
+
+QMailThread QMailStoreNullImplementation::thread(const QMailThreadId &) const
+{
+    return QMailThread();
 }
 
 QMailMessageMetaData QMailStoreNullImplementation::messageMetaData(const QMailMessageId &) const

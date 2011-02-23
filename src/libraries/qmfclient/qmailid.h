@@ -127,33 +127,64 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 };
 
+class QMF_EXPORT QMailThreadId
+{
+    QScopedPointer<QMailIdPrivate> d;
+public:
+    QMailThreadId();
+    explicit QMailThreadId(quint64 value);
+    QMailThreadId(const QMailThreadId& other);
+    virtual ~QMailThreadId();
+
+    QMailThreadId& operator=(const QMailThreadId& other);
+
+    bool isValid() const;
+    quint64 toULongLong() const;
+
+    operator QVariant() const;
+
+    bool operator!=(const QMailThreadId& other) const;
+    bool operator==(const QMailThreadId& other) const;
+    bool operator<(const QMailThreadId& other) const;
+
+    template <typename Stream> void serialize(Stream &stream) const;
+    template <typename Stream> void deserialize(Stream &stream);
+};
+
 
 typedef QList<QMailAccountId> QMailAccountIdList;
 typedef QList<QMailFolderId> QMailFolderIdList;
 typedef QList<QMailMessageId> QMailMessageIdList;
+typedef QList<QMailThreadId> QMailThreadIdList;
 
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailAccountId &id);
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailFolderId &id);
 QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailMessageId &id);
+QMF_EXPORT QDebug& operator<< (QDebug& debug, const QMailThreadId &id);
 
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailAccountId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailFolderId &id);
 QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailMessageId &id);
+QMF_EXPORT QTextStream& operator<< (QTextStream& s, const QMailThreadId &id);
 
 Q_DECLARE_USER_METATYPE(QMailAccountId);
 Q_DECLARE_USER_METATYPE(QMailFolderId);
 Q_DECLARE_USER_METATYPE(QMailMessageId);
+Q_DECLARE_USER_METATYPE(QMailThreadId);
 
 Q_DECLARE_METATYPE(QMailAccountIdList)
 Q_DECLARE_METATYPE(QMailFolderIdList)
 Q_DECLARE_METATYPE(QMailMessageIdList)
+Q_DECLARE_METATYPE(QMailThreadIdList)
 
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageIdList, QMailMessageIdList)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
 
 uint QMF_EXPORT qHash(const QMailAccountId &id);
 uint QMF_EXPORT qHash(const QMailFolderId &id);
 uint QMF_EXPORT qHash(const QMailMessageId &id);
+uint QMF_EXPORT qHash(const QMailThreadId &id);
 
 #endif

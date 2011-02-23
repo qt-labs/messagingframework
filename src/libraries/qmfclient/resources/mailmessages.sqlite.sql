@@ -22,9 +22,11 @@ CREATE TABLE mailmessages (
     listid VARCHAR NOT NULL DEFAULT '',
     rfcid VARCHAR NOT NULL DEFAULT '',
     preview VARCHAR NOT NULL DEFAULT '',
-    latestinconversation INTEGER NOT NULL,
+    parentthreadid INTEGER NOT NULL,
     FOREIGN KEY (parentfolderid) REFERENCES mailfolders(id),
-    FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id));
+    FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id),
+    FOREIGN KEY (threadid) REFERENCES mailthreads(id)
+    );
 
 CREATE INDEX parentfolderid_idx ON mailmessages("parentfolderid"); 
 CREATE INDEX parentaccountid_idx ON mailmessages("parentaccountid");

@@ -79,6 +79,7 @@ using nonstd::tr1::cref;
 
 MAKE_APPEND_UNIQUE(QMailMessageId)
 MAKE_APPEND_UNIQUE(QMailFolderId)
+MAKE_APPEND_UNIQUE(QMailThreadId)
 MAKE_APPEND_UNIQUE(QMailAccountId)
 
 #undef MAKE_APPEND_UNIQUE
@@ -92,7 +93,9 @@ class QMailStorePrivate::Key
         FolderSort,
         Message,
         MessageSort,
-        Text
+        Text,
+        Thread,
+        ThreadSort
     };
 
     Type m_type;
@@ -129,6 +132,11 @@ public:
     explicit Key(const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(0) {}
     Key(const QString &field, const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(&field) {}
     explicit Key(const QMailFolderSortKey &key, const QString &alias = QString()) : m_type(FolderSort), m_key(&key), m_alias(&alias), m_field(0) {}
+
+    explicit Key(const QMailThreadKey &key, const QString &alias = QString()) : m_type(Thread), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailThreadKey &key, const QString &alias = QString()) : m_type(Thread), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailThreadSortKey &key, const QString &alias = QString()) : m_type(ThreadSort), m_key(&key), m_alias(&alias), m_field(0) {}
+
 
     explicit Key(const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(0) {}
     Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
@@ -327,7 +335,7 @@ public:
 
     QVariant preview() const { return _data.preview(); }
 
-    QVariant latestInConversation() const { return _data.latestInConversation().toULongLong(); }
+    QVariant parentThreadId() const { return _data.parentThreadId().toULongLong(); }
 };
 
 // Class to extract QMailMessageMetaData properties from QVariant object
@@ -383,7 +391,7 @@ public:
 
     QString preview() const { return QMailStorePrivate::extractValue<QString>(_value); }
 
-    QMailMessageId latestInConversation() const { return QMailMessageId(QMailStorePrivate::extractValue<quint64>(_value)); }
+    QMailThreadId parentThreadId() const { return QMailThreadId(QMailStorePrivate::extractValue<quint64>(_value)); }
 };
 
 
@@ -416,7 +424,7 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::ListId, "listid");
     map.insert(QMailMessageKey::RfcId, "rfcid");
     map.insert(QMailMessageKey::Preview, "preview");
-    map.insert(QMailMessageKey::LatestInConversation, "latestinconversation");
+    map.insert(QMailMessageKey::ParentThreadId, "parentthreadid");
     return map;
 }
 
@@ -500,6 +508,34 @@ static QString folderPropertyName(QMailFolderKey::Property property)
 
     return QString();
 }
+
+typedef QMap<QMailThreadKey::Property, QString> ThreadPropertyMap;
+
+// Properties of the mailfolders table
+static ThreadPropertyMap threadPropertyMap()
+{
+    ThreadPropertyMap map;
+
+    map.insert(QMailThreadKey::Id,"id");
+    map.insert(QMailThreadKey::MessageCount, "messagecount");
+    map.insert(QMailThreadKey::UnreadCount, "unreadcount");
+    map.insert(QMailThreadKey::ServerUid, "serveruid");
+    return map;
+}
+
+static QString threadPropertyName(QMailThreadKey::Property property)
+{
+    static const ThreadPropertyMap map(threadPropertyMap());
+
+    ThreadPropertyMap::const_iterator it = map.find(property);
+    if (it != map.end())
+        return it.value();
+
+   qWarning() << "Unknown thread property:" << property;
+
+    return QString();
+}
+
 
 // Build lists of column names from property values
 
@@ -625,6 +661,12 @@ template<>
 QString fieldName<QMailFolderSortKey::Property>(QMailFolderSortKey::Property property, const QString &alias)
 {
     return qualifiedName(folderPropertyName(matchingProperty<QMailFolderSortKey::Property, QMailFolderKey::Property>(property)), alias);
+}
+
+template<>
+QString fieldName<QMailThreadSortKey::Property>(QMailThreadSortKey::Property property, const QString &alias)
+{
+    return qualifiedName(threadPropertyName(matchingProperty<QMailThreadSortKey::Property, QMailThreadKey::Property>(property)), alias);
 }
 
 template<>
@@ -904,7 +946,7 @@ public:
 
     QString preview() const { return value<QString>(QMailMessageKey::Preview); }
 
-    QMailMessageId latestInConversation() const { return QMailMessageId(value<quint64>(QMailMessageKey::LatestInConversation)); }
+    QMailThreadId parentThreadId() const { return QMailThreadId(value<quint64>(QMailMessageKey::ParentThreadId)); }
 
 private:
     int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
@@ -1005,7 +1047,7 @@ public:
 
     QVariantList preview() const { return stringValues(); }
 
-    QVariantList latestInConversation() const { return idValues<QMailMessageKey>(); }
+    QVariantList parentThreadId() const { return idValues<QMailThreadKey>(); }
 };
 
 template<>
@@ -1127,8 +1169,9 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
         values += extractor.preview();
         break;
 
-    case QMailMessageKey::LatestInConversation:
-        values += extractor.latestInConversation();
+    case QMailMessageKey::ParentThreadId:
+        values += extractor.parentThreadId();
+        break;
     }
 }
 
@@ -1352,6 +1395,80 @@ void appendWhereValues<QMailFolderKey::ArgumentType>(const QMailFolderKey::Argum
         break;
 
     case QMailFolderKey::Custom:
+        values += extractor.custom();
+        break;
+    }
+}
+
+
+// Class to extract data from records of the mailfolders table
+class ThreadRecord : public RecordExtractorBase<QMailThreadKey::Property>
+{
+public:
+    ThreadRecord(const QSqlRecord &r)
+        : RecordExtractorBase<QMailThreadKey::Property>(r) {}
+
+    QMailThreadId id() const { return QMailThreadId(value<quint64>(QMailThreadKey::Id)); }
+
+    QString serverUid() const { return value<QString>(QMailThreadKey::ServerUid); }
+
+    uint messageCount() const { return value<uint>(QMailThreadKey::MessageCount); }
+
+    uint unreadCount() const { return value<uint>(QMailThreadKey::UnreadCount); }
+
+private:
+    int fieldIndex(const QString &field, int props) const
+    {
+        return mappedFieldIndex(field, props, _fieldIndex);
+    }
+
+    static QMap<int, QMap<QString, int> > _fieldIndex;
+};
+
+QMap<int, QMap<QString, int> > ThreadRecord::_fieldIndex;
+
+// Class to convert QMailFolderKey argument values to SQL bind values
+class ThreadKeyArgumentExtractor : public ArgumentExtractorBase<QMailThreadKey>
+{
+public:
+    ThreadKeyArgumentExtractor(const QMailThreadKey::ArgumentType &a)
+        : ArgumentExtractorBase<QMailThreadKey>(a) {}
+
+    QVariantList id() const { return idValues<QMailThreadKey>(); }
+
+    QVariantList serverUid() const { return stringValues(); }
+
+    QVariant messageCount() const { return intValue(); }
+
+    QVariant unreadCount() const { return intValue(); }
+
+    QVariantList custom() const { return customValues(); }
+};
+
+template<>
+void appendWhereValues<QMailThreadKey::ArgumentType>(const QMailThreadKey::ArgumentType &a, QVariantList &values)
+{
+    const ThreadKeyArgumentExtractor extractor(a);
+
+    switch (a.property)
+    {
+    case QMailThreadKey::Id:
+        values += extractor.id();
+        break;
+
+    case QMailThreadKey::ServerUid:
+        values += extractor.serverUid();
+        break;
+
+    case QMailThreadKey::UnreadCount:
+        values += extractor.unreadCount();
+        break;
+
+    case QMailThreadKey::MessageCount:
+        values += extractor.messageCount();
+        break;
+
+    case QMailThreadKey::Custom:
         values += extractor.custom();
         break;
     }
@@ -1637,6 +1754,18 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             }
             break;
 
+        case QMailMessageKey::ParentThreadId:
+            if (a.valueList.first().canConvert<QMailThreadId>()) {
+                QMailThreadKey parentThreadKey = a.valueList.first().value<QMailThreadKey>();
+                QString nestedAlias(incrementAlias(alias));
+
+                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailthreads " << nestedAlias;
+                q << store.buildWhereClause(QMailStorePrivate::Key(parentThreadKey, nestedAlias)) << ")";
+            } else {
+                q << expression;
+            }
+            break;
+
         case QMailMessageKey::AncestorFolderIds:
             if (a.valueList.first().canConvert<QMailFolderKey>()) {
                 QMailFolderKey folderSubKey = a.valueList.first().value<QMailFolderKey>();
@@ -1685,7 +1814,6 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::InResponseTo:
-        case QMailMessageKey::LatestInConversation:
             if (a.valueList.first().canConvert<QMailMessageKey>()) {
                 QMailMessageKey messageKey = a.valueList.first().value<QMailMessageKey>();
                 QString nestedAlias(incrementAlias(alias));
@@ -1698,29 +1826,14 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::Conversation:
-            {
-                // We need to do a double lookup on the mailthreadmessages table, converting message key to threads, and then back to messages...
-                QString nestedAlias1(incrementAlias(alias));
-                QString nestedAlias2(incrementAlias(nestedAlias1));
+        {
+            QMailMessageKey messageKey(a.valueList.first().value<QMailMessageKey>());
+            QString nestedAlias(incrementAlias(alias));
 
-                q << baseExpression(columnName, Includes, true);
-                q << "( SELECT " << qualifiedName("messageid", nestedAlias1) << " FROM mailthreadmessages " << nestedAlias1 << " WHERE threadid IN ";
-                q << "( SELECT DISTINCT " << qualifiedName("threadid", nestedAlias2) << " FROM mailthreadmessages " << nestedAlias2 << " WHERE ";
-
-                if (a.valueList.first().canConvert<QMailMessageKey>()) {
-                    QMailMessageKey messageKey = a.valueList.first().value<QMailMessageKey>();
-                    QString nestedAlias3(incrementAlias(nestedAlias2));
-
-                    q << baseExpression(qualifiedName("messageid", nestedAlias2), Includes, true) << "( SELECT " << qualifiedName("id", nestedAlias3) << " FROM mailmessages " << nestedAlias3;
-                    q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias3)) << " )";
-                } else {
-                    q << columnExpression(qualifiedName("messageid", nestedAlias2), a.op, a.valueList);
-                }
-
-                q << " ) )";
-            }
+            q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("threadid", nestedAlias) << " FROM mailmessages " << nestedAlias;
+            q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias)) << ")";
             break;
-
+        }
         case QMailMessageKey::ServerUid:
         case QMailMessageKey::CopyServerUid:
             if (a.valueList.count() >= IdLookupThreshold) {
@@ -2109,13 +2222,14 @@ const QMailMessageKey::Properties &QMailStorePrivate::updatableMessageProperties
                                            QMailMessageKey::RestoreFolderId |
                                            QMailMessageKey::ListId |
                                            QMailMessageKey::RfcId |
-                                           QMailMessageKey::Preview;
+                                           QMailMessageKey::Preview |
+                                           QMailMessageKey::ParentThreadId;
     return p;
 }
 
 const QMailMessageKey::Properties &QMailStorePrivate::allMessageProperties()
 {
-    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | QMailMessageKey::LatestInConversation | updatableMessageProperties();
+    static QMailMessageKey::Properties p = QMailMessageKey::Id | QMailMessageKey::AncestorFolderIds | updatableMessageProperties();
     return p;
 }
 
@@ -2223,7 +2337,6 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailsubjects", 100)
                                             << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
-                                            << tableInfo("mailthreadmessages", 101)
                                             << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
                                             << tableInfo("deletedmessages", 101)
@@ -2709,6 +2822,20 @@ QMailAccount QMailStorePrivate::extractAccount(const QSqlRecord& r)
     return result;
 }
 
+
+QMailThread QMailStorePrivate::extractThread(const QSqlRecord& r)
+{
+    const ThreadRecord record(r);
+
+    QMailThread result;
+    result.setId(record.id());
+    result.setServerUid(record.serverUid());
+    result.setMessageCount(record.messageCount());
+    result.setUnreadCount(record.unreadCount());
+    return result;
+}
+
+
 QMailFolder QMailStorePrivate::extractFolder(const QSqlRecord& r)
 {
     const FolderRecord record(r);
@@ -2834,8 +2961,9 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
             metaData->setPreview(messageRecord.preview());
             break;
 
-        case QMailMessageKey::LatestInConversation:
-            metaData->setLatestInConversation(messageRecord.latestInConversation());
+        case QMailMessageKey::ParentThreadId:
+            metaData->setParentThreadId(messageRecord.parentThreadId());
+            break;
         }
     }
     
@@ -3079,8 +3207,8 @@ QVariantList QMailStorePrivate::messageValues(const QMailMessageKey::Properties&
                 values.append(extractor.preview());
                 break;
 
-            case QMailMessageKey::LatestInConversation:
-                values.append(extractor.latestInConversation());
+            case QMailMessageKey::ParentThreadId:
+                values.append(extractor.parentThreadId());
         }
     }
 
@@ -3204,8 +3332,8 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                 metaData.setPreview(extractor.preview());
                 break;
 
-            case QMailMessageKey::LatestInConversation:
-                metaData.setLatestInConversation(extractor.latestInConversation());
+            case QMailMessageKey::ParentThreadId:
+                metaData.setParentThreadId(extractor.parentThreadId());
                 break;
 
             default:
@@ -3639,29 +3767,33 @@ QString QMailStorePrivate::expandProperties(const QMailMessageKey::Properties& p
 bool QMailStorePrivate::addAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                    QMailAccountIdList *addedAccountIds)
 {
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddAccount, this, 
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddAccount, this,
                                         account, config, 
-                                        addedAccountIds), 
+                                        addedAccountIds),
                                    "addAccount");
 }
 
 bool QMailStorePrivate::addFolder(QMailFolder *folder,
                                   QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {   
-    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddFolder, this, 
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddFolder, this,
                                         folder, 
-                                        addedFolderIds, modifiedAccountIds), 
+                                        addedFolderIds, modifiedAccountIds),
                                    "addFolder");
 }
 
 bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
-                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
     // Resolve from overloaded member functions:
-    AttemptResult (QMailStorePrivate::*func)(QMailMessage*, const QString&, const QStringList&, QMailMessageIdList*, QMailMessageIdList*, QMailFolderIdList*, QMailAccountIdList*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
+    AttemptResult (QMailStorePrivate::*func)(QMailMessage*, QString const&, QStringList const&, AttemptAddMessageOut*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
+
     QSet<QString> contentSchemes;
 
+    AttemptAddMessageOut container(addedMessageIds, addedThreadIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+
     Transaction t(this);
+
 
     foreach (QMailMessage *message, messages) {
         // Find the message identifier and references from the header
@@ -3674,9 +3806,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
             }
         }
 
-        if (!repeatedly<WriteAccess>(bind(func, this, 
-                                          message, cref(identifier), cref(references),
-                                          addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+        if (!repeatedly<WriteAccess>(bind(func, this, message, cref(identifier), cref(references), &container),
                                      "addMessages",
                                      &t)) {
             return false;
@@ -3711,10 +3841,12 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
 }
 
 bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &messages,
-                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
     // Resolve from overloaded member functions:
-    AttemptResult (QMailStorePrivate::*func)(QMailMessageMetaData*, const QString&, const QStringList&, QMailMessageIdList*, QMailMessageIdList*, QMailFolderIdList*, QMailAccountIdList*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
+    AttemptResult (QMailStorePrivate::*func)(QMailMessageMetaData*, const QString&, const QStringList&, AttemptAddMessageOut*, Transaction&, bool) = &QMailStorePrivate::attemptAddMessage;
+
+    AttemptAddMessageOut out(addedMessageIds, addedThreadIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
 
     Transaction t(this);
 
@@ -3724,7 +3856,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
 
         if (!repeatedly<WriteAccess>(bind(func, this, 
                                           metaData, cref(identifier), cref(references),
-                                          addedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                          &out),
                                      "addMessages",
                                      &t)) {
             return false;
@@ -3739,32 +3871,58 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
     return true;
 }
 
-bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
-                                       QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+bool QMailStorePrivate::addThread(QMailThread *thread, QMailThreadIdList *addedThreadIds)
 {
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddThread, this,
+                                        thread,
+                                        addedThreadIds),
+                                   "addThread");
+}
+
+bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
+                                       QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+{
+    AttemptRemoveAccountOut out(deletedAccountIds, deletedFolderIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveAccounts, this, 
                                         cref(key), 
-                                        deletedAccountIds, deletedFolderIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                        &out),
                                    "removeAccounts");
 }
 
 bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                                      QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                      QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
+
+    AttemptRemoveFoldersOut out(deletedFolderIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+
+
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveFolders, this, 
                                         cref(key), option, 
-                                        deletedFolderIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                        &out),
                                    "removeFolders");
 }
 
 bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                                       QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                       QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveMessages, this, 
                                         cref(key), option, 
-                                        deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                        deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds),
                                    "removeMessages");
 }
+
+bool QMailStorePrivate::removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
+                               QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+{
+    AttemptRemoveThreadsOut out(deletedThreads, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveThreads, this,
+                                        cref(key), option,
+                                        &out),
+                                   "removeMessages");
+}
+
 
 bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                       QMailAccountIdList *updatedAccountIds)
@@ -3791,6 +3949,15 @@ bool QMailStorePrivate::updateFolder(QMailFolder *folder,
                                         folder, 
                                         updatedFolderIds, modifiedAccountIds), 
                                    "updateFolder");
+}
+
+bool QMailStorePrivate::updateThread(QMailThread *t,
+                              QMailThreadIdList *updatedThreadIds)
+{
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateThread, this,
+                                        t,
+                                        updatedThreadIds),
+                                   "updateThread");
 }
 
 bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> > &messages,
@@ -3909,6 +4076,15 @@ int QMailStorePrivate::countMessages(const QMailMessageKey &key) const
     return result;
 }
 
+int QMailStorePrivate::countThreads(const QMailThreadKey &key) const
+{
+    int result(0);
+    repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptCountThreads, const_cast<QMailStorePrivate*>(this),
+                                cref(key), &result),
+                           "countThreads");
+    return result;
+}
+
 int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
 {
     int result(0);
@@ -3942,6 +4118,15 @@ QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, 
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryMessages, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), cref(sortKey), limit, offset, &ids), 
                            "queryMessages");
+    return ids;
+}
+
+QMailThreadIdList QMailStorePrivate::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const
+{
+    QMailThreadIdList ids;
+    repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryThreads, const_cast<QMailStorePrivate*>(this),
+                                cref(key), cref(sortKey), limit, offset, &ids),
+                           "queryFolders");
     return ids;
 }
 
@@ -4000,6 +4185,15 @@ QMailMessage QMailStorePrivate::message(const QString &uid, const QMailAccountId
                                 cref(uid), cref(accountId), &msg), 
                            "message(uid, accountId)");
     return msg;
+}
+
+QMailThread QMailStorePrivate::thread(const QMailThreadId &id) const
+{
+    QMailThread thread;
+    repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptThread, const_cast<QMailStorePrivate*>(this),
+                                cref(id), &thread),
+                           "thread");
+    return thread;
 }
 
 QMailMessageMetaData QMailStorePrivate::messageMetaData(const QMailMessageId &id) const
@@ -4615,8 +4809,41 @@ struct ReferenceStorer
     }
 };
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
-                                                                      QMailMessageIdList *all_addedMessageIds, QMailMessageIdList *all_updatedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddThread(QMailThread *thread, QMailThreadIdList *addedThreadIds, Transaction &t, bool commitOnSuccess)
+{
+    // TODO: check preconditions
+    QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id,messagecount,unreadcount,serveruid) VALUES (?,?,?,?)",
+                                QVariantList() << thread->id()
+                                            << thread->messageCount()
+                                            << thread->unreadCount()
+                                            << thread->unreadCount()
+                                            << thread->serverUid(),
+                                "addFolder mailfolders query"));
+
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    // Extract the inserted id
+    QMailThreadId insertId(extractValue<quint64>(query.lastInsertId()));
+
+
+    thread->setId(insertId);
+
+
+    if (commitOnSuccess && !t.commit()) {
+        qWarning() << "Could not commit thread  changes to database";
+
+        thread->setId(QMailThreadId()); // id didn't sync
+        return DatabaseFailure;
+    }
+
+    addedThreadIds->append(insertId);
+
+    return Success;
+}
+
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
                                                                       Transaction &t, bool commitOnSuccess)
 {
     if (!message->parentAccountId().isValid()) {
@@ -4666,7 +4893,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         }
     }
 
-    AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, all_addedMessageIds, all_updatedMessageIds, all_modifiedFolderIds, all_modifiedAccountIds, t, commitOnSuccess);
+    AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, out, t, commitOnSuccess);
     if (result != Success) {
         bool obsoleted(false);
         foreach(QMailContentManager *manager, contentManagers) {
@@ -4690,8 +4917,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     return result;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
-                                                                      QMailMessageIdList *all_addedMessageIds, QMailMessageIdList *all_updatedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
                                                                       Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->parentFolderId().isValid()) {
@@ -4724,64 +4950,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             return result;
     }
 
-    // Ensure that any phone numbers are added in minimal form
-    QMailAddress from(metaData->from());
-    QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
-
-    QStringList recipients;
-    foreach (const QMailAddress& address, metaData->to())
-        recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
-
-    quint64 insertId;
-
-    {
-        QMap<QString, QVariant> values;
-
-        values.insert("type", static_cast<int>(metaData->messageType()));
-        values.insert("parentfolderid", metaData->parentFolderId().toULongLong());
-        values.insert("sender", fromText);
-        values.insert("recipients", recipients.join(","));
-        values.insert("subject", metaData->subject());
-        values.insert("stamp", QMailTimeStamp(metaData->date()).toLocalTime());
-        values.insert("status", static_cast<int>(metaData->status()));
-        values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
-        values.insert("mailfile", ::contentUri(*metaData));
-        values.insert("serveruid", metaData->serverUid());
-        values.insert("size", metaData->size());
-        values.insert("contenttype", static_cast<int>(metaData->content()));
-        values.insert("responseid", metaData->inResponseTo().toULongLong());
-        values.insert("responsetype", metaData->responseType());
-        values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toLocalTime());
-        values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
-        values.insert("copyserveruid", metaData->copyServerUid());
-        values.insert("restorefolderid", metaData->restoreFolderId().toULongLong());
-        values.insert("listid", metaData->listId());
-        values.insert("rfcID", metaData->rfcId());
-        values.insert("preview", metaData->preview());
-        values.insert("latestinconversation", metaData->latestInConversation());
-
-        const QStringList &list(values.keys());
-        QString columns = list.join(",");
-
-        // Add the record to the mailmessages table
-        QSqlQuery query(simpleQuery(QString("INSERT INTO mailmessages (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
-                                    values.values(),
-                                    "addMessage mailmessages query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
-
-        //retrieve the insert id
-        insertId = extractValue<quint64>(query.lastInsertId());
-    }
-
-    // Insert any custom fields belonging to this message
-    AttemptResult result(addCustomFields(insertId, metaData->customFields(), "mailmessagecustom"));
-    if (result != Success)
-        return result;
-
-    // Attach this message to a thread
-    if (metaData->inResponseTo().isValid()) {
-
+    if (!metaData->parentThreadId().isValid() && metaData->inResponseTo().isValid()) {
         QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid=%1");
         QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
 
@@ -4792,30 +4961,43 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             qWarning() << "Could not find thread id for inserted message";
             return DatabaseFailure;
         }
-
         quint64 threadId(extractValue<quint64>(query.value(0)));
 
-        // Use the thread of the parent message
-        QSqlQuery insertQuery(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) VALUES (?,?)",
-                                    QVariantList() << threadId << insertId,
-                                    "addMessage mailthreadmessages insert query"));
-        if (insertQuery.lastError().type() != QSqlError::NoError)
+        Q_ASSERT(threadId != 0);
+        metaData->setParentThreadId(QMailThreadId(threadId));
+    }
+
+    if (metaData->parentThreadId().isValid()) {
+        APPEND_UNIQUE(out->modifiedThreadIds, metaData->parentThreadId());
+
+        QString sql("UPDATE mailthreads SET messagecount = messagecount + 1"
+                    + (metaData->status() & QMailMessage::Read ? QString("") : QString(", unreadcount = unreadcount + 1 "))
+                    + " FROM mailthreads WHERE id=%1");
+
+        QSqlQuery query(simpleQuery(sql.arg(metaData->parentThreadId().toULongLong()), "addMessage increment message query"));
+
+        if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
-
-        quint64 newLatest;
-        AttemptResult res(updateLatestInConversation(threadId, all_updatedMessageIds, &newLatest));
-
-        if (res != Success)
-            return res;
-
-        Q_ASSERT(newLatest != 0);
-        metaData->setLatestInConversation(QMailMessageId(newLatest));
     } else {
-        // Add a new thread for this message
-        quint64 threadId;
+        quint64 threadId = 0;
 
-        {
-            QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id) SELECT COALESCE(MAX(id),0) + 1 FROM mailthreads",
+        // Attach this message to a thread
+        if (metaData->inResponseTo().isValid()) {
+
+            QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid=%1");
+            QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
+
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+            if (!query.next()) {
+                qWarning() << "Could not find thread id for inserted message";
+                return DatabaseFailure;
+            }
+            threadId = extractValue<quint64>(query.value(0));
+        } else {
+            // Add a new thread for this message
+            QSqlQuery query(simpleQuery("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(0, 0, '')",
                                         "addMessage mailthreads insert query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
@@ -4823,29 +5005,69 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             threadId = extractValue<quint64>(query.lastInsertId());
         }
 
-        {
-            QSqlQuery query(simpleQuery("INSERT INTO mailthreadmessages (threadid,messageid) VALUES (?,?)",
-                                        QVariantList() << threadId << insertId,
-                                        "addMessage mailthreads insert query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
-
-        Q_ASSERT(insertId != 0);
-        metaData->setLatestInConversation(QMailMessageId(insertId));
-        QString updateSql("UPDATE mailmessages SET latestinconversation = %1 WHERE id = %1");
-        QSqlQuery updateQuery(simpleQuery(updateSql.arg(insertId), "addmessage latestinconversation selfupdate"));
-
-        if (updateQuery.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
+        Q_ASSERT(threadId != 0);
+        metaData->setParentThreadId(QMailThreadId(threadId));
     }
+
+    // Ensure that any phone numbers are added in minimal form
+    QMailAddress from(metaData->from());
+    QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
+
+    QStringList recipients;
+    foreach (const QMailAddress& address, metaData->to())
+        recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
+
+    quint64 insertId;
+
+    QMap<QString, QVariant> values;
+
+    values.insert("type", static_cast<int>(metaData->messageType()));
+    values.insert("parentfolderid", metaData->parentFolderId().toULongLong());
+    values.insert("sender", fromText);
+    values.insert("recipients", recipients.join(","));
+    values.insert("subject", metaData->subject());
+    values.insert("stamp", QMailTimeStamp(metaData->date()).toLocalTime());
+    values.insert("status", static_cast<int>(metaData->status()));
+    values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
+    values.insert("mailfile", ::contentUri(*metaData));
+    values.insert("serveruid", metaData->serverUid());
+    values.insert("size", metaData->size());
+    values.insert("contenttype", static_cast<int>(metaData->content()));
+    values.insert("responseid", metaData->inResponseTo().toULongLong());
+    values.insert("responsetype", metaData->responseType());
+    values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toLocalTime());
+    values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
+    values.insert("copyserveruid", metaData->copyServerUid());
+    values.insert("restorefolderid", metaData->restoreFolderId().toULongLong());
+    values.insert("listid", metaData->listId());
+    values.insert("rfcID", metaData->rfcId());
+    values.insert("preview", metaData->preview());
+    values.insert("parentthreadid", metaData->parentThreadId());
+
+    const QStringList &list(values.keys());
+    QString columns = list.join(",");
+
+    // Add the record to the mailmessages table
+    QSqlQuery query(simpleQuery(QString("INSERT INTO mailmessages (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
+                                values.values(),
+                                "addMessage mailmessages query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    //retrieve the insert id
+    insertId = extractValue<quint64>(query.lastInsertId());
 
     if (!baseSubject.isEmpty()) {
         // Ensure that this subject is in the subjects table
-        result = registerSubject(baseSubject, insertId, metaData->inResponseTo(), missingAncestor);
+        AttemptResult result = registerSubject(baseSubject, insertId, metaData->inResponseTo(), missingAncestor);
         if (result != Success)
             return result;
     }
+
+    // Insert any custom fields belonging to this message
+    AttemptResult result(addCustomFields(insertId, metaData->customFields(), "mailmessagecustom"));
+    if (result != Success)
+        return result;
 
     // Does this message have any identifier?
     if (!identifier.isEmpty()) {
@@ -4859,14 +5081,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     // See if this message resolves any missing message items
     QMailMessageIdList updatedMessageIds;
     result = resolveMissingMessages(identifier, metaData->inResponseTo(), baseSubject, insertId, &updatedMessageIds);
-    APPEND_UNIQUE(all_updatedMessageIds, &updatedMessageIds);
+    APPEND_UNIQUE(out->updatedMessageIds, &updatedMessageIds);
     if (result != Success)
         return result;
 
     if (!updatedMessageIds.isEmpty()) {
         // Find the set of folders and accounts whose contents are modified by these messages
         QMailMessageKey modifiedMessageKey(QMailMessageKey::id(updatedMessageIds));
-        result = affectedByMessageIds(updatedMessageIds, all_modifiedFolderIds, all_modifiedAccountIds);
+        result = affectedByMessageIds(updatedMessageIds, out->modifiedFolderIds, out->modifiedAccountIds);
         if (result != Success)
             return result;
     }
@@ -4904,23 +5126,23 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     metaData->setId(QMailMessageId(insertId));
     metaData->setUnmodified();
-    APPEND_UNIQUE(all_addedMessageIds, metaData->id());
-    APPEND_UNIQUE(all_modifiedFolderIds, &folderIds);
+    APPEND_UNIQUE(out->addedMessageIds, metaData->id());
+    APPEND_UNIQUE(out->modifiedFolderIds, &folderIds);
     if (metaData->parentAccountId().isValid())
-        APPEND_UNIQUE(all_modifiedAccountIds, metaData->parentAccountId());
+        APPEND_UNIQUE(out->modifiedAccountIds, metaData->parentAccountId());
     return Success;
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const QMailAccountKey &key, 
-                                                                          QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                          AttemptRemoveAccountOut *out,
                                                                           Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
-    if (deleteAccounts(key, *deletedAccountIds, *deletedFolderIds, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
+    if (deleteAccounts(key, *out->deletedAccountIds, *out->deletedFolderIds, *out->deletedMessageIds, expiredContent, *out->updatedMessageIds, *out->modifiedFolderIds, *out->modifiedThreadIds, *out->modifiedAccountIds)) {
         if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
-            removeExpiredData(*deletedMessageIds, expiredContent, *deletedFolderIds, *deletedAccountIds);
+            removeExpiredData(*out->deletedMessageIds, expiredContent, *out->deletedFolderIds, *out->deletedAccountIds);
             return Success;
         }
     }
@@ -4929,15 +5151,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveAccounts(const 
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
-                                                                         QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                         AttemptRemoveFoldersOut *out,
                                                                          Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
-    if (deleteFolders(key, option, *deletedFolderIds, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
+    if (deleteFolders(key, option, *out->deletedFolderIds, *out->deletedMessageIds, expiredContent, *out->updatedMessageIds, *out->modifiedFolderIds, *out->modifiedThreadIds, *out->modifiedAccountIds)) {
         if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
-            removeExpiredData(*deletedMessageIds, expiredContent, *deletedFolderIds);
+            removeExpiredData(*out->deletedMessageIds, expiredContent, *out->deletedFolderIds);
             return Success;
         }
     }
@@ -4945,13 +5167,31 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveFolders(const Q
     return DatabaseFailure;
 }
 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
+                                                                         AttemptRemoveThreadsOut *out,
+                                                                         Transaction &t, bool commitOnSuccess)
+{
+    QStringList expiredContent;
+
+    if (deleteThreads(key, option, *out->deletedThreadIds, *out->deletedMessageIds, expiredContent, *out->updatedMessageIds, *out->modifiedFolderIds, *out->modifiedThreadIds, *out->modifiedAccountIds)) {
+        if (commitOnSuccess && t.commit()) {
+            //remove deleted objects from caches
+            removeExpiredData(*out->deletedMessageIds, expiredContent);
+            return Success;
+        }
+    }
+
+    return DatabaseFailure;
+}
+
+
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option, 
-                                                                          QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                                                          QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds,
                                                                           Transaction &t, bool commitOnSuccess)
 {
     QStringList expiredContent;
 
-    if (deleteMessages(key, option, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedAccountIds)) {
+    if (deleteMessages(key, option, *deletedMessageIds, expiredContent, *updatedMessageIds, *modifiedFolderIds, *modifiedThreadIds, *modifiedAccountIds)) {
         if (commitOnSuccess && t.commit()) {
             //remove deleted objects from caches
             removeExpiredData(*deletedMessageIds, expiredContent);
@@ -5187,6 +5427,34 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
     }
 
     updatedAccountIds->append(id);
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateThread(QMailThread *thread,
+                                  QMailThreadIdList *updatedThreadIds,
+                                  Transaction &t, bool commitOnSuccess)
+{
+    if (thread->id().isValid())
+        return Failure;
+
+    updatedThreadIds->append(thread->id());
+
+    QSqlQuery query(simpleQuery("UPDATE mailthreads SET messagecount=?, unreadcount=?, serveruid=? WHERE id=?",
+                                QVariantList() << thread->messageCount()
+                                             << thread->unreadCount()
+                                             << thread->serverUid()
+                                             << thread->id().toULongLong(),
+                                "AttemptUpdateThread update"));
+
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    if (commitOnSuccess && !t.commit()) {
+        qWarning() << "Could not commit folder update to database";
+        return DatabaseFailure;
+    }
+
+
     return Success;
 }
 
@@ -5798,15 +6066,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
-
-        QSet<quint64> threadIds;
-        foreach(const QMailMessageId &id, *updatedMessageIds) {
-            threadIds.insert(threadId(id));
-        }
-
-        AttemptResult res(updateLatestInConversation(threadIds, updatedMessageIds));
-        if (res != Success)
-            return res;
     }
 
     if (commitOnSuccess && !t.commit()) {
@@ -5951,6 +6210,22 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountFolders(const QM
     return Success;
 }
 
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountThreads(const QMailThreadKey &key,
+                                                                         int *result,
+                                                                         ReadLock &)
+{
+    QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailthreads",
+                                Key(key),
+                                "countThreads count query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    if (query.first())
+        *result = extractValue<int>(query.value(0));
+
+    return Success;
+}
+
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountMessages(const QMailMessageKey &key, 
                                                                          int *result, 
                                                                          ReadLock &)
@@ -5997,6 +6272,24 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const Q
 
     while (query.next())
         ids->append(QMailAccountId(extractValue<quint64>(query.value(0))));
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset,
+                                                                        QMailThreadIdList *ids,
+                                                                        ReadLock &)
+{
+    QSqlQuery query(simpleQuery("SELECT id FROM mailthreads",
+                                QVariantList(),
+                                QList<Key>() << Key(key) << Key(sortKey),
+                                qMakePair(limit, offset),
+                                "queryFolders mailfolders query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    while (query.next())
+        ids->append(QMailThreadId(extractValue<quint64>(query.value(0))));
 
     return Success;
 }
@@ -6156,6 +6449,22 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
 
     return Success;
 }
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptThread(const QMailThreadId &id, QMailThread *result, ReadLock &)
+{
+    QSqlQuery query(simpleQuery("SELECT * FROM mailthreads WHERE id=?",
+                                QVariantList() << id.toULongLong(),
+                                "folder mailfolders query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    if (query.first()) {
+        *result = extractThread(query.record());
+    }
+
+    return (result->id().isValid()) ? Success : Failure;
+}
+
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFolderId &id, 
                                                                   QMailFolder *result, 
@@ -6670,92 +6979,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::affectedByFolderIds(const QM
     return result;
 }
 
-quint64 QMailStorePrivate::threadId(const QMailMessageId &id)
-{
-    Q_ASSERT(id.isValid());
-    QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid = %1");
-    QSqlQuery query(simpleQuery(sql.arg(id.toULongLong()), "messagethreadid info query"));
-
-    if (query.lastError().type() != QSqlError::NoError) {
-        qWarning() << "Error when locating thread information for message: " << id;
-        return 0;
-    }
-
-    if (query.next()) {
-        return extractValue<quint64>(query.value(0));
-    } else {
-        qWarning() << "Error when locating thread information for message: " << id;
-        return 0;
-    }
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo)
-{
-    Q_ASSERT(threadId != 0);
-
-    QString messageIdsQuery("SELECT id FROM mailmessages WHERE id IN (SELECT messageid FROM mailthreadmessages WHERE threadid = %1) ORDER BY stamp DESC");
-
-    QSqlQuery query(simpleQuery(messageIdsQuery.arg(threadId), "updateLatestInConversation message list"));
-
-    if (query.lastError().type() != QSqlError::NoError) {
-        qWarning() << "Error when listing messages in thread id" << threadId;
-        return DatabaseFailure;
-    }
-
-    QList<QMailMessageId> toUpdate; // exclusive of themostRecent
-
-    if (!query.next()) {
-        return Success; // nothing to do
-    }
-
-    QMailMessageId mostRecent(extractValue<quint64>(query.value(0)));
-    Q_ASSERT(mostRecent.isValid());
-
-    while (query.next()) {
-        toUpdate.push_back(QMailMessageId(extractValue<quint64>(query.value(0))));
-    }
-
-    // TODO: clean this up, but as they're all just ints -- it's not so bad
-    QString updateSql("UPDATE mailmessages SET latestinconversation=");
-    updateSql += QString::number(mostRecent.toULongLong());
-    updateSql += " WHERE id IN (";
-    updateSql += QString::number(mostRecent.toULongLong());
-
-    foreach (QMailMessageId const& updateId, toUpdate) {
-        updateSql += ", " + QString::number(updateId.toULongLong());
-    }
-
-    updateSql += ");";
-
-    QSqlQuery updateQuery(simpleQuery(updateSql, "updateLatestInConversation thread update"));
-
-    if (updateQuery.lastError().type() != QSqlError::NoError) {
-        qWarning() << "Error when updating all messages in thread";
-        return DatabaseFailure;
-    }
-
-    APPEND_UNIQUE(messagesUpdated, mostRecent);
-    APPEND_UNIQUE(messagesUpdated, &toUpdate);
-
-    if (updatedTo) {
-        *updatedTo = mostRecent.toULongLong();
-    }
-
-    return Success;
-}
-
-QMailStorePrivate::AttemptResult QMailStorePrivate::updateLatestInConversation(const QSet<quint64> & threadIds, QMailMessageIdList *messagesUpdated)
-{
-    foreach (quint64 const& threadId, threadIds) {
-        AttemptResult res(updateLatestInConversation(threadId, messagesUpdated));
-        if (res != Success) {
-            return res;
-        }
-    }
-
-    return Success;
-}
-
 QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool replyOrForward,
                                                                        QStringList *missingReferences, bool *missingAncestor)
 {
@@ -6810,7 +7033,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             }
         }
     } else if (!baseSubject.isEmpty() && replyOrForward) {
-        // This message has a thread ancestor, but we can only estimate which is the best choice
+        // This message has a thread ancestor,  but we can only estimate which is the best choice
         *missingAncestor = true;
 
         // Find the preceding messages of all thread matching this base subject
@@ -7237,18 +7460,17 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QStringList& expiredContent, 
                                        QMailMessageIdList& updatedMessageIds, 
                                        QMailFolderIdList& modifiedFolderIds,
+                                       QMailThreadIdList& modifiedThreadIds,
                                        QMailAccountIdList& modifiedAccountIds)
 {
 
-    QString elements("id,mailfile,parentaccountid,parentfolderid, latestinconversation");
+    QString elements("id,mailfile,parentaccountid,parentfolderid");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";
 
     QVariantList removalAccountIds;
     QVariantList removalServerUids;
     QVariantList removalFolderIds;
-
-    QSet<quint64> threadsToUpdate;
 
     {
         // Get the information we need to delete these messages
@@ -7278,19 +7500,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             QMailFolderId folderId(extractValue<quint64>(query.value(3)));
             if (!modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
-
-            if (extractValue<quint64>(query.value(4) == messageId.toULongLong())) {
-
-                QSqlQuery threadIdQuery(simpleQuery(QString("SELECT threadid FROM mailthreadmessages WHERE messageid=%1").arg(messageId.toULongLong()),
-                                            "deleteMessages threadid info query"));
-                if (threadIdQuery.lastError().type() != QSqlError::NoError)
-                    return false;
-
-                int hasNext(threadIdQuery.next());
-                Q_ASSERT(hasNext);
-
-                threadsToUpdate.insert(extractValue<quint64>(threadIdQuery.value(0)));
-            }
 
             if (option == QMailStore::CreateRemovalRecord) {
                 // Extract the info needed to create removal records
@@ -7461,12 +7670,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             return false;
     }
     {
-        AttemptResult res(updateLatestInConversation(threadsToUpdate, &updatedMessageIds));
-        if (res != Success)
-            return false;
-    }
-
-    {
         // Remove any subjects that are unreferenced after this deletion
         {
             QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT id FROM mailthreads)",
@@ -7486,6 +7689,65 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     return true;
 }
 
+bool QMailStorePrivate::deleteThreads(const QMailThreadKey& key,
+                   QMailStore::MessageRemovalOption option,
+                   QMailThreadIdList& deletedThreadIds,
+                   QMailMessageIdList& deletedMessageIds,
+                   QStringList& expiredMailfiles,
+                   QMailMessageIdList& updatedMessageIds,
+                   QMailFolderIdList& modifiedFolderIds,
+                   QMailThreadIdList& modifiedThreadIds,
+                   QMailAccountIdList& modifiedAccountIds)
+{
+    QMailThreadIdList threadsToDelete;
+
+    {
+        // Get the identifiers for all the threads we're deleting
+        QSqlQuery query(simpleQuery("SELECT t0.id FROM mailthreads t0",
+                                    Key(key, "t0"),
+                                    "deleteThreads info query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+
+        while (query.next())
+            threadsToDelete.append(QMailThreadId(extractValue<quint64>(query.value(0))));
+    }
+
+    if (threadsToDelete.isEmpty())
+        return true;
+
+    // Create a key to select messages in the thread to be deleted
+    QMailMessageKey messagesKey(QMailMessageKey::parentThreadId(key));
+
+    // Delete all the messages contained by the folders we're deleting
+    if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredMailfiles, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
+        return false;
+
+
+    {
+        // Perform the folder deletion
+        QString sql("DELETE FROM mailthreads");
+        QSqlQuery query(simpleQuery(sql, Key(QMailThreadKey::id(threadsToDelete)),
+                                    "deleteThreads delete mailthreads query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+
+    deletedThreadIds.append(threadsToDelete);
+
+    // Do not report any deleted entities as updated TODO: factor this into deleteMessages
+    for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
+        if (deletedMessageIds.contains(*mit)) {
+            mit = updatedMessageIds.erase(mit);
+        } else {
+            ++mit;
+        }
+    }
+
+    return true;
+}
+
+
 bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key, 
                                       QMailStore::MessageRemovalOption option, 
                                       QMailFolderIdList& deletedFolderIds, 
@@ -7493,6 +7755,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
                                       QStringList& expiredContent, 
                                       QMailMessageIdList& updatedMessageIds, 
                                       QMailFolderIdList& modifiedFolderIds, 
+                                      QMailThreadIdList& modifiedThreadIds,
                                       QMailAccountIdList& modifiedAccountIds)
 {
     {
@@ -7515,7 +7778,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
     QMailMessageKey messagesKey(QMailMessageKey::parentFolderId(key));
     
     // Delete all the messages contained by the folders we're deleting
-    if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedAccountIds))
+    if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;
     
     // Delete any references to these folders in the mailfolderlinks table
@@ -7586,7 +7849,8 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
                                        QMailMessageIdList& deletedMessageIds, 
                                        QStringList& expiredContent, 
                                        QMailMessageIdList& updatedMessageIds, 
-                                       QMailFolderIdList& modifiedFolderIds, 
+                                       QMailFolderIdList& modifiedFolderIds,
+                                       QMailThreadIdList& modifiedThreadIds,
                                        QMailAccountIdList& modifiedAccountIds)
 {
     {
@@ -7612,7 +7876,7 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
     QMailStore::MessageRemovalOption option(QMailStore::NoRemovalRecord);
 
     // Delete all the folders contained by the accounts we're deleting
-    if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedAccountIds))
+    if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;
     
     // Also delete any messages belonging to these accounts, that aren't in folders owned by the accounts
@@ -7621,7 +7885,7 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
     QMailMessageKey messagesKey(QMailMessageKey::parentAccountId(key));
 
     // Delete all the messages contained by the folders we're deleting
-    if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedAccountIds))
+    if (!deleteMessages(messagesKey, option, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;
 
     {
@@ -7943,8 +8207,8 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
                     metaData.setResponseType(data.responseType());
                     break;
 
-                case QMailMessageKey::LatestInConversation:
-                    metaData.setLatestInConversation(data.latestInConversation());
+                case QMailMessageKey::ParentThreadId:
+                    metaData.setParentThreadId(data.parentThreadId());
                     break;
                 }
             }

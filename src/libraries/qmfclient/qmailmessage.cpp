@@ -6053,9 +6053,9 @@ void QMailMessageMetaDataPrivate::setCustomFields(const QMap<QString, QString> &
     _customFieldsModified = true;
 }
 
-void QMailMessageMetaDataPrivate::setLatestInConversation(QMailMessageId const& id)
+void QMailMessageMetaDataPrivate::setParentThreadId(const QMailThreadId &id)
 {
-    updateMember(_latestInConversation, id);
+    updateMember(_parentThreadId, id);
 }
 
 template <typename Stream> 
@@ -6091,7 +6091,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _customFieldsModified;
     stream << _dirty;
     stream << _preview;
-    stream << _latestInConversation;
+    stream << _parentThreadId;
 }
 
 template <typename Stream> 
@@ -6133,7 +6133,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _customFieldsModified;
     stream >> _dirty;
     stream >> _preview;
-    stream >> _latestInConversation;
+    stream >> _parentThreadId;
 }
 
 
@@ -6742,6 +6742,22 @@ void QMailMessageMetaData::setRfcId(const QString &id)
 }
 
 /*!
+    Returns the id of the thread this message belongs to.
+*/
+QMailThreadId QMailMessageMetaData::parentThreadId() const
+{
+    return impl(this)->_parentThreadId;
+}
+
+/*!
+    Sets the id of the thread this message belongs to. If this is left blank and the thread will be detected/generated.
+*/
+void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
+{
+    impl(this)->setParentThreadId(id);
+}
+
+/*!
     Returns the status value for the message.
 
     \sa setStatus(), statusMask()
@@ -7073,21 +7089,6 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
     d->_customFieldsModified = set;
 }
 
-/*!
-  This is a hack that returns the latest messageId from the conversation this message is.
-*/
-QMailMessageId QMailMessageMetaData::latestInConversation() const
-{
-    return impl(this)->_latestInConversation;
-}
-
-/*!
-  This is a hack that sets the latest messageId in the conversation. No client should use this..
-*/
-void QMailMessageMetaData::setLatestInConversation(QMailMessageId const& id)
-{
-    return impl(this)->setLatestInConversation(id);
-}
 
 /*! 
     \fn QMailMessageMetaData::serialize(Stream&) const

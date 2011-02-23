@@ -107,7 +107,7 @@ using namespace QMailKey;
     \value TimeStamp The message origination timestamp.
     \value ReceptionTimeStamp The message reception timestamp.
     \value Status The message status flags.
-    \value Conversation The set of related messages containing the specified message.
+    \value Conversation The set of related messages containing the specified message. This is deprecated, use QMailThreads instead.
     \value ServerUid The IMAP server UID of the message.
     \value Size The size of the message.
     \value ParentAccountId The ID of the account the message was downloaded from.
@@ -912,8 +912,9 @@ QMailMessageKey QMailMessageKey::customField(const QString &name, const QString 
 
 /*!
     Returns a key matching messages that are participants in the conversation containing the message identified by \a id.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageId &id)
 {
@@ -923,8 +924,9 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageId &id)
 /*!
     Returns a key matching messages that are participants in any of the conversations containing the messages
     whose identifiers are members of \a ids.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
 {
@@ -934,8 +936,9 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
 /*!
     Returns a key matching messages that are participants in any of the conversations containing the messages
     whose identifiers are members of the set yielded by \a key.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
 {

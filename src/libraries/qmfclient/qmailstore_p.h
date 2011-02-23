@@ -83,89 +83,102 @@ public:
     struct ReadAccess {};
     struct WriteAccess {};
 
-    QMailStorePrivate(QMailStore* parent);
-    ~QMailStorePrivate();
+    QMailStorePrivate(QMailStore *parent);
+    virtual ~QMailStorePrivate();
 
     virtual bool initStore();
 
-    void clearContent();
+    virtual void clearContent();
 
-    bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
+    virtual bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
                     QMailAccountIdList *addedAccountIds);
 
-    bool addFolder(QMailFolder *f,
+    virtual bool addFolder(QMailFolder *f,
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool addMessages(const QList<QMailMessage *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    virtual bool addMessages(const QList<QMailMessage *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool addMessages(const QList<QMailMessageMetaData *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool removeAccounts(const QMailAccountKey &key,
-                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    virtual bool addThread(QMailThread *t,
+                               QMailThreadIdList *addedThreadIds);
 
-    bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    virtual bool removeAccounts(const QMailAccountKey &key,
+                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    virtual bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
+                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
+    virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
+                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
+
+    virtual bool removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
+                               QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIdList, QMailAccountIdList *modifiedAccountIds);
+
+
+    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                        QMailAccountIdList *updatedAccountIds);
 
-    bool updateAccountConfiguration(QMailAccountConfiguration* config,
+    virtual bool updateAccountConfiguration(QMailAccountConfiguration* config,
                                     QMailAccountIdList *updatedAccountIds);
 
-    bool updateFolder(QMailFolder* f,
+    virtual bool updateFolder(QMailFolder* f,
                       QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
+    virtual bool updateThread(QMailThread *t, QMailThreadIdList *updatedThreadIds);
+
+    virtual bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
                         QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
+    virtual bool updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
+    virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
-    void lock();
-    void unlock();
+    virtual void lock();
+    virtual void unlock();
 
-    bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);
+    virtual bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids);
 
-    int countAccounts(const QMailAccountKey &key) const;
-    int countFolders(const QMailFolderKey &key) const;
-    int countMessages(const QMailMessageKey &key) const;
+    virtual int countAccounts(const QMailAccountKey &key) const;
+    virtual int countFolders(const QMailFolderKey &key) const;
+    virtual int countMessages(const QMailMessageKey &key) const;
+    virtual int countThreads(const QMailThreadKey &key) const;
 
-    int sizeOfMessages(const QMailMessageKey &key) const;
+    virtual int sizeOfMessages(const QMailMessageKey &key) const;
 
-    QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const;
-    QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const;
-    QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const;
+    virtual QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const;
+    virtual QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const;
+    virtual QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const;
+    virtual QMailThreadIdList queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const;
 
-    QMailAccount account(const QMailAccountId &id) const;
-    QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const;
+    virtual QMailAccount account(const QMailAccountId &id) const;
+    virtual QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const;
 
-    QMailFolder folder(const QMailFolderId &id) const;
+    virtual QMailFolder folder(const QMailFolderId &id) const;
 
-    QMailMessage message(const QMailMessageId &id) const;
-    QMailMessage message(const QString &uid, const QMailAccountId &accountId) const;
+    virtual QMailMessage message(const QMailMessageId &id) const;
+    virtual QMailMessage message(const QString &uid, const QMailAccountId &accountId) const;
 
-    QMailMessageMetaData messageMetaData(const QMailMessageId &id) const;
-    QMailMessageMetaData messageMetaData(const QString &uid, const QMailAccountId &accountId) const;
-    QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const;
+    virtual QMailThread thread(const QMailThreadId &id) const;
 
-    QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId, const QMailFolderId &parentFolderId) const;
+    virtual QMailMessageMetaData messageMetaData(const QMailMessageId &id) const;
+    virtual QMailMessageMetaData messageMetaData(const QString &uid, const QMailAccountId &accountId) const;
+    virtual QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const;
 
-    bool registerAccountStatusFlag(const QString &name);
-    quint64 accountStatusMask(const QString &name) const;
+    virtual QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId, const QMailFolderId &parentFolderId) const;
 
-    bool registerFolderStatusFlag(const QString &name);
-    quint64 folderStatusMask(const QString &name) const;
+    virtual bool registerAccountStatusFlag(const QString &name);
+    virtual quint64 accountStatusMask(const QString &name) const;
 
-    bool registerMessageStatusFlag(const QString &name);
-    quint64 messageStatusMask(const QString &name) const;
+    virtual bool registerFolderStatusFlag(const QString &name);
+    virtual quint64 folderStatusMask(const QString &name) const;
+
+    virtual bool registerMessageStatusFlag(const QString &name);
+    virtual quint64 messageStatusMask(const QString &name) const;
 
     QString buildOrderClause(const Key& key) const;
 
@@ -177,7 +190,7 @@ public:
 
     static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
 
-    QMap<QString, QString> messageCustomFields(const QMailMessageId &id);
+    virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id);
 
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
@@ -289,6 +302,7 @@ private:
                         QStringList& expiredMailfiles,
                         QMailMessageIdList& updatedMessageIds,
                         QMailFolderIdList& modifiedFolders,
+                        QMailThreadIdList& modifiedThreads,
                         QMailAccountIdList& modifiedAccounts);
 
     bool deleteFolders(const QMailFolderKey& key,
@@ -298,6 +312,17 @@ private:
                        QStringList& expiredMailfiles,
                        QMailMessageIdList& updatedMessageIds,
                        QMailFolderIdList& modifiedFolderIds,
+                       QMailThreadIdList& modifiedThreadIds,
+                       QMailAccountIdList& modifiedAccountIds);
+
+    bool deleteThreads(const QMailThreadKey& key,
+                       QMailStore::MessageRemovalOption option,
+                       QMailThreadIdList& deletedThreadIds,
+                       QMailMessageIdList& deletedMessageIds,
+                       QStringList& expiredMailfiles,
+                       QMailMessageIdList& updatedMessageIds,
+                       QMailFolderIdList& modifiedFolderIds,
+                       QMailThreadIdList& modifiedThreadIds,
                        QMailAccountIdList& modifiedAccountIds);
 
     bool deleteAccounts(const QMailAccountKey& key,
@@ -307,6 +332,7 @@ private:
                         QStringList& expiredMailfiles,
                         QMailMessageIdList& updatedMessageIds,
                         QMailFolderIdList& modifiedFolderIds,
+                        QMailThreadIdList& modifiedThreadIds,
                         QMailAccountIdList& modifiedAccountIds);
 
     void removeExpiredData(const QMailMessageIdList& messageIds,
@@ -318,10 +344,6 @@ private:
 
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
-
-    quint64 threadId(const QMailMessageId &id);
-    AttemptResult updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo = 0);
-    AttemptResult updateLatestInConversation(const QSet<quint64> &threadIds, QMailMessageIdList *messagesUpdated);
 
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
@@ -335,24 +357,133 @@ private:
                                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                    Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
-                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+    AttemptResult attemptAddThread(QMailThread *thread, QMailThreadIdList *addedThreadIds, Transaction &t, bool commitOnSuccess);
+
+
+    // hack to get around tr1's bind arg limit
+    struct AttemptAddMessageOut {
+        AttemptAddMessageOut( QMailMessageIdList * addedMessages
+                            , QMailThreadIdList * addedThreads
+                            , QMailMessageIdList * updatedMessages
+                            , QMailFolderIdList * modifiedFolders
+                            , QMailThreadIdList * modifiedThreads
+                            , QMailAccountIdList * modifiedAccounts)
+            : addedMessageIds(addedMessages)
+            , addedThreadIds(addedThreads)
+            , updatedMessageIds(updatedMessages)
+            , modifiedFolderIds(modifiedFolders)
+            , modifiedThreadIds(modifiedThreads)
+            , modifiedAccountIds(modifiedAccounts)
+        {}
+
+        QMailMessageIdList *addedMessageIds;
+        QMailThreadIdList* addedThreadIds;
+        QMailMessageIdList *updatedMessageIds;
+        QMailFolderIdList *modifiedFolderIds;
+        QMailThreadIdList *modifiedThreadIds;
+        QMailAccountIdList *modifiedAccountIds;
+    };
+
+
+    AttemptResult attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
                                     Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
-                                    QMailMessageIdList *addedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, 
+    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
                                     Transaction &t, bool commitOnSuccess);
+
+
+    struct AttemptRemoveAccountOut {
+        AttemptRemoveAccountOut( QMailAccountIdList *deletedAccounts
+                               , QMailFolderIdList *deletedFolders
+                               , QMailMessageIdList *deletedMessages
+                               , QMailMessageIdList *updatedMessages
+                               , QMailFolderIdList *modifiedFolders
+                               , QMailThreadIdList *modifiedThreads
+                               , QMailAccountIdList *modifiedAccounts)
+            : deletedAccountIds(deletedAccounts)
+            , deletedFolderIds(deletedFolders)
+            , deletedMessageIds(deletedMessages)
+            , updatedMessageIds(updatedMessages)
+            , modifiedFolderIds(modifiedFolders)
+            , modifiedThreadIds(modifiedThreads)
+            , modifiedAccountIds(modifiedAccounts)
+        {}
+
+        QMailAccountIdList *deletedAccountIds;
+        QMailFolderIdList *deletedFolderIds;
+        QMailMessageIdList *deletedMessageIds;
+        QMailMessageIdList *updatedMessageIds;
+        QMailFolderIdList *modifiedFolderIds;
+        QMailThreadIdList *modifiedThreadIds;
+        QMailAccountIdList *modifiedAccountIds;
+    };
+
 
     AttemptResult attemptRemoveAccounts(const QMailAccountKey &key, 
-                                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                        AttemptRemoveAccountOut *out,
                                         Transaction &t, bool commitOnSuccess);
 
+    // a hack to get around bind max arg limitation
+    struct AttemptRemoveFoldersOut {
+
+        AttemptRemoveFoldersOut(QMailFolderIdList *deletedFolders
+                              , QMailMessageIdList *deletedMessages
+                              , QMailMessageIdList *updatedMessages
+                              , QMailFolderIdList *modifiedFolders
+                              , QMailThreadIdList *modifiedThreads
+                              , QMailAccountIdList *modifiedAccounts)
+            : deletedFolderIds(deletedFolders)
+            , deletedMessageIds(deletedMessages)
+            , updatedMessageIds(updatedMessages)
+            , modifiedFolderIds(modifiedFolders)
+            , modifiedThreadIds(modifiedThreads)
+            , modifiedAccountIds(modifiedAccounts)
+        {}
+
+        QMailFolderIdList *deletedFolderIds;
+        QMailMessageIdList *deletedMessageIds;
+        QMailMessageIdList *updatedMessageIds;
+        QMailFolderIdList *modifiedFolderIds;
+        QMailThreadIdList *modifiedThreadIds;
+        QMailAccountIdList *modifiedAccountIds;
+    };
+
+
     AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
-                                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                       AttemptRemoveFoldersOut *out,
+                                       Transaction &t, bool commitOnSuccess);
+
+
+    // hack to get around bind max arg limitation
+    struct AttemptRemoveThreadsOut {
+        AttemptRemoveThreadsOut( QMailThreadIdList *deletedThreads
+                               , QMailMessageIdList *deletedMessages
+                               , QMailMessageIdList *updatedMessages
+                               , QMailFolderIdList *modifiedFolders
+                               , QMailThreadIdList *modifiedThreads
+                               , QMailAccountIdList *modifiedAccount)
+            : deletedThreadIds(deletedThreads)
+            , deletedMessageIds(deletedMessages)
+            , updatedMessageIds(updatedMessages)
+            , modifiedFolderIds(modifiedFolders)
+            , modifiedThreadIds(modifiedThreads)
+            , modifiedAccountIds(modifiedAccount)
+        {}
+
+        QMailThreadIdList *deletedThreadIds;
+        QMailMessageIdList *deletedMessageIds;
+        QMailMessageIdList *updatedMessageIds;
+        QMailFolderIdList *modifiedFolderIds;
+        QMailThreadIdList *modifiedThreadIds;
+        QMailAccountIdList *modifiedAccountIds;
+    };
+
+    AttemptResult attemptRemoveThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
+                                       AttemptRemoveThreadsOut *out,
                                        Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option, 
-                                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                        QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds,
                                         Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateAccount(QMailAccount *account, QMailAccountConfiguration *config, 
@@ -363,8 +494,12 @@ private:
                                                     QMailAccountIdList *updatedAccountIds,
                                                     Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptUpdateFolder(QMailFolder *folder, 
-                                      QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds,
+    AttemptResult attemptUpdateFolder(QMailFolder *folder,
+                                      QMailFolderIdList *updatedFolderIds, QMailAccountIdList *updatedAccounts,
+                                      Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptUpdateThread(QMailThread *thread,
+                                      QMailThreadIdList *updatedThreadIds,
                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *mail, 
@@ -392,6 +527,10 @@ private:
                                        int *result, 
                                        ReadLock &);
 
+    AttemptResult attemptCountThreads(const QMailThreadKey &key,
+                                       int *result,
+                                       ReadLock &);
+
     AttemptResult attemptSizeOfMessages(const QMailMessageKey &key, 
                                         int *result, 
                                         ReadLock &);
@@ -407,6 +546,10 @@ private:
     AttemptResult attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset,
                                        QMailMessageIdList *ids, 
                                        ReadLock &);
+
+    AttemptResult attemptQueryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset,
+                                      QMailThreadIdList *ids,
+                                      ReadLock &);
 
     AttemptResult attemptAccount(const QMailAccountId &id, 
                                  QMailAccount *result, 
@@ -439,6 +582,10 @@ private:
     AttemptResult attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option, 
                                           QMailMessageMetaDataList *result, 
                                           ReadLock &);
+
+    AttemptResult attemptThread(const QMailThreadId &id,
+                                QMailThread *result,
+                                ReadLock &);
 
     AttemptResult attemptMessageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &parentFolderId, 
                                                QMailMessageRemovalRecordList *result,
@@ -480,6 +627,7 @@ private:
     AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId, bool missingAncestor);
 
     QMailAccount extractAccount(const QSqlRecord& r);
+    QMailThread extractThread(const QSqlRecord &r);
     QMailFolder extractFolder(const QSqlRecord& r);
     QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
