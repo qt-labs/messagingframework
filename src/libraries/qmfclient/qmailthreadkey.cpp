@@ -47,85 +47,10 @@
 
 using namespace QMailKey;
 
-/*!
-    \class QMailFolderKey
-
-    \preliminary
-    \brief The QMailFolderKey class defines the parameters used for querying a subset of
-    all available folders from the mail store.
-    \ingroup messaginglibrary
-
-    A QMailFolderKey is composed of a folder property, an optional comparison operator
-    and a comparison value. The QMailFolderKey class is used in conjunction with the 
-    QMailStore::queryFolders() and QMailStore::countFolders() functions to filter results 
-    which meet the criteria defined by the key.
-
-    QMailFolderKey's can be combined using the logical operators (&), (|) and (~) to
-    build more sophisticated queries.
-
-    For example:
-
-    To create a query for folders with paths containing "inbox" or "sms":
-    \code
-    QMailFolderKey inboxKey(QMailFolderKey::path("inbox", QMailDataComparator::Includes));
-    QMailFolderKey smsKey(QMailFolderKey::path("sms", QMailDataComparator::Includes));
-    QMailFolderIdList results = QMailStore::instance()->queryFolders(inboxKey | smsKey);
-    \endcode
-
-    To query all folders with name containing "foo" for a specified account:
-    \code
-    QMailFolderIdList fooFolders(const QMailAccountId& accountId)
-    {
-        QMailFolderKey nameKey(QMailFolderKey::displayName("foo", QMailDataComparator::Includes);
-        QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
-
-        return QMailStore::instance()->queryFolders(nameKey & accountKey);
-    }
-    \endcode
-
-    \sa QMailStore, QMailFolder
-*/
-
-/*!
-    \enum QMailFolderKey::Property
-
-    This enum type describes the queryable data properties of a QMailFolder.
-
-    \value Id The ID of the folder.
-    \value Path The path of the folder in native form.
-    \value ParentFolderId The ID of the parent folder for a given folder.
-    \value ParentAccountId The ID of the parent account for this folder.
-    \value DisplayName The name of the folder, designed for display to users.
-    \value Status The status value of the folder.
-    \value AncestorFolderIds The set of IDs of folders which are direct or indirect parents of this folder.
-    \value ServerCount The number of messages reported to be on the server for the folder.
-    \value ServerUnreadCount The number of unread messages reported to be on the server for the folder.
-    \value ServerUndiscoveredCount The number of undiscovered messages reported to be on the server for the folder.
-    \value Custom The custom fields of the folder.
-*/
-
-/*!
-    \typedef QMailFolderKey::IdType
-    \internal
-*/
-
-/*!
-    \typedef QMailFolderKey::ArgumentType
-    
-    Defines the type used to represent a single criterion of a folder filter.
-
-    Synonym for QMailKeyArgument<QMailFolderKey::Property>.
-*/
 
 Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
 
-/*!
-    Creates a QMailFolderKey without specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) matches all folders. 
-
-    \sa isEmpty()
-*/
 QMailThreadKey::QMailThreadKey()
     : d(new QMailThreadKeyPrivate)
 {
@@ -159,7 +84,7 @@ QMailThreadKey::QMailThreadKey(const QMailThreadKey& other)
 }
 
 /*!
-    Destroys this QMailFolderKey.
+    Destroys this QMailThreadKey.
 */
 QMailThreadKey::~QMailThreadKey()
 {
@@ -282,7 +207,7 @@ bool QMailThreadKey::isNegated() const
 }
 
 /*!
-    Returns the QVariant representation of this QMailFolderKey. 
+    Returns the QVariant representation of this QMailFolderKey.
 */
 QMailThreadKey::operator QVariant() const
 {
@@ -290,7 +215,7 @@ QMailThreadKey::operator QVariant() const
 }
 
 /*!
-    Returns the list of arguments to this QMailFolderKey.
+    Returns the list of arguments to this QMailThreadKey.
 */
 const QList<QMailThreadKey::ArgumentType> &QMailThreadKey::arguments() const
 {
@@ -298,7 +223,7 @@ const QList<QMailThreadKey::ArgumentType> &QMailThreadKey::arguments() const
 }
 
 /*!
-    Returns the list of sub keys held by this QMailFolderKey.
+    Returns the list of sub keys held by this QMailThreadKey.
 */
 const QList<QMailThreadKey> &QMailThreadKey::subKeys() const
 {
@@ -306,7 +231,7 @@ const QList<QMailThreadKey> &QMailThreadKey::subKeys() const
 }
 
 /*! 
-    Returns the combiner used to combine arguments or sub keys of this QMailFolderKey.
+    Returns the combiner used to combine arguments or sub keys of this QMailThreadKey.
 */
 QMailKey::Combiner QMailThreadKey::combiner() const
 {
@@ -324,7 +249,7 @@ template <typename Stream> void QMailThreadKey::serialize(Stream &stream) const
 }
 
 /*!
-    \fn QMailFolderKey::deserialize(Stream &stream)
+    \fn QMailThreadKey::deserialize(Stream &stream)
 
     Reads the contents of a QMailFolderKey from \a stream.
 */
@@ -344,7 +269,7 @@ QMailThreadKey QMailThreadKey::nonMatchingKey()
 }
 
 /*!
-    Returns a key matching folders whose identifier matches \a id, according to \a cmp.
+    Returns a key matching threads whose identifier matches \a id, according to \a cmp.
 
     \sa QMailFolder::id()
 */
@@ -356,7 +281,7 @@ QMailThreadKey QMailThreadKey::id(const QMailThreadId &id, QMailDataComparator::
 /*!
     Returns a key matching threads whose identifier is a member of \a ids, according to \a cmp.
 
-    \sa QMailFolder::id()
+    \sa QMailThread::id()
 */
 QMailThreadKey QMailThreadKey::id(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp)
 {
@@ -364,9 +289,9 @@ QMailThreadKey QMailThreadKey::id(const QMailThreadIdList &ids, QMailDataCompara
 }
 
 /*!
-    Returns a key matching folders whose identifier is a member of the set yielded by \a key, according to \a cmp.
+    Returns a key matching thread whose identifier is a member of the set yielded by \a key, according to \a cmp.
 
-    \sa QMailFolder::id()
+    \sa QMailThread::id()
 */
 QMailThreadKey QMailThreadKey::id(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp)
 {
@@ -375,32 +300,32 @@ QMailThreadKey QMailThreadKey::id(const QMailThreadKey &key, QMailDataComparator
 
 
 /*!
-	Returns a key matching messages whose serverUid matches \a uid, according to \a cmp.
+    Returns a key matching messages whose serverUid matches \a uid, according to \a cmp.
 
-	\sa QMailMessage::serverUid()
+    \sa QMailThread::serverUid()
 */
 QMailThreadKey QMailThreadKey::serverUid(const QString &uid, QMailDataComparator::EqualityComparator cmp)
 {
-	return QMailThreadKey(ServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
+    return QMailThreadKey(ServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
 }
 
 /*!
-	Returns a key matching messages whose serverUid matches the substring \a uid, according to \a cmp.
+    Returns a key matching threads whose serverUid matches the substring \a uid, according to \a cmp.
 
-	\sa QMailMessage::serverUid()
+    \sa QMailThread::serverUid()
 */
 QMailThreadKey QMailThreadKey::serverUid(const QString &uid, QMailDataComparator::InclusionComparator cmp)
 {
-	return QMailThreadKey(ServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
+    return QMailThreadKey(ServerUid, QMailKey::stringValue(uid), QMailKey::comparator(cmp));
 }
 
 /*!
-	Returns a key matching messages whose serverUid is a member of \a uids, according to \a cmp.
+    Returns a key matching thre whose serverUid is a member of \a uids, according to \a cmp.
 
-	\sa QMailMessage::serverUid()
+    \sa QMailThread::serverUid()
 */
 QMailThreadKey QMailThreadKey::serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp)
 {
-	return QMailThreadKey(uids, ServerUid, QMailKey::comparator(cmp));
+    return QMailThreadKey(uids, ServerUid, QMailKey::comparator(cmp));
 }
 

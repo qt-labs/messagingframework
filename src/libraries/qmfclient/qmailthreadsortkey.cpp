@@ -42,61 +42,6 @@
 #include "qmailthreadsortkey.h"
 #include "qmailthreadsortkey_p.h"
 
-
-/*!
-    \class QMailFolderSortKey
-
-    \preliminary
-    \brief The QMailFolderSortKey class defines the parameters used for sorting a subset of 
-    queried folders from the mail store.
-    \ingroup messaginglibrary
-
-    A QMailFolderSortKey is composed of a folder property to sort and a sort order. 
-    The QMailFolderSortKey class is used in conjunction with the QMailStore::queryFolders() 
-    function to sort folder results according to the criteria defined by the sort key.
-
-    For example:
-    To create a query for all folders sorted by the path in ascending order:
-    \code
-    QMailFolderSortKey sortKey(QMailFolderSortKey::path(Qt::Ascending));
-    QMailIdList results = QMailStore::instance()->queryFolders(QMailFolderKey(), sortKey);
-    \endcode
-    
-    \sa QMailStore, QMailFolderKey
-*/
-
-/*!
-    \enum QMailFolderSortKey::Property
-
-    This enum type describes the sortable data properties of a QMailFolder.
-
-    \value Id The ID of the folder.
-    \value Path The path of the folder in native form.
-    \value ParentFolderId The ID of the parent folder for a given folder.
-    \value ParentAccountId The ID of the parent account for a given folder.
-    \value DisplayName The name of the folder, designed for display to users.
-    \value Status The status value of the folder.
-    \value ServerCount The number of messages reported to be on the server for the folder.
-    \value ServerUnreadCount The number of unread messages reported to be on the server for the folder.
-    \value ServerUndiscoveredCount The number of undiscovered messages reported to be on the server for the folder.
-*/
-
-/*!
-    \typedef QMailFolderSortKey::ArgumentType
-    
-    Defines the type used to represent a single sort criterion of a folder sort key.
-*/
-
-/*!
-    Create a QMailFolderSortKey with specifying matching parameters.
-
-    A default-constructed key (one for which isEmpty() returns true) sorts no folders. 
-
-    The result of combining an empty key with a non-empty key is the same as the original 
-    non-empty key.
-
-    The result of combining two empty keys is an empty key.
-*/
 QMailThreadSortKey::QMailThreadSortKey()
     : d(new QMailThreadSortKeyPrivate())
 {
@@ -124,7 +69,7 @@ QMailThreadSortKey::QMailThreadSortKey(const QMailThreadSortKey& other)
 }
 
 /*!
-    Destroys this QMailFolderSortKey.
+    Destroys this QMailThreadSortKey.
 */
 QMailThreadSortKey::~QMailThreadSortKey()
 {
@@ -184,7 +129,7 @@ bool QMailThreadSortKey::isEmpty() const
 }
 
 /*!
-    Returns the list of arguments to this QMailFolderSortKey.
+    Returns the list of arguments to this QMailThreadSortKey.
 */
 const QList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() const
 {
@@ -192,7 +137,7 @@ const QList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() c
 }
 
 /*!
-    \fn QMailFolderSortKey::serialize(Stream &stream) const
+    \fn QMailThreadSortKey::serialize(Stream &stream) const
 
     Writes the contents of a QMailFolderSortKey to a \a stream.
 */
@@ -202,7 +147,7 @@ template <typename Stream> void QMailThreadSortKey::serialize(Stream &stream) co
 }
 
 /*!
-    \fn QMailFolderSortKey::deserialize(Stream &stream)
+    \fn QMailThreadSortKey::deserialize(Stream &stream)
 
     Reads the contents of a QMailFolderSortKey from \a stream.
 */
@@ -214,7 +159,7 @@ template <typename Stream> void QMailThreadSortKey::deserialize(Stream &stream)
 /*!
     Returns a key that sorts folders by their identifiers, according to \a order.
 
-    \sa QMailFolder::id()
+    \sa QMailThread::id()
 */
 QMailThreadSortKey QMailThreadSortKey::id(Qt::SortOrder order)
 {

@@ -92,7 +92,7 @@ public:
     bool isNonMatching() const;
     bool isNegated() const;
 
-    //for subqueries 
+    // for subqueries
     operator QVariant() const;
 
     const QList<ArgumentType> &arguments() const;
@@ -109,9 +109,9 @@ public:
     static QMailThreadKey id(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailThreadKey id(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-	static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-	static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::InclusionComparator cmp);
-	static QMailThreadKey serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::InclusionComparator cmp);
+    static QMailThreadKey serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 private:
     QMailThreadKey(Property p, const QVariant& value, QMailKey::Comparator c);
 
