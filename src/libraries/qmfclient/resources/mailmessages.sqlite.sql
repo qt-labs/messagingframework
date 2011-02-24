@@ -25,7 +25,7 @@ CREATE TABLE mailmessages (
     parentthreadid INTEGER NOT NULL,
     FOREIGN KEY (parentfolderid) REFERENCES mailfolders(id),
     FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id),
-    FOREIGN KEY (threadid) REFERENCES mailthreads(id)
+    FOREIGN KEY (parentthreadid) REFERENCES mailthreads(id)
     );
 
 CREATE INDEX parentfolderid_idx ON mailmessages("parentfolderid"); 

@@ -1854,7 +1854,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             QMailMessageKey messageKey(a.valueList.first().value<QMailMessageKey>());
             QString nestedAlias(incrementAlias(alias));
 
-            q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("threadid", nestedAlias) << " FROM mailmessages " << nestedAlias;
+            q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("parentthreadid", nestedAlias) << " FROM mailmessages " << nestedAlias;
             q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias)) << ")";
             break;
         }
@@ -2354,12 +2354,12 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 106)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
+                                            << tableInfo("mailthreads", 100)
                                             << tableInfo("mailmessages", 113)
                                             << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
                                             << tableInfo("mailsubjects", 100)
-                                            << tableInfo("mailthreads", 100)
                                             << tableInfo("mailthreadsubjects", 100)
                                             << tableInfo("missingancestors", 101)
                                             << tableInfo("missingmessages", 101)
@@ -4975,7 +4975,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     }
 
     if (!metaData->parentThreadId().isValid() && metaData->inResponseTo().isValid()) {
-        QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid=%1");
+        QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
         QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
 
         if (query.lastError().type() != QSqlError::NoError)
@@ -5008,7 +5008,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         // Attach this message to a thread
         if (metaData->inResponseTo().isValid()) {
 
-            QString sql("SELECT threadid FROM mailthreadmessages WHERE messageid=%1");
+            QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
             QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
 
             if (query.lastError().type() != QSqlError::NoError)
@@ -5744,9 +5744,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
             if (metaData->inResponseTo().isValid()) {
                 {
-                    QSqlQuery query(simpleQuery("SELECT threadid FROM mailthreadmessages WHERE messageid=?",
+                    QSqlQuery query(simpleQuery("SELECT parentthreadid FROM mailmessages WHERE id=?",
                                                 QVariantList() << updateId,
-                                                "updateMessage mailthreadmessages query"));
+                                                "updateMessage mailmessages query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
 
@@ -5756,9 +5756,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 {
-                    QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?) WHERE threadid=?",
+                    QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
                                                 QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
-                                                "updateMessage mailthreadmessages update query"));
+                                                "updateMessage mailmessages update query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
@@ -5809,10 +5809,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                 {
                     // Migrate descendants to the new thread
-                    QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=?",
+                    QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=?",
                                                 QVariantList() << threadId,
-                                                Key("messageid", QMailMessageKey::id(descendantIds)),
-                                                "updateMessage mailthreadmessages update query"));
+                                                Key("id", QMailMessageKey::id(descendantIds)),
+                                                "updateMessage mailmessages descendants update query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
@@ -7066,7 +7066,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                                     "AND parentaccountid=? "
                                     "AND stamp<? "
                                     "AND id IN ("
-                                        "SELECT messageid FROM mailthreadmessages mtm WHERE threadid IN ("
+                                        "SELECT id FROM mailmessages mtm WHERE parentthreadid IN ("
                                             "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
                                                 "SELECT id FROM mailsubjects WHERE basesubject=?"
                                             ")"
@@ -7098,8 +7098,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
 
                 // Find the predecessor message for every message in the same thread as us
                 QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
-                                                "SELECT messageid FROM mailthreadmessages WHERE threadid = ("
-                                                    "SELECT threadid FROM mailthreadmessages WHERE messageid=?"
+                                                "SELECT id FROM mailmessages WHERE threadid = ("
+                                                    "SELECT parentthreadid FROM mailmessages WHERE id=?"
                                                 ")"
                                             ")",
                                             QVariantList() << metaData->id().toULongLong(),
@@ -7158,11 +7158,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::identifyAncestors(const QMai
 
         {
             // Find the predecessor message for every message in the same thread as the predecessor
-            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
-                                            "SELECT messageid FROM mailthreadmessages WHERE threadid = ("
-                                                "SELECT threadid FROM mailthreadmessages WHERE messageid=?"
-                                            ")"
-                                        ")",
+            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE parentthreadid = ?",
                                         QVariantList() << predecessorId.toULongLong(),
                                         "identifyAncestors mailmessages query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -7250,9 +7246,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Find the threads that the descendants currently belong to
-            QSqlQuery query(simpleQuery("SELECT DISTINCT threadid FROM mailthreadmessages",
-                                        Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
-                                        "resolveMissingMessages mailthreadmessages query"));
+            QSqlQuery query(simpleQuery("SELECT DISTINCT parentthreadid FROM mailmessages",
+                                        Key("id", QMailMessageKey::id(*updatedMessageIds)),
+                                        "resolveMissingMessages mailmessages query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
 
@@ -7262,10 +7258,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Attach the descendants to the thread of their new predecessor
-            QSqlQuery query(simpleQuery("UPDATE mailthreadmessages SET threadid=(SELECT threadid FROM mailthreadmessages WHERE messageid=?)",
+            QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?)",
                                         QVariantList() << messageId,
                                         Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
-                                        "resolveMissingMessages mailthreadmessages update query"));
+                                        "resolveMissingMessages mailmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
@@ -7377,7 +7373,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     int count = 0;
     {
         QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailthreadsubjects "
-                                    "WHERE subjectid=? AND threadid = (SELECT threadid FROM mailthreadmessages WHERE messageid=?)",
+                                    "WHERE subjectid=? AND threadid = (SELECT parentthreadid FROM mailmessages WHERE id=?)",
                                     QVariantList() << subjectId << messageId,
                                     "registerSubject mailthreadsubjects query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -7388,7 +7384,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     }
     
     if (count == 0) {
-        QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT threadid,? FROM mailthreadmessages WHERE messageid=?",
+        QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT parentthreadid,? FROM mailmessages WHERE id=?",
                                     QVariantList() << subjectId << messageId,
                                     "registerSubject mailthreadsubjects insert query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -7678,15 +7674,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
-        // Delete the thread associations of these messages
-        QSqlQuery query(simpleQuery("DELETE FROM mailthreadmessages",
-                                    Key("messageid", QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages mailthreadmessages delete query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return false;
-    }
-
-    {
         // Remove any threads that are empty after this deletion
         QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id NOT IN (SELECT threadid FROM mailthreadmessages)",
                                     "deleteMessages mailthreads delete query"));
@@ -7696,7 +7683,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     {
         // Remove any subjects that are unreferenced after this deletion
         {
-            QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT id FROM mailthreads)",
+            QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT parentthreadid FROM mailmessages)",
                                         "deleteMessages mailthreadsubjects delete query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
