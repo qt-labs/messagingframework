@@ -7674,13 +7674,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     }
 
     {
-        // Remove any threads that are empty after this deletion
-        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id NOT IN (SELECT threadid FROM mailthreadmessages)",
-                                    "deleteMessages mailthreads delete query"));
-        if (query.lastError().type() != QSqlError::NoError)
-            return false;
-    }
-    {
         // Remove any subjects that are unreferenced after this deletion
         {
             QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT parentthreadid FROM mailmessages)",
