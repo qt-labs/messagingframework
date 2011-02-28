@@ -600,7 +600,7 @@ static QMap<QMailMessageSortKey::Property, QMailMessageKey::Property> messageSor
     map.insert(QMailMessageSortKey::ListId, QMailMessageKey::ListId);
     map.insert(QMailMessageSortKey::RestoreFolderId, QMailMessageKey::RestoreFolderId);
     map.insert(QMailMessageSortKey::RfcId, QMailMessageKey::RfcId);
-    map.insert(QMailMessageSortKey::Parent, QMailMessageKey::ParentThreadId);
+    map.insert(QMailMessageSortKey::ParentThreadId, QMailMessageKey::ParentThreadId);
 
     return map;
 }
