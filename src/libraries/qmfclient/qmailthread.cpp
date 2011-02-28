@@ -58,48 +58,6 @@ public:
     uint unreadCount;
     QString serverUid;
 
-    QMap<QString, QString> customFields;
-    bool customFieldsModified;
-
-    QString customField(const QString &name) const
-    {
-        QMap<QString, QString>::const_iterator it = customFields.find(name);
-        if (it != customFields.end()) {
-            return *it;
-        }
-
-        return QString();
-    }
-
-    void setCustomField(const QString &name, const QString &value)
-    {
-        QMap<QString, QString>::iterator it = customFields.find(name);
-        if (it != customFields.end()) {
-            if (*it != value) {
-                *it = value;
-                customFieldsModified = true;
-            }
-        } else {
-            customFields.insert(name, value);
-            customFieldsModified = true;
-        }
-    }
-
-    void setCustomFields(const QMap<QString, QString> &fields)
-    {
-        QMap<QString, QString>::const_iterator it = fields.begin(), end = fields.end();
-        for ( ; it != end; ++it)
-            setCustomField(it.key(), it.value());
-    }
-
-    void removeCustomField(const QString &name)
-    {
-        QMap<QString, QString>::iterator it = customFields.find(name);
-        if (it != customFields.end()) {
-            customFields.erase(it);
-            customFieldsModified = true;
-        }
-    }
 };
 
 /*!
@@ -228,67 +186,5 @@ void QMailThread::setMessageCount(uint value)
 void QMailThread::setUnreadCount(uint value)
 {
     d->unreadCount = value;
-}
-
-/*!
-    Returns the value recorded in the custom field named \a name.
-
-    \sa setCustomField(), customFields()
-*/
-QString QMailThread::customField(const QString &name) const
-{
-    return d->customField(name);
-}
-
-/*!
-    Sets the value of the custom field named \a name to \a value.
-
-    \sa customField(), customFields()
-*/
-void QMailThread::setCustomField(const QString &name, const QString &value)
-{
-    d->setCustomField(name, value);
-}
-
-/*!
-    Sets the folder to contain the custom fields in \a fields.
-
-    \sa setCustomField(), customFields()
-*/
-void QMailThread::setCustomFields(const QMap<QString, QString> &fields)
-{
-    d->setCustomFields(fields);
-}
-
-/*!
-    Removes the custom field named \a name.
-
-    \sa customField(), customFields()
-*/
-void QMailThread::removeCustomField(const QString &name)
-{
-    d->removeCustomField(name);
-}
-
-/*!
-    Returns the map of custom fields stored in the folder.
-
-    \sa customField(), setCustomField()
-*/
-const QMap<QString, QString> &QMailThread::customFields() const
-{
-    return d->customFields;
-}
-
-/*! \internal */
-bool QMailThread::customFieldsModified() const
-{
-    return d->customFieldsModified;
-}
-
-/*! \internal */
-void QMailThread::setCustomFieldsModified(bool set)
-{
-    d->customFieldsModified = set;
 }
 

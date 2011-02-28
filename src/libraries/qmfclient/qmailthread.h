@@ -72,11 +72,6 @@ struct QMF_EXPORT QMailThread
     uint messageCount() const;
     void setMessageCount(uint value);
 
-    QString customField(const QString &name) const;
-    void setCustomField(const QString &name, const QString &value);
-    void setCustomFields(const QMap<QString, QString> &fields);
-    void removeCustomField(const QString &name);
-    const QMap<QString, QString> & customFields() const;
 private:
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
