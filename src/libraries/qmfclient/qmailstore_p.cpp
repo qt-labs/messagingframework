@@ -600,6 +600,7 @@ static QMap<QMailMessageSortKey::Property, QMailMessageKey::Property> messageSor
     map.insert(QMailMessageSortKey::ListId, QMailMessageKey::ListId);
     map.insert(QMailMessageSortKey::RestoreFolderId, QMailMessageKey::RestoreFolderId);
     map.insert(QMailMessageSortKey::RfcId, QMailMessageKey::RfcId);
+    map.insert(QMailMessageSortKey::Parent, QMailMessageKey::ParentThreadId);
 
     return map;
 }
@@ -1779,7 +1780,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::ParentThreadId:
-            if (a.valueList.first().canConvert<QMailThreadId>()) {
+            if (a.valueList.first().canConvert<QMailThreadKey>()) {
                 QMailThreadKey parentThreadKey = a.valueList.first().value<QMailThreadKey>();
                 QString nestedAlias(incrementAlias(alias));
 
