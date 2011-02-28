@@ -57,7 +57,7 @@ public:
     uint messageCount;
     uint unreadCount;
     QString serverUid;
-
+    QMailAccountId parentAccountId;
 };
 
 /*!
@@ -152,16 +152,28 @@ void QMailThread::setId(const QMailThreadId& id)
 }
 
 /*!
+  Sets the parent account id
+*/
+void QMailThread::setParentAccountId(const QMailAccountId &id)
+{
+    d->parentAccountId = id;
+}
+
+/*!
+  Gets the parent account for this thread
+*/
+QMailAccountId QMailThread::parentAccountId() const
+{
+    return d->parentAccountId;
+}
+
+/*!
   Returns the path of the folder.
 */
 QString QMailThread::serverUid() const
 {
     return d->serverUid;
 }
-
-/*!
-  Sets the path of this folder within the parent account to \a path.
-*/
 
 void QMailThread::setServerUid(const QString& serverUid)
 {

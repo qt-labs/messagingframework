@@ -63,6 +63,9 @@ struct QMF_EXPORT QMailThread
     QMailThreadId id() const;
     void setId(const QMailThreadId& id);
 
+    QMailAccountId parentAccountId() const;
+    void setParentAccountId(const QMailAccountId& id);
+
     QString serverUid() const;
     void setServerUid(const QString& serverUid);
 
@@ -73,9 +76,6 @@ struct QMF_EXPORT QMailThread
     void setMessageCount(uint value);
 
 private:
-    bool customFieldsModified() const;
-    void setCustomFieldsModified(bool set);
-
     QMailThreadPrivate *d;
 };
 
