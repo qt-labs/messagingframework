@@ -5067,7 +5067,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     values.insert("listid", metaData->listId());
     values.insert("rfcID", metaData->rfcId());
     values.insert("preview", metaData->preview());
-    values.insert("parentthreadid", metaData->parentThreadId());
+    values.insert("parentthreadid", metaData->parentThreadId().toULongLong());
 
     const QStringList &list(values.keys());
     QString columns = list.join(",");
