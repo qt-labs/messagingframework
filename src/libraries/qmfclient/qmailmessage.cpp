@@ -1589,8 +1589,14 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
         QByteArray input(value);
         do
         {
-            pieces.append(input.left(maxInputLength));
-            input = input.mid(maxInputLength);
+            int splitPoint = maxInputLength;
+            if (encoded && input.length() > maxInputLength) {
+                int percentPosition = input.indexOf("%", maxInputLength - 2);
+                if (percentPosition != -1 && percentPosition < maxInputLength)
+                    splitPoint = percentPosition;
+            }
+            pieces.append(input.left(splitPoint));
+            input = input.mid(splitPoint);
         } while (input.length());
 
         if (it == end) {
