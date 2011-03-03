@@ -4997,7 +4997,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
         QString sql("UPDATE mailthreads SET messagecount = messagecount + 1"
                     + (metaData->status() & QMailMessage::Read ? QString("") : QString(", unreadcount = unreadcount + 1 "))
-                    + " FROM mailthreads WHERE id=%1");
+                    + " WHERE id=%1");
 
         QSqlQuery query(simpleQuery(sql.arg(metaData->parentThreadId().toULongLong()), "addMessage increment message query"));
 
@@ -7098,12 +7098,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             {
 
                 // Find the predecessor message for every message in the same thread as us
-                QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE id IN ("
-                                                "SELECT id FROM mailmessages WHERE threadid = ("
-                                                    "SELECT parentthreadid FROM mailmessages WHERE id=?"
-                                                ")"
-                                            ")",
-                                            QVariantList() << metaData->id().toULongLong(),
+                QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE threadid = ("
+                                                       "SELECT parentthreadid FROM mailmessages WHERE id=%1"
+                                                ")").arg(metaData->id().toULongLong()),
                                             "identifyAncestors mailmessages query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
@@ -7261,7 +7258,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
             // Attach the descendants to the thread of their new predecessor
             QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?)",
                                         QVariantList() << messageId,
-                                        Key("messageid", QMailMessageKey::id(*updatedMessageIds)),
+                                        Key("id", QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailmessages update query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
