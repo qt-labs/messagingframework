@@ -5480,7 +5480,7 @@ QMailMessageContentDisposition QMailMessagePart::contentDisposition() const
 */
 void QMailMessagePart::setContentDisposition(const QMailMessageContentDisposition &disposition)
 {
-    setHeaderField("Content-Disposition", disposition.toString());
+    setHeaderField("Content-Disposition", disposition.toString(false, false));
 }
 
 /*!
