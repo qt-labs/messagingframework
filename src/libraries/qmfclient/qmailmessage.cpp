@@ -5528,10 +5528,10 @@ QMailMessagePart::Location QMailMessagePart::location() const
 */
 QString QMailMessagePart::displayName() const
 {
-    QString id(decodeWordSequence(contentType().name()));
+    QString id(contentType().isParameterEncoded("name")?decodeParameter(contentType().name()):decodeWordSequence(contentType().name()));
 
     if (id.isEmpty())
-        id = decodeWordSequence(contentDisposition().filename());
+        id = contentDisposition().isParameterEncoded("filename")?decodeParameter(contentDisposition().filename()):decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
         id = contentID();
