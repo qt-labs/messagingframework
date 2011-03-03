@@ -1599,7 +1599,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
             while (pieces.count() > 0) {
                 QByteArray id(param);
                 id.append('*').append(QByteArray::number(n));
-                if (encoded && (n == 0))
+                if (encoded)
                     id.append('*');
 
                 _parameters.append(qMakePair(id, pieces.takeFirst()));
