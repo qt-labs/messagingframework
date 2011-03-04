@@ -7482,7 +7482,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailAccountIdList& modifiedAccountIds)
 {
 
-    QString elements("id,mailfile,parentaccountid,parentfolderid");
+    QString elements("id,mailfile,parentaccountid,parentfolderid,parentthreadid");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";
 
@@ -7518,6 +7518,10 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
             QMailFolderId folderId(extractValue<quint64>(query.value(3)));
             if (!modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
+
+            QMailThreadId threadId(extractValue<quint64>(query.value(4)));
+            if (!modifiedThreadIds.contains(threadId))
+                modifiedThreadIds.append(threadId);
 
             if (option == QMailStore::CreateRemovalRecord) {
                 // Extract the info needed to create removal records
