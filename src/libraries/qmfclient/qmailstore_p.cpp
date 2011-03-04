@@ -7098,9 +7098,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
             {
 
                 // Find the predecessor message for every message in the same thread as us
-                QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE threadid = ("
-                                                       "SELECT parentthreadid FROM mailmessages WHERE id=%1"
-                                                ")").arg(metaData->id().toULongLong()),
+                QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE parentthreadid = %1").arg(metaData->id().toULongLong()),
                                             "identifyAncestors mailmessages query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
