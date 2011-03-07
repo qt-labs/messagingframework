@@ -430,34 +430,27 @@ static QString decodeWordSequence(const QByteArray& str)
 
     // Any idea why this isn't matching?
     //QRegExp encodedWord("\\b=\\?\\S+\\?\\S+\\?\\S*\\?=\\b");
-    QRegExp encodedWord("=\\?\\S+\\?\\S+\\?\\S*\\?=");
+    QRegExp encodedWord("\"?=\\?\\S+\\?\\S+\\?\\S*\\?=\"?");
 
     int pos = 0;
     int lastPos = 0;
-    int length = str.length();
 
     while (pos != -1) {
         pos = encodedWord.indexIn(str, pos);
         if (pos != -1) {
             int endPos = pos + encodedWord.matchedLength();
 
-            if ( ((pos == 0) || (::isspace(str[pos - 1]))) &&
-                 ((endPos == length) || (::isspace(str[endPos]))) ) {
+            QString preceding(str.mid(lastPos, (pos - lastPos)));
+            QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
 
-                QString preceding(str.mid(lastPos, (pos - lastPos)));
-                QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
+            // If there is only whitespace between two encoded words, it should not be included
+            if (!whitespace.exactMatch(preceding))
+                out.append(preceding);
 
-                // If there is only whitespace between two encoded words, it should not be included
-                if (!whitespace.exactMatch(preceding))
-                    out.append(preceding);
+            out.append(decoded);
 
-                out.append(decoded);
-
-                pos = endPos;
-                lastPos = pos;
-            }
-            else
-                pos = endPos;
+            pos = endPos;
+            lastPos = pos;
         }
     }
 
@@ -5564,10 +5557,10 @@ QString QMailMessagePart::identifier() const
     QString id(contentID());
 
     if (id.isEmpty())
-        id = contentDisposition().filename();
+        id = decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
-        id = contentType().name();
+        id = decodeWordSequence(contentType().name());
 
     if (id.isEmpty())
         id = QString::number(impl(this)->partNumber());
@@ -6574,7 +6567,9 @@ void QMailMessageMetaData::setId(const QMailMessageId &id)
 */
 QMailAddress QMailMessageMetaData::from() const
 {
-    return QMailAddress(impl(this)->_from);
+    const QString& addr = impl(this)->_from;
+    const QString& decodedAddr = decodeWordSequence(addr.toAscii());
+    return QMailAddress(decodedAddr);
 }
 
 /*!

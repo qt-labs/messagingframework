@@ -1342,13 +1342,153 @@ void ImapFetchSelectedMessagesStrategy::clearSelection()
     _retrievalSize.clear();
 }
 
-void ImapFetchSelectedMessagesStrategy::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
+static bool operator==(const QMailMessagePartContainer::Location &a,
+                       const QMailMessagePartContainer::Location &b)
 {
-    if (spec == QMailRetrievalAction::MetaData) {
-        _headerLimit = UINT_MAX;
-    } else {
-        _headerLimit = 0;
+    return a.toString(true) == b.toString(true);
+}
+
+void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase *context,
+                                                   const QMailMessagePartContainer &partContainer,
+                                                   const QList<QMailMessagePartContainer::Location> &attachmentLocations,
+                                                   QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
+                                                   QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
+                                                   uint &bytesLeft,
+                                                   bool &foundBody)
+{
+    if (bytesLeft == 0)
+        return;
+
+    ImapConfiguration imapCfg(context->config());
+    QString preferred(imapCfg.preferredTextSubtype().toLower());
+
+    // Otherwise, consider the subparts individually
+    for (uint i = 0; i < partContainer.partCount(); ++i) {
+        const QMailMessagePart part(partContainer.partAt(i));
+        const QMailMessageContentDisposition disposition(part.contentDisposition());
+        const QMailMessageContentType contentType(part.contentType());
+
+        if (part.partCount() > 0) {
+            metaDataAnalysis(context, part, attachmentLocations,
+                             sectionList, completionSectionList,
+                             bytesLeft, foundBody);
+        } else if (part.partialContentAvailable()) {
+            continue;
+        } else if (disposition.size() <= 0) {
+            continue;
+        } else if (_retrievalSpec == QMailRetrievalAction::Auto
+                   && !imapCfg.downloadAttachments()
+                   && attachmentLocations.contains(part.location())) {
+            continue;
+        } else if (!preferred.isEmpty()
+                   && (contentType.type().toLower() == "text")
+                   && (contentType.subType().toLower() == preferred)
+                   && !foundBody) {
+            // There is a preferred text sub-part to retrieve.
+            // The preferred text part has priority over other parts so,
+            // we put it directly into the main completion list.
+            // Text parts may be downloaded partially.
+            if (bytesLeft >= (uint)disposition.size()) {
+                completionSectionList.append(qMakePair(part.location(), 0u));
+                bytesLeft -= disposition.size();
+            } else {
+                completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+                bytesLeft = 0;
+            }
+            foundBody = true;
+        } else {
+            // This is a regular part. Try to download it completely.
+            sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
+        }
     }
+}
+
+static bool qMailMessageImapStrategyLessThan(const QPair<QMailMessagePart::Location, uint> &l,
+                                             const QPair<QMailMessagePart::Location, uint> &r)
+{
+    return l.second < r.second;
+}
+
+void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
+        ImapStrategyContextBase *context,
+        const QMailMessage &message,
+        QMailMessageIdList &completionList,
+        QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList)
+{
+    ImapConfiguration imapCfg(context->config());
+    const QList<QMailMessagePartContainer::Location> &attachmentLocations = message.findAttachmentLocations();
+
+    if (message.size() < _headerLimit
+        && (_retrievalSpec != QMailRetrievalAction::Auto
+            || (attachmentLocations.isEmpty() || imapCfg.downloadAttachments()))
+       ) {
+        completionList.append(message.id());
+    } else {
+        const QMailMessageContentType contentType(message.contentType());
+        if (contentType.type().toLower() == "text") {
+            // It is a text part. So, we can retrieve the first
+            // portion of it.
+            QMailMessagePart::Location location;
+            location.setContainingMessageId(message.id());
+            completionSectionList.append(qMakePair(location,
+                                                   static_cast<unsigned>(_headerLimit)));
+        } else {
+            uint bytesLeft = _headerLimit;
+            int partsToRetrieve = 0;
+            const int maxParts = 100;
+            bool foundBody = false;
+            QList<QPair<QMailMessagePart::Location, uint> > sectionList;
+            metaDataAnalysis(context, message, attachmentLocations,
+                             sectionList, completionSectionList,
+                             bytesLeft, foundBody);
+
+            qSort(sectionList.begin(), sectionList.end(), qMailMessageImapStrategyLessThan);
+            QList<QPair<QMailMessagePart::Location, uint> >::iterator it = sectionList.begin();
+            while (it != sectionList.end() && (bytesLeft > 0) && (partsToRetrieve < maxParts)) {
+                const QMailMessagePart &part = message.partAt(it->first);
+                if (it->second <= (uint)bytesLeft) {
+                    completionSectionList.append(qMakePair(it->first, (uint)0));
+                    bytesLeft -= it->second;
+                    ++partsToRetrieve;
+                } else if (part.contentType().type().toLower() == "text") {
+                    // Text parts can be downloaded partially.
+                    completionSectionList.append(qMakePair(it->first, (uint)bytesLeft));
+                    bytesLeft = 0;
+                    ++partsToRetrieve;
+                }
+                ++it;
+            }
+        }
+    }
+}
+
+void ImapFetchSelectedMessagesStrategy::setOperation(
+        ImapStrategyContextBase *context,
+        QMailRetrievalAction::RetrievalSpecification spec)
+{
+    switch (spec) {
+    case QMailRetrievalAction::Auto:
+        {
+            ImapConfiguration imapCfg(context->config());
+            if (imapCfg.isAutoDownload()) {
+                // Just download everything
+                _headerLimit = UINT_MAX;
+            } else {
+                _headerLimit = imapCfg.maxMailSize() * 1024;
+            }
+        }
+        break;
+    case QMailRetrievalAction::Content:
+        _headerLimit = UINT_MAX;
+        break;
+    case QMailRetrievalAction::MetaData:
+    case QMailRetrievalAction::Flags:
+    default:
+        _headerLimit = 0;
+        break;
+    }
+
+    _retrievalSpec = spec;
 }
 
 void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageIdList& ids) 
@@ -1423,13 +1563,6 @@ void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *c
     _progressRetrievalSize = 0;
     _messageCount = 0;
     _outstandingFetches = 0;
-
-    ImapConfiguration imapCfg(context->config());
-    if (!imapCfg.isAutoDownload()) {
-        _headerLimit = imapCfg.maxMailSize() * 1024;
-    } else {
-        _headerLimit = INT_MAX;
-    }
 
     ImapMessageListStrategy::newConnection(context);
 }
@@ -2083,71 +2216,6 @@ void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase
 {
 }
 
-void ImapSynchronizeBaseStrategy::recursivelyCompleteParts(ImapStrategyContextBase *context, 
-                                                           const QMailMessagePartContainer &partContainer, 
-                                                           int &partsToRetrieve, 
-                                                           int &bytesLeft)
-{
-    if (bytesLeft <= 0)
-        return;
-    
-    if (partContainer.multipartType() == QMailMessage::MultipartAlternative) {
-        // See if there is a preferred sub-part to retrieve
-        ImapConfiguration imapCfg(context->config());
-
-        QString preferred(imapCfg.preferredTextSubtype().toLower());
-        if (!preferred.isEmpty()) {
-            for (uint i = 0; i < partContainer.partCount(); ++i) {
-                const QMailMessagePart part(partContainer.partAt(i));
-                const QMailMessageContentDisposition disposition(part.contentDisposition());
-                const QMailMessageContentType contentType(part.contentType());
-
-                if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == preferred)) {
-                    if (bytesLeft >= disposition.size()) {
-                        _completionSectionList.append(qMakePair(part.location(), 0u));
-                        bytesLeft -= disposition.size();
-                        ++partsToRetrieve;
-                    } else if (preferred == "plain") {
-                        // We can retrieve the first portion of this part
-                        _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
-                        bytesLeft = 0;
-                        ++partsToRetrieve;
-                    }
-                    return;
-                }
-            }
-        }
-    }
-
-    // Otherwise, consider the subparts individually
-    for (uint i = 0; i < partContainer.partCount(); ++i) {
-        const QMailMessagePart part(partContainer.partAt(i));
-        const QMailMessageContentDisposition disposition(part.contentDisposition());
-        const QMailMessageContentType contentType(part.contentType());
-
-        if (partsToRetrieve > 10) {
-            break; // sanity check, prevent DOS
-        } else if (part.partCount() > 0) {
-            recursivelyCompleteParts(context, part, partsToRetrieve, bytesLeft);
-        } else if (part.partialContentAvailable()) {
-            continue;
-        } else if (disposition.size() <= 0) {
-            continue;
-        } else if ((disposition.type() != QMailMessageContentDisposition::Inline) && (contentType.type().toLower() != "text")) {
-            continue;
-        } else if (bytesLeft >= disposition.size()) {
-            _completionSectionList.append(qMakePair(part.location(), 0u));
-            bytesLeft -= disposition.size();
-            ++partsToRetrieve;
-        } else if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
-            // We can retrieve the first portion of this part
-            _completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
-            bytesLeft = 0;
-            ++partsToRetrieve;
-        }
-    }
-}
-
 void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     ImapFolderListStrategy::messageFetched(context, message);
@@ -2158,24 +2226,12 @@ void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *contex
 void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
 {
     ImapFolderListStrategy::messageFlushed(context, message);
-    if (_error) return;
+    if (_error) {
+        return;
+    }
 
     if ((_transferState == Preview) && (_headerLimit > 0)) {
-        if (message.size() < _headerLimit) {
-            _completionList.append(message.id());
-        } else {
-            const QMailMessageContentType contentType(message.contentType());
-            if ((contentType.type().toLower() == "text") && (contentType.subType().toLower() == "plain")) {
-                // We can retrieve the first portion of this message
-                QMailMessagePart::Location location;
-                location.setContainingMessageId(message.id());
-                _completionSectionList.append(qMakePair(location, static_cast<unsigned>(_headerLimit)));
-            } else {
-                int bytesLeft = _headerLimit;
-                int partsToRetrieve = 1;
-                recursivelyCompleteParts(context, message, partsToRetrieve, bytesLeft);
-            }
-        }
+        prepareCompletionList(context, message, _completionList, _completionSectionList);
     }
 }
 
@@ -4268,7 +4324,7 @@ void ImapFlagMessagesStrategy::handleUidStore(ImapStrategyContextBase *context)
 
 void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase *context)
 {
-    const int batchSize = 1000;
+    const int batchSize = 100;
     if (selectNextMessageSequence(context, batchSize)) {
         QString uidSequence(numericUidSequence(_messageUids));
         if (_setMask) {
@@ -4279,6 +4335,7 @@ void ImapFlagMessagesStrategy::messageListMessageAction(ImapStrategyContextBase 
             context->protocol().sendUidStore(_unsetMask, false, uidSequence);
             ++_outstandingStores;
         }
+        context->progressChanged(0, 0); // Don't timeout
     }
 }
 

@@ -68,6 +68,7 @@ public:
     void messageFlushed(QMailMessage *message)
     {
         context->messageFlushed(*message, isComplete);
+        context->removeAllFromBuffer(message);
     }
 };
 
@@ -182,20 +183,30 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     selected = false;
     deleting = false;
     additional = 0;
-    QMailAccount account(config.id());
 
-    if (spec == QMailRetrievalAction::MetaData) {
-        PopConfiguration popCfg(config);
+    switch (spec) {
+    case QMailRetrievalAction::Auto:
+        {
+            PopConfiguration popCfg(config);
 
-        if (popCfg.isAutoDownload()) {
-            // Just download everything
-            headerLimit = INT_MAX;
-        } else {
-            headerLimit = popCfg.maxMailSize() * 1024;
+            if (popCfg.isAutoDownload()) {
+                // Just download everything
+                headerLimit = UINT_MAX;
+            } else {
+                headerLimit = popCfg.maxMailSize() * 1024;
+            }
         }
-    } else {
+        break;
+    case QMailRetrievalAction::Content:
+        headerLimit = UINT_MAX;
+        break;
+    case QMailRetrievalAction::MetaData:
+    case QMailRetrievalAction::Flags:
+    default:
         headerLimit = 0;
+        break;
     }
+
     findInbox();
 }
 
@@ -238,7 +249,7 @@ void PopClient::setSelectedMails(const SelectionMap& data)
     // We shouldn't have anything left in our retrieval list...
     if (!retrievalSize.isEmpty()) {
         foreach (const QString& uid, retrievalSize.keys())
-            qMailLog(IMAP) << "Message" << uid << "still in retrieve map...";
+            qMailLog(POP) << "Message" << uid << "still in retrieve map...";
 
         retrievalSize.clear();
     }
@@ -343,7 +354,7 @@ QString PopClient::readResponse()
 {
     QString response = transport->readLine();
 
-    if ((response.length() > 1) && (status != MessageData)) {
+    if ((response.length() > 1) && (status != MessageDataRetr) && (status != MessageDataTop)) {
         qMailLog(POP) << "RECV:" << qPrintable(response.left(response.length() - 2));
     }
 
@@ -490,13 +501,15 @@ void PopClient::processResponse(const QString &response)
         break;
     }
     case Retr:
+    case Top:
     {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
     }
-    case MessageData:
+    case MessageDataRetr:
+    case MessageDataTop:
     {
         if (response != QString(".\r\n")) {
             if (response.startsWith('.')) {
@@ -539,6 +552,7 @@ void PopClient::processResponse(const QString &response)
         }
         break;
     }
+    case DeleAfterRetr:
     case Dele:
     {
         if (response[0] != '+') {
@@ -692,13 +706,14 @@ void PopClient::nextAction()
                 emit updateStatus(tr("Completing %1 / %2").arg(messageCount).arg(selectionMap.count()));
             }
 
-            nextStatus = Retr;
             QString temp = QString::number(msgNum);
-            if (selected || ((headerLimit > 0) && (mailSize <= headerLimit))) {
+            if ((headerLimit > 0) && (mailSize <= headerLimit)) {
                 // Retrieve the whole message
                 nextCommand = ("RETR " + temp);
+                nextStatus = Retr;
             } else {                                //only header
                 nextCommand = ("TOP " + temp + " 0");
+                nextStatus = Top;
             }
         } else {
             // No more messages to be fetched - are there any to be deleted?
@@ -714,16 +729,37 @@ void PopClient::nextAction()
         break;
     }
     case Retr:
+    case Top:
     {
         // Message data will follow
         message = "";
         dataStream->reset();
 
-        nextStatus = MessageData;
+        nextStatus = (status == Retr) ? MessageDataRetr : MessageDataTop;
         waitForInput = true;
         break;
     }
-    case MessageData:
+    case MessageDataRetr:
+    {
+        PopConfiguration popCfg(config);
+        if (popCfg.deleteRetrievedMailsFromServer()) {
+        int pos = msgPosFromUidl(messageUid);
+            emit updateStatus(tr("Removing message from server"));
+            nextCommand = ("DELE " + QString::number(pos));
+            nextStatus = DeleAfterRetr;
+        } else {
+            // See if there are more messages to retrieve
+            nextStatus = RequestMessage;
+        }
+        break;
+    }
+    case MessageDataTop:
+    {
+        // See if there are more messages to retrieve
+        nextStatus = RequestMessage;
+        break;
+    }
+    case DeleAfterRetr:
     {
         // See if there are more messages to retrieve
         nextStatus = RequestMessage;
@@ -853,9 +889,9 @@ int PopClient::nextMsgServerPos()
         // if requested mail is not on server, try to get a new mail from the list
         while ( (thisMsg == -1) && !serverId.isEmpty() ) {
             int pos = msgPosFromUidl(serverId);
+            QMailMessage message(selectionMap[serverId]);
             if (pos == -1) {
                 // Mark this message as deleted
-                QMailMessage message(selectionMap[serverId]);
                 if (message.id().isValid()) {
                     message.setStatus(QMailMessage::Removed, true);
                     QMailStore::instance()->updateMessage(&message);
@@ -873,6 +909,9 @@ int PopClient::nextMsgServerPos()
                 thisMsg = pos;
                 messageUid = serverId;
                 mailSize = getSize(thisMsg);
+                if (mailSize == uint(-1) && message.id().isValid()) {
+                    mailSize = message.size();
+                }
             }
         }
 
@@ -982,55 +1021,66 @@ void PopClient::createMail()
 
     qMailLog(POP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
     
-    QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
+    QMailMessage *mail(new QMailMessage(QMailMessage::fromRfc2822File(detachedFile)));
+    _bufferedMessages.append(mail);
 
-    mail.setSize(mailSize);
-    mail.setServerUid(messageUid);
+    mail->setSize(mailSize);
+    mail->setServerUid(messageUid);
 
-    if (selectionMap.contains(mail.serverUid())) {
+    if (selectionMap.contains(mail->serverUid())) {
         // We need to update the message from the existing data
-        QMailMessageMetaData existing(selectionMap.value(mail.serverUid()));
+        QMailMessageMetaData existing(selectionMap.value(mail->serverUid()));
 
-        mail.setId(existing.id());
-        mail.setStatus(existing.status());
-        mail.setContent(existing.content());
-        QMailDisconnected::copyPreviousFolder(existing, &mail);
-        mail.setContentScheme(existing.contentScheme());
-        mail.setContentIdentifier(existing.contentIdentifier());
-        mail.setCustomFields(existing.customFields());
+        mail->setId(existing.id());
+        mail->setStatus(existing.status());
+        mail->setContent(existing.content());
+        QMailDisconnected::copyPreviousFolder(existing, mail);
+        mail->setContentScheme(existing.contentScheme());
+        mail->setContentIdentifier(existing.contentIdentifier());
+        mail->setCustomFields(existing.customFields());
     } else {
-        mail.setStatus(QMailMessage::Incoming, true);
-        mail.setStatus(QMailMessage::New, true);
-        mail.setReceivedDate(QMailTimeStamp::currentDateTime());
+        mail->setStatus(QMailMessage::Incoming, true);
+        mail->setStatus(QMailMessage::New, true);
+        mail->setReceivedDate(QMailTimeStamp::currentDateTime());
     }
-    mail.setCustomField( "qmf-detached-filename", detachedFile );
+    mail->setCustomField( "qmf-detached-filename", detachedFile );
 
-    mail.setMessageType(QMailMessage::Email);
-    mail.setParentAccountId(config.id());
+    mail->setMessageType(QMailMessage::Email);
+    mail->setParentAccountId(config.id());
 
-    mail.setParentFolderId(folderId);
+    mail->setParentFolderId(folderId);
 
-    bool isComplete = (selected || ((headerLimit > 0) && (mailSize <= headerLimit)));
-    mail.setStatus(QMailMessage::ContentAvailable, isComplete);
-    mail.setStatus(QMailMessage::PartialContentAvailable, isComplete);
+    bool isComplete = ((headerLimit > 0) && (mailSize <= headerLimit));
+    mail->setStatus(QMailMessage::ContentAvailable, isComplete);
+    mail->setStatus(QMailMessage::PartialContentAvailable, isComplete);
     if (!isComplete) {
-        mail.setContentSize(mailSize - detachedSize);
+        mail->setContentSize(mailSize - detachedSize);
+    }
+    if (isComplete) {
+        // Mark as LocalOnly if it will be removed from the server after
+        // retrieval. The original mail will be deleted from the server
+        // by the state machine.
+        PopConfiguration popCfg(config);
+        if (popCfg.deleteRetrievedMailsFromServer()) {
+            mail->setStatus(QMailMessage::LocalOnly, true);
+        }
     }
 
-    classifier.classifyMessage(mail);
+
+    classifier.classifyMessage(*mail);
 
     // Store this message to the mail store
-    if (mail.id().isValid()) {
-        QMailMessageBuffer::instance()->updateMessage(&mail);
+    if (mail->id().isValid()) {
+        QMailMessageBuffer::instance()->updateMessage(mail);
     } else {
-        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail.serverUid()) & QMailMessageKey::parentAccountId(mail.parentAccountId()));
+        QMailMessageKey duplicateKey(QMailMessageKey::serverUid(mail->serverUid()) & QMailMessageKey::parentAccountId(mail->parentAccountId()));
         QMailStore::instance()->removeMessages(duplicateKey);
-        QMailMessageBuffer::instance()->addMessage(&mail);
+        QMailMessageBuffer::instance()->addMessage(mail);
     }
 
     dataStream->reset();
 
-    QMailMessageBuffer::instance()->setCallback(&mail, new MessageFlushedWrapper(this, isComplete));
+    QMailMessageBuffer::instance()->setCallback(mail, new MessageFlushedWrapper(this, isComplete));
 }
 
 void PopClient::messageFlushed(QMailMessage &message, bool isComplete)
@@ -1139,3 +1189,11 @@ void PopClient::operationFailed(QMailServiceAction::Status::ErrorCode code, cons
     emit errorOccurred(code, msg);
 }
 
+void PopClient::removeAllFromBuffer(QMailMessage *message)
+{
+    int i = 0;
+    while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
+        delete _bufferedMessages.at(i);
+        _bufferedMessages.remove(i);
+    }
+}

@@ -84,6 +84,7 @@ public:
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void messageFlushed(QMailMessage &message, bool isComplete);
+    void removeAllFromBuffer(QMailMessage *message);
 
 signals:
     void errorOccurred(int, const QString &);
@@ -130,8 +131,8 @@ private:
         StartTLS, TLS, Connected, Auth, 
         RequestUids, Uidl, UidList,
         RequestSizes, List, SizeList,
-        RequestMessage, Retr, MessageData,
-        DeleteMessage, Dele,
+        RequestMessage, Retr, Top, MessageDataRetr, MessageDataTop,
+        DeleteMessage, Dele, DeleAfterRetr,
         Done, Quit, Exit
     };
 
@@ -179,6 +180,7 @@ private:
     QStringList capabilities;
     QList<QByteArray> authCommands;
     QTime lastStatusTimer;
+    QVector<QMailMessage*> _bufferedMessages;
 };
 
 #endif

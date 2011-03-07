@@ -217,6 +217,7 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
         _service->_client.strategyContext()->retrieveMessageListStrategy.setAccountCheck(true);
     }
 
+    _service->_client.strategyContext()->retrieveMessageListStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Auto);
     _service->_client.strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
     appendStrategy(&_service->_client.strategyContext()->retrieveMessageListStrategy);
     if(!_unavailable)
@@ -241,8 +242,24 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
     }
 
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
-    _service->_client.strategyContext()->selectedStrategy.setOperation(spec);
-    _service->_client.strategyContext()->selectedStrategy.selectedMailsAppend(messageIds);
+
+    // Select the parts to be downloaded according to "spec".
+    _service->_client.strategyContext()->selectedStrategy.setOperation(
+            _service->_client.strategyContext(), spec);
+    QMailMessageIdList completionList;
+    QList<QPair<QMailMessagePart::Location, uint> > completionSectionList;
+    foreach (const QMailMessageId &id, messageIds) {
+        QMailMessage message(id);
+        _service->_client.strategyContext()->selectedStrategy.prepareCompletionList(
+                _service->_client.strategyContext(), message,
+                completionList, completionSectionList);
+    }
+    _service->_client.strategyContext()->selectedStrategy.selectedMailsAppend(completionList);
+    typedef QPair<QMailMessagePart::Location, uint > SectionDescription;
+    foreach (const SectionDescription &section, completionSectionList) {
+        _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(section.first, section.second);
+    }
+
     appendStrategy(&_service->_client.strategyContext()->selectedStrategy);
 
     if(!_unavailable)
@@ -274,7 +291,7 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
     }
     
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
-    _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
+    _service->_client.strategyContext()->selectedStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Content);
     _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation);
     appendStrategy(&_service->_client.strategyContext()->selectedStrategy);
     if(!_unavailable)
@@ -310,7 +327,7 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
     location.setContainingMessageId(messageId);
 
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
-    _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
+    _service->_client.strategyContext()->selectedStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Content);
     _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(location, minimum);
     appendStrategy(&_service->_client.strategyContext()->selectedStrategy);
     if(!_unavailable)
@@ -346,7 +363,7 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
     }
     
     _service->_client.strategyContext()->selectedStrategy.clearSelection();
-    _service->_client.strategyContext()->selectedStrategy.setOperation(QMailRetrievalAction::Content);
+    _service->_client.strategyContext()->selectedStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Content);
     _service->_client.strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
     appendStrategy(&_service->_client.strategyContext()->selectedStrategy);
 
@@ -366,7 +383,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
     _service->_client.strategyContext()->retrieveAllStrategy.setBase(QMailFolderId());
     _service->_client.strategyContext()->retrieveAllStrategy.setQuickList(false);
     _service->_client.strategyContext()->retrieveAllStrategy.setDescending(true);
-    _service->_client.strategyContext()->retrieveAllStrategy.setOperation(QMailRetrievalAction::MetaData);
+    _service->_client.strategyContext()->retrieveAllStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Auto);
     appendStrategy(&_service->_client.strategyContext()->retrieveAllStrategy);
     if(!_unavailable)
         return initiateStrategy();
@@ -430,7 +447,7 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
     _service->_client.strategyContext()->synchronizeAccountStrategy.setBase(QMailFolderId());
     _service->_client.strategyContext()->synchronizeAccountStrategy.setQuickList(false);
     _service->_client.strategyContext()->synchronizeAccountStrategy.setDescending(true);
-    _service->_client.strategyContext()->synchronizeAccountStrategy.setOperation(QMailRetrievalAction::MetaData);
+    _service->_client.strategyContext()->synchronizeAccountStrategy.setOperation(_service->_client.strategyContext(), QMailRetrievalAction::Auto);
     appendStrategy(&_service->_client.strategyContext()->synchronizeAccountStrategy);
     if(!_unavailable)
         return initiateStrategy();

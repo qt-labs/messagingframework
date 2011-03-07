@@ -94,6 +94,7 @@ public:
     void idling(const QMailFolderId &id);
     QMailFolderIdList configurationIdleFolderIds();
     void monitor(const QMailFolderIdList &mailboxIds);
+    void removeAllFromBuffer(QMailMessage *message);
 
 signals:
     void errorOccurred(int, const QString &);
@@ -168,6 +169,7 @@ private:
 
     QMap<QMailFolderId, IdleProtocol*> _monitored;
     QList<QMailMessageBufferFlushCallback*> callbacks;
+    QVector<QMailMessage*> _bufferedMessages;
 };
 
 #endif

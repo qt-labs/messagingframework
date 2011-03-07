@@ -65,6 +65,7 @@ public:
     void messageFlushed(QMailMessage *message)
     {
         context->messageFlushed(*message);
+        context->client()->removeAllFromBuffer(message);
     }
 };
 
@@ -84,6 +85,7 @@ public:
     void messageFlushed(QMailMessage *message)
     {
         context->dataFlushed(*message, uid, section);
+        context->client()->removeAllFromBuffer(message);
     }
 };
 
@@ -872,10 +874,13 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 
     _classifier.classifyMessage(mail);
 
-    _strategyContext->messageFetched(mail);
+
+    QMailMessage *bufferMessage(new QMailMessage(mail));
+    _bufferedMessages.append(bufferMessage);
+    _strategyContext->messageFetched(*bufferMessage);
     QMailMessageBufferFlushCallback *callback = new MessageFlushedWrapper(_strategyContext);
     callbacks << callback;
-    QMailMessageBuffer::instance()->setCallback(&mail, callback);
+    QMailMessageBuffer::instance()->setCallback(bufferMessage, callback);
 }
 
 
@@ -1097,17 +1102,30 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 {
     static const QString tempDir = QMail::tempPath();
 
-    QMailMessage mail(uid, _config.id());
-    if (mail.id().isValid()) {
+    QMailMessage *mail;
+    bool inBuffer = false;
+
+    foreach (QMailMessage *msg, _bufferedMessages) {
+        if (msg->serverUid() == uid) {
+            mail = msg;
+            inBuffer = true;
+            break;
+        }
+    }
+    if (!inBuffer) {
+        mail = new QMailMessage(uid, _config.id());
+    }
+
+    if (mail->id().isValid()) {
         if (section.isEmpty()) {
             // This is the body of the message, or a part thereof
             uint existingSize = 0;
-            if (mail.hasBody()) {
-                existingSize = mail.body().length();
+            if (mail->hasBody()) {
+                existingSize = mail->body().length();
 
                 // Write the existing data to a temporary file
                 TemporaryFile tempFile("mail-" + uid + "-body");
-                if (!tempFile.write(mail.body())) {
+                if (!tempFile.write(mail->body())) {
                     qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
                     return;
                 }
@@ -1121,13 +1139,13 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             }
 
             // Set the content into the mail
-            mail.setBody(QMailMessageBody::fromFile(fileName, mail.contentType(), mail.transferEncoding(), QMailMessageBody::AlreadyEncoded));
-            mail.setStatus(QMailMessage::PartialContentAvailable, true);
+            mail->setBody(QMailMessageBody::fromFile(fileName, mail->contentType(), mail->transferEncoding(), QMailMessageBody::AlreadyEncoded));
+            mail->setStatus(QMailMessage::PartialContentAvailable, true);
 
             const uint totalSize(existingSize + size);
-            if (totalSize >= mail.contentSize()) {
+            if (totalSize >= mail->contentSize()) {
                 // We have all the data for this message body
-                mail.setStatus(QMailMessage::ContentAvailable, true);
+                mail->setStatus(QMailMessage::ContentAvailable, true);
             } 
 
         } else {
@@ -1136,12 +1154,12 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             if (!partLocation.isValid(false)) {
                 qWarning() << "Unable to locate part for invalid section:" << section;
                 return;
-            } else if (!mail.contains(partLocation)) {
+            } else if (!mail->contains(partLocation)) {
                 qWarning() << "Unable to update invalid part for section:" << section;
                 return;
             }
 
-            QMailMessagePart &part = mail.partAt(partLocation);
+            QMailMessagePart &part = mail->partAt(partLocation);
 
             int existingSize = 0;
             if (part.hasBody()) {
@@ -1198,16 +1216,21 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 }
 
                 // These updates cannot be effected by storing the data file directly
-                if (!mail.customField("qmf-detached-filename").isEmpty()) {
-                    mail.removeCustomField("qmf-detached-filename");
+                if (!mail->customField("qmf-detached-filename").isEmpty()) {
+                    mail->removeCustomField("qmf-detached-filename");
                 }
             }
         }
 
-        _strategyContext->dataFetched(mail, uid, section);
+        if (inBuffer) {
+            return;
+        }
+
+        _bufferedMessages.append(mail);
+        _strategyContext->dataFetched(*mail, uid, section);
         QMailMessageBufferFlushCallback *callback = new DataFlushedWrapper(_strategyContext, uid, section);
         callbacks << callback;
-        QMailMessageBuffer::instance()->setCallback(&mail, callback);
+        QMailMessageBuffer::instance()->setCallback(mail, callback);
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
@@ -1502,6 +1525,15 @@ void ImapClient::messageBufferFlushed()
 {
     // We know this is now empty
     callbacks.clear();
+}
+
+void ImapClient::removeAllFromBuffer(QMailMessage *message)
+{
+    int i = 0;
+    while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
+        delete _bufferedMessages.at(i);
+        _bufferedMessages.remove(i);
+    }
 }
 
 #include "imapclient.moc"
