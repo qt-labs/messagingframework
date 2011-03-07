@@ -1851,14 +1851,28 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
             break;
 
         case QMailMessageKey::Conversation:
-        {
-            QMailMessageKey messageKey(a.valueList.first().value<QMailMessageKey>());
-            QString nestedAlias(incrementAlias(alias));
+            {
+                // This desperately needs to be simplified...
+                QString nestedAlias1(incrementAlias(alias));
+                QString nestedAlias2(incrementAlias(nestedAlias1));
 
-            q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("parentthreadid", nestedAlias) << " FROM mailmessages " << nestedAlias;
-            q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias)) << ")";
+                q << baseExpression(columnName, Includes, true);
+                q << "( SELECT " << qualifiedName("id", nestedAlias1) << " FROM mailmessages " << nestedAlias1 << " WHERE parentthreadid IN ";
+                q << "( SELECT DISTINCT " << qualifiedName("parentthreadid", nestedAlias2) << " FROM mailmessages " << nestedAlias2 << " WHERE ";
+
+                if (a.valueList.first().canConvert<QMailMessageKey>()) {
+                    QMailMessageKey messageKey = a.valueList.first().value<QMailMessageKey>();
+                    QString nestedAlias3(incrementAlias(nestedAlias2));
+
+                    q << baseExpression(qualifiedName("id", nestedAlias2), Includes, true) << "( SELECT " << qualifiedName("id", nestedAlias3) << " FROM mailmessages " << nestedAlias3;
+                    q << store.buildWhereClause(QMailStorePrivate::Key(messageKey, nestedAlias3)) << " )";
+                } else {
+                    q << columnExpression(qualifiedName("id", nestedAlias2), a.op, a.valueList);
+                }
+
+                q << " ) )";
+            }
             break;
-        }
         case QMailMessageKey::ServerUid:
         case QMailMessageKey::CopyServerUid:
             if (a.valueList.count() >= IdLookupThreshold) {
@@ -5069,6 +5083,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     values.insert("preview", metaData->preview());
     values.insert("parentthreadid", metaData->parentThreadId().toULongLong());
 
+    Q_ASSERT(metaData->parentThreadId().toULongLong() != 0);
+
     const QStringList &list(values.keys());
     QString columns = list.join(",");
 
@@ -5756,7 +5772,28 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                     }
                 }
 
+
                 {
+
+                        QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
+                        QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage debug query"));
+
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+
+                        if (!query.next()) {
+                            qWarning() << "Could not find thread id for inserted message";
+                            return DatabaseFailure;
+                        }
+
+
+                    qDebug() << "To be updated message Id: " << metaData->inResponseTo().toULongLong() << " has value: " << extractValue<quint64>(query.value(0));
+                    Q_ASSERT(query.value(0) != 0);
+
+                }
+
+                {
+                    Q_ASSERT(threadId != 0);
                     QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
                                                 QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
                                                 "updateMessage mailmessages update query"));
@@ -5809,6 +5846,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 {
+                    Q_ASSERT(threadId);
                     // Migrate descendants to the new thread
                     QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=?",
                                                 QVariantList() << threadId,

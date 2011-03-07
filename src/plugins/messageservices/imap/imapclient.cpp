@@ -866,6 +866,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setContentScheme(existing.contentScheme());
             mail.setContentIdentifier(existing.contentIdentifier());
             mail.setCustomFields(existing.customFields());
+            mail.setParentThreadId(existing.parentThreadId());
 
             // Preserve the status flags determined by the protocol
             mail.setStatus(QMailMessage::Replied, replied);
