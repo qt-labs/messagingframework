@@ -802,6 +802,32 @@ CRLF
                       << QString("This is a message just to say hello.\nSo, ""Hello"".") // plain_text
                       << int( 0 ); // message_part_count
 
+    QTest::newRow("long_header") << QByteArray(
+"From: John Doe <jdoe@machine.example>" CRLF
+"To: Mary Smith <mary@example.net>" CRLF
+"Subject: Saying Hello" CRLF
+"Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
+"Message-ID: " CRLF
+" <D5D122C46A7E494280C389109EA6190705C1C4C72C01ABCDEF@ex2007.ex2007.pohjola.example.com>" CRLF
+CRLF
+"This is a message just to say hello.\015"
+"So, ""Hello"".") // rfc_text
+                      << QString("John Doe <jdoe@machine.example>") // from
+                      << QString("John Doe") // from_name
+                      << QString("jdoe@machine.example") // from_email
+                      << QStringList("Mary Smith <mary@example.net>") // to
+                      << QStringList() // cc
+                      << QStringList() // bcc
+                      << QString("Saying Hello") // subject
+                      << QString() // reply_to
+                      << QString() // in_reply_to
+                      << QString("<D5D122C46A7E494280C389109EA6190705C1C4C72C01ABCDEF@ex2007.ex2007.pohjola.example.com>") // message_id
+                      << QDateTime(QDate(1997,11,21), QTime(15,55,6), Qt::UTC).toLocalTime() // datetime
+                      << QString( "Fri, 21 Nov 1997 09:55:06 -0600" ) // date_str
+                      << int(QMailMessage::Email) // type
+                      << QString("This is a message just to say hello.\nSo, ""Hello"".") // plain_text
+                      << int( 0 ); // message_part_count
+
 /* TEMPLATE TO ADD A NEW ROW
     QTest::newRow("") << QByteArray("") // rfc_text
                       << QString() // from

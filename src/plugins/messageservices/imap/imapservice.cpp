@@ -47,6 +47,7 @@
 #include "imapstrategy.h"
 #include <QtPlugin>
 #include <QTimer>
+#include <qmailheartbeattimer.h>
 #include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
@@ -101,8 +102,10 @@ public:
     void setIntervalTimer(int interval)
     {
         _intervalTimer.stop();
-        if (interval > 0)
-            _intervalTimer.start(interval*1000*60); // interval minutes
+        if (interval > 0) {
+            // 1 minute heartbeat window
+            _intervalTimer.start(qMax(1, interval-1)*1000*60, interval*1000*60); // interval minutes
+        }
     }
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
@@ -166,7 +169,7 @@ private:
     QMailFolderId _mailCheckFolderId;
     bool _unavailable;
     bool _synchronizing;
-    QTimer _intervalTimer;
+    QMailHeartbeatTimer _intervalTimer;
     QList<QMailFolderId> _queuedFolders;
     quint64 _setMask;
     quint64 _unsetMask;
@@ -1044,6 +1047,7 @@ void ImapService::Source::retrievalCompleted()
 void ImapService::Source::intervalCheck()
 {
     _flagsCheckQueued = true; // Convenient for user to check for flag changes on server also
+    _service->_client.requestRapidClose();
     exportUpdates(_service->accountId()); // Convenient for user to export pending changes also
     queueMailCheck(QMailFolderId());
 }
@@ -1063,6 +1067,7 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
     _mailCheckFolderId = folderId;
 
     emit _service->availabilityChanged(false);
+    _service->_client.requestRapidClose();
     if (folderId.isValid()) {
         retrievalCompleted(); // move onto retrieveMessageList stage
     } else {
@@ -1082,6 +1087,7 @@ void ImapService::Source::queueFlagsChangedCheck()
     _mailCheckPhase = CheckFlags;
 
     emit _service->availabilityChanged(false);
+    _service->_client.requestRapidClose();
     
     // Check same messages as last time
     appendStrategy(&_service->_client.strategyContext()->updateMessagesFlagsStrategy);
@@ -1190,7 +1196,9 @@ bool ImapService::pushEmailEstablished()
 
     const int oneHour = 60*60;
     qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
-    QTimer::singleShot(_pushRetry * 1000, this, SLOT(restartPushEmail()));
+    
+    // 1 minute heartbeat window
+    QMailHeartbeatTimer::singleShot(qMax(1, _pushRetry - 60)*1000, _pushRetry * 1000, this, SLOT(restartPushEmail()));
     _pushRetry = qMin(oneHour, _pushRetry * 2);
     return false;
 }

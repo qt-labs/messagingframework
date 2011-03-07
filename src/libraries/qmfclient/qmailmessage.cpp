@@ -1780,8 +1780,10 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
 
         if (lastIndex == -1)
         {
-            int syntacticIn = -1;
             // We couldn't find any suitable whitespace, look for high-level syntactic break
+            // allow a maximum of 998 characters excl CRLF on a line without white space
+            remaining = 997 - *lineLength;
+            int syntacticIn = -1;
             do {
                 lastIndex = syntacticIn;
                 syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);

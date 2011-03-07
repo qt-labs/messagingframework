@@ -70,6 +70,7 @@ public:
 
     void setAccount(const QMailAccountId& accountId);
     QMailAccountId account() const;
+    void requestRapidClose() { _requestRapidClose = true; } // Close connection ASAP, unless interactive checking occurred recently
 
     void newConnection();
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
@@ -163,6 +164,8 @@ private:
     QMailFolderIdList _waitingForIdleFolderIds;
     bool _idlesEstablished;
     bool _qresyncEnabled;
+    bool _requestRapidClose;
+    bool _rapidClosing;
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;

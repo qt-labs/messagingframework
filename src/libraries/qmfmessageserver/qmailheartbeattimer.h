@@ -39,73 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILMESSAGEBUFFER_H
-#define QMAILMESSAGEBUFFER_H
+#ifndef QMAILHEARTBEATTIMER_H
+#define QMAILHEARTBEATTIMER_H
 
 #include <QObject>
-#include <QList>
-#include <QTime>
-#include <QVariant>
-
-class QMailMessage;
-class QMailMessageBufferPrivate;
-class QTimer;
-
+#include <QTimer>
 #include <qmailglobal.h>
 
+class QMailHeartbeatTimerPrivate;
 
-class MESSAGESERVER_EXPORT QMailMessageBufferFlushCallback
-{
-public:
-    virtual ~QMailMessageBufferFlushCallback() {}
-    virtual void messageFlushed(QMailMessage *message) = 0;
-};
-
-class MESSAGESERVER_EXPORT QMailMessageBuffer : public QObject
+class MESSAGESERVER_EXPORT QMailHeartbeatTimer : public QObject
 {
     Q_OBJECT
 public:
-    QMailMessageBuffer(QObject *parent = 0);
-    virtual ~QMailMessageBuffer();
+    explicit QMailHeartbeatTimer(QObject *parent = 0);
+    ~QMailHeartbeatTimer();
 
-    static QMailMessageBuffer *instance();
+    inline bool isActive() const;
+    int timerId() const;
 
-    bool addMessage(QMailMessage *message);
-    bool updateMessage(QMailMessage *message);
-    bool setCallback(QMailMessage *message, QMailMessageBufferFlushCallback *callback);
+    void setInterval(int minimum, int maximum);
+    int interval() const;
 
-    void flush();
+    inline void setSingleShot(bool singleShot);
+    inline bool isSingleShot() const;
 
-    void removeCallback(QMailMessageBufferFlushCallback *callback);
+    static void singleShot(int minimum, int maximum, QObject *receiver, const char *member);
 
-signals:
-    void flushed();
+public Q_SLOTS:
+    void start(int minimum, int maximum);
 
-private slots:
-    void messageTimeout();
-    void readConfig();
+    void start();
+    void stop();
+
+Q_SIGNALS:
+    void timeout();
 
 private:
-    friend class QMailMessageBufferPrivate;
-    struct BufferItem
-    {
-        BufferItem(bool _add, QMailMessageBufferFlushCallback *_callback, QMailMessage *_message)
-            : add(_add)
-            , callback(_callback)
-            , message(_message)
-        {}
+    Q_DISABLE_COPY(QMailHeartbeatTimer)
 
-        bool add;
-        QMailMessageBufferFlushCallback *callback;
-        QMailMessage *message;
-    };
+    friend class QMailHeartbeatTimerPrivate;
 
-    void messageFlush();
-    int messagePending();
-    bool isFull();
-    BufferItem *get_item(QMailMessage *message);
-
-    QScopedPointer<QMailMessageBufferPrivate> d;
+    QScopedPointer<QMailHeartbeatTimerPrivate> d;
 };
 
 #endif

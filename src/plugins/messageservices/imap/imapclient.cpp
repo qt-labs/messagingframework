@@ -49,6 +49,7 @@
 #include <qmailfolder.h>
 #include <qmailnamespace.h>
 #include <qmaildisconnected.h>
+#include <qmailheartbeattimer.h>
 #include <limits.h>
 #include <QFile>
 #include <QDir>
@@ -383,7 +384,9 @@ void IdleProtocol::idleTransportError()
         close();
     
     _idleRecoveryTimer.stop();
-    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+    
+    // 10 minute heartbeat window
+    QMailHeartbeatTimer::singleShot(qMax(1, _idleRetryDelay - 10*60)*1000, _idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
 }
 
 void IdleProtocol::idleErrorRecovery()
@@ -398,7 +401,9 @@ void IdleProtocol::idleErrorRecovery()
         return;
     }
     updateStatus(tr("Idle Error occurred"));
-    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+
+    // 10 minute heartbeat window
+    QMailHeartbeatTimer::singleShot(qMax(1, _idleRetryDelay - 10*60)*1000, _idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
     _idleRetryDelay = qMin( oneHour, _idleRetryDelay*2 );
     
     emit openRequest(this);
@@ -409,7 +414,9 @@ ImapClient::ImapClient(QObject* parent)
       _closeCount(0),
       _waitingForIdle(false),
       _idlesEstablished(false),
-      _qresyncEnabled(false)
+      _qresyncEnabled(false),
+      _requestRapidClose(false),
+      _rapidClosing(false)
 {
     static int count(0);
     ++count;
@@ -474,6 +481,7 @@ ImapClient::~ImapClient()
     delete _strategyContext;
 }
 
+// Called to begin executing a strategy
 void ImapClient::newConnection()
 {
     if (_protocol.loggingOut())
@@ -483,6 +491,9 @@ void ImapClient::newConnection()
         _config = QMailAccountConfiguration(_config.id());
         _qresyncEnabled = false;
     }
+    if (_requestRapidClose && !_inactiveTimer.isActive())
+        _rapidClosing = true; // Don't close the connection rapidly if interactive checking has recently occurred
+    _requestRapidClose = false;
     _inactiveTimer.stop();
 
     ImapConfiguration imapCfg(_config);
@@ -1328,6 +1339,8 @@ void ImapClient::retrieveOperationCompleted()
 void ImapClient::deactivateConnection()
 {
     int time(ImapConfiguration(_config).timeTillLogout());
+    if (_rapidClosing)
+        time = 0;
     _closeCount = time / MaxTimeBeforeNoop;
     _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : time);
 }
@@ -1336,6 +1349,7 @@ void ImapClient::connectionInactive()
 {
     Q_ASSERT(_closeCount >= 0);
     if (_closeCount == 0) {
+        _rapidClosing = false;
         closeConnection();
     } else {
         --_closeCount;

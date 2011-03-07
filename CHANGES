@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201108
+  * Fixes: NB#227422 - Wrong header field splitting when using setHeaderField() with long string
+
 201103
   * Fixes: NB#204181 - Subject encoded using the" =?charset?encoding?result?=" method is not shown correctly
   * Fixes: QTSOL-196 - IMAP's recursivelyCompleteParts is faulty
