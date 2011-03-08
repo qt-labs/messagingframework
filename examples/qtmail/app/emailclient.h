@@ -185,7 +185,7 @@ protected slots:
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
    
-    void rollBackUpdates();
+    void rollBackUpdates(QMailAccountId accountId);
     void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask, const QString& description = QString("Updating message flags"));
 
     void messageActivated();
