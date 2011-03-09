@@ -1066,7 +1066,7 @@ QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadId &id, QMailDa
 
 
 /*!
-    Returns a key matching messages whose threadis a member of \a ids, according to \a cmp.
+    Returns a key matching messages whose thread is a member of \a ids, according to \a cmp.
 */
 
 QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp)

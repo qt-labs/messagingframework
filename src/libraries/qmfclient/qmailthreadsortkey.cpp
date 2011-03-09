@@ -42,6 +42,27 @@
 #include "qmailthreadsortkey.h"
 #include "qmailthreadsortkey_p.h"
 
+/*!
+    \class QMailThreadSortKey
+
+    \preliminary
+    \brief The QMailThreadSortKey class defines the parameters used for sorting a subset of 
+    threads from the mail store.
+    \ingroup messaginglibrary
+
+    \sa QMailStore, QMailThreadKey
+*/
+
+/*!
+    Create a QMailThreadSortyKey.
+
+    A default-constructed key (one for which isEmpty() returns true) sorts no messages. 
+
+    The result of combining an empty key with a non-empty key is the same as the original 
+    non-empty key.
+
+    The result of combining two empty keys is an empty key.
+*/
 QMailThreadSortKey::QMailThreadSortKey()
     : d(new QMailThreadSortKeyPrivate())
 {
@@ -60,7 +81,7 @@ QMailThreadSortKey::QMailThreadSortKey(const QList<QMailThreadSortKey::ArgumentT
 }
 
 /*!
-    Create a copy of the QMailFolderSortKey \a other.
+    Create a copy of the QMailThreadSortKey \a other.
 */
 QMailThreadSortKey::QMailThreadSortKey(const QMailThreadSortKey& other)
     : d(new QMailThreadSortKeyPrivate())
@@ -112,7 +133,7 @@ bool QMailThreadSortKey::operator!=(const QMailThreadSortKey& other) const
 }
 
 /*!
-    Assign the value of the QMailFolderSortKey \a other to this.
+    Assign the value of the QMailThreadSortKey \a other to this.
 */
 QMailThreadSortKey& QMailThreadSortKey::operator=(const QMailThreadSortKey& other)
 {
@@ -139,7 +160,7 @@ const QList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() c
 /*!
     \fn QMailThreadSortKey::serialize(Stream &stream) const
 
-    Writes the contents of a QMailFolderSortKey to a \a stream.
+    Writes the contents of a QMailThreadSortKey to a \a stream.
 */
 template <typename Stream> void QMailThreadSortKey::serialize(Stream &stream) const
 {
@@ -149,7 +170,7 @@ template <typename Stream> void QMailThreadSortKey::serialize(Stream &stream) co
 /*!
     \fn QMailThreadSortKey::deserialize(Stream &stream)
 
-    Reads the contents of a QMailFolderSortKey from \a stream.
+    Reads the contents of a QMailThreadSortKey from \a stream.
 */
 template <typename Stream> void QMailThreadSortKey::deserialize(Stream &stream)
 {
@@ -157,7 +178,7 @@ template <typename Stream> void QMailThreadSortKey::deserialize(Stream &stream)
 }
 
 /*!
-    Returns a key that sorts folders by their identifiers, according to \a order.
+    Returns a key that sorts threads by their identifiers, according to \a order.
 
     \sa QMailThread::id()
 */

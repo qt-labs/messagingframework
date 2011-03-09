@@ -6747,7 +6747,7 @@ QMailThreadId QMailMessageMetaData::parentThreadId() const
 }
 
 /*!
-    Sets the id of the thread this message belongs to. If this is left blank and the thread will be detected/generated.
+    Sets the id of the thread this message belongs to. If this is left blank then the thread will be detected/generated.
 */
 void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
 {

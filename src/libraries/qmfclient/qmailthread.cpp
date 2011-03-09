@@ -67,14 +67,7 @@ public:
     \brief The QMailThread class represents a thread of mail messages in the mail store.
     \ingroup messaginglibrary
 
-    QMailThread represents a thread of mail messages, either defined internally for
-    application use, or to represent a folder object held by an external message
-    service, such as an IMAP account.
-
-    A QMailThread object has an optional parent of the same type, allowing folders
-    to be arranged in tree structures.  Messages may be associated with folders,
-    allowing for simple classification and access by their
-    \l{QMailMessage::parentFolderId()}{parentFolderId} property.
+    QMailThread represents a thread (also known as conversation) of mail messages.
 
     \sa QMailMessage, QMailStore::thread()
 */
@@ -82,7 +75,7 @@ public:
 /*!
   Constructor that creates an empty and invalid \c QMailThread.
   An empty thread is one which has no id or messages account.
-  An invalid folder does not exist in the database and has an invalid id.
+  An invalid thread does not exist in the database and has an invalid id.
 */
 
 QMailThread::QMailThread()
@@ -143,7 +136,7 @@ QMailThreadId QMailThread::id() const
 }
 
 /*!
-  Sets the ID of this folder to \a id
+  Sets the ID of this thread to \a id
 */
 
 void QMailThread::setId(const QMailThreadId& id)
@@ -152,7 +145,7 @@ void QMailThread::setId(const QMailThreadId& id)
 }
 
 /*!
-  Sets the parent account id
+  Sets the parent account ID to \a id.
 */
 void QMailThread::setParentAccountId(const QMailAccountId &id)
 {
@@ -168,33 +161,48 @@ QMailAccountId QMailThread::parentAccountId() const
 }
 
 /*!
-  Returns the path of the folder.
+  Gets the serverUid of the thread.
 */
 QString QMailThread::serverUid() const
 {
     return d->serverUid;
 }
 
+/*!
+  Sets the serverUid of the thread to \a serverUid.
+*/
 void QMailThread::setServerUid(const QString& serverUid)
 {
     d->serverUid = serverUid;
 }
 
+/*!
+  Gets the unread count of the thread.
+*/
 uint QMailThread::unreadCount() const
 {
     return d->unreadCount;
 }
 
+/*!
+  Gets the count of the thread.
+*/
 uint QMailThread::messageCount() const
 {
     return d->messageCount;
 }
 
+/*!
+  Sets the count of the thread to \a value.
+*/
 void QMailThread::setMessageCount(uint value)
 {
     d->messageCount = value;
 }
 
+/*!
+  Sets the unread count of the thread to \a value.
+*/
 void QMailThread::setUnreadCount(uint value)
 {
     d->unreadCount = value;

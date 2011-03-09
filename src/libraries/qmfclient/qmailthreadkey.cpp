@@ -51,14 +51,66 @@ using namespace QMailKey;
 Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
 
 
+/*!
+    \class QMailThreadKey
+
+    \preliminary
+    \brief The QMailThreadKey class defines the parameters used for querying a subset of
+    all message threads from the mail store.
+    \ingroup messaginglibrary
+
+    A QMailThreadKey is composed of a thread property, an optional comparison operator
+    and a comparison value. The QMailThreadKey class is used in conjunction with the 
+    QMailStore::queryThreads() and QMailStore::countThreads() functions to filter results 
+    which meet the criteria defined by the key.
+
+    QMailThreadKeys can be combined using the logical operators (&), (|) and (~) to
+    create more refined queries.
+
+    \sa QMailStore, QMailThread
+*/
+
+/*!
+    \enum QMailThreadKey::Property
+
+    This enum type describes the data query properties of a QMailThread.
+
+    \value Id The ID of the thread.
+    \value ServerUid The ServerUid of thread.
+    \value MessageCount The number of messages in the thread
+    \value UnreadCount The number of unread messages in the thread.
+    \value Custom For internal use, may be removed.
+*/
+
+/*!
+    \typedef QMailThreadKey::IdType
+    \internal
+*/
+
+/*!
+    \typedef QMailThreadKey::ArgumentType
+    
+    Defines the type used to represent a single criterion of a message filter.
+
+    Synonym for QMailThreadKeyArgument<QMailThreadKey::Property>.
+*/
+
+/*!
+    Creates a QMailThreadKey without specifying matching parameters.
+
+    A default-constructed key (one for which isEmpty() returns true) matches all threads. 
+
+    \sa isEmpty()
+*/
 QMailThreadKey::QMailThreadKey()
     : d(new QMailThreadKeyPrivate)
 {
 }
 
 /*!
-
-
+    Constructs a QMailThreadKey which defines a query parameter where
+    Property \a p is compared using comparison operator
+    \a c with a value \a value.
 */
 QMailThreadKey::QMailThreadKey(Property p, const QVariant& value, QMailKey::Comparator c)
     : d(new QMailThreadKeyPrivate(p, value, c))
@@ -156,7 +208,7 @@ bool QMailThreadKey::operator!=(const QMailThreadKey& other) const
 }
 
 /*!
-    Assign the value of the QMailFolderKey \a other to this.
+    Assign the value of the QMailThreadKey \a other to this.
 */
 const QMailThreadKey& QMailThreadKey::operator=(const QMailThreadKey& other)
 {
@@ -167,7 +219,7 @@ const QMailThreadKey& QMailThreadKey::operator=(const QMailThreadKey& other)
 /*!
     Returns true if the key remains empty after default construction; otherwise returns false. 
 
-    An empty key matches all folders.
+    An empty key matches all threads.
 
     The result of combining an empty key with a non-empty key is the original non-empty key. 
     This is true regardless of whether the combination is formed by an AND or an OR operation.
@@ -184,7 +236,7 @@ bool QMailThreadKey::isEmpty() const
 /*!
     Returns true if the key is a non-matching key; otherwise returns false.
 
-    A non-matching key does not match any folders.
+    A non-matching key does not match any threads.
 
     The result of ANDing a non-matching key with a matching key is a non-matching key.
     The result of ORing a non-matching key with a matching key is the original matching key.
@@ -241,7 +293,7 @@ QMailKey::Combiner QMailThreadKey::combiner() const
 /*!
     \fn QMailThreadKey::serialize(Stream &stream) const
 
-    Writes the contents of a QMailFolderKey to a \a stream.
+    Writes the contents of a QMailThreadKey to a \a stream.
 */
 template <typename Stream> void QMailThreadKey::serialize(Stream &stream) const
 {
@@ -251,7 +303,7 @@ template <typename Stream> void QMailThreadKey::serialize(Stream &stream) const
 /*!
     \fn QMailThreadKey::deserialize(Stream &stream)
 
-    Reads the contents of a QMailFolderKey from \a stream.
+    Reads the contents of a QMailThradKey from \a stream.
 */
 template <typename Stream> void QMailThreadKey::deserialize(Stream &stream)
 {
@@ -259,7 +311,7 @@ template <typename Stream> void QMailThreadKey::deserialize(Stream &stream)
 }
 
 /*!
-    Returns a key that does not match any folders (unlike an empty key).
+    Returns a key that does not match any threads (unlike an empty key).
 
     \sa isNonMatching(), isEmpty()
 */
@@ -300,7 +352,7 @@ QMailThreadKey QMailThreadKey::id(const QMailThreadKey &key, QMailDataComparator
 
 
 /*!
-    Returns a key matching messages whose serverUid matches \a uid, according to \a cmp.
+    Returns a key matching threads whose serverUid matches \a uid, according to \a cmp.
 
     \sa QMailThread::serverUid()
 */
@@ -320,7 +372,7 @@ QMailThreadKey QMailThreadKey::serverUid(const QString &uid, QMailDataComparator
 }
 
 /*!
-    Returns a key matching thre whose serverUid is a member of \a uids, according to \a cmp.
+    Returns a key matching threads whose serverUid is a member of \a uids, according to \a cmp.
 
     \sa QMailThread::serverUid()
 */
