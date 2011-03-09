@@ -123,7 +123,9 @@ using namespace QMailKey;
     \value CopyServerUid The serveruid this message is a copy of
     \value RestoreFolderId The folderId this message could be untrashed to
     \value ListId The list-id-namespace of this message
-    \value RfcId The rfc id of this message
+    \value ParentThreadId The threadId of the thread (conversation) this message is in.
+    \value Preview The preview text for this message. Normally upto 280 characters of the beginning text of the message.
+    \value RfcId The message rfcId, that is the message-id header field value.
 */
 
 /*!

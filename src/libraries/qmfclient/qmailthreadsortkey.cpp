@@ -54,6 +54,21 @@
 */
 
 /*!
+    \enum QMailThreadSortKey::Property
+
+    This enum type describes the sortable data properties of a QMailThread.
+
+    \value Id The ID of the thread.
+    \value ServerUid The ServerUid of the thread.
+*/
+
+/*!
+    \typedef QMailThreadSortKey::ArgumentType
+    
+    Defines the type used to represent a single sort criterion of a message sort key.
+*/
+
+/*!
     Create a QMailThreadSortyKey.
 
     A default-constructed key (one for which isEmpty() returns true) sorts no messages. 
@@ -191,7 +206,7 @@ QMailThreadSortKey QMailThreadSortKey::id(Qt::SortOrder order)
 /*!
     Returns a key that sorts threads by their server uid string according to \a order.
 
-    \sa QMailThread::serverUid::status()
+    \sa QMailThread::serverUid()
 */
 QMailThreadSortKey QMailThreadSortKey::serverUid(Qt::SortOrder order)
 {

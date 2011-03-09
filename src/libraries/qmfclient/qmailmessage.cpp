@@ -4705,7 +4705,7 @@ bool QMailMessagePartContainer::hasAttachments() const
 }
 
 /*!
-  Sets the plain text body of a container.
+  Sets the plain text body of a container to \a plainTextBody.
  */
 void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTextBody)
 {
@@ -4732,7 +4732,7 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
 }
 
 /*!
-  Simultaneously sets the html and plain text body of a container.
+  Simultaneously sets the html and plain text body of a container to \a htmlBody and \a plainTextBody respectively.
  */
 void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
 {
@@ -4778,7 +4778,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
 }
 
 /*!
-  Sets the attachment list of a container.
+  Sets the attachment list of a container to \a attachments.
   \param attachments String paths to local files to be attached
  */
 void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
@@ -4811,7 +4811,7 @@ void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
 }
 
 /*!
-  Sets the attachment list of a container.
+  Sets the attachment list of a container to \a attachments.
   \param attachments List of already created message parts representing the attachments (might come from other existing messages)
  */
 void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePart*> attachments)
@@ -6747,7 +6747,7 @@ QMailThreadId QMailMessageMetaData::parentThreadId() const
 }
 
 /*!
-    Sets the id of the thread this message belongs to. If this is left blank then the thread will be detected/generated.
+    Sets the id of the thread this message belongs to \a id. If this is left blank then the thread will be detected/generated.
 */
 void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
 {
