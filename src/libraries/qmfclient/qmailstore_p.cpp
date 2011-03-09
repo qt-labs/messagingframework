@@ -4989,6 +4989,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             return result;
     }
 
+    // Attach this message to a thread
     if (!metaData->parentThreadId().isValid() && metaData->inResponseTo().isValid()) {
         QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
         QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
@@ -5020,29 +5021,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     } else {
         quint64 threadId = 0;
 
-        // Attach this message to a thread
-        if (metaData->inResponseTo().isValid()) {
+        // Add a new thread for this message
+        QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1"));
+        QSqlQuery query(simpleQuery(sql, "addMessage mailthreads insert query"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
 
-            QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
-            QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
-
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-
-            if (!query.next()) {
-                qWarning() << "Could not find thread id for inserted message";
-                return DatabaseFailure;
-            }
-            threadId = extractValue<quint64>(query.value(0));
-        } else {
-            // Add a new thread for this message
-            QSqlQuery query(simpleQuery("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(0, 0, '')",
-                                        "addMessage mailthreads insert query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-
-            threadId = extractValue<quint64>(query.lastInsertId());
-        }
+        threadId = extractValue<quint64>(query.lastInsertId());
 
         Q_ASSERT(threadId != 0);
         metaData->setParentThreadId(QMailThreadId(threadId));
@@ -5786,8 +5771,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                             return DatabaseFailure;
                         }
 
-
-                    qDebug() << "To be updated message Id: " << metaData->inResponseTo().toULongLong() << " has value: " << extractValue<quint64>(query.value(0));
                     Q_ASSERT(query.value(0) != 0);
 
                 }
@@ -5836,9 +5819,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 {
-                    // Allocate a new thread for this message
-                    QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id) SELECT COALESCE(MAX(id),0) + 1 FROM mailthreads",
-                                                "updateMessage mailthreads insert query"));
+                    // Add a new thread for this message
+                    QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1"));
+                    QSqlQuery query(simpleQuery(sql, "addMessage mailthreads insert query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
 
@@ -7104,13 +7087,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                                     "WHERE id!=? "
                                     "AND parentaccountid=? "
                                     "AND stamp<? "
-                                    "AND id IN ("
-                                        "SELECT id FROM mailmessages mtm WHERE parentthreadid IN ("
+                                    "AND parentthreadid IN ("
                                             "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
                                                 "SELECT id FROM mailsubjects WHERE basesubject=?"
-                                            ")"
                                         ")"
-                                    ") "
+                                     ")"
                                     "ORDER BY stamp DESC",
                                     QVariantList() << metaData->id().toULongLong() 
                                                     << metaData->parentAccountId().toULongLong() 
