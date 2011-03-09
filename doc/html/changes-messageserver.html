@@ -32,6 +32,16 @@
 
     4. Added 'bool QMailMessageSink::cancelOperation()'
 
+    5. Added concurrent version to QMailMessageSource and QMailMessageSink
+
+    6. Added QMailMessageBuffer
+
+    7. Added QMailMessageService::useConcurrentActions()
+
+    8. Changed semantics of QMailMessageBuffer::setCallback(), this function no longer creates a copy of the QMailMessage
+       argument, the caller must now handle lifetime management.
+
+    9. Added QMailHeartbeatTimer.
 
     *****************************************************************************
 

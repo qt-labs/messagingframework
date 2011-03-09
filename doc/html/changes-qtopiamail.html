@@ -136,6 +136,32 @@
                 'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId&amp; id)' and
                 'void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey&amp; key)'
 
+    37. Added 'QMailStore::messageDataAdded(const QMailMessageMetaDataList &amp;data)'
+              'QMailStore::messageDataUpdated(const QMailMessageMetaDataList &amp;data)
+              'QMailStore::messagePropertyUpdated(const QMailMessageIdList&amp; ids,
+                                                  const QMailMessageKey::Properties&amp; properties,
+                                                  const QMailMessageMetaData&amp; data)'
+              'QMailStore::messageStatusUpdated(const QMailMessageIdList&amp; ids,
+                                                quint64 status, bool set)' signals.
+
+    38. Remove unintentionally exported QMailId that should not have been included in the public API.
+
+    39. Move Location inner class from QMailMessagePart to QMailMessagePartContainer
+
+        Added following functions to QMailMessagePartContainer:
+        'QMailMessagePartContainer* findPlainTextContainer() const'
+        'QMailMessagePartContainer* findHtmlContainer() const'
+        'QList&lt;QMailMessagePartContainer::Location&gt; findAttachmentLocations() const'
+        'bool hasPlainTextBody() const'
+        'bool hasHtmlBody() const'
+        'bool hasAttachments() const'
+        'void setPlainTextBody(const QMailMessageBody&amp; plainTextBody)'
+        'void setHtmlAndPlainTextBody(const QMailMessageBody&amp; htmlBody, const QMailMessageBody&amp; plainTextBody)'
+        'void setAttachments(const QStringList&amp; attachments)'
+        'void setAttachments(const QList&lt;const QMailMessagePart*&gt; attachments)'
+
+    40. Add 'QMailRetrievalAction::Auto'
+
     *****************************************************************************
 
     Changes since the development preview release on 03/04/09:

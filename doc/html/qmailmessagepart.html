@@ -20,12 +20,6 @@
 <li><a href="qmailmessagepart-members.html">List of all members, including inherited members</a></li>
 </ul>
 <hr />
-<a name="public-types"></a>
-<h2>Public Types</h2>
-<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
-<tr><td class="memItemLeft" align="right" valign="top">class </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart-location.html">Location</a></b>&nbsp;&nbsp;<tt> (preliminary)</tt></td></tr>
-</table>
-<hr />
 <a name="public-functions"></a>
 <h2>Public Functions</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -38,7 +32,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#displayName">displayName</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#identifier">identifier</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#indicativeSize">indicativeSize</a></b> () const</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">Location </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#location">location</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">Location </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#locationx">location</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#messageReference">messageReference</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#partNumber">partNumber</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessagePart::Location </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#partReference">partReference</a></b> () const</td></tr>
@@ -62,7 +56,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepart.html#partialContentAvailable">partialContentAvailable</a></b> () const</td></tr>
 </table>
 <ul>
-<li><div bar="2" class="fn"></div>30 public functions inherited from <a href="qmailmessagepartcontainer.html#public-functions">QMailMessagePartContainer</a></li>
+<li><div bar="2" class="fn"></div>40 public functions inherited from <a href="qmailmessagepartcontainer.html#public-functions">QMailMessagePartContainer</a></li>
 </ul>
 <hr />
 <a name="static-public-members"></a>
@@ -125,7 +119,7 @@
 <h3 class="fn"><a name="fromMessageReference"></a>QMailMessagePart QMailMessagePart::fromMessageReference ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i>, const <a href="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</a> &amp; <i>disposition</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Creates a <a href="qmailmessagepart.html">QMailMessagePart</a> containing an attachment of type <i>disposition</i>, whose content is a reference to the message identified by <i>messageId</i>. The resulting part has content type <i>type</i> and uses the transfer encoding <i>encoding</i>.</p>
 <p>The message reference can only be resolved by transmitting the message to an external server, where both the originating server of the referenced message and the receiving server of the new message support resolution of the content reference.</p>
-<h3 class="fn"><a name="fromPartReference"></a>QMailMessagePart QMailMessagePart::fromPartReference ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, const <a href="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</a> &amp; <i>disposition</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<h3 class="fn"><a name="fromPartReference"></a>QMailMessagePart QMailMessagePart::fromPartReference ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, const <a href="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</a> &amp; <i>disposition</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Creates a <a href="qmailmessagepart.html">QMailMessagePart</a> containing an attachment of type <i>disposition</i>, whose content is a reference to the message part identified by <i>partLocation</i>. The resulting part has content type <i>type</i> and uses the transfer encoding <i>encoding</i>.</p>
 <p>The part reference can only be resolved by transmitting the message to an external server, where both the originating server of the referenced part's message and the receiving server of the new message support resolution of the content reference.</p>
 <h3 class="fn"><a name="fromStream"></a>QMailMessagePart QMailMessagePart::fromStream ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>in</i>, const <a href="qmailmessagecontentdisposition.html">QMailMessageContentDisposition</a> &amp; <i>disposition</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i>, <a href="qmailmessagebodyfwd.html#EncodingStatus-enum">QMailMessageBody::EncodingStatus</a> <i>status</i> = QMailMessageBody::RequiresEncoding )&nbsp;&nbsp;<tt> [static]</tt></h3>
@@ -138,7 +132,7 @@
 <p>Returns a non-empty string to identify the part, appropriate for storage. If the part has a 'Content-ID' header field, that value is used. Otherwise, if the part has a 'Content-Disposition' header field containing a 'filename' parameter, that value is used. Otherwise, if the part 'Content-Type' header field contains a 'name' parameter, that value is used. Finally, the part's number will be returned.</p>
 <h3 class="fn"><a name="indicativeSize"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailMessagePart::indicativeSize () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns an indication of the size of the part. This measure should be used only in comparing the relative size of parts with respect to transmission.</p>
-<h3 class="fn"><a name="location"></a><a href="qmailmessagepart-location.html">Location</a> QMailMessagePart::location () const</h3>
+<h3 class="fn"><a name="locationx"></a><a href="qmailmessagepartcontainer-location.html">Location</a> QMailMessagePart::location () const</h3>
 <p>Returns the location of the part within the message.</p>
 <h3 class="fn"><a name="messageReference"></a><a href="qmailmessageid.html">QMailMessageId</a> QMailMessagePart::messageReference () const</h3>
 <p>Returns the identifier of the message that this part references.</p>
@@ -146,7 +140,7 @@
 <p>See also <a href="qmailmessagepart.html#referenceType">referenceType</a>(), <a href="qmailmessagepart.html#partReference">partReference</a>(), and <a href="qmailmessagepart.html#referenceResolution">referenceResolution</a>().</p>
 <h3 class="fn"><a name="partNumber"></a>int QMailMessagePart::partNumber () const</h3>
 <p>Returns the number of the part, if it has been set; otherwise returns -1.</p>
-<h3 class="fn"><a name="partReference"></a><a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> QMailMessagePart::partReference () const</h3>
+<h3 class="fn"><a name="partReference"></a><a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> QMailMessagePart::partReference () const</h3>
 <p>Returns the location of the message part that this part references.</p>
 <p>The result will be meaningful only when <a href="qmailmessagepart.html#referenceType">referenceType</a>() yields <a href="qmailmessagepartfwd.html#ReferenceType-enum">QMailMessagePart::PartReference</a>.</p>
 <p>See also <a href="qmailmessagepart.html#referenceType">referenceType</a>(), <a href="qmailmessagepart.html#messageReference">messageReference</a>(), and <a href="qmailmessagepart.html#referenceResolution">referenceResolution</a>().</p>
@@ -180,7 +174,7 @@
 <p>Sets the part content to contain a reference to the message identified by <i>id</i>, having content type <i>type</i> and using the transfer encoding <i>encoding</i>.</p>
 <p>The message reference can only be resolved by transmitting the message to an external server, where both the originating server of the referenced message and the receiving server of the new message support resolution of the content reference.</p>
 <p>See also <a href="qmailmessagepart.html#referenceType">referenceType</a>() and <a href="qmailmessagepart.html#setReferenceResolution">setReferenceResolution</a>().</p>
-<h3 class="fn"><a name="setReference-2"></a>void QMailMessagePart::setReference ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>location</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i> )</h3>
+<h3 class="fn"><a name="setReference-2"></a>void QMailMessagePart::setReference ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>location</i>, const <a href="qmailmessagecontenttype.html">QMailMessageContentType</a> &amp; <i>type</i>, <a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> <i>encoding</i> )</h3>
 <p>Sets the part content to contain a reference to the message part identified by <i>location</i>, having content type <i>type</i> and using the transfer encoding <i>encoding</i>.</p>
 <p>The part reference can only be resolved by transmitting the message to an external server, where both the originating server of the referenced part's message and the receiving server of the new message support resolution of the content reference.</p>
 <p>See also <a href="qmailmessagepart.html#referenceType">referenceType</a>() and <a href="qmailmessagepart.html#setReferenceResolution">setReferenceResolution</a>().</p>

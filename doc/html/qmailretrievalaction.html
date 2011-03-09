@@ -23,7 +23,7 @@
 <a name="public-types"></a>
 <h2>Public Types</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
-<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailretrievalaction.html#RetrievalSpecification-enum">RetrievalSpecification</a></b> { Flags, MetaData, Content }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailretrievalaction.html#RetrievalSpecification-enum">RetrievalSpecification</a></b> { Flags, MetaData, Content, Auto }</td></tr>
 </table>
 <hr />
 <a name="public-functions"></a>
@@ -85,6 +85,7 @@
 <tr><td valign="top"><tt>QMailRetrievalAction::Flags</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">Changes to the state of the message should be retrieved.</td></tr>
 <tr><td valign="top"><tt>QMailRetrievalAction::MetaData</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">Only the meta data of the message should be retrieved.</td></tr>
 <tr><td valign="top"><tt>QMailRetrievalAction::Content</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">The entire content of the message should be retrieved.</td></tr>
+<tr><td valign="top"><tt>QMailRetrievalAction::Auto</tt></td><td align="center" valign="top"><tt>3</tt></td><td valign="top">Account specific settings are used during synchronization. For example, this may mean skipping the attachments.</td></tr>
 </table></p>
 <hr />
 <h2>Member Function Documentation</h2>
@@ -109,10 +110,10 @@
 <p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties will be updated for each folder from which messages are retrieved.</p>
 <p>New messages will be added to the mail store as they are discovered, and marked with the <a href="qmailmessagemetadata.html#New-var">QMailMessage::New</a> status flag. Messages that are present in the mail store but found to be no longer available are marked with the <a href="qmailmessagemetadata.html#Removed-var">QMailMessage::Removed</a> status flag.</p>
 <p>See also <a href="qmailaccount.html#lastSynchronized">QMailAccount::lastSynchronized</a>().</p>
-<h3 class="fn"><a name="retrieveMessagePart"></a>void QMailRetrievalAction::retrieveMessagePart ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePart"></a>void QMailRetrievalAction::retrieveMessagePart ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the message server retrieve the message part that is indicated by the location <i>partLocation</i>.</p>
 <p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties will be updated for the folder from which the part is retrieved.</p>
-<h3 class="fn"><a name="retrieveMessagePartRange"></a>void QMailRetrievalAction::retrieveMessagePartRange ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePartRange"></a>void QMailRetrievalAction::retrieveMessagePartRange ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the message server retrieve a subset of the message part that is indicated by the location <i>partLocation</i>. The messageserver should ensure that at least <i>minimum</i> bytes are available from the mail store.</p>
 <p>The total size of the part on the server is given by <a href="qmailmessagepart.html#contentDisposition">QMailMessagePart::contentDisposition</a>().size(), the amount of the part available locally is given by <a href="qmailmessagepartcontainer.html#body">QMailMessagePart::body</a>().<a href="http://doc.trolltech.com/4.5/stylesheet-reference.html">length</a>().</p>
 <p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties will be updated for the folder from which the part is retrieved.</p>

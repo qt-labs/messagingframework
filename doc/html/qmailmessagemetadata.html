@@ -43,7 +43,9 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual MessageType </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#messageType">messageType</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailAccountId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#parentAccountId">parentAccountId</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#parentFolderId">parentFolderId</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailThreadId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#parentThreadId">parentThreadId</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#partialContentAvailable">partialContentAvailable</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#preview">preview</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailTimeStamp </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#receivedDate">receivedDate</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#removeCustomField">removeCustomField</a></b> ( const QString &amp; <i>name</i> )</td></tr>
@@ -64,6 +66,8 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setMessageType">setMessageType</a></b> ( MessageType <i>type</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</a></b> ( const QMailAccountId &amp; <i>id</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</a></b> ( const QMailFolderId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setParentThreadId">setParentThreadId</a></b> ( const QMailThreadId &amp; <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setPreview">setPreview</a></b> ( const QString &amp; <i>s</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</a></b> ( const QMailFolderId &amp; <i>id</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</a></b> ( const QMailTimeStamp &amp; <i>timeStamp</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setResponseType">setResponseType</a></b> ( ResponseType <i>type</i> )</td></tr>
@@ -178,8 +182,14 @@
 <h3 class="fn"><a name="parentFolderId"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailMessageMetaData::parentFolderId () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Return the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contains the message.</p>
 <p>See also <a href="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</a>().</p>
+<h3 class="fn"><a name="parentThreadId"></a>QMailThreadId QMailMessageMetaData::parentThreadId () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the id of the thread this message belongs to.</p>
+<p>See also <a href="qmailmessagemetadata.html#setParentThreadId">setParentThreadId</a>().</p>
 <h3 class="fn"><a name="partialContentAvailable"></a>bool QMailMessageMetaData::partialContentAvailable () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns true if some portion of the content of this message is available; otherwise returns false.</p>
+<h3 class="fn"><a name="preview"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageMetaData::preview () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the preview text of this message.</p>
+<p>See also <a href="qmailmessagemetadata.html#setPreview">setPreview</a>().</p>
 <h3 class="fn"><a name="previousParentFolderId"></a><a href="qmailfolderid.html">QMailFolderId</a> QMailMessageMetaData::previousParentFolderId () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Return the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contained the message before it was moved into the current parent folder.</p>
 <p>See also <a href="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</a>().</p>
@@ -242,6 +252,12 @@
 <h3 class="fn"><a name="setParentFolderId"></a>void QMailMessageMetaData::setParentFolderId ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contains the message to <i>id</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#parentFolderId">parentFolderId</a>().</p>
+<h3 class="fn"><a name="setParentThreadId"></a>void QMailMessageMetaData::setParentThreadId ( const QMailThreadId &amp; <i>id</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Sets the id of the thread this message belongs to <i>id</i>. If this is left blank then the thread will be detected/generated.</p>
+<p>See also <a href="qmailmessagemetadata.html#parentThreadId">parentThreadId</a>().</p>
+<h3 class="fn"><a name="setPreview"></a>void QMailMessageMetaData::setPreview ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>s</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Sets the preview text of this message to <i>s</i>.</p>
+<p>See also <a href="qmailmessagemetadata.html#preview">preview</a>().</p>
 <h3 class="fn"><a name="setPreviousParentFolderId"></a>void QMailMessageMetaData::setPreviousParentFolderId ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the <a href="qmailfolderid.html">QMailFolderId</a> of the folder that contained the message before it was moved into the current parent folder to <i>id</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</a>().</p>

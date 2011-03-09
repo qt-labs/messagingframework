@@ -22,7 +22,6 @@
 <a name="public-functions"></a>
 <h2>Public Functions</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
-<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#concurrentActionsSupported">concurrentActionsSupported</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::MessageRemovalOption </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesource.html#messageRemovalOption">messageRemovalOption</a></b> () const</td></tr>
 </table>
 <ul>
@@ -128,11 +127,11 @@
 <h3 class="fn"><a name="QMailMessageSource"></a>QMailMessageSource::QMailMessageSource ( <a href="qmailmessageservice.html">QMailMessageService</a> * <i>service</i> )&nbsp;&nbsp;<tt> [protected]</tt></h3>
 <p>Creates a message source object associated with the service <i>service</i>.</p>
 <h3 class="fn"><a name="cancelSearch"></a>bool QMailMessageSource::cancelSearch ()&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
-<p>Invoked by the message server to initiate a request to stop remote searching.</p>
+<p>This method is obsolete. It is no longer invoked. QMailMessageService::cancelOperation is used instead.</p>
+<p>Previously was invoked by the message server to initiate a request to stop remote searching.</p>
 <p>Searches in progress will be stopped, and no further results returned.</p>
-<p>See also <a href="qmailmessagesource.html#searchMessages">searchMessages</a>() and <a href="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</a>().</p>
+<p>See also QMailMessageService::cancelOperation.</p>
 <h3 class="fn"><a name="cancelSearch-2"></a>bool QMailMessageSource::cancelSearch ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
-<h3 class="fn"><a name="concurrentActionsSupported"></a>bool QMailMessageSource::concurrentActionsSupported () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <h3 class="fn"><a name="copyMessages"></a>bool QMailMessageSource::copyMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>destinationId</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message copy operation.</p>
 <p>For each message listed in <i>ids</i>, create a new copy in the folder identified by <i>destinationId</i>.</p>
@@ -203,13 +202,13 @@
 <p>Signal emitted by the source to report the availability of new messages.</p>
 <h3 class="fn"><a name="newMessagesAvailable-2"></a>void QMailMessageSource::newMessagesAvailable ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <h3 class="fn"><a name="notImplemented"></a>void QMailMessageSource::notImplemented ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [protected]</tt></h3>
-<h3 class="fn"><a name="prepareMessages"></a>bool QMailMessageSource::prepareMessages ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>, <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>&gt; &gt; &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="prepareMessages"></a>bool QMailMessageSource::prepareMessages ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a>, <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a>&gt; &gt; &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message preparation operation.</p>
 <p>Prepare each message listed in <i>ids</i> for transmission by resolving any external references into URLs, and updating the reference in the associated location.</p>
 <p>Messages successfully prepared for transmission should be progressively reported via <a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a>().</p>
 <p>Return true if an operation is initiated.</p>
 <p>See also <a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a>().</p>
-<h3 class="fn"><a name="prepareMessages-2"></a>bool QMailMessageSource::prepareMessages ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>, <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a>&gt; &gt; &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="prepareMessages-2"></a>bool QMailMessageSource::prepareMessages ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a>, <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a>&gt; &gt; &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <h3 class="fn"><a name="protocolRequest"></a>bool QMailMessageSource::protocolRequest ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>request</i>, const <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> &amp; <i>data</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a protocol-specific operation.</p>
 <p>If <i>request</i> corresponds to a protocol-specific action implemented by the source, initiate the requested operation for <i>accountId</i>, using any relevant information extracted from <i>data</i>.</p>
@@ -249,18 +248,18 @@
 <p>Return true if an operation is initiated.</p>
 <p>See also <a href="qmailaccount.html#lastSynchronized">QMailAccount::lastSynchronized</a>().</p>
 <h3 class="fn"><a name="retrieveMessageList-2"></a>bool QMailMessageSource::retrieveMessageList ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i>, const <a href="qmailmessagesortkey.html">QMailMessageSortKey</a> &amp; <i>sort</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
-<h3 class="fn"><a name="retrieveMessagePart"></a>bool QMailMessageSource::retrieveMessagePart ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePart"></a>bool QMailMessageSource::retrieveMessagePart ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message part retrieval operation.</p>
 <p>Retrieve the content of the message part indicated by the location <i>partLocation</i>.</p>
 <p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for the folder from which the part is retrieved.</p>
 <p>Return true if an operation is initiated.</p>
-<h3 class="fn"><a name="retrieveMessagePart-2"></a>bool QMailMessageSource::retrieveMessagePart ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
-<h3 class="fn"><a name="retrieveMessagePartRange"></a>bool QMailMessageSource::retrieveMessagePartRange ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePart-2"></a>bool QMailMessageSource::retrieveMessagePart ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePartRange"></a>bool QMailMessageSource::retrieveMessagePartRange ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message part range retrieval operation.</p>
 <p>Retrieve a portion of the content of the message part indicated by the location <i>partLocation</i>, ensuring that at least <i>minimum</i> bytes are available in the mail store.</p>
 <p>The <a href="qmailfolder.html#serverCount">QMailFolder::serverCount</a>(), <a href="qmailfolder.html#serverUnreadCount">QMailFolder::serverUnreadCount</a>() and <a href="qmailfolder.html#serverUndiscoveredCount">QMailFolder::serverUndiscoveredCount</a>() properties should be updated for the folder from which the part is retrieved.</p>
 <p>Return true if an operation is initiated.</p>
-<h3 class="fn"><a name="retrieveMessagePartRange-2"></a>bool QMailMessageSource::retrieveMessagePartRange ( const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePartRange-2"></a>bool QMailMessageSource::retrieveMessagePartRange ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <h3 class="fn"><a name="retrieveMessageRange"></a>bool QMailMessageSource::retrieveMessageRange ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a message range retrieval operation.</p>
 <p>Retrieve a portion of the content of the message identified by <i>messageId</i>, ensuring that at least <i>minimum</i> bytes are available in the mail store.</p>

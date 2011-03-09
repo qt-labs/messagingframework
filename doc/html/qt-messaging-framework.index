@@ -235,6 +235,7 @@
                 <value name="ListId" value="15"/>
                 <value name="RestoreFolderId" value="16"/>
                 <value name="RfcId" value="17"/>
+                <value name="ParentThreadId" value="18"/>
             </enum>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailMessageSortKey::ArgumentType" href="qmailmessagesortkey.html#ArgumentType-typedef" location="qmailmessagesortkey.h"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailMessageSortKey" fullname="QMailMessageSortKey::QMailMessageSortKey" href="qmailmessagesortkey.html#QMailMessageSortKey" location="qmailmessagesortkey.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailMessageSortKey()"/>
@@ -357,6 +358,8 @@
                 <value name="RestoreFolderId" value="( 1&lt;&lt;22 )"/>
                 <value name="ListId" value="( 1&lt;&lt;23 )"/>
                 <value name="RfcId" value="( 1&lt;&lt;24 )"/>
+                <value name="Preview" value="( 1&lt;&lt;25 )"/>
+                <value name="ParentThreadId" value="( 1&lt;&lt;26 )"/>
             </enum>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="Properties" fullname="QMailMessageKey::Properties" href="qmailmessagekey.html#Properties-typedef" location="qmailmessagekey.h" enum="QMailMessageKey::Property"/>
             <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailMessageKey::ArgumentType" href="qmailmessagekey.html#ArgumentType-typedef" location="qmailmessagekey.h"/>
@@ -400,6 +403,12 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="deserialize" fullname="QMailMessageKey::deserialize" href="qmailmessagekey.html#deserialize" location="qmailmessagekey.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="deserialize(Stream &amp; stream)">
                 <parameter left="Stream &amp;" right="" name="stream" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serialize" fullname="QMailMessageKey::serialize" href="qmailmessagekey.html#serialize-2" location="qmailmessagekey.cpp" virtual="non" meta="plain" const="true" static="false" overload="true" overload-number="2" type="void" signature="serialize(QDataStream &amp; stream) const">
+                <parameter left="QDataStream &amp;" right="" name="stream" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="deserialize" fullname="QMailMessageKey::deserialize" href="qmailmessagekey.html#deserialize-2" location="qmailmessagekey.cpp" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="void" signature="deserialize(QDataStream &amp; stream)">
+                <parameter left="QDataStream &amp;" right="" name="stream" default=""/>
+            </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="nonMatchingKey" fullname="QMailMessageKey::nonMatchingKey" href="qmailmessagekey.html#nonMatchingKey" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageKey" signature="nonMatchingKey()"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailMessageKey::id" href="qmailmessagekey.html#id" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageKey" signature="id(const QMailMessageId &amp; id, QMailDataComparator::EqualityComparator cmp)">
                 <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
@@ -441,7 +450,11 @@
                 <parameter left="const QString &amp;" right="" name="value" default=""/>
                 <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default=""/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="sender" fullname="QMailMessageKey::sender" href="qmailmessagekey.html#sender-3" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="3" type="QMailMessageKey" signature="sender(const QStringList &amp; values, QMailDataComparator::InclusionComparator cmp)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="sender" fullname="QMailMessageKey::sender" href="qmailmessagekey.html#sender-3" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="3" type="QMailMessageKey" signature="sender(const QString &amp; value, QMailDataComparator::RelationComparator cmp)">
+                <parameter left="const QString &amp;" right="" name="value" default=""/>
+                <parameter left="QMailDataComparator::RelationComparator" right="" name="cmp" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="sender" fullname="QMailMessageKey::sender" href="qmailmessagekey.html#sender-4" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="4" type="QMailMessageKey" signature="sender(const QStringList &amp; values, QMailDataComparator::InclusionComparator cmp)">
                 <parameter left="const QStringList &amp;" right="" name="values" default=""/>
                 <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
             </function>
@@ -652,6 +665,18 @@
                 <parameter left="const QString &amp;" right="" name="value" default=""/>
                 <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentThreadId" fullname="QMailMessageKey::parentThreadId" href="qmailmessagekey.html#parentThreadId" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessageKey" signature="parentThreadId(const QMailThreadId &amp; id, QMailDataComparator::EqualityComparator cmp)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
+                <parameter left="QMailDataComparator::EqualityComparator" right="" name="cmp" default="QMailDataComparator::Equal"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentThreadId" fullname="QMailMessageKey::parentThreadId" href="qmailmessagekey.html#parentThreadId-2" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="QMailMessageKey" signature="parentThreadId(const QMailThreadIdList &amp; ids, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentThreadId" fullname="QMailMessageKey::parentThreadId" href="qmailmessagekey.html#parentThreadId-3" location="qmailmessagekey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="3" type="QMailMessageKey" signature="parentThreadId(const QMailThreadKey &amp; key, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="key" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
+            </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailServiceAction" href="qmailserviceaction.html" location="qmailserviceaction.h" bases="QObject" module="">
             <enum access="public" threadsafety="unspecified" status="commendable" name="Connectivity" fullname="QMailServiceAction::Connectivity" href="qmailserviceaction.html#Connectivity-enum" location="qmailserviceaction.h">
@@ -741,6 +766,7 @@
                 <value name="Flags" value="0"/>
                 <value name="MetaData" value="1"/>
                 <value name="Content" value="2"/>
+                <value name="Auto" value="3"/>
             </enum>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailRetrievalAction" fullname="QMailRetrievalAction::QMailRetrievalAction" href="qmailretrievalaction.html#QMailRetrievalAction" location="qmailserviceaction.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailRetrievalAction(QObject * parent)">
                 <parameter left="QObject *" right="" name="parent" default="0"/>
@@ -954,6 +980,39 @@
                 <value name="CramMd5Mechanism" value="3"/>
             </enum>
         </namespace>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailThread" href="qmailthread.html" location="qmailthread.h" bases="" module="">
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThread" fullname="QMailThread::QMailThread" href="qmailthread.html#QMailThread" location="qmailthread.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailThread()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThread" fullname="QMailThread::QMailThread" href="qmailthread.html#QMailThread-2" location="qmailthread.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailThread(const QMailThreadId &amp; id)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="~QMailThread" fullname="QMailThread::~QMailThread" href="qmailthread.html#dtor.QMailThread" location="qmailthread.h" virtual="non" meta="destructor" const="false" static="false" overload="false" type="" signature="~QMailThread()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThread" fullname="QMailThread::QMailThread" href="qmailthread.html#QMailThread-3" location="qmailthread.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="3" type="" signature="QMailThread(const QMailThread &amp; other)">
+                <parameter left="const QMailThread &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator=" fullname="QMailThread::operator=" href="qmailthread.html#operator=" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QMailThread &amp;" signature="operator=(const QMailThread &amp; other)">
+                <parameter left="const QMailThread &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailThread::id" href="qmailthread.html#id" location="qmailthread.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThreadId" signature="id() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setId" fullname="QMailThread::setId" href="qmailthread.html#setId" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setId(const QMailThreadId &amp; id)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentAccountId" fullname="QMailThread::parentAccountId" href="qmailthread.html#parentAccountId" location="qmailthread.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailAccountId" signature="parentAccountId() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setParentAccountId" fullname="QMailThread::setParentAccountId" href="qmailthread.html#setParentAccountId" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setParentAccountId(const QMailAccountId &amp; id)">
+                <parameter left="const QMailAccountId &amp;" right="" name="id" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serverUid" fullname="QMailThread::serverUid" href="qmailthread.html#serverUid" location="qmailthread.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="serverUid() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setServerUid" fullname="QMailThread::setServerUid" href="qmailthread.html#setServerUid" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setServerUid(const QString &amp; serverUid)">
+                <parameter left="const QString &amp;" right="" name="serverUid" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="unreadCount" fullname="QMailThread::unreadCount" href="qmailthread.html#unreadCount" location="qmailthread.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="uint" signature="unreadCount() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setUnreadCount" fullname="QMailThread::setUnreadCount" href="qmailthread.html#setUnreadCount" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setUnreadCount(uint value)">
+                <parameter left="uint" right="" name="value" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="messageCount" fullname="QMailThread::messageCount" href="qmailthread.html#messageCount" location="qmailthread.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="uint" signature="messageCount() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setMessageCount" fullname="QMailThread::setMessageCount" href="qmailthread.html#setMessageCount" location="qmailthread.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setMessageCount(uint value)">
+                <parameter left="uint" right="" name="value" default=""/>
+            </function>
+        </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessageSetContainer" href="qmailmessagesetcontainer.html" location="qmailmessageset.h" bases="" module="">
             <function access="public" threadsafety="unspecified" status="commendable" name="count" fullname="QMailMessageSetContainer::count" href="qmailmessagesetcontainer.html#count" location="qmailmessageset.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="count() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="at" fullname="QMailMessageSetContainer::at" href="qmailmessagesetcontainer.html#at" location="qmailmessageset.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessageSet *" signature="at(int i) const">
@@ -1197,6 +1256,9 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="addMessages" fullname="QMailStore::addMessages" href="qmailstore.html#addMessages-2" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="bool" signature="addMessages(const QList&lt;QMailMessageMetaData *&gt; &amp; messages)">
                 <parameter left="const QList&lt;QMailMessageMetaData *&gt; &amp;" right="" name="messages" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="addThread" fullname="QMailStore::addThread" href="qmailstore.html#addThread" location="qmailstore.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="addThread(QMailThread * t)">
+                <parameter left="QMailThread *" right="" name="t" default=""/>
+            </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="removeAccount" fullname="QMailStore::removeAccount" href="qmailstore.html#removeAccount" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="removeAccount(const QMailAccountId &amp; id)">
                 <parameter left="const QMailAccountId &amp;" right="" name="id" default=""/>
             </function>
@@ -1218,6 +1280,14 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="removeMessages" fullname="QMailStore::removeMessages" href="qmailstore.html#removeMessages" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="removeMessages(const QMailMessageKey &amp; key, MessageRemovalOption option)">
                 <parameter left="const QMailMessageKey &amp;" right="" name="key" default=""/>
                 <parameter left="MessageRemovalOption" right="" name="option" default="NoRemovalRecord"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="removeThread" fullname="QMailStore::removeThread" href="qmailstore.html#removeThread" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="removeThread(const QMailThreadId &amp; id, MessageRemovalOption option)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
+                <parameter left="MessageRemovalOption" right="" name="option" default="NoRemovalRecord"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="removeThreads" fullname="QMailStore::removeThreads" href="qmailstore.html#removeThreads" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="removeThreads(const QMailThreadKey &amp; key, QMailStore::MessageRemovalOption option)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="key" default=""/>
+                <parameter left="QMailStore::MessageRemovalOption" right="" name="option" default="NoRemovalRecord"/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="updateAccount" fullname="QMailStore::updateAccount" href="qmailstore.html#updateAccount" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="updateAccount(QMailAccount * account, QMailAccountConfiguration * config)">
                 <parameter left="QMailAccount *" right="" name="account" default=""/>
@@ -1251,6 +1321,9 @@
                 <parameter left="quint64" right="" name="status" default=""/>
                 <parameter left="bool" right="" name="set" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="updateThread" fullname="QMailStore::updateThread" href="qmailstore.html#updateThread" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="updateThread(QMailThread * t)">
+                <parameter left="QMailThread *" right="" name="t" default=""/>
+            </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="countAccounts" fullname="QMailStore::countAccounts" href="qmailstore.html#countAccounts" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="countAccounts(const QMailAccountKey &amp; key) const">
                 <parameter left="const QMailAccountKey &amp;" right="" name="key" default="QMailAccountKey()"/>
             </function>
@@ -1259,6 +1332,9 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="countMessages" fullname="QMailStore::countMessages" href="qmailstore.html#countMessages" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="countMessages(const QMailMessageKey &amp; key) const">
                 <parameter left="const QMailMessageKey &amp;" right="" name="key" default="QMailMessageKey()"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="countThreads" fullname="QMailStore::countThreads" href="qmailstore.html#countThreads" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="countThreads(const QMailThreadKey &amp; key) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="key" default="QMailThreadKey()"/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="sizeOfMessages" fullname="QMailStore::sizeOfMessages" href="qmailstore.html#sizeOfMessages" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="sizeOfMessages(const QMailMessageKey &amp; key) const">
                 <parameter left="const QMailMessageKey &amp;" right="" name="key" default="QMailMessageKey()"/>
@@ -1281,6 +1357,12 @@
                 <parameter left="uint" right="" name="limit" default="0"/>
                 <parameter left="uint" right="" name="offset" default="0"/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="queryThreads" fullname="QMailStore::queryThreads" href="qmailstore.html#queryThreads" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QMailThreadIdList" signature="queryThreads(const QMailThreadKey &amp; key, const QMailThreadSortKey &amp; sortKey, uint limit, uint offset) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="key" default="QMailThreadKey()"/>
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="sortKey" default="QMailThreadSortKey()"/>
+                <parameter left="uint" right="" name="limit" default="0"/>
+                <parameter left="uint" right="" name="offset" default="0"/>
+            </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="account" fullname="QMailStore::account" href="qmailstore.html#account" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailAccount" signature="account(const QMailAccountId &amp; id) const">
                 <parameter left="const QMailAccountId &amp;" right="" name="id" default=""/>
             </function>
@@ -1289,6 +1371,9 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="folder" fullname="QMailStore::folder" href="qmailstore.html#folder" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailFolder" signature="folder(const QMailFolderId &amp; id) const">
                 <parameter left="const QMailFolderId &amp;" right="" name="id" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="thread" fullname="QMailStore::thread" href="qmailstore.html#thread" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThread" signature="thread(const QMailThreadId &amp; id) const">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="message" fullname="QMailStore::message" href="qmailstore.html#message" location="qmailstore.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessage" signature="message(const QMailMessageId &amp; id) const">
                 <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
@@ -1400,6 +1485,18 @@
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="folderContentsModified" fullname="QMailStore::folderContentsModified" href="qmailstore.html#folderContentsModified" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="folderContentsModified(const QMailFolderIdList &amp; ids)">
                 <parameter left="const QMailFolderIdList &amp;" right="" name="ids" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="threadsAdded" fullname="QMailStore::threadsAdded" href="qmailstore.html#threadsAdded" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="threadsAdded(const QMailThreadIdList &amp; ids)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="threadsRemoved" fullname="QMailStore::threadsRemoved" href="qmailstore.html#threadsRemoved" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="threadsRemoved(const QMailThreadIdList &amp; ids)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="threadsUpdated" fullname="QMailStore::threadsUpdated" href="qmailstore.html#threadsUpdated" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="threadsUpdated(const QMailThreadIdList &amp; ids)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="threadContentsModified" fullname="QMailStore::threadContentsModified" href="qmailstore.html#threadContentsModified" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="threadContentsModified(const QMailThreadIdList &amp; ids)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="messageRemovalRecordsAdded" fullname="QMailStore::messageRemovalRecordsAdded" href="qmailstore.html#messageRemovalRecordsAdded" location="qmailstore.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="messageRemovalRecordsAdded(const QMailAccountIdList &amp; ids)">
                 <parameter left="const QMailAccountIdList &amp;" right="" name="ids" default=""/>
@@ -1583,6 +1680,47 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="parentFolderId" fullname="QMailMessageRemovalRecord::parentFolderId" href="qmailmessageremovalrecord.html#parentFolderId" location="qmailmessageremovalrecord.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailFolderId" signature="parentFolderId() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="setParentFolderId" fullname="QMailMessageRemovalRecord::setParentFolderId" href="qmailmessageremovalrecord.html#setParentFolderId" location="qmailmessageremovalrecord.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setParentFolderId(const QMailFolderId &amp; parentFolderId)">
                 <parameter left="const QMailFolderId &amp;" right="" name="parentFolderId" default=""/>
+            </function>
+        </class>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailThreadSortKey" href="qmailthreadsortkey.html" location="qmailthreadsortkey.h" bases="" module="">
+            <enum access="public" threadsafety="unspecified" status="commendable" name="Property" fullname="QMailThreadSortKey::Property" href="qmailthreadsortkey.html#Property-enum" location="qmailthreadsortkey.h">
+                <value name="Id" value="0"/>
+                <value name="ServerUid" value="1"/>
+            </enum>
+            <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailThreadSortKey::ArgumentType" href="qmailthreadsortkey.html#ArgumentType-typedef" location="qmailthreadsortkey.h"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadSortKey" fullname="QMailThreadSortKey::QMailThreadSortKey" href="qmailthreadsortkey.html#QMailThreadSortKey" location="qmailthreadsortkey.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailThreadSortKey()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadSortKey" fullname="QMailThreadSortKey::QMailThreadSortKey" href="qmailthreadsortkey.html#QMailThreadSortKey-2" location="qmailthreadsortkey.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailThreadSortKey(const QMailThreadSortKey &amp; other)">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="~QMailThreadSortKey" fullname="QMailThreadSortKey::~QMailThreadSortKey" href="qmailthreadsortkey.html#dtor.QMailThreadSortKey" location="qmailthreadsortkey.h" virtual="impure" meta="destructor" const="false" static="false" overload="false" type="" signature="~QMailThreadSortKey()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator&amp;" fullname="QMailThreadSortKey::operator&amp;" href="qmailthreadsortkey.html#operator&amp;" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThreadSortKey" signature="operator&amp;(const QMailThreadSortKey &amp; other) const">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator&amp;=" fullname="QMailThreadSortKey::operator&amp;=" href="qmailthreadsortkey.html#operator&amp;=" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QMailThreadSortKey &amp;" signature="operator&amp;=(const QMailThreadSortKey &amp; other)">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator==" fullname="QMailThreadSortKey::operator==" href="qmailthreadsortkey.html#operator==" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator==(const QMailThreadSortKey &amp; other) const">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator!=" fullname="QMailThreadSortKey::operator!=" href="qmailthreadsortkey.html#operator!=" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator!=(const QMailThreadSortKey &amp; other) const">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator=" fullname="QMailThreadSortKey::operator=" href="qmailthreadsortkey.html#operator=" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QMailThreadSortKey &amp;" signature="operator=(const QMailThreadSortKey &amp; other)">
+                <parameter left="const QMailThreadSortKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isEmpty" fullname="QMailThreadSortKey::isEmpty" href="qmailthreadsortkey.html#isEmpty" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isEmpty() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="arguments" fullname="QMailThreadSortKey::arguments" href="qmailthreadsortkey.html#arguments" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QList&lt;ArgumentType&gt; &amp;" signature="arguments() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serialize" fullname="QMailThreadSortKey::serialize" href="qmailthreadsortkey.html#serialize" location="qmailthreadsortkey.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="void" signature="serialize(Stream &amp; stream) const">
+                <parameter left="Stream &amp;" right="" name="stream" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="deserialize" fullname="QMailThreadSortKey::deserialize" href="qmailthreadsortkey.html#deserialize" location="qmailthreadsortkey.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="deserialize(Stream &amp; stream)">
+                <parameter left="Stream &amp;" right="" name="stream" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailThreadSortKey::id" href="qmailthreadsortkey.html#id" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailThreadSortKey" signature="id(Qt::SortOrder order)">
+                <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serverUid" fullname="QMailThreadSortKey::serverUid" href="qmailthreadsortkey.html#serverUid" location="qmailthreadsortkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailThreadSortKey" signature="serverUid(Qt::SortOrder order)">
+                <parameter left="Qt::SortOrder" right="" name="order" default="Qt::AscendingOrder"/>
             </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessageListModel" href="qmailmessagelistmodel.html" location="qmailmessagelistmodel.h" bases="QMailMessageModelBase" module="">
@@ -1808,6 +1946,81 @@
                 <parameter left="const QMailAccountId &amp;" right="" name="accountId" default=""/>
                 <parameter left="const QString &amp;" right="" name="request" default=""/>
                 <parameter left="const QVariant &amp;" right="" name="data" default=""/>
+            </function>
+        </class>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailThreadKey" href="qmailthreadkey.html" location="qmailthreadkey.h" bases="" module="">
+            <enum access="public" threadsafety="unspecified" status="commendable" name="Property" fullname="QMailThreadKey::Property" href="qmailthreadkey.html#Property-enum" location="qmailthreadkey.h">
+                <value name="Id" value="( 1&lt;&lt;0 )"/>
+                <value name="ServerUid" value="( 1&lt;&lt;1 )"/>
+                <value name="MessageCount" value="( 1&lt;&lt;2 )"/>
+                <value name="UnreadCount" value="( 1&lt;&lt;3 )"/>
+                <value name="Custom" value="( 1&lt;&lt;4 )"/>
+            </enum>
+            <typedef access="public" threadsafety="unspecified" status="commendable" name="ArgumentType" fullname="QMailThreadKey::ArgumentType" href="qmailthreadkey.html#ArgumentType-typedef" location="qmailthreadkey.h"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadKey" fullname="QMailThreadKey::QMailThreadKey" href="qmailthreadkey.html#QMailThreadKey" location="qmailthreadkey.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailThreadKey()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadKey" fullname="QMailThreadKey::QMailThreadKey" href="qmailthreadkey.html#QMailThreadKey-2" location="qmailthreadkey.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailThreadKey(const QMailThreadKey &amp; other)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="~QMailThreadKey" fullname="QMailThreadKey::~QMailThreadKey" href="qmailthreadkey.html#dtor.QMailThreadKey" location="qmailthreadkey.h" virtual="impure" meta="destructor" const="false" static="false" overload="false" type="" signature="~QMailThreadKey()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator~" fullname="QMailThreadKey::operator~" href="qmailthreadkey.html#operator~" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThreadKey" signature="operator~() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator&amp;" fullname="QMailThreadKey::operator&amp;" href="qmailthreadkey.html#operator&amp;" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThreadKey" signature="operator&amp;(const QMailThreadKey &amp; other) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator|" fullname="QMailThreadKey::operator|" href="qmailthreadkey.html#operator|" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailThreadKey" signature="operator|(const QMailThreadKey &amp; other) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator&amp;=" fullname="QMailThreadKey::operator&amp;=" href="qmailthreadkey.html#operator&amp;=" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="const QMailThreadKey &amp;" signature="operator&amp;=(const QMailThreadKey &amp; other)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator|=" fullname="QMailThreadKey::operator|=" href="qmailthreadkey.html#operator|=" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="const QMailThreadKey &amp;" signature="operator|=(const QMailThreadKey &amp; other)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator==" fullname="QMailThreadKey::operator==" href="qmailthreadkey.html#operator==" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator==(const QMailThreadKey &amp; other) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator!=" fullname="QMailThreadKey::operator!=" href="qmailthreadkey.html#operator!=" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator!=(const QMailThreadKey &amp; other) const">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator=" fullname="QMailThreadKey::operator=" href="qmailthreadkey.html#operator=" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="const QMailThreadKey &amp;" signature="operator=(const QMailThreadKey &amp; other)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isEmpty" fullname="QMailThreadKey::isEmpty" href="qmailthreadkey.html#isEmpty" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isEmpty() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isNonMatching" fullname="QMailThreadKey::isNonMatching" href="qmailthreadkey.html#isNonMatching" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isNonMatching() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isNegated" fullname="QMailThreadKey::isNegated" href="qmailthreadkey.html#isNegated" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isNegated() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator QVariant" fullname="QMailThreadKey::operator QVariant" href="qmailthreadkey.html#operator QVariant" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="" signature="operator QVariant() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="arguments" fullname="QMailThreadKey::arguments" href="qmailthreadkey.html#arguments" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QList&lt;ArgumentType&gt; &amp;" signature="arguments() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="subKeys" fullname="QMailThreadKey::subKeys" href="qmailthreadkey.html#subKeys" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="const QList&lt;QMailThreadKey&gt; &amp;" signature="subKeys() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="combiner" fullname="QMailThreadKey::combiner" href="qmailthreadkey.html#combiner" location="qmailthreadkey.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailKey::Combiner" signature="combiner() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serialize" fullname="QMailThreadKey::serialize" href="qmailthreadkey.html#serialize" location="qmailthreadkey.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="void" signature="serialize(Stream &amp; stream) const">
+                <parameter left="Stream &amp;" right="" name="stream" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="deserialize" fullname="QMailThreadKey::deserialize" href="qmailthreadkey.html#deserialize" location="qmailthreadkey.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="deserialize(Stream &amp; stream)">
+                <parameter left="Stream &amp;" right="" name="stream" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="nonMatchingKey" fullname="QMailThreadKey::nonMatchingKey" href="qmailthreadkey.html#nonMatchingKey" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailThreadKey" signature="nonMatchingKey()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailThreadKey::id" href="qmailthreadkey.html#id" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailThreadKey" signature="id(const QMailThreadId &amp; id, QMailDataComparator::EqualityComparator cmp)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
+                <parameter left="QMailDataComparator::EqualityComparator" right="" name="cmp" default="QMailDataComparator::Equal"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailThreadKey::id" href="qmailthreadkey.html#id-2" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="QMailThreadKey" signature="id(const QMailThreadIdList &amp; ids, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QMailThreadIdList &amp;" right="" name="ids" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="id" fullname="QMailThreadKey::id" href="qmailthreadkey.html#id-3" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="3" type="QMailThreadKey" signature="id(const QMailThreadKey &amp; key, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QMailThreadKey &amp;" right="" name="key" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serverUid" fullname="QMailThreadKey::serverUid" href="qmailthreadkey.html#serverUid" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailThreadKey" signature="serverUid(const QString &amp; uid, QMailDataComparator::EqualityComparator cmp)">
+                <parameter left="const QString &amp;" right="" name="uid" default=""/>
+                <parameter left="QMailDataComparator::EqualityComparator" right="" name="cmp" default="QMailDataComparator::Equal"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serverUid" fullname="QMailThreadKey::serverUid" href="qmailthreadkey.html#serverUid-2" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="2" type="QMailThreadKey" signature="serverUid(const QString &amp; uid, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QString &amp;" right="" name="uid" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="serverUid" fullname="QMailThreadKey::serverUid" href="qmailthreadkey.html#serverUid-3" location="qmailthreadkey.h" virtual="non" meta="plain" const="false" static="true" overload="true" overload-number="3" type="QMailThreadKey" signature="serverUid(const QStringList &amp; uids, QMailDataComparator::InclusionComparator cmp)">
+                <parameter left="const QStringList &amp;" right="" name="uids" default=""/>
+                <parameter left="QMailDataComparator::InclusionComparator" right="" name="cmp" default="QMailDataComparator::Includes"/>
             </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailAccountKey" href="qmailaccountkey.html" location="qmailaccountkey.h" bases="" module="">
@@ -2565,6 +2778,25 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="length" fullname="QMailMessageBody::length" href="qmailmessagebody.html#length" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="int" signature="length() const"/>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessagePartContainer" href="qmailmessagepartcontainer.html" location="qmailmessage.h" bases="QMailMessagePartContainerFwd" module="">
+            <class access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePartContainer::Location" href="qmailmessagepartcontainer-location.html" location="qmailmessage.h" bases="" module="">
+                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePartContainer::Location::Location" href="qmailmessagepartcontainer-location.html#Location" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="Location()"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePartContainer::Location::Location" href="qmailmessagepartcontainer-location.html#Location-2" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="Location(const QString &amp; description)">
+                    <parameter left="const QString &amp;" right="" name="description" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePartContainer::Location::Location" href="qmailmessagepartcontainer-location.html#Location-3" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="3" type="" signature="Location(const Location &amp; other)">
+                    <parameter left="const Location &amp;" right="" name="other" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="isValid" fullname="QMailMessagePartContainer::Location::isValid" href="qmailmessagepartcontainer-location.html#isValid" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isValid(bool extended) const">
+                    <parameter left="bool" right="" name="extended" default="true"/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="containingMessageId" fullname="QMailMessagePartContainer::Location::containingMessageId" href="qmailmessagepartcontainer-location.html#containingMessageId" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessageId" signature="containingMessageId() const"/>
+                <function access="public" threadsafety="unspecified" status="commendable" name="setContainingMessageId" fullname="QMailMessagePartContainer::Location::setContainingMessageId" href="qmailmessagepartcontainer-location.html#setContainingMessageId" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setContainingMessageId(const QMailMessageId &amp; id)">
+                    <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
+                </function>
+                <function access="public" threadsafety="unspecified" status="commendable" name="toString" fullname="QMailMessagePartContainer::Location::toString" href="qmailmessagepartcontainer-location.html#toString" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="toString(bool extended) const">
+                    <parameter left="bool" right="" name="extended" default=""/>
+                </function>
+            </class>
             <function access="public" threadsafety="unspecified" status="commendable" name="multipartType" fullname="QMailMessagePartContainer::multipartType" href="qmailmessagepartcontainer.html#multipartType" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="MultipartType" signature="multipartType() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="setMultipartType" fullname="QMailMessagePartContainer::setMultipartType" href="qmailmessagepartcontainer.html#setMultipartType" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setMultipartType(MultipartType type)">
                 <parameter left="MultipartType" right="" name="type" default=""/>
@@ -2643,30 +2875,30 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="nameForMultipartType" fullname="QMailMessagePartContainer::nameForMultipartType" href="qmailmessagepartcontainer.html#nameForMultipartType" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QByteArray" signature="nameForMultipartType(MultipartType type)">
                 <parameter left="MultipartType" right="" name="type" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="findPlainTextContainer" fullname="QMailMessagePartContainer::findPlainTextContainer" href="qmailmessagepartcontainer.html#findPlainTextContainer" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessagePartContainer *" signature="findPlainTextContainer() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="findHtmlContainer" fullname="QMailMessagePartContainer::findHtmlContainer" href="qmailmessagepartcontainer.html#findHtmlContainer" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessagePartContainer *" signature="findHtmlContainer() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="findAttachmentLocations" fullname="QMailMessagePartContainer::findAttachmentLocations" href="qmailmessagepartcontainer.html#findAttachmentLocations" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QList&lt;QMailMessagePartContainer::Location&gt;" signature="findAttachmentLocations() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="hasPlainTextBody" fullname="QMailMessagePartContainer::hasPlainTextBody" href="qmailmessagepartcontainer.html#hasPlainTextBody" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasPlainTextBody() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="hasHtmlBody" fullname="QMailMessagePartContainer::hasHtmlBody" href="qmailmessagepartcontainer.html#hasHtmlBody" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasHtmlBody() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="hasAttachments" fullname="QMailMessagePartContainer::hasAttachments" href="qmailmessagepartcontainer.html#hasAttachments" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="hasAttachments() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setPlainTextBody" fullname="QMailMessagePartContainer::setPlainTextBody" href="qmailmessagepartcontainer.html#setPlainTextBody" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setPlainTextBody(const QMailMessageBody &amp; plainTextBody)">
+                <parameter left="const QMailMessageBody &amp;" right="" name="plainTextBody" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setHtmlAndPlainTextBody" fullname="QMailMessagePartContainer::setHtmlAndPlainTextBody" href="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setHtmlAndPlainTextBody(const QMailMessageBody &amp; htmlBody, const QMailMessageBody &amp; plainTextBody)">
+                <parameter left="const QMailMessageBody &amp;" right="" name="htmlBody" default=""/>
+                <parameter left="const QMailMessageBody &amp;" right="" name="plainTextBody" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setAttachments" fullname="QMailMessagePartContainer::setAttachments" href="qmailmessagepartcontainer.html#setAttachments" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setAttachments(const QStringList &amp; attachments)">
+                <parameter left="const QStringList &amp;" right="" name="attachments" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setAttachments" fullname="QMailMessagePartContainer::setAttachments" href="qmailmessagepartcontainer.html#setAttachments-2" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="void" signature="setAttachments(const QList&lt;const QMailMessagePart *&gt; attachments)">
+                <parameter left="const QList&lt;const QMailMessagePart *&gt;" right="" name="attachments" default=""/>
+            </function>
             <function access="protected" threadsafety="unspecified" status="commendable" name="QMailMessagePartContainer" fullname="QMailMessagePartContainer::QMailMessagePartContainer" href="qmailmessagepartcontainer.html#QMailMessagePartContainer" location="qmailmessage.cpp" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailMessagePartContainer(Subclass * p)">
                 <parameter left="Subclass *" right="" name="p" default=""/>
             </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessagePart" href="qmailmessagepart.html" location="qmailmessage.h" bases="QMailMessagePartContainer,QMailMessagePartFwd" module="">
-            <class access="public" threadsafety="unspecified" status="preliminary" name="Location" fullname="QMailMessagePart::Location" href="qmailmessagepart-location.html" location="qmailmessage.h" bases="" module="">
-                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePart::Location::Location" href="qmailmessagepart-location.html#Location" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="Location()"/>
-                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePart::Location::Location" href="qmailmessagepart-location.html#Location-2" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="Location(const QString &amp; description)">
-                    <parameter left="const QString &amp;" right="" name="description" default=""/>
-                </function>
-                <function access="public" threadsafety="unspecified" status="commendable" name="Location" fullname="QMailMessagePart::Location::Location" href="qmailmessagepart-location.html#Location-3" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="3" type="" signature="Location(const Location &amp; other)">
-                    <parameter left="const Location &amp;" right="" name="other" default=""/>
-                </function>
-                <function access="public" threadsafety="unspecified" status="commendable" name="isValid" fullname="QMailMessagePart::Location::isValid" href="qmailmessagepart-location.html#isValid" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isValid(bool extended) const">
-                    <parameter left="bool" right="" name="extended" default="true"/>
-                </function>
-                <function access="public" threadsafety="unspecified" status="commendable" name="containingMessageId" fullname="QMailMessagePart::Location::containingMessageId" href="qmailmessagepart-location.html#containingMessageId" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QMailMessageId" signature="containingMessageId() const"/>
-                <function access="public" threadsafety="unspecified" status="commendable" name="setContainingMessageId" fullname="QMailMessagePart::Location::setContainingMessageId" href="qmailmessagepart-location.html#setContainingMessageId" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setContainingMessageId(const QMailMessageId &amp; id)">
-                    <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
-                </function>
-                <function access="public" threadsafety="unspecified" status="commendable" name="toString" fullname="QMailMessagePart::Location::toString" href="qmailmessagepart-location.html#toString" location="qmailmessage.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="toString(bool extended) const">
-                    <parameter left="bool" right="" name="extended" default=""/>
-                </function>
-            </class>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailMessagePart" fullname="QMailMessagePart::QMailMessagePart" href="qmailmessagepart.html#QMailMessagePart" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailMessagePart()"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="fromFile" fullname="QMailMessagePart::fromFile" href="qmailmessagepart.html#fromFile" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QMailMessagePart" signature="fromFile(const QString &amp; filename, const QMailMessageContentDisposition &amp; disposition, const QMailMessageContentType &amp; type, QMailMessageBody::TransferEncoding encoding, QMailMessageBody::EncodingStatus status)">
                 <parameter left="const QString &amp;" right="" name="filename" default=""/>
@@ -2790,6 +3022,7 @@
             <variable access="public" threadsafety="unspecified" status="commendable" name="Important" fullname="QMailMessageMetaData::Important" href="qmailmessagemetadata.html#Important-var" location="qmailmessage.h" type="const quint64 &amp;" static="true"/>
             <variable access="public" threadsafety="unspecified" status="commendable" name="HighPriority" fullname="QMailMessageMetaData::HighPriority" href="qmailmessagemetadata.html#HighPriority-var" location="qmailmessage.h" type="const quint64 &amp;" static="true"/>
             <variable access="public" threadsafety="unspecified" status="commendable" name="LowPriority" fullname="QMailMessageMetaData::LowPriority" href="qmailmessagemetadata.html#LowPriority-var" location="qmailmessage.h" type="const quint64 &amp;" static="true"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="CalendarInvitation" fullname="QMailMessageMetaData::CalendarInvitation" href="qmailmessagemetadata.html#CalendarInvitation-var" location="qmailmessage.h" type="const quint64 &amp;" static="true"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailMessageMetaData" fullname="QMailMessageMetaData::QMailMessageMetaData" href="qmailmessagemetadata.html#QMailMessageMetaData" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailMessageMetaData()"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailMessageMetaData" fullname="QMailMessageMetaData::QMailMessageMetaData" href="qmailmessagemetadata.html#QMailMessageMetaData-2" location="qmailmessage.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailMessageMetaData(const QMailMessageId &amp; id)">
                 <parameter left="const QMailMessageId &amp;" right="" name="id" default=""/>
@@ -2878,6 +3111,10 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="setResponseType" fullname="QMailMessageMetaData::setResponseType" href="qmailmessagemetadata.html#setResponseType" location="qmailmessage.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="setResponseType(ResponseType type)">
                 <parameter left="ResponseType" right="" name="type" default=""/>
             </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="preview" fullname="QMailMessageMetaData::preview" href="qmailmessagemetadata.html#preview" location="qmailmessage.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="QString" signature="preview() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setPreview" fullname="QMailMessageMetaData::setPreview" href="qmailmessagemetadata.html#setPreview" location="qmailmessage.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="setPreview(const QString &amp; s)">
+                <parameter left="const QString &amp;" right="" name="s" default=""/>
+            </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="contentAvailable" fullname="QMailMessageMetaData::contentAvailable" href="qmailmessagemetadata.html#contentAvailable" location="qmailmessage.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="contentAvailable() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="partialContentAvailable" fullname="QMailMessageMetaData::partialContentAvailable" href="qmailmessagemetadata.html#partialContentAvailable" location="qmailmessage.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="partialContentAvailable() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="statusMask" fullname="QMailMessageMetaData::statusMask" href="qmailmessagemetadata.html#statusMask" location="qmailmessage.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="quint64" signature="statusMask(const QString &amp; flagName)">
@@ -2909,6 +3146,10 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="rfcId" fullname="QMailMessageMetaData::rfcId" href="qmailmessagemetadata.html#rfcId" location="qmailmessage.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="QString" signature="rfcId() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="setRfcId" fullname="QMailMessageMetaData::setRfcId" href="qmailmessagemetadata.html#setRfcId" location="qmailmessage.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="setRfcId(const QString &amp; id)">
                 <parameter left="const QString &amp;" right="" name="id" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parentThreadId" fullname="QMailMessageMetaData::parentThreadId" href="qmailmessagemetadata.html#parentThreadId" location="qmailmessage.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="QMailThreadId" signature="parentThreadId() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setParentThreadId" fullname="QMailMessageMetaData::setParentThreadId" href="qmailmessagemetadata.html#setParentThreadId" location="qmailmessage.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="setParentThreadId(const QMailThreadId &amp; id)">
+                <parameter left="const QMailThreadId &amp;" right="" name="id" default=""/>
             </function>
         </class>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessage" href="qmailmessage.html" location="qmailmessage.h" bases="QMailMessageMetaData,QMailMessagePartContainer,QMailMessageFwd" module="">
@@ -3440,7 +3681,6 @@
         </class>
         <class access="public" threadsafety="unspecified" status="commendable" name="QMailMessageSource" href="qmailmessagesource.html" location="qmailmessageservice.h" bases="QObject" module="">
             <function access="public" threadsafety="unspecified" status="commendable" name="messageRemovalOption" fullname="QMailMessageSource::messageRemovalOption" href="qmailmessagesource.html#messageRemovalOption" location="qmailmessageservice.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="QMailStore::MessageRemovalOption" signature="messageRemovalOption() const"/>
-            <function access="public" threadsafety="unspecified" status="commendable" name="concurrentActionsSupported" fullname="QMailMessageSource::concurrentActionsSupported" href="qmailmessagesource.html#concurrentActionsSupported" location="qmailmessageservice.cpp" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="concurrentActionsSupported() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="retrieveFolderList" fullname="QMailMessageSource::retrieveFolderList" href="qmailmessagesource.html#retrieveFolderList" location="qmailmessageservice.h" virtual="impure" meta="slot" const="false" static="false" overload="false" type="bool" signature="retrieveFolderList(const QMailAccountId &amp; accountId, const QMailFolderId &amp; folderId, bool descending)">
                 <parameter left="const QMailAccountId &amp;" right="" name="accountId" default=""/>
                 <parameter left="const QMailFolderId &amp;" right="" name="folderId" default=""/>
@@ -3679,7 +3919,6 @@
             </function>
         </class>
         <class access="public" threadsafety="unspecified" status="commendable" name="QMailMessageSink" href="qmailmessagesink.html" location="qmailmessageservice.h" bases="QObject" module="">
-            <function access="public" threadsafety="unspecified" status="commendable" name="concurrentActionsSupported" fullname="QMailMessageSink::concurrentActionsSupported" href="qmailmessagesink.html#concurrentActionsSupported" location="qmailmessageservice.cpp" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="concurrentActionsSupported() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="transmitMessages" fullname="QMailMessageSink::transmitMessages" href="qmailmessagesink.html#transmitMessages" location="qmailmessageservice.h" virtual="impure" meta="slot" const="false" static="false" overload="false" type="bool" signature="transmitMessages(const QMailMessageIdList &amp; ids)">
                 <parameter left="const QMailMessageIdList &amp;" right="" name="ids" default=""/>
             </function>
@@ -3720,6 +3959,7 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="sink" fullname="QMailMessageService::sink" href="qmailmessageservice.html#sink" location="qmailmessageservice.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="QMailMessageSink &amp;" signature="sink() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="available" fullname="QMailMessageService::available" href="qmailmessageservice.html#available" location="qmailmessageservice.h" virtual="pure" meta="plain" const="true" static="false" overload="false" type="bool" signature="available() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="requiresReregistration" fullname="QMailMessageService::requiresReregistration" href="qmailmessageservice.html#requiresReregistration" location="qmailmessageservice.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="requiresReregistration() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="usesConcurrentActions" fullname="QMailMessageService::usesConcurrentActions" href="qmailmessageservice.html#usesConcurrentActions" location="qmailmessageservice.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="usesConcurrentActions() const"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="cancelOperation" fullname="QMailMessageService::cancelOperation" href="qmailmessageservice.html#cancelOperation" location="qmailmessageservice.h" virtual="pure" meta="slot" const="false" static="false" overload="false" type="bool" signature="cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &amp; text)">
                 <parameter left="QMailServiceAction::Status::ErrorCode" right="" name="code" default=""/>
                 <parameter left="const QString &amp;" right="" name="text" default=""/>
@@ -3830,6 +4070,7 @@
             <variable access="public" threadsafety="unspecified" status="commendable" name="DeletionPermitted" fullname="QMailFolder::DeletionPermitted" href="qmailfolder.html#DeletionPermitted-var" location="qmailfolder.h" type="const quint64 &amp;" static="true"/>
             <variable access="public" threadsafety="unspecified" status="commendable" name="NonMail" fullname="QMailFolder::NonMail" href="qmailfolder.html#NonMail-var" location="qmailfolder.h" type="const quint64 &amp;" static="true"/>
             <variable access="public" threadsafety="unspecified" status="commendable" name="MessagesPermitted" fullname="QMailFolder::MessagesPermitted" href="qmailfolder.html#MessagesPermitted-var" location="qmailfolder.h" type="const quint64 &amp;" static="true"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="ReadOnly" fullname="QMailFolder::ReadOnly" href="qmailfolder.html#ReadOnly-var" location="qmailfolder.h" type="const quint64 &amp;" static="true"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailFolder" fullname="QMailFolder::QMailFolder" href="qmailfolder.html#QMailFolder" location="qmailfolder.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailFolder()"/>
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailFolder" fullname="QMailFolder::QMailFolder" href="qmailfolder.html#QMailFolder-2" location="qmailfolder.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailFolder(const QString &amp; path, const QMailFolderId &amp; parentFolderId, const QMailAccountId &amp; parentAccountId)">
                 <parameter left="const QString &amp;" right="" name="path" default=""/>
