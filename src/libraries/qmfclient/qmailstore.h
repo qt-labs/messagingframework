@@ -134,8 +134,7 @@ public:
     bool removeMessages(const QMailMessageKey& key, MessageRemovalOption option = NoRemovalRecord);
 
     bool removeThread(const QMailThreadId &id);
-    bool removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option,
-                               QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
+    bool removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option = NoRemovalRecord);
 
     bool updateAccount(QMailAccount* account, QMailAccountConfiguration* config = 0);
     bool updateAccountConfiguration(QMailAccountConfiguration* config);
@@ -158,6 +157,7 @@ public:
     const QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(), const QMailAccountSortKey& sortKey = QMailAccountSortKey(), uint limit = 0, uint offset = 0) const;
     const QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(), const QMailFolderSortKey& sortKey = QMailFolderSortKey(), uint limit = 0, uint offset = 0) const;
     const QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(), const QMailMessageSortKey& sortKey = QMailMessageSortKey(), uint limit = 0, uint offset = 0) const;
+    const QMailThreadIdList queryThreads(const QMailThreadKey &key = QMailThreadKey(), const QMailThreadSortKey &sortKey = QMailThreadSortKey(), uint limit = 0, uint offset = 0) const;
 
     QMailAccount account(const QMailAccountId& id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId& id) const;
