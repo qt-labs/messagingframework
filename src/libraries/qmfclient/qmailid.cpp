@@ -271,7 +271,27 @@ QTextStream& operator<< (QTextStream& s, const QMailAccountId &id)
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 
 
-// QMailThreadID description docs go here
+/*!
+    \class QMailThreadId
+    \ingroup messaginglibrary
+
+    \preliminary
+    \brief The QMailThreadId class is used to identify threads stored by QMailStore.
+
+    QMailThreadId is a class used to represent threads stored by the QMailStore, identified
+    by their unique numeric internal indentifer.
+
+    A QMailThreadId instance can be tested for validity, and compared to other instances
+    for equality.  The numeric value of the identifier is not intrinsically meaningful 
+    and cannot be modified.
+    
+    \sa QMailThread, QMailStore::thread()
+*/
+
+/*!
+    \typedef QMailThreadIdList
+    \relates QMailThreadId
+*/
 
 Q_IMPLEMENT_USER_METATYPE(QMailThreadId);
 
