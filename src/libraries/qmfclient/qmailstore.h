@@ -133,7 +133,7 @@ public:
     bool removeMessage(const QMailMessageId& id, MessageRemovalOption option = NoRemovalRecord);
     bool removeMessages(const QMailMessageKey& key, MessageRemovalOption option = NoRemovalRecord);
 
-    bool removeThread(const QMailThreadId &id);
+    bool removeThread(const QMailThreadId &id, MessageRemovalOption option = NoRemovalRecord);
     bool removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option = NoRemovalRecord);
 
     bool updateAccount(QMailAccount* account, QMailAccountConfiguration* config = 0);

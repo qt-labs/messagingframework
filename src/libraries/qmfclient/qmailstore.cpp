@@ -410,12 +410,28 @@ bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRem
     return true;
 }
 
+/*!
+    Removes all QMailThreads identified by the id \a id from the message store. If \a option is
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed message.
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-bool QMailStore::removeThread(const QMailThreadId &id)
+    Note: Using a QMailThreads instance after it has been removed from the store will
+    result in undefined behavior.
+*/
+bool QMailStore::removeThread(const QMailThreadId &id, QMailStore::MessageRemovalOption option)
 {
-    return removeThreads(QMailThreadKey::id(id));
+    return removeThreads(QMailThreadKey::id(id), option);
 }
 
+
+/*!
+    Removes all QMailThreads identified by the key \a key from the message store. If \a option is
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed message.
+    Returns \c true if the operation completed successfully, \c false otherwise.
+
+    Note: Using a QMailThreads instance after it has been removed from the store will
+    result in undefined behavior.
+*/
 bool QMailStore::removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option)
 {
     QMailThreadIdList deletedThreadIds;
