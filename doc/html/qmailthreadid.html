@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailid.cpp -->
+<head>
+  <title>QMailThreadId Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailThreadId Class Reference</h1>
+<p>The QMailThreadId class is used to identify threads stored by <a href="qmailstore.html">QMailStore</a>. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailThreadId&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailthreadid-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#QMailThreadId">QMailThreadId</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#QMailThreadId-2">QMailThreadId</a></b> ( quint64 <i>value</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#isValid">isValid</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#operator-QVariant">operator QVariant</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#operator-not-eq">operator!=</a></b> ( const QMailThreadId &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#operator-lt">operator&lt;</a></b> ( const QMailThreadId &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#operator-eq-eq">operator==</a></b> ( const QMailThreadId &amp; <i>other</i> ) const</td></tr>
+</table>
+<hr />
+<a name="related-non-members"></a>
+<h2>Related Non-Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</a></b></td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailThreadId class is used to identify threads stored by <a href="qmailstore.html">QMailStore</a>.</p>
+<p>QMailThreadId is a class used to represent threads stored by the <a href="qmailstore.html">QMailStore</a>, identified by their unique numeric internal indentifer.</p>
+<p>A QMailThreadId instance can be tested for validity, and compared to other instances for equality. The numeric value of the identifier is not intrinsically meaningful and cannot be modified.</p>
+<p>See also <a href="qmailthread.html">QMailThread</a> and <a href="qmailstore.html#thread">QMailStore::thread</a>().</p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailThreadId"></a>QMailThreadId::QMailThreadId ()</h3>
+<p>Construct an uninitialized <a href="qmailthreadid.html">QMailThreadId</a>, for which <a href="qmailthreadid.html#isValid">isValid</a>() returns false.</p>
+<h3 class="fn"><a name="QMailThreadId-2"></a>QMailThreadId::QMailThreadId ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>value</i> )</h3>
+<p>Construct a <a href="qmailthreadid.html">QMailThreadId</a> with the supplied numeric identifier <i>value</i>.</p>
+<h3 class="fn"><a name="isValid"></a>bool QMailThreadId::isValid () const</h3>
+<p>Returns true if this object has been initialized with an identifier.</p>
+<h3 class="fn"><a name="operator-QVariant"></a>QMailThreadId::operator QVariant () const</h3>
+<p>Returns a <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> containing the value of this thread identfier.</p>
+<h3 class="fn"><a name="operator-not-eq"></a>bool QMailThreadId::operator!= ( const QMailThreadId &amp; <i>other</i> ) const</h3>
+<p>Returns true if this object's identifier value differs from that of <i>other</i>.</p>
+<h3 class="fn"><a name="operator-lt"></a>bool QMailThreadId::operator&lt; ( const QMailThreadId &amp; <i>other</i> ) const</h3>
+<p>Returns true if this object's identifier value is less than that of <i>other</i>.</p>
+<h3 class="fn"><a name="operator-eq-eq"></a>bool QMailThreadId::operator== ( const QMailThreadId &amp; <i>other</i> ) const</h3>
+<p>Returns true if this object's identifier value is equal to that of <i>other</i>.</p>
+<hr />
+<h2>Related Non-Members</h2>
+<h3 class="fn"><a name="QMailThreadIdList-typedef"></a>typedef QMailThreadIdList</h3>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

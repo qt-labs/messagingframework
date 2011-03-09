@@ -248,6 +248,9 @@
                 <section ref="qmailthread.html" title="QMailThread Class Reference">
                     <section ref="qmailthread-members.html" title="List of all members"/>
                 </section>
+                <section ref="qmailthreadid.html" title="QMailThreadId Class Reference">
+                    <section ref="qmailthreadid-members.html" title="List of all members"/>
+                </section>
                 <section ref="qmailthreadkey.html" title="QMailThreadKey Class Reference">
                     <section ref="qmailthreadkey-members.html" title="List of all members"/>
                 </section>
@@ -1604,6 +1607,13 @@
             <keyword name="setUnreadCount" id="QMailThread::setUnreadCount" ref="qmailthread.html#setUnreadCount"/>
             <keyword name="unreadCount" id="QMailThread::unreadCount" ref="qmailthread.html#unreadCount"/>
             <keyword name="~QMailThread" id="QMailThread::~QMailThread" ref="qmailthread.html#dtor.QMailThread"/>
+            <keyword name="QMailThreadId" id="QMailThreadId" ref="qmailthreadid.html"/>
+            <keyword name="isValid" id="QMailThreadId::isValid" ref="qmailthreadid.html#isValid"/>
+            <keyword name="operator QVariant" id="QMailThreadId::operator QVariant" ref="qmailthreadid.html#operator-QVariant"/>
+            <keyword name="operator!=" id="QMailThreadId::operator!=" ref="qmailthreadid.html#operator-not-eq"/>
+            <keyword name="operator&lt;" id="QMailThreadId::operator&lt;" ref="qmailthreadid.html#operator-lt"/>
+            <keyword name="operator==" id="QMailThreadId::operator==" ref="qmailthreadid.html#operator-eq-eq"/>
+            <keyword name="QMailThreadIdList" id="QMailThreadIdList" ref="qmailthreadid.html#QMailThreadIdList-typedef"/>
             <keyword name="QMailThreadKey" id="QMailThreadKey" ref="qmailthreadkey.html"/>
             <keyword name="QMailThreadKey::ArgumentType" id="QMailThreadKey::ArgumentType" ref="qmailthreadkey.html#ArgumentType-typedef"/>
             <keyword name="QMailThreadKey::Property" id="QMailThreadKey::Property" ref="qmailthreadkey.html#Property-enum"/>
@@ -1702,6 +1712,7 @@
             <file>qmailcontentmanager-members.html</file>
             <file>qmailaccountmessageset-members.html</file>
             <file>qmailpluginmanager-members.html</file>
+            <file>qmailthreadid-members.html</file>
             <file>qtextendedmail-qmfutil.html</file>
             <file>qtextended-messaging.html</file>
             <file>qmailmessageserver-members.html</file>
@@ -1835,6 +1846,7 @@
             <file>qmailfolderkey-members.html</file>
             <file>qmailmessagecontentdispositionfwd.html</file>
             <file>qmailcodec-members.html</file>
+            <file>qmailthreadid.html</file>
             <file>qmailmessageservicefactory.html</file>
             <file>qmailaddress.html</file>
             <file>qmailcontentmanagerplugin.html</file>

@@ -48,13 +48,13 @@
 <h2>Member Function Documentation</h2>
 <h3 class="fn"><a name="QMailThread"></a>QMailThread::QMailThread ()</h3>
 <p>Constructor that creates an empty and invalid <tt>QMailThread</tt>. An empty thread is one which has no id or messages account. An invalid thread does not exist in the database and has an invalid id.</p>
-<h3 class="fn"><a name="QMailThread-2"></a>QMailThread::QMailThread ( const QMailThreadId &amp; <i>id</i> )</h3>
-<p>Constructor that creates a <a href="qmailthread.html">QMailThread</a> by loading the data from the message store as specified by the QMailThreadId <i>id</i>. If the thread does not exist in the message store, then this constructor will create an empty and invalid <a href="qmailthread.html">QMailThread</a>.</p>
+<h3 class="fn"><a name="QMailThread-2"></a>QMailThread::QMailThread ( const <a href="qmailthreadid.html">QMailThreadId</a> &amp; <i>id</i> )</h3>
+<p>Constructor that creates a <a href="qmailthread.html">QMailThread</a> by loading the data from the message store as specified by the <a href="qmailthreadid.html">QMailThreadId</a> <i>id</i>. If the thread does not exist in the message store, then this constructor will create an empty and invalid <a href="qmailthread.html">QMailThread</a>.</p>
 <h3 class="fn"><a name="QMailThread-3"></a>QMailThread::QMailThread ( const QMailThread &amp; <i>other</i> )</h3>
 <p>Creates a copy of the <tt>QMailThread</tt> object <i>other</i>.</p>
 <h3 class="fn"><a name="dtor.QMailThread"></a>QMailThread::~QMailThread ()</h3>
 <p>Destroys the <tt>QMailThread</tt> object.</p>
-<h3 class="fn"><a name="id"></a>QMailThreadId QMailThread::id () const</h3>
+<h3 class="fn"><a name="id"></a><a href="qmailthreadid.html">QMailThreadId</a> QMailThread::id () const</h3>
 <p>Returns the <tt>ID</tt> of the <tt>QMailThread</tt> object. A <tt>QMailThread</tt> with an invalid ID is one which does not yet exist on the message store.</p>
 <p>See also <a href="qmailthread.html#setId">setId</a>().</p>
 <h3 class="fn"><a name="messageCount"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailThread::messageCount () const</h3>
@@ -66,7 +66,7 @@
 <h3 class="fn"><a name="serverUid"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailThread::serverUid () const</h3>
 <p>Gets the serverUid of the thread.</p>
 <p>See also <a href="qmailthread.html#setServerUid">setServerUid</a>().</p>
-<h3 class="fn"><a name="setId"></a>void QMailThread::setId ( const QMailThreadId &amp; <i>id</i> )</h3>
+<h3 class="fn"><a name="setId"></a>void QMailThread::setId ( const <a href="qmailthreadid.html">QMailThreadId</a> &amp; <i>id</i> )</h3>
 <p>Sets the ID of this thread to <i>id</i></p>
 <p>See also <a href="qmailthread.html#id">id</a>().</p>
 <h3 class="fn"><a name="setMessageCount"></a>void QMailThread::setMessageCount ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>value</i> )</h3>

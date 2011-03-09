@@ -1256,7 +1256,7 @@
             <function access="public" threadsafety="unspecified" status="commendable" name="addMessages" fullname="QMailStore::addMessages" href="qmailstore.html#addMessages-2" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="true" overload-number="2" type="bool" signature="addMessages(const QList&lt;QMailMessageMetaData *&gt; &amp; messages)">
                 <parameter left="const QList&lt;QMailMessageMetaData *&gt; &amp;" right="" name="messages" default=""/>
             </function>
-            <function access="public" threadsafety="unspecified" status="commendable" name="addThread" fullname="QMailStore::addThread" href="qmailstore.html#addThread" location="qmailstore.cpp" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="addThread(QMailThread * t)">
+            <function access="public" threadsafety="unspecified" status="commendable" name="addThread" fullname="QMailStore::addThread" href="qmailstore.html#addThread" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="addThread(QMailThread * t)">
                 <parameter left="QMailThread *" right="" name="t" default=""/>
             </function>
             <function access="public" threadsafety="unspecified" status="commendable" name="removeAccount" fullname="QMailStore::removeAccount" href="qmailstore.html#removeAccount" location="qmailstore.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="removeAccount(const QMailAccountId &amp; id)">
@@ -1657,9 +1657,27 @@
                 <parameter left="const QMailMessageId &amp;" right="" name="other" default=""/>
             </function>
         </class>
+        <class access="public" threadsafety="unspecified" status="preliminary" name="QMailThreadId" href="qmailthreadid.html" location="qmailid.h" bases="" module="">
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadId" fullname="QMailThreadId::QMailThreadId" href="qmailthreadid.html#QMailThreadId" location="qmailid.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailThreadId()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QMailThreadId" fullname="QMailThreadId::QMailThreadId" href="qmailthreadid.html#QMailThreadId-2" location="qmailid.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QMailThreadId(quint64 value)">
+                <parameter left="quint64" right="" name="value" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isValid" fullname="QMailThreadId::isValid" href="qmailthreadid.html#isValid" location="qmailid.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="isValid() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator QVariant" fullname="QMailThreadId::operator QVariant" href="qmailthreadid.html#operator QVariant" location="qmailid.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="" signature="operator QVariant() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator!=" fullname="QMailThreadId::operator!=" href="qmailthreadid.html#operator!=" location="qmailid.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator!=(const QMailThreadId &amp; other) const">
+                <parameter left="const QMailThreadId &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator==" fullname="QMailThreadId::operator==" href="qmailthreadid.html#operator==" location="qmailid.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator==(const QMailThreadId &amp; other) const">
+                <parameter left="const QMailThreadId &amp;" right="" name="other" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="operator&lt;" fullname="QMailThreadId::operator&lt;" href="qmailthreadid.html#operator&lt;" location="qmailid.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="bool" signature="operator&lt;(const QMailThreadId &amp; other) const">
+                <parameter left="const QMailThreadId &amp;" right="" name="other" default=""/>
+            </function>
+        </class>
         <typedef access="public" threadsafety="unspecified" status="commendable" name="QMailAccountIdList" href="qmailaccountid.html#QMailAccountIdList-typedef" location="qmailid.h"/>
         <typedef access="public" threadsafety="unspecified" status="commendable" name="QMailFolderIdList" href="qmailfolderid.html#QMailFolderIdList-typedef" location="qmailid.h"/>
         <typedef access="public" threadsafety="unspecified" status="commendable" name="QMailMessageIdList" href="qmailmessageid.html#QMailMessageIdList-typedef" location="qmailid.h"/>
+        <typedef access="public" threadsafety="unspecified" status="commendable" name="QMailThreadIdList" href="qmailthreadid.html#QMailThreadIdList-typedef" location="qmailid.h"/>
         <class access="public" threadsafety="unspecified" status="preliminary" name="QMailMessageRemovalRecord" href="qmailmessageremovalrecord.html" location="qmailmessageremovalrecord.h" bases="" module="">
             <function access="public" threadsafety="unspecified" status="commendable" name="QMailMessageRemovalRecord" fullname="QMailMessageRemovalRecord::QMailMessageRemovalRecord" href="qmailmessageremovalrecord.html#QMailMessageRemovalRecord" location="qmailmessageremovalrecord.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QMailMessageRemovalRecord(const QMailAccountId &amp; parentAccountId, const QString &amp; serverUid, const QMailFolderId &amp; parentFolderId)">
                 <parameter left="const QMailAccountId &amp;" right="" name="parentAccountId" default=""/>
@@ -4173,6 +4191,7 @@
             <contents name="overview" title="Overview" level="1"/>
             <contents name="composition-and-manipulation-of-messages" title="Composition and Manipulation of Messages" level="1"/>
             <contents name="message-accounts" title="Message Accounts" level="1"/>
+            <contents name="message-threads" title="Message threads" level="1"/>
             <contents name="message-listing" title="Message Listing" level="1"/>
             <contents name="message-navigation" title="Message Navigation" level="1"/>
             <contents name="sorting-and-searching-functionality" title="Sorting and Searching Functionality" level="1"/>

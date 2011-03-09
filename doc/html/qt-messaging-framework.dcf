@@ -1559,6 +1559,16 @@
         <keyword ref="qmailthread.html#operator-eq">operator=</keyword>
         <section ref="qmailthread-members.html" title="List of all members"/>
     </section>
+    <section ref="qmailthreadid.html" title="QMailThreadId Class Reference">
+        <keyword ref="qmailthreadid.html">QMailThreadId</keyword>
+        <keyword ref="qmailthreadid.html#isValid">isValid</keyword>
+        <keyword ref="qmailthreadid.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailthreadid.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailthreadid.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailthreadid.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</keyword>
+        <section ref="qmailthreadid-members.html" title="List of all members"/>
+    </section>
     <section ref="qmailthreadkey.html" title="QMailThreadKey Class Reference">
         <keyword ref="qmailthreadkey.html">QMailThreadKey</keyword>
         <keyword ref="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</keyword>

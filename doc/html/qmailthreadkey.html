@@ -100,10 +100,10 @@
 <p>Returns the combiner used to combine arguments or sub keys of this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
 <h3 class="fn"><a name="deserialize"></a>void QMailThreadKey::deserialize ( Stream &amp; <i>stream</i> )</h3>
 <p>Reads the contents of a QMailThradKey from <i>stream</i>.</p>
-<h3 class="fn"><a name="id"></a>QMailThreadKey QMailThreadKey::id ( const QMailThreadId &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<h3 class="fn"><a name="id"></a>QMailThreadKey QMailThreadKey::id ( const <a href="qmailthreadid.html">QMailThreadId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching threads whose identifier matches <i>id</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailfolder.html#id">QMailFolder::id</a>().</p>
-<h3 class="fn"><a name="id-2"></a>QMailThreadKey QMailThreadKey::id ( const QMailThreadIdList &amp; <i>ids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<h3 class="fn"><a name="id-2"></a>QMailThreadKey QMailThreadKey::id ( const <a href="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</a> &amp; <i>ids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching threads whose identifier is a member of <i>ids</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailthread.html#id">QMailThread::id</a>().</p>
 <h3 class="fn"><a name="id-3"></a>QMailThreadKey QMailThreadKey::id ( const QMailThreadKey &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
