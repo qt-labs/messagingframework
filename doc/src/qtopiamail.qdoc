@@ -62,6 +62,19 @@ Classes relating to messaging accounts:
 \row \o QMailAccountConfiguration \o Contains the configuration details for an account.
 \endtable
 
+\section1 Message threads
+
+The Client Library provides classes for storing information about
+message threads (a.k.a. conversations).
+
+Classes relating to message threads:
+
+\table
+\header \o Class \o Description
+\row \o QMailThreadId \o Represents the mail store identifiers for thread records.
+\row \o QMailThread \o Stores attributes for a message thread.
+\endtable
+
 \section1 Message Listing
 
 The Client library provides classes to assist with displaying lists of message data.  These classes allow clients to
@@ -111,6 +124,8 @@ Classes to assist with sorting and searching messages:
 \row \o QMailAccountSortKey \o Defines the parameters used for sorting accounts queried from the mail store.
 \row \o QMailFolderKey \o Defines the parameters used for querying a subset of all available mail folders from the mail store.
 \row \o QMailFolderSortKey \o Defines the parameters used for sorting mail folders queried from the mail store.
+\row \o QMailThreadKey \o Defines the parameters used for querying a subset of all available threads from the mail store.
+\row \o QMailThreadSortKey \o Defines the parameters used for sorting threads queried from the mail store.
 \row \o QMailMessageKey \o Defines the parameters used for querying a subset of all available mail messages from the mail store.
 \row \o QMailMessageSortKey \o Defines the parameters used for sorting messages queried from the mail store.
 \endtable

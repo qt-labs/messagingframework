@@ -54,10 +54,12 @@
     \ingroup messaginglibrary
 
     The QMailStore class is accessed through a singleton interface and provides functions 
-    for adding, updating and deleting of QMailAccounts, QMailFolders and QMailMessages on the message store.
+    for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and 
+    QMailMessages on the message store.
 
-    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts and QMailMessages
-    when used in conjunction with QMailMessageKey, QMailFolderKey and QMailAccountKey classes.
+    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts, 
+    QMailThreads and QMailMessages when used in conjunction with QMailFolderKey and 
+    QMailAccountKey, QMailThreadKey and QMailMessageKey classes.
 
     If a QMailStore operation fails, the lastError() function will return an error code
     value indicating the failure mode encountered.  A successful operation will set the 
@@ -73,6 +75,14 @@
     addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
     affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
     accountContentsModified() and accountsRemoved() signals.
+    
+    Thread (a.k.a. conversation) objects are accessed via the thread(), countThreads()
+    and queryThreads() functions.  Accounts in the mail store can be manipulated via the 
+    addThread(), updateThread() and removeThread() functions.  Mail store manipulations
+    affecting accounts are reported via the threadsAdded(), threadsUpdated(), 
+    threadsContentsModified() and threadsRemoved() signals.
+    
+    
 
     Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
     The data associated with folders is held by instances of the QMailFolder class.
@@ -100,7 +110,7 @@
     only to assist in keeping mail store content synchronized with the content of
     an external message source.  QMailMessageRemovalRecord objects can be accessed
     via the messageRemovalRecords() function.
-
+    
     \sa QMailAccount, QMailFolder, QMailMessage
 */
 
@@ -224,7 +234,12 @@ bool QMailStore::addFolder(QMailFolder* folder)
     return true;
 }
 
- bool QMailStore::addThread(QMailThread *t)
+/*!
+    Adds a new QMailThread object \a t into the message store, performing
+    respective integrity checks. Returns \c true if the operation
+    completed successfully, \c false otherwise. 
+*/
+bool QMailStore::addThread(QMailThread *t)
  {
      QMailThreadIdList addedThreadIds;
 
@@ -412,7 +427,7 @@ bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRem
 
 /*!
     Removes all QMailThreads identified by the id \a id from the message store. If \a option is
-    QMailStore::CreateRemovalRecord then removal records will be created for each removed message.
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed thread.
     Returns \c true if the operation completed successfully, \c false otherwise.
 
     Note: Using a QMailThreads instance after it has been removed from the store will
@@ -426,7 +441,7 @@ bool QMailStore::removeThread(const QMailThreadId &id, QMailStore::MessageRemova
 
 /*!
     Removes all QMailThreads identified by the key \a key from the message store. If \a option is
-    QMailStore::CreateRemovalRecord then removal records will be created for each removed message.
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed thread.
     Returns \c true if the operation completed successfully, \c false otherwise.
 
     Note: Using a QMailThreads instance after it has been removed from the store will
@@ -552,7 +567,7 @@ bool QMailStore::updateFolder(QMailFolder* folder)
 }
 
 /*!
-    Updates existing QMailThread \a thread in the message store.
+    Updates existing QMailThread \a t in the message store.
     Returns \c true if the operation completed successfully, \c false otherwise.
 */
  bool QMailStore::updateThread(QMailThread* t)
@@ -710,6 +725,17 @@ int QMailStore::countFolders(const QMailFolderKey& key) const
 }
 
 /*!
+    Returns the count of the number of threads which pass the 
+    filtering criteria defined in QMailThreadKey \a key. If 
+    key is empty a count of all folders is returned.
+*/
+int QMailStore::countThreads(const QMailThreadKey& key) const
+{
+    d->setLastError(NoError);
+    return d->countThreads(key);
+}
+
+/*!
     Returns the count of the number of messages which pass the 
     filtering criteria defined in QMailMessageKey \a key. If 
     key is empty a count of all messages is returned.
@@ -805,12 +831,12 @@ const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
 
 
 /*!
-    Returns the \l{QMailThreadId}s of messages in the message store. If \a key is not empty
-    only messages matching the parameters set by \a key will be returned, otherwise
-    all message identifiers will be returned.
+    Returns the \l{QMailThreadId}s of threads in the message store. If \a key is not empty
+    only threads matching the parameters set by \a key will be returned, otherwise
+    all thread identifiers will be returned.
     If \a sortKey is not empty, the identifiers will be sorted by the parameters set
     by \a sortKey.
-    If \a limit is non-zero, then no more than \a limit matching message IDs should be
+    If \a limit is non-zero, then no more than \a limit matching thread IDs should be
     returned.
     If \a offset is non-zero, then the first \a offset matching IDs should be omitted
     from the returned list.
@@ -1595,6 +1621,42 @@ QMailStore* QMailStore::instance()
     Signal that is emitted when messages within the mail store are updated using 
     \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, quint64, bool)}.
     \a ids is a list of ids of messages that have been updated, \a status is the status flags set according to \a set.
+*/
+
+/*!
+    \fn void QMailStore::threadsAdded(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    added to the store.
+
+    \sa threadsRemoved(), threadsUpdated()
+*/
+
+/*!
+    \fn void QMailStore::threadsRemoved(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    removed from the store.
+
+    \sa threadsAdded(), threadsUpdated()
+*/
+
+/*!
+    \fn void QMailStore::threadsUpdated(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    updated within the store.
+
+    \sa threadsAdded(), threadsRemoved()
+*/
+
+/*!
+    \fn void QMailStore::threadContentsModified(const QMailThreadIdList& ids)
+
+    Signal that is emitted when changes to messages in the mail store
+    affect the content of the threads in the list \a ids.
+
+    \sa messagesAdded(), messagesUpdated(), messagesRemoved()
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)
