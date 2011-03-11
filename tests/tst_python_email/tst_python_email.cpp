@@ -688,7 +688,7 @@ void tst_python_email::test_no_split_long_header()
     QByteArray output =
 "References:" CRLF
 " xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" CRLF
-"\txxxxxxxxxxxxxxxxxxxxxxx";
+" xxxxxxxxxxxxxxxxxxxxxxx";
 
     QMailMessageHeaderField field("References", QByteArray(100, 'x'), QMailMessageHeaderField::UnstructuredField);
     QByteArray result = testHeaderOutput(field);
@@ -705,14 +705,14 @@ void tst_python_email::test_splitting_multiple_long_lines()
     QByteArray output =
 "X-Data: from babylon.scr.example.org (localhost [127.0.0.1]);" CRLF
 " by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81;" CRLF
-" for <mailman-admin@babylon.scr.example.org>;" CRLF
-" Sat, 2 Feb 2002 17:00:06 -0800 (PST)\tfrom babylon.scr.example.org (localhost" CRLF
+" for <mailman-admin@babylon.scr.example.org>; Sat," CRLF
+" 2 Feb 2002 17:00:06 -0800 (PST)\tfrom babylon.scr.example.org (localhost" CRLF
 " [127.0.0.1]); by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81;" CRLF
-" for <mailman-admin@babylon.scr.example.org>;" CRLF
-" Sat, 2 Feb 2002 17:00:06 -0800 (PST)\tfrom babylon.scr.example.org (localhost" CRLF
+" for <mailman-admin@babylon.scr.example.org>; Sat," CRLF
+" 2 Feb 2002 17:00:06 -0800 (PST)\tfrom babylon.scr.example.org (localhost" CRLF
 " [127.0.0.1]); by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81;" CRLF
-" for <mailman-admin@babylon.scr.example.org>;" CRLF
-" Sat, 2 Feb 2002 17:00:06 -0800 (PST)";
+" for <mailman-admin@babylon.scr.example.org>; Sat," CRLF
+" 2 Feb 2002 17:00:06 -0800 (PST)";
 
     QMailMessageHeaderField field("X-Data", input, QMailMessageHeaderField::UnstructuredField);
     QByteArray result = testHeaderOutput(field);
@@ -764,8 +764,8 @@ void tst_python_email::test_long_to_header()
     QByteArray output =
 "To: \"Someone Test #A\"" CRLF
 " <someone@eecs.umich.test>,<someone@eecs.umich.test>,\"Someone Test #B\"" CRLF
-" <someone@umich.test>, \"Someone Test #C\" <someone@eecs.umich.test>, \"Someone" CRLF
-" Test #D\" <someone@eecs.umich.test>";
+" <someone@umich.test>, \"Someone Test #C\" <someone@eecs.umich.test>," CRLF
+" \"Someone Test #D\" <someone@eecs.umich.test>";
 
     QMailMessageHeaderField field("To", input, QMailMessageHeaderField::UnstructuredField);
     QByteArray result = testHeaderOutput(field);
@@ -781,9 +781,9 @@ void tst_python_email::test_long_field_name()
     // Note the same as the equivalent python formulation, but again, conforming
     QByteArray output =
 "X-Very-Very-Very-Long-Header-Name: Die Mieter treten hier ein werden mit" CRLF
-" einem Foerderband komfortabel den Korridor entlang, an" CRLF
-" =?ISO-8859-1?Q?s=FCdl=0Fcndischen?= =?ISO-8859-1?Q?_Wandgem=E4lden?= vorbei," CRLF
-" gegen die rotierenden Klingen =?ISO-8859-1?Q?bef=F6rdert=2E?=";
+" einem Foerderband komfortabel den Korridor entlang," CRLF
+" an =?ISO-8859-1?Q?s=FCdl=0Fcndischen?= =?ISO-8859-1?Q?_Wandgem=E4lden?=" CRLF
+" vorbei, gegen die rotierenden Klingen =?ISO-8859-1?Q?bef=F6rdert=2E?=";
 
     QMailMessageHeaderField field("X-Very-Very-Very-Long-Header-Name", input, QMailMessageHeaderField::UnstructuredField);
     QByteArray result = testHeaderOutput(field);
@@ -1127,7 +1127,10 @@ void tst_python_email::test_nested_inner_contains_outer_boundary()
     And we don't support it, apart from accepting the input.
     */
     QMailMessage msg = fromFile("msg_38.txt");
-    QCOMPARE( msg.partCount(), 2u );
+
+    // MIME without headers/with invalid headers is considered as a single
+    // MIME part body. So effectively there are 3 parts in msg_38.txt
+    QCOMPARE( msg.partCount(), 3u );
 }
 
 void tst_python_email::test_nested_with_same_boundary()
@@ -1371,8 +1374,10 @@ void tst_python_email::test_rfc2047_without_whitespace()
 {
     QByteArray input("Sm=?ISO-8859-1?B?9g==?=rg=?ISO-8859-1?B?5Q==?=sbord");
 
+    QByteArray output("Sm" "\xf6" "rg" "\xe5" "sbord");
+
     QMailMessageHeaderField field("Subject", input);
-    QCOMPARE( field.decodedContent(), QString::fromLatin1(input) );
+    QCOMPARE( field.decodedContent(), QString::fromLatin1(output) );
 }
 
 void tst_python_email::test_rfc2047_with_whitespace()
@@ -1721,8 +1726,8 @@ void tst_python_email::test_rfc2231_set_param()
     QByteArray output = 
 "Return-Path: <bbb@zzz.test>" CRLF
 "Delivered-To: bbb@zzz.test" CRLF
-"Received: by mail.zzz.test (Postfix, from userid 889)\tid 27CEAD38CC;" CRLF
-" Fri,  4 May 2001 14:05:44 -0400 (EDT)" CRLF
+"Received: by mail.zzz.test (Postfix, from userid 889)\tid 27CEAD38CC; Fri," CRLF
+"  4 May 2001 14:05:44 -0400 (EDT)" CRLF
 "Content-Type: text/plain; charset=us-ascii;" CRLF
 " title*0*=us-ascii'en'This%20is%20even%20more%20%2A%2A%2Afun%2A%2A%2A%20is;" CRLF
 " title*1*=n%27t%20it%21" CRLF
