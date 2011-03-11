@@ -303,7 +303,7 @@ template <typename Stream> void QMailThreadKey::serialize(Stream &stream) const
 /*!
     \fn QMailThreadKey::deserialize(Stream &stream)
 
-    Reads the contents of a QMailThradKey from \a stream.
+    Reads the contents of a QMailThreadKey from \a stream.
 */
 template <typename Stream> void QMailThreadKey::deserialize(Stream &stream)
 {
