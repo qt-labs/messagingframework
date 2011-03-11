@@ -32,6 +32,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#service">service</a></b> () const = 0</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageSink &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#sink">sink</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailMessageSource &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#source">source</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessageservice.html#usesConcurrentActions">usesConcurrentActions</a></b> () const</td></tr>
 </table>
 <ul>
 <li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
@@ -147,6 +148,7 @@
 <h3 class="fn"><a name="updateStatus-2"></a>void QMailMessageService::updateStatus ( int <i>code</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>text</i> = QString(), const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> = QMailAccountId(), const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> = QMailFolderId(), const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i> = QMailMessageId(), <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> = 0 )&nbsp;&nbsp;<tt> [protected]</tt></h3>
 <p>Emits the <a href="qmailmessageservice.html#statusChanged">statusChanged</a>() signal with the Status object constructed from <i>code</i>, <i>text</i>, <i>accountId</i>, <i>folderId</i> and <i>messageId</i>.</p>
 <p>If possible, a standardized error message is determined from <i>code</i>, and prepended to the error message.</p>
+<h3 class="fn"><a name="usesConcurrentActions"></a>bool QMailMessageService::usesConcurrentActions () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>

@@ -35,6 +35,7 @@
 <li><div class="fn"><b><a href="qmailstore.html#addMessage-2">addMessage</a></b> ( QMailMessageMetaData * ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#addMessages">addMessages</a></b> ( const QList&lt;QMailMessage *&gt; &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#addMessages-2">addMessages</a></b> ( const QList&lt;QMailMessageMetaData *&gt; &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#addThread">addThread</a></b> ( QMailThread * ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#asynchronousEmission">asynchronousEmission</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#blockSignals">blockSignals</a></b> ( bool )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#childEvent">childEvent</a></b> ( QChildEvent * )</div></li>
@@ -45,6 +46,7 @@
 <li><div class="fn"><b><a href="qmailstore.html#countAccounts">countAccounts</a></b> ( const QMailAccountKey &amp; ) const : int</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#countFolders">countFolders</a></b> ( const QMailFolderKey &amp; ) const : int</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#countMessages">countMessages</a></b> ( const QMailMessageKey &amp; ) const : int</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#countThreads">countThreads</a></b> ( const QMailThreadKey &amp; ) const : int</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#customEvent">customEvent</a></b> ( QEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#d_ptr-var">d_ptr</a></b> : </div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#deleteLater">deleteLater</a></b> ()</div></li>
@@ -79,10 +81,10 @@
 <li><div class="fn"><b><a href="qmailstore.html#lock">lock</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#message">message</a></b> ( const QMailMessageId &amp; ) const : QMailMessage</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#message-2">message</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessage</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#messageContentsModified">messageContentsModified</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageDataAdded">messageDataAdded</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageDataUpdated">messageDataUpdated</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData">messageMetaData</a></b> ( const QMailMessageId &amp; ) const : QMailMessageMetaData</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData-2">messageMetaData</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessageMetaData</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messagePropertyUpdated">messagePropertyUpdated</a></b> ( const QMailMessageIdList &amp;, const QMailMessageKey::Properties &amp;, const QMailMessageMetaData &amp; )</div></li>
@@ -104,6 +106,7 @@
 <li><div class="fn"><b><a href="qmailstore.html#queryAccounts">queryAccounts</a></b> ( const QMailAccountKey &amp;, const QMailAccountSortKey &amp;, uint, uint ) const : const QMailAccountIdList</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#queryFolders">queryFolders</a></b> ( const QMailFolderKey &amp;, const QMailFolderSortKey &amp;, uint, uint ) const : const QMailFolderIdList</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#queryMessages">queryMessages</a></b> ( const QMailMessageKey &amp;, const QMailMessageSortKey &amp;, uint, uint ) const : const QMailMessageIdList</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#queryThreads">queryThreads</a></b> ( const QMailThreadKey &amp;, const QMailThreadSortKey &amp;, uint, uint ) const : const QMailThreadIdList</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</a></b> ( const QString &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</a></b> ( const QString &amp; ) : bool</div></li>
@@ -115,6 +118,8 @@
 <li><div class="fn"><b><a href="qmailstore.html#removeFolders">removeFolders</a></b> ( const QMailFolderKey &amp;, MessageRemovalOption ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#removeMessage">removeMessage</a></b> ( const QMailMessageId &amp;, MessageRemovalOption ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#removeMessages">removeMessages</a></b> ( const QMailMessageKey &amp;, MessageRemovalOption ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#removeThread">removeThread</a></b> ( const QMailThreadId &amp;, MessageRemovalOption ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#removeThreads">removeThreads</a></b> ( const QMailThreadKey &amp;, QMailStore::MessageRemovalOption ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#retrievalInProgress">retrievalInProgress</a></b> ( const QMailAccountIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#sender">sender</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">setObjectName</a></b> ( const QString &amp; )</div></li>
@@ -127,7 +132,11 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#startTimer">startTimer</a></b> ( int )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#staticMetaObject-var">staticMetaObject</a></b> : </div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#staticQtMetaObject-var">staticQtMetaObject</a></b> : </div></li>
-<li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#thread">thread</a></b> () const</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#thread">thread</a></b> ( const QMailThreadId &amp; ) const : QMailThread</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#threadContentsModified">threadContentsModified</a></b> ( const QMailThreadIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#threadsAdded">threadsAdded</a></b> ( const QMailThreadIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#threadsRemoved">threadsRemoved</a></b> ( const QMailThreadIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#threadsUpdated">threadsUpdated</a></b> ( const QMailThreadIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#timerEvent">timerEvent</a></b> ( QTimerEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#tr">tr</a></b> ( const char *, const char *, int )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#trUtf8">trUtf8</a></b> ( const char *, const char *, int )</div></li>
@@ -142,6 +151,7 @@
 <li><div class="fn"><b><a href="qmailstore.html#updateMessages-2">updateMessages</a></b> ( const QList&lt;QMailMessageMetaData *&gt; &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#updateMessagesMetaData">updateMessagesMetaData</a></b> ( const QMailMessageKey &amp;, const QMailMessageKey::Properties &amp;, const QMailMessageMetaData &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#updateMessagesMetaData-2">updateMessagesMetaData</a></b> ( const QMailMessageKey &amp;, quint64, bool ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#updateThread">updateThread</a></b> ( QMailThread * ) : bool</div></li>
 </ul>
 </td></tr>
 </table></p>

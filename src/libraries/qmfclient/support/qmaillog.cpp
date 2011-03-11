@@ -102,7 +102,7 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
      );
 
     const bool syslogEnabled = settings.value("Syslog/Enabled", false).toBool();
-    const bool stderrEnabled = settings.value("StdStreamLog/StdErrEnabled", defaultStdError).toBool();
+    const bool stderrEnabled = settings.value("StdStreamLog/Enabled", defaultStdError).toBool();
     const QString filePath = settings.value("FileLog/Path").toString();
 
     LogSystem& loggers = LogSystem::getInstance();

@@ -1233,16 +1233,16 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
     }
 }
 
-void EmailClient::rollBackUpdates()
+void EmailClient::rollBackUpdates(QMailAccountId accountId)
 {
-    if (!QMailDisconnected::updatesOutstanding(mailAccountId))
+    if (!QMailDisconnected::updatesOutstanding(accountId))
         return;
     if (QMessageBox::Yes == QMessageBox::question(this,
                                                   tr("Pending updates"),
                                                   tr("There are local updates pending synchronization, " \
                                                      "do you want to revert these changes?"),
                                                   QMessageBox::Yes | QMessageBox::No)) {
-        QMailDisconnected::rollBackUpdates(mailAccountId);
+        QMailDisconnected::rollBackUpdates(accountId);
     }
 }
 
@@ -1508,7 +1508,7 @@ void EmailClient::transferFailure(const QMailAccountId& accountId, const QString
             emit updateStatus(tr("Transfer cancelled"));
         }
 
-        rollBackUpdates();
+        rollBackUpdates(accountId);
 
         if (isSending()) {
             sendFailure(accountId);
@@ -1934,9 +1934,8 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
                 storageActionFailure(status.accountId, status.text);
                 action->deleteLater();
             } else if (action == m_exportAction) {
-                m_exportAction->deleteLater();
-                m_exportAction = 0;
-                rollBackUpdates();
+                rollBackUpdates(status.accountId);
+                runNextPendingExport();
             } else {
                 transferFailure(status.accountId, status.text, status.errorCode);
             }

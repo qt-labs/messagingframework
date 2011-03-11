@@ -21,6 +21,12 @@
 <li><a href="qmailmessagepartcontainer-members.html">List of all members, including inherited members</a></li>
 </ul>
 <hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">class </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer-location.html">Location</a></b></td></tr>
+</table>
+<hr />
 <a name="public-functions"></a>
 <h2>Public Functions</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -32,9 +38,15 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#clearParts">clearParts</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#contentAvailable">contentAvailable</a></b> () const = 0</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageContentType </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#contentType">contentType</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QList&lt;QMailMessagePartContainer::Location&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessagePartContainer * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessagePartContainer * </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#foreachPart">foreachPart</a></b> ( F <i>func</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#foreachPart-2">foreachPart</a></b> ( F <i>func</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#hasBody">hasBody</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#hasHtmlBody">hasHtmlBody</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#hasPlainTextBody">hasPlainTextBody</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageHeaderField </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#headerField">headerField</a></b> ( const QString &amp; <i>id</i>, QMailMessageHeaderField::FieldType <i>fieldType</i> = QMailMessageHeaderField::StructuredField ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#headerFieldText">headerFieldText</a></b> ( const QString &amp; <i>id</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QList&lt;QMailMessageHeaderField&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#headerFields">headerFields</a></b> ( const QString &amp; <i>id</i>, QMailMessageHeaderField::FieldType <i>fieldType</i> = QMailMessageHeaderField::StructuredField ) const</td></tr>
@@ -48,11 +60,15 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#prependPart">prependPart</a></b> ( const QMailMessagePart &amp; <i>part</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#removeHeaderField">removeHeaderField</a></b> ( const QString &amp; <i>id</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#removePartAt">removePartAt</a></b> ( uint <i>pos</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setAttachments">setAttachments</a></b> ( const QStringList &amp; <i>attachments</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setAttachments-2">setAttachments</a></b> ( const QList&lt;const QMailMessagePart *&gt; <i>attachments</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setBody">setBody</a></b> ( const QMailMessageBody &amp; <i>body</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setBoundary">setBoundary</a></b> ( const QByteArray &amp; <i>text</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</a></b> ( const QString &amp; <i>id</i>, const QString &amp; <i>value</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setHeaderField-2">setHeaderField</a></b> ( const QMailMessageHeaderField &amp; <i>field</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</a></b> ( const QMailMessageBody &amp; <i>htmlBody</i>, const QMailMessageBody &amp; <i>plainTextBody</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</a></b> ( MultipartType <i>type</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</a></b> ( const QMailMessageBody &amp; <i>plainTextBody</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageBody::TransferEncoding </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagepartcontainer.html#transferEncoding">transferEncoding</a></b> () const</td></tr>
 </table>
 <hr />
@@ -102,14 +118,26 @@
 <h3 class="fn"><a name="contentType"></a><a href="qmailmessagecontenttype.html">QMailMessageContentType</a> QMailMessagePartContainer::contentType () const</h3>
 <p>Returns the content type of this part. Where <a href="qmailmessagepartcontainer.html#hasBody">hasBody</a>() is true, the type of the contained body element is returned; otherwise a content type matching the <a href="qmailmessagepartcontainer.html#multipartType">multipartType</a>() for this part is returned.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#hasBody">hasBody</a>(), <a href="qmailmessagebody.html#contentType">QMailMessageBody::contentType</a>(), and <a href="qmailmessagepartcontainer.html#multipartType">multipartType</a>().</p>
+<h3 class="fn"><a name="findAttachmentLocations"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailmessagepartcontainer-location.html">QMailMessagePartContainer::Location</a>&gt; QMailMessagePartContainer::findAttachmentLocations () const</h3>
+<p>Returns the locations of the attachments in a container, dealing with a range of different message structures and exceptions.</p>
+<h3 class="fn"><a name="findHtmlContainer"></a>QMailMessagePartContainer * QMailMessagePartContainer::findHtmlContainer () const</h3>
+<p>Searches for the container that encapsulates the HTML body of this container, returning a pointer to it or 0 if it's not present.</p>
+<h3 class="fn"><a name="findPlainTextContainer"></a>QMailMessagePartContainer * QMailMessagePartContainer::findPlainTextContainer () const</h3>
+<p>Searches for the container that encapsulates the plain text body of this container, returning a pointer to it or 0 if it's not present.</p>
 <h3 class="fn"><a name="foreachPart"></a>bool QMailMessagePartContainer::foreachPart ( F <i>func</i> )</h3>
 <p>Applies the function or functor <i>func</i> to each part contained within the container. <i>func</i> must implement the signature 'bool operator()(<a href="qmailmessagepart.html">QMailMessagePart</a> &amp;)', and must return true to indicate success, or false to end the traversal operation.</p>
 <p>Returns true if all parts of the message were traversed, and <i>func</i> returned true for every invocation; else returns false.</p>
 <h3 class="fn"><a name="foreachPart-2"></a>bool QMailMessagePartContainer::foreachPart ( F <i>func</i> ) const</h3>
 <p>Applies the function or functor <i>func</i> to each part contained within the container. <i>func</i> must implement the signature 'bool operator()(const <a href="qmailmessagepart.html">QMailMessagePart</a> &amp;)', and must return true to indicate success, or false to end the traversal operation.</p>
 <p>Returns true if all parts of the message were traversed, and <i>func</i> returned true for every invocation; else returns false.</p>
+<h3 class="fn"><a name="hasAttachments"></a>bool QMailMessagePartContainer::hasAttachments () const</h3>
+<p>Returns true if attachments are present in the container, dealing with a range of different message structures and exceptions.</p>
 <h3 class="fn"><a name="hasBody"></a>bool QMailMessagePartContainer::hasBody () const</h3>
 <p>Returns true if the part contains a body element; otherwise returns false.</p>
+<h3 class="fn"><a name="hasHtmlBody"></a>bool QMailMessagePartContainer::hasHtmlBody () const</h3>
+<p>Returns true if an HTML body is present in the container.</p>
+<h3 class="fn"><a name="hasPlainTextBody"></a>bool QMailMessagePartContainer::hasPlainTextBody () const</h3>
+<p>Returns true if a plain text body is present in the container.</p>
 <h3 class="fn"><a name="headerField"></a><a href="qmailmessageheaderfield.html">QMailMessageHeaderField</a> QMailMessagePartContainer::headerField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>id</i>, <a href="qmailmessageheaderfieldfwd.html#FieldType-enum">QMailMessageHeaderField::FieldType</a> <i>fieldType</i> = QMailMessageHeaderField::StructuredField ) const</h3>
 <p>Returns an object containing the value of the first header field with the given <i>id</i>. If <i>fieldType</i> is <a href="qmailmessageheaderfieldfwd.html#FieldType-enum">QMailMessageHeaderField::StructuredField</a>, then the field content will be parsed assuming a format equivalent to that used for the RFC 2045 'Content-Type' and RFC 2183 'Content-Disposition' header fields.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</a>().</p>
@@ -145,6 +173,11 @@
 <h3 class="fn"><a name="removePartAt"></a>void QMailMessagePartContainer::removePartAt ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>pos</i> )</h3>
 <p>Removes the part at the index <i>pos</i>.</p>
 <p><i>pos</i> must be a valid index position in the list (i.e&#x2e;, 0 &lt;= i &lt; <a href="qmailmessagepartcontainer.html#partCount">partCount</a>()).</p>
+<h3 class="fn"><a name="setAttachments"></a>void QMailMessagePartContainer::setAttachments ( const <a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> &amp; <i>attachments</i> )</h3>
+<p>Sets the attachment list of a container to <i>attachments</i>. <font color="red"><b><code>\param</code></b></font> attachments String paths to local files to be attached</p>
+<p>See also <a href="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</a>().</p>
+<h3 class="fn"><a name="setAttachments-2"></a>void QMailMessagePartContainer::setAttachments ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;const <a href="qmailmessagepart.html">QMailMessagePart</a> *&gt; <i>attachments</i> )</h3>
+<p>Sets the attachment list of a container to <i>attachments</i>. <font color="red"><b><code>\param</code></b></font> attachments List of already created message parts representing the attachments (might come from other existing messages)</p>
 <h3 class="fn"><a name="setBody"></a>void QMailMessagePartContainer::setBody ( const <a href="qmailmessagebody.html">QMailMessageBody</a> &amp; <i>body</i> )</h3>
 <p>Sets the part to contain the body element <i>body</i>.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#body">body</a>().</p>
@@ -157,9 +190,14 @@
 <p>See also <a href="qmailmessagepartcontainer.html#headerField">headerField</a>() and <a href="qmailmessageheaderfield.html">QMailMessageHeaderField</a>.</p>
 <h3 class="fn"><a name="setHeaderField-2"></a>void QMailMessagePartContainer::setHeaderField ( const <a href="qmailmessageheaderfield.html">QMailMessageHeaderField</a> &amp; <i>field</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the first header field with identity matching <i>field</i> to have the content of <i>field</i>.</p>
+<h3 class="fn"><a name="setHtmlAndPlainTextBody"></a>void QMailMessagePartContainer::setHtmlAndPlainTextBody ( const <a href="qmailmessagebody.html">QMailMessageBody</a> &amp; <i>htmlBody</i>, const <a href="qmailmessagebody.html">QMailMessageBody</a> &amp; <i>plainTextBody</i> )</h3>
+<p>Simultaneously sets the html and plain text body of a container to <i>htmlBody</i> and <i>plainTextBody</i> respectively.</p>
 <h3 class="fn"><a name="setMultipartType"></a>void QMailMessagePartContainer::setMultipartType ( <a href="qmailmessagepartcontainerfwd.html#MultipartType-enum">MultipartType</a> <i>type</i> )</h3>
 <p>Sets the multipart state of the message to <i>type</i>.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#multipartType">multipartType</a>().</p>
+<h3 class="fn"><a name="setPlainTextBody"></a>void QMailMessagePartContainer::setPlainTextBody ( const <a href="qmailmessagebody.html">QMailMessageBody</a> &amp; <i>plainTextBody</i> )</h3>
+<p>Sets the plain text body of a container to <i>plainTextBody</i>.</p>
+<p>See also <a href="qmailmessagepartcontainer.html#hasPlainTextBody">hasPlainTextBody</a>().</p>
 <h3 class="fn"><a name="transferEncoding"></a><a href="qmailmessagebodyfwd.html#TransferEncoding-enum">QMailMessageBody::TransferEncoding</a> QMailMessagePartContainer::transferEncoding () const</h3>
 <p>Returns the transfer encoding type of this part. Where <a href="qmailmessagepartcontainer.html#hasBody">hasBody</a>() is true, the transfer encoding type of the contained body element is returned; otherwise, the transfer encoding type specified by the 'Content-Transfer-Encoding' field of the header for this part is returned.</p>
 <p>See also <a href="qmailmessagepartcontainer.html#hasBody">hasBody</a>() and <a href="qmailmessagebody.html#transferEncoding">QMailMessageBody::transferEncoding</a>().</p>

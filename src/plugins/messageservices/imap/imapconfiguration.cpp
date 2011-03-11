@@ -88,6 +88,11 @@ bool ImapConfiguration::canDeleteMail() const
     return (value("canDelete", "1").toInt() != 0);
 }
 
+bool ImapConfiguration::downloadAttachments() const
+{
+    return (value("downloadAttachments", "1").toInt() != 0);
+}
+
 bool ImapConfiguration::isAutoDownload() const
 {
     return (value("autoDownload", "0").toInt() != 0);

@@ -43,6 +43,7 @@
 <li><div class="fn"><b><a href="qmailmessagekey.html#customField-2">customField</a></b> ( const QString &amp;, const QString &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#customField-3">customField</a></b> ( const QString &amp;, const QString &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#deserialize">deserialize</a></b> ( Stream &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#deserialize-2">deserialize</a></b> ( QDataStream &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#id">id</a></b> ( const QMailMessageId &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#id-2">id</a></b> ( const QMailMessageIdList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#id-3">id</a></b> ( const QMailMessageKey &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
@@ -60,10 +61,13 @@
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentAccountId">parentAccountId</a></b> ( const QMailAccountId &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentAccountId-2">parentAccountId</a></b> ( const QMailAccountIdList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentAccountId-3">parentAccountId</a></b> ( const QMailAccountKey &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentFolderId">parentFolderId</a></b> ( const QMailFolderId &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentFolderId-2">parentFolderId</a></b> ( const QMailFolderIdList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagekey.html#parentFolderId-3">parentFolderId</a></b> ( const QMailFolderKey &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#parentThreadId">parentThreadId</a></b> ( const QMailThreadId &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#parentThreadId-2">parentThreadId</a></b> ( const QMailThreadIdList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#parentThreadId-3">parentThreadId</a></b> ( const QMailThreadKey &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#previousParentFolderId">previousParentFolderId</a></b> ( const QMailFolderId &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#previousParentFolderId-2">previousParentFolderId</a></b> ( const QMailFolderIdList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#previousParentFolderId-3">previousParentFolderId</a></b> ( const QMailFolderKey &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
@@ -80,8 +84,10 @@
 <li><div class="fn"><b><a href="qmailmessagekey.html#rfcId-2">rfcId</a></b> ( const QString &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#sender">sender</a></b> ( const QString &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#sender-2">sender</a></b> ( const QString &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
-<li><div class="fn"><b><a href="qmailmessagekey.html#sender-3">sender</a></b> ( const QStringList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#sender-3">sender</a></b> ( const QString &amp;, QMailDataComparator::RelationComparator ) : QMailMessageKey</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#sender-4">sender</a></b> ( const QStringList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#serialize">serialize</a></b> ( Stream &amp; ) const</div></li>
+<li><div class="fn"><b><a href="qmailmessagekey.html#serialize-2">serialize</a></b> ( QDataStream &amp; ) const</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#serverUid">serverUid</a></b> ( const QString &amp;, QMailDataComparator::EqualityComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#serverUid-2">serverUid</a></b> ( const QString &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>
 <li><div class="fn"><b><a href="qmailmessagekey.html#serverUid-3">serverUid</a></b> ( const QStringList &amp;, QMailDataComparator::InclusionComparator ) : QMailMessageKey</div></li>

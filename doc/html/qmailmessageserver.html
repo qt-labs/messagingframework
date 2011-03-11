@@ -135,6 +135,7 @@
 <p>Emitted whenever the MessageServer experiences a change in the activity status of the request identified by <i>action</i>. The request's new status is described by <i>activity</i>.</p>
 <h3 class="fn"><a name="cancelSearch"></a>void QMailMessageServer::cancelSearch ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the MessageServer cancel any pending search operations for the request identified by <i>action</i>.</p>
+<p>This method is obsolete, use cancel transfer instead.</p>
 <h3 class="fn"><a name="cancelTransfer"></a>void QMailMessageServer::cancelTransfer ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the MessageServer cancel any pending transfer operations for the request identified by <i>action</i>.</p>
 <p>See also <a href="qmailmessageserver.html#transmitMessages">transmitMessages</a>() and <a href="qmailmessageserver.html#retrieveMessages">retrieveMessages</a>().</p>
@@ -223,10 +224,10 @@
 <p>If <i>sort</i> is not empty, the external service will discover the listed messages in the ordering indicated by the sort criterion, if possible.</p>
 <p>The request has the identifier <i>action</i>.</p>
 <p>See also <a href="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</a>().</p>
-<h3 class="fn"><a name="retrieveMessagePart"></a>void QMailMessageServer::retrieveMessagePart ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i>, const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePart"></a>void QMailMessageServer::retrieveMessagePart ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i>, const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the message server retrieve the message part that is indicated by the location <i>partLocation</i>. The request has the identifier <i>action</i>.</p>
 <p>See also <a href="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</a>().</p>
-<h3 class="fn"><a name="retrieveMessagePartRange"></a>void QMailMessageServer::retrieveMessagePartRange ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i>, const <a href="qmailmessagepart-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
+<h3 class="fn"><a name="retrieveMessagePartRange"></a>void QMailMessageServer::retrieveMessagePartRange ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i>, const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>partLocation</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the message server retrieve a subset of the message part that is indicated by the location <i>partLocation</i>. The messageserver should ensure that at least <i>minimum</i> bytes are available from the mail store. The request has the identifier <i>action</i>.</p>
 <p>See also <a href="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</a>().</p>
 <h3 class="fn"><a name="retrieveMessageRange"></a>void QMailMessageServer::retrieveMessageRange ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i>, const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>messageId</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>minimum</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>

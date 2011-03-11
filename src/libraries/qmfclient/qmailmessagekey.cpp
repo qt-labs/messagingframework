@@ -43,6 +43,7 @@
 #include "qmailmessagekey_p.h"
 
 #include "qmailaccountkey.h"
+#include "qmailthreadkey.h"
 #include "qmailfolderkey.h"
 #include <QDateTime>
 #include <QStringList>
@@ -107,7 +108,7 @@ using namespace QMailKey;
     \value TimeStamp The message origination timestamp.
     \value ReceptionTimeStamp The message reception timestamp.
     \value Status The message status flags.
-    \value Conversation The set of related messages containing the specified message.
+    \value Conversation The set of related messages containing the specified message. This is deprecated, use QMailThreads instead.
     \value ServerUid The IMAP server UID of the message.
     \value Size The size of the message.
     \value ParentAccountId The ID of the account the message was downloaded from.
@@ -122,7 +123,9 @@ using namespace QMailKey;
     \value CopyServerUid The serveruid this message is a copy of
     \value RestoreFolderId The folderId this message could be untrashed to
     \value ListId The list-id-namespace of this message
-    \value RfcId The rfc id of this message
+    \value ParentThreadId The threadId of the thread (conversation) this message is in.
+    \value Preview The preview text for this message. Normally upto 280 characters of the beginning text of the message.
+    \value RfcId The message rfcId, that is the message-id header field value.
 */
 
 /*!
@@ -912,8 +915,9 @@ QMailMessageKey QMailMessageKey::customField(const QString &name, const QString 
 
 /*!
     Returns a key matching messages that are participants in the conversation containing the message identified by \a id.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageId &id)
 {
@@ -923,8 +927,9 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageId &id)
 /*!
     Returns a key matching messages that are participants in any of the conversations containing the messages
     whose identifiers are members of \a ids.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
 {
@@ -934,8 +939,9 @@ QMailMessageKey QMailMessageKey::conversation(const QMailMessageIdList &ids)
 /*!
     Returns a key matching messages that are participants in any of the conversations containing the messages
     whose identifiers are members of the set yielded by \a key.
+    This is deprecated. Use QMailThread's instead.
 
-    \sa QMailMessage::inResponseTo()
+    \sa QMailMessage::parentThreadId()
 */
 QMailMessageKey QMailMessageKey::conversation(const QMailMessageKey &key)
 {
@@ -1049,6 +1055,33 @@ QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator
 QMailMessageKey QMailMessageKey::rfcId(const QString &value, QMailDataComparator::InclusionComparator cmp)
 {
     return QMailMessageKey(RfcId, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose parent thread identifier matches \a id, according to \a cmp.
+*/
+
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadId &id, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(ParentThreadId, id, QMailKey::comparator(cmp));
+}
+
+
+/*!
+    Returns a key matching messages whose thread is a member of \a ids, according to \a cmp.
+*/
+
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ids, ParentThreadId, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose thread matched \a key, according to \a cmp.
+*/
+QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(ParentThreadId, key, QMailKey::comparator(cmp));
 }
 
 //create implementations for QDataStream

@@ -51,6 +51,9 @@
 #include "qmailaccount.h"
 #include "qmailaccountkey.h"
 #include "qmailaccountsortkey.h"
+#include "qmailthread.h"
+#include "qmailthreadkey.h"
+#include "qmailthreadsortkey.h"
 #include "qmailaccountconfiguration.h"
 #include "qmailmessageremovalrecord.h"
 #include "qmailglobal.h"
@@ -119,6 +122,7 @@ public:
     bool addMessage(QMailMessageMetaData* m);
     bool addMessages(const QList<QMailMessage*>& m);
     bool addMessages(const QList<QMailMessageMetaData*>& m);
+    bool addThread(QMailThread *t);
 
     bool removeAccount(const QMailAccountId& id);
     bool removeAccounts(const QMailAccountKey& key);
@@ -129,6 +133,9 @@ public:
     bool removeMessage(const QMailMessageId& id, MessageRemovalOption option = NoRemovalRecord);
     bool removeMessages(const QMailMessageKey& key, MessageRemovalOption option = NoRemovalRecord);
 
+    bool removeThread(const QMailThreadId &id, MessageRemovalOption option = NoRemovalRecord);
+    bool removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option = NoRemovalRecord);
+
     bool updateAccount(QMailAccount* account, QMailAccountConfiguration* config = 0);
     bool updateAccountConfiguration(QMailAccountConfiguration* config);
     bool updateFolder(QMailFolder* f);
@@ -138,21 +145,26 @@ public:
     bool updateMessages(const QList<QMailMessageMetaData*>& m);
     bool updateMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data);
     bool updateMessagesMetaData(const QMailMessageKey& key, quint64 messageStatus, bool set);
+    bool updateThread(QMailThread* t);
 
     int countAccounts(const QMailAccountKey& key = QMailAccountKey()) const;
     int countFolders(const QMailFolderKey& key = QMailFolderKey()) const;
     int countMessages(const QMailMessageKey& key = QMailMessageKey()) const;
+    int countThreads(const QMailThreadKey & key = QMailThreadKey()) const;
 
     int sizeOfMessages(const QMailMessageKey& key = QMailMessageKey()) const;
 
     const QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(), const QMailAccountSortKey& sortKey = QMailAccountSortKey(), uint limit = 0, uint offset = 0) const;
     const QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(), const QMailFolderSortKey& sortKey = QMailFolderSortKey(), uint limit = 0, uint offset = 0) const;
     const QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(), const QMailMessageSortKey& sortKey = QMailMessageSortKey(), uint limit = 0, uint offset = 0) const;
+    const QMailThreadIdList queryThreads(const QMailThreadKey &key = QMailThreadKey(), const QMailThreadSortKey &sortKey = QMailThreadSortKey(), uint limit = 0, uint offset = 0) const;
 
     QMailAccount account(const QMailAccountId& id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId& id) const;
 
     QMailFolder folder(const QMailFolderId& id) const;
+
+    QMailThread thread(const QMailThreadId &id) const;
 
     QMailMessage message(const QMailMessageId& id) const;
     QMailMessage message(const QString& uid, const QMailAccountId& accountId) const;
@@ -213,6 +225,11 @@ signals:
     void foldersUpdated(const QMailFolderIdList& ids);
     void folderContentsModified(const QMailFolderIdList& ids);
 
+    void threadsAdded(const QMailThreadIdList& ids);
+    void threadsRemoved(const QMailThreadIdList& ids);
+    void threadsUpdated(const QMailThreadIdList& ids);
+    void threadContentsModified(const QMailThreadIdList& ids);
+
     void messageRemovalRecordsAdded(const QMailAccountIdList& ids);
     void messageRemovalRecordsRemoved(const QMailAccountIdList& ids);
 
@@ -236,6 +253,7 @@ private:
     void emitErrorNotification(QMailStore::ErrorCode code);
     void emitAccountNotification(ChangeType type, const QMailAccountIdList &ids);
     void emitFolderNotification(ChangeType type, const QMailFolderIdList &ids);
+    void emitThreadNotification(ChangeType type, const QMailThreadIdList &ids);
     void emitMessageNotification(ChangeType type, const QMailMessageIdList &ids);
     void emitMessageDataNotification(ChangeType type, const QMailMessageMetaDataList &data);
     void emitMessageDataNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,

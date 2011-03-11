@@ -72,7 +72,8 @@ public:
         CopyServerUid,
         ListId,
         RestoreFolderId,
-        RfcId
+        RfcId,
+        ParentThreadId
     };
 
     typedef QMailSortKeyArgument<Property> ArgumentType;

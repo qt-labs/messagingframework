@@ -69,6 +69,7 @@ public:
     int mailAuthentication() const;
 
     bool canDeleteMail() const;
+    bool downloadAttachments() const;
     bool isAutoDownload() const;
     int maxMailSize() const;
 

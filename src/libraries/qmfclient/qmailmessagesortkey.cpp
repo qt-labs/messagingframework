@@ -86,7 +86,8 @@
     \value CopyServerUid The server uid of the message this is a copy of
     \value ListId The name of the list
     \value RestoreFolderId The folderId of where the message should be restored to
-    \value RfcId The messages rfc id
+    \value RfcId The message rfcId, that is the message-id header field value.
+    \value ParentThreadId The QMailThreadId of the thread (conversation) of the message.
 */
 
 /*!

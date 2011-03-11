@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- qmailthreadkey.cpp -->
+<head>
+  <title>QMailThreadKey Class Reference</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qtlogo.png" align="left" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="index.html"><font color="#004faf">Home</font></a></td>
+<td align="right" valign="top" width="230"><img src="images/codeless.png"  border="0" /></td></tr></table><h1 class="title">QMailThreadKey Class Reference</h1>
+<p>The QMailThreadKey class defines the parameters used for querying a subset of all message threads from the mail store. <a href="#details">More...</a></p>
+<pre>    #include &lt;QMailThreadKey&gt;</pre><p><b>This class is under development and is subject to change.</b></p>
+<ul>
+<li><a href="qmailthreadkey-members.html">List of all members, including inherited members</a></li>
+</ul>
+<hr />
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</a></b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#Property-enum">Property</a></b> { Id, ServerUid, MessageCount, UnreadCount, Custom }</td></tr>
+</table>
+<hr />
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#QMailThreadKey">QMailThreadKey</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#QMailThreadKey-2">QMailThreadKey</a></b> ( const QMailThreadKey &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#dtor.QMailThreadKey">~QMailThreadKey</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QList&lt;ArgumentType&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#arguments">arguments</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailKey::Combiner </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#combiner">combiner</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#deserialize">deserialize</a></b> ( Stream &amp; <i>stream</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#isEmpty">isEmpty</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#isNegated">isNegated</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#isNonMatching">isNonMatching</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serialize">serialize</a></b> ( Stream &amp; <i>stream</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QList&lt;QMailThreadKey&gt; &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#subKeys">subKeys</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-QVariant">operator QVariant</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-not-eq">operator!=</a></b> ( const QMailThreadKey &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-and">operator&amp;</a></b> ( const QMailThreadKey &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMailThreadKey &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-and-eq">operator&amp;=</a></b> ( const QMailThreadKey &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMailThreadKey &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-eq">operator=</a></b> ( const QMailThreadKey &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-eq-eq">operator==</a></b> ( const QMailThreadKey &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-7c">operator|</a></b> ( const QMailThreadKey &amp; <i>other</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">const QMailThreadKey &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-7c-eq">operator|=</a></b> ( const QMailThreadKey &amp; <i>other</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#operator-7e">operator~</a></b> () const</td></tr>
+</table>
+<hr />
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id">id</a></b> ( const QMailThreadId &amp; <i>id</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id-2">id</a></b> ( const QMailThreadIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id-3">id</a></b> ( const QMailThreadKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#nonMatchingKey">nonMatchingKey</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid">serverUid</a></b> ( const QString &amp; <i>uid</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid-2">serverUid</a></b> ( const QString &amp; <i>uid</i>, QMailDataComparator::InclusionComparator <i>cmp</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid-3">serverUid</a></b> ( const QStringList &amp; <i>uids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+</table>
+<a name="details"></a>
+<hr />
+<h2>Detailed Description</h2>
+<p>The QMailThreadKey class defines the parameters used for querying a subset of all message threads from the mail store.</p>
+<p>A QMailThreadKey is composed of a thread property, an optional comparison operator and a comparison value. The QMailThreadKey class is used in conjunction with the <a href="qmailstore.html#queryThreads">QMailStore::queryThreads</a>() and <a href="qmailstore.html#countThreads">QMailStore::countThreads</a>() functions to filter results which meet the criteria defined by the key.</p>
+<p>QMailThreadKeys can be combined using the logical operators (&amp;), (|) and (~) to create more refined queries.</p>
+<p>See also <a href="qmailstore.html">QMailStore</a> and <a href="qmailthread.html">QMailThread</a>.</p>
+<hr />
+<h2>Member Type Documentation</h2>
+<h3 class="fn"><a name="ArgumentType-typedef"></a>typedef QMailThreadKey::ArgumentType</h3>
+<p>Defines the type used to represent a single criterion of a message filter.</p>
+<p>Synonym for QMailThreadKeyArgument&lt;<a href="qmailthreadkey.html#Property-enum">QMailThreadKey::Property</a>&gt;.</p>
+<h3 class="fn"><a name="Property-enum"></a>enum QMailThreadKey::Property</h3>
+<p>This enum type describes the data query properties of a <a href="qmailthread.html">QMailThread</a>.</p>
+<p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
+<tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
+<tr><td valign="top"><tt>QMailThreadKey::Id</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;0 )</tt></td><td valign="top">The ID of the thread.</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::ServerUid</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;1 )</tt></td><td valign="top">The ServerUid of thread.</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::MessageCount</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;2 )</tt></td><td valign="top">The number of messages in the thread</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::UnreadCount</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;3 )</tt></td><td valign="top">The number of unread messages in the thread.</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::Custom</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;4 )</tt></td><td valign="top">For internal use, may be removed.</td></tr>
+</table></p>
+<hr />
+<h2>Member Function Documentation</h2>
+<h3 class="fn"><a name="QMailThreadKey"></a>QMailThreadKey::QMailThreadKey ()</h3>
+<p>Creates a <a href="qmailthreadkey.html">QMailThreadKey</a> without specifying matching parameters.</p>
+<p>A default-constructed key (one for which <a href="qmailthreadkey.html#isEmpty">isEmpty</a>() returns true) matches all threads.</p>
+<p>See also <a href="qmailthreadkey.html#isEmpty">isEmpty</a>().</p>
+<h3 class="fn"><a name="QMailThreadKey-2"></a>QMailThreadKey::QMailThreadKey ( const QMailThreadKey &amp; <i>other</i> )</h3>
+<p>Creates a copy of the <a href="qmailthreadkey.html">QMailThreadKey</a> <i>other</i>.</p>
+<h3 class="fn"><a name="dtor.QMailThreadKey"></a>QMailThreadKey::~QMailThreadKey ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Destroys this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
+<h3 class="fn"><a name="arguments"></a>const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</a>&gt; &amp; QMailThreadKey::arguments () const</h3>
+<p>Returns the list of arguments to this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
+<h3 class="fn"><a name="combiner"></a><a href="qmailkey.html#Combiner-enum">QMailKey::Combiner</a> QMailThreadKey::combiner () const</h3>
+<p>Returns the combiner used to combine arguments or sub keys of this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
+<h3 class="fn"><a name="deserialize"></a>void QMailThreadKey::deserialize ( Stream &amp; <i>stream</i> )</h3>
+<p>Reads the contents of a QMailThradKey from <i>stream</i>.</p>
+<h3 class="fn"><a name="id"></a>QMailThreadKey QMailThreadKey::id ( const <a href="qmailthreadid.html">QMailThreadId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose identifier matches <i>id</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailfolder.html#id">QMailFolder::id</a>().</p>
+<h3 class="fn"><a name="id-2"></a>QMailThreadKey QMailThreadKey::id ( const <a href="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</a> &amp; <i>ids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose identifier is a member of <i>ids</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#id">QMailThread::id</a>().</p>
+<h3 class="fn"><a name="id-3"></a>QMailThreadKey QMailThreadKey::id ( const QMailThreadKey &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching thread whose identifier is a member of the set yielded by <i>key</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#id">QMailThread::id</a>().</p>
+<h3 class="fn"><a name="isEmpty"></a>bool QMailThreadKey::isEmpty () const</h3>
+<p>Returns true if the key remains empty after default construction; otherwise returns false.</p>
+<p>An empty key matches all threads.</p>
+<p>The result of combining an empty key with a non-empty key is the original non-empty key. This is true regardless of whether the combination is formed by an AND or an OR operation.</p>
+<p>The result of combining two empty keys is an empty key.</p>
+<p>See also <a href="qmailthreadkey.html#isNonMatching">isNonMatching</a>().</p>
+<h3 class="fn"><a name="isNegated"></a>bool QMailThreadKey::isNegated () const</h3>
+<p>Returns true if the key's criteria should be negated in application.</p>
+<h3 class="fn"><a name="isNonMatching"></a>bool QMailThreadKey::isNonMatching () const</h3>
+<p>Returns true if the key is a non-matching key; otherwise returns false.</p>
+<p>A non-matching key does not match any threads.</p>
+<p>The result of ANDing a non-matching key with a matching key is a non-matching key. The result of ORing a non-matching key with a matching key is the original matching key.</p>
+<p>The result of combining two non-matching keys is a non-matching key.</p>
+<p>See also <a href="qmailthreadkey.html#nonMatchingKey">nonMatchingKey</a>() and <a href="qmailthreadkey.html#isEmpty">isEmpty</a>().</p>
+<h3 class="fn"><a name="nonMatchingKey"></a>QMailThreadKey QMailThreadKey::nonMatchingKey ()&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key that does not match any threads (unlike an empty key).</p>
+<p>See also <a href="qmailthreadkey.html#isNonMatching">isNonMatching</a>() and <a href="qmailthreadkey.html#isEmpty">isEmpty</a>().</p>
+<h3 class="fn"><a name="serialize"></a>void QMailThreadKey::serialize ( Stream &amp; <i>stream</i> ) const</h3>
+<p>Writes the contents of a <a href="qmailthreadkey.html">QMailThreadKey</a> to a <i>stream</i>.</p>
+<h3 class="fn"><a name="serverUid"></a>QMailThreadKey QMailThreadKey::serverUid ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>uid</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose serverUid matches <i>uid</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#serverUid">QMailThread::serverUid</a>().</p>
+<h3 class="fn"><a name="serverUid-2"></a>QMailThreadKey QMailThreadKey::serverUid ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>uid</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose serverUid matches the substring <i>uid</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#serverUid">QMailThread::serverUid</a>().</p>
+<h3 class="fn"><a name="serverUid-3"></a>QMailThreadKey QMailThreadKey::serverUid ( const <a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> &amp; <i>uids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose serverUid is a member of <i>uids</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#serverUid">QMailThread::serverUid</a>().</p>
+<h3 class="fn"><a name="subKeys"></a>const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;QMailThreadKey&gt; &amp; QMailThreadKey::subKeys () const</h3>
+<p>Returns the list of sub keys held by this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
+<h3 class="fn"><a name="operator-QVariant"></a>QMailThreadKey::operator QVariant () const</h3>
+<p>Returns the <a href="http://doc.trolltech.com/4.5/qvariant.html">QVariant</a> representation of this <a href="qmailfolderkey.html">QMailFolderKey</a>.</p>
+<h3 class="fn"><a name="operator-not-eq"></a>bool QMailThreadKey::operator!= ( const QMailThreadKey &amp; <i>other</i> ) const</h3>
+<p>Returns <tt>true</tt> if the value of this key is not the same as the key <i>other</i>. Returns <tt>false</tt> otherwise.</p>
+<h3 class="fn"><a name="operator-and"></a>QMailThreadKey QMailThreadKey::operator&amp; ( const QMailThreadKey &amp; <i>other</i> ) const</h3>
+<p>Returns a key that is the logical AND of this key and the value of key <i>other</i>.</p>
+<h3 class="fn"><a name="operator-and-eq"></a>const QMailThreadKey &amp; QMailThreadKey::operator&amp;= ( const QMailThreadKey &amp; <i>other</i> )</h3>
+<p>Performs a logical AND with this key and the key <i>other</i> and assigns the result to this key.</p>
+<h3 class="fn"><a name="operator-eq"></a>const QMailThreadKey &amp; QMailThreadKey::operator= ( const QMailThreadKey &amp; <i>other</i> )</h3>
+<p>Assign the value of the <a href="qmailthreadkey.html">QMailThreadKey</a> <i>other</i> to this.</p>
+<h3 class="fn"><a name="operator-eq-eq"></a>bool QMailThreadKey::operator== ( const QMailThreadKey &amp; <i>other</i> ) const</h3>
+<p>Returns <tt>true</tt> if the value of this key is the same as the key <i>other</i>. Returns <tt>false</tt> otherwise.</p>
+<h3 class="fn"><a name="operator-7c"></a>QMailThreadKey QMailThreadKey::operator| ( const QMailThreadKey &amp; <i>other</i> ) const</h3>
+<p>Returns a key that is the logical OR of this key and the value of key <i>other</i>.</p>
+<h3 class="fn"><a name="operator-7c-eq"></a>const QMailThreadKey &amp; QMailThreadKey::operator|= ( const QMailThreadKey &amp; <i>other</i> )</h3>
+<p>Performs a logical OR with this key and the key <i>other</i> and assigns the result to this key.</p>
+<h3 class="fn"><a name="operator-7e"></a>QMailThreadKey QMailThreadKey::operator~ () const</h3>
+<p>Returns a key that is the logical NOT of the value of this key.</p>
+<p>If this key is empty, the result will be a non-matching key; if this key is non-matching, the result will be an empty key.</p>
+<p>See also <a href="qmailthreadkey.html#isEmpty">isEmpty</a>() and <a href="qmailthreadkey.html#isNonMatching">isNonMatching</a>().</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td align="left">Copyright &copy; 2010 QtSoftware</td>
+<td align="right"><div align="right">Messaging Framework</div></td>
+</tr></table></div></address></body>
+</html>

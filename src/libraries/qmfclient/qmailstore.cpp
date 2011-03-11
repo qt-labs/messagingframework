@@ -54,10 +54,12 @@
     \ingroup messaginglibrary
 
     The QMailStore class is accessed through a singleton interface and provides functions 
-    for adding, updating and deleting of QMailAccounts, QMailFolders and QMailMessages on the message store.
+    for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and
+    QMailMessages on the message store.
 
-    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts and QMailMessages
-    when used in conjunction with QMailMessageKey, QMailFolderKey and QMailAccountKey classes.
+    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts,
+    QMailThreads and QMailMessages when used in conjunction with QMailFolderKey and
+    QMailAccountKey, QMailThreadKey and QMailMessageKey classes.
 
     If a QMailStore operation fails, the lastError() function will return an error code
     value indicating the failure mode encountered.  A successful operation will set the 
@@ -73,6 +75,14 @@
     addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
     affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
     accountContentsModified() and accountsRemoved() signals.
+
+    Thread (a.k.a. conversation) objects are accessed via the thread(), countThreads()
+    and queryThreads() functions.  Accounts in the mail store can be manipulated via the
+    addThread(), updateThread() and removeThread() functions.  Mail store manipulations
+    affecting accounts are reported via the threadsAdded(), threadsUpdated(),
+    threadsContentsModified() and threadsRemoved() signals.
+
+
 
     Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
     The data associated with folders is held by instances of the QMailFolder class.
@@ -225,6 +235,25 @@ bool QMailStore::addFolder(QMailFolder* folder)
 }
 
 /*!
+    Adds a new QMailThread object \a t into the message store, performing
+    respective integrity checks. Returns \c true if the operation
+    completed successfully, \c false otherwise.
+*/
+bool QMailStore::addThread(QMailThread *t)
+ {
+     QMailThreadIdList addedThreadIds;
+
+     d->setLastError(NoError);
+
+     if (!d->addThread(t, &addedThreadIds))
+         return false;
+
+     emitThreadNotification(Added, addedThreadIds);
+
+     return true;
+ }
+
+/*!
     Adds a new QMailMessage object \a msg into the message store, performing
     respective integrity checks. Returns \c true if the operation
     completed successfully, \c false otherwise. 
@@ -252,17 +281,21 @@ bool QMailStore::addMessage(QMailMessageMetaData* metaData)
 bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 {
     QMailMessageIdList addedMessageIds;
+    QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
+    emitThreadNotification(Added, addedThreadIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
 
     return true;
@@ -270,23 +303,27 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 
 /*!
     Adds a new QMailMessageMetData object into the message store for each entry in
-    the list \a messages, performing all respective integrity checks. 
+    the list \a messages, performing all respective integrity checks.
     Returns \c true if the operation completed successfully, \c false otherwise. 
 */
 bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
 {
     QMailMessageIdList addedMessageIds;
+    QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
+    emitThreadNotification(Added, addedThreadIds);
     emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
@@ -319,10 +356,11 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
     QMailMessageIdList deletedMessageIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeAccounts(key, &deletedAccountIds, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->removeAccounts(key, &deletedAccountIds, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Removed, deletedAccountIds);
@@ -331,6 +369,7 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
     emitAccountNotification(Removed, deletedAccountIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
@@ -370,15 +409,60 @@ bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRem
     QMailMessageIdList deletedMessageIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeFolders(key, option, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->removeFolders(key, option, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Added, modifiedAccountIds);
     emitMessageNotification(Removed, deletedMessageIds);
     emitFolderNotification(Removed, deletedFolderIds);
+    emitMessageNotification(Updated, updatedMessageIds);
+    emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitAccountNotification(ContentsModified, modifiedAccountIds);
+    return true;
+}
+
+/*!
+    Removes all QMailThreads identified by the id \a id from the message store. If \a option is
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed thread.
+    Returns \c true if the operation completed successfully, \c false otherwise.
+
+    Note: Using a QMailThreads instance after it has been removed from the store will
+    result in undefined behavior.
+*/
+bool QMailStore::removeThread(const QMailThreadId &id, QMailStore::MessageRemovalOption option)
+{
+    return removeThreads(QMailThreadKey::id(id), option);
+}
+
+
+/*!
+    Removes all QMailThreads identified by the key \a key from the message store. If \a option is
+    QMailStore::CreateRemovalRecord then removal records will be created for each removed thread.
+    Returns \c true if the operation completed successfully, \c false otherwise.
+
+    Note: Using a QMailThreads instance after it has been removed from the store will
+    result in undefined behavior.
+*/
+bool QMailStore::removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option)
+{
+    QMailThreadIdList deletedThreadIds;
+    QMailMessageIdList deletedMessageIds;
+    QMailMessageIdList updatedMessageIds;
+    QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
+    QMailAccountIdList modifiedAccountIds;
+
+    d->setLastError(NoError);
+    if (!d->removeThreads(key, option, &deletedThreadIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+        return false;
+
+    emitRemovalRecordNotification(Added, modifiedAccountIds);
+    emitMessageNotification(Removed, deletedMessageIds);
+    emitThreadNotification(Removed, deletedThreadIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
@@ -412,17 +496,19 @@ bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageR
 {
     QMailMessageIdList deletedMessageIds;
     QMailMessageIdList updatedMessageIds;
-    QMailAccountIdList modifiedAccountIds;
     QMailFolderIdList modifiedFolderIds;
+    QMailThreadIdList modifiedThreadIds;
+    QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeMessages(key, option, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedAccountIds))
+    if (!d->removeMessages(key, option, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Added, modifiedAccountIds);
     emitMessageNotification(Removed, deletedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
@@ -479,6 +565,21 @@ bool QMailStore::updateFolder(QMailFolder* folder)
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;
 }
+
+/*!
+    Updates existing QMailThread \a t in the message store.
+    Returns \c true if the operation completed successfully, \c false otherwise.
+*/
+ bool QMailStore::updateThread(QMailThread* t)
+ {
+     QMailThreadIdList updatedThreads;
+     d->setLastError(NoError);
+     if (!d->updateThread(t, &updatedThreads))
+         return false;
+
+     emitThreadNotification(Updated, updatedThreads);
+     return true;
+ }
 
 /*!
     Updates the existing QMailMessage \a msg on the message store.
@@ -624,6 +725,17 @@ int QMailStore::countFolders(const QMailFolderKey& key) const
 }
 
 /*!
+    Returns the count of the number of threads which pass the
+    filtering criteria defined in QMailThreadKey \a key. If
+    key is empty a count of all folders is returned.
+*/
+int QMailStore::countThreads(const QMailThreadKey& key) const
+{
+    d->setLastError(NoError);
+    return d->countThreads(key);
+}
+
+/*!
     Returns the count of the number of messages which pass the 
     filtering criteria defined in QMailMessageKey \a key. If 
     key is empty a count of all messages is returned.
@@ -717,6 +829,29 @@ const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
     return d->queryMessages(key, sortKey, limit, offset);
 }
 
+
+/*!
+    Returns the \l{QMailThreadId}s of threads in the message store. If \a key is not empty
+    only threads matching the parameters set by \a key will be returned, otherwise
+    all thread identifiers will be returned.
+    If \a sortKey is not empty, the identifiers will be sorted by the parameters set
+    by \a sortKey.
+    If \a limit is non-zero, then no more than \a limit matching thread IDs should be
+    returned.
+    If \a offset is non-zero, then the first \a offset matching IDs should be omitted
+    from the returned list.
+
+    Note: if the implementation cannot support the \a limit and \a offset parameters,
+    it should not attempt to perform a query where either of these values is non-zero;
+    instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
+*/
+const QMailThreadIdList QMailStore::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const
+{
+    d->setLastError(NoError);
+    return d->queryThreads(key, sortKey, limit, offset);
+}
+
+
 /*!
    Returns the QMailAccount defined by the QMailAccountId \a id from the store.
  */
@@ -742,6 +877,15 @@ QMailFolder QMailStore::folder(const QMailFolderId& id) const
 {
     d->setLastError(NoError);
     return d->folder(id);
+}
+
+/*!
+   Returns the QMailThread defined by QMailThreadId \a id from the store.
+*/
+QMailThread QMailStore::thread(const QMailThreadId &id) const
+{
+    d->setLastError(NoError);
+    return d->thread(id);
 }
 
 /*!
@@ -1060,6 +1204,36 @@ void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList
 }
 
 /*! \internal */
+void QMailStore::emitThreadNotification(ChangeType type, const QMailThreadIdList &ids)
+{
+    Q_ASSERT(!ids.contains(QMailThreadId()));
+    if (!ids.isEmpty()) {
+        // Ensure there are no duplicates in the list
+        QMailThreadIdList idList(ids.toSet().toList());
+
+        d->notifyThreadsChange(type, idList);
+
+        switch (type) {
+        case Added:
+            emit threadsAdded(idList);
+            break;
+
+        case Removed:
+            emit threadsRemoved(idList);
+            break;
+
+        case Updated:
+            emit threadsUpdated(idList);
+            break;
+
+        case ContentsModified:
+            emit threadContentsModified(idList);
+            break;
+        }
+    }
+}
+
+/*! \internal */
 void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdList &ids)
 {
     Q_ASSERT(!ids.contains(QMailMessageId()));
@@ -1196,9 +1370,8 @@ QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* mess
     metaData.setRfcId(message->rfcId());
     metaData.setCopyServerUid(message->copyServerUid());
     metaData.setPreview(message->preview());
-    metaData.setLatestInConversation(message->latestInConversation());
+    metaData.setParentThreadId(message->parentThreadId());
     metaData.setUnmodified();
-
 
     return metaData;
 }
@@ -1448,6 +1621,42 @@ QMailStore* QMailStore::instance()
     Signal that is emitted when messages within the mail store are updated using 
     \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, quint64, bool)}.
     \a ids is a list of ids of messages that have been updated, \a status is the status flags set according to \a set.
+*/
+
+/*!
+    \fn void QMailStore::threadsAdded(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    added to the store.
+
+    \sa threadsRemoved(), threadsUpdated()
+*/
+
+/*!
+    \fn void QMailStore::threadsRemoved(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    removed from the store.
+
+    \sa threadsAdded(), threadsUpdated()
+*/
+
+/*!
+    \fn void QMailStore::threadsUpdated(const QMailThreadIdList& ids)
+
+    Signal that is emitted when the threads in the list \a ids are
+    updated within the store.
+
+    \sa threadsAdded(), threadsRemoved()
+*/
+
+/*!
+    \fn void QMailStore::threadContentsModified(const QMailThreadIdList& ids)
+
+    Signal that is emitted when changes to messages in the mail store
+    affect the content of the threads in the list \a ids.
+
+    \sa messagesAdded(), messagesUpdated(), messagesRemoved()
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

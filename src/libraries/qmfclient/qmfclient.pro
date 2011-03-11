@@ -60,6 +60,9 @@ PUBLIC_HEADERS += qmailaccount.h \
                   qmailsortkeyargument.h \
                   qmailstore.h \
                   qmailtimestamp.h \
+                  qmailthread.h \
+                  qmailthreadkey.h \
+                  qmailthreadsortkey.h \
                   qprivateimplementation.h \
                   qprivateimplementationdef.h \
                   support/qmailglobal.h \
@@ -85,6 +88,8 @@ PRIVATE_HEADERS += bind_p.h \
                    qmailserviceaction_p.h \
                    qmailstore_p.h \
                    qmailstoreimplementation_p.h \
+                   qmailthreadkey_p.h \
+                   qmailthreadsortkey_p.h \
                    longstring_p.h \
                    longstream_p.h \
                    support/qcopchannel_p.h \
@@ -132,6 +137,9 @@ SOURCES += longstream.cpp \
            qmailstore_p.cpp \
            qmailstoreimplementation_p.cpp \
            qmailtimestamp.cpp \
+           qmailthread.cpp \
+           qmailthreadkey.cpp \
+           qmailthreadsortkey.cpp \
            qprivateimplementation.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \

@@ -430,11 +430,16 @@ static QString decodeWordSequence(const QByteArray& str)
 
     // Any idea why this isn't matching?
     //QRegExp encodedWord("\\b=\\?\\S+\\?\\S+\\?\\S*\\?=\\b");
-    QRegExp encodedWord("=\\?\\S+\\?\\S+\\?\\S*\\?=");
+    QRegExp encodedWord("\"?=\\?\\S+\\?\\S+\\?\\S*\\?=\"?");
+
+    // set minimal=true, to match sequences which do not have whit space in between 2 encoded words; otherwise by default greedy matching is performed
+    // eg. "Sm=?ISO-8859-1?B?9g==?=rg=?ISO-8859-1?B?5Q==?=sbord" will match "=?ISO-8859-1?B?9g==?=rg=?ISO-8859-1?B?5Q==?=" as a single encoded word without minimal=true
+    // with minimal=true, "=?ISO-8859-1?B?9g==?=" will be the first encoded word and "=?ISO-8859-1?B?5Q==?=" the second.
+    // -- assuming there are no nested encodings, will there be?
+    encodedWord.setMinimal(true);
 
     int pos = 0;
     int lastPos = 0;
-    int length = str.length();
 
     while (pos != -1) {
         pos = encodedWord.indexIn(str, pos);
@@ -1779,8 +1784,10 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* line
 
         if (lastIndex == -1)
         {
-            int syntacticIn = -1;
             // We couldn't find any suitable whitespace, look for high-level syntactic break
+            // allow a maximum of 998 characters excl CRLF on a line without white space
+            remaining = 997 - *lineLength;
+            int syntacticIn = -1;
             do {
                 lastIndex = syntacticIn;
                 syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
@@ -4701,7 +4708,7 @@ bool QMailMessagePartContainer::hasAttachments() const
 }
 
 /*!
-  Sets the plain text body of a container.
+  Sets the plain text body of a container to \a plainTextBody.
  */
 void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTextBody)
 {
@@ -4728,7 +4735,7 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
 }
 
 /*!
-  Simultaneously sets the html and plain text body of a container.
+  Simultaneously sets the html and plain text body of a container to \a htmlBody and \a plainTextBody respectively.
  */
 void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
 {
@@ -4774,7 +4781,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
 }
 
 /*!
-  Sets the attachment list of a container.
+  Sets the attachment list of a container to \a attachments.
   \param attachments String paths to local files to be attached
  */
 void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
@@ -4807,7 +4814,7 @@ void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
 }
 
 /*!
-  Sets the attachment list of a container.
+  Sets the attachment list of a container to \a attachments.
   \param attachments List of already created message parts representing the attachments (might come from other existing messages)
  */
 void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePart*> attachments)
@@ -5555,10 +5562,10 @@ QString QMailMessagePart::identifier() const
     QString id(contentID());
 
     if (id.isEmpty())
-        id = contentDisposition().filename();
+        id = decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
-        id = contentType().name();
+        id = decodeWordSequence(contentType().name());
 
     if (id.isEmpty())
         id = QString::number(impl(this)->partNumber());
@@ -6044,9 +6051,9 @@ void QMailMessageMetaDataPrivate::setCustomFields(const QMap<QString, QString> &
     _customFieldsModified = true;
 }
 
-void QMailMessageMetaDataPrivate::setLatestInConversation(QMailMessageId const& id)
+void QMailMessageMetaDataPrivate::setParentThreadId(const QMailThreadId &id)
 {
-    updateMember(_latestInConversation, id);
+    updateMember(_parentThreadId, id);
 }
 
 template <typename Stream> 
@@ -6082,7 +6089,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _customFieldsModified;
     stream << _dirty;
     stream << _preview;
-    stream << _latestInConversation;
+    stream << _parentThreadId;
 }
 
 template <typename Stream> 
@@ -6124,7 +6131,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     stream >> _customFieldsModified;
     stream >> _dirty;
     stream >> _preview;
-    stream >> _latestInConversation;
+    stream >> _parentThreadId;
 }
 
 
@@ -6565,7 +6572,9 @@ void QMailMessageMetaData::setId(const QMailMessageId &id)
 */
 QMailAddress QMailMessageMetaData::from() const
 {
-    return QMailAddress(impl(this)->_from);
+    const QString& addr = impl(this)->_from;
+    const QString& decodedAddr = decodeWordSequence(addr.toAscii());
+    return QMailAddress(decodedAddr);
 }
 
 /*!
@@ -6730,6 +6739,22 @@ QString QMailMessageMetaData::rfcId() const
 void QMailMessageMetaData::setRfcId(const QString &id)
 {
     impl(this)->setRfcId(id);
+}
+
+/*!
+    Returns the id of the thread this message belongs to.
+*/
+QMailThreadId QMailMessageMetaData::parentThreadId() const
+{
+    return impl(this)->_parentThreadId;
+}
+
+/*!
+    Sets the id of the thread this message belongs to \a id. If this is left blank then the thread will be detected/generated.
+*/
+void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
+{
+    impl(this)->setParentThreadId(id);
 }
 
 /*!
@@ -7064,21 +7089,6 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
     d->_customFieldsModified = set;
 }
 
-/*!
-  This is a hack that returns the latest messageId from the conversation this message is.
-*/
-QMailMessageId QMailMessageMetaData::latestInConversation() const
-{
-    return impl(this)->_latestInConversation;
-}
-
-/*!
-  This is a hack that sets the latest messageId in the conversation. No client should use this..
-*/
-void QMailMessageMetaData::setLatestInConversation(QMailMessageId const& id)
-{
-    return impl(this)->setLatestInConversation(id);
-}
 
 /*! 
     \fn QMailMessageMetaData::serialize(Stream&) const

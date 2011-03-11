@@ -16,6 +16,7 @@
 <p>This is the complete list of members for <a href="qmailmessage.html">QMailMessage</a>, including inherited members.</p>
 <p><table class="propsummary" width="100%" border="0" cellpadding="0" cellspacing="0">
 <tr><td width="45%" valign="top"><ul>
+<li><div class="fn">class <b><a href="qmailmessagepartcontainer-location.html">Location</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagefwd.html#AttachmentsAction-enum">AttachmentsAction</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagefwd.html#ChunkType-enum">ChunkType</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagemetadatafwd.html#ContentType-enum">ContentType</a></b></div></li>
@@ -29,6 +30,7 @@
 <li><div class="fn"><b><a href="qmailmessage.html#QMailMessage-3">QMailMessage</a></b> ( const QString &amp;, const QMailAccountId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#Avar"></a></b> : QMailMessageMetaData::MessageType</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#CRLF-var">CRLF</a></b> : const char *</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#CalendarInvitation-var">CalendarInvitation</a></b> : const quint64 &amp;</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#CarriageReturn-var">CarriageReturn</a></b> : const char</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#ContentAvailable-var">ContentAvailable</a></b> : const quint64 &amp;</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#Draft-var">Draft</a></b> : const quint64 &amp;</div></li>
@@ -79,12 +81,18 @@
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#customFields">customFields</a></b> () const : const QMap&lt;QString, QString&gt; &amp;</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#date">date</a></b> () const : QMailTimeStamp</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#externalLocationReference">externalLocationReference</a></b> () const : QString</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</a></b> () const : QList&lt;QMailMessagePartContainer::Location&gt;</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</a></b> () const : QMailMessagePartContainer *</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</a></b> () const : QMailMessagePartContainer *</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart">foreachPart</a></b> ( F ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart-2">foreachPart</a></b> ( F ) const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#from">from</a></b> () const : QMailAddress</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#fromRfc2822">fromRfc2822</a></b> ( const QByteArray &amp; ) : QMailMessage</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#fromRfc2822File">fromRfc2822File</a></b> ( const QString &amp; ) : QMailMessage</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasBody">hasBody</a></b> () const : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasHtmlBody">hasHtmlBody</a></b> () const : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasPlainTextBody">hasPlainTextBody</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#hasRecipients">hasRecipients</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerField">headerField</a></b> ( const QString &amp;, QMailMessageHeaderField::FieldType ) const : QMailMessageHeaderField</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFieldText">headerFieldText</a></b> ( const QString &amp; ) const : QString</div></li>
@@ -103,11 +111,13 @@
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#nameForMultipartType">nameForMultipartType</a></b> ( MultipartType ) : QByteArray</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#parentAccountId">parentAccountId</a></b> () const : QMailAccountId</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#parentFolderId">parentFolderId</a></b> () const : QMailFolderId</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#parentThreadId">parentThreadId</a></b> () const : QMailThreadId</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#partAt">partAt</a></b> ( const QMailMessagePart::Location &amp; ) const : const QMailMessagePart &amp;</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#partAt-2">partAt</a></b> ( const QMailMessagePart::Location &amp; ) : QMailMessagePart &amp;</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#partCount">partCount</a></b> () const : uint</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#partialContentAvailable">partialContentAvailable</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#prependPart">prependPart</a></b> ( const QMailMessagePart &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#preview">preview</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</a></b> () const : QMailFolderId</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#receivedDate">receivedDate</a></b> () const : QMailTimeStamp</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#recipients">recipients</a></b> () const : QList&lt;QMailAddress&gt;</div></li>
@@ -119,6 +129,8 @@
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#restoreFolderId">restoreFolderId</a></b> () const : QMailFolderId</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#rfcId">rfcId</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#serverUid">serverUid</a></b> () const : QString</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setAttachments">setAttachments</a></b> ( const QStringList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setAttachments-2">setAttachments</a></b> ( const QList&lt;const QMailMessagePart *&gt; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setBcc">setBcc</a></b> ( const QList&lt;QMailAddress&gt; &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setBody">setBody</a></b> ( const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setBoundary">setBoundary</a></b> ( const QByteArray &amp; )</div></li>
@@ -134,6 +146,7 @@
 <li><div class="fn"><b><a href="qmailmessage.html#setFrom">setFrom</a></b> ( const QMailAddress &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setHeaderField">setHeaderField</a></b> ( const QString &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setHeaderField-2">setHeaderField</a></b> ( const QMailMessageHeaderField &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</a></b> ( const QMailMessageBody &amp;, const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setId">setId</a></b> ( const QMailMessageId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setInReplyTo">setInReplyTo</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setInResponseTo">setInResponseTo</a></b> ( const QMailMessageId &amp; )</div></li>
@@ -142,6 +155,9 @@
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</a></b> ( MultipartType )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</a></b> ( const QMailAccountId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</a></b> ( const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setParentThreadId">setParentThreadId</a></b> ( const QMailThreadId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</a></b> ( const QMailMessageBody &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagemetadata.html#setPreview">setPreview</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</a></b> ( const QMailFolderId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</a></b> ( const QMailTimeStamp &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessage.html#setReplyTo">setReplyTo</a></b> ( const QMailAddress &amp; )</div></li>

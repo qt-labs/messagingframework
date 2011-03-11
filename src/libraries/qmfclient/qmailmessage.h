@@ -652,8 +652,6 @@ public:
     void setCustomField(const QString &name, const QString &value);
     void setCustomFields(const QMap<QString, QString> &fields);
 
-    QMailMessageId latestInConversation() const;
-
     void removeCustomField(const QString &name);
 
     const QMap<QString, QString> &customFields() const;
@@ -674,8 +672,6 @@ private:
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
 
-    void setLatestInConversation(QMailMessageId const& id);
-
 public:
     virtual QString copyServerUid() const;
     virtual void setCopyServerUid(const QString &s);
@@ -688,6 +684,9 @@ public:
 
     virtual QString rfcId() const;
     virtual void setRfcId(const QString &s);
+
+    virtual QMailThreadId parentThreadId() const;
+    virtual void setParentThreadId(const QMailThreadId &id);
 };
 
 class QMailMessagePrivate;

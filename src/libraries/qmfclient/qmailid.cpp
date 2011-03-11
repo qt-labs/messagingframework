@@ -270,6 +270,146 @@ QTextStream& operator<< (QTextStream& s, const QMailAccountId &id)
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
 
+
+/*!
+    \class QMailThreadId
+    \ingroup messaginglibrary
+
+    \preliminary
+    \brief The QMailThreadId class is used to identify threads stored by QMailStore.
+
+    QMailThreadId is a class used to represent threads stored by the QMailStore, identified
+    by their unique numeric internal indentifer.
+
+    A QMailThreadId instance can be tested for validity, and compared to other instances
+    for equality.  The numeric value of the identifier is not intrinsically meaningful
+    and cannot be modified.
+
+    \sa QMailThread, QMailStore::thread()
+*/
+
+/*!
+    \typedef QMailThreadIdList
+    \relates QMailThreadId
+*/
+
+Q_IMPLEMENT_USER_METATYPE(QMailThreadId);
+
+/*!
+    Construct an uninitialized QMailThreadId, for which isValid() returns false.
+*/
+QMailThreadId::QMailThreadId()
+    : d(new QMailIdPrivate)
+{
+}
+
+/*!
+    Construct a QMailThreadId with the supplied numeric identifier \a value.
+*/
+QMailThreadId::QMailThreadId(quint64 value)
+    : d(new QMailIdPrivate(value))
+{
+}
+
+/*! \internal */
+QMailThreadId::QMailThreadId(const QMailThreadId &other)
+    : d(new QMailIdPrivate(*other.d))
+{
+}
+
+/*! \internal */
+QMailThreadId::~QMailThreadId()
+{
+}
+
+/*! \internal */
+QMailThreadId& QMailThreadId::operator=(const QMailThreadId &other)
+{
+    *d = *other.d;
+    return *this;
+}
+
+/*!
+    Returns true if this object has been initialized with an identifier.
+*/
+bool QMailThreadId::isValid() const
+{
+    return d->isValid();
+}
+
+/*! \internal */
+quint64 QMailThreadId::toULongLong() const
+{
+    return d->toULongLong();
+}
+
+/*!
+    Returns a QVariant containing the value of this thread identfier.
+*/
+QMailThreadId::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+/*!
+    Returns true if this object's identifier value differs from that of \a other.
+*/
+bool QMailThreadId::operator!=(const QMailThreadId &other) const
+{
+    return *d != *other.d;
+}
+
+/*!
+    Returns true if this object's identifier value is equal to that of \a other.
+*/
+bool QMailThreadId::operator==(const QMailThreadId& other) const
+{
+    return *d == *other.d;
+}
+
+/*!
+    Returns true if this object's identifier value is less than that of \a other.
+*/
+bool QMailThreadId::operator<(const QMailThreadId& other) const
+{
+    return *d < *other.d;
+}
+
+/*!
+    \fn QMailThreadId::serialize(Stream&) const
+    \internal
+*/
+template <typename Stream> void QMailThreadId::serialize(Stream &stream) const
+{
+    d->serialize(stream);
+}
+
+/*!
+    \fn QMailThreadId::deserialize(Stream&)
+    \internal
+*/
+template <typename Stream> void QMailThreadId::deserialize(Stream &stream)
+{
+    d->deserialize(stream);
+}
+
+/*! \internal */
+QDebug& operator<<(QDebug& debug, const QMailThreadId &id)
+{
+    id.serialize(debug);
+    return debug;
+}
+
+/*! \internal */
+QTextStream& operator<< (QTextStream& s, const QMailThreadId &id)
+{
+    id.serialize(s);
+    return s;
+}
+
+Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
+
+
 /*!
     \class QMailFolderId
     \ingroup messaginglibrary
@@ -569,6 +709,11 @@ uint qHash(const QMailFolderId &id)
 
 /*! \internal */
 uint qHash(const QMailMessageId &id)
+{
+    return qHash(id.toULongLong());
+}
+/*! \internal */
+uint qHash(const QMailThreadId &id)
 {
     return qHash(id.toULongLong());
 }

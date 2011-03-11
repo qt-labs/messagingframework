@@ -1,13 +1,13 @@
 <!DOCTYPE DCF>
 <DCF ref="index.html" icon="qt-messaging-framework.png" imagedir="../../gif" title="Qt Messaging Framework Reference Documentation">
 <section ref="classes.html" title="Classes">
-    <section ref="qmailmessagepart-location.html" title="Location Class Reference">
-        <keyword ref="qmailmessagepart-location.html">Location</keyword>
-        <keyword ref="qmailmessagepart-location.html#containingMessageId">containingMessageId</keyword>
-        <keyword ref="qmailmessagepart-location.html#isValid">isValid</keyword>
-        <keyword ref="qmailmessagepart-location.html#setContainingMessageId">setContainingMessageId</keyword>
-        <keyword ref="qmailmessagepart-location.html#toString">toString</keyword>
-        <section ref="qmailmessagepart-location-members.html" title="List of all members"/>
+    <section ref="qmailmessagepartcontainer-location.html" title="Location Class Reference">
+        <keyword ref="qmailmessagepartcontainer-location.html">Location</keyword>
+        <keyword ref="qmailmessagepartcontainer-location.html#containingMessageId">containingMessageId</keyword>
+        <keyword ref="qmailmessagepartcontainer-location.html#isValid">isValid</keyword>
+        <keyword ref="qmailmessagepartcontainer-location.html#setContainingMessageId">setContainingMessageId</keyword>
+        <keyword ref="qmailmessagepartcontainer-location.html#toString">toString</keyword>
+        <section ref="qmailmessagepartcontainer-location-members.html" title="List of all members"/>
     </section>
     <section ref="qmail.html" title="QMail Namespace Reference">
         <keyword ref="qmail.html">QMail</keyword>
@@ -692,6 +692,7 @@
         <keyword ref="qmailmessagekey.html#Property-enum">Property</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">Properties</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ListId</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ParentThreadId</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::InResponseTo</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ResponseType</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::RestoreFolderId</keyword>
@@ -715,6 +716,7 @@
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ContentIdentifier</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::RfcId</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Subject</keyword>
+        <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::Preview</keyword>
         <keyword ref="qmailmessagekey.html#Property-enum">QMailMessageKey::ServerUid</keyword>
         <keyword ref="qmailmessagekey.html#ancestorFolderIds">ancestorFolderIds</keyword>
         <keyword ref="qmailmessagekey.html#arguments">arguments</keyword>
@@ -736,6 +738,7 @@
         <keyword ref="qmailmessagekey.html#nonMatchingKey">nonMatchingKey</keyword>
         <keyword ref="qmailmessagekey.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailmessagekey.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessagekey.html#parentThreadId">parentThreadId</keyword>
         <keyword ref="qmailmessagekey.html#previousParentFolderId">previousParentFolderId</keyword>
         <keyword ref="qmailmessagekey.html#receptionTimeStamp">receptionTimeStamp</keyword>
         <keyword ref="qmailmessagekey.html#recipients">recipients</keyword>
@@ -787,7 +790,9 @@
         <keyword ref="qmailmessagemetadata.html#messageType">messageType</keyword>
         <keyword ref="qmailmessagemetadata.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailmessagemetadata.html#parentFolderId">parentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#parentThreadId">parentThreadId</keyword>
         <keyword ref="qmailmessagemetadata.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessagemetadata.html#preview">preview</keyword>
         <keyword ref="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#receivedDate">receivedDate</keyword>
         <keyword ref="qmailmessagemetadata.html#removeCustomField">removeCustomField</keyword>
@@ -808,6 +813,8 @@
         <keyword ref="qmailmessagemetadata.html#setMessageType">setMessageType</keyword>
         <keyword ref="qmailmessagemetadata.html#setParentAccountId">setParentAccountId</keyword>
         <keyword ref="qmailmessagemetadata.html#setParentFolderId">setParentFolderId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setParentThreadId">setParentThreadId</keyword>
+        <keyword ref="qmailmessagemetadata.html#setPreview">setPreview</keyword>
         <keyword ref="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</keyword>
         <keyword ref="qmailmessagemetadata.html#setResponseType">setResponseType</keyword>
@@ -937,7 +944,7 @@
         <keyword ref="qmailmessagepart.html#fromStream">fromStream</keyword>
         <keyword ref="qmailmessagepart.html#identifier">identifier</keyword>
         <keyword ref="qmailmessagepart.html#indicativeSize">indicativeSize</keyword>
-        <keyword ref="qmailmessagepart.html#location">location</keyword>
+        <keyword ref="qmailmessagepart.html#locationx">location</keyword>
         <keyword ref="qmailmessagepart.html#messageReference">messageReference</keyword>
         <keyword ref="qmailmessagepart.html#partNumber">partNumber</keyword>
         <keyword ref="qmailmessagepart.html#partReference">partReference</keyword>
@@ -963,8 +970,14 @@
         <keyword ref="qmailmessagepartcontainer.html#clearParts">clearParts</keyword>
         <keyword ref="qmailmessagepartcontainer.html#contentAvailable">contentAvailable</keyword>
         <keyword ref="qmailmessagepartcontainer.html#contentType">contentType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</keyword>
         <keyword ref="qmailmessagepartcontainer.html#foreachPart">foreachPart</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</keyword>
         <keyword ref="qmailmessagepartcontainer.html#hasBody">hasBody</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#hasHtmlBody">hasHtmlBody</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#hasPlainTextBody">hasPlainTextBody</keyword>
         <keyword ref="qmailmessagepartcontainer.html#headerField">headerField</keyword>
         <keyword ref="qmailmessagepartcontainer.html#headerFieldText">headerFieldText</keyword>
         <keyword ref="qmailmessagepartcontainer.html#headerFields">headerFields</keyword>
@@ -978,10 +991,13 @@
         <keyword ref="qmailmessagepartcontainer.html#prependPart">prependPart</keyword>
         <keyword ref="qmailmessagepartcontainer.html#removeHeaderField">removeHeaderField</keyword>
         <keyword ref="qmailmessagepartcontainer.html#removePartAt">removePartAt</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setAttachments">setAttachments</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setBody">setBody</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setBoundary">setBoundary</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</keyword>
         <keyword ref="qmailmessagepartcontainer.html#transferEncoding">transferEncoding</keyword>
         <section ref="qmailmessagepartcontainer-members.html" title="List of all members"/>
     </section>
@@ -1087,6 +1103,7 @@
         <keyword ref="qmailmessageservice.html#source">source</keyword>
         <keyword ref="qmailmessageservice.html#statusChanged">statusChanged</keyword>
         <keyword ref="qmailmessageservice.html#updateStatus">updateStatus</keyword>
+        <keyword ref="qmailmessageservice.html#usesConcurrentActions">usesConcurrentActions</keyword>
         <section ref="qmailmessageservice-members.html" title="List of all members"/>
     </section>
     <section ref="qmailmessageserviceconfigurator.html" title="QMailMessageServiceConfigurator Class Reference">
@@ -1189,7 +1206,6 @@
     </section>
     <section ref="qmailmessagesink.html" title="QMailMessageSink Class Reference">
         <keyword ref="qmailmessagesink.html">QMailMessageSink</keyword>
-        <keyword ref="qmailmessagesink.html#concurrentActionsSupported">concurrentActionsSupported</keyword>
         <keyword ref="qmailmessagesink.html#messagesFailedTransmission">messagesFailedTransmission</keyword>
         <keyword ref="qmailmessagesink.html#messagesTransmitted">messagesTransmitted</keyword>
         <keyword ref="qmailmessagesink.html#notImplemented">notImplemented</keyword>
@@ -1201,6 +1217,7 @@
         <keyword ref="qmailmessagesortkey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">Property</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ListId</keyword>
+        <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::ParentThreadId</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::RestoreFolderId</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Id</keyword>
         <keyword ref="qmailmessagesortkey.html#Property-enum">QMailMessageSortKey::Size</keyword>
@@ -1250,7 +1267,6 @@
     <section ref="qmailmessagesource.html" title="QMailMessageSource Class Reference">
         <keyword ref="qmailmessagesource.html">QMailMessageSource</keyword>
         <keyword ref="qmailmessagesource.html#cancelSearch">cancelSearch</keyword>
-        <keyword ref="qmailmessagesource.html#concurrentActionsSupported">concurrentActionsSupported</keyword>
         <keyword ref="qmailmessagesource.html#copyMessages">copyMessages</keyword>
         <keyword ref="qmailmessagesource.html#createFolder">createFolder</keyword>
         <keyword ref="qmailmessagesource.html#deleteFolder">deleteFolder</keyword>
@@ -1323,6 +1339,7 @@
         <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Content</keyword>
         <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Flags</keyword>
         <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::MetaData</keyword>
+        <keyword ref="qmailretrievalaction.html#RetrievalSpecification-enum">QMailRetrievalAction::Auto</keyword>
         <keyword ref="qmailretrievalaction.html#exportUpdates">exportUpdates</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveAll">retrieveAll</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveFolderList">retrieveFolderList</keyword>
@@ -1442,10 +1459,12 @@
         <keyword ref="qmailstore.html#addFolder">addFolder</keyword>
         <keyword ref="qmailstore.html#addMessage">addMessage</keyword>
         <keyword ref="qmailstore.html#addMessages">addMessages</keyword>
+        <keyword ref="qmailstore.html#addThread">addThread</keyword>
         <keyword ref="qmailstore.html#asynchronousEmission">asynchronousEmission</keyword>
         <keyword ref="qmailstore.html#countAccounts">countAccounts</keyword>
         <keyword ref="qmailstore.html#countFolders">countFolders</keyword>
         <keyword ref="qmailstore.html#countMessages">countMessages</keyword>
+        <keyword ref="qmailstore.html#countThreads">countThreads</keyword>
         <keyword ref="qmailstore.html#errorOccurred">errorOccurred</keyword>
         <keyword ref="qmailstore.html#flushIpcNotifications">flushIpcNotifications</keyword>
         <keyword ref="qmailstore.html#folder">folder</keyword>
@@ -1477,6 +1496,7 @@
         <keyword ref="qmailstore.html#queryAccounts">queryAccounts</keyword>
         <keyword ref="qmailstore.html#queryFolders">queryFolders</keyword>
         <keyword ref="qmailstore.html#queryMessages">queryMessages</keyword>
+        <keyword ref="qmailstore.html#queryThreads">queryThreads</keyword>
         <keyword ref="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</keyword>
         <keyword ref="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</keyword>
         <keyword ref="qmailstore.html#registerMessageStatusFlag">registerMessageStatusFlag</keyword>
@@ -1486,10 +1506,17 @@
         <keyword ref="qmailstore.html#removeFolders">removeFolders</keyword>
         <keyword ref="qmailstore.html#removeMessage">removeMessage</keyword>
         <keyword ref="qmailstore.html#removeMessages">removeMessages</keyword>
+        <keyword ref="qmailstore.html#removeThread">removeThread</keyword>
+        <keyword ref="qmailstore.html#removeThreads">removeThreads</keyword>
         <keyword ref="qmailstore.html#retrievalInProgress">retrievalInProgress</keyword>
         <keyword ref="qmailstore.html#setRetrievalInProgress">setRetrievalInProgress</keyword>
         <keyword ref="qmailstore.html#setTransmissionInProgress">setTransmissionInProgress</keyword>
         <keyword ref="qmailstore.html#sizeOfMessages">sizeOfMessages</keyword>
+        <keyword ref="qmailstore.html#thread">thread</keyword>
+        <keyword ref="qmailstore.html#threadContentsModified">threadContentsModified</keyword>
+        <keyword ref="qmailstore.html#threadsAdded">threadsAdded</keyword>
+        <keyword ref="qmailstore.html#threadsRemoved">threadsRemoved</keyword>
+        <keyword ref="qmailstore.html#threadsUpdated">threadsUpdated</keyword>
         <keyword ref="qmailstore.html#transmissionInProgress">transmissionInProgress</keyword>
         <keyword ref="qmailstore.html#unlock">unlock</keyword>
         <keyword ref="qmailstore.html#updateAccount">updateAccount</keyword>
@@ -1498,6 +1525,7 @@
         <keyword ref="qmailstore.html#updateMessage">updateMessage</keyword>
         <keyword ref="qmailstore.html#updateMessages">updateMessages</keyword>
         <keyword ref="qmailstore.html#updateMessagesMetaData">updateMessagesMetaData</keyword>
+        <keyword ref="qmailstore.html#updateThread">updateThread</keyword>
         <section ref="qmailstore-members.html" title="List of all members"/>
     </section>
     <section ref="qmailstoreaccountfilter.html" title="QMailStoreAccountFilter Class Reference">
@@ -1515,6 +1543,81 @@
         <keyword ref="qmailstoreaccountfilter.html#messagesRemoved">messagesRemoved</keyword>
         <keyword ref="qmailstoreaccountfilter.html#messagesUpdated">messagesUpdated</keyword>
         <section ref="qmailstoreaccountfilter-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailthread.html" title="QMailThread Class Reference">
+        <keyword ref="qmailthread.html">QMailThread</keyword>
+        <keyword ref="qmailthread.html#id">id</keyword>
+        <keyword ref="qmailthread.html#messageCount">messageCount</keyword>
+        <keyword ref="qmailthread.html#parentAccountId">parentAccountId</keyword>
+        <keyword ref="qmailthread.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailthread.html#setId">setId</keyword>
+        <keyword ref="qmailthread.html#setMessageCount">setMessageCount</keyword>
+        <keyword ref="qmailthread.html#setParentAccountId">setParentAccountId</keyword>
+        <keyword ref="qmailthread.html#setServerUid">setServerUid</keyword>
+        <keyword ref="qmailthread.html#setUnreadCount">setUnreadCount</keyword>
+        <keyword ref="qmailthread.html#unreadCount">unreadCount</keyword>
+        <keyword ref="qmailthread.html#operator-eq">operator=</keyword>
+        <section ref="qmailthread-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailthreadid.html" title="QMailThreadId Class Reference">
+        <keyword ref="qmailthreadid.html">QMailThreadId</keyword>
+        <keyword ref="qmailthreadid.html#isValid">isValid</keyword>
+        <keyword ref="qmailthreadid.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailthreadid.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailthreadid.html#operator-lt">operator&lt;</keyword>
+        <keyword ref="qmailthreadid.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</keyword>
+        <section ref="qmailthreadid-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailthreadkey.html" title="QMailThreadKey Class Reference">
+        <keyword ref="qmailthreadkey.html">QMailThreadKey</keyword>
+        <keyword ref="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::ServerUid</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::UnreadCount</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::Id</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::MessageCount</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::Custom</keyword>
+        <keyword ref="qmailthreadkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailthreadkey.html#combiner">combiner</keyword>
+        <keyword ref="qmailthreadkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailthreadkey.html#id">id</keyword>
+        <keyword ref="qmailthreadkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailthreadkey.html#isNegated">isNegated</keyword>
+        <keyword ref="qmailthreadkey.html#isNonMatching">isNonMatching</keyword>
+        <keyword ref="qmailthreadkey.html#nonMatchingKey">nonMatchingKey</keyword>
+        <keyword ref="qmailthreadkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailthreadkey.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailthreadkey.html#subKeys">subKeys</keyword>
+        <keyword ref="qmailthreadkey.html#operator-QVariant">operator QVariant</keyword>
+        <keyword ref="qmailthreadkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailthreadkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailthreadkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailthreadkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailthreadkey.html#operator-eq-eq">operator==</keyword>
+        <keyword ref="qmailthreadkey.html#operator-7c">operator|</keyword>
+        <keyword ref="qmailthreadkey.html#operator-7c-eq">operator|=</keyword>
+        <keyword ref="qmailthreadkey.html#operator-7e">operator~</keyword>
+        <section ref="qmailthreadkey-members.html" title="List of all members"/>
+    </section>
+    <section ref="qmailthreadsortkey.html" title="QMailThreadSortKey Class Reference">
+        <keyword ref="qmailthreadsortkey.html">QMailThreadSortKey</keyword>
+        <keyword ref="qmailthreadsortkey.html#ArgumentType-typedef">ArgumentType</keyword>
+        <keyword ref="qmailthreadsortkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailthreadsortkey.html#Property-enum">QMailThreadSortKey::ServerUid</keyword>
+        <keyword ref="qmailthreadsortkey.html#Property-enum">QMailThreadSortKey::Id</keyword>
+        <keyword ref="qmailthreadsortkey.html#arguments">arguments</keyword>
+        <keyword ref="qmailthreadsortkey.html#deserialize">deserialize</keyword>
+        <keyword ref="qmailthreadsortkey.html#id">id</keyword>
+        <keyword ref="qmailthreadsortkey.html#isEmpty">isEmpty</keyword>
+        <keyword ref="qmailthreadsortkey.html#serialize">serialize</keyword>
+        <keyword ref="qmailthreadsortkey.html#serverUid">serverUid</keyword>
+        <keyword ref="qmailthreadsortkey.html#operator-not-eq">operator!=</keyword>
+        <keyword ref="qmailthreadsortkey.html#operator-and">operator&amp;</keyword>
+        <keyword ref="qmailthreadsortkey.html#operator-and-eq">operator&amp;=</keyword>
+        <keyword ref="qmailthreadsortkey.html#operator-eq">operator=</keyword>
+        <keyword ref="qmailthreadsortkey.html#operator-eq-eq">operator==</keyword>
+        <section ref="qmailthreadsortkey-members.html" title="List of all members"/>
     </section>
     <section ref="qmailtimestamp.html" title="QMailTimeStamp Class Reference">
         <keyword ref="qmailtimestamp.html">QMailTimeStamp</keyword>

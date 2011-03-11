@@ -16,7 +16,7 @@
 <p>This is the complete list of members for <a href="qmailmessagepart.html">QMailMessagePart</a>, including inherited members.</p>
 <p><table class="propsummary" width="100%" border="0" cellpadding="0" cellspacing="0">
 <tr><td width="45%" valign="top"><ul>
-<li><div class="fn">class <b><a href="qmailmessagepart-location.html">Location</a></b></div></li>
+<li><div class="fn">class <b><a href="qmailmessagepartcontainer-location.html">Location</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagepartcontainerfwd.html#MultipartType-enum">MultipartType</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagepartfwd.html#ReferenceType-enum">ReferenceType</a></b></div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#QMailMessagePart">QMailMessagePart</a></b> ()</div></li>
@@ -34,6 +34,9 @@
 <li><div class="fn"><b><a href="qmailmessagepart.html#contentLocation">contentLocation</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#contentType">contentType</a></b> () const : QMailMessageContentType</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#displayName">displayName</a></b> () const : QString</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</a></b> () const : QList&lt;QMailMessagePartContainer::Location&gt;</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</a></b> () const : QMailMessagePartContainer *</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</a></b> () const : QMailMessagePartContainer *</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart">foreachPart</a></b> ( F ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart-2">foreachPart</a></b> ( F ) const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#fromData">fromData</a></b> ( const QByteArray &amp;, const QMailMessageContentDisposition &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding, QMailMessageBody::EncodingStatus ) : QMailMessagePart</div></li>
@@ -43,16 +46,19 @@
 <li><div class="fn"><b><a href="qmailmessagepart.html#fromPartReference">fromPartReference</a></b> ( const QMailMessagePart::Location &amp;, const QMailMessageContentDisposition &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding ) : QMailMessagePart</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#fromStream">fromStream</a></b> ( QDataStream &amp;, const QMailMessageContentDisposition &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding, QMailMessageBody::EncodingStatus ) : QMailMessagePart</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#fromStream-2">fromStream</a></b> ( QTextStream &amp;, const QMailMessageContentDisposition &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding ) : QMailMessagePart</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasBody">hasBody</a></b> () const : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasHtmlBody">hasHtmlBody</a></b> () const : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#hasPlainTextBody">hasPlainTextBody</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerField">headerField</a></b> ( const QString &amp;, QMailMessageHeaderField::FieldType ) const : QMailMessageHeaderField</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFieldText">headerFieldText</a></b> ( const QString &amp; ) const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFields">headerFields</a></b> ( const QString &amp;, QMailMessageHeaderField::FieldType ) const : QList&lt;QMailMessageHeaderField&gt;</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFields-2">headerFields</a></b> () const : QList&lt;QMailMessageHeaderField&gt;</div></li>
-<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFieldsText">headerFieldsText</a></b> ( const QString &amp; ) const : QStringList</div></li>
 </ul></td><td valign="top"><ul>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#headerFieldsText">headerFieldsText</a></b> ( const QString &amp; ) const : QStringList</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#identifier">identifier</a></b> () const : QString</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#indicativeSize">indicativeSize</a></b> () const : uint</div></li>
-<li><div class="fn"><b><a href="qmailmessagepart.html#location">location</a></b> () const : Location</div></li>
+<li><div class="fn"><b><a href="qmailmessagepart.html#locationx">location</a></b> () const : Location</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#messageReference">messageReference</a></b> () const : QMailMessageId</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#multipartType">multipartType</a></b> () const : MultipartType</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#multipartTypeForName">multipartTypeForName</a></b> ( const QByteArray &amp; ) : MultipartType</div></li>
@@ -68,6 +74,8 @@
 <li><div class="fn"><b><a href="qmailmessagepart.html#referenceType">referenceType</a></b> () const : ReferenceType</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#removeHeaderField">removeHeaderField</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#removePartAt">removePartAt</a></b> ( uint )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setAttachments">setAttachments</a></b> ( const QStringList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setAttachments-2">setAttachments</a></b> ( const QList&lt;const QMailMessagePart *&gt; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setBody">setBody</a></b> ( const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setBoundary">setBoundary</a></b> ( const QByteArray &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#setContentDescription">setContentDescription</a></b> ( const QString &amp; )</div></li>
@@ -77,7 +85,9 @@
 <li><div class="fn"><b><a href="qmailmessagepart.html#setContentLocation">setContentLocation</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</a></b> ( const QString &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHeaderField-2">setHeaderField</a></b> ( const QMailMessageHeaderField &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</a></b> ( const QMailMessageBody &amp;, const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</a></b> ( MultipartType )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</a></b> ( const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#setReference">setReference</a></b> ( const QMailMessageId &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#setReference-2">setReference</a></b> ( const QMailMessagePart::Location &amp;, const QMailMessageContentType &amp;, QMailMessageBody::TransferEncoding )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepart.html#setReferenceResolution">setReferenceResolution</a></b> ( const QString &amp; )</div></li>
