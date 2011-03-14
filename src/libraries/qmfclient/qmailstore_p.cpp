@@ -112,8 +112,6 @@ class QMailStorePrivate::Key
     bool isType(QMailAccountSortKey*) const { return (m_type == AccountSort); }
     bool isType(QMailFolderKey*) const { return (m_type == Folder); }
     bool isType(QMailFolderSortKey*) const { return (m_type == FolderSort); }
-    bool isType(QMailThreadKey*) const { return (m_type == Thread); }
-    bool isType(QMailThreadSortKey*) const { return (m_type == ThreadSort); }
     bool isType(QMailMessageKey*) const { return (m_type == Message); }
     bool isType(QMailMessageSortKey*) const { return (m_type == MessageSort); }
     bool isType(QString*) const { return (m_type == Text); }
@@ -124,8 +122,6 @@ class QMailStorePrivate::Key
     const QMailFolderSortKey &key(QMailFolderSortKey*) const { return *reinterpret_cast<const QMailFolderSortKey*>(m_key); }
     const QMailMessageKey &key(QMailMessageKey*) const { return *reinterpret_cast<const QMailMessageKey*>(m_key); }
     const QMailMessageSortKey &key(QMailMessageSortKey*) const { return *reinterpret_cast<const QMailMessageSortKey*>(m_key); }
-    const QMailThreadKey &key(QMailThreadKey*) const { return *reinterpret_cast<const QMailThreadKey*>(m_key); }
-    const QMailThreadSortKey &key(QMailThreadSortKey*) const { return *reinterpret_cast<const QMailThreadSortKey*>(m_key); }
     const QString &key(QString*) const { return *m_alias; }
 
 public:
@@ -524,7 +520,6 @@ static ThreadPropertyMap threadPropertyMap()
     map.insert(QMailThreadKey::MessageCount, "messagecount");
     map.insert(QMailThreadKey::UnreadCount, "unreadcount");
     map.insert(QMailThreadKey::ServerUid, "serveruid");
-    map.insert(QMailThreadKey::Includes, "id");
     return map;
 }
 
@@ -1473,8 +1468,6 @@ public:
     QVariant unreadCount() const { return intValue(); }
 
     QVariantList custom() const { return customValues(); }
-
-    QVariantList includes() const { return idValues<QMailMessageKey>(); }
 };
 
 template<>
@@ -1503,9 +1496,6 @@ void appendWhereValues<QMailThreadKey::ArgumentType>(const QMailThreadKey::Argum
     case QMailThreadKey::Custom:
         values += extractor.custom();
         break;
-
-    case QMailThreadKey::Includes:
-        values += extractor.includes();
     }
 }
 
@@ -2014,63 +2004,6 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
         case QMailFolderKey::ServerUnreadCount:
         case QMailFolderKey::ServerUndiscoveredCount:
 
-            q << expression;
-            break;
-        }
-    }
-    return item;
-}
-
-
-template<>
-QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThreadKey::ArgumentType &a, const QString &alias, const QString &field, const QMailStorePrivate &store)
-{
-    QString item;
-    {
-        QTextStream q(&item);
-
-        QString columnName;
-        if (!field.isEmpty()) {
-            columnName = qualifiedName(field, alias);
-        } else {
-            columnName = fieldName(a.property, alias);
-        }
-
-        QString expression = columnExpression(columnName, a.op, a.valueList);
-
-        switch (a.property)
-        {
-        case QMailThreadKey::Id:
-            if (a.valueList.first().canConvert<QMailThreadKey>()) {
-                QMailThreadKey subKey = a.valueList.first().value<QMailThreadKey>();
-                QString nestedAlias(incrementAlias(alias));
-
-                // Expand comparison to sub-query result
-                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailthreads " << nestedAlias;
-                q << store.buildWhereClause(QMailStorePrivate::Key(subKey, nestedAlias)) << ")";
-            } else {
-                q << expression;
-            }
-            break;
-
-        case QMailThreadKey::Includes:
-            if(a.valueList.first().canConvert<QMailMessageKey>()) {
-                QMailMessageKey messageSubKey = a.valueList.first().value<QMailMessageKey>();
-                QString nestedAlias(incrementAlias(alias));
-
-                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("parentthreadid", nestedAlias) << " FROM mailmessages " << nestedAlias;
-                q << store.buildWhereClause(QMailStorePrivate::Key(messageSubKey, nestedAlias)) << ")";
-            } else {
-                Q_ASSERT(false);
-                q << expression;
-            }
-            break;
-
-        case QMailThreadKey::Custom:
-            Q_ASSERT(false);
-        case QMailThreadKey::ServerUid:
-        case QMailThreadKey::MessageCount:
-        case QMailThreadKey::UnreadCount:
             q << expression;
             break;
         }
@@ -3188,9 +3121,6 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
     } else if (key.isType<QMailAccountKey>()) {
         const QMailAccountKey &accountKey(key.key<QMailAccountKey>());
         return ::buildWhereClause(accountKey, accountKey.arguments(), accountKey.subKeys(), accountKey.combiner(), accountKey.isNegated(), nested, firstClause, key.alias(), key.field(), *this);
-    } else if (key.isType<QMailThreadKey>()) {
-        const QMailThreadKey &threadKey(key.key<QMailThreadKey>());
-        return ::buildWhereClause(threadKey, threadKey.arguments(), threadKey.subKeys(), threadKey.combiner(), threadKey.isNegated(), nested, firstClause, key.alias(), key.field(), *this);
     }
 
     return QString();
@@ -6400,7 +6330,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryThreads(const QM
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "querythreads mailthreadss query"));
+                                "queryFolders mailfolders query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -8119,15 +8049,13 @@ QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, 
 
     bool firstClause(true);
     foreach (const Key &key, keys) {
-        if (key.isType<QMailMessageKey>() || key.isType<QMailFolderKey>() || key.isType<QMailAccountKey>() || key.isType<QMailThreadKey>()) {
+        if (key.isType<QMailMessageKey>() || key.isType<QMailFolderKey>() || key.isType<QMailAccountKey>()) {
             keyStatements.append(buildWhereClause(key, false, firstClause));
             keyValues << whereClauseValues(key);
-        } else if (key.isType<QMailMessageSortKey>() || key.isType<QMailFolderSortKey>() || key.isType<QMailAccountSortKey>() || key.isType<QMailThreadSortKey>()) {
+        } else if (key.isType<QMailMessageSortKey>() || key.isType<QMailFolderSortKey>() || key.isType<QMailAccountSortKey>()) {
             keyStatements.append(buildOrderClause(key));
         } else if (key.isType<QString>()) {
             keyStatements.append(key.key<QString>());
-        } else {
-            Q_ASSERT(false);
         }
 
         firstClause = false;

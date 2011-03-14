@@ -54,7 +54,6 @@
 class QMailAccountKey;
 
 class QMailThreadKeyPrivate;
-class QMailMessageKey;
 
 template <typename Key>
 class MailKeyImpl;
@@ -68,8 +67,7 @@ public:
         ServerUid = (1 << 1),
         MessageCount = (1 << 2),
         UnreadCount = (1 << 3),
-        Custom = (1 << 4),
-        Includes = (1 << 5)
+        Custom = (1 << 4)
     };
 
     typedef QMailThreadId IdType;
@@ -114,10 +112,6 @@ public:
     static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailThreadKey serverUid(const QString &uid, QMailDataComparator::InclusionComparator cmp);
     static QMailThreadKey serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
-
-    static QMailThreadKey includes(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
-    static QMailThreadKey includes(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
-
 private:
     QMailThreadKey(Property p, const QVariant& value, QMailKey::Comparator c);
 
