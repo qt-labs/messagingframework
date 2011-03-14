@@ -499,16 +499,24 @@ void tst_QMailMessageHeaderField::setContent()
 
     header1.setId("Subject");
     header1.setContent(longContent);
-    QCOMPARE( asRfc2822(header1), QByteArray(
+
+//    qCritical() << "orig=" << longContent;
+//    qCritical() << "rfc =" << asRfc2822(header1);
+
+    QByteArray expected(
 "Subject: There are quite a lot of places in the code that use" CRLF
 " qApp->desktop->width() \nand height() to calculate the size of widgets.\n\nSome" CRLF
-" devices will have two QScreens, one for the LCD and the other for the TV " CRLF
-"\noutput.  The \"desktop\" is the union of both screens, not just the first " CRLF
-"\nscreen, which causes widgets to get resized incorrectly on the LCD.  To see" CRLF
-" a \ndemo, try running World Time in a multi screen skin in qvfb.\n\nThe correct" CRLF
-" value to use is that from QDesktopWidget::availableGeometry() or " CRLF
-"\nQDesktopWidget::screenGeometry() for the primary screen, not the desktop " CRLF
-"\ngeometry." CRLF) );
+" devices will have two QScreens," CRLF
+" one for the LCD and the other for the TV \noutput.  The \"desktop\" is the" CRLF
+" union of both screens, not just the first \nscreen," CRLF
+" which causes widgets to get resized incorrectly on the LCD.  To see a \ndemo," CRLF
+" try running World Time in a multi screen skin in qvfb.\n\nThe correct value to" CRLF
+" use is that from QDesktopWidget::availableGeometry() or " CRLF
+"\nQDesktopWidget::screenGeometry() for the primary screen," CRLF
+" not the desktop \ngeometry." CRLF);
+
+    QCOMPARE( asRfc2822(header1), expected);
+
 }
 
 void tst_QMailMessageHeaderField::parameter()
@@ -1156,8 +1164,8 @@ void tst_QMailMessageHeaderField::output_data()
         << QByteArray("X-Very-Long-Identifier-For-A-Header")
         << QByteArray("\"quoted text string, should follow the soft line-break, maybe?\"")
         << QByteArray(
-"X-Very-Long-Identifier-For-A-Header: \"quoted text string, should follow the" CRLF
-" soft line-break, maybe?\"" CRLF);
+"X-Very-Long-Identifier-For-A-Header: \"quoted text string," CRLF
+" should follow the soft line-break, maybe?\"" CRLF);
 
     QTest::newRow("Requires wrapping after content")
         << QByteArray("X-Very-Long-Identifier-For-A-Header")
@@ -1186,7 +1194,7 @@ void tst_QMailMessageHeaderField::output_data()
         << QByteArray(
 "X-Very-Long-Identifier-For-A-Header:" CRLF
 " This_text_string_is_too_long_to_fit_entirely_into_a_single_line_of_a_message_" CRLF
-"\theader_field..." CRLF);
+" header_field..." CRLF);
 
     QTest::newRow("Unbreakable token after breakable whitespace")
         << QByteArray("Content-Disposition")
@@ -1194,7 +1202,7 @@ void tst_QMailMessageHeaderField::output_data()
         << QByteArray(
 "Content-Disposition: attachment;" CRLF
 " filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jp" CRLF
-"\tg" CRLF);
+" g" CRLF);
 }
 
 void tst_QMailMessageHeaderField::output()
