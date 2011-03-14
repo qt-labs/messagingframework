@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201110_2
+  * Fixes: NB#235204 - QMF IMAP plugin is unable to get mail
+
 201108
   * Fixes: NB#227422 - Wrong header field splitting when using setHeaderField() with long string
 
