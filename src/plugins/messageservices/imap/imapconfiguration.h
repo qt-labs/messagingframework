@@ -90,6 +90,9 @@ public:
 
     int timeTillLogout() const;
     void setTimeTillLogout(int milliseconds);
+
+    bool fullPipelining() const;
+    void setFullPipelining(bool b);
 };
 
 class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration

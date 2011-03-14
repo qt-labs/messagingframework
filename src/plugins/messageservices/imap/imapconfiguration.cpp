@@ -178,6 +178,19 @@ void ImapConfiguration::setTimeTillLogout(int milliseconds)
     setValue("timeTillLogout", QString::number(milliseconds));
 }
 
+// Defines if aggresive pipelining will be used
+// Currently SELECT + UID FETCH command combination may be pipelined iff true
+bool ImapConfiguration::fullPipelining() const
+{
+    return (value("fullPipelining", "0").toInt() != 0);
+}
+
+
+void ImapConfiguration::setFullPipelining(bool b)
+{
+    setValue("fullPipelining", QString::number(b ? 1 : 0));
+}
+
 ImapConfigurationEditor::ImapConfigurationEditor(QMailAccountConfiguration *config)
     : ImapConfiguration(*config)
 {
