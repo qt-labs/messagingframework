@@ -43,6 +43,7 @@
 #include "qmailthreadkey_p.h"
 
 #include "qmailaccountkey.h"
+#include "qmailmessagekey.h"
 #include <QStringList>
 
 using namespace QMailKey;
@@ -380,4 +381,24 @@ QMailThreadKey QMailThreadKey::serverUid(const QStringList &uids, QMailDataCompa
 {
     return QMailThreadKey(uids, ServerUid, QMailKey::comparator(cmp));
 }
+
+
+/*!
+    Returns a key matching threads that include a message in \a ids, according to \a cmp.
+*/
+
+QMailThreadKey QMailThreadKey::includes(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailThreadKey(ids, QMailThreadKey::Includes, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching threads that include a message in \a keys, according to \a cmp.
+*/
+
+QMailThreadKey QMailThreadKey::includes(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailThreadKey(Includes, key, QMailKey::comparator(cmp));
+}
+
 
