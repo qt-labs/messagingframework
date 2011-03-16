@@ -1342,10 +1342,12 @@ void ImapFetchSelectedMessagesStrategy::clearSelection()
     _retrievalSize.clear();
 }
 
-static bool operator==(const QMailMessagePartContainer::Location &a,
+namespace {
+bool operator==(const QMailMessagePartContainer::Location &a,
                        const QMailMessagePartContainer::Location &b)
 {
     return a.toString(true) == b.toString(true);
+}
 }
 
 void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase *context,
