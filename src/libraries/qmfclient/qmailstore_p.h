@@ -57,7 +57,7 @@
 #include <QSqlDatabase>
 #include <QCache>
 
-#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
+//#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
 //#define QMAILSTORE_USE_RTTI //define if RTTI is available to assist debugging
 
 #ifdef QMAILSTORE_USE_RTTI
