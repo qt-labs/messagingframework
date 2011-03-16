@@ -22,6 +22,13 @@ SUBDIRS = src/libraries/qmfclient \
           SUBDIRS += benchmarks
 }
 
+symbian {
+    message("Building a pure Symbian Client-Server implementation for Data Server using Raptor...")
+    system(sbs -b src/symbian/qmfdataserver/bld.inf)
+    message("Building a pure Symbian Client-Server implementation for IPC Channel using Raptor...")
+    system(sbs -b src/symbian/qmfipcchannelserver/bld.inf)
+}
+
 defineReplace(targetPath) {
     return($$replace(1, /, $$QMAKE_DIR_SEP))
 }

@@ -53,7 +53,11 @@ class QMailMessagePartContainer;
 
 QT_BEGIN_NAMESPACE
 
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+class SymbianFile;
+#else
 class QFile;
+#endif
 
 QT_END_NAMESPACE
 
@@ -90,9 +94,17 @@ private:
 
     bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable);
     bool removeParts(const QString &fileName);
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+    void syncLater(QSharedPointer<SymbianFile> file);
+#else
     void syncLater(QSharedPointer<QFile> file);
+#endif
 
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+    QList< QSharedPointer<SymbianFile> > _openFiles;
+#else
     QList< QSharedPointer<QFile> > _openFiles;
+#endif
     bool _useFullSync;
 };
 

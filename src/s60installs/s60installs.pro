@@ -20,6 +20,7 @@ qmfdeployment.pkg_prerules += vendorinfo
 deploy.path = C:
 
 qmfdeployment.sources = messageserver.exe
+qmfdeployment.sources += qmfdataserver.exe
 qmfdeployment.sources += qmfclient.dll
 qmfdeployment.sources += qmfmessageserver.dll
 qmfdeployment.path = /sys/bin

@@ -53,6 +53,10 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #endif
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+#include "sqldatabase.h"
+#define QSqlDatabase SymbianSqlDatabase
+#endif
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -210,7 +214,11 @@ bool QMail::fileUnlock(int id)
 QString QMail::dataPath()
 {
 #ifdef Q_OS_SYMBIAN
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+    return QString("");
+#else
     return QString("\\");
+#endif
 #else
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
@@ -297,9 +305,14 @@ QSqlDatabase QMail::createDatabase()
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
-
         
-#ifndef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+        db.setDatabaseName("qmailstore.db");
+#else
+        db.setDatabaseName(dataPath() + "qmailstore.db");
+#endif
+#else
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
@@ -316,10 +329,6 @@ QSqlDatabase QMail::createDatabase()
         db.setDatabaseName(dataPath() + "database/qmailstore.db");
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-        db.setDatabaseName(dataPath() + "qmailstore.db");
-#endif
-        
         if(!db.open()) {
             QSqlError dbError = db.lastError();
             qCritical() << "Cannot open database: " << dbError.text();

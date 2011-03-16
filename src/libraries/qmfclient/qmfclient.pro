@@ -13,6 +13,28 @@ win32: {
 
 QT = core sql network
 symbian: {
+    include(../../../symbianoptions.pri)
+
+    contains(CONFIG, SYMBIAN_USE_DATA_CAGED_DATABASE) {
+        DEFINES += SYMBIAN_USE_DATA_CAGED_DATABASE
+
+        INCLUDEPATH += symbian \
+                       ../../symbian/qmfdataclient
+
+        PRIVATE_HEADERS += ../../symbian/qmfdataclient/qmfdataclientservercommon.h \
+                           ../../symbian/qmfdataclient/qmfdatasession.h \
+                           ../../symbian/qmfdataclient/qmfdatastorage.h \
+                           symbian/sqldatabase.h \
+                           symbian/sqlquery.h
+
+        SOURCES += ../../symbian/qmfdataclient/qmfdatasession.cpp \
+                   ../../symbian/qmfdataclient/qmfdatastorage.cpp \
+                   symbian/sqldatabase.cpp \
+                   symbian/sqlquery.cpp
+
+        LIBS += -lsqldb
+    }
+
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
     TARGET.EPOCALLOWDLLDATA = 1
