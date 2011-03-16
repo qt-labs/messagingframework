@@ -1334,7 +1334,13 @@ void tst_QMailStore::remove1000Messages()
 
     //without message removal record
 
+#if defined(Q_OS_SYMBIAN)
+    // Adding & removing large amounts of messages is really slow on Symbian platform
+    // => 10 messages is used for testing (not 1000)
+    static const int largeMessageCount = 10;
+#else
     static const int largeMessageCount = 1000;
+#endif
 
     for(int i = 0; i < largeMessageCount; ++i)
     {
