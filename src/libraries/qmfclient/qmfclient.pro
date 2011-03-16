@@ -222,7 +222,13 @@ TRANSLATIONS += libqtopiamail-ar.ts \
 header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
 header_files.files=$$PUBLIC_HEADERS
 
-INSTALLS += header_files 
+INSTALLS += header_files
+
+symbian {
+    for(header, header_files.files) {
+        BLD_INF_RULES.prj_exports += "$$header $$MW_LAYER_PUBLIC_EXPORT_PATH("qmf/"$$basename(header))"
+    }
+}
 
 unix: {
 	CONFIG += create_pc create_prl
