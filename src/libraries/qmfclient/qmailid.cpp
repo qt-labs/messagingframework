@@ -293,7 +293,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
     \relates QMailThreadId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailThreadId);
+Q_IMPLEMENT_USER_METATYPE(QMailThreadId)
 
 /*!
     Construct an uninitialized QMailThreadId, for which isValid() returns false.

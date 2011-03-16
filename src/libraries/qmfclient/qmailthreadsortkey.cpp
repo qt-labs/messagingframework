@@ -215,5 +215,5 @@ QMailThreadSortKey QMailThreadSortKey::serverUid(Qt::SortOrder order)
 
 
 
-Q_IMPLEMENT_USER_METATYPE(QMailThreadSortKey);
+Q_IMPLEMENT_USER_METATYPE(QMailThreadSortKey)
 
