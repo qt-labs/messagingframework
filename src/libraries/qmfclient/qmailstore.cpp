@@ -43,6 +43,9 @@
 #define QMAILSTOREINSTANCE_DEFINED_HERE
 #include "qmailstore.h"
 #include "qmailstore_p.h"
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+#include <QThreadStorage>
+#endif
 
 /*!
     \class QMailStore
@@ -1406,7 +1409,29 @@ QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessageMetaData*>
     return data;
 }
 
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+class QMailStoreInstanceData
+{
+public:
+    QMailStoreInstanceData()
+    {
+    mailStore = 0;
+    init = false;
+    }
+
+    ~QMailStoreInstanceData()
+    {
+    delete mailStore;
+    }
+
+    QMailStore *mailStore;
+    bool init;
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QMailStoreInstanceData *>, mailStoreDataInstance)
+#else
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
+#endif
 
 /*!
     Returns the single instance of the QMailStore class.
@@ -1417,6 +1442,25 @@ Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
 */
 QMailStore* QMailStore::instance()
 {
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+    if (!mailStoreDataInstance()->hasLocalData()) {
+        mailStoreDataInstance()->setLocalData(new QMailStoreInstanceData);
+    }
+    QMailStoreInstanceData* instance = mailStoreDataInstance()->localData();
+
+    if (!instance->init) {
+        instance->init = true;
+
+        instance->mailStore = new QMailStore;
+        QMailStore *store = instance->mailStore;
+        store->d->initialize();
+        if (initializationState() == QMailStore::InitializationFailed) {
+            delete store->d;
+            store->d = new QMailStoreNullImplementation(store);
+        }
+    }
+    return instance->mailStore;
+#else
     static bool init = false;
     if (!init) {
         init = true;
@@ -1428,6 +1472,7 @@ QMailStore* QMailStore::instance()
         }
     }
     return QMailStoreInstance();
+#endif
 }
 
 /*!

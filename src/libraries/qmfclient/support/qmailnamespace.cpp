@@ -47,6 +47,9 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+#include <QThreadStorage>
+#endif
 #include <stdio.h>
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 // Not available for windows mobile?
@@ -297,11 +300,41 @@ QString QMail::messageSettingsPath()
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
+
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+class QDatabaseInstanceData
+{
+public:
+    QDatabaseInstanceData()
+    {
+    init = false;
+    }
+
+    ~QDatabaseInstanceData()
+    {
+    }
+
+    bool init;
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QDatabaseInstanceData *>, databaseDataInstance)
+#endif
+
 QSqlDatabase QMail::createDatabase()
 {
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+    if (!databaseDataInstance()->hasLocalData()) {
+        databaseDataInstance()->setLocalData(new QDatabaseInstanceData);
+    }
+    QDatabaseInstanceData* instance = databaseDataInstance()->localData();
+
+    QSqlDatabase db;
+    if (instance->init) {
+#else
     static bool init = false;
     QSqlDatabase db;
     if(init) {
+#endif
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
@@ -339,7 +372,11 @@ QSqlDatabase QMail::createDatabase()
             if(!tp.mkpath(tempPath()))
                 qCritical() << "Cannot create temp path";
 
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+        instance->init = true;
+#else
         init = true;
+#endif
     }
 
     return db;
