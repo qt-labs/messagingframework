@@ -2524,6 +2524,14 @@ void EmailClient::settings()
 
 void EmailClient::notificationStateChanged()
 {
+    QMailThreadKey key(QMailThreadKey::id(QMailThreadIdList() << QMailThreadId(1) << QMailThreadId(2) << QMailThreadId(3)));
+
+    foreach(QMailThreadId id, QMailStore::instance()->queryThreads(key))
+    {
+        qDebug() << "Found thread: " << id.toULongLong();
+    }
+
+
 #ifndef QT_NO_SYSTEMTRAYICON
     if (!NotificationTray::isSystemTrayAvailable()) {
         QMessageBox::warning(this, tr("Unable to enable notification"), tr("System tray was undetected"));
