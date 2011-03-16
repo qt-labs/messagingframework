@@ -46,6 +46,7 @@ TRANSLATIONS += messageserver-ar.ts \
                 
 symbian: {
     TARGET.CAPABILITY = ALL -TCB
+    TARGET.UID3 = 0x20034928
     TARGET.EPOCHEAPSIZE = 0x20000 0x1000000
 }                
 

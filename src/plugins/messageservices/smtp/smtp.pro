@@ -45,6 +45,7 @@ symbian: {
 
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.CAPABILITY = ALL -TCB
+    TARGET.UID3 = 0x20034926
 
     deploy.path = C:
     pluginstub.sources = $${TARGET}.dll
