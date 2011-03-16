@@ -1,4 +1,14 @@
-TEMPLATE = app
+symbian: {
+    include(../../../symbianoptions.pri)
+}
+
+SERVER_AS_DLL: {
+    DEFINES += SERVER_AS_DLL
+    DEFINES += QMFUTIL_INTERNAL
+    TEMPLATE = lib
+} else {
+    TEMPLATE = app
+}
 TARGET = messageserver
 CONFIG += qmfmessageserver qmfclient
 QT = core
@@ -24,11 +34,13 @@ HEADERS += mailmessageclient.h \
            newcountnotifier.h
 
 SOURCES += mailmessageclient.cpp \
-           main.cpp \
            messageserver.cpp \
            prepareaccounts.cpp \
            newcountnotifier.cpp \
            servicehandler.cpp
+!SERVER_AS_DLL: {
+    SOURCES += main.cpp
+}
 
 TRANSLATIONS += messageserver-ar.ts \
                 messageserver-de.ts \
@@ -48,6 +60,11 @@ symbian: {
     TARGET.CAPABILITY = ALL -TCB
     TARGET.UID3 = 0x20034928
     TARGET.EPOCHEAPSIZE = 0x20000 0x1000000
+
+    SERVER_AS_DLL: {
+        TARGET.EPOCALLOWDLLDATA = 1
+        MMP_RULES += EXPORTUNFROZEN
+    }
 }                
 
 include(../../../common.pri)

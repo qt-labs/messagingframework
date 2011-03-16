@@ -52,6 +52,9 @@
 #include <QSystemTrayIcon>
 #include <QTime>
 #include <QTimer>
+#if defined(SERVER_AS_DLL)
+#include <QThread>
+#endif
 #include <QProcess>
 
 class EmailFolderModel;
@@ -438,7 +441,11 @@ private:
 
     QMailMessageId lastDraftId;
 
+#if defined(SERVER_AS_DLL)
+    QThread* m_messageServerThread;
+#else
     QProcess* m_messageServerProcess;
+#endif
     QSet<QMailMessageId> flagMessageIds;
     QMenu* m_contextMenu;
     QToolBar* m_toolBar;
@@ -450,6 +457,22 @@ private:
     QMailRetrievalAction* m_exportAction;
     QMailAccountIdList m_queuedExports;
 };
+
+#if defined(SERVER_AS_DLL)
+class MessageServerThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    MessageServerThread();
+    ~MessageServerThread();
+
+    void run();
+
+signals:
+    void messageServerStarted();
+};
+#endif
 
 #ifndef QT_NO_SYSTEMTRAYICON
 class NotificationTray : public QSystemTrayIcon {

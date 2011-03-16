@@ -19,7 +19,9 @@ SUBDIRS = src/libraries/qmfclient \
           
 # disable benchmark test on mac until ported
 !macx {
+    !SERVER_AS_DLL {
           SUBDIRS += benchmarks
+    }
 }
 
 symbian {
