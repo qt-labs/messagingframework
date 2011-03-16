@@ -37,3 +37,7 @@ qmfmessageservicepluginstubs.sources += smtp.dll
 qmfmessageservicepluginstubs.sources += qmfsettings.dll
 qmfmessageservicepluginstubs.path = $$QT_PLUGINS_BASE_DIR/qtmail/messageservices
 DEPLOYMENT += qmfmessageservicepluginstubs
+
+qmfconfigfile.sources = qmfconfig.ini
+qmfconfigfile.path = c:/data/
+DEPLOYMENT += qmfconfigfile
