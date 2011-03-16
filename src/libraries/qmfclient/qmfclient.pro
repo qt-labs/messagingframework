@@ -35,6 +35,22 @@ symbian: {
         LIBS += -lsqldb
     }
 
+    contains(CONFIG, SYMBIAN_USE_IPC_SOCKET) {
+        DEFINES += SYMBIAN_USE_IPC_SOCKET
+
+        INCLUDEPATH += symbian
+        PRIVATE_HEADERS += symbian/qmfipcchannelclient/qmfipcchannelclientservercommon.h \
+                           symbian/qmfipcchannelclient/qmfipcchannelsession.h \
+                           symbian/qmfipcchannelclient/qmfipcchannel.h \
+                           symbian/ipcsocket.h \
+                           symbian/ipcserver.h
+
+        SOURCES += symbian/qmfipcchannelclient/qmfipcchannelsession.cpp \
+                   symbian/qmfipcchannelclient/qmfipcchannel.cpp \
+                   symbian/ipcsocket.cpp \
+                   symbian/ipcserver.cpp
+    }
+
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
     TARGET.EPOCALLOWDLLDATA = 1

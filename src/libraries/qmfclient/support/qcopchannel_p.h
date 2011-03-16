@@ -54,6 +54,14 @@
 //
 
 #include <QtCore/qobject.h>
+#ifdef SYMBIAN_USE_IPC_SOCKET
+#include <QtCore/qmap.h>
+#include <QtNetwork/qlocalsocket.h>
+#include "ipcsocket.h"
+#include "ipcserver.h"
+typedef SymbianIpcSocket QCopLocalSocket;
+typedef SymbianIpcServer QCopLocalServer;
+#else
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
 #include <QtNetwork/qlocalsocket.h>
 #include <QtNetwork/qlocalserver.h>
@@ -64,6 +72,7 @@ typedef QLocalServer QCopLocalServer;
 #include <QtNetwork/qtcpserver.h>
 typedef QTcpSocket QCopLocalSocket;
 typedef QTcpServer QCopLocalServer;
+#endif
 #endif
 #include <QtCore/qshareddata.h>
 #include <QtCore/qregexp.h>

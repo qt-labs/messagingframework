@@ -21,6 +21,7 @@ deploy.path = C:
 
 qmfdeployment.sources = messageserver.exe
 qmfdeployment.sources += qmfdataserver.exe
+qmfdeployment.sources += qmfipcchannelserver.exe
 qmfdeployment.sources += qmfclient.dll
 qmfdeployment.sources += qmfmessageserver.dll
 qmfdeployment.path = /sys/bin
