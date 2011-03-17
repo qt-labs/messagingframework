@@ -119,16 +119,22 @@ struct StructureDecomposer
     {
         if ((c == ')') || (c == '\0')) {
             if (depth == reportDepth) {
-                result.append(field.mid(begin - field.begin(), it - begin).trimmed());
 
-                if (reportDepth > 0)
-                    --reportDepth;
+                // Allow reportDepth to have negative values, meaning that we're
+                // processing more fields than requested (happens with Yahoo IMAP)
+                // When processing a negative depth, the unrequested content is silently
+                // discarded
+
+                if (depth >= 0)
+                    result.append(field.mid(begin - field.begin(), it - begin).trimmed());
+
+                --reportDepth;
 
                 return true;
             }
         } else if (c == '(') {
             if (it == begin) {
-                if (reportDepth > 0) return false;
+                if (reportDepth != 0) return false;
 
                 ++reportDepth;
                 return true;
