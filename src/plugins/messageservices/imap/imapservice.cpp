@@ -735,7 +735,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
     }
 
-    quint64 updatableFlags(QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded);
+    quint64 updatableFlags(QMailMessage::Replied | QMailMessage::RepliedAll | QMailMessage::Forwarded | QMailMessage::Read | QMailMessage::Important);
     if ((setMask & updatableFlags) || (unsetMask & updatableFlags)) {
         // We could hold on to these changes until exportUpdates instead...
         MessageFlags setFlags(0);
@@ -746,6 +746,18 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
         if (unsetMask & (QMailMessage::Replied | QMailMessage::RepliedAll)) {
             unsetFlags |= MFlag_Answered;
+        }
+        if (setMask & QMailMessage::Read) {
+            setFlags |= MFlag_Seen;
+        }
+        if (unsetMask & QMailMessage::Read) {
+            unsetFlags |= MFlag_Seen;
+        }
+        if (setMask & QMailMessage::Important) {
+            setFlags |= MFlag_Flagged;
+        }
+        if (unsetMask & QMailMessage::Important) {
+            unsetFlags |= MFlag_Flagged;
         }
 
         if ((setMask | unsetMask) & QMailMessage::Forwarded) {
@@ -779,7 +791,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(setFlags, true);
             }
             if (unsetFlags) {
-                _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(unsetFlags, true);
+                _service->_client.strategyContext()->flagMessagesStrategy.setMessageFlags(unsetFlags, false);
             }
             _service->_client.strategyContext()->flagMessagesStrategy.selectedMailsAppend(messageIds);
             appendStrategy(&_service->_client.strategyContext()->flagMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
