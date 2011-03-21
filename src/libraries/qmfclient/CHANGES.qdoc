@@ -150,6 +150,22 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 40. Add 'QMailRetrievalAction::Auto'
 
+41. Removed QMailMessage::latestInConversation() 
+
+    Added QMailThreadId, QMailThread, QMailThreadKey and QMailThreadSortKey classes
+
+    Added 'QMailStore::addThread(QMailThread *t)',
+      'QMailStore::removeThread(const QMailThreadId &id, MessageRemovalOption option = NoRemovalRecord)', 
+      'QMailStore::removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option = NoRemovalRecord)', 
+      'QMailStore::updateThread(QMailThread* t)', 
+      'QMailStore::countThreads(const QMailThreadKey & key = QMailThreadKey())',
+      'QMailStore::queryThreadsconst QMailThreadKey &key = QMailThreadKey(), const QMailThreadSortKey &sortKey = QMailThreadSortKey(), uint limit = 0, uint offset = 0) const',
+      'QMailStore::thread(const QMailThreadId &id)',
+      'QMailStore::threadsAdded(const QMailThreadIdList& ids)',
+      'QMailStore::threadsRemoved(const QMailThreadIdList& ids)',
+      'QMailStore::threadsUpdated(const QMailThreadIdList& ids)' and
+      'QMailStore::threadContentsModified(const QMailThreadIdList& ids)'.
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
