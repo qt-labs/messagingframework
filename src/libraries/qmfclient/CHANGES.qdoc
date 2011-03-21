@@ -163,8 +163,14 @@ Changes since the QMF-1.0 release on 15/05/09:
       'QMailStore::thread(const QMailThreadId &id)',
       'QMailStore::threadsAdded(const QMailThreadIdList& ids)',
       'QMailStore::threadsRemoved(const QMailThreadIdList& ids)',
-      'QMailStore::threadsUpdated(const QMailThreadIdList& ids)' and
-      'QMailStore::threadContentsModified(const QMailThreadIdList& ids)'.
+      'QMailStore::threadsUpdated(const QMailThreadIdList& ids)',
+      'QMailStore::threadContentsModified(const QMailThreadIdList& ids)',
+      'QMailThreadId QMailMessageKey::parentThreadId() const',
+      'void QMailMessageKey::setParentThreadId(const QMailThreadId &id)',
+      'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal)',
+      'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)' and
+      'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)'.
+
 
 *****************************************************************************
 
