@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201111
+  * Fixes: QTSOL-200 - QMailStorageAction::flagMessages doesn't export Read and Important flag changes to the server
+
 201110_2
   * Fixes: NB#235204 - QMF IMAP plugin is unable to get mail
 
