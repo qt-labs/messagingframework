@@ -5063,13 +5063,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     QStringList missingReferences;
     bool missingAncestor(false);
 
-    if (!metaData->inResponseTo().isValid()) {
-        // Does this message have any references to resolve?
-        AttemptResult result = messagePredecessor(metaData, references, baseSubject, replyOrForward, &missingReferences, &missingAncestor);
-        if (result != Success)
-            return result;
-    }
-
     // Attach this message to a thread
     if (!metaData->parentThreadId().isValid() && metaData->inResponseTo().isValid()) {
         QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
@@ -5078,14 +5071,23 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
-        if (!query.next()) {
-            qWarning() << "Could not find thread id for inserted message";
+        if (query.next()) {
+            quint64 threadId(extractValue<quint64>(query.value(0)));
+
+            Q_ASSERT(threadId != 0);
+            metaData->setParentThreadId(QMailThreadId(threadId));
+        } else {
+            // Predecessor was deleted
+            metaData->setInResponseTo(QMailMessageId());
             return DatabaseFailure;
         }
-        quint64 threadId(extractValue<quint64>(query.value(0)));
+    }
 
-        Q_ASSERT(threadId != 0);
-        metaData->setParentThreadId(QMailThreadId(threadId));
+    if (!metaData->inResponseTo().isValid()) {
+        // Does this message have any references to resolve?
+        AttemptResult result = messagePredecessor(metaData, references, baseSubject, replyOrForward, &missingReferences, &missingAncestor);
+        if (result != Success)
+            return result;
     }
 
     if (metaData->parentThreadId().isValid()) {
