@@ -611,8 +611,8 @@ bool EmailClient::isMessageServerRunning() const
 {
     QString lockfile = "messageserver-instance.lock";
     int lockid = QMail::fileLock(lockfile);
-	if (lockid == -1)
-		return true;
+    if (lockid == -1)
+        return true;
 
     QMail::fileUnlock(lockid);
     return false;

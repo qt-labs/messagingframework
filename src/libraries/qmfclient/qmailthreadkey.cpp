@@ -401,4 +401,32 @@ QMailThreadKey QMailThreadKey::includes(const QMailMessageKey &key, QMailDataCom
     return QMailThreadKey(Includes, key, QMailKey::comparator(cmp));
 }
 
+/*!
+    Returns a key matching threads whose parent account's identifier is \a id  according to \a cmp.
 
+    \sa QMailThread::parentAccountId()
+*/
+QMailThreadKey QMailThreadKey::parentAccountId(const QMailAccountId &id, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailThreadKey(ParentAccountId, id, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching threads whose parent account's identifier is a member of \a ids, according to \a cmp.
+
+    \sa QMailThread::parentAccountId()
+*/
+QMailThreadKey QMailThreadKey::parentAccountId(const QMailAccountIdList &ids, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailThreadKey(ids, ParentAccountId, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching threads whose parent account's identifier is a member of the set yielded by \a key, according to \a cmp.
+
+    \sa QMailThread::parentAccountId()
+*/
+QMailThreadKey QMailThreadKey::parentAccountId(const QMailAccountKey &key, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailThreadKey(ParentAccountId, key, QMailKey::comparator(cmp));
+}

@@ -68,8 +68,9 @@ public:
         ServerUid = (1 << 1),
         MessageCount = (1 << 2),
         UnreadCount = (1 << 3),
-        Custom = (1 << 4),
-        Includes = (1 << 5)
+        Custom = (1 << 4), // This is for internal use only. It will be removed without notice
+        Includes = (1 << 5),
+        ParentAccountId = (1 << 6)
     };
 
     typedef QMailThreadId IdType;
@@ -117,6 +118,10 @@ public:
 
     static QMailThreadKey includes(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailThreadKey includes(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+
+    static QMailThreadKey parentAccountId(const QMailAccountId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailThreadKey parentAccountId(const QMailAccountIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailThreadKey parentAccountId(const QMailAccountKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
 private:
     QMailThreadKey(Property p, const QVariant& value, QMailKey::Comparator c);

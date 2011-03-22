@@ -525,6 +525,7 @@ static ThreadPropertyMap threadPropertyMap()
     map.insert(QMailThreadKey::UnreadCount, "unreadcount");
     map.insert(QMailThreadKey::ServerUid, "serveruid");
     map.insert(QMailThreadKey::Includes, "id");
+    map.insert(QMailThreadKey::ParentAccountId, "parentaccountid");
     return map;
 }
 
@@ -1475,6 +1476,8 @@ public:
     QVariantList custom() const { return customValues(); }
 
     QVariantList includes() const { return idValues<QMailMessageKey>(); }
+
+    QVariantList parentAccountId() const { return idValues<QMailAccountKey>(); }
 };
 
 template<>
@@ -1506,6 +1509,9 @@ void appendWhereValues<QMailThreadKey::ArgumentType>(const QMailThreadKey::Argum
 
     case QMailThreadKey::Includes:
         values += extractor.includes();
+
+    case QMailThreadKey::ParentAccountId:
+        values += extractor.parentAccountId();
     }
 }
 
@@ -2054,6 +2060,19 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
             }
             break;
 
+        case QMailThreadKey::ParentAccountId:
+            if (a.valueList.first().canConvert<QMailAccountKey>()) {
+                QMailAccountKey subKey = a.valueList.first().value<QMailAccountKey>();
+                QString nestedAlias(incrementAlias(alias));
+
+                // Expand comparison to sub-query result
+                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
+                q << store.buildWhereClause(QMailStorePrivate::Key(subKey, nestedAlias)) << ")";
+            } else {
+                q << expression;
+            }
+            break;
+
         case QMailThreadKey::Custom:
             Q_ASSERT(false);
         case QMailThreadKey::ServerUid:
@@ -2424,7 +2443,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfolders", 106)
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
-                                            << tableInfo("mailthreads", 100)
+                                            << tableInfo("mailthreads", 101)
                                             << tableInfo("mailmessages", 113)
                                             << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
@@ -4912,12 +4931,13 @@ struct ReferenceStorer
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddThread(QMailThread *thread, QMailThreadIdList *addedThreadIds, Transaction &t, bool commitOnSuccess)
 {
     // TODO: check preconditions
-    QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id,messagecount,unreadcount,serveruid) VALUES (?,?,?,?)",
+    QSqlQuery query(simpleQuery("INSERT INTO mailthreads (id,messagecount,unreadcount,serveruid,parentaccountid) VALUES (?,?,?,?,?)",
                                 QVariantList() << thread->id()
                                             << thread->messageCount()
                                             << thread->unreadCount()
                                             << thread->unreadCount()
-                                            << thread->serverUid(),
+                                            << thread->serverUid()
+                                            << thread->parentAccountId(),
                                 "addFolder mailfolders query"));
 
     if (query.lastError().type() != QSqlError::NoError)
@@ -5083,7 +5103,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         quint64 threadId = 0;
 
         // Add a new thread for this message
-        QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1"));
+        QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid, parentaccountid) VALUES(1, %1, '', %2)").arg(metaData->status() & QMailMessage::Read ? "0" : "1").arg(metaData->parentAccountId().toULongLong()));
         QSqlQuery query(simpleQuery(sql, "addMessage mailthreads insert query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
@@ -5526,10 +5546,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateThread(QMailThr
 
     updatedThreadIds->append(thread->id());
 
-    QSqlQuery query(simpleQuery("UPDATE mailthreads SET messagecount=?, unreadcount=?, serveruid=? WHERE id=?",
+    QSqlQuery query(simpleQuery("UPDATE mailthreads SET messagecount=?, unreadcount=?, serveruid=?, parentaccountid=? WHERE id=?",
                                 QVariantList() << thread->messageCount()
                                              << thread->unreadCount()
                                              << thread->serverUid()
+                                             << thread->parentAccountId().toULongLong()
                                              << thread->id().toULongLong(),
                                 "AttemptUpdateThread update"));
 
@@ -5881,7 +5902,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                 {
                     // Add a new thread for this message
-                    QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1"));
+                    QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid, parentaccountid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1").arg(metaData->parentAccountId().toULongLong()));
                     QSqlQuery query(simpleQuery(sql, "addMessage mailthreads insert query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
@@ -6391,7 +6412,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryThreads(const QM
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "querythreads mailthreadss query"));
+                                "querythreads mailthreads query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
