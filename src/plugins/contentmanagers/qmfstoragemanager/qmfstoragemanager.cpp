@@ -59,6 +59,14 @@
 #include <unistd.h>
 #endif
 #endif
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+#include "symbiandir.h"
+#include "symbianfile.h"
+#include "symbianfileinfo.h"
+#define QFile SymbianFile
+#define QFileInfo SymbianFileInfo
+#define QDir SymbianDir
+#endif
 
 namespace {
 
@@ -270,9 +278,14 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     }
 
     // Write the message to file (not including sub-part contents)
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+    QByteArray bodyData = message->toRfc2822(QMailMessage::StorageFormat);
+    if ((file->write(bodyData) < 0) ||
+#else
     QDataStream out(file.data());
     message->toRfc2822(out, QMailMessage::StorageFormat);
     if ((out.status() != QDataStream::Ok) ||
+#endif
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
          !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durable))) {
@@ -424,8 +437,8 @@ struct PartLoader
         if ((part.referenceType() == QMailMessagePart::None) &&
             (part.multipartType() == QMailMessagePartContainer::MultipartNone)) {
             QString partFilePath;
-
-            bool localAttachment = QFile::exists(QUrl(part.contentLocation()).toLocalFile()) && !part.hasBody();
+            QString localContentFile = QUrl(part.contentLocation()).toLocalFile();
+            bool localAttachment = QFile::exists(localContentFile) && !localContentFile.isEmpty() && !part.hasBody();
             if (localAttachment)
                 partFilePath = QUrl(part.contentLocation()).toLocalFile();
             else
@@ -435,7 +448,15 @@ struct PartLoader
                 // Is the file content in encoded or decoded form?  Since we're delivering
                 // server-side data, the parameter seems reversed...
                 QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+                QFile partFile(partFilePath);
+                partFile.open(QIODevice::ReadOnly);
+                QByteArray data = partFile.readAll();
+                part.setBody(QMailMessageBody::fromData(data, part.contentType(), part.transferEncoding(), dataState));
+                partFile.close();
+#else
                 part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
+#endif
                 if (!part.hasBody())
                     return false;
             }
@@ -462,7 +483,15 @@ QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMe
         return (pathOnDefault(path) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+    QFile messageFile(path);
+    messageFile.open(QIODevice::ReadOnly);
+    QByteArray data = messageFile.readAll();
+    QMailMessage result(QMailMessage::fromRfc2822(data));
+    messageFile.close();
+#else
     QMailMessage result(QMailMessage::fromRfc2822File(path));
+#endif
 
     // Load the reference information from the meta data into our content object
     ReferenceLoader refLoader(message);
@@ -661,8 +690,13 @@ struct PartStorer
             }
 
             // Write the part content to file
+#ifdef SYMBIAN_USE_DATA_CAGED_FILES
+            QByteArray bodyData = part.body().data(outputFormat);
+            if (file->write(bodyData) < 0) {
+#else
             QDataStream out(file.data());
             if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
+#endif
                 qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
                 if (!QFile::remove(partFilePath)){

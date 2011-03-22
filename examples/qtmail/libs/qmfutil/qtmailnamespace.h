@@ -48,6 +48,6 @@
 namespace Qtmail
 {
     QMFUTIL_EXPORT QIcon icon(const QString& name);
-};
+}
 
 #endif

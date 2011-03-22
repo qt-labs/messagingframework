@@ -93,6 +93,6 @@ private:
     QSharedDataPointer<QMailThreadSortKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailThreadSortKey);
+Q_DECLARE_USER_METATYPE(QMailThreadSortKey)
 
 #endif

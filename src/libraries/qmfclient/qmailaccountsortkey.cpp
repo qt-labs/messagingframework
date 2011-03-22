@@ -258,5 +258,5 @@ QMailAccountSortKey QMailAccountSortKey::status(quint64 mask, Qt::SortOrder orde
 }
 
 
-Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey);
+Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey)
 

@@ -29,8 +29,10 @@ INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmfclient \
 LIBS += -L$$BASE/src/libraries/qmfmessageserver/build \
         -L$$BASE/src/libraries/qmfclient/build
 
-QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
-    -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
+!symbian {
+    QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
+        -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
+}
 
 HEADERS += benchmarkcontext.h \
            qscopedconnection.h \

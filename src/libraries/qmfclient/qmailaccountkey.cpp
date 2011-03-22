@@ -108,7 +108,7 @@ using namespace QMailDataComparator;
     Synonym for QMailKeyArgument<QMailAccountKey::Property>.
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailAccountKey);
+Q_IMPLEMENT_USER_METATYPE(QMailAccountKey)
 
 /*!
     Creates a QMailAccountKey without specifying matching parameters.

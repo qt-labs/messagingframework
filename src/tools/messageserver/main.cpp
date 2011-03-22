@@ -46,7 +46,7 @@
 #include <qmaillog.h>
 #include <qloggers.h>
 
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 #include <signal.h>
 
 static void shutdown(int n)
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
     MessageServer server;
 
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     signal(SIGINT, shutdown);
     signal(SIGTERM, shutdown);
 #endif

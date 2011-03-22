@@ -1208,7 +1208,7 @@ bool ImapService::pushEmailEstablished()
 
     const int oneHour = 60*60;
     qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
-    
+
     // 1 minute heartbeat window
     QMailHeartbeatTimer::singleShot(qMax(1, _pushRetry - 60)*1000, _pushRetry * 1000, this, SLOT(restartPushEmail()));
     _pushRetry = qMin(oneHour, _pushRetry * 2);

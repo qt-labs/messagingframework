@@ -106,10 +106,10 @@ static QByteArray cramMd5Response(const QByteArray &nonce, const QByteArray &nam
 */
 bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
-    return false;
-
     Q_UNUSED(svcCfg)
     Q_UNUSED(capabilities)
+
+    return false;
 }
 
 /*!
@@ -119,14 +119,14 @@ bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceC
 */
 QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
+    Q_UNUSED(capabilities)
+
     QMailServiceConfiguration configuration(svcCfg);
     if (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))
         return "CRAM-MD5";
 
     // Unknown service type and/or authentication type
     return QByteArray();
-
-    Q_UNUSED(capabilities)
 }
 
 /*!

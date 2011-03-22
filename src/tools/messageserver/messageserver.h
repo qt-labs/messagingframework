@@ -55,7 +55,11 @@ class QMailMessageMetaData;
 class QNetworkState;
 class NewCountNotifier;
 
+#if defined(SERVER_AS_DLL)
+class QMFUTIL_EXPORT MessageServer : public QObject
+#else
 class MessageServer : public QObject
+#endif
 {
     Q_OBJECT
 

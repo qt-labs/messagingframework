@@ -77,7 +77,7 @@ typedef void (tst_MessageServer::*TestFunction)();
 
 typedef QList<QByteArray> TestMail;
 typedef QList<TestMail>   TestMailList;
-Q_DECLARE_METATYPE(TestMailList);
+Q_DECLARE_METATYPE(TestMailList)
 
 class tst_MessageServer : public QObject
 {

@@ -55,7 +55,7 @@ class QContact;
 class QMenu;
 class QUrl;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class QMailViewerInterface;
 

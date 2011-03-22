@@ -46,7 +46,7 @@
     \class QMailThreadSortKey
 
     \preliminary
-    \brief The QMailThreadSortKey class defines the parameters used for sorting a subset of 
+    \brief The QMailThreadSortKey class defines the parameters used for sorting a subset of
     threads from the mail store.
     \ingroup messaginglibrary
 
@@ -64,16 +64,16 @@
 
 /*!
     \typedef QMailThreadSortKey::ArgumentType
-    
+
     Defines the type used to represent a single sort criterion of a message sort key.
 */
 
 /*!
     Create a QMailThreadSortyKey.
 
-    A default-constructed key (one for which isEmpty() returns true) sorts no messages. 
+    A default-constructed key (one for which isEmpty() returns true) sorts no messages.
 
-    The result of combining an empty key with a non-empty key is the same as the original 
+    The result of combining an empty key with a non-empty key is the same as the original
     non-empty key.
 
     The result of combining two empty keys is an empty key.
@@ -130,7 +130,7 @@ QMailThreadSortKey& QMailThreadSortKey::operator&=(const QMailThreadSortKey& oth
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailThreadSortKey::operator==(const QMailThreadSortKey& other) const
@@ -144,7 +144,7 @@ bool QMailThreadSortKey::operator==(const QMailThreadSortKey& other) const
 */
 bool QMailThreadSortKey::operator!=(const QMailThreadSortKey& other) const
 {
-   return !(*this == other); 
+   return !(*this == other);
 }
 
 /*!
@@ -215,5 +215,5 @@ QMailThreadSortKey QMailThreadSortKey::serverUid(Qt::SortOrder order)
 
 
 
-Q_IMPLEMENT_USER_METATYPE(QMailThreadSortKey);
+Q_IMPLEMENT_USER_METATYPE(QMailThreadSortKey)
 

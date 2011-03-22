@@ -56,7 +56,7 @@ class QAction;
 class QPushButton;
 class QToolButton;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 // A generic viewer able to show email, SMS or basic MMS
 class GenericViewer : public QMailViewerInterface

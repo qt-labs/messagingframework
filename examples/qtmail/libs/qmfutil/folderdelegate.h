@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractItemView;
 class QScrollBar;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class FolderDelegate : public QItemDelegate
 {

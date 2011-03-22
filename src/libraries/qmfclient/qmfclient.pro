@@ -13,12 +13,59 @@ win32: {
 
 QT = core sql network
 symbian: {
+    include(../../../symbianoptions.pri)
+
+    contains(CONFIG, SYMBIAN_USE_DATA_CAGED_DATABASE) {
+        DEFINES += SYMBIAN_USE_DATA_CAGED_DATABASE
+
+        INCLUDEPATH += symbian \
+                       ../../symbian/qmfdataclient
+
+        PRIVATE_HEADERS += ../../symbian/qmfdataclient/qmfdataclientservercommon.h \
+                           ../../symbian/qmfdataclient/qmfdatasession.h \
+                           ../../symbian/qmfdataclient/qmfdatastorage.h \
+                           symbian/sqldatabase.h \
+                           symbian/sqlquery.h
+
+        SOURCES += ../../symbian/qmfdataclient/qmfdatasession.cpp \
+                   ../../symbian/qmfdataclient/qmfdatastorage.cpp \
+                   symbian/sqldatabase.cpp \
+                   symbian/sqlquery.cpp
+
+        LIBS += -lsqldb
+    }
+
+    contains(CONFIG, SYMBIAN_USE_IPC_SOCKET) {
+        DEFINES += SYMBIAN_USE_IPC_SOCKET
+
+        INCLUDEPATH += symbian
+        PRIVATE_HEADERS += symbian/qmfipcchannelclient/qmfipcchannelclientservercommon.h \
+                           symbian/qmfipcchannelclient/qmfipcchannelsession.h \
+                           symbian/qmfipcchannelclient/qmfipcchannel.h \
+                           symbian/ipcsocket.h \
+                           symbian/ipcserver.h
+
+        SOURCES += symbian/qmfipcchannelclient/qmfipcchannelsession.cpp \
+                   symbian/qmfipcchannelclient/qmfipcchannel.cpp \
+                   symbian/ipcsocket.cpp \
+                   symbian/ipcserver.cpp
+    }
+
+    contains(CONFIG, SYMBIAN_THREAD_SAFE_MAILSTORE) {
+        DEFINES += SYMBIAN_THREAD_SAFE_MAILSTORE
+    }
+
+    INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
+
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL \
-        -TCB
+    TARGET.CAPABILITY = ALL -TCB
+    TARGET.UID3 = 0x20034921
     LIBS += -lefsrv
     MMP_RULES += EXPORTUNFROZEN
-    INCLUDEPATH += /epoc32/include/platform
+
+    QMFClient.sources = $${TARGET}.dll
+    QMFClient.path = /sys/bin
+    DEPLOYMENT += QMFClient
 }
 
 DEPENDPATH += .
@@ -175,7 +222,13 @@ TRANSLATIONS += libqtopiamail-ar.ts \
 header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
 header_files.files=$$PUBLIC_HEADERS
 
-INSTALLS += header_files 
+INSTALLS += header_files
+
+symbian {
+    for(header, header_files.files) {
+        BLD_INF_RULES.prj_exports += "$$header $$MW_LAYER_PUBLIC_EXPORT_PATH("qmf/"$$basename(header))"
+    }
+}
 
 unix: {
 	CONFIG += create_pc create_prl

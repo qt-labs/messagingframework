@@ -64,7 +64,7 @@ class QTabBar;
 class QToolButton;
 class QItemDelegate;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class MessageListView : public QWidget
 {

@@ -10,9 +10,13 @@ QT = core network
 
 symbian: {
     TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL \
-        -TCB
+    TARGET.CAPABILITY = ALL -TCB
+    TARGET.UID3 = 0x20034922
     MMP_RULES += EXPORTUNFROZEN
+
+    QMFServer.sources = $${TARGET}.dll
+    QMFServer.path = /sys/bin
+    DEPLOYMENT += QMFServer
 }
 
 DEFINES += MESSAGESERVER_INTERNAL

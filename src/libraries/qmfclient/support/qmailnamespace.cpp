@@ -47,11 +47,18 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+#include <QThreadStorage>
+#endif
 #include <stdio.h>
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 // Not available for windows mobile?
 #include <QSqlDatabase>
 #include <QSqlError>
+#endif
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+#include "sqldatabase.h"
+#define QSqlDatabase SymbianSqlDatabase
 #endif
 
 #ifdef Q_OS_WIN
@@ -65,8 +72,10 @@
 #include <fcntl.h>
 #endif
 
+#ifndef Q_OS_SYMBIAN
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
+#endif
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
@@ -189,10 +198,12 @@ bool QMail::fileUnlock(int id)
 
     int result = -1;
 
-    if((result = ::fcntl(id,F_SETLK, &fl)) == -1)
+    result = ::fcntl(id,F_SETLK, &fl);
+    if (result == -1)
         return false;
 
-    if((result = ::close(id)) == -1)
+    result = ::close(id);
+    if (result == -1)
         return false;
 
     return true;
@@ -206,13 +217,18 @@ bool QMail::fileUnlock(int id)
 QString QMail::dataPath()
 {
 #ifdef Q_OS_SYMBIAN
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+    return QString("");
+#else
     return QString("\\");
 #endif
+#else
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
     return QDir::homePath() + "/.qmf/";
+#endif
 }
 
 /*!
@@ -230,13 +246,13 @@ QString QMail::pluginsPath()
 {
 #if defined(Q_OS_SYMBIAN)
     return QString("/resource/qt/plugins/qtmail");
-#endif
-    
+#else
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + '/';
     //default to "." if no env set
     return pluginsEnv;
+#endif
 }
 
 /*!
@@ -255,7 +271,12 @@ QString QMail::messageServerPath()
     static QString serverEnv(qgetenv(QMF_SERVER_ENV));
     if(!serverEnv.isEmpty())
         return serverEnv + '/';
+
+#if defined(Q_OS_SYMBIAN)
+    return "";
+#else
     return QCoreApplication::applicationDirPath() + '/';
+#endif
 }
 
 /*!
@@ -279,17 +300,52 @@ QString QMail::messageSettingsPath()
 #include <sys/types.h>
 #include <sys/stat.h>
 #endif
+
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+class QDatabaseInstanceData
+{
+public:
+    QDatabaseInstanceData()
+    {
+    init = false;
+    }
+
+    ~QDatabaseInstanceData()
+    {
+    }
+
+    bool init;
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QDatabaseInstanceData *>, databaseDataInstance)
+#endif
+
 QSqlDatabase QMail::createDatabase()
 {
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+    if (!databaseDataInstance()->hasLocalData()) {
+        databaseDataInstance()->setLocalData(new QDatabaseInstanceData);
+    }
+    QDatabaseInstanceData* instance = databaseDataInstance()->localData();
+
+    QSqlDatabase db;
+    if (instance->init) {
+#else
     static bool init = false;
     QSqlDatabase db;
     if(init) {
+#endif
         db = QSqlDatabase::database();
     } else {
         db = QSqlDatabase::addDatabase("QSQLITE");
-
         
-#ifndef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
+#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
+        db.setDatabaseName("qmailstore.db");
+#else
+        db.setDatabaseName(dataPath() + "qmailstore.db");
+#endif
+#else
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
@@ -306,10 +362,6 @@ QSqlDatabase QMail::createDatabase()
         db.setDatabaseName(dataPath() + "database/qmailstore.db");
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-        db.setDatabaseName(dataPath() + "qmailstore.db");
-#endif
-        
         if(!db.open()) {
             QSqlError dbError = db.lastError();
             qCritical() << "Cannot open database: " << dbError.text();
@@ -320,7 +372,11 @@ QSqlDatabase QMail::createDatabase()
             if(!tp.mkpath(tempPath()))
                 qCritical() << "Cannot create temp path";
 
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+        instance->init = true;
+#else
         init = true;
+#endif
     }
 
     return db;

@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QSettings;
 class QTimer;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class QMF_EXPORT QMailAccount
 {

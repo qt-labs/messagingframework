@@ -9,6 +9,7 @@ SUBDIRS = src/libraries/qmfclient \
           src/plugins/messageservices/qmfsettings \
           src/plugins/contentmanagers/qmfstoragemanager \
           src/tools/messageserver \
+          tests \
           examples/qtmail/libs/qmfutil \
           examples/qtmail/app \
           examples/qtmail/plugins/viewers/generic \
@@ -16,14 +17,18 @@ SUBDIRS = src/libraries/qmfclient \
           examples/messagingaccounts \
           examples/serverobserver
           
-# disable tests on symbian until ported
-!symbian {
-          SUBDIRS += tests
-}
-
 # disable benchmark test on mac until ported
 !macx {
+    !SERVER_AS_DLL {
           SUBDIRS += benchmarks
+    }
+}
+
+symbian {
+    message("Building a pure Symbian Client-Server implementation for Data Server using Raptor...")
+    system(sbs -b src/symbian/qmfdataserver/bld.inf)
+    message("Building a pure Symbian Client-Server implementation for IPC Channel using Raptor...")
+    system(sbs -b src/symbian/qmfipcchannelserver/bld.inf)
 }
 
 defineReplace(targetPath) {
