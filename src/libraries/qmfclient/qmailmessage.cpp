@@ -5161,6 +5161,13 @@ const QMailMessagePartContainer::Location &QMailMessagePartContainer::Location::
     return *this;
 }
 
+/*! Returns true if \a other is referring to the same location */
+bool QMailMessagePartContainer::Location::operator==(const QMailMessagePartContainer::Location &other) const
+{
+    return toString(true) == other.toString(true);
+}
+
+
 /*! 
     Returns true if the location object contains the location of a valid message part.
     If \a extended is true, the location must also contain a valid message identifier.
