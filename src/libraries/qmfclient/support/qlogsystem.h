@@ -54,7 +54,7 @@ extern "C"
 {
 #include <stdarg.h>
 #include <errno.h>
-};
+}
 
 /// This enumeration represents different widely-used log levels
 typedef enum {
@@ -129,7 +129,7 @@ private:
     /// Do not allow to delete object of this class from outside
     ~LogSystem();
 
-    Q_DISABLE_COPY(LogSystem);
+    Q_DISABLE_COPY(LogSystem)
 
     QList<ILogger*> loggers;
 

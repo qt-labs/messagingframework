@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 class QListWidget;
 class QPushButton;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class QMFUTIL_EXPORT SelectFolderDialog : public QDialog
 {

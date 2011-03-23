@@ -58,7 +58,7 @@ class QMenu;
 class QStackedWidget;
 class QUrl;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class ReadMail : public QFrame
 {

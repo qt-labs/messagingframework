@@ -43,6 +43,9 @@
 #define QMAILSTOREINSTANCE_DEFINED_HERE
 #include "qmailstore.h"
 #include "qmailstore_p.h"
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+#include <QThreadStorage>
+#endif
 
 /*!
     \class QMailStore
@@ -54,11 +57,11 @@
     \ingroup messaginglibrary
 
     The QMailStore class is accessed through a singleton interface and provides functions 
-    for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and 
+    for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and
     QMailMessages on the message store.
 
-    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts, 
-    QMailThreads and QMailMessages when used in conjunction with QMailFolderKey and 
+    QMailStore also provides functions for querying and counting of QMailFolders, QMailAccounts,
+    QMailThreads and QMailMessages when used in conjunction with QMailFolderKey and
     QMailAccountKey, QMailThreadKey and QMailMessageKey classes.
 
     If a QMailStore operation fails, the lastError() function will return an error code
@@ -75,14 +78,14 @@
     addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
     affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
     accountContentsModified() and accountsRemoved() signals.
-    
+
     Thread (a.k.a. conversation) objects are accessed via the thread(), countThreads()
-    and queryThreads() functions.  Accounts in the mail store can be manipulated via the 
+    and queryThreads() functions.  Accounts in the mail store can be manipulated via the
     addThread(), updateThread() and removeThread() functions.  Mail store manipulations
-    affecting accounts are reported via the threadsAdded(), threadsUpdated(), 
+    affecting accounts are reported via the threadsAdded(), threadsUpdated(),
     threadsContentsModified() and threadsRemoved() signals.
-    
-    
+
+
 
     Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
     The data associated with folders is held by instances of the QMailFolder class.
@@ -110,7 +113,7 @@
     only to assist in keeping mail store content synchronized with the content of
     an external message source.  QMailMessageRemovalRecord objects can be accessed
     via the messageRemovalRecords() function.
-    
+
     \sa QMailAccount, QMailFolder, QMailMessage
 */
 
@@ -237,7 +240,7 @@ bool QMailStore::addFolder(QMailFolder* folder)
 /*!
     Adds a new QMailThread object \a t into the message store, performing
     respective integrity checks. Returns \c true if the operation
-    completed successfully, \c false otherwise. 
+    completed successfully, \c false otherwise.
 */
 bool QMailStore::addThread(QMailThread *t)
  {
@@ -725,8 +728,8 @@ int QMailStore::countFolders(const QMailFolderKey& key) const
 }
 
 /*!
-    Returns the count of the number of threads which pass the 
-    filtering criteria defined in QMailThreadKey \a key. If 
+    Returns the count of the number of threads which pass the
+    filtering criteria defined in QMailThreadKey \a key. If
     key is empty a count of all folders is returned.
 */
 int QMailStore::countThreads(const QMailThreadKey& key) const
@@ -1406,7 +1409,29 @@ QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessageMetaData*>
     return data;
 }
 
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+class QMailStoreInstanceData
+{
+public:
+    QMailStoreInstanceData()
+    {
+    mailStore = 0;
+    init = false;
+    }
+
+    ~QMailStoreInstanceData()
+    {
+    delete mailStore;
+    }
+
+    QMailStore *mailStore;
+    bool init;
+};
+
+Q_GLOBAL_STATIC(QThreadStorage<QMailStoreInstanceData *>, mailStoreDataInstance)
+#else
 Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
+#endif
 
 /*!
     Returns the single instance of the QMailStore class.
@@ -1417,6 +1442,25 @@ Q_GLOBAL_STATIC(QMailStore,QMailStoreInstance);
 */
 QMailStore* QMailStore::instance()
 {
+#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
+    if (!mailStoreDataInstance()->hasLocalData()) {
+        mailStoreDataInstance()->setLocalData(new QMailStoreInstanceData);
+    }
+    QMailStoreInstanceData* instance = mailStoreDataInstance()->localData();
+
+    if (!instance->init) {
+        instance->init = true;
+
+        instance->mailStore = new QMailStore;
+        QMailStore *store = instance->mailStore;
+        store->d->initialize();
+        if (initializationState() == QMailStore::InitializationFailed) {
+            delete store->d;
+            store->d = new QMailStoreNullImplementation(store);
+        }
+    }
+    return instance->mailStore;
+#else
     static bool init = false;
     if (!init) {
         init = true;
@@ -1428,6 +1472,7 @@ QMailStore* QMailStore::instance()
         }
     }
     return QMailStoreInstance();
+#endif
 }
 
 /*!

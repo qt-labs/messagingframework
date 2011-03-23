@@ -54,6 +54,11 @@
 #include <QSqlRecord>
 #include <QTextCodec>
 
+#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
+#include "sqlquery.h"
+#define QSqlQuery SymbianSqlQuery
+#endif
+
 #define Q_USE_SQLITE
 
 // When using GCC 4.1.1 on ARM, TR1 functional cannot be included when RTTI
@@ -1578,38 +1583,30 @@ QString operatorString(QMailKey::Comparator op, bool multipleArgs = false, bool 
     {
     case Equal:
         return (multipleArgs ? " IN " : (patternMatch ? " LIKE " : " = "));
-        break;
 
     case NotEqual:
         return (multipleArgs ? " NOT IN " : (patternMatch ? " NOT LIKE " : " <> "));
-        break;
 
     case LessThan:
         return " < ";
-        break;
 
     case LessThanEqual:
         return " <= ";
-        break;
 
     case GreaterThan:
         return " > ";
-        break;
 
     case GreaterThanEqual:
         return " >= ";
-        break;
 
     case Includes:
     case Present:
         return (multipleArgs ? " IN " : (bitwiseMultiples ? " & " : " LIKE "));
-        break;
 
     case Excludes:
     case Absent:
         // Note: the result is not correct in the bitwiseMultiples case!
         return (multipleArgs ? " NOT IN " : (bitwiseMultiples ? " & " : " NOT LIKE "));
-        break;
     }
 
     return QString();
@@ -1621,11 +1618,9 @@ QString combineOperatorString(QMailKey::Combiner op)
     {
     case And:
         return " AND ";
-        break;
 
     case Or:
         return " OR ";
-        break;
 
     case None:
         break;
@@ -2205,7 +2200,8 @@ QMailStorePrivate::Transaction::~Transaction()
 bool QMailStorePrivate::Transaction::commit()
 {
     if (m_initted && !m_committed) {
-        if ((m_committed = m_d->commit())) {
+        m_committed = m_d->commit();
+        if (m_committed) {
             --mutexLockCount;
             if (mutexLockCount == 0)
                 m_d->databaseMutex().unlock();
@@ -2366,7 +2362,11 @@ const QString &QMailStorePrivate::defaultContentScheme()
 
 QString QMailStorePrivate::databaseIdentifier() const
 {
+#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
+    return "C:/resource/qt/plugins/qtmail";
+#else
     return database.databaseName();
+#endif
 }
 
 

@@ -382,9 +382,9 @@ void IdleProtocol::idleTransportError()
 
     if (inUse())
         close();
-    
+
     _idleRecoveryTimer.stop();
-    
+
     // 10 minute heartbeat window
     QMailHeartbeatTimer::singleShot(qMax(1, _idleRetryDelay - 10*60)*1000, _idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
 }

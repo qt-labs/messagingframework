@@ -135,6 +135,6 @@ private:
     QSharedDataPointer<QMailThreadKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailThreadKey);
+Q_DECLARE_USER_METATYPE(QMailThreadKey)
 
 #endif

@@ -1,0 +1,18 @@
+TARGET            QMFDataServer.exe
+TARGETTYPE        exe
+UID               0x1000007A 0x2003A67A
+
+SOURCEPATH        .
+SOURCE            qmfdataserver.cpp
+SOURCE            qmfdataserversession.cpp
+
+USERINCLUDE       .
+USERINCLUDE       ..\qmfdataclient
+SYSTEMINCLUDE     \epoc32\include
+SYSTEMINCLUDE     \epoc32\include\platform
+
+LIBRARY           euser.lib efsrv.lib bafl.lib sqldb.lib
+
+VENDORID          0
+
+CAPABILITY        ALL -TCB

@@ -339,7 +339,7 @@ public:
                      LessThan = 1 << 10,
                      LessThanEqual = 1 << 11 };
 
-    Q_DECLARE_FLAGS(Comparators,Comparator);
+    Q_DECLARE_FLAGS(Comparators,Comparator)
 
     static Comparators textComparators(){ return (QFlags<Comparator>(Contains) | DoesNotContain | Equal | NotEqual);};
     static Comparators numericComparators(){ return QFlags<Comparator>(Equal) | NotEqual | GreaterThan | GreaterThanEqual | LessThan | LessThanEqual;}

@@ -208,7 +208,7 @@ public:
         /// Closes file if this object is it's owner.
         ~FileLogger();
 private:
-        Q_DISABLE_COPY(FileLogger);
+        Q_DISABLE_COPY(FileLogger)
         QString name;
         /// File handle
         FILE* f;
@@ -250,7 +250,7 @@ public:
         /// Disconnects from the syslog
         ~SysLogger();
 private:
-        Q_DISABLE_COPY(SysLogger);
+        Q_DISABLE_COPY(SysLogger)
         /// Ident string for syslog
         QByteArray ident;
 };
@@ -283,7 +283,7 @@ inline void BaseLogger<Host, Prefix>::log(const LogLevel _lvl, const char* _fmt,
 
 
    }
-};
+}
 
 /**********************************************************************************************************/
 /*********************************** FileLogger implementation ********************************************/
@@ -299,20 +299,20 @@ inline FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flus
         should_close = false;
         BaseLogger< FileLogger<Prefix>, Prefix >::setUnReady(strerror(errno));
     }
-};
+}
 
 template <class Prefix>
 inline FileLogger<Prefix>::FileLogger(FILE* _f, const unsigned _flush_period, const LogLevel _min_lvl, bool _owner)
     : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(""), f(_f), should_close(_owner), flush_period(_flush_period)
 {
-};
+}
 
 template <class Prefix>
 inline FileLogger<Prefix>::~FileLogger()
 {
     if(should_close)
         fclose(f);
-};
+}
 
 template <class Prefix>
 inline void FileLogger<Prefix>::doLog(const LogLevel /*lvl*/, const char* fmt, va_list args)
@@ -325,7 +325,7 @@ inline void FileLogger<Prefix>::doLog(const LogLevel /*lvl*/, const char* fmt, v
         do_cntr = 0;
         fflush(f);
     };
-};
+}
 
 #if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
 

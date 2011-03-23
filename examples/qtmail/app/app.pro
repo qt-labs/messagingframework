@@ -47,4 +47,15 @@ FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
 
+symbian {
+    include(../../../symbianoptions.pri)
+
+    TARGET.CAPABILITY += ALL -TCB
+    SERVER_AS_DLL: {
+        DEFINES += SERVER_AS_DLL
+        INCLUDEPATH += ../../../src/tools/messageserver
+        LIBS += -lmessageserver
+    }
+}
+
 include(../../../common.pri)

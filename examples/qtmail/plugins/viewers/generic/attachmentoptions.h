@@ -56,7 +56,7 @@ class QLabel;
 class QPushButton;
 class QString;
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 class AttachmentOptions : public QDialog
 {

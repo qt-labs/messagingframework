@@ -49,7 +49,7 @@
 using namespace QMailKey;
 
 
-Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
+Q_IMPLEMENT_USER_METATYPE(QMailThreadKey)
 
 
 /*!
@@ -61,8 +61,8 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
     \ingroup messaginglibrary
 
     A QMailThreadKey is composed of a thread property, an optional comparison operator
-    and a comparison value. The QMailThreadKey class is used in conjunction with the 
-    QMailStore::queryThreads() and QMailStore::countThreads() functions to filter results 
+    and a comparison value. The QMailThreadKey class is used in conjunction with the
+    QMailStore::queryThreads() and QMailStore::countThreads() functions to filter results
     which meet the criteria defined by the key.
 
     QMailThreadKeys can be combined using the logical operators (&), (|) and (~) to
@@ -90,7 +90,7 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
 
 /*!
     \typedef QMailThreadKey::ArgumentType
-    
+
     Defines the type used to represent a single criterion of a message filter.
 
     Synonym for QMailThreadKeyArgument<QMailThreadKey::Property>.
@@ -99,7 +99,7 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey);
 /*!
     Creates a QMailThreadKey without specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) matches all threads. 
+    A default-constructed key (one for which isEmpty() returns true) matches all threads.
 
     \sa isEmpty()
 */
@@ -118,9 +118,9 @@ QMailThreadKey::QMailThreadKey(Property p, const QVariant& value, QMailKey::Comp
 {
 }
 
-/*! 
+/*!
     \fn QMailThreadKey::QMailThreadKey(const ListType &, Property, QMailKey::Comparator)
-    \internal 
+    \internal
 */
 template <typename ListType>
 QMailThreadKey::QMailThreadKey(const ListType &valueList, QMailThreadKey::Property p, QMailKey::Comparator c)
@@ -146,7 +146,7 @@ QMailThreadKey::~QMailThreadKey()
 /*!
     Returns a key that is the logical NOT of the value of this key.
 
-    If this key is empty, the result will be a non-matching key; if this key is 
+    If this key is empty, the result will be a non-matching key; if this key is
     non-matching, the result will be an empty key.
 
     \sa isEmpty(), isNonMatching()
@@ -191,7 +191,7 @@ const QMailThreadKey& QMailThreadKey::operator|=(const QMailThreadKey& other)
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailThreadKey::operator==(const QMailThreadKey& other) const
@@ -218,11 +218,11 @@ const QMailThreadKey& QMailThreadKey::operator=(const QMailThreadKey& other)
 }
 
 /*!
-    Returns true if the key remains empty after default construction; otherwise returns false. 
+    Returns true if the key remains empty after default construction; otherwise returns false.
 
     An empty key matches all threads.
 
-    The result of combining an empty key with a non-empty key is the original non-empty key. 
+    The result of combining an empty key with a non-empty key is the original non-empty key.
     This is true regardless of whether the combination is formed by an AND or an OR operation.
 
     The result of combining two empty keys is an empty key.
@@ -251,7 +251,7 @@ bool QMailThreadKey::isNonMatching() const
     return d->isNonMatching();
 }
 
-/*! 
+/*!
     Returns true if the key's criteria should be negated in application.
 */
 bool QMailThreadKey::isNegated() const
@@ -283,7 +283,7 @@ const QList<QMailThreadKey> &QMailThreadKey::subKeys() const
     return d->subKeys;
 }
 
-/*! 
+/*!
     Returns the combiner used to combine arguments or sub keys of this QMailThreadKey.
 */
 QMailKey::Combiner QMailThreadKey::combiner() const

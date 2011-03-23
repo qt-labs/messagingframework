@@ -154,7 +154,7 @@ QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
     \relates QMailAccountId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailAccountId);
+Q_IMPLEMENT_USER_METATYPE(QMailAccountId)
 
 /*! 
     Construct an uninitialized QMailAccountId, for which isValid() returns false.
@@ -282,9 +282,9 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
     by their unique numeric internal indentifer.
 
     A QMailThreadId instance can be tested for validity, and compared to other instances
-    for equality.  The numeric value of the identifier is not intrinsically meaningful 
+    for equality.  The numeric value of the identifier is not intrinsically meaningful
     and cannot be modified.
-    
+
     \sa QMailThread, QMailStore::thread()
 */
 
@@ -293,7 +293,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
     \relates QMailThreadId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailThreadId);
+Q_IMPLEMENT_USER_METATYPE(QMailThreadId)
 
 /*!
     Construct an uninitialized QMailThreadId, for which isValid() returns false.
@@ -432,7 +432,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
     \relates QMailFolderId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailFolderId);
+Q_IMPLEMENT_USER_METATYPE(QMailFolderId)
 
 /*! 
     Construct an uninitialized QMailFolderId, for which isValid() returns false.
@@ -579,7 +579,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
     \relates QMailMessageId
 */
 
-Q_IMPLEMENT_USER_METATYPE(QMailMessageId);
+Q_IMPLEMENT_USER_METATYPE(QMailMessageId)
 
 /*! 
     Construct an uninitialized QMailMessageId, for which isValid() returns false.

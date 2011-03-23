@@ -45,8 +45,6 @@
 #include <QCache>
 #include <QtAlgorithms>
 
-static const int fullRefreshCutoff = 10;
-
 class QMailMessageThreadedModelItem
 {
 public:
@@ -202,11 +200,10 @@ int QMailMessageThreadedModelPrivate::rowCount(const QModelIndex &idx) const
 
 int QMailMessageThreadedModelPrivate::columnCount(const QModelIndex &idx) const
 {
+    Q_UNUSED(idx)
     init();
 
     return 1;
-    
-    Q_UNUSED(idx)
 }
 
 QMailMessageId QMailMessageThreadedModelPrivate::idFromIndex(const QModelIndex& idx) const

@@ -143,6 +143,6 @@ private:
     QSharedDataPointer<QMailAccountKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailAccountKey);
+Q_DECLARE_USER_METATYPE(QMailAccountKey)
 
 #endif

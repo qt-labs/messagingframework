@@ -208,9 +208,9 @@ QVariant MessageListModel<BaseModel>::headerData(int section, Qt::Orientation o,
 template <typename BaseModel>
 int MessageListModel<BaseModel>::columnCount(const QModelIndex & parent) const
 {
-    return headers.count();
-
     Q_UNUSED(parent);
+
+    return headers.count();
 }
 
 template <typename BaseModel>

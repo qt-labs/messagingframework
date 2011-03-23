@@ -100,7 +100,7 @@ private:
     QSharedDataPointer<QMailAccountSortKeyPrivate> d;
 };
 
-Q_DECLARE_USER_METATYPE(QMailAccountSortKey);
+Q_DECLARE_USER_METATYPE(QMailAccountSortKey)
 
 #endif
 
