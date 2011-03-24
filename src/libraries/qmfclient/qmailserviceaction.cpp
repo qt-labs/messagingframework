@@ -78,7 +78,11 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _total(0),
       _progress(0),
       _isValid(false),
-      _action(0)
+      _action(0),
+      _connectivityChanged(false),
+      _activityChanged(false),
+      _progressChanged(false),
+      _statusChanged(false)
 {
     connect(_server, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
             this, SLOT(activityChanged(quint64, QMailServiceAction::Activity)));
@@ -1619,7 +1623,7 @@ void QMailActionInfoPrivate::theProgressChanged(uint, uint)
     emit totalProgressChanged(totalProgress());
 }
 
-void QMailActionInfoPrivate::theStatusChanged(QMailServiceAction::Status newStatus)
+void QMailActionInfoPrivate::theStatusChanged(const QMailServiceAction::Status &newStatus)
 {
     if (_lastStatus.accountId != newStatus.accountId)
         emit statusAccountIdChanged(newStatus.accountId);
