@@ -5079,7 +5079,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         } else {
             // Predecessor was deleted
             metaData->setInResponseTo(QMailMessageId());
-            return DatabaseFailure;
         }
     }
 
