@@ -1072,15 +1072,21 @@ namespace findAttachments
         {
             QMailMessageContentType contentType = part.contentType();
 
+            bool isText = (contentType.type().toLower() == "text") &&
+                ((contentType.subType().toLower() == "plain") || (contentType.subType().toLower() == "html"));
+
+            bool isInLine = (!part.contentDisposition().isNull()) &&
+                (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
+
+            bool isAttachment = (!part.contentDisposition().isNull()) &&
+                (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment);
+
+            bool isRFC822 = (contentType.type().toLower() == "message") &&
+                (contentType.subType().toLower() == "rfc822");
+
             // Attached messages are considered as attachments even if content disposition
             // is inline instead of attachment, but only if they aren't text/plain nor text/html
-            if (!part.contentDisposition().isNull()
-                && (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment
-                    || (part.contentDisposition().type() == QMailMessageContentDisposition::Inline
-                        && !(contentType.type().toLower() == "text"
-                             && contentType.subType().toLower() == "plain")
-                        && !(contentType.type().toLower() == "text"
-                             && contentType.subType().toLower() == "html")))) {
+            if (isRFC822 || isAttachment || (isInLine && !isText)) {
                 if (found) {
                     *found << part.location();
                 }
@@ -1179,7 +1185,6 @@ namespace findAttachments
     };
 
     static const AttachmentFindStrategies allStrategies(AttachmentFindStrategies()
-                                                  << new findAttachments::TnefAttachmentFindStrategy()
                                                   << new findAttachments::DefaultAttachmentFindStrategy());
 }
 
