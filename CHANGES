@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201112
+  * Fixes: NB#240458 - Random as-daemon crash observed on accepting multiple meeting invites continuously
+  * Fixes: NB#209479 - <UninitVar> qmailserviceaction.cpp:340
+
 201111
   * Fixes: QTSOL-200 - QMailStorageAction::flagMessages doesn't export Read and Important flag changes to the server
 
