@@ -79,6 +79,7 @@ public:
 
     bool isConnected() const;
     void connectRepeatedly();
+    void disconnectFromServer();
 
 Q_SIGNALS:
     void received(const QString& msg, const QByteArray &data);

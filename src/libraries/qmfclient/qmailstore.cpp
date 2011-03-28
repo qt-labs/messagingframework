@@ -1126,6 +1126,16 @@ bool QMailStore::isIpcConnectionEstablished() const
     return d->isIpcConnectionEstablished();
 }
 
+void QMailStore::disconnectIpc()
+{
+    d->disconnectIpc();
+}
+
+void QMailStore::reconnectIpc()
+{
+    d->reconnectIpc();
+}
+
 /*!
     Returns true if the running process is in the act of emitting an asynchronous QMailStore 
     signal caused by another process.  This can only be true when called from a slot

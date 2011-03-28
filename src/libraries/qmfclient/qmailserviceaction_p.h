@@ -383,6 +383,8 @@ public:
      QList< QSharedPointer<QMailActionInfo> > runningActions() const;
 signals:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &);
+public slots:
+    void listActionsRequest();
 private slots:
     void anActionActivityChanged(QMailServiceAction::Activity activity);
     void removeOldActions();

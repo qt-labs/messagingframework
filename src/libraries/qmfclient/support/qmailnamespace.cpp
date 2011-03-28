@@ -230,6 +230,22 @@ QString QMail::dataPath()
     return QDir::homePath() + "/.qmf/";
 #endif
 }
+/*!
+    Returns the the time when the Messaging framework store file was las updated.
+*/
+QDateTime QMail::lastDbUpdated()
+{
+    static QString path(dataPath() + "database/qmailstore.db");
+    QFileInfo info(path);
+
+    if (!info.exists()) {
+        qWarning() << Q_FUNC_INFO << "Store file does not exist";
+        return QDateTime();
+    }
+
+    return info.lastModified();
+}
+
 
 /*!
     Returns the path to where the Messaging framework will store its temporary files.

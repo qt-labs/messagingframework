@@ -1963,6 +1963,11 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActi
     return _runningActions.values();
 }
 
+void QMailActionObserverPrivate::listActionsRequest()
+{
+    _server->listActions();
+}
+
 void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
 {
     if (_isReady)
@@ -2083,6 +2088,14 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::actions() const
     return impl(this)->runningActions();
 }
 
+/*!
+    \fn QMailActionObserver::listActionsRequest()
+    Makes request of running actions. Result will be returned with actionsChanged() signal.
+*/
+void QMailActionObserver::listActionsRequest()
+{
+    impl(this)->listActionsRequest();
+}
 
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)

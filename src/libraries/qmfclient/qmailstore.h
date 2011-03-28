@@ -198,6 +198,9 @@ public:
 
     bool isIpcConnectionEstablished() const;
 
+    void disconnectIpc();
+    void reconnectIpc();
+
     static QMailStore* instance();
 #ifdef QMAILSTOREINSTANCE_DEFINED_HERE
     friend QMailStore* QMailStoreInstance();

@@ -169,7 +169,8 @@ public:
 
     bool isStartupComplete;
     bool isConnectionEstablished;
-
+    bool isManuallyDisconnected;
+    void disconnectFromServer();
     void reconnect();
 
 signals:
@@ -446,7 +447,7 @@ public:
 private:
     void disconnected()
     {
-        if (conn) {
+        if (conn && !conn->isManuallyDisconnected) {
             conn->deleteLater();
 
             conn = new QCopClient(false, this, &QCopThreadData::disconnected);

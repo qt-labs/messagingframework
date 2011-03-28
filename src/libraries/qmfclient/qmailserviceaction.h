@@ -316,6 +316,7 @@ public:
     virtual ~QMailActionObserver();
 
     QList< QSharedPointer<QMailActionInfo> > actions() const;
+    void listActionsRequest();
 signals:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions);
 };

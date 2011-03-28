@@ -687,6 +687,16 @@ bool QMailStoreImplementationBase::isIpcConnectionEstablished() const
     return ipcChannel->isConnected();
 }
 
+void QMailStoreImplementationBase::disconnectIpc()
+{
+    ipcChannel->disconnectFromServer();
+}
+
+void QMailStoreImplementationBase::reconnectIpc()
+{
+    ipcChannel->connectRepeatedly();
+}
+
 QString QMailStoreImplementationBase::accountAddedSig()
 {
     static QString s("accountAdded(uint,QList<quint64>)");

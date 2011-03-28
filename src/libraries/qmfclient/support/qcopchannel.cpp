@@ -314,6 +314,15 @@ void QCopChannel::connectRepeatedly()
     client->reconnect();
 }
 
+void QCopChannel::disconnectFromServer()
+{
+    QCopThreadData *td = qcopThreadData();
+    Q_ASSERT (td);
+    QCopClient* client = td->clientConnection();
+    Q_ASSERT (client);
+    client->disconnectFromServer();
+}
+
 /* !
     \fn void QCopChannel::received(const QString& message, const QByteArray &data)
 
@@ -720,6 +729,7 @@ void QCopClient::init()
 
     isStartupComplete = false;
     isConnectionEstablished = false;
+    isManuallyDisconnected = false;
 
     inBufferUsed = 0;
     inBufferExpected = minPacketSize;
@@ -1064,6 +1074,20 @@ void QCopClient::reconnect()
     QTimer::singleShot(1000, this, SLOT(connectToServer()));
 }
 
+void QCopClient::disconnectFromServer()
+{
+    if (!isConnectionEstablished)
+        return;
+
+    isManuallyDisconnected = true;
+ #ifndef QT_NO_QCOP_LOCAL_SOCKET
+    socket->disconnectFromServer();
+ #else
+    socket->disconnectFromHost();
+ #endif
+
+}
+
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
 
 QString QCopThreadData::socketPath()
@@ -1113,6 +1137,7 @@ void QCopClient::connectToServer()
             pendingData = QByteArray();
         }
         isConnectionEstablished = true;
+        isManuallyDisconnected = false;        
         emit connected();
     } else {
 #ifndef SUPPRESS_QCOP_SERVER_WARNING
