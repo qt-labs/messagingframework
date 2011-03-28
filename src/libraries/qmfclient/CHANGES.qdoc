@@ -171,6 +171,10 @@ Changes since the QMF-1.0 release on 15/05/09:
       'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)' and
       'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)'.
 
+42.  Change return type of 'QMailHeartBeatTimer::interval() const' from 'int' to 'QPair<int, int>'
+     Added QMailHeartBeatTimer::setInterval(int)
+     Remove inline keyword from QMailHeartBeatTimer member functions
+
 
 *****************************************************************************
 
