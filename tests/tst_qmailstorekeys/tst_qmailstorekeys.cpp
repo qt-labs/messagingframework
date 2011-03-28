@@ -1906,8 +1906,6 @@ void tst_QMailStoreKeys::messageConversation()
     QCOMPARE(messageSet(~QMailMessageKey::conversation(smsMessage)), messageSet() << inboxMessage1 << archivedMessage1 << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage1)), messageSet() << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage1)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::conversation(inboxMessage2)), messageSet() << inboxMessage1 << inboxMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::conversation(inboxMessage2)), messageSet() << smsMessage << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::conversation(QMailMessageId())), noMessages);
     QCOMPARE(messageSet(~QMailMessageKey::conversation(QMailMessageId())), allMessages);
 
