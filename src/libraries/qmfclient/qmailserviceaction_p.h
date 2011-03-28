@@ -358,7 +358,7 @@ signals:
     void statusMessageIdChanged(const QMailMessageId &newMessageId);
     void totalProgressChanged(float progress);
 public slots:
-    void theStatusChanged(QMailServiceAction::Status newStatus);
+    void theStatusChanged(const QMailServiceAction::Status &newStatus);
     void theProgressChanged(uint progress, uint total);
 private slots:
     void activityCompleted(quint64 action);

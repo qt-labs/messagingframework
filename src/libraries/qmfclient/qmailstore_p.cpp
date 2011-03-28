@@ -5079,7 +5079,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         } else {
             // Predecessor was deleted
             metaData->setInResponseTo(QMailMessageId());
-            return DatabaseFailure;
         }
     }
 
@@ -7621,7 +7620,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 modifiedFolderIds.append(folderId);
 
             QMailThreadId threadId(extractValue<quint64>(query.value(4)));
-            if (!modifiedThreadIds.contains(threadId))
+            if (threadId.isValid() && !modifiedThreadIds.contains(threadId))
                 modifiedThreadIds.append(threadId);
 
             if (option == QMailStore::CreateRemovalRecord) {
