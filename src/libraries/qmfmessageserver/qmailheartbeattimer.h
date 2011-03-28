@@ -44,6 +44,7 @@
 
 #include <QObject>
 #include <QTimer>
+#include <QPair>
 #include <qmailglobal.h>
 
 class QMailHeartbeatTimerPrivate;
@@ -55,31 +56,30 @@ public:
     explicit QMailHeartbeatTimer(QObject *parent = 0);
     ~QMailHeartbeatTimer();
 
-    inline bool isActive() const;
+    bool isActive() const;
     int timerId() const;
 
+    void setInterval(int interval);
     void setInterval(int minimum, int maximum);
-    int interval() const;
+    QPair<int, int> interval() const;
 
-    inline void setSingleShot(bool singleShot);
-    inline bool isSingleShot() const;
+    void setSingleShot(bool singleShot);
+    bool isSingleShot() const;
 
     static void singleShot(int minimum, int maximum, QObject *receiver, const char *member);
 
-public Q_SLOTS:
+public slots:
+    void start(int interval);
     void start(int minimum, int maximum);
 
     void start();
     void stop();
 
-Q_SIGNALS:
+signals:
     void timeout();
 
 private:
     Q_DISABLE_COPY(QMailHeartbeatTimer)
-
-    friend class QMailHeartbeatTimerPrivate;
-
     QScopedPointer<QMailHeartbeatTimerPrivate> d;
 };
 
