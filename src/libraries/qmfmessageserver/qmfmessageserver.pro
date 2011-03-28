@@ -46,7 +46,7 @@ SOURCES += qmailauthenticator.cpp \
            qmailserviceconfiguration.cpp \
            qmailstoreaccountfilter.cpp \
            qmailtransport.cpp \
-           qmailheartbeattimer.cpp
+           qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
 
 header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
 header_files.files=$$PUBLIC_HEADERS
