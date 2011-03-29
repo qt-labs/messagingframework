@@ -5074,7 +5074,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         if (query.next()) {
             quint64 threadId(extractValue<quint64>(query.value(0)));
 
-            Q_ASSERT(threadId != 0);
+            if (threadId == 0)
+                qWarning() << "Message had an inResponseTo of " << metaData->inResponseTo() << " which had no thread id";
             metaData->setParentThreadId(QMailThreadId(threadId));
         } else {
             // Predecessor was deleted
