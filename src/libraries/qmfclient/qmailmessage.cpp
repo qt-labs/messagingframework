@@ -5792,6 +5792,15 @@ QString QMailMessagePart::displayName() const
         id = contentID();
 
     if (id.isEmpty()) {
+        bool isRFC822 = (contentType().type().toLower() == "message") &&
+            (contentType().subType().toLower() == "rfc822");
+        if (isRFC822) {
+            QMailMessage msg = QMailMessage::fromRfc2822(body().data(QMailMessageBody::Decoded));
+            id = msg.subject();
+        }
+    }
+
+    if (id.isEmpty()) {
         int partNumber = impl(this)->partNumber();
         if (partNumber != -1) {
             id = QString::number(partNumber) + ' ';
