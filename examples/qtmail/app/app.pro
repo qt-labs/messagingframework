@@ -14,9 +14,9 @@ LIBS += -L../../../src/libraries/qmfclient/build \
         -L../libs/qmfutil/build \
         -L../../../src/libraries/qmfmessageserver/build
 
-macx:LIBS += -F../../../src/libraries/qmfclient/clientbuild \
-        -F../libs/qmfutil/build \
-        -F../../../src/libraries/qmfclient/build
+macx:LIBS += -F../../../src/libraries/qmfclient/build \
+             -F../libs/qmfutil/build \
+             -F../../../src/libraries/qmfmessageserver/build
 
 HEADERS += emailclient.h \
            messagelistview.h \
