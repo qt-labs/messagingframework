@@ -1253,36 +1253,43 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         _messageUids.append(selector.uidString(mailboxIdStr));
         _msgSection = selector._properties._location;
         
-        if (selector._properties._minimum != SectionProperties::All) {
-            _sectionEnd = (selector._properties._minimum - 1);
-
-            bool valid(_sectionEnd != SectionProperties::All);
-            if (valid) {
-                // Find where we should continue fetching from
-                QMailMessage message(_messageUids.first(), context->config().id());
-                valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
-                
-                // Try to avoid sending bad IMAP commands even when the server gives bogus values
-                if (_sectionStart >= _sectionEnd) {
-                    qWarning() << "Invalid message section range" 
-                               << "account:" << message.parentAccountId() 
-                               << "UID:" << message.serverUid() 
-                               << "start:" << _sectionStart 
-                               << "end:" << _sectionEnd;
-                    valid = false;
-                }
+        // Determine the start position.
+        // Find where we should continue (start) fetching from
+        const QMailMessage message(_messageUids.first(), context->config().id());
+        bool valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
+        if (!valid) {
+            qMailLog(IMAP) << "Could not complete part: invalid location or invalid uid";
+            return selectNextMessageSequence(context, maximum, folderActionPermitted);
+        }
+        // Determine the end position.
+        if (selector._properties._minimum == SectionProperties::All) {
+            const QMailMessagePart &part(message.partAt(_msgSection));
+            _sectionEnd = part.contentDisposition().size();
+            if (_sectionStart == 0 || _sectionEnd == -1) {
+                // Cannot determine content size. Fetch it all then.
+                _sectionStart = 0;
+                _sectionEnd = SectionProperties::All;
             }
-
-            if (!valid) {
-                if (_sectionStart <= _sectionEnd) {
-                    qMailLog(Messaging) << "Could not complete part: invalid location or invalid uid";
-                } else {
-                    // already have retrieved minimum bytes, so nothing to do
-                }
-
-                // Try the next list element
+        } else {
+            _sectionEnd = (selector._properties._minimum - 1);
+            if (_sectionEnd < 0) {
+                qMailLog(IMAP) << "Invalid 'minimum' value: " << selector._properties._minimum;
                 return selectNextMessageSequence(context, maximum, folderActionPermitted);
             }
+        }
+
+        if (_sectionEnd == SectionProperties::All) {
+            _sectionStart = 0;
+        }
+        // Try to avoid sending bad IMAP commands even when the server gives bogus values
+        if (_sectionEnd != SectionProperties::All
+            && _sectionStart >= _sectionEnd) {
+            qMailLog(IMAP) << "Invalid message section range"
+                           << "account:" << message.parentAccountId()
+                           << "UID:" << message.serverUid()
+                           << "start:" << _sectionStart
+                           << "end:" << _sectionEnd;
+            return selectNextMessageSequence(context, maximum, folderActionPermitted);
         }
     }
 
@@ -2873,7 +2880,7 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     ImapConfiguration imapCfg(context->config());
     if (!imapCfg.canDeleteMail()) {
         QString name(QMailAccount(context->config().id()).name());
-        qMailLog(Messaging) << "Not exporting deletions. Deleting mail is disabled for account name" << name;
+        qMailLog(IMAP) << "Not exporting deletions. Deleting mail is disabled for account name" << name;
     }
 
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
