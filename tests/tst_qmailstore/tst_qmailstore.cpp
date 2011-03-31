@@ -45,6 +45,159 @@
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
+#include <QThread>
+#include <QSignalSpy>
+
+class WriteThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    WriteThread() {}
+
+    void run()
+    {
+        QMailAccount account1;
+        account1.setName("Account 1");
+        account1.setFromAddress(QMailAddress("Account 1", "account1@example.org"));
+        account1.setStatus(QMailAccount::SynchronizationEnabled, true);
+        account1.setStatus(QMailAccount::Synchronized, false);
+        account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(333));
+        account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(666));
+        account1.setCustomField("question", "What is your dog's name?");
+        account1.setCustomField("answer", "Fido");
+
+        QMailAccountConfiguration config1;
+        config1.addServiceConfiguration("imap4");
+
+        if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("imap4")) {
+            svcCfg->setValue("server", "mail.example.org");
+            svcCfg->setValue("username", "account1");
+        }
+        config1.addServiceConfiguration("smtp");
+        if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("smtp")) {
+            svcCfg->setValue("server", "mail.example.org");
+            svcCfg->setValue("username", "account1");
+        }
+
+       //Verify that invalid retrieval fails
+        QMailAccount accountX(account1.id());
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
+        QVERIFY(!accountX.id().isValid());
+
+        // Verify that addition is successful
+        QCOMPARE(QMailStore::instance()->countAccounts(), 0);
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+        QVERIFY(!account1.id().isValid());
+        QVERIFY(QMailStore::instance()->addAccount(&account1, &config1));
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+        QVERIFY(account1.id().isValid());
+        QCOMPARE(QMailStore::instance()->countAccounts(), 1);
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+        // Verify that retrieval yields matching result
+        QMailAccount account2(account1.id());
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+        QCOMPARE(account2.id(), account1.id());
+        QCOMPARE(account2.name(), account1.name());
+        QCOMPARE(account2.fromAddress(), account1.fromAddress());
+        QCOMPARE(account2.status(), account1.status());
+        QCOMPARE(account2.standardFolder(QMailFolder::InboxFolder), QMailFolderId());
+        QCOMPARE(account2.standardFolder(QMailFolder::SentFolder), QMailFolderId(333));
+        QCOMPARE(account2.standardFolder(QMailFolder::TrashFolder), QMailFolderId(666));
+        QCOMPARE(account2.customFields(), account1.customFields());
+        QCOMPARE(account2.customField("answer"), QString("Fido"));
+
+        QMailAccountConfiguration config2(account1.id());
+        QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+        QCOMPARE(config2.services(), config1.services());
+        foreach (const QString &service, config2.services()) {
+            if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config2.serviceConfiguration(service)) {
+                QCOMPARE(svcCfg->values(), config1.serviceConfiguration(service).values());
+            } else QFAIL(qPrintable(QString("no config for %1!").arg(service)));
+        }
+
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::id(account1.id())), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::id(account1.id(), QMailDataComparator::NotEqual)), 0);
+
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::name(account1.name())), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::name(account1.name().mid(3))), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::name(account1.name().mid(3), QMailDataComparator::Includes)), 1);
+
+        // From Address field gets special handling
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address())), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address())), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::NotEqual)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::NotEqual)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::Includes)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::Includes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::Excludes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address(), QMailDataComparator::Excludes)), 1);
+
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address().mid(4), QMailDataComparator::Includes)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address().mid(4), QMailDataComparator::Includes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(account1.fromAddress().address().mid(4), QMailDataComparator::Excludes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(account1.fromAddress().address().mid(4), QMailDataComparator::Excludes)), 1);
+
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::Equal)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Equal)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::NotEqual)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::NotEqual)), 0);
+
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::Includes)), 1);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Includes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 0);
+        QCOMPARE(QMailStore::instance()->countAccounts(~QMailAccountKey::fromAddress(QString(), QMailDataComparator::Excludes)), 1);
+
+        // Test basic limit/offset
+        QMailAccountKey key;
+        QMailAccountSortKey sort;
+        QMailAccountIdList accountIds(QMailStore::instance()->queryAccounts(key, sort));
+        QCOMPARE(QMailStore::instance()->queryAccounts(key, sort, 1, 0), accountIds);
+    }
+};
+
+class ReadThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    QList<QMailAccountIdList> added;
+    QList<QMailAccountIdList> updated;
+    QList<QMailAccountIdList> removed;
+    QMailStore* store;
+
+    ReadThread()
+    {
+        store = QMailStore::instance();
+    }
+
+public slots:
+    void accountsAdded(const QMailAccountIdList& ids)
+    {
+        added.append(ids);
+    }
+
+    void accountsRemoved(const QMailAccountIdList& ids)
+    {
+        removed.append(ids);
+    }
+
+    void accountsUpdated(const QMailAccountIdList& ids)
+    {
+        updated.append(ids);
+    }
+
+protected:
+    void run()
+    {
+        connect(store, SIGNAL(accountsAdded(const QMailAccountIdList&)), this, SLOT(accountsAdded(const QMailAccountIdList&)));
+        connect(store, SIGNAL(accountsRemoved(const QMailAccountIdList&)), this, SLOT(accountsRemoved(const QMailAccountIdList&)));
+        connect(store, SIGNAL(accountsUpdated(const QMailAccountIdList&)), this, SLOT(accountsUpdated(const QMailAccountIdList&)));
+
+        exec();
+    }
+};
 
 //TESTED_CLASS=QMailStore
 //TESTED_FILES=src/libraries/qtopiamail/qmailstore.cpp
@@ -80,6 +233,7 @@ private slots:
     void removeFolder();
     void removeMessage();
     void remove1000Messages();
+    void threads();
 };
 
 QTEST_MAIN(tst_QMailStore)
@@ -1387,4 +1541,28 @@ void tst_QMailStore::remove1000Messages()
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
 }
 
+void tst_QMailStore::threads()
+{
+    QEventLoop writeLoop;
+    QMailStore* store = QMailStore::instance();
+    QSignalSpy spy(store, SIGNAL(accountsAdded(const QMailAccountIdList&)));
+
+    ReadThread readThread;
+    readThread.start();
+
+    while (!readThread.isRunning())
+        QTest::qWait(50);
+
+    WriteThread writeThread;
+    connect(&writeThread, SIGNAL(finished()), &writeLoop, SLOT(quit()));
+    writeThread.start();
+
+    if (!writeThread.isFinished())
+        writeLoop.exec();
+
+    QCOMPARE(readThread.added.count(), 1);
+    QCOMPARE(spy.count(), 1);
+
+    readThread.terminate();
+}
 
