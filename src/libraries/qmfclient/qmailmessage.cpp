@@ -824,6 +824,7 @@ QDataStream& operator<<(QDataStream& out, const DataString& dataString)
 
 /* Utility namespaces for message part detection, finding and building */
 
+const static char* imageContentType = "image";
 const static char* textContentType = "text";
 const static char* plainContentSubtype = "plain";
 const static char* htmlContentSubtype = "html";
@@ -835,6 +836,8 @@ namespace findBody
         Context() : found (0), alternateParent (0), contentType (textContentType) {}
         QMailMessagePartContainer *found;
         QMailMessagePartContainer *alternateParent;
+        QList<QMailMessagePart::Location> htmlImageLoc;
+        QList<const QMailMessagePart *> htmlImageParts;
         QByteArray contentType;
         QByteArray contentSubtype;
     };
@@ -897,25 +900,47 @@ namespace findBody
         return false;
     }
 
+    // We assume MultipartRelated parts will hold the images
+    // related to the HTML body, so they will be stored in
+    // ctx.htmlImageLoc and ctx.htmlImageParts.
     bool inMultipartRelated(const QMailMessagePartContainer &container, Context &ctx)
     {
-        for (int i = (int)container.partCount() - 1; i >= 0; i--) {
+        int bodyPart = -1;
+        for (int i = (int)container.partCount() - 1; ((i >= 0) && (bodyPart == -1)); i--) {
             const QMailMessagePart &part = container.partAt(i);
             switch (part.multipartType()) {
             case QMailMessagePart::MultipartNone:
                 if (inMultipartNone(part, ctx))
-                    return true;
+                    bodyPart = i;
                 break;
             case QMailMessagePart::MultipartAlternative:
                 if (inMultipartAlternative(part, ctx))
-                    return true;
+                    bodyPart = i;
                 break;
             default:
                 qWarning() << Q_FUNC_INFO << "Multipart related message with unexpected subpart";
                 break;
             }
         }
-        return false;
+
+        // The body is not inside the container, so stop
+        // looking for inline images.
+        if (bodyPart == -1) {
+            return false;
+        }
+
+        // We assume the inline images are the sibling parts
+        // of the html body part.
+        for (int i = (int)container.partCount() - 1; i >= 0; i--) {
+            if (i != bodyPart) {
+                const QMailMessagePart &part = container.partAt(i);
+                if (imageContentType == part.contentType().type().toLower())
+                    ctx.htmlImageLoc << part.location();
+                    ctx.htmlImageParts << &part;
+            }
+        }
+
+        return true;
     }
 
     bool inMultipartSigned(const QMailMessagePartContainer &container, Context &ctx)
@@ -1214,6 +1239,50 @@ namespace attachments
         return 0;
     }
 
+    void removeInlineImages(QMailMessagePartContainer &container, int depth)
+    {
+        if (container.multipartType() == QMailMessagePart::MultipartSigned ||
+            container.multipartType() == QMailMessagePart::MultipartEncrypted) {
+            // Do not mess with signed/encrypted containers.
+            return;
+        }
+        if (depth > maxDepth) {
+            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            return;
+        }
+        int diff;
+        int end = container.partCount();
+
+        // Locations change when messages are removed, so better have a
+        // list of pointers to the parts
+        QList<QMailMessagePart*> imageParts;
+        foreach (QMailMessagePart::Location location, container.findInlineImageLocations()) {
+            QMailMessagePart *part = partAt(container, location);
+            if (part) {
+                imageParts << part;
+            } else {
+                qWarning() << Q_FUNC_INFO << "location"
+                           << location.toString(true)
+                           << "not found in container";
+            }
+        }
+
+        for (int i = 0; i < end; ++i) {
+            QMailMessagePart& part = container.partAt(i);
+            if (imageParts.contains(&part)) {
+                // Remove it.
+                container.removePartAt(i);
+                --i;
+                // This is just a safeguard in case multiple parts are removed
+                // starting at i.
+                diff = end - container.partCount();
+                end -= diff;
+            } else {
+                removeInlineImages(part, depth + 1);
+            }
+        }
+    }
+
     void removeAttachments(QMailMessagePartContainer &message, int depth)
     {
         if (message.multipartType() == QMailMessagePart::MultipartSigned ||
@@ -1258,6 +1327,13 @@ namespace attachments
         }
     }
 
+    void removeAllInlineImages(QMailMessagePartContainer &container)
+    {
+        removeInlineImages(container, 0);
+        // Not sure if "cleaning up" is a good idea.
+        //cleanup(message, 0);
+    }
+
     void removeAll(QMailMessagePartContainer &message)
     {
         removeAttachments(message, 0);
@@ -1283,6 +1359,69 @@ namespace attachments
             message.clearParts();
             message.setMultipartType(QMailMessagePartContainer::MultipartMixed);
             message.appendPart(subpart);
+        }
+    }
+
+    void convertToMultipartRelated(QMailMessagePartContainer &message)
+    {
+        if (message.multipartType() != QMailMessagePartContainer::MultipartRelated) {
+            // Convert the message to multipart/mixed.
+            QMailMessagePart subpart;
+            if (message.multipartType() == QMailMessagePartContainer::MultipartNone) {
+                // Move the body
+                subpart.setBody(message.body());
+            } else {
+                // Copy relevant data of the message to subpart
+                subpart.setMultipartType(message.multipartType());
+                for (uint i=0; i < message.partCount(); i++) {
+                    subpart.appendPart(message.partAt(i));
+                }
+            }
+            message.clearParts();
+            message.setMultipartType(QMailMessagePartContainer::MultipartRelated);
+            message.appendPart(subpart);
+        }
+    }
+
+    void addImagesToMultipart(QMailMessagePartContainer *container, const QMap<QString, QString> &htmlImagesMap)
+    {
+        Q_ASSERT (NULL != container);
+        Q_ASSERT (QMailMessagePartContainer::MultipartRelated == container->multipartType());
+
+        foreach (const QString &imageID, htmlImagesMap) {
+
+            const QString &imagePath = htmlImagesMap.value(imageID);
+            const QFileInfo fi(imagePath);
+            if (!fi.isFile()) {
+                qWarning() << Q_FUNC_INFO << ":" << imagePath << "is not regular file. Cannot attach.";
+                continue;
+            }
+
+            const QString &partName = fi.fileName();
+            const QString &filePath = fi.absoluteFilePath();
+
+            QMailMessageContentType attach_type(QMail::mimeTypeFromFileName(imagePath).toLatin1());
+            attach_type.setName(partName.toLatin1());
+
+            QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
+            disposition.setFilename(partName.toLatin1());
+            disposition.setSize(fi.size());
+            QMailMessagePart part = QMailMessagePart::fromFile(filePath, disposition, attach_type,
+                                                               QMailMessageBody::Base64,
+                                                               QMailMessageBody::RequiresEncoding);
+            part.setContentID(imageID);
+            container->appendPart(part);
+        }
+    }
+
+    void addImagesToMultipart(QMailMessagePartContainer *container, const QList<const QMailMessagePart*> imageParts)
+    {
+        Q_ASSERT (NULL != container);
+        Q_ASSERT (QMailMessagePartContainer::MultipartRelated == container->multipartType());
+
+        foreach (const QMailMessagePart *imagePart, imageParts) {
+            Q_ASSERT(NULL != imagePart);
+            container->appendPart(*imagePart);
         }
     }
 
@@ -4716,6 +4855,20 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocat
 }
 
 /*!
+  Returns the locations of the attachments in a container, dealing with a range of different message structures and exceptions.
+ */
+QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlineImageLocations() const
+{
+    findBody::Context ctx;
+    ctx.contentSubtype = htmlContentSubtype;
+    if (findBody::inPartContainer(*this, ctx)) {
+        return ctx.htmlImageLoc;
+    } else {
+        return QList<QMailMessagePart::Location>();
+    }
+}
+
+/*!
   Returns true if a plain text body is present in the container.
  */
 bool QMailMessagePartContainer::hasPlainTextBody() const
@@ -4778,14 +4931,24 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
 void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
 {
     QMailMessagePartContainer *bodyContainer = 0;
+    QMailMessagePart subpart;
+    bool hasInlineImages = false;
 
     findBody::Context ctx;
     if (findBody::inPartContainer(*this, ctx)) {
         Q_ASSERT (0 != ctx.found);
+        hasInlineImages = !ctx.htmlImageParts.isEmpty();
         if (0 != ctx.alternateParent) {
             bodyContainer = ctx.alternateParent;
         } else {
             bodyContainer = ctx.found;
+        }
+        if (hasInlineImages) {
+            // Copy relevant data of the message to subpart
+            subpart.setMultipartType(QMailMessagePartContainer::MultipartRelated);
+            foreach (const QMailMessagePart *part, ctx.htmlImageParts) {
+                subpart.appendPart(*part);
+            }
         }
         bodyContainer->clearParts();
     } else {
@@ -4815,7 +4978,46 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
 
     QMailMessagePart htmlBodyPart;
     htmlBodyPart.setBody(htmlBody);
-    bodyContainer->appendPart(htmlBodyPart);
+    if (hasInlineImages){
+        subpart.prependPart(htmlBodyPart);
+        bodyContainer->appendPart(subpart);
+    } else {
+        bodyContainer->appendPart(htmlBodyPart);
+    }
+}
+
+/*!
+  Sets the image list of a container to \a images.
+  \param images String paths to local files to be added
+ */
+void QMailMessagePartContainer::setInlineImages(const QMap<QString, QString> &htmlImagesMap)
+{
+    attachments::removeAllInlineImages(*this);
+
+    if (htmlImagesMap.isEmpty()) {
+        return;
+    }
+
+    // Add attachments
+    attachments::convertToMultipartRelated(*this);
+    attachments::addImagesToMultipart(this, htmlImagesMap);
+}
+
+/*!
+  Sets the images list of a container to \a images.
+  \param images List of already created message parts representing the inline images (might come from other existing messages)
+ */
+void QMailMessagePartContainer::setInlineImages(const QList<const QMailMessagePart*> imageParts)
+{
+    attachments::removeAllInlineImages(*this);
+
+    if (imageParts.isEmpty()) {
+        return;
+    }
+
+    // Add attachments
+    attachments::convertToMultipartRelated(*this);
+    attachments::addImagesToMultipart(this, imageParts);
 }
 
 /*!

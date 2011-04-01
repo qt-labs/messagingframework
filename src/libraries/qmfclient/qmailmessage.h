@@ -382,11 +382,14 @@ public:
     QMailMessagePartContainer* findPlainTextContainer() const;
     QMailMessagePartContainer* findHtmlContainer() const;
     QList<QMailMessagePartContainer::Location> findAttachmentLocations() const;
+    QList<QMailMessagePartContainer::Location> findInlineImageLocations() const;
     bool hasPlainTextBody() const;
     bool hasHtmlBody() const;
     bool hasAttachments() const;
     void setPlainTextBody(const QMailMessageBody& plainTextBody);
     void setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody);
+    void setInlineImages(const QMap<QString, QString> &htmlImagesMap);
+    void setInlineImages(const QList<const QMailMessagePart*> images);
     void setAttachments(const QStringList& attachments);
     void setAttachments(const QList<const QMailMessagePart*> attachments);
 
