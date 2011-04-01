@@ -2023,8 +2023,8 @@ void ServiceHandler::actionCompleted(bool success, QMailMessageService *service,
 
                 QMailMessageKey idsKey(QMailMessageKey::id(mSentIds));
 
-                bool failed = QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true);
-                failed = QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false) || failed;
+                bool failed = !QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true);
+                failed = !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false) || failed;
 
                 if (failed) {
                     qWarning() << "Unable to flag messages:" << mSentIds;
