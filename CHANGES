@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201113
+  * Fixes: NB#239506 - Some part of message body shown duplicate 
+
 201112
   * Fixes: NB#240458 - Random as-daemon crash observed on accepting multiple meeting invites continuously
   * Fixes: NB#209479 - <UninitVar> qmailserviceaction.cpp:340
