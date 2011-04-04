@@ -5838,36 +5838,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                     if (query.first()) {
                         threadId = extractValue<quint64>(query.value(0));
+                        Q_ASSERT(threadId != 0);
                     }
                 }
-
-
                 {
-
-                        QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
-                        QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage debug query"));
-
-                        if (query.lastError().type() != QSqlError::NoError)
-                            return DatabaseFailure;
-
-                        if (!query.next()) {
-                            qWarning() << "Could not find thread id for inserted message";
-                            return DatabaseFailure;
-                        }
-
-                    Q_ASSERT(query.value(0) != 0);
-
-                }
-
-                {
-                    Q_ASSERT(threadId != 0);
                     QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
                                                 QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
                                                 "updateMessage mailmessages update query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
-
                 {
                     QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
                                                 QVariantList() << threadId,
