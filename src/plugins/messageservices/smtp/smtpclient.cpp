@@ -497,6 +497,8 @@ void SmtpClient::nextAction(const QString &response)
             // We are now authenticated
             status = Authenticated;
             nextAction(QString());
+        } else if (responseCode == 530) {
+            operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
         } else {
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
         }
