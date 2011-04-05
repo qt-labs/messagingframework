@@ -5883,7 +5883,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                 {
                     // Add a new thread for this message
-                    QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid, parentaccountid) VALUES(1, %1, '')").arg(metaData->status() & QMailMessage::Read ? "0" : "1").arg(metaData->parentAccountId().toULongLong()));
+                    QString sql(QString("INSERT INTO mailthreads (messagecount, unreadcount, serveruid, parentaccountid) VALUES(1, %1, '', %2)").arg(metaData->status() & QMailMessage::Read ? "0" : "1").arg(metaData->parentAccountId().toULongLong()));
                     QSqlQuery query(simpleQuery(sql, "addMessage mailthreads insert query"));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
