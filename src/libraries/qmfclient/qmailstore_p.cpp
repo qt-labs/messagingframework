@@ -4935,7 +4935,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddThread(QMailThread
                                 QVariantList() << thread->id()
                                             << thread->messageCount()
                                             << thread->unreadCount()
-                                            << thread->unreadCount()
                                             << thread->serverUid()
                                             << thread->parentAccountId(),
                                 "addFolder mailfolders query"));
