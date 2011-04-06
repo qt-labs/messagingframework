@@ -1,4 +1,4 @@
-TARGET            QMFIPCChannelServer.exe
+TARGET            qmfipcchannelserver.exe
 TARGETTYPE        exe
 UID               0x1000007A 0x2003A67B
 
