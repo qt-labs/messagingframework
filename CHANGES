@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201113_2
+  * Fixes: QTSOLBUG-155 - Unable to move messages with qtmail
+  * Fixes: NB#195729 - "qtn_mail_smtp_authentication_error" not shown when account is configured with wrong settings
+
 201113
   * Fixes: NB#239506 - Some part of message body shown duplicate 
 
