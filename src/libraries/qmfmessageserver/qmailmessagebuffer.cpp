@@ -94,12 +94,14 @@ QMailMessageBuffer *QMailMessageBuffer::instance()
 
 bool QMailMessageBuffer::addMessage(QMailMessage *message)
 {
+    Q_ASSERT(message);
     d->waitingForCallback.append(new BufferItem(true, 0, message));
     return true;
 }
 
 bool QMailMessageBuffer::updateMessage(QMailMessage *message)
 {
+    Q_ASSERT(message);
     d->waitingForCallback.append(new BufferItem(false, 0, message));
     return true;
 }
@@ -119,13 +121,14 @@ QMailMessageBuffer::BufferItem *QMailMessageBuffer::get_item(QMailMessage *messa
 // We "own" the callback instance (makes the error case simpler for the client to handle)
 bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFlushCallback *callback)
 {
-    BufferItem *item = get_item(message);
     if (!message) {
         // This message was not scheduled for adding or updating
         qWarning() << "Adding null message to buffer";
         delete callback;
         return false;
     }
+    BufferItem *item = get_item(message);
+    Q_ASSERT(item);
 
     item->callback = callback;
     item->message = message;
