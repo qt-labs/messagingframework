@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201114
+  * Fixes: NB#242495 - Messageserver crash while trying to delete 1st account during initial fetch
+
 201113_2
   * Fixes: QTSOLBUG-155 - Unable to move messages with qtmail
   * Fixes: NB#195729 - "qtn_mail_smtp_authentication_error" not shown when account is configured with wrong settings
