@@ -244,7 +244,7 @@ void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callbac
 {
     foreach (BufferItem *item, d->waitingForFlush) {
         if (item->callback == callback) {
-            d->waitingForCallback.removeOne(item);
+            d->waitingForFlush.removeOne(item);
             delete item->callback;
             delete item;
         }
