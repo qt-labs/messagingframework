@@ -1,4 +1,4 @@
-TARGET            QMFDataServer.exe
+TARGET            qmfdataserver.exe
 TARGETTYPE        exe
 UID               0x1000007A 0x2003A67A
 

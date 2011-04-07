@@ -25,10 +25,9 @@ SUBDIRS = src/libraries/qmfclient \
 }
 
 symbian {
-    message("Building a pure Symbian Client-Server implementation for Data Server using Raptor...")
-    system(sbs -b src/symbian/qmfdataserver/bld.inf)
-    message("Building a pure Symbian Client-Server implementation for IPC Channel using Raptor...")
-    system(sbs -b src/symbian/qmfipcchannelserver/bld.inf)
+    # Add native Symbian compilations to list of projects to compile
+    BLD_INF_RULES.prj_mmpfiles += "src/symbian/qmfdataserver/qmfdataserver.mmp"
+    BLD_INF_RULES.prj_mmpfiles += "src/symbian/qmfipcchannelserver/qmfipcchannelserver.mmp"
 }
 
 defineReplace(targetPath) {

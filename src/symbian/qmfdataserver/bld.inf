@@ -1,5 +1,0 @@
-prj_platforms
-WINSCW GCCE ARMV5 ARMV6
-
-prj_mmpfiles
-qmfdataserver.mmp
