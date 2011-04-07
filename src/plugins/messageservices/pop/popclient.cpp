@@ -84,12 +84,22 @@ PopClient::PopClient(QObject* parent)
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
+    connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
 }
 
 PopClient::~PopClient()
 {
+    foreach (QMailMessageBufferFlushCallback * c, callbacks) {
+        QMailMessageBuffer::instance()->removeCallback(c);
+    }
+
     delete dataStream;
     delete transport;
+}
+
+void PopClient::messageBufferFlushed()
+{
+    callbacks.clear();
 }
 
 QMailMessage::MessageType PopClient::messageType() const
@@ -1080,7 +1090,10 @@ void PopClient::createMail()
 
     dataStream->reset();
 
-    QMailMessageBuffer::instance()->setCallback(mail, new MessageFlushedWrapper(this, isComplete));
+
+    QMailMessageBufferFlushCallback *callback = new MessageFlushedWrapper(this, isComplete);
+    QMailMessageBuffer::instance()->setCallback(mail, callback);
+    callbacks.push_back(callback);
 }
 
 void PopClient::messageFlushed(QMailMessage &message, bool isComplete)

@@ -52,6 +52,7 @@
 #include <qmailmessageclassifier.h>
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
+#include <qmailmessagebuffer.h>
 
 class LongStream;
 class QMailTransport;
@@ -99,6 +100,7 @@ signals:
     void allMessagesReceived();
 
 protected slots:
+    void messageBufferFlushed();
     void connected(QMailTransport::EncryptType encryptType);
     void transportError(int, QString msg);
 
@@ -181,6 +183,7 @@ private:
     QList<QByteArray> authCommands;
     QTime lastStatusTimer;
     QVector<QMailMessage*> _bufferedMessages;
+    QVector<QMailMessageBufferFlushCallback*> callbacks;
 };
 
 #endif
