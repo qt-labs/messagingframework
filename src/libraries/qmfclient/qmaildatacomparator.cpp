@@ -51,7 +51,7 @@
     \enum QMailDataComparator::EqualityComparator
 
     Defines the comparison operations that can be used to compare data elements 
-    of QMailStore objects for equality and inequality.
+    of QMailStore objects for equality and inequality. This is case sensitive.
 
     \value Equal Represents the '==' operator.
     \value NotEqual Represents the '!=' operator.
@@ -61,7 +61,7 @@
     \enum QMailDataComparator::InclusionComparator
 
     Defines the comparison operations that can be used to compare data elements 
-    of QMailStore objects for inclusion or exclusion.
+    of QMailStore objects for inclusion or exclusion. This is case insensitive.
 
     \value Includes Represents an operation in which an associated property is tested to 
                     determine whether it is equal to any of a supplied set of values.
