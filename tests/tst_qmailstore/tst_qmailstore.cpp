@@ -45,6 +45,7 @@
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
+#include "qmailstoreimplementation_p.h"
 
 //TESTED_CLASS=QMailStore
 //TESTED_FILES=src/libraries/qtopiamail/qmailstore.cpp
@@ -80,11 +81,15 @@ private slots:
     void removeFolder();
     void removeMessage();
     void remove1000Messages();
+    void message();
+    void implementationbase();
 };
 
 QTEST_MAIN(tst_QMailStore)
 
 #include "tst_qmailstore.moc"
+
+#define CRLF "\015\012"
 
 tst_QMailStore::tst_QMailStore()
 {
@@ -1387,4 +1392,108 @@ void tst_QMailStore::remove1000Messages()
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
 }
 
+void tst_QMailStore::message()
+{
+    // initializations
+    QByteArray mime1("From: aperson@domain.example" CRLF
+                     "To: bperson@domain.example" CRLF
+                     "Content-Type: multipart/digest; boundary=XYZ" CRLF
+                     "" CRLF
+                     "--XYZ" CRLF
+                     "Content-Type: text/plain" CRLF
+                     "" CRLF
+                     "This is a text plain part that is counter to recommended practice in" CRLF
+                     "RFC 2046, $5.1.5, but is not illegal" CRLF
+                     "" CRLF
+                     "--XYZ" CRLF
+                     "From: cperson@domain.example" CRLF
+                     "To: dperson@domain.example" CRLF
+                     "" CRLF
+                     "A submessage" CRLF
+                     "" CRLF
+                     "--XYZ--" CRLF);
 
+    QMailAccount account2;
+    account2.setName("Account 2");
+    account2.setMessageType(QMailMessage::Email);
+    account2.setFromAddress(QMailAddress("Account 2", "account2@example.org"));
+    account2.setStatus(QMailAccount::SynchronizationEnabled, true);
+    account2.setStatus(QMailAccount::Synchronized, true);
+    account2.setStatus(QMailAccount::MessageSource, true);
+    account2.setStatus(QMailAccount::CanRetrieve, true);
+    account2.setStatus(QMailAccount::MessageSink, true);
+    account2.setStatus(QMailAccount::CanTransmit, true);
+    account2.setCustomField("verified", "true");
+    account2.setCustomField("question", "What is your dog's name?");
+    account2.setCustomField("answer", "Milo");
+
+    QMailAccountConfiguration config;
+    config.addServiceConfiguration("imap4");
+    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config.serviceConfiguration("imap4")) {
+        svcCfg->setValue("server", "mail.example.org");
+        svcCfg->setValue("username", "Account 2");
+    }
+    config.addServiceConfiguration("smtp");
+    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config.serviceConfiguration("smtp")) {
+        svcCfg->setValue("server", "mail.example.org");
+        svcCfg->setValue("username", "Account 2");
+    }
+
+    QVERIFY(QMailStore::instance()->addAccount(&account2, &config));
+
+    QMailMessage msg2 = QMailMessage::fromRfc2822(mime1);
+    msg2.setMessageType(QMailMessage::Email);
+    msg2.setParentAccountId(account2.id());
+    msg2.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg2.setSubject("email message test");
+    msg2.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg2.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg2.setStatus(QMailMessage::Incoming, true);
+    msg2.setStatus(QMailMessage::New, true);
+    msg2.setStatus(QMailMessage::Read, false);
+    msg2.setServerUid("inboxmsg21");
+    msg2.setSize(5 * 1024);
+    msg2.setCustomField("present", "true");
+    QVERIFY(QMailStore::instance()->addMessage(&msg2));
+
+    QCOMPARE(msg2.partCount(), 2u);
+
+    QCOMPARE(QMailStore::instance()->message(msg2.id()).partCount(), 2u);
+}
+
+void tst_QMailStore::implementationbase()
+{
+    QMailAccount account1;
+    account1.setName("Account 10");
+    account1.setFromAddress(QMailAddress("Account 10", "account10@example.org"));
+    account1.setStatus(QMailAccount::SynchronizationEnabled, true);
+    account1.setStatus(QMailAccount::Synchronized, false);
+    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(333));
+    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(666));
+    account1.setCustomField("question", "What is your dog's name?");
+    account1.setCustomField("answer", "Fido");
+
+    QMailAccountConfiguration config1;
+    config1.addServiceConfiguration("imap4");
+    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("imap4")) {
+        svcCfg->setValue("server", "mail.example.org");
+        svcCfg->setValue("username", "account10");
+    }
+    config1.addServiceConfiguration("smtp");
+    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("smtp")) {
+        svcCfg->setValue("server", "mail.example.org");
+        svcCfg->setValue("username", "account10");
+    }
+    QVERIFY(QMailStore::instance()->addAccount(&account1, &config1));
+
+
+
+    QMailStoreNullImplementation impl(QMailStore::instance());
+    QVERIFY(!impl.asynchronousEmission());
+    impl.flushIpcNotifications();
+    impl.processIpcMessageQueue();
+
+    impl.setRetrievalInProgress(QMailAccountIdList()<<account1.id());
+    impl.notifyRetrievalInProgress(QMailAccountIdList()<<account1.id());
+
+}

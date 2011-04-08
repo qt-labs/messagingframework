@@ -108,6 +108,8 @@ class QCopClient : public QObject
 {
     Q_OBJECT
 
+    friend class tst_QCop;
+
     struct MemberInvokerBase
     {
         virtual ~MemberInvokerBase() {}

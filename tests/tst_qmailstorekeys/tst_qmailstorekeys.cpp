@@ -46,6 +46,7 @@
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
+#include "locks_p.h"
 
 class tst_QMailStoreKeys : public QObject
 {
@@ -99,6 +100,8 @@ private slots:
 
     void listModel();
     void threadedModel();
+
+    void locks();
 
 private:
     // We only want to compare sets, disregarding ordering
@@ -2547,3 +2550,8 @@ void tst_QMailStoreKeys::threadedModel()
     QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
 }
 
+void tst_QMailStoreKeys::locks()
+{
+    ProcessMutex mutex("invalid path", 0);
+    mutex.lock();
+}

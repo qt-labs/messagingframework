@@ -91,7 +91,7 @@ private:
 
 private:
     QMailAccountListModelPrivate* d;
-
+    friend class tst_QMail_ListModels;
 };
 
 #endif

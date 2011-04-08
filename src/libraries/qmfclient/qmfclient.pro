@@ -1,6 +1,8 @@
 TEMPLATE = lib 
 CONFIG += warn_on
 TARGET = qmfclient
+INSTALLS += target
+CONFIG += link_pkgconfig
 
 simulator:macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
 else:target.path += $$QMF_INSTALL_ROOT/lib
