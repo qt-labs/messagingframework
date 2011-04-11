@@ -489,29 +489,33 @@ void tst_QMailMessageSet::test_messagesetcontainer()
     QMailMessageSetModel model;
     QMailFolderMessageSet *folderset1 = new QMailFolderMessageSet(&model, inboxId1);
 
-    QMailFolderMessageSet *child = new QMailFolderMessageSet(folderset1, savedId1);
-    QMailFolderMessageSet *child2 = new QMailFolderMessageSet(folderset1, savedId2);
-    QMailFolderMessageSet *child3 = new QMailFolderMessageSet(folderset1, archivedId1);
-    QMailFolderMessageSet *child4 = new QMailFolderMessageSet(folderset1, archivedId2);
+    QMailFolderMessageSet *child = new QMailFolderMessageSet(&model, savedId1);
+    QMailFolderMessageSet *child2 = new QMailFolderMessageSet(&model, savedId2);
+    QMailFolderMessageSet *child3 = new QMailFolderMessageSet(&model, archivedId1);
+    QMailFolderMessageSet *child4 = new QMailFolderMessageSet(&model, archivedId2);
+
+
+    model.append(folderset1);
     model.append(child);
     model.append(child2);
     model.append(child3);
     model.append(child4);
-    QCOMPARE(model.count(), 4);
-    QCOMPARE(model.at(0), child);
-    QCOMPARE(model.indexOf(child), 0);
+
+    QCOMPARE(model.count(), 5);
+    QCOMPARE(model.at(0), folderset1);
+    QCOMPARE(model.indexOf(folderset1), 0);
 
     //update
 
 
     //remove
     model.remove(child);
-    QCOMPARE(model.count(), 3);
+    QCOMPARE(model.count(), 4);
     QCOMPARE(model.indexOf(child), -1);
-    QCOMPARE(model.at(0), child2);
+    QCOMPARE(model.at(0), folderset1);
 
     model.remove( QList<QMailMessageSet *>() << child2 << child3);
-    QCOMPARE(model.count(), 1);
+    QCOMPARE(model.count(), 2);
 
     model.removeDescendants();
     QCOMPARE(model.count(), 0);
