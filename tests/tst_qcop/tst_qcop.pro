@@ -1,4 +1,5 @@
 TEMPLATE = app
+QT += network
 TARGET = tst_qcop
 CONFIG += unitest qmfclient qtestlib
 
