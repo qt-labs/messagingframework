@@ -3527,10 +3527,11 @@ public:
 template<typename Derived>
 QMailMessagePartContainerPrivate::QMailMessagePartContainerPrivate(Derived* p)
     : QPrivateImplementationBase(p)
+    , _multipartType(QMailMessagePartContainer::MultipartNone)
+    , _hasBody(false)
+    , _dirty(false)
+    , _previewDirty(false)
 {
-    _multipartType = QMailMessagePartContainer::MultipartNone;
-    _hasBody = false;
-    _dirty = false;
 }
 
 void QMailMessagePartContainerPrivate::setLocation(const QMailMessageId& id, const QList<uint>& indices)
@@ -3774,6 +3775,7 @@ void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContaine
     if (_multipartType != type) {
         _multipartType = type;
         setDirty();
+        setPreviewDirty(true); // this could change the preview string
 
         if (_multipartType == QMailMessagePartContainer::MultipartNone) {
             removeHeaderField("Content-Type");
@@ -3828,6 +3830,8 @@ void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body)
         _body = body;
         _hasBody = !_body.isEmpty();
     }
+
+    setPreviewDirty(true);
 }
 
 void QMailMessagePartContainerPrivate::setBodyProperties(const QMailMessageContentType &type, QMailMessageBody::TransferEncoding encoding)
@@ -3961,6 +3965,7 @@ void QMailMessagePartContainerPrivate::appendPart(const QMailMessagePart &part)
     (*it).impl<QMailMessagePartContainerPrivate>()->setLocation(_messageId, location);
 
     setDirty();
+    setPreviewDirty(true);
 }
 
 void QMailMessagePartContainerPrivate::prependPart(const QMailMessagePart &part)
@@ -3980,6 +3985,7 @@ void QMailMessagePartContainerPrivate::prependPart(const QMailMessagePart &part)
     (*it).impl<QMailMessagePartContainerPrivate>()->setLocation(_messageId, location);
 
     setDirty();
+    setPreviewDirty(true);
 }
 
 void QMailMessagePartContainerPrivate::removePartAt(uint pos)
@@ -3998,6 +4004,7 @@ void QMailMessagePartContainerPrivate::removePartAt(uint pos)
     }
 
     setDirty();
+    setPreviewDirty(true);
 }
 
 void QMailMessagePartContainerPrivate::clear()
@@ -4005,6 +4012,7 @@ void QMailMessagePartContainerPrivate::clear()
     if (!_messageParts.isEmpty()) {
         _messageParts.clear();
         setDirty();
+        setPreviewDirty(true);
     }
 }
 
@@ -4162,6 +4170,28 @@ void QMailMessagePartContainerPrivate::setDirty(bool value, bool recursive)
     }
 }
 
+bool QMailMessagePartContainerPrivate::previewDirty() const
+{
+    if (_previewDirty)
+        return true;
+
+    const QList<QMailMessagePart>::const_iterator end = _messageParts.end();
+    for (QList<QMailMessagePart>::const_iterator it = _messageParts.begin(); it != end; ++it)
+        if ((*it).impl<QMailMessagePartContainerPrivate>()->previewDirty())
+            return true;
+
+    return false;
+}
+
+void QMailMessagePartContainerPrivate::setPreviewDirty(bool value)
+{
+    _previewDirty = value;
+
+    const QList<QMailMessagePart>::Iterator end = _messageParts.end();
+    for (QList<QMailMessagePart>::Iterator it = _messageParts.begin(); it != end; ++it)
+        (*it).impl<QMailMessagePartContainerPrivate>()->setPreviewDirty(value);
+}
+
 template <typename Stream> 
 void QMailMessagePartContainerPrivate::serialize(Stream &stream) const
 {
@@ -4175,6 +4205,7 @@ void QMailMessagePartContainerPrivate::serialize(Stream &stream) const
     if (_hasBody)
         stream << _body;
     stream << _dirty;
+    stream << _previewDirty;
 }
 
 template <typename Stream> 
@@ -4190,6 +4221,7 @@ void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
     if (_hasBody)
         stream >> _body;
     stream >> _dirty;
+    stream >> _previewDirty;
 }
 
 
@@ -7793,6 +7825,18 @@ bool QMailMessage::partialContentAvailable() const
     return QMailMessageMetaData::partialContentAvailable();
 }
 
+/*! \reimp */
+QString QMailMessage::preview() const
+{
+    if (partContainerImpl()->previewDirty())
+    {
+        const_cast<QMailMessage*>(this)->refreshPreview();
+    }
+
+    return QMailMessageMetaData::preview();
+}
+
+
 // The QMMMetaData half of this object is implemented in a QMailMessageMetaDataPrivate object
 /*! \internal */
 QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl() 
@@ -7934,27 +7978,26 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
     return; // Normal Priority
 }
 
-static void setMessagePreview(QMailMessage *mail) 
+/*! \internal */
+void QMailMessage::refreshPreview()
 {
     const int maxPreviewLength = 280;
-    QMailMessagePartContainer *plainTextContainer = mail->findPlainTextContainer();
-    if (plainTextContainer) {
-        mail->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
-        return;
-    }
-    QMailMessagePartContainer *htmlContainer = mail->findHtmlContainer();
-    if (htmlContainer) {
+    if (QMailMessagePartContainer *plainTextContainer = findPlainTextContainer()) {
+        metaDataImpl()->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
+    } else if (QMailMessagePartContainer *htmlContainer = findHtmlContainer()) {
+        // TODO: this properly..
         QString markup = htmlContainer->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
         markup.remove(QRegExp("<(.)[^>]*>"));
-        markup.replace("&quot;", "\"");
-        markup.replace("&nbsp;", " ");
-        markup.replace("&amp;", "*");
-        markup.replace("&lt;", "<");
-        markup.replace("&gt;", "<");
-        mail->setPreview(markup.simplified().left(maxPreviewLength));
-        return;
+        markup.replace("&quot;", "\"", Qt::CaseInsensitive);
+        markup.replace("&nbsp;", " ", Qt::CaseInsensitive);
+        markup.replace("&amp;", "*", Qt::CaseInsensitive);
+        markup.replace("&lt;", "<", Qt::CaseInsensitive);
+        markup.replace("&gt;", ">", Qt::CaseInsensitive);
+        metaDataImpl()->setPreview(markup.simplified().left(maxPreviewLength));
     }
+    
+    partContainerImpl()->setPreviewDirty(false);
 }
 
 /*! \internal */
@@ -7992,7 +8035,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     }
 
     setMessagePriorityFromHeaderFields(&mail);
-    setMessagePreview(&mail);
+    mail.refreshPreview();
     if (mail.hasAttachments()) {
         mail.setStatus( QMailMessage::HasAttachments, true );
     }

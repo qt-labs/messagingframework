@@ -209,12 +209,6 @@ public:
 
     uint indicativeSize() const;
 
-protected:
-    friend class QMailMessagePartContainer;
-    friend class QMailMessagePart;
-    friend class QMailMessagePart::Location;
-    friend class QMailMessagePrivate;
-
     void defaultContentType(const QMailMessagePartContainerPrivate* parent);
 
     template <typename F>
@@ -244,6 +238,12 @@ protected:
     bool dirty(bool recursive = false) const;
     void setDirty(bool value = true, bool recursive = false);
 
+    bool previewDirty() const;
+    void setPreviewDirty(bool value);
+
+    QMailMessagePartContainer *findPlainTextContainer() const;
+    QMailMessagePartContainer *findHtmlContainer() const;
+
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
@@ -256,6 +256,7 @@ protected:
     QList<uint> _indices;
     bool _hasBody;
     bool _dirty;
+    bool _previewDirty;
 };
 
 

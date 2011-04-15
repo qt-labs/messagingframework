@@ -261,6 +261,7 @@ public:
     TransferEncoding transferEncoding() const;
     QMailMessageContentType contentType() const;
 
+    QString preview() const;
     bool isEmpty() const;
     int length() const;
 
@@ -798,6 +799,10 @@ private:
     void updateMetaData(const QByteArray& id, const QString& value);
 
     static QMailMessage fromRfc2822(LongString& ls);
+    void refreshPreview();
+
+public:
+    virtual QString preview() const;
 };
 
 typedef QList<QMailMessage> QMailMessageList;
