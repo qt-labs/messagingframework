@@ -1,5 +1,7 @@
 Latest Changes
 ---------------
+201116
+  * Fixes: NB#23452 - Preview is missing for locally saved drafts or sent messages in Client
 
 201114
   * Fixes: NB#242495 - Messageserver crash while trying to delete 1st account during initial fetch
