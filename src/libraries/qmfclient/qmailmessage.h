@@ -261,7 +261,6 @@ public:
     TransferEncoding transferEncoding() const;
     QMailMessageContentType contentType() const;
 
-    QString preview() const;
     bool isEmpty() const;
     int length() const;
 
