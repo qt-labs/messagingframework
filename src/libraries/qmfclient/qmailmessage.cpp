@@ -5701,7 +5701,7 @@ static QString randomString(int length)
 
 static QString partFileName(const QMailMessagePart &part)
 {
-    QString fileName(part.identifier());
+    QString fileName(part.displayName());
     if (!fileName.isEmpty()) {
         // Remove any slash characters which are invalid in filenames
         QChar* first = fileName.data(), *last = first + (fileName.length() - 1);
