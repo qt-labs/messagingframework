@@ -19,7 +19,7 @@ SUBDIRS = \
       tst_qmail_listmodels \
       tst_qmaillog \
       tst_qcop \
-      tst_qmfstoragemanager \
+      tst_storagemanager \
       tst_qmaildisconnected \
       tst_qmailnamespace \
 

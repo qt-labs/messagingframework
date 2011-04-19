@@ -72,7 +72,7 @@ void tst_QMailLog::test_qmaillog()
 
     qMailLoggersRecreate(settings.organizationName(), settings.applicationName(), 0);
 
-    char *newmod = "NewModule";
+    char const* newmod = "NewModule";
     qmf_registerLoggingFlag(newmod); // no way to verify if it is registered
 
     QDebug dbg = QLogBase::log(newmod);

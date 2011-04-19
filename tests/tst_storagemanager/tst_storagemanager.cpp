@@ -43,15 +43,15 @@
 #include <QTest>
 #include <ctype.h>
 #include "qmailstore.h"
-#include "qmfstoragemanager.h"
+#include "qmailcontentmanager.h"
 
-class tst_QmfStorageManager : public QObject
+class tst_StorageManager : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QmfStorageManager() {}
-    virtual ~tst_QmfStorageManager() {}
+    tst_StorageManager() {}
+    virtual ~tst_StorageManager() {}
 
 private slots:
     void initTestCase();
@@ -72,13 +72,12 @@ private:
 
 };
 
-QTEST_MAIN(tst_QmfStorageManager)
-
-#include "tst_qmfstoragemanager.moc"
+QTEST_MAIN(tst_StorageManager)
+#include "tst_storagemanager.moc"
 
 #define CRLF "\015\012"
 
-QMailAccountConfiguration tst_QmfStorageManager::makeConfig(const QString &accountName)
+QMailAccountConfiguration tst_StorageManager::makeConfig(const QString &accountName)
 {
     QMailAccountConfiguration config;
     config.addServiceConfiguration("imap4");
@@ -94,7 +93,7 @@ QMailAccountConfiguration tst_QmfStorageManager::makeConfig(const QString &accou
     return config;
 }
 
-void tst_QmfStorageManager::initTestCase()
+void tst_StorageManager::initTestCase()
 {
     QByteArray mime1("From: aperson@domain.example" CRLF
                 "To: bperson@domain.example" CRLF
@@ -199,7 +198,7 @@ void tst_QmfStorageManager::initTestCase()
 
 }
 
-void tst_QmfStorageManager::cleanupTestCase()
+void tst_StorageManager::cleanupTestCase()
 {
     QMailStore::instance()->removeAccounts(QMailAccountKey::customField("verified"));
     QMailStore::instance()->removeMessages(QMailMessageKey::customField("present"));
@@ -213,14 +212,14 @@ void tst_QmfStorageManager::cleanupTestCase()
 //    }
 //}
 
-void tst_QmfStorageManager::test_init()
+void tst_StorageManager::test_init()
 {
-    QmfStorageManager mgr;
+    QMailContentManager *mgr = QMailContentManagerFactory::create(QMailContentManagerFactory::defaultScheme());
 
-    QVERIFY(mgr.init());
+    QVERIFY(mgr->init());
 }
 
-void tst_QmfStorageManager::test_add()
+void tst_StorageManager::test_add()
 {
     // also tested in initTestCase()
 
@@ -247,11 +246,12 @@ void tst_QmfStorageManager::test_add()
     QVERIFY(QMailStore::instance()->addMessage(&msg3));
 }
 
-void tst_QmfStorageManager::test_remove()
+void tst_StorageManager::test_remove()
 {
 }
 
-void tst_QmfStorageManager::test_update()
+void tst_StorageManager::test_update()
 {
 
 }
+
