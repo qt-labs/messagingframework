@@ -50,6 +50,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QHostInfo>
+#include <QNetworkInterface>
 #ifndef QT_NO_OPENSSL
 #include <QSslSocket>
 #endif
@@ -93,7 +94,10 @@ static QByteArray localName()
     QByteArray result(QHostInfo::localDomainName().toLatin1());
     if (!result.isEmpty())
         return result;
-    return "localhost";
+    QList<QHostAddress> addresses(QNetworkInterface::allAddresses());
+    if (!addresses.isEmpty())
+        return addresses.first().toString().toLatin1();
+    return "localhost.localdomain";
 }
 
 SmtpClient::SmtpClient(QObject* parent)
