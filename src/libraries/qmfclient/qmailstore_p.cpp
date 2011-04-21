@@ -5849,22 +5849,23 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                     if (query.first()) {
                         threadId = extractValue<quint64>(query.value(0));
-                        Q_ASSERT(threadId != 0);
                     }
                 }
-                {
-                    QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
-                                                QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
-                                                "updateMessage mailmessages update query"));
-                    if (query.lastError().type() != QSqlError::NoError)
-                        return DatabaseFailure;
-                }
-                {
-                    QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
-                                                QVariantList() << threadId,
-                                                "updateMessage mailthreads delete query"));
-                    if (query.lastError().type() != QSqlError::NoError)
-                        return DatabaseFailure;
+                if (threadId) {
+                    {
+                        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
+                                                    QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
+                                                    "updateMessage mailmessages update query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+                    }
+                    {
+                        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
+                                                    QVariantList() << threadId,
+                                                    "updateMessage mailthreads delete query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
+                    }
                 }
             } else {
                 // This message is no longer associated with the thread of the former predecessor
