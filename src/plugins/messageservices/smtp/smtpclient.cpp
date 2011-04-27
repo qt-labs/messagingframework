@@ -96,7 +96,7 @@ static QByteArray localName()
         return result;
     QList<QHostAddress> addresses(QNetworkInterface::allAddresses());
     if (!addresses.isEmpty())
-        return addresses.first().toString().toLatin1();
+        return "[" + addresses.first().toString().toLatin1() + "]";
     return "localhost.localdomain";
 }
 
