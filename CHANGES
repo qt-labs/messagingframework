@@ -1,5 +1,10 @@
 Latest Changes
 ---------------
+201117
+  * Fixes: NB#238416 Preview of the message got corrupted
+  * Fixes: NB#249858 Random crash observed
+  * Fixes: NB#247408 Handle the no thread case
+
 201115
   * Fixes: NB#23452 - Preview is missing for locally saved drafts or sent messages in Client
 
