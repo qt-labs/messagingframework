@@ -7600,16 +7600,11 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 expiredContent.append(contentUri);
 
             QMailAccountId parentAccountId(extractValue<quint64>(query.value(2)));
-            if (parentAccountId.isValid()) {
-                if (!modifiedAccountIds.contains(parentAccountId)) {
-                    modifiedAccountIds.append(parentAccountId);
-                }
-            } else {
-                qWarning() << "Unable to find parent account";
-            }
+            if (parentAccountId.isValid() && !modifiedAccountIds.contains(parentAccountId))
+                modifiedAccountIds.append(parentAccountId);
 
             QMailFolderId folderId(extractValue<quint64>(query.value(3)));
-            if (!modifiedFolderIds.contains(folderId))
+            if (folderId.isValid() && !modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
 
             QMailThreadId threadId(extractValue<quint64>(query.value(4)));
