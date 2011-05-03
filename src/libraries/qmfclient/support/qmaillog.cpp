@@ -193,7 +193,7 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
     Q_UNUSED(ident);
 }
 
-QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
+QMF_EXPORT void qmf_registerLoggingFlag(const char *flag)
 {
     Q_UNUSED(flag);
 }
