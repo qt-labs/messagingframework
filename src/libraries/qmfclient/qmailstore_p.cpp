@@ -7308,6 +7308,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         QMap<QMailMessageId, quint64>::const_iterator it = descendants.begin(), end = descendants.end();
         for ( ; it != end; ++it) {
+            Q_ASSERT(it.key() != QMailMessageId());
             updatedMessageIds->append(it.key());
 
             descendantIds.append(QVariant(it.key().toULongLong()));

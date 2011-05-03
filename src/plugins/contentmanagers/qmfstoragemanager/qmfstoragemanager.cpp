@@ -326,7 +326,47 @@ QMailStore::ErrorCode QmfStorageManager::update(QMailMessage *message, QMailCont
     if (code != QMailStore::NoError) {
         message->setContentIdentifier(existingIdentifier);
         return code;
-    } 
+    }
+
+    QString newContent = message->contentIdentifier();
+    QMailMessageMetaData existing(*message);
+
+    code = load(message->contentIdentifier(), message);
+    if (code != QMailStore::NoError) {
+        qWarning() << "Unable to load new message content (" << newContent << ") .. going to revert it.";
+        if (remove(newContent) != QMailStore::NoError)
+            qWarning() << "..and there was even a problem removing it :/";
+
+        message->setContentIdentifier(existingIdentifier);
+
+        return code;
+    }
+    // unfortunately the call to "load" destroys all metadata, so we need to put it back ;(
+    message->setId(existing.id());
+    message->setParentFolderId(existing.parentFolderId());
+    message->setMessageType(existing.messageType());
+    message->setFrom(existing.from());
+    message->setSubject(existing.subject());
+    message->setDate(existing.date());
+    message->setReceivedDate(existing.receivedDate());
+    message->setTo(existing.to());
+    message->setStatus(existing.status());
+    message->setParentAccountId(existing.parentAccountId());
+    message->setServerUid(existing.serverUid());
+    message->setSize(existing.size());
+    message->setContent(existing.content());
+    message->setPreviousParentFolderId(existing.previousParentFolderId());
+    message->setContentScheme(existing.contentScheme());
+    message->setContentIdentifier(newContent);
+    message->setInResponseTo(existing.inResponseTo());
+    message->setResponseType(existing.responseType());
+    message->setPreview(existing.preview());
+    message->setCustomFields(existing.customFields());
+    message->setCopyServerUid(existing.copyServerUid());
+    message->setRestoreFolderId(existing.restoreFolderId());
+    message->setListId(existing.listId());
+    message->setRfcId(message->rfcId());
+    message->setParentThreadId(message->parentThreadId());
 
     if (!existingIdentifier.isEmpty()) {
         // Try to remove the existing data
