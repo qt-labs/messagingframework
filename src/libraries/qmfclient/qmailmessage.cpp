@@ -5936,7 +5936,7 @@ static QString partFileName(const QMailMessagePart &part)
         if (index != -1)
             existing = fileName.mid(index + 1);
 
-        QStringList extensions = QMail::extensionsForMimeType(part.contentType().content());
+        QStringList extensions = QMail::extensionsForMimeType(part.contentType().content().toLower());
         if (!extensions.isEmpty()) {
             // See if the existing extension is a known one
             if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
