@@ -7991,9 +7991,24 @@ void QMailMessage::refreshPreview()
         markup.remove(QRegExp("<(.)[^>]*>"));
         markup.replace("&quot;", "\"", Qt::CaseInsensitive);
         markup.replace("&nbsp;", " ", Qt::CaseInsensitive);
-        markup.replace("&amp;", "*", Qt::CaseInsensitive);
+        markup.replace("&amp;", "&", Qt::CaseInsensitive);
         markup.replace("&lt;", "<", Qt::CaseInsensitive);
         markup.replace("&gt;", ">", Qt::CaseInsensitive);
+
+        // now replace stuff like "&#1084;"
+        for (int pos = 0; ; ) {
+            pos = markup.indexOf("&#", pos);
+            if (pos < 0)
+                break;
+            int semicolon = markup.indexOf(';', pos+2);
+            if (semicolon < 0)
+                continue;
+            int code = (markup.mid(pos+2, semicolon-pos-2)).toInt();
+            if (code == 0)
+                continue;
+            markup.replace(pos, semicolon-pos+1, QChar(code));
+        }
+
         metaDataImpl()->setPreview(markup.simplified().left(maxPreviewLength));
     }
     
