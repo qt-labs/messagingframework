@@ -837,6 +837,8 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 
     metadata.append(qMakePair(tr("Date"), dateString(mail->date().toLocalTime())));
 
+    metadata.append(qMakePair(tr("Message Id"), QString::number(mail->id().toULongLong())));
+
     if ( (mail->status() & QMailMessage::Incoming) && 
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {

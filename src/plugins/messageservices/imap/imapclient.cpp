@@ -242,8 +242,8 @@ protected:
     QMailFolder _folder;
 
 private:
-    QTimer _idleTimer; // Send a DONE command every 29 minutes
-    QTimer _idleRecoveryTimer; // Check command hasn't hung
+    QMailHeartbeatTimer _idleTimer; // Send a DONE command every 29 minutes
+    QMailHeartbeatTimer _idleRecoveryTimer; // Check command hasn't hung
     int _idleRetryDelay; // Try to restablish IDLE state
     enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
 };
@@ -278,14 +278,15 @@ bool IdleProtocol::open(const ImapConfiguration& config)
 
 void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 {
-    const int idleTimeout = 28*60*1000;
+    const int idleTimeOutMin = 25*60*1000;
+    const int idleTimeoutMax = 28*60*1000;
 
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
             qMailLog(IMAP) << "IDLE: Idle connection established.";
             
             // We are now idling
-            _idleTimer.start(idleTimeout);
+            _idleTimer.start(idleTimeOutMin, idleTimeoutMax);
             _idleRecoveryTimer.stop();
 
             handleIdling();

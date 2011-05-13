@@ -2683,8 +2683,6 @@ ImapProtocol::ImapProtocol()
       _flatHierarchy(false),
       _delimiter(0)
 {
-    connect(&_incomingDataTimer, SIGNAL(timeout()),
-            this, SLOT(incomingData()));
     connect(&_fsm->listState, SIGNAL(mailboxListed(QString, QString)),
             this, SIGNAL(mailboxListed(QString, QString)));
     connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
@@ -3082,14 +3080,10 @@ void ImapProtocol::incomingData()
     while (_transport->canReadLine()) {
         processResponse(_transport->readLine());
 
-        readLines++;
-        if (readLines >= MAX_LINES) {
-            _incomingDataTimer.start(0);
-            return;
+        if (++readLines >= MAX_LINES) {
+            QTimer::singleShot(0, this, SLOT(incomingData()));
         }
     }
-
-    _incomingDataTimer.stop();
 }
 
 void ImapProtocol::continuation(ImapCommand command, const QString &recv)

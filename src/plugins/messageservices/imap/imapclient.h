@@ -43,6 +43,7 @@
 #define IMAPCLIENT_H
 
 #include "imapprotocol.h"
+#include "qmailheartbeattimer.h"
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qobject.h>
@@ -157,7 +158,7 @@ private:
     QMailAccountConfiguration _config;
 
     ImapProtocol _protocol;
-    QTimer _inactiveTimer;
+    QMailHeartbeatTimer _inactiveTimer;
     int _closeCount;
 
     bool _waitingForIdle;

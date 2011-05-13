@@ -73,7 +73,7 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _interface(i),
       _server(new QMailMessageServer(this)),
       _connectivity(QMailServiceAction::Offline),
-      _activity(QMailServiceAction::Successful),
+      _activity(QMailServiceAction::Pending),
       _status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()),
       _total(0),
       _progress(0),
@@ -224,7 +224,7 @@ void QMailServiceActionPrivate::clearSubActions()
 void QMailServiceActionPrivate::init()
 {
     _connectivity = QMailServiceAction::Offline;
-    _activity = QMailServiceAction::Successful;
+    _activity = QMailServiceAction::Pending;
     _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
     _total = 0;
     _progress = 0;
@@ -248,7 +248,7 @@ quint64 QMailServiceActionPrivate::newAction()
 
     _action = nextMessageAction();
     _isValid = true;
-    setActivity(QMailServiceAction::Pending);
+    _activityChanged = true;
     emitChanges();
 
     return _action;
