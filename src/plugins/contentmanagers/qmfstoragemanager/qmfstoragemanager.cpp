@@ -589,38 +589,6 @@ bool QmfStorageManager::init()
         }
     }
 
-    // Migrate any data in older formats
-    foreach (const QMailAccountId &accountId, QMailStore::instance()->queryAccounts()) {
-        QMailAccountConfiguration config(accountId);
-
-        if (config.services().contains(gKey)) {
-            // This account uses our content manager
-            QMailAccountConfiguration::ServiceConfiguration &svcCfg = config.serviceConfiguration(gKey);
-            int version = svcCfg.value("version").toInt();
-
-            if (version == 100) {
-                // Version 100 - part files are not in subdirectories
-                if (!migrateAccountToVersion101(accountId)) {
-                    qWarning() << "Unable to migrate account data to version 101 for account:" << accountId;
-                    return false;
-                }
-
-                version = 101;
-            }
-
-            if (svcCfg.value("version").toInt() != version) {
-                svcCfg.setValue("version", QString::number(version));
-
-                if (QMailStore::instance()->updateAccountConfiguration(&config)) {
-                    qMailLog(Messaging) << "Migrated content data for account" << accountId << "to version" << version;
-                } else {
-                    qWarning() << "Unable to update account configuration for account:" << accountId;
-                    return false;
-                }
-            }
-        }
-    }
-
     return true;
 }
 
