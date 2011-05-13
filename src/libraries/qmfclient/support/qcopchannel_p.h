@@ -265,6 +265,7 @@ protected:
 public:
     QMap<QString, QCopServerAppInfo *> applications;
     QMap<QString, QCopServerAppInfo *> pidChannels;
+    QCopClient *client;
 
 private slots:
     void forwarded(const QString& msg, const QByteArray &data, const QString& channel);
