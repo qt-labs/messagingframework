@@ -576,7 +576,7 @@ bool QmfStorageManager::init()
                 config.addServiceConfiguration(gKey);
 
                 QMailAccountConfiguration::ServiceConfiguration &svcCfg(config.serviceConfiguration(gKey));
-                svcCfg.setValue("version", "100");
+                svcCfg.setValue("version", "101");
                 svcCfg.setValue("servicetype", "storage");
 
                 if (QMailStore::instance()->updateAccountConfiguration(&config)) {
