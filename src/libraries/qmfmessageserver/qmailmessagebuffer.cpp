@@ -41,10 +41,10 @@
 
 #include "qmailmessagebuffer.h"
 #include "qmailstore.h"
+#include "qmailheartbeattimer.h"
 
 #include <QSettings>
 #include <QDebug>
-#include <QTimer>
 #include <QFile>
 
 
@@ -61,7 +61,7 @@ class QMailMessageBufferPrivate
     qreal timeoutScale;
 
     // Flush the buffer periodically
-    QTimer *messageTimer;
+    QMailHeartbeatTimer messageTimer;
     QTime secondaryTimer;
     int lastFlushTimePerMessage;
 
@@ -74,9 +74,8 @@ Q_GLOBAL_STATIC(QMailMessageBuffer, messageBuffer)
 QMailMessageBuffer::QMailMessageBuffer(QObject *parent)
     : QObject(parent), d(new QMailMessageBufferPrivate)
 {
-    d->messageTimer = new QTimer(this);
-    d->messageTimer->setSingleShot(true);
-    connect(d->messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
+    d->messageTimer.setSingleShot(true);
+    connect(&d->messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
 
     d->lastFlushTimePerMessage = 0;
 
@@ -134,11 +133,11 @@ bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFl
     item->message = message;
     d->waitingForFlush.append(item);
 
-    if (isFull() || !d->messageTimer->isActive()) {
+    if (isFull() || !d->messageTimer.isActive()) {
         // If the buffer is full we flush.
         // If the timer isn't running we flush.
         messageFlush();
-    } else if (d->secondaryTimer.elapsed() > d->messageTimer->interval()) {
+    } else if (d->secondaryTimer.elapsed() > d->messageTimer.interval().second) {
         // message timer is overdue to fire, force a flush
         messageFlush();
     }
@@ -153,7 +152,7 @@ void QMailMessageBuffer::messageTimeout()
         messageFlush();
     } else {
         d->lastFlushTimePerMessage = 0;
-        d->messageTimer->setInterval(d->idleTimeout);
+        d->messageTimer.setInterval(d->idleTimeout);
     }
 }
 
@@ -198,15 +197,15 @@ void QMailMessageBuffer::messageFlush()
     d->waitingForFlush.clear();
 
     int timePerMessage = commitTimer.elapsed() / processed;
-    if (timePerMessage > d->lastFlushTimePerMessage && d->messageTimer->interval() < d->maxTimeout) {
+    if (timePerMessage > d->lastFlushTimePerMessage && d->messageTimer.interval().first < d->maxTimeout) {
         // increase the timeout
-        int interval = d->messageTimer->interval() * d->timeoutScale;
+        int interval = d->messageTimer.interval().first * d->timeoutScale;
         int actual = (interval > d->maxTimeout)? d->maxTimeout:interval;
-        d->messageTimer->setInterval(actual);
+        d->messageTimer.setInterval(actual);
     }
     d->lastFlushTimePerMessage = timePerMessage;
 
-    d->messageTimer->start();
+    d->messageTimer.start();
     d->secondaryTimer.start();
 
     if (processed)
@@ -237,7 +236,7 @@ void QMailMessageBuffer::readConfig()
     d->maxTimeout = settings.value("maxTimeout", 8000).toInt();
     d->timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
 
-    d->messageTimer->setInterval(d->idleTimeout);
+    d->messageTimer.setInterval(d->idleTimeout);
 }
 
 void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callback)

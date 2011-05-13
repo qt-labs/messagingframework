@@ -49,7 +49,6 @@
 
 class QMailMessage;
 class QMailMessageBufferPrivate;
-class QTimer;
 
 #include <qmailglobal.h>
 

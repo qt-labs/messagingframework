@@ -296,7 +296,6 @@ private:
 
     QString _unprocessedInput;
 
-    QTimer _incomingDataTimer;
     bool _flatHierarchy;
     QChar _delimiter;
 

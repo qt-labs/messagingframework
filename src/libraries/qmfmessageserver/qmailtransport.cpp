@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmailtransport.h"
+#include "qmailheartbeattimer.h"
 #include <QFile>
 #include <QTimer>
 
@@ -161,14 +162,12 @@ QMailTransport::QMailTransport(const char* name)
 #endif
     mSocket = 0;
     mStream = 0;
-    connectToHostTimeOut = new QTimer(this);
-    connect( connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
+    connect( &connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
 }
 
 /*! \internal */
 QMailTransport::~QMailTransport()
 {
-    delete connectToHostTimeOut;
     delete mStream;
     delete mSocket;
 }
@@ -256,8 +255,9 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     
     mInUse = true;
 
-    const int timeOut = 3 * 60 * 1000; // 3 minutes
-    connectToHostTimeOut->start( timeOut );
+    const int oneMin = 1 * 60 * 1000;
+    const int threeMin = 3 * 60 * 1000;
+    connectToHostTimeOut.start(oneMin, threeMin); // even this seems way too long?
     createSocket(encryptionType);
     emit updateStatus(tr("DNS lookup"));
 
@@ -289,7 +289,7 @@ void QMailTransport::switchToEncrypted()
 */
 void QMailTransport::close()
 {
-    connectToHostTimeOut->stop();
+    connectToHostTimeOut.stop();
 
     while (mSocket->bytesToWrite()) {
         // Flush any pending write data before closing
@@ -366,7 +366,7 @@ QByteArray QMailTransport::readLine(qint64 maxSize)
 /*! \internal */
 void QMailTransport::connectionEstablished()
 {
-    connectToHostTimeOut->stop();
+    connectToHostTimeOut.stop();
     if (mailEncryption() == Encrypt_NONE) {
         mConnected = true;
         emit updateStatus(tr("Connected"));
@@ -379,7 +379,7 @@ void QMailTransport::connectionEstablished()
 /*! \internal */
 void QMailTransport::hostConnectionTimeOut()
 {
-    connectToHostTimeOut->stop();
+    connectToHostTimeOut.stop();
     errorHandling(QAbstractSocket::SocketTimeoutError, tr("Connection timed out"));
 }
 
@@ -429,7 +429,7 @@ bool QMailTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
 /*! \internal */
 void QMailTransport::errorHandling(int status, QString msg)
 {
-    connectToHostTimeOut->stop();
+    connectToHostTimeOut.stop();
     mConnected = false;
     mInUse = false;
     mSocket->abort();

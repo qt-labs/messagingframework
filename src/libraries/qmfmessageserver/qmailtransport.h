@@ -43,6 +43,7 @@
 #define QMAILTRANSPORT_H
 
 #include <qmailglobal.h>
+#include "qmailheartbeattimer.h"
 
 #include <QObject>
 #include <QAbstractSocket>
@@ -50,7 +51,6 @@
 QT_BEGIN_NAMESPACE
 
 class QString;
-class QTimer;
 #ifndef QT_NO_OPENSSL
 class QSslSocket;
 class QSslError;
@@ -145,7 +145,7 @@ private:
 #endif
     QDataStream *mStream;
     const char *mName;
-    QTimer *connectToHostTimeOut;
+    QMailHeartbeatTimer connectToHostTimeOut;
     bool mConnected;
     bool mInUse;
 };
