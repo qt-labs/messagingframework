@@ -424,7 +424,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
 
 static QString decodeWordSequence(const QByteArray& str)
 {
-    static const QRegExp whitespace("^\\s+$");
+    QRegExp whitespace("^\\s+$");
 
     QString out;
 
@@ -1686,8 +1686,8 @@ void QMailMessageHeaderFieldPrivate::setParameterEncoded(const QByteArray& name)
 
 static QByteArray protectedParameter(const QByteArray& value)
 {
-    static const QRegExp whitespace("\\s+");
-    static const QRegExp tspecials = QRegExp("[<>\\[\\]\\(\\)\\?:;@\\\\,=]");
+    QRegExp whitespace("\\s+");
+    QRegExp tspecials = QRegExp("[<>\\[\\]\\(\\)\\?:;@\\\\,=]");
 
     if ((whitespace.indexIn(value) != -1) ||
         (tspecials.indexIn(value) != -1))
@@ -1757,8 +1757,8 @@ QByteArray QMailMessageHeaderFieldPrivate::toString(bool includeName, bool prese
 
 static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* lineLength, const int maxLineLength)
 {
-    static const QRegExp whitespace("\\s");
-    static const QRegExp syntacticBreak(";|,");
+    QRegExp whitespace("\\s");
+    QRegExp syntacticBreak(";|,");
 
     int remaining = maxLineLength - *lineLength;
     if (text.length() <= remaining)

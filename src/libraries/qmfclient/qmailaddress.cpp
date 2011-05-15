@@ -696,19 +696,19 @@ QString QMailAddressPrivate::name() const
 
 bool QMailAddressPrivate::isPhoneNumber() const
 {
-    static const QRegExp pattern(QMailAddress::phoneNumberPattern());
+    QRegExp pattern(QMailAddress::phoneNumberPattern());
     return pattern.exactMatch(_address);
 }
 
 bool QMailAddressPrivate::isEmailAddress() const
 {
-    static const QRegExp pattern(QMailAddress::emailAddressPattern());
+    QRegExp pattern(QMailAddress::emailAddressPattern());
     return pattern.exactMatch(QMailAddress::removeWhitespace(QMailAddress::removeComments(_address)));
 }
 
 QString QMailAddressPrivate::minimalPhoneNumber() const
 {
-    static const QRegExp nondiallingChars("[^\\d,xpwXPW\\+\\*#]");
+    QRegExp nondiallingChars("[^\\d,xpwXPW\\+\\*#]");
 
     // Remove any characters which don't affect dialing
     QString minimal(_address);
@@ -723,7 +723,7 @@ QString QMailAddressPrivate::minimalPhoneNumber() const
 
 static bool needsQuotes(const QString& src)
 {
-    static const QRegExp specials = QRegExp("[<>\\[\\]:;@\\\\,.]");
+    QRegExp specials = QRegExp("[<>\\[\\]:;@\\\\,.]");
 
     QString characters(src);
 

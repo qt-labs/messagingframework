@@ -3371,7 +3371,7 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
 QString ImapProtocol::quoteString(const QString& input)
 {
     // We can't easily catch controls other than those caught by \\s...
-    static const QRegExp atomSpecials("[\\(\\)\\{\\s\\*%\\\\\"\\]]");
+    QRegExp atomSpecials("[\\(\\)\\{\\s\\*%\\\\\"\\]]");
 
     // The empty string must be quoted
     if (input.isEmpty())
