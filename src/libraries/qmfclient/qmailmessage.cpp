@@ -8001,11 +8001,15 @@ void QMailMessage::refreshPreview()
             if (pos < 0)
                 break;
             int semicolon = markup.indexOf(';', pos+2);
-            if (semicolon < 0)
+            if (semicolon < 0) {
+                ++pos;
                 continue;
+            }
             int code = (markup.mid(pos+2, semicolon-pos-2)).toInt();
-            if (code == 0)
+            if (code == 0) {
+                ++pos;
                 continue;
+            }
             markup.replace(pos, semicolon-pos+1, QChar(code));
         }
 
