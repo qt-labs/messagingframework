@@ -3,6 +3,9 @@ Latest Changes
 201119
   * Fixes: NB#253783 Random crash during sync
   * Fixes: NB#238479 Some special characters are converted to &-sequences in the mail preview
+  * Fixes: NB#251063 Long time taken for sync button to come to stop state after sending response
+  * Fixes: NB#253979 Body & Preview of message got corrupted after deleting attachment(s) from Message
+  * Fixes: NB#243117 Time taken to open settings for the first time after configuring account is more
 
 201117
   * Fixes: NB#238416 Preview of the message got corrupted
