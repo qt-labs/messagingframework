@@ -1,5 +1,9 @@
 Latest Changes
 ---------------
+201119
+  * Fixes: NB#238479 Some special characters are converted to &-sequences in the mail preview
+  * Fixes: NB#218816 <MemLeak> memory and file descriptor leaks reported in qcopserver.cpp by valgrind on device
+
 201117
   * Fixes: NB#238416 Preview of the message got corrupted
   * Fixes: NB#249858 Random crash observed

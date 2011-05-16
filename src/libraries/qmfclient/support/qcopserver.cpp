@@ -47,7 +47,8 @@
 #include <QtCore/qdir.h>
 
 QCopServerPrivate::QCopServerPrivate()
-    : QCopLocalServer()
+    : QCopLocalServer(),
+      client(0)
 {
     bool ok;
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
@@ -83,6 +84,7 @@ QCopServerPrivate::QCopServerPrivate()
 QCopServerPrivate::~QCopServerPrivate()
 {
     qDeleteAll(applications);
+    delete client;
 }
 
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
@@ -94,7 +96,7 @@ void QCopServerPrivate::incomingConnection(int socketDescriptor)
     QCopLocalSocket * sock = new QCopLocalSocket;
     sock->setSocketDescriptor(socketDescriptor);
 
-    QCopClient *client;
+    delete client; // don't leak client
     client = new QCopClient(sock, sock);
     sock->setParent(client);
 }
