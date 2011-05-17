@@ -97,6 +97,7 @@ void QCopServerPrivate::incomingConnection(int socketDescriptor)
     QCopClient *client;
     client = new QCopClient(sock, sock);
     sock->setParent(client);
+    client->setParent(this);
 }
 
 /* ! - documentation comments in this file are disabled:

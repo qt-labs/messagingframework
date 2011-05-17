@@ -55,6 +55,7 @@
 #include "qthreadstorage.h"
 #include "qthread.h"
 #include "qcoreevent.h"
+#include "qmaillog.h"
 
 QCopServerRegexp::QCopServerRegexp(const QString& ch, QCopClient *cl)
     : channel(ch), client(cl)
@@ -668,6 +669,8 @@ struct QCopPacketHeader
     int forwardToLength;
 };
 
+int QCopClient::clientsCount = 0;
+
 QCopClient::QCopClient(QIODevice *device, QCopLocalSocket *socket)
     : QObject()
 {
@@ -690,6 +693,7 @@ QCopClient::QCopClient(QIODevice *device, bool isServer)
 
 void QCopClient::init()
 {
+    qMailLog(Messaging) << "QCopClient count" << ++clientsCount << "this" << this; 
     if (server || !socket)
         connectSignals();
 
@@ -715,6 +719,7 @@ void QCopClient::init()
 
 QCopClient::~QCopClient()
 {
+    qMailLog(Messaging) << "~QCopClient count" << --clientsCount << "this" << this; 
     if (disconnectHandler) {
         delete disconnectHandler;
         disconnectHandler = 0;
