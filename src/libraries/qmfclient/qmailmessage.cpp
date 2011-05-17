@@ -7982,11 +7982,14 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
 void QMailMessage::refreshPreview()
 {
     const int maxPreviewLength = 280;
-    if (QMailMessagePartContainer *plainTextContainer = findPlainTextContainer()) {
-        metaDataImpl()->setPreview(plainTextContainer->body().data().left(maxPreviewLength));
-    } else if (QMailMessagePartContainer *htmlContainer = findHtmlContainer()) {
+
+    QMailMessagePartContainer *part;
+
+    if ((part = findPlainTextContainer()) && part->hasBody()) {
+        metaDataImpl()->setPreview(part->body().data().left(maxPreviewLength));
+    } else if ((part = findHtmlContainer()) && part->hasBody()) {
         // TODO: this properly..
-        QString markup = htmlContainer->body().data();
+        QString markup = part->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
         markup.remove(QRegExp("<(.)[^>]*>"));
         markup.replace("&quot;", "\"", Qt::CaseInsensitive);
