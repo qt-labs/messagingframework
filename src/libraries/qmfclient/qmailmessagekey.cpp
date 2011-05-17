@@ -554,6 +554,36 @@ QMailMessageKey QMailMessageKey::subject(const QStringList &values, QMailDataCom
 }
 
 /*!
+    Returns a key matching messages whose preview matches \a value, according to \a cmp.
+
+    \sa QMailMessage::preview()
+*/
+QMailMessageKey QMailMessageKey::preview(const QString &value, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailMessageKey(Preview, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose preview matches the substring \a value, according to \a cmp.
+
+    \sa QMailMessage::preview()
+*/
+QMailMessageKey QMailMessageKey::preview(const QString &value, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(Preview, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose preview is a member of \a values, according to \a cmp.
+
+    \sa QMailMessage::preview()
+*/
+QMailMessageKey QMailMessageKey::preview(const QStringList &values, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailMessageKey(values, Preview, QMailKey::comparator(cmp));
+}
+
+/*!
     Returns a key matching messages whose timestamp matches \a value, according to \a cmp.
 
     \sa QMailMessage::date()

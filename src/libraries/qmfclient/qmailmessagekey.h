@@ -158,6 +158,10 @@ public:
     static QMailMessageKey subject(const QString &value, QMailDataComparator::InclusionComparator cmp);
     static QMailMessageKey subject(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
+    static QMailMessageKey preview(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey preview(const QString &value, QMailDataComparator::InclusionComparator cmp);
+    static QMailMessageKey preview(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+
     static QMailMessageKey timeStamp(const QDateTime &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey timeStamp(const QDateTime &value, QMailDataComparator::RelationComparator cmp);
 
