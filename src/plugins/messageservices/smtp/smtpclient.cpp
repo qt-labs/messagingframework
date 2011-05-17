@@ -496,6 +496,9 @@ void SmtpClient::nextAction(const QString &response)
                 sendCommand(response.toBase64());
                 bufferedResponse.clear();
                 return;
+            } else {
+                // No username/password defined
+                operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
             }
         } else if (responseCode == 235) {
             // We are now authenticated
