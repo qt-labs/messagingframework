@@ -388,6 +388,7 @@ void QMailServiceActionPrivate::emitChanges()
     \value ErrNotImplemented        The requested operation is not implemented by the relevant service component.
     \value ErrFrameworkFault        A fault in the messaging framework prevented the execution of the request.
     \value ErrSystemError           A system-level error prevented the execution of the request.
+    \value ErrInternalServer        A system error on server.
     \value ErrCancel                The operation was cancelled by user intervention.
     \value ErrConfiguration         The configuration needed for the requested action is invalid.
     \value ErrNoConnection          A connection could not be established to the external service.

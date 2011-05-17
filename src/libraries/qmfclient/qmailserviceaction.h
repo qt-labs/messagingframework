@@ -91,6 +91,7 @@ public:
             ErrNotImplemented = ErrorCodeMinimum,
             ErrFrameworkFault,
             ErrSystemError,
+            ErrInternalServer,
             ErrUnknownResponse,
             ErrLoginFailed,
             ErrCancel,
