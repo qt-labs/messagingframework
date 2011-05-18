@@ -2143,11 +2143,6 @@ QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
 
 } // namespace
 
-
-// We need to support recursive locking, per-process
-static volatile int mutexLockCount = 0;
-static volatile int readLockCount = 0;
-
 class QMailStorePrivate::Transaction
 {
     QMailStorePrivate *m_d;
@@ -2168,32 +2163,15 @@ QMailStorePrivate::Transaction::Transaction(QMailStorePrivate* d)
       m_initted(false),
       m_committed(false)
 {
-    if (mutexLockCount > 0) {
-        // Increase lock recursion depth
-        ++mutexLockCount;
-        m_initted = true;
-    } else {
-        // This process does not yet have a mutex lock
-        m_d->databaseMutex().lock();
-        // Wait for any readers to complete
-        m_d->databaseReadLock().wait();
-        if (m_d->transaction()) {
-            ++mutexLockCount;
-            m_initted = true;
-        } else {
-            m_d->databaseMutex().unlock();
-        }
-    }
+	m_d->databaseMutex().lock();
+	m_d->databaseMutex().unlock();
+    m_initted = m_d->transaction();
 }
 
 QMailStorePrivate::Transaction::~Transaction()
 {
     if (m_initted && !m_committed) {
         m_d->rollback();
-
-        --mutexLockCount;
-        if (mutexLockCount == 0)
-            m_d->databaseMutex().unlock();
     }
 }
 
@@ -2201,13 +2179,7 @@ bool QMailStorePrivate::Transaction::commit()
 {
     if (m_initted && !m_committed) {
         m_committed = m_d->commit();
-        if (m_committed) {
-            --mutexLockCount;
-            if (mutexLockCount == 0)
-                m_d->databaseMutex().unlock();
-        }
     }
-
     return m_committed;
 }
 
@@ -2217,46 +2189,10 @@ bool QMailStorePrivate::Transaction::committed() const
 }
 
 
-class QMailStorePrivate::ReadLock
+struct QMailStorePrivate::ReadLock
 {
-    QMailStorePrivate *m_d;
-    bool m_locked;
-
-public:
-    ReadLock(QMailStorePrivate *);
-    ~ReadLock();
+    ReadLock(QMailStorePrivate *){};
 };
-
-QMailStorePrivate::ReadLock::ReadLock(QMailStorePrivate* d)
-    : m_d(d),
-      m_locked(false)
-{
-    if (readLockCount > 0) {
-        // Increase lock recursion depth
-        ++readLockCount;
-        m_locked = true;
-    } else {
-        // This process does not yet have a read lock
-        // Lock the mutex to ensure no writers are active or waiting (unless we have already locked it)
-        if (mutexLockCount == 0)
-            m_d->databaseMutex().lock();
-        m_d->databaseReadLock().lock();
-        ++readLockCount;
-        m_locked = true;
-
-        if (mutexLockCount == 0)
-            m_d->databaseMutex().unlock();
-   }
-}
-
-QMailStorePrivate::ReadLock::~ReadLock()
-{
-    if (m_locked) {
-        --readLockCount;
-        if (readLockCount == 0)
-            m_d->databaseReadLock().unlock();
-    }
-}
 
 
 template<typename FunctionType>
@@ -2382,7 +2318,6 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
       inTransaction(false),
       lastQueryError(0),
       mutex(0),
-      readLock(0),
       globalLocks(0)
 {
     ProcessMutex creationMutex(QDir::rootPath());
@@ -2393,7 +2328,6 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     database = QMail::createDatabase();
 
     mutex = new ProcessMutex(databaseIdentifier(), 1);
-    readLock = new ProcessReadLock(databaseIdentifier(), 2);
     if (contentMutex == 0) {
         contentMutex = new ProcessMutex(databaseIdentifier(), 3);
     }
@@ -2402,17 +2336,11 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
 QMailStorePrivate::~QMailStorePrivate()
 {
     delete mutex;
-    delete readLock;
 }
 
 ProcessMutex& QMailStorePrivate::databaseMutex(void) const
 {
     return *mutex;
-}
-
-ProcessReadLock& QMailStorePrivate::databaseReadLock(void) const
-{
-    return *readLock;
 }
 
 ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
@@ -2537,10 +2465,8 @@ bool QMailStorePrivate::initStore()
     }
 
 #if defined(Q_USE_SQLITE)
-    // default sqlite cache_size of 2000*1.5KB is too large, as we only want
-    // to cache 100 metadata records 
     QSqlQuery query( database );
-    query.exec(QLatin1String("PRAGMA cache_size=500")); // increased from 50
+    query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
 #endif
 
     if (!QMailContentManagerFactory::init()) {
@@ -4157,19 +4083,18 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
 
 void QMailStorePrivate::lock()
 {
-    databaseMutex().lock();
-    databaseReadLock().lock();
-    globalLocks++;
-    databaseMutex().unlock();
+    Q_ASSERT(globalLocks >= 0);
+    if (++globalLocks == 1)
+        databaseMutex().lock();
 }
 
 void QMailStorePrivate::unlock()
 {
-    if (globalLocks > 0) {
-        databaseReadLock().unlock();
-        globalLocks--;
-    } else {
+    if (--globalLocks == 0) {
+        databaseMutex().unlock();
+    } else if (globalLocks < 0) {
         qWarning() << "Unable to unlock when lock was not called (in this process)";
+        globalLocks = 0;
     }
 }
 

@@ -70,7 +70,6 @@
 #endif
 
 class ProcessMutex;
-class ProcessReadLock;
 
 
 class QMailStorePrivate : public QMailStoreImplementation
@@ -82,7 +81,7 @@ public:
     typedef QList<QMailMessageKey::Property> MessagePropertyList;
 
     class Transaction;
-    class ReadLock;
+    struct ReadLock;
     class Key;
 
     struct ReadAccess {};
@@ -209,7 +208,6 @@ private:
     static ProcessMutex& contentManagerMutex(void);
 
     ProcessMutex& databaseMutex(void) const;
-    ProcessReadLock& databaseReadLock(void) const;
 
     static const MessagePropertyMap& messagePropertyMap();
     static const MessagePropertyList& messagePropertyList();
@@ -718,7 +716,6 @@ private:
     mutable int lastQueryError;
 
     ProcessMutex *mutex;
-    ProcessReadLock *readLock;
 
     static ProcessMutex *contentMutex;
 
