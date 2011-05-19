@@ -8044,13 +8044,14 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     if (mail.metaDataImpl()->_date.isNull()) {
         QByteArray hReceived(mail.partContainerImpl()->headerField("Received"));
         if (!hReceived.isEmpty()) {
-            // From rfc2822 recieved is formatted: "Received:" name-val-list ";" date-time CRLF
-            // As the ";" is manditory this should never fail unless the email is badly formatted
+            // From rfc2822 received is formatted: "Received:" name-val-list ";" date-time CRLF
+            // As the ";" is mandatory this should never fail unless the email is badly formatted
             QStringList sl(QString::fromAscii(hReceived.data()).split(";"));
-            Q_ASSERT(sl.length() == 2);
             if (sl.length() == 2) {
                 mail.metaDataImpl()->setDate(QMailTimeStamp(sl.at(1)));
-            }
+            } else {
+	        qWarning() << "Ill formatted message, bad Received field";
+	    }
         } else {
             mail.metaDataImpl()->setDate(QMailTimeStamp::currentDateTime());
         }
