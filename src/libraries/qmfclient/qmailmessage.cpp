@@ -8050,8 +8050,8 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
             if (sl.length() == 2) {
                 mail.metaDataImpl()->setDate(QMailTimeStamp(sl.at(1)));
             } else {
-	        qWarning() << "Ill formatted message, bad Received field";
-	    }
+                qWarning() << "Ill formatted message, bad Received field";
+            }
         } else {
             mail.metaDataImpl()->setDate(QMailTimeStamp::currentDateTime());
         }

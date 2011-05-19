@@ -2,7 +2,7 @@ Latest Changes
 ---------------
 
 201120
-  * Fixes: NB#225762 QMailMessage asserts when parsing invalid message/rfc822 
+  * Fixes: NB#225762 QMailMessage asserts when parsing invalid message/rfc822
 
 201119
   * Fixes: NB#253783 Random crash during sync
