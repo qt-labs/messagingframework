@@ -485,7 +485,7 @@ ServiceHandler::ServiceHandler(QObject* parent)
 
     if (!_failedRequests.isEmpty()) {
         // Allow the clients some time to reconnect, then report our failures
-        QMailHeartbeatTimer::singleShot(2000, 5000, this, SLOT(reportFailures()));
+        QTimer::singleShot(2000, this, SLOT(reportFailures()));
     }
 }
 
@@ -920,7 +920,7 @@ void ServiceHandler::dispatchRequest()
             if (mActionExpiry.isEmpty()) {
                 // Start the expiry timer. Convert to miliseconds, and avoid shooting too early
                 const int expiryMs = ExpirySeconds * 1000;
-                QMailHeartbeatTimer::singleShot(expiryMs + 50, expiryMs + 4000, this, SLOT(expireAction()));
+                QTimer::singleShot(expiryMs + 50, this, SLOT(expireAction()));
             }
             mActionExpiry.append(request->action);
         } else {
@@ -1027,7 +1027,7 @@ void ServiceHandler::expireAction()
 
             // miliseconds until it expires..
             uint nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
-            QMailHeartbeatTimer::singleShot(nextShot, nextShot + 4000, this, SLOT(expireAction()));
+            QTimer::singleShot(nextShot, this, SLOT(expireAction()));
             return;
         } else {
             expiryIt = mActionExpiry.erase(expiryIt); // Just remove this non-existent action
