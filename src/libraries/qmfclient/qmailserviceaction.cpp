@@ -660,6 +660,15 @@ QPair<uint, uint> QMailServiceAction::progress() const
 }
 
 /*!
+    Returns if the service action is currently running (i.e. if it's doing something, but hasn't yet finished)
+*/
+
+bool QMailServiceAction::isRunning() const
+{
+    return impl(this)->_isValid;
+}
+
+/*!
     Attempts to cancel the last requested operation.
 */
 void QMailServiceAction::cancelOperation()

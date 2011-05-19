@@ -135,6 +135,8 @@ public:
     const Status status() const;
     QPair<uint, uint> progress() const;
 
+    bool isRunning() const;
+
 public slots:
     virtual void cancelOperation();
 
