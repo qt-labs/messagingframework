@@ -177,7 +177,8 @@ protected slots:
     void cancelOperation();
 
     void noSendAccount(QMailMessage::MessageType);
-    void enqueueMail(QMailMessage&);
+    void beginEnqueueMail(QMailMessage&);
+    void finishEnqueueMail(QMailServiceAction::Activity);
     void saveAsDraft(QMailMessage&);
     void discardMail();
 
@@ -455,6 +456,7 @@ private:
     QMailRetrievalAction* m_retrievalAction;
     QMailRetrievalAction* m_flagRetrievalAction;
     QMailRetrievalAction* m_exportAction;
+    QList<QMailStorageAction*> m_outboxActions; 
     QMailAccountIdList m_queuedExports;
 };
 

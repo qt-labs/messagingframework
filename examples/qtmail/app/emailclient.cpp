@@ -387,7 +387,7 @@ WriteMail* MessageUiBase::createWriteMailWidget()
     WriteMail* writeMail = new WriteMail(this);
     writeMail->setObjectName("write-mail");
 
-    connect(writeMail, SIGNAL(enqueueMail(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)));
+    connect(writeMail, SIGNAL(enqueueMail(QMailMessage&)), this, SLOT(beginEnqueueMail(QMailMessage&)));
     connect(writeMail, SIGNAL(discardMail()), this, SLOT(discardMail()));
     connect(writeMail, SIGNAL(saveAsDraft(QMailMessage&)), this, SLOT(saveAsDraft(QMailMessage&)));
     connect(writeMail, SIGNAL(noSendAccount(QMailMessage::MessageType)), this, SLOT(noSendAccount(QMailMessage::MessageType)));
@@ -410,7 +410,7 @@ ReadMail* MessageUiBase::createReadMailWidget()
     connect(readMail, SIGNAL(readReplyRequested(QMailMessageMetaData)), this, SLOT(readReplyRequested(QMailMessageMetaData)));
     connect(readMail, SIGNAL(sendMessageTo(QMailAddress,QMailMessage::MessageType)), this, SLOT(sendMessageTo(QMailAddress,QMailMessage::MessageType)));
     connect(readMail, SIGNAL(viewMessage(QMailMessageId,QMailViewerFactory::PresentationType)), this, SLOT(presentMessage(QMailMessageId,QMailViewerFactory::PresentationType)));
-    connect(readMail, SIGNAL(sendMessage(QMailMessage&)), this, SLOT(enqueueMail(QMailMessage&)));
+    connect(readMail, SIGNAL(sendMessage(QMailMessage&)), this, SLOT(beginEnqueueMail(QMailMessage&)));
     connect(readMail, SIGNAL(retrieveMessagePortion(QMailMessageMetaData, uint)), this, SLOT(retrieveMessagePortion(QMailMessageMetaData, uint)));
     connect(readMail, SIGNAL(retrieveMessagePart(QMailMessagePart::Location)), this, SLOT(retrieveMessagePart(QMailMessagePart::Location)));
     connect(readMail, SIGNAL(retrieveMessagePartPortion(QMailMessagePart::Location, uint)), this, SLOT(retrieveMessagePartPortion(QMailMessagePart::Location, uint)));
@@ -1117,10 +1117,14 @@ void EmailClient::cancelOperation()
             || (m_exportAction->activity() == QMailServiceAction::Pending))) {
         m_exportAction->cancelOperation();
     }
+
+    foreach(QMailStorageAction *action, m_outboxActions) {
+        action->cancelOperation();
+    }
 }
 
 /*  Enqueue mail must always store the mail in the outbox   */
-void EmailClient::enqueueMail(QMailMessage& mail)
+void EmailClient::beginEnqueueMail(QMailMessage& mail)
 {
     // Does this account support sending a message by reference from an external sent folder?
     QMailAccount account(mail.parentAccountId());
@@ -1131,17 +1135,31 @@ void EmailClient::enqueueMail(QMailMessage& mail)
 
     mail.setStatus(QMailMessage::Outbox, true);
 
-    bool inserted(false);
+    QMailStorageAction *outboxAction(new QMailStorageAction());
+    connect(outboxAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+            this, SLOT(finishEnqueueMail(QMailServiceAction::Activity)));
+    m_outboxActions.append(outboxAction);
     if (!mail.id().isValid()) {
         // This message is present only on the local device until we externalise or send it
         mail.setStatus(QMailMessage::LocalOnly, true);
-        inserted = QMailStore::instance()->addMessage(&mail);
+        outboxAction->addMessages(QMailMessageList() << mail);
     } else {
-        inserted = QMailStore::instance()->updateMessage(&mail);
+        outboxAction->updateMessages(QMailMessageList() << mail);
+    }
+}
+
+void EmailClient::finishEnqueueMail(QMailServiceAction::Activity activity)
+{
+    if ((activity == QMailServiceAction::Successful) ||
+        (activity == QMailServiceAction::Failed)) {
+        QMailStorageAction *serviceAction(dynamic_cast<QMailStorageAction*>(sender()));
+        if (serviceAction) {
+            m_outboxActions.removeAll(serviceAction);
+            serviceAction->deleteLater();
+        }
     }
 
-    if (inserted) {
-        
+    if (activity == QMailServiceAction::Successful) {
         if (workOfflineAction->isChecked()) {
             AcknowledgmentBox::show(tr("Message queued"), tr("Message has been queued in outbox"));
         } else {
@@ -1152,9 +1170,8 @@ void EmailClient::enqueueMail(QMailMessage& mail)
             closeAfterTransmissionsFinished();
             closeApplication();
         }
-    } else {
-        QMailFolder folder(mail.parentFolderId());
-        accessError(folder.displayName());
+    } else if (activity == QMailServiceAction::Failed) {
+        AcknowledgmentBox::show(tr("Message queuing failure"), tr("Failed to queue message in outbox."));
         return;
     }
 }
