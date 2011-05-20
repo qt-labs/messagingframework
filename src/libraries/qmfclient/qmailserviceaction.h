@@ -225,6 +225,9 @@ public:
     QMailStorageAction(QObject *parent = 0);
     ~QMailStorageAction();
 
+    QMailMessageIdList messagesAdded() const;
+    QMailMessageIdList messagesUpdated() const;
+
 public slots:
     void deleteMessages(const QMailMessageIdList &ids);
     void discardMessages(const QMailMessageIdList &ids);
@@ -233,6 +236,8 @@ public slots:
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
     void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+    void addMessages(const QMailMessageList &list);
+    void updateMessages(const QMailMessageList &list);
 
     void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(const QMailFolderId &folderId, const QString &name);

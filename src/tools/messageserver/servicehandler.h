@@ -80,6 +80,8 @@ public slots:
     void copyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void addMessages(quint64 action, const QString &filename);
+    void updateMessages(quint64 action, const QString &filename);
     void createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name);
     void deleteFolder(quint64 action, const QMailFolderId &folderId);
@@ -109,6 +111,9 @@ signals:
     void messagesCopied(quint64 action, const QMailMessageIdList&);
     void messagesMoved(quint64 action, const QMailMessageIdList&);
     void messagesFlagged(quint64 action, const QMailMessageIdList&);
+
+    void messagesAdded(quint64 action, const QMailMessageIdList&);
+    void messagesUpdated(quint64 action, const QMailMessageIdList&);
 
     void folderCreated(quint64 action, const QMailFolderId&);
     void folderRenamed(quint64 action, const QMailFolderId&);
@@ -244,6 +249,7 @@ private:
 
     void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);
     void setTransmissionInProgress(const QMailAccountId &id, bool inProgress);
+    void addOrUpdateMessages(quint64 action, const QString &filename, bool add);
 
     QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> > serviceMap;
     QMap<QMailAccountId, QMailMessageSource*> sourceMap;

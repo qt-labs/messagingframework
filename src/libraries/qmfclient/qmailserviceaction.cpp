@@ -45,9 +45,12 @@
 #include "qmailstore.h"
 #include "qmaillog.h"
 #include "qmaildisconnected.h"
+#include "qmailnamespace.h"
 #include <QCoreApplication>
 #include <QPair>
 #include <QTimer>
+#include <QDir>
+#include <QTemporaryFile>
 
 namespace {
 
@@ -1193,7 +1196,10 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
     connect(_server, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-
+    connect(_server, SIGNAL(messagesAdded(quint64, QMailMessageIdList)),
+            this, SLOT(messagesAdded(quint64, QMailMessageIdList)));
+    connect(_server, SIGNAL(messagesUpdated(quint64, QMailMessageIdList)),
+            this, SLOT(messagesUpdated(quint64, QMailMessageIdList)));
     connect(_server, SIGNAL(storageActionCompleted(quint64)),
             this, SLOT(storageActionCompleted(quint64)));
 
@@ -1246,6 +1252,53 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
     emitChanges();
 }
 
+static QString streamMessages(const QMailMessageList &list)
+{
+    QString path = QMail::tempPath();
+    QDir dir;
+    if (!dir.exists(path))
+        dir.mkpath(path);
+    QString tmpName(path + QLatin1String("addmailmessage"));
+    QTemporaryFile tmpFile(tmpName + QLatin1String(".XXXXXX"));
+    tmpFile.setAutoRemove(false);
+    QDataStream *ts;
+    if (tmpFile.open()) {
+        tmpFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+        ts = new QDataStream(&tmpFile);
+    } else {
+        qWarning() << "Unable to open temporary file:" << tmpFile.fileName();
+        ts = 0;
+        tmpFile.setAutoRemove(true);
+        return QString();
+    }
+    foreach(QMailMessage message, list) {
+        message.serialize(*ts);
+    }
+    tmpFile.flush();
+    tmpFile.close();
+    return tmpFile.fileName();
+}
+
+void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
+{
+     QString filename(streamMessages(list));
+    _server->addMessages(newAction(), filename);
+
+    _ids.clear();
+    _addedOrUpdatedIds.clear();
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
+{
+     QString filename(streamMessages(list));
+    _server->updateMessages(newAction(), filename);
+
+    _ids.clear();
+    _addedOrUpdatedIds.clear();
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     _server->createFolder(newAction(), name, accountId, parentId);
@@ -1282,6 +1335,20 @@ void QMailStorageActionPrivate::messagesEffected(quint64 action, const QMailMess
     if (validAction(action)) {
         foreach (const QMailMessageId &id, ids)
             _ids.removeAll(id);
+    }
+}
+
+void QMailStorageActionPrivate::messagesAdded(quint64 action, const QMailMessageIdList &ids)
+{
+    if (validAction(action)) {
+        _addedOrUpdatedIds.append(ids);
+    }
+}
+
+void QMailStorageActionPrivate::messagesUpdated(quint64 action, const QMailMessageIdList &ids)
+{
+    if (validAction(action)) {
+        _addedOrUpdatedIds.append(ids);
     }
 }
 
@@ -1386,6 +1453,46 @@ void QMailStorageAction::moveMessages(const QMailMessageIdList &ids, const QMail
 void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
 {
     impl(this)->flagMessages(ids, setMask, unsetMask);
+}
+
+/*!
+    Requests that the message server add \a messages to the mail store.
+
+    The messages will be added asynchronously.
+
+    \sa QMailStorageAction::messagesAdded
+*/
+void QMailStorageAction::addMessages(const QMailMessageList &messages)
+{
+    impl(this)->addMessages(messages);
+}
+
+/*!
+    Returns the ids of the messages added to the mail store.
+*/
+QMailMessageIdList QMailStorageAction::messagesAdded() const
+{
+    return impl(this)->_addedOrUpdatedIds;
+}
+
+/*!
+    Requests that the message server update \a messages in the mail store.
+
+    The messages will be updated asynchronously.
+
+    \sa QMailStorageAction::messagesUpdated
+*/
+void QMailStorageAction::updateMessages(const QMailMessageList &messages)
+{
+    impl(this)->updateMessages(messages);
+}
+
+/*!
+    Returns the ids of the messages updated in the mail store.
+*/
+QMailMessageIdList QMailStorageAction::messagesUpdated() const
+{
+    return impl(this)->_addedOrUpdatedIds;
 }
 
 /*!

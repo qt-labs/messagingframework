@@ -256,6 +256,8 @@ public:
     void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
     void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
     void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+    void addMessages(const QMailMessageList &list);
+    void updateMessages(const QMailMessageList &list);
 
     void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(const QMailFolderId &id, const QString &name);
@@ -268,11 +270,14 @@ protected:
 protected slots:
     void messagesEffected(quint64, const QMailMessageIdList &id);
     void storageActionCompleted(quint64);
+    void messagesAdded(quint64, const QMailMessageIdList &ids);
+    void messagesUpdated(quint64, const QMailMessageIdList &ids);
 
 private:
     friend class QMailStorageAction;
 
     QMailMessageIdList _ids;
+    QMailMessageIdList _addedOrUpdatedIds;
 };
 
 class QMailDeleteFolderCommand : public QMailServiceActionCommand

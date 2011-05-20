@@ -8090,4 +8090,3 @@ void QMailMessage::deserialize(Stream &stream)
 }
 
 template void QMailMessage::deserialize(QDataStream &);
-

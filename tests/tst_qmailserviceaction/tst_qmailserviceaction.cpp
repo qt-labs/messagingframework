@@ -452,6 +452,8 @@ void tst_QMailServiceAction::test_storageaction()
     action.renameFolder(savedId1, "saved1new");
     action.deleteFolder(archivedId2);
 
+    action.addMessages(QMailMessageList() << QMailMessage());
+    action.updateMessages(QMailMessageList() << QMailMessage());
 }
 
 void tst_QMailServiceAction::test_searchaction()

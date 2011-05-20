@@ -326,6 +326,16 @@ Changes since the development preview release on 16/01/09:
 29. Changed 'QMailMessageModelBase::emitDataChanged(const QModelIndex &idx)' to 
             'QMailMessageModelBase::emitDataChanged(const QModelIndex &idx, const QModelIndex &jdx)'.
 
+30. Added 'QMailStorageAction::addMessages(const QMailMessageList &list)',
+          'QMailStorageAction::updateMessages(const QMailMessageList &list)',
+          'QMailMessageIdList QMailStorageAction::messagesAdded() const',
+          'QMailMessageIdList QMailStorageAction::messagesUpdated() const'.
+          'QMailMessageServer::addMessages(quint64, const QString &filename)',
+          'QMailMessageServer::updateMessages(quint64, const QString &filename)',
+          'void QMailMessageServer::messagesAdded(quint64, QMailMessageIdList)' and
+          'void QMailMessageServer::messagesUpdated(quint64, QMailMessageIdList)'.
+
+
 *****************************************************************************
 
 \endcode

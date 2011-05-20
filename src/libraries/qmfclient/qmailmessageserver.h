@@ -91,6 +91,8 @@ signals:
     void messagesCopied(quint64, const QMailMessageIdList&);
     void messagesMoved(quint64, const QMailMessageIdList&);
     void messagesFlagged(quint64, const QMailMessageIdList&);
+    void messagesAdded(quint64, const QMailMessageIdList&);
+    void messagesUpdated(quint64, const QMailMessageIdList&);
 
     void folderCreated(quint64, const QMailFolderId&);
     void folderRenamed(quint64, const QMailFolderId&);
@@ -128,6 +130,8 @@ public slots:
     void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void addMessages(quint64, const QString &filename);
+    void updateMessages(quint64, const QString &filename);
 
     void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);

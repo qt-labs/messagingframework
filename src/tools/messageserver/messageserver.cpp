@@ -187,6 +187,10 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
         connect(client, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
                 handler, SLOT(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+        connect(client, SIGNAL(addMessages(quint64, QString)),
+                handler, SLOT(addMessages(quint64, QString)));
+        connect(client, SIGNAL(updateMessages(quint64, QString)),
+                handler, SLOT(updateMessages(quint64, QString)));
         connect(client, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
                 handler, SLOT(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
         connect(client, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),

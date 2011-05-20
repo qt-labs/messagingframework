@@ -82,6 +82,8 @@ signals:
     void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void addMessages(quint64, const QString &filename);
+    void updateMessages(quint64, const QString &filename);
 
     void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
@@ -150,6 +152,10 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
     connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
                adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+    connectIpc(this, SIGNAL(addMessages(quint64, QString)),
+               adaptor, MESSAGE(addMessages(quint64, QString)));
+    connectIpc(this, SIGNAL(updateMessages(quint64, QString)),
+               adaptor, MESSAGE(updateMessages(quint64, QString)));
     connectIpc(this, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
                adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
     connectIpc(this, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),
@@ -186,6 +192,10 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)),
                parent, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(messagesAdded(quint64, QMailMessageIdList)),
+               parent, SIGNAL(messagesAdded(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(messagesUpdated(quint64, QMailMessageIdList)),
+               parent, SIGNAL(messagesUpdated(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(folderCreated(quint64, QMailFolderId)),
                parent, SIGNAL(folderCreated(quint64, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(folderRenamed(quint64, QMailFolderId)),
@@ -662,6 +672,26 @@ void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& 
 {
     emit d->flagMessages(action, mailList, setMask, unsetMask);
 }
+
+/*!
+    Requests that the MessageServer add the messages in 
+    \a filename to the message store.
+*/
+void QMailMessageServer::addMessages(quint64 action, const QString& filename)
+{
+    emit d->addMessages(action, filename);
+}
+
+/*!
+    Requests that the MessageServer update the messages in 
+    \a filename to the message store.
+*/
+void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
+{
+    emit d->updateMessages(action, filename);
+}
+
+
 
 /*!
     Requests that the MessageServer create a new folder named \a name, created in the
