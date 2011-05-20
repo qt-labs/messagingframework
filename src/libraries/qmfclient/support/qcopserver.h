@@ -62,6 +62,9 @@ public:
     QCopServer(QObject *parent = 0);
     ~QCopServer();
 
+signals:
+    void ready();
+
 protected:
     virtual qint64 activateApplication(const QString& name);
     void applicationExited(qint64 pid);

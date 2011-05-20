@@ -246,6 +246,7 @@ void QCopServerPrivate::init()
 {
     QCopChannel *appChannel =
         new QCopChannel(QLatin1String("QPE/Application/*"), this);
+    connect(appChannel, SIGNAL(connected()), QCopThreadData::instance()->server, SIGNAL(ready()));
     connect(appChannel, SIGNAL(forwarded(QString,QByteArray,QString)),
             this, SLOT(forwarded(QString,QByteArray,QString)));
 }
