@@ -111,8 +111,10 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
     const bool stderrEnabled = settings.value("StdStreamLog/Enabled", defaultStdError).toBool();
 #ifndef Q_OS_SYMBIAN
     const QString filePath = settings.value("FileLog/Path").toString();
+    const bool fileEnabled = settings.value("FileLog/Enabled", false).toBool() && !filePath.isEmpty();
 #else
     const QString filePath("C:\\Data\\qmf.log");
+    const bool fileEnabled = !filePath.isEmpty();
 #endif
 
     LogSystem& loggers = LogSystem::getInstance();
@@ -125,7 +127,7 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
     };
 #endif
 
-    if(!filePath.isEmpty()) {
+    if(fileEnabled) {
         FileLogger<LvlTimePidLogPrefix>* fl = new FileLogger<LvlTimePidLogPrefix>(filePath);
         addLoggerIfReady(fl);
     };
