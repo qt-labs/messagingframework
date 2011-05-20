@@ -90,4 +90,12 @@
 #define PLUGIN_EXPORT QMF_DECL_IMPORT
 #endif
 
+#ifndef ENFORCE
+#ifdef QT_NO_DEBUG
+#define ENFORCE(expr) expr
+#else
+#define ENFORCE(expr) { bool res = (expr); Q_ASSERT(res); }
+#endif
+#endif
+
 #endif
