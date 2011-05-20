@@ -45,31 +45,34 @@
 struct QMailHeartbeatTimerPrivate
 {
     QMailHeartbeatTimerPrivate()
-        : interval(0, 0)
+        : timer(new QTimer), interval(0, 0)
     {}
 
-    QTimer timer;
+    ~QMailHeartbeatTimerPrivate()
+    {
+        delete timer;
+    }
+
+    QTimer* timer;
     QPair<int, int> interval;
 };
 
 QMailHeartbeatTimer::QMailHeartbeatTimer(QObject *parent)
-    : QObject(parent), d(new QMailHeartbeatTimerPrivate)
+    : QObject(parent), d_ptr(new QMailHeartbeatTimerPrivate)
 {
-    connect(&d->timer, SIGNAL(timeout()), this, SIGNAL(timeout()));
+    Q_D(QMailHeartbeatTimer);
+    connect(d->timer, SIGNAL(timeout()), this, SIGNAL(timeout()));
 }
 
 QMailHeartbeatTimer::~QMailHeartbeatTimer()
 {
+    delete d_ptr;
 }
 
 bool QMailHeartbeatTimer::isActive() const
 {
-    return d->timer.isActive();
-}
-
-int QMailHeartbeatTimer::timerId() const
-{
-    return d->timer.timerId();
+    const Q_D(QMailHeartbeatTimer);
+    return d->timer->isActive();
 }
 
 void QMailHeartbeatTimer::setInterval(int interval)
@@ -80,29 +83,38 @@ void QMailHeartbeatTimer::setInterval(int interval)
 void QMailHeartbeatTimer::setInterval(int minimum, int maximum)
 {
     Q_ASSERT(minimum <= maximum);
-    d->timer.setInterval((minimum + maximum) / 2);
+    Q_D(QMailHeartbeatTimer);
+    d->timer->setInterval((minimum + maximum) / 2);
     d->interval = qMakePair(minimum, maximum);
 }
 
 QPair<int, int> QMailHeartbeatTimer::interval() const
 {
+    const Q_D(QMailHeartbeatTimer);
     return d->interval;
 }
 
 void QMailHeartbeatTimer::setSingleShot(bool singleShot)
 {
-    d->timer.setSingleShot(singleShot);
+    Q_D(QMailHeartbeatTimer);
+    d->timer->setSingleShot(singleShot);
 }
 
 bool QMailHeartbeatTimer::isSingleShot() const
 {
-    return d->timer.isSingleShot();
+    const Q_D(QMailHeartbeatTimer);
+    return d->timer->isSingleShot();
 }
 
 void QMailHeartbeatTimer::singleShot(int minimum, int maximum, QObject *receiver, const char *member)
 {
     Q_ASSERT(minimum <= maximum);
     QTimer::singleShot((minimum + maximum) / 2, receiver, member);
+}
+
+void QMailHeartbeatTimer::singleShot(int interval, QObject *receiver, const char *member)
+{
+    QTimer::singleShot(interval, receiver, member);
 }
 
 void QMailHeartbeatTimer::start(int interval)
@@ -113,15 +125,27 @@ void QMailHeartbeatTimer::start(int interval)
 void QMailHeartbeatTimer::start(int minimum, int maximum)
 {
     Q_ASSERT(minimum <= maximum);
-    d->timer.start((minimum + maximum) / 2);
+    Q_D(QMailHeartbeatTimer);
+    d->timer->start((minimum + maximum) / 2);
 }
 
 void QMailHeartbeatTimer::start()
 {
-    d->timer.start();
+    Q_D(QMailHeartbeatTimer);
+    d->timer->start();
 }
 
 void QMailHeartbeatTimer::stop()
 {
-    d->timer.stop();
+    Q_D(QMailHeartbeatTimer);
+    d->timer->stop();
+}
+
+void QMailHeartbeatTimer::wokeUp()
+{
+    if (isSingleShot()) {
+        stop();
+    } else {
+        start();
+    }
 }
