@@ -2163,8 +2163,8 @@ QMailStorePrivate::Transaction::Transaction(QMailStorePrivate* d)
       m_initted(false),
       m_committed(false)
 {
-	m_d->databaseMutex().lock();
-	m_d->databaseMutex().unlock();
+    m_d->databaseMutex().lock();
+    m_d->databaseMutex().unlock();
     m_initted = m_d->transaction();
 }
 
@@ -6913,7 +6913,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
 
 
         if (query.next())
-            *result = (1 << (extractValue<int>(query.value(0))-1));
+            *result = (static_cast<quint64>(1) << (extractValue<int>(query.value(0))-1));
         else
             *result = 0;
 
@@ -6950,7 +6950,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
                                     "mailstatusflags register insert"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
-        *result = 1 << highest;
+        *result = static_cast<quint64>(1) << highest;
     }
 
     if (commitOnSuccess && !t.commit()) {

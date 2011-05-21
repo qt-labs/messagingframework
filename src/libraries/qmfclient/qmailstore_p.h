@@ -203,7 +203,7 @@ public:
     
 private:
     friend class Transaction;
-    friend class ReadLock;
+    friend struct ReadLock;
 
     static ProcessMutex& contentManagerMutex(void);
 
