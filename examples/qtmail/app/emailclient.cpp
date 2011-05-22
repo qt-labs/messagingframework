@@ -1152,7 +1152,7 @@ void EmailClient::finishEnqueueMail(QMailServiceAction::Activity activity)
 {
     if ((activity == QMailServiceAction::Successful) ||
         (activity == QMailServiceAction::Failed)) {
-        QMailStorageAction *serviceAction(dynamic_cast<QMailStorageAction*>(sender()));
+        QMailStorageAction *serviceAction(qobject_cast<QMailStorageAction*>(sender()));
         if (serviceAction) {
             m_outboxActions.removeAll(serviceAction);
             serviceAction->deleteLater();
