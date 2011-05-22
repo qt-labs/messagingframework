@@ -495,6 +495,11 @@ void ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::Standar
             );
 
     Q_ASSERT(folders.count() <= 1);
+    if (folders.count() == 0) {
+        // remove standard folder
+        account->setStandardFolder(folderType, QMailFolderId());
+        return;
+    }
     if (folders.count() != 1)
         return;
 
