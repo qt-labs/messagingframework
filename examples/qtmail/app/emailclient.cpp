@@ -1092,34 +1092,28 @@ void EmailClient::cancelOperation()
     retrievalAccountIds.clear();
 
     if (isSending()) {
-        if ((m_transmitAction->activity() == QMailServiceAction::InProgress)
-            || (m_transmitAction->activity() == QMailServiceAction::Pending)) {
+        if (m_transmitAction->isRunning())
             m_transmitAction->cancelOperation();
-        }
-        setSendingInProgress( false );
+
+        setSendingInProgress(false);
     }
     if (isRetrieving()) {
-        if ((m_retrievalAction->activity() == QMailServiceAction::InProgress)
-            || (m_retrievalAction->activity() == QMailServiceAction::Pending)) {
+        if (m_retrievalAction->isRunning())
             m_retrievalAction->cancelOperation();
-        }
-        setRetrievalInProgress( false );
+
+        setRetrievalInProgress(false);
     }
 
-    if (m_flagRetrievalAction
-        && ((m_flagRetrievalAction->activity() == QMailServiceAction::InProgress)
-            || (m_flagRetrievalAction->activity() == QMailServiceAction::Pending))) {
+    if (m_flagRetrievalAction && m_flagRetrievalAction->isRunning())
         m_flagRetrievalAction->cancelOperation();
-    }
 
-    if (m_exportAction
-        && ((m_exportAction->activity() == QMailServiceAction::InProgress)
-            || (m_exportAction->activity() == QMailServiceAction::Pending))) {
+
+    if (m_exportAction && m_exportAction->isRunning())
         m_exportAction->cancelOperation();
-    }
 
     foreach(QMailStorageAction *action, m_outboxActions) {
-        action->cancelOperation();
+        if (action->isRunning())
+            action->cancelOperation();
     }
 }
 
