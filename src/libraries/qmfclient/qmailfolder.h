@@ -79,6 +79,7 @@ public:
     static const quint64 &NonMail;
     static const quint64 &MessagesPermitted;
     static const quint64 &ReadOnly;
+    static const quint64 &Favourite;
 
     QMailFolder();
 

@@ -59,6 +59,7 @@ static quint64 deletionPermittedFlag = 0;
 static quint64 nonMailFlag = 0;
 static quint64 messagesPermittedFlag = 0;
 static quint64 readOnlyFlag = 0;
+static quint64 favouriteFlag = 0;
 
 class QMailFolderPrivate : public QSharedData
 {
@@ -295,6 +296,15 @@ public:
     \value JunkFolder Represents the standard junk folder.
 */
 
+/*!
+    \variable QMailFolder::Favourite
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "Favourite" against the result of QMailFolder::status().
+
+    This flag indicates that a folder is one of favourite from user point of view.
+*/
+
 
 const quint64 &QMailFolder::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailFolder::Synchronized = synchronizedFlag;
@@ -312,6 +322,7 @@ const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;
 const quint64 &QMailFolder::NonMail = nonMailFlag;
 const quint64 &QMailFolder::MessagesPermitted = messagesPermittedFlag;
 const quint64 &QMailFolder::ReadOnly = readOnlyFlag;
+const quint64 &QMailFolder::Favourite = favouriteFlag;
 
 
 /*!
