@@ -548,10 +548,6 @@
         <description>libqmf-tests:tst_python_email:test_no_semis_header_splitter</description>
         <step>/usr/tests/qmf/tst_python_email test_no_semis_header_splitter</step>
       </case>
-      <case name="tst_python_email-test_no_split_long_header">
-        <description>libqmf-tests:tst_python_email:test_no_split_long_header</description>
-        <step>/usr/tests/qmf/tst_python_email test_no_split_long_header</step>
-      </case>
       <case name="tst_python_email-test_splitting_multiple_long_lines">
         <description>libqmf-tests:tst_python_email:test_splitting_multiple_long_lines</description>
         <step>/usr/tests/qmf/tst_python_email test_splitting_multiple_long_lines</step>

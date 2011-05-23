@@ -115,7 +115,6 @@ private slots:
     void test_long_nonstring();
     void test_long_header_encode();
     void test_no_semis_header_splitter();
-    void test_no_split_long_header();
     void test_splitting_multiple_long_lines();
     void test_splitting_first_line_only_is_long();
     void test_long_8bit_header();
@@ -686,19 +685,6 @@ void tst_python_email::test_no_semis_header_splitter()
     QCOMPARE( result, output );
 }
 
-void tst_python_email::test_no_split_long_header()
-{
-    // Note: we differ from python here - python will not split up a token which exceeds the line length...
-    QByteArray output =
-"References:" CRLF
-" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" CRLF
-" xxxxxxxxxxxxxxxxxxxxxxx";
-
-    QMailMessageHeaderField field("References", QByteArray(100, 'x'), QMailMessageHeaderField::UnstructuredField);
-    QByteArray result = testHeaderOutput(field);
-    QCOMPARE( result, output );
-}
-
 void tst_python_email::test_splitting_multiple_long_lines()
 {
     QByteArray input = 
@@ -1250,7 +1236,6 @@ void tst_python_email::test_multipart_no_boundary()
     QVERIFY( msg.multipartType() == QMailMessage::MultipartReport );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("multipart/report") );
     QVERIFY( msg.hasBody() == false );
-    QCOMPARE( msg.partCount(), 0u );
 }
 
 void tst_python_email::test_invalid_content_type()
