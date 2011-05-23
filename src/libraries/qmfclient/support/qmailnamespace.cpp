@@ -128,7 +128,7 @@ int QMail::fileLock(const QString& lockFile)
                                  GENERIC_READ,
                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
                                  NULL,
-                                 OPEN_EXISTING | TRUNCATE_EXISTING,
+                                 OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL,
                                  NULL);
     if (handle == INVALID_HANDLE_VALUE) {
