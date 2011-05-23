@@ -2386,66 +2386,66 @@ bool QMailStorePrivate::initStore()
         }
         /*static_*/Q_ASSERT(Success == 0);
 
-        bool res = attemptRegisterStatusBit("SynchronizationEnabled", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
-                || attemptRegisterStatusBit("Synchronized", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::Synchronized), t, false)
-                || attemptRegisterStatusBit("AppendSignature", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::AppendSignature), t, false)
-                || attemptRegisterStatusBit("UserEditable", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UserEditable), t, false)
-                || attemptRegisterStatusBit("UserRemovable", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UserRemovable), t, false)
-                || attemptRegisterStatusBit("PreferredSender", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::PreferredSender), t, false)
-                || attemptRegisterStatusBit("MessageSource", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::MessageSource), t, false)
-                || attemptRegisterStatusBit("CanRetrieve", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanRetrieve), t, false)
-                || attemptRegisterStatusBit("MessageSink", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::MessageSink), t, false)
-                || attemptRegisterStatusBit("CanTransmit", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanTransmit), t, false)
-                || attemptRegisterStatusBit("Enabled", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::Enabled), t, false)
-                || attemptRegisterStatusBit("CanReferenceExternalData", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanReferenceExternalData), t, false)
-                || attemptRegisterStatusBit("CanTransmitViaReference", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanTransmitViaReference), t, false)
-                || attemptRegisterStatusBit("CanCreateFolders", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::CanCreateFolders), t, false)
-                || attemptRegisterStatusBit("UseSmartReply", "accountstatus", 64, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
-                || attemptRegisterStatusBit("SynchronizationEnabled", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
-                || attemptRegisterStatusBit("Synchronized", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Synchronized), t, false)
-                || attemptRegisterStatusBit("PartialContent", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::PartialContent), t, false)
-                || attemptRegisterStatusBit("Removed", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Removed), t, false)
-                || attemptRegisterStatusBit("Incoming", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Incoming), t, false)
-                || attemptRegisterStatusBit("Outgoing", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Outgoing), t, false)
-                || attemptRegisterStatusBit("Sent", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Sent), t, false)
-                || attemptRegisterStatusBit("Trash", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Trash), t, false)
-                || attemptRegisterStatusBit("Drafts", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
-                || attemptRegisterStatusBit("Junk", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
-                || attemptRegisterStatusBit("ChildCreationPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
-                || attemptRegisterStatusBit("RenamePermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::RenamePermitted), t, false)
-                || attemptRegisterStatusBit("DeletionPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::DeletionPermitted), t, false)
-                || attemptRegisterStatusBit("NonMail", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::NonMail), t, false)
-                || attemptRegisterStatusBit("MessagesPermitted", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::MessagesPermitted), t, false)
-                || attemptRegisterStatusBit("ReadOnly", "folderstatus", 64, true, const_cast<quint64 *>(&QMailFolder::ReadOnly), t, false)
-                || attemptRegisterStatusBit("Incoming", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Incoming), t, false)
-                || attemptRegisterStatusBit("Outgoing", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Outgoing), t, false)
-                || attemptRegisterStatusBit("Sent", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Sent), t, false)
-                || attemptRegisterStatusBit("Replied", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Replied), t, false)
-                || attemptRegisterStatusBit("RepliedAll", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::RepliedAll), t, false)
-                || attemptRegisterStatusBit("Forwarded", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Forwarded), t, false)
-                || attemptRegisterStatusBit("ContentAvailable", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ContentAvailable), t, false)
-                || attemptRegisterStatusBit("Read", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Read), t, false)
-                || attemptRegisterStatusBit("Removed", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Removed), t, false)
-                || attemptRegisterStatusBit("ReadElsewhere", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ReadElsewhere), t, false)
-                || attemptRegisterStatusBit("UnloadedData", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::UnloadedData), t, false)
-                || attemptRegisterStatusBit("New", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::New), t, false)
-                || attemptRegisterStatusBit("ReadReplyRequested", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
-                || attemptRegisterStatusBit("Trash", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
-                || attemptRegisterStatusBit("PartialContentAvailable", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
-                || attemptRegisterStatusBit("HasAttachments", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasAttachments), t, false)
-                || attemptRegisterStatusBit("HasReferences", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasReferences), t, false)
-                || attemptRegisterStatusBit("HasUnresolvedReferences", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HasUnresolvedReferences), t, false)
-                || attemptRegisterStatusBit("Draft", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Draft), t, false)
-                || attemptRegisterStatusBit("Outbox", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Outbox), t, false)
-                || attemptRegisterStatusBit("Junk", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Junk), t, false)
-                || attemptRegisterStatusBit("TransmitFromExternal", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::TransmitFromExternal), t, false)
-                || attemptRegisterStatusBit("LocalOnly", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::LocalOnly), t, false)
-                || attemptRegisterStatusBit("TemporaryFlag", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Temporary), t, false)
-                || attemptRegisterStatusBit("ImportantElsewhere", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::ImportantElsewhere), t, false)
-                || attemptRegisterStatusBit("Important", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::Important), t, false)
-                || attemptRegisterStatusBit("HighPriority", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
-                || attemptRegisterStatusBit("LowPriority", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
-                || attemptRegisterStatusBit("CalendarInvitation", "messagestatus", 64, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false);
+        bool res = attemptRegisterStatusBit("SynchronizationEnabled", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::Synchronized), t, false)
+                || attemptRegisterStatusBit("AppendSignature", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::AppendSignature), t, false)
+                || attemptRegisterStatusBit("UserEditable", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UserEditable), t, false)
+                || attemptRegisterStatusBit("UserRemovable", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UserRemovable), t, false)
+                || attemptRegisterStatusBit("PreferredSender", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::PreferredSender), t, false)
+                || attemptRegisterStatusBit("MessageSource", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::MessageSource), t, false)
+                || attemptRegisterStatusBit("CanRetrieve", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanRetrieve), t, false)
+                || attemptRegisterStatusBit("MessageSink", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::MessageSink), t, false)
+                || attemptRegisterStatusBit("CanTransmit", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmit), t, false)
+                || attemptRegisterStatusBit("Enabled", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::Enabled), t, false)
+                || attemptRegisterStatusBit("CanReferenceExternalData", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanReferenceExternalData), t, false)
+                || attemptRegisterStatusBit("CanTransmitViaReference", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmitViaReference), t, false)
+                || attemptRegisterStatusBit("CanCreateFolders", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanCreateFolders), t, false)
+                || attemptRegisterStatusBit("UseSmartReply", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
+                || attemptRegisterStatusBit("SynchronizationEnabled", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Synchronized), t, false)
+                || attemptRegisterStatusBit("PartialContent", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::PartialContent), t, false)
+                || attemptRegisterStatusBit("Removed", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Removed), t, false)
+                || attemptRegisterStatusBit("Incoming", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Sent), t, false)
+                || attemptRegisterStatusBit("Trash", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Trash), t, false)
+                || attemptRegisterStatusBit("Drafts", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
+                || attemptRegisterStatusBit("Junk", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
+                || attemptRegisterStatusBit("ChildCreationPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
+                || attemptRegisterStatusBit("RenamePermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::RenamePermitted), t, false)
+                || attemptRegisterStatusBit("DeletionPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::DeletionPermitted), t, false)
+                || attemptRegisterStatusBit("NonMail", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::NonMail), t, false)
+                || attemptRegisterStatusBit("MessagesPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::MessagesPermitted), t, false)
+                || attemptRegisterStatusBit("ReadOnly", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::ReadOnly), t, false)
+                || attemptRegisterStatusBit("Incoming", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Sent), t, false)
+                || attemptRegisterStatusBit("Replied", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Replied), t, false)
+                || attemptRegisterStatusBit("RepliedAll", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::RepliedAll), t, false)
+                || attemptRegisterStatusBit("Forwarded", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Forwarded), t, false)
+                || attemptRegisterStatusBit("ContentAvailable", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ContentAvailable), t, false)
+                || attemptRegisterStatusBit("Read", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Read), t, false)
+                || attemptRegisterStatusBit("Removed", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Removed), t, false)
+                || attemptRegisterStatusBit("ReadElsewhere", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ReadElsewhere), t, false)
+                || attemptRegisterStatusBit("UnloadedData", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::UnloadedData), t, false)
+                || attemptRegisterStatusBit("New", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::New), t, false)
+                || attemptRegisterStatusBit("ReadReplyRequested", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
+                || attemptRegisterStatusBit("Trash", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
+                || attemptRegisterStatusBit("PartialContentAvailable", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
+                || attemptRegisterStatusBit("HasAttachments", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasAttachments), t, false)
+                || attemptRegisterStatusBit("HasReferences", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasReferences), t, false)
+                || attemptRegisterStatusBit("HasUnresolvedReferences", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasUnresolvedReferences), t, false)
+                || attemptRegisterStatusBit("Draft", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Draft), t, false)
+                || attemptRegisterStatusBit("Outbox", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Outbox), t, false)
+                || attemptRegisterStatusBit("Junk", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Junk), t, false)
+                || attemptRegisterStatusBit("TransmitFromExternal", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::TransmitFromExternal), t, false)
+                || attemptRegisterStatusBit("LocalOnly", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::LocalOnly), t, false)
+                || attemptRegisterStatusBit("TemporaryFlag", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Temporary), t, false)
+                || attemptRegisterStatusBit("ImportantElsewhere", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ImportantElsewhere), t, false)
+                || attemptRegisterStatusBit("Important", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Important), t, false)
+                || attemptRegisterStatusBit("HighPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
+                || attemptRegisterStatusBit("LowPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
+                || attemptRegisterStatusBit("CalendarInvitation", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false);
 
         if (res) {
             qWarning() << "There was an error registering flags.";
@@ -2467,6 +2467,11 @@ bool QMailStorePrivate::initStore()
 #if defined(Q_USE_SQLITE)
     QSqlQuery query( database );
     query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
+    if (query.next() && query.value(0).toString().toLower() != "wal") {
+        qWarning() << "res" << query.value(0).toString().toLower();
+        qWarning() << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
+        qWarning() << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
+    }
 #endif
 
     if (!QMailContentManagerFactory::init()) {
@@ -4326,7 +4331,7 @@ bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
 
     static const QString context("accountstatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64, false, &num),
+                                        cref(name), cref(context), 63, false, &num),
                                    "registerAccountStatusBit");
 }
 
@@ -4347,7 +4352,7 @@ bool QMailStorePrivate::registerFolderStatusFlag(const QString &name)
 
     static const QString context("folderstatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64, false, &num),
+                                        cref(name), cref(context), 63, false, &num),
                                    "registerFolderStatusBit");
 }
 
@@ -4368,7 +4373,7 @@ bool QMailStorePrivate::registerMessageStatusFlag(const QString &name)
 
     static const QString context("messagestatus");
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
-                                        cref(name), cref(context), 64, false, &num),
+                                        cref(name), cref(context), 63, false, &num),
                                    "registerMessageStatusBit");
 }
 
@@ -6146,14 +6151,20 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
         if (result != Success)
             return result;
 
-        {
-            QString sql("UPDATE mailmessages SET status=(status %1 ?)");
-            QSqlQuery query(simpleQuery(sql.arg(set ? "|" : "&"),
-                                        QVariantList() << (set ? status : ~status),
-                                        Key(QMailMessageKey::id(*updatedMessageIds)),
+        QString sql;
+
+        if (set) {
+            sql = QString("UPDATE mailmessages SET status=(status | %1)").arg(status);
+        } else {
+            // essentially SET status &= ~unsetmask
+            // but sqlite can't handle a large unsetmask, so use or and xor,
+            // but sqllite doesn't support xor so use & and |.
+            sql = QString("UPDATE mailmessages SET status=(~((status|%1)& %1))&(status|%1)").arg(status);
+        }
+        QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(*updatedMessageIds)),
                                         "updateMessagesMetaData status query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
+        if (query.lastError().type() != QSqlError::NoError) {
+            return DatabaseFailure;
         }
     }
 
