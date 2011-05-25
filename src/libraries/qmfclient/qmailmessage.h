@@ -777,7 +777,7 @@ public:
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 
-    virtual bool isCalendarInvitation() const;
+    virtual bool hasCalendarInvitation() const;
 
     virtual bool contentModified() const;
 

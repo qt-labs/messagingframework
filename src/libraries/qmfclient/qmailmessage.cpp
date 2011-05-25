@@ -8088,7 +8088,7 @@ bool QMailMessage::contentModified() const
     return partContainerImpl()->contentModified();
 }
 
-bool QMailMessage::isCalendarInvitation() const
+bool QMailMessage::hasCalendarInvitation() const
 {
     if (headerFieldText("Content-class") != "urn:content-classes:calendarmessage")
         return false;

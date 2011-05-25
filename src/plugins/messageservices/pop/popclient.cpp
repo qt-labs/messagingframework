@@ -1074,7 +1074,7 @@ void PopClient::createMail()
         if (popCfg.deleteRetrievedMailsFromServer()) {
             mail->setStatus(QMailMessage::LocalOnly, true);
         }
-        mail->setStatus(QMailMessage::CalendarInvitation, mail->isCalendarInvitation());
+        mail->setStatus(QMailMessage::CalendarInvitation, mail->hasCalendarInvitation());
     }
 
 
