@@ -1059,8 +1059,9 @@ namespace findAttachments
             if (found) {
                 found->clear();
             }
-            if (container.multipartType() == QMailMessagePart::MultipartMixed)
-                inMultipartMixed(container, found, hasAttachments);
+
+            if (container.multipartType() == QMailMessagePart::MultipartMixed || container.multipartType() == QMailMessagePart::MultipartRelated)
+                inMultipartMR(container, found, hasAttachments);
 
             // In any case, the default strategy wins, even if there are no attachments
             return true;
@@ -1078,8 +1079,17 @@ namespace findAttachments
             bool isInLine = (!part.contentDisposition().isNull()) &&
                 (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
 
-            bool isAttachment = (!part.contentDisposition().isNull()) &&
-                (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment);
+            bool isAttachment = (!part.contentDisposition().isNull() &&
+                (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment));
+
+            if (!isAttachment
+                && (part.contentDisposition().isNull() || part.contentDisposition().type() == QMailMessageContentDisposition::None)
+                && part.contentType().subType() != "plain"
+                && part.contentType().subType() != "html" )
+            {
+                // Assume this is an attachment, despite not having a content disposition
+                isAttachment = true;
+            }
 
             bool isRFC822 = (contentType.type().toLower() == "message") &&
                 (contentType.subType().toLower() == "rfc822");
@@ -1096,7 +1106,7 @@ namespace findAttachments
             }
         }
 
-        void inMultipartMixed(const QMailMessagePartContainer &container,
+        void inMultipartMR(const QMailMessagePartContainer &container,
                               Locations* found,
                               bool* hasAttachments) const
         {
