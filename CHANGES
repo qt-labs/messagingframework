@@ -2,6 +2,9 @@ Latest Changes
 ---------------
 
 201120
+  * Fixes: NB#232541 calendar icon not displayed
+
+201120
   * Fixes: NB#225762 QMailMessage asserts when parsing invalid message/rfc822
   * Fixes: NB#253979 Body & Preview of message got corrupted after deleting attachment(s) from Message
   * Fixes: NB#257648 Use QTimer for "expire check" instead of syshb

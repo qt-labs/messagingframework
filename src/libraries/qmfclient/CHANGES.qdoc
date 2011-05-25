@@ -334,6 +334,8 @@ Changes since the development preview release on 16/01/09:
           'QMailMessageServer::updateMessages(quint64, const QString &filename)',
           'void QMailMessageServer::messagesAdded(quint64, QMailMessageIdList)' and
           'void QMailMessageServer::messagesUpdated(quint64, QMailMessageIdList)'.
+          
+31. Added 'QMailMessage::isCalendarInvitation()'
 
 
 *****************************************************************************
