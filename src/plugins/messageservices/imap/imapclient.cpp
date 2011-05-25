@@ -844,6 +844,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
         if (properties.status & QMailFolder::Junk) {
             mail.setStatus(QMailMessage::Junk, true); 
         }
+        mail.setStatus(QMailMessage::CalendarInvitation, mail.isCalendarInvitation());
     } else {
         // We need to update the message from the existing data
         QMailMessageMetaData existing(mail.serverUid(), _config.id());

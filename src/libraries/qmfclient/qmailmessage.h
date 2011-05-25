@@ -777,6 +777,8 @@ public:
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 
+    virtual bool isCalendarInvitation() const;
+
     virtual bool contentModified() const;
 
     template <typename Stream> void serialize(Stream &stream) const;

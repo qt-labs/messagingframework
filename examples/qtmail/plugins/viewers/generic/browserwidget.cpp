@@ -838,6 +838,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     metadata.append(qMakePair(tr("Date"), dateString(mail->date().toLocalTime())));
 
     metadata.append(qMakePair(tr("Message Id"), QString::number(mail->id().toULongLong())));
+    metadata.append(qMakePair(tr("CalendarInvitation"), (mail->status() & QMailMessage::CalendarInvitation) ? QString("true") : QString("false")));
 
     if ( (mail->status() & QMailMessage::Incoming) && 
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {

@@ -8088,6 +8088,34 @@ bool QMailMessage::contentModified() const
     return partContainerImpl()->contentModified();
 }
 
+bool QMailMessage::isCalendarInvitation() const
+{
+    if (headerFieldText("Content-class") != "urn:content-classes:calendarmessage")
+        return false;
+
+    QList<const QMailMessagePart*> parts;
+    for (uint i = 0; i < partCount(); ++i)
+        parts.append(&partAt(i));
+    
+    while (!parts.isEmpty()) {
+        const QMailMessagePart *part(parts.takeFirst());
+        if (part->multipartType() != QMailMessagePartContainer::MultipartNone) {
+            for (uint i = 0; i < part->partCount(); ++i) {
+  	        parts.append(&part->partAt(i));
+            }
+	} else {
+	  const QMailMessageContentType &ct(part->contentType());
+          if ((ct.type().toLower() == "text") &&
+              (ct.subType().toLower() == "calendar") &&
+              (ct.parameter("method").toLower() == "request")) {
+              qWarning() << "XXX Found calendar invitation" << subject();
+              return true;
+	  }
+	}
+    }
+    return false;
+}
+
 /*! \internal */
 void QMailMessage::setUnmodified()
 {
