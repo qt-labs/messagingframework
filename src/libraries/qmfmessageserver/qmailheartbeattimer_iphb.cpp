@@ -66,15 +66,6 @@ QMailHeartbeatTimer::QMailHeartbeatTimer(QObject *parent)
     connect(d->timer, SIGNAL(timeout()), this, SIGNAL(timeout()));
 }
 
-static QPair<int, int> calculatePeriod(int interval)
-{
-    const int seconds = interval / 1000;
-    const int dev = qMin(qMax(seconds / 8, 3), 30);  // deviation is not greater than 1/8 of interval, but 3-30 sec
-
-    // not earlier than in 1 sec
-    return qMakePair(qMax(seconds - dev, 1), seconds + dev);
-}
-
 QMailHeartbeatTimer::~QMailHeartbeatTimer()
 {
     delete d_ptr;
@@ -88,8 +79,7 @@ bool QMailHeartbeatTimer::isActive() const
 
 void QMailHeartbeatTimer::setInterval(int interval)
 {
-    QPair<int, int> period = calculatePeriod(interval);
-    setInterval(period.first, period.second);
+    setInterval(interval, interval);
 }
 
 void QMailHeartbeatTimer::setInterval(int minimum, int maximum)
@@ -126,14 +116,12 @@ void QMailHeartbeatTimer::singleShot(int minimum, int maximum, QObject *receiver
 
 void QMailHeartbeatTimer::singleShot(int interval, QObject *receiver, const char *member)
 {
-    QPair<int, int> period = calculatePeriod(interval);
-    QSystemAlignedTimer::singleShot(period.first, period.second, receiver, member);
+    QSystemAlignedTimer::singleShot(interval, interval, receiver, member);
 }
 
 void QMailHeartbeatTimer::start(int interval)
 {
-    QPair<int, int> period = calculatePeriod(interval);
-    start(period.first, period.second);
+    start(interval, interval);
 }
 
 void QMailHeartbeatTimer::start(int minimum, int maximum)
