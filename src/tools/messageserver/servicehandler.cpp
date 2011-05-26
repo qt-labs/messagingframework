@@ -764,7 +764,7 @@ bool ServiceHandler::servicesAvailable(const Request &req) const
 
 bool ServiceHandler::serviceAvailable(QPointer<QMailMessageService> service) const
 {
-    if ((!service->usesConcurrentActions() && mServiceAction.contains(service)) || mUnavailableServices.contains(service))
+    if (!service || (!service->usesConcurrentActions() && mServiceAction.contains(service)) || mUnavailableServices.contains(service))
         return false;
 
     return true;
