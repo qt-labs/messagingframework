@@ -58,13 +58,13 @@ static void shutdown(int n)
 
 int main(int argc, char** argv)
 {
+    QCoreApplication app(argc, argv);
+
     // This is ~/.config/Nokia/Messageserver.conf
     qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
 
     if(QMail::fileLock("messageserver-instance.lock") == -1)
         qFatal("Could not get messageserver lock. Messageserver might already be running!");
-
-    QCoreApplication app(argc, argv);
 
     MessageServer server;
 
