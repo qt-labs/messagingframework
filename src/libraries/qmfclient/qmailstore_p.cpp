@@ -3859,6 +3859,9 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
 
 
     foreach (QMailMessage *message, messages) {
+        // TODO: remove hack to force eager preview generation
+        message->preview();
+
         // Find the message identifier and references from the header
         QString identifier(identifierValue(message->headerFieldText("Message-ID")));
         QStringList references(identifierValues(message->headerFieldText("References")));
@@ -5715,6 +5718,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 // Use the default storage scheme
                 metaData->setContentScheme(defaultContentScheme());
             }
+
+            // TODO: remove hack to force eager preview generation
+            message->preview();
 
             MutexGuard lock(contentManagerMutex());
             lock.lock();
