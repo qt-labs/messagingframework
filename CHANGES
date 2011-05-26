@@ -1,8 +1,9 @@
 Latest Changes
 ---------------
 
-201120
+201121
   * Fixes: NB#232541 calendar icon not displayed
+  * Fixes: NB#252977 email client should align with other periodic network
 
 201120
   * Fixes: NB#225762 QMailMessage asserts when parsing invalid message/rfc822
