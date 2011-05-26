@@ -5,6 +5,7 @@ Latest Changes
   * Fixes: NB#232541 Calendar icon not displayed
   * Fixes: NB#252977 Email client should align with other periodic network
   * Fixes: NB#237487 Inlined attachments are missing from message item
+  * Fixes: NB#252977 E-Mail client should align with other periodic network traffic through SystemHB
 
 201120
   * Fixes: NB#225762 QMailMessage asserts when parsing invalid message/rfc822
