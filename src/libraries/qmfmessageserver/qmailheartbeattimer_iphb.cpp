@@ -59,6 +59,11 @@ struct QMailHeartbeatTimerPrivate
     QSystemAlignedTimer* timer;
 };
 
+namespace {
+    int toSeconds(int milliseconds) { return milliseconds / 1000; }
+    int toMilliseconds(int seconds) { return seconds * 1000; }
+}
+
 QMailHeartbeatTimer::QMailHeartbeatTimer(QObject *parent)
     : QObject(parent), d_ptr(new QMailHeartbeatTimerPrivate)
 {
@@ -86,14 +91,14 @@ void QMailHeartbeatTimer::setInterval(int minimum, int maximum)
 {
     Q_ASSERT(minimum <= maximum);
     Q_D(QMailHeartbeatTimer);
-    d->timer->setMinimumInterval(minimum);
-    d->timer->setMaximumInterval(maximum);
+    d->timer->setMinimumInterval(toSeconds(minimum));
+    d->timer->setMaximumInterval(toSeconds(maximum));
 }
 
 QPair<int, int> QMailHeartbeatTimer::interval() const
 {
     const Q_D(QMailHeartbeatTimer);
-    return qMakePair(d->timer->minimumInterval(), d->timer->maximumInterval());
+    return qMakePair(toMilliseconds(d->timer->minimumInterval()), toMilliseconds(d->timer->maximumInterval()));
 }
 
 void QMailHeartbeatTimer::setSingleShot(bool singleShot)
@@ -111,12 +116,12 @@ bool QMailHeartbeatTimer::isSingleShot() const
 void QMailHeartbeatTimer::singleShot(int minimum, int maximum, QObject *receiver, const char *member)
 {
     Q_ASSERT(minimum <= maximum);
-    QSystemAlignedTimer::singleShot(minimum, maximum, receiver, member);
+    QSystemAlignedTimer::singleShot(toSeconds(minimum), toSeconds(maximum), receiver, member);
 }
 
 void QMailHeartbeatTimer::singleShot(int interval, QObject *receiver, const char *member)
 {
-    QSystemAlignedTimer::singleShot(interval, interval, receiver, member);
+    QSystemAlignedTimer::singleShot(toSeconds(interval), toSeconds(interval), receiver, member);
 }
 
 void QMailHeartbeatTimer::start(int interval)
@@ -128,7 +133,7 @@ void QMailHeartbeatTimer::start(int minimum, int maximum)
 {
     Q_ASSERT(minimum <= maximum);
     Q_D(QMailHeartbeatTimer);
-    d->timer->start(minimum, maximum);
+    d->timer->start(toSeconds(minimum), toSeconds(maximum));
 }
 
 void QMailHeartbeatTimer::start()
