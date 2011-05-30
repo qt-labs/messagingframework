@@ -264,7 +264,7 @@ void LongStringFileMapping::init()
         QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
         if (it == fileMap.end()) {
             // This file is not referenced yet
-            if (fi.size() > 0) {
+            if (fi.size() >= 0) {
                 QFileMapping fileMapping;
 
                 fileMapping.file = new QFile(filename);
