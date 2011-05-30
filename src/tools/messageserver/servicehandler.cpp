@@ -1417,7 +1417,7 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(quint64 action, const QByt
             ? source->retrieveMessagePartRange(partLocation, minimum, action)
             : source->retrieveMessagePartRange(partLocation, minimum));
 
-        if (!success) {
+        if (success) {
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
