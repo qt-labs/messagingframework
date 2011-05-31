@@ -7575,8 +7575,11 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
-            modifiedFolderIds.append(QMailFolderId(extractValue<quint64>(query.value(0))));
+        while (query.next()) {
+            QMailFolderId folderId(extractValue<quint64>(query.value(0)));
+            if (folderId.isValid())
+                modifiedFolderIds.append(folderId);
+        }
     }
 
     // Insert the removal records
@@ -7746,8 +7749,11 @@ bool QMailStorePrivate::deleteThreads(const QMailThreadKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
-            threadsToDelete.append(QMailThreadId(extractValue<quint64>(query.value(0))));
+        while (query.next()) {
+            QMailThreadId thread(extractValue<quint64>(query.value(0)));
+            if (thread.isValid())
+                threadsToDelete.append(thread);
+        }
     }
 
     if (threadsToDelete.isEmpty())

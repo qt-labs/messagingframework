@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201122
+  * Fixes: NB#249858 Random crash observed with assert 
+
 201121
   * Fixes: NB#232541 Calendar icon not displayed
   * Fixes: NB#252977 Email client should align with other periodic network
