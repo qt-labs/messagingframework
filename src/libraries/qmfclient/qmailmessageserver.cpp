@@ -682,7 +682,7 @@ void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& 
 /*!
     Requests that the MessageServer add the messages in 
     \a filename to the message store.
-   
+
     \deprecated
 */
 void QMailMessageServer::addMessages(quint64 action, const QString& filename)
@@ -691,8 +691,8 @@ void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 }
 
 /*!
-    Requests that the MessageServer update the list of \a messages 
-    in the message store, and ensure the durability of the content of \messages..
+    Requests that the MessageServer update the list of \a messages
+    in the message store, and ensure the durability of the content of \messages.
 */
 void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
@@ -712,7 +712,7 @@ void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
 }
 
 /*!
-    Requests that the MessageServer add the list of \a messages 
+    Requests that the MessageServer add the list of \a messages
     to the message store, and ensure the durability of the content of \messages..
 */
 void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDataList& messages)

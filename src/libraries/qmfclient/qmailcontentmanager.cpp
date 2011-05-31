@@ -381,7 +381,7 @@ QStringList QMailContentManagerPlugin::keys() const
 /*!
     \fn QMailStore::ErrorCode QMailContentManager::ensureDurability(const QList<QString> &identifiers)
 
-    Requests that the content manager ensure that message data will be made durable for messages 
+    Requests that the content manager ensure that message data will be made durable for messages
     identified by the given content \a identifiers.
 
     To be used with the \l{QMailContentManager::DeferDurability}{NoDurability} option.

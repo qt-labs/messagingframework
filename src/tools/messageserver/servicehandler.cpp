@@ -382,7 +382,7 @@ QList<QString> obsoleteContentIdentifiers(QList<QMailMessageMetaData*> list)
         QString identifier = m->customField("qmf-obsolete-contentid");
         if (!identifier.isEmpty()) {
             result.append(identifier);
-	}
+        }
     }
     return result;
 }
@@ -394,7 +394,7 @@ QList<QString> contentIdentifiers(QList<QMailMessageMetaData*> list)
         QString identifier = m->contentIdentifier();
         if (!identifier.isEmpty()) {
             result.append(identifier);
-	}
+        }
     }
     return result;
 }
@@ -1839,8 +1839,8 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
     }
     foreach (QMailMessageMetaData m, messages) {
         if (m.contentScheme() != scheme) {
-            reportFailure(action, 
-                          QMailServiceAction::Status::ErrFrameworkFault, 
+            reportFailure(action,
+                          QMailServiceAction::Status::ErrFrameworkFault,
                           tr("Unable to async add messages, "
                              "inconsistent contentscheme"));
         }
@@ -1884,8 +1884,8 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
     }
     foreach (QMailMessageMetaData m, messages) {
         if (m.contentScheme() != scheme) {
-            reportFailure(action, 
-                          QMailServiceAction::Status::ErrFrameworkFault, 
+            reportFailure(action,
+                          QMailServiceAction::Status::ErrFrameworkFault,
                           tr("Unable to async update messages, "
                              "inconsistent contentscheme"));
         }
