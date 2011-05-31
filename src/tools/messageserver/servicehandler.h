@@ -81,7 +81,9 @@ public slots:
     void moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64 action, const QString &filename);
+    void addMessages(quint64 action, const QMailMessageMetaDataList &messages);
     void updateMessages(quint64 action, const QString &filename);
+    void updateMessages(quint64 action, const QMailMessageMetaDataList &messages);
     void createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name);
     void deleteFolder(quint64 action, const QMailFolderId &folderId);

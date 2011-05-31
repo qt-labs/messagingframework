@@ -332,11 +332,15 @@ Changes since the development preview release on 16/01/09:
           'QMailMessageIdList QMailStorageAction::messagesUpdated() const'.
           'QMailMessageServer::addMessages(quint64, const QString &filename)',
           'QMailMessageServer::updateMessages(quint64, const QString &filename)',
-          'void QMailMessageServer::messagesAdded(quint64, QMailMessageIdList)' and
-          'void QMailMessageServer::messagesUpdated(quint64, QMailMessageIdList)'.
+          'QMailMessageServer::messagesAdded(quint64, QMailMessageIdList)' and
+          'QMailMessageServer::messagesUpdated(quint64, QMailMessageIdList)'.
 
 31. Added 'QMailMessage::hasCalendarInvitation()'
 
+32. Added 'QMailContentManager::NoDurability' enum value,
+          'QMailContentManager::ensureDurability(const QList<QString> &)',
+          'QMailMessageServer::addMessages(quint64, const QMailMessageMetaDataList &)' and
+          'QMailMessageServer::updateMessages(quint64, const QMailMessageMetaDataList &)'.
 
 *****************************************************************************
 

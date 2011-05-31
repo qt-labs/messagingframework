@@ -83,7 +83,9 @@ signals:
     void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QString &filename);
+    void addMessages(quint64, const QMailMessageMetaDataList &list);
     void updateMessages(quint64, const QString &filename);
+    void updateMessages(quint64, const QMailMessageMetaDataList &list);
 
     void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
@@ -154,8 +156,12 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
     connectIpc(this, SIGNAL(addMessages(quint64, QString)),
                adaptor, MESSAGE(addMessages(quint64, QString)));
+    connectIpc(this, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
+               adaptor, MESSAGE(addMessages(quint64, QMailMessageMetaDataList)));
     connectIpc(this, SIGNAL(updateMessages(quint64, QString)),
                adaptor, MESSAGE(updateMessages(quint64, QString)));
+    connectIpc(this, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
+               adaptor, MESSAGE(updateMessages(quint64, QMailMessageMetaDataList)));
     connectIpc(this, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
                adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
     connectIpc(this, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),
@@ -676,6 +682,8 @@ void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& 
 /*!
     Requests that the MessageServer add the messages in 
     \a filename to the message store.
+   
+    \deprecated
 */
 void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 {
@@ -683,12 +691,33 @@ void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 }
 
 /*!
+    Requests that the MessageServer update the list of \a messages 
+    in the message store, and ensure the durability of the content of \messages..
+*/
+void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataList& messages)
+{
+    emit d->addMessages(action, messages);
+}
+
+/*!
     Requests that the MessageServer update the messages in 
     \a filename to the message store.
+
+    \deprecated
+
 */
 void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
 {
     emit d->updateMessages(action, filename);
+}
+
+/*!
+    Requests that the MessageServer add the list of \a messages 
+    to the message store, and ensure the durability of the content of \messages..
+*/
+void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDataList& messages)
+{
+    emit d->updateMessages(action, messages);
 }
 
 

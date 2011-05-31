@@ -112,13 +112,15 @@ public:
 
     enum DurabilityRequirement { 
         EnsureDurability = 0,
-        DeferDurability
+        DeferDurability,
+        NoDurability
     };
 
     virtual QMailStore::ErrorCode add(QMailMessage *message, DurabilityRequirement durability) = 0;
     virtual QMailStore::ErrorCode update(QMailMessage *message, DurabilityRequirement durability) = 0;
 
     virtual QMailStore::ErrorCode ensureDurability() = 0;
+    virtual QMailStore::ErrorCode ensureDurability(const QList<QString> &identifiers) = 0;
 
     virtual QMailStore::ErrorCode remove(const QString &identifier) = 0;
     virtual QMailStore::ErrorCode remove(const QList<QString> &identifiers);

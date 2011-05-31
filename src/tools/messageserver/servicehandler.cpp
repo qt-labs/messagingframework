@@ -50,6 +50,7 @@
 #include <qmailstore.h>
 #include <qmaillog.h>
 #include <qmailmessage.h>
+#include <qmailcontentmanager.h>
 #include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
@@ -372,6 +373,30 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 QString requestsFileName()
 {
     return QDir::tempPath() + "/qmf-messageserver-requests";
+}
+
+QList<QString> obsoleteContentIdentifiers(QList<QMailMessageMetaData*> list)
+{
+    QList<QString> result;
+    foreach (QMailMessageMetaData *m, list) {
+        QString identifier = m->customField("qmf-obsolete-contentid");
+        if (!identifier.isEmpty()) {
+            result.append(identifier);
+	}
+    }
+    return result;
+}
+
+QList<QString> contentIdentifiers(QList<QMailMessageMetaData*> list)
+{
+    QList<QString> result;
+    foreach (QMailMessageMetaData *m, list) {
+        QString identifier = m->contentIdentifier();
+        if (!identifier.isEmpty()) {
+            result.append(identifier);
+	}
+    }
+    return result;
 }
 
 }
@@ -1803,6 +1828,101 @@ void ServiceHandler::addMessages(quint64 action, const QString &filename)
 void ServiceHandler::updateMessages(quint64 action, const QString &filename)
 {
     addOrUpdateMessages(action, filename, false);
+}
+
+void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList &messages)
+{
+    QList<QMailMessageMetaData*> list;
+    QString scheme;
+    if (messages.count()) {
+        scheme = messages.first().contentScheme();
+    }
+    foreach (QMailMessageMetaData m, messages) {
+        if (m.contentScheme() != scheme) {
+            reportFailure(action, 
+                          QMailServiceAction::Status::ErrFrameworkFault, 
+                          tr("Unable to async add messages, "
+                             "inconsistent contentscheme"));
+        }
+    }
+    foreach (QMailMessageMetaData m, messages) {
+        list.append(new QMailMessageMetaData(m));
+    }
+    if (scheme.isEmpty()) {
+        scheme = QMailContentManagerFactory::defaultScheme();
+    }
+    if (!list.isEmpty()) {
+        QMailContentManager *content = QMailContentManagerFactory::create(scheme);
+        content->ensureDurability(contentIdentifiers(list));
+        QMailStore *store = QMailStore::instance();
+        store->addMessages(list);
+        if (store->lastError() != QMailStore::NoError) {
+            reportFailure(action,
+                          QMailServiceAction::Status::ErrFrameworkFault,
+                          tr("Unable to async update messages"));
+            return;
+        }
+    }
+
+    QMailMessageIdList ids;
+    while (!list.isEmpty()) {
+        QMailMessageMetaData *data(list.takeFirst());
+        ids.append(data->id());
+        delete data;
+    }
+
+    emit messagesAdded(action, ids);
+    emit storageActionCompleted(action);
+}
+
+void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataList &messages)
+{
+    QList<QMailMessageMetaData*> list;
+    QString scheme;
+    if (messages.count()) {
+        scheme = messages.first().contentScheme();
+    }
+    foreach (QMailMessageMetaData m, messages) {
+        if (m.contentScheme() != scheme) {
+            reportFailure(action, 
+                          QMailServiceAction::Status::ErrFrameworkFault, 
+                          tr("Unable to async update messages, "
+                             "inconsistent contentscheme"));
+        }
+    }
+    foreach (QMailMessageMetaData m, messages) {
+        list.append(new QMailMessageMetaData(m));
+    }
+    if (scheme.isEmpty()) {
+        scheme = QMailContentManagerFactory::defaultScheme();
+    }
+    if (!list.isEmpty()) {
+        QMailContentManager *content = QMailContentManagerFactory::create(scheme);
+        QList<QString> obsoleteIds(obsoleteContentIdentifiers(list));
+        content->ensureDurability(contentIdentifiers(list));
+        foreach (QMailMessageMetaData *m, list) {
+            m->removeCustomField("qmf-obsolete-contentid");
+        }
+        QMailStore *store = QMailStore::instance();
+        store->updateMessages(list);
+        if (store->lastError() != QMailStore::NoError) {
+            reportFailure(action,
+                          QMailServiceAction::Status::ErrFrameworkFault,
+                          tr("Unable to async update messages"));
+            return;
+        }
+        content->remove(obsoleteIds);
+    }
+
+    QMailMessageIdList ids;
+    while (!list.isEmpty()) {
+        QMailMessageMetaData *data(list.takeFirst());
+        ids.append(data->id());
+        delete data;
+    }
+
+    emit messagesUpdated(action, ids);
+    emit storageActionCompleted(action);
 }
 
 bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data)

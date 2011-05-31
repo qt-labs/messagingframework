@@ -251,10 +251,10 @@ void QmfStorageManager::clearAccountPath(const QMailAccountIdList &ids)
 
 QMailStore::ErrorCode QmfStorageManager::add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability)
 {
-    return addOrRename(message, QString(), (durability == QMailContentManager::EnsureDurability));
+    return addOrRename(message, QString(), durability);
 }
 
-QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable)
+QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, QMailContentManager::DurabilityRequirement durability)
 {
     // Use the supplied identifier as a filename
     QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier());
@@ -288,7 +288,7 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
 #endif
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
-         !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durable))) {
+         !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durability))) {
         // Remove the file
         file->close();
         qMailLog(Messaging) << "Unable to save message content, removing temporary file:" << filePath;
@@ -302,11 +302,11 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
         return QMailStore::FrameworkFault;
     }
 
-    if (durable) {
+    if (durability == QMailContentManager::EnsureDurability) {
         syncFile(file);
-    } else {
+    } else if (durability == QMailContentManager::DeferDurability) {
         syncLater(file);
-    }
+    } // else NoDurability
 
     message->removeCustomField("qmf-detached-filename");
     if (!detachedFile.isEmpty()) {
@@ -322,14 +322,15 @@ QMailStore::ErrorCode QmfStorageManager::update(QMailMessage *message, QMailCont
 
     // Store to a new file
     message->setContentIdentifier(QString());
-    QMailStore::ErrorCode code = addOrRename(message, existingIdentifier, (durability == QMailContentManager::EnsureDurability));
+    QMailStore::ErrorCode code = addOrRename(message, existingIdentifier, durability);
     if (code != QMailStore::NoError) {
         message->setContentIdentifier(existingIdentifier);
         return code;
     }
 
-    if (!existingIdentifier.isEmpty()) {
-        // Try to remove the existing data
+    if (!existingIdentifier.isEmpty() && (durability != NoDurability)) {
+        // Try to remove the existing data,
+        // but if NoDurability don't delete existing content, it should be deleted later
         code = remove(existingIdentifier);
         if (code != QMailStore::NoError) {
             qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
@@ -359,6 +360,17 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
     }
     _openFiles.clear();
 
+    return QMailStore::NoError;
+}
+
+QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &identifiers)
+{
+    // Can't just sync identifiers, also must sync message parts
+#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+            qWarning() << "Unable to call sync in ensureDurability.";
+#else
+            ::sync();
+#endif
     return QMailStore::NoError;
 }
 
@@ -613,8 +625,10 @@ struct PartStorer
     QString fileName;
     QString existing;
     QList< QSharedPointer<QFile> > *openParts;
+    bool allowRename;
 
-    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o) : message(m), fileName(f), existing(e), openParts(o) {}
+    PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o, bool ar) 
+     : message(m), fileName(f), existing(e), openParts(o), allowRename(ar) {}
 
     bool operator()(const QMailMessagePart &part)
     {
@@ -624,7 +638,7 @@ struct PartStorer
             // We need to store this part
             QString partFilePath(QmfStorageManager::messagePartFilePath(part, fileName));
 
-            if (!part.contentModified() && !existing.isEmpty()) {
+            if (!part.contentModified() && !existing.isEmpty() && allowRename) {
                 // This part is not modified; see if we can simply move the existing file to the new identifier
                 QString existingPath(QmfStorageManager::messagePartFilePath(part, existing));
                 if (QFile::rename(existingPath, partFilePath)) {
@@ -684,7 +698,7 @@ struct PartStorer
     }
 };
 
-bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable)
+bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, QMailContentManager::DurabilityRequirement durability)
 {
     // Ensure that the part directory exists
     QString partDirectory(messagePartDirectory(fileName));
@@ -696,11 +710,15 @@ bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &f
     }
 
     QList< QSharedPointer<QFile> > openParts;
-    PartStorer partStorer(message, fileName, existing, (durable ? 0 : &openParts));
+    bool durable = (durability == QMailContentManager::EnsureDurability);
+    bool allowRename = (durability != QMailContentManager::NoDurability);
+    PartStorer partStorer(message, fileName, existing, (durable ? 0 : &openParts), allowRename);
     if (!const_cast<const QMailMessage*>(message)->foreachPart(partStorer)) {
         qMailLog(Messaging) << "Unable to store parts for message:" << fileName;
         return false;
     }
+    if (durability == QMailContentManager::NoDurability)
+      return true; // Don't sync parts, they should be sync'd later
     foreach(QSharedPointer<QFile> part, openParts) {
         syncLater(part);
     }

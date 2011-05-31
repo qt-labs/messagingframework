@@ -132,8 +132,12 @@ MailMessageClient::MailMessageClient(QObject* parent)
                this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
     connectIpc(adaptor, MESSAGE(addMessages(quint64,QString)),
                this, SIGNAL(addMessages(quint64, QString)));
+    connectIpc(adaptor, MESSAGE(addMessages(quint64,QMailMessageMetaDataList)),
+               this, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)));
     connectIpc(adaptor, MESSAGE(updateMessages(quint64,QString)),
                this, SIGNAL(updateMessages(quint64, QString)));
+    connectIpc(adaptor, MESSAGE(updateMessages(quint64,QMailMessageMetaDataList)),
+               this, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)));
     connectIpc(adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
                this, SIGNAL(createFolder(quint64,QString,QMailAccountId,QMailFolderId)));
     connectIpc(adaptor, MESSAGE(renameFolder(quint64, QMailFolderId, QString)),

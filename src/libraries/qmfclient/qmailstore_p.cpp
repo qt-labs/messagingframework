@@ -5703,7 +5703,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
         //a content scheme may not be supplied
         updateProperties &= ~QMailMessageKey::ContentScheme;
-        updateProperties &= ~QMailMessageKey::ContentIdentifier;
 
         if (updateContent && !metaData->contentScheme().isEmpty()) {
 

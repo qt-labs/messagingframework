@@ -312,6 +312,7 @@ QStringList QMailContentManagerPlugin::keys() const
 
     \value EnsureDurability     The content manager should make the requested changes durable before reporting success.
     \value DeferDurability      The content manager may defer ensuring that changes are durable until the next invocation of ensureDurability().
+    \value NoDurability         The content manager will not make changes durable.
 */
 
 /*!
@@ -375,6 +376,15 @@ QStringList QMailContentManagerPlugin::keys() const
 
     Requests that the content manager ensure that any previous actions that were performed with the
     \l{QMailContentManager::DeferDurability}{DeferDurability} option be made durable.
+*/
+
+/*!
+    \fn QMailStore::ErrorCode QMailContentManager::ensureDurability(const QList<QString> &identifiers)
+
+    Requests that the content manager ensure that message data will be made durable for messages 
+    identified by the given content \a identifiers.
+
+    To be used with the \l{QMailContentManager::DeferDurability}{NoDurability} option.
 */
 
 /*!

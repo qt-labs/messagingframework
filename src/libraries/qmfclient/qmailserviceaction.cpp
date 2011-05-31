@@ -46,6 +46,7 @@
 #include "qmaillog.h"
 #include "qmaildisconnected.h"
 #include "qmailnamespace.h"
+#include <qmailcontentmanager.h>
 #include <QCoreApplication>
 #include <QPair>
 #include <QTimer>
@@ -1262,50 +1263,67 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
     emitChanges();
 }
 
-static QString streamMessages(const QMailMessageList &list)
-{
-    QString path = QMail::tempPath();
-    QDir dir;
-    if (!dir.exists(path))
-        dir.mkpath(path);
-    QString tmpName(path + QLatin1String("addmailmessage"));
-    QTemporaryFile tmpFile(tmpName + QLatin1String(".XXXXXX"));
-    tmpFile.setAutoRemove(false);
-    QDataStream *ts;
-    if (tmpFile.open()) {
-        tmpFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-        ts = new QDataStream(&tmpFile);
-    } else {
-        qWarning() << "Unable to open temporary file:" << tmpFile.fileName();
-        ts = 0;
-        tmpFile.setAutoRemove(true);
-        return QString();
-    }
-    foreach(QMailMessage message, list) {
-        message.serialize(*ts);
-    }
-    tmpFile.flush();
-    tmpFile.close();
-    return tmpFile.fileName();
-}
-
 void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
 {
-     QString filename(streamMessages(list));
-    _server->addMessages(newAction(), filename);
-
     _ids.clear();
     _addedOrUpdatedIds.clear();
+
+    // Make non durable changes to the content manager
+    // Existing message data in mail store and content manager should not be
+    // changed directly by this function, instead the messageserver should do it.
+    QMailMessageMetaDataList metadata;
+    foreach (QMailMessage message, list) {
+        if (message.contentScheme().isEmpty()) {
+            message.setContentScheme(QMailContentManagerFactory::defaultScheme());
+        }
+        if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message.contentScheme())) {
+            QMailStore::ErrorCode code = contentManager->add(&message, QMailContentManager::NoDurability);
+            if (code != QMailStore::NoError) {
+                qWarning() << "Unable to ensure message content durability for scheme:" << message.contentScheme();
+                if (validAction(newAction())) {
+                    setActivity(QMailServiceAction::Failed);
+                    emitChanges();
+                }
+                return;
+            }
+            metadata.append(message);
+        }
+    }
+    _server->addMessages(newAction(), metadata);
+
     emitChanges();
 }
 
 void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
 {
-     QString filename(streamMessages(list));
-    _server->updateMessages(newAction(), filename);
-
     _ids.clear();
     _addedOrUpdatedIds.clear();
+
+    // Ensure that message non metadata is written and flushed to the filesystem,
+    // but not synced
+    // Existing message data in mail store and content manager should not be
+    // changed directly by this function, instead the messageserver should do it.
+    QMailMessageMetaDataList metadata;
+    foreach (QMailMessage message, list) {
+        if (message.contentScheme().isEmpty()) {
+            message.setContentScheme(QMailContentManagerFactory::defaultScheme());
+        }
+        message.setCustomField("qmf-obsolete-contentid", message.contentIdentifier());
+        if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message.contentScheme())) {
+            QMailStore::ErrorCode code = contentManager->update(&message, QMailContentManager::EnsureDurability);
+            if (code != QMailStore::NoError) {
+                qWarning() << "Unable to ensure message content durability for scheme:" << message.contentScheme();
+                if (validAction(newAction())) {
+                    setActivity(QMailServiceAction::Failed);
+                    emitChanges();
+                }
+                return;
+            }
+            metadata.append(message);
+        }
+    }
+    _server->updateMessages(newAction(), metadata);
+
     emitChanges();
 }
 
@@ -1470,7 +1488,9 @@ void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 set
 
     The messages will be added asynchronously.
 
-    \sa QMailStorageAction::messagesAdded
+    All messages must use the same content scheme.
+
+    \sa QMailStorageAction::messagesAdded, QMailMessageData::contentScheme
 */
 void QMailStorageAction::addMessages(const QMailMessageList &messages)
 {
@@ -1490,7 +1510,9 @@ QMailMessageIdList QMailStorageAction::messagesAdded() const
 
     The messages will be updated asynchronously.
 
-    \sa QMailStorageAction::messagesUpdated
+    All messages must use the same content scheme.
+
+    \sa QMailStorageAction::messagesUpdated, QMailMessageData::contentScheme
 */
 void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 {

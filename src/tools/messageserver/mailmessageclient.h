@@ -89,7 +89,9 @@ signals:
     void moveMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
     void flagMessages(quint64, const QMailMessageIdList&, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QString &filename);
+    void addMessages(quint64, const QMailMessageMetaDataList &metadata);
     void updateMessages(quint64, const QString &filename);
+    void updateMessages(quint64, const QMailMessageMetaDataList &metadata);
 
     void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);

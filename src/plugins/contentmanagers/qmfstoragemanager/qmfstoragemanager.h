@@ -73,6 +73,7 @@ public:
     QMailStore::ErrorCode update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
 
     QMailStore::ErrorCode ensureDurability();
+    QMailStore::ErrorCode ensureDurability(const QList<QString> &identifiers);
 
     QMailStore::ErrorCode remove(const QString &identifier);
     QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message);
@@ -90,9 +91,9 @@ protected slots:
     void clearAccountPath(const QMailAccountIdList&);
 
 private:
-    QMailStore::ErrorCode addOrRename(QMailMessage *message, const QString &existingIdentifier, bool durable);
+    QMailStore::ErrorCode addOrRename(QMailMessage *message, const QString &existingIdentifier, QMailContentManager::DurabilityRequirement durability);
 
-    bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, bool durable);
+    bool addOrRenameParts(QMailMessage *message, const QString &fileName, const QString &existing, QMailContentManager::DurabilityRequirement durability);
     bool removeParts(const QString &fileName);
 #ifdef SYMBIAN_USE_DATA_CAGED_FILES
     void syncLater(QSharedPointer<SymbianFile> file);
