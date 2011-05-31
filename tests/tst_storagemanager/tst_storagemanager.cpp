@@ -248,6 +248,29 @@ void tst_StorageManager::test_add()
 
 void tst_StorageManager::test_remove()
 {
+    QMailMessage msg4;
+    msg4.setMessageType(QMailMessage::Email);
+    msg4.setParentAccountId(account1.id());
+    msg4.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg4.setFrom(QMailAddress("newguy@example.org"));
+    msg4.setTo(QMailAddress("old@example.org"));
+    msg4.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
+    msg4.setSubject("email message test");
+    msg4.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg4.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg4.setStatus(QMailMessage::Incoming, true);
+    msg4.setStatus(QMailMessage::New, true);
+    msg4.setStatus(QMailMessage::Read, false);
+    msg4.setServerUid("unique-inboxmsg22");
+    msg4.setSize(5 * 1024);
+    msg4.setContent(QMailMessage::PlainTextContent);
+    msg4.setCustomField("present", "true");
+    msg4.setBody(QMailMessageBody::fromData("plaintext",QMailMessageContentType("text/plain"),QMailMessageBody::QuotedPrintable));
+    msg4.setCustomField("qmf-detached-filename", "non-existent");
+    msg4.setAttachments(QStringList() << "/fake/path");
+    msg4.setAttachments(QStringList() << "qmf-detached-filename");
+    QVERIFY(QMailStore::instance()->addMessage(&msg4));
+
 }
 
 void tst_StorageManager::test_update()

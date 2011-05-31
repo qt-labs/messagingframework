@@ -852,7 +852,6 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    <!--
     <set name="_usr_tests_qmf_tst_qmailstorekeys">
       <description>libqmf-tests:tst_qmailstorekeys</description>
       <case name="tst_qmailstorekeys-simpleKeys">
@@ -1004,6 +1003,256 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    -->
+    <set name="_usr_tests_qmf_tst_longstream">
+      <description>libqmf-tests:tst_longstream</description>
+      <case name="tst_longstream-test_new_stream">
+        <description>libqmf-tests:tst_longstream:test_new_stream</description>
+        <step>/usr/tests/qmf/tst_longstream test_new_stream</step>
+      </case>
+      <case name="tst_longstream-test_status">
+        <description>libqmf-tests:tst_longstream:test_status</description>
+        <step>/usr/tests/qmf/tst_longstream test_status</step>
+      </case>
+      <case name="tst_longstream-test_errorMessage">
+        <description>libqmf-tests:tst_longstream:test_errorMessage</description>
+        <step>/usr/tests/qmf/tst_longstream test_errorMessage</step>
+      </case>
+      <case name="tst_longstream-test_temp_files">
+        <description>libqmf-tests:tst_longstream:test_temp_files</description>
+        <step>/usr/tests/qmf/tst_longstream test_temp_files</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_locks">
+      <description>libqmf-tests:tst_locks</description>
+      <case name="tst_locks-testLock">
+        <description>libqmf-tests:tst_locks:testLock</description>
+        <step>/usr/tests/qmf/tst_locks testLock</step>
+      </case>
+      <case name="tst_locks-testQMailAccountKey">
+        <description>libqmf-tests:tst_locks:testQMailAccountKey</description>
+        <step>/usr/tests/qmf/tst_locks testQMailAccountKey</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qcop">
+      <description>libqmf-tests:tst_qcop</description>
+      <case name="tst_qcop-test_qcopchannel">
+        <description>libqmf-tests:tst_qcop:test_qcopchannel</description>
+        <step>/usr/tests/qmf/tst_qcop test_qcopchannel</step>
+      </case>
+      <case name="tst_qcop-test_qcopserver">
+        <description>libqmf-tests:tst_qcop:test_qcopserver</description>
+        <step>/usr/tests/qmf/tst_qcop test_qcopserver</step>
+      </case>
+      <case name="tst_qcop-test_qcopclient">
+        <description>libqmf-tests:tst_qcop:test_qcopclient</description>
+        <step>/usr/tests/qmf/tst_qcop test_qcopclient</step>
+      </case>
+      <case name="tst_qcop-test_qcopadaptor">
+        <description>libqmf-tests:tst_qcop:test_qcopadaptor</description>
+        <step>/usr/tests/qmf/tst_qcop test_qcopadaptor</step>
+      </case>
+      <case name="tst_qcop-test_secondqcopserver">
+        <description>libqmf-tests:tst_qcop:test_secondqcopserver</description>
+        <step>/usr/tests/qmf/tst_qcop test_secondqcopserver</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmaillog">
+      <description>libqmf-tests:tst_qmaillog</description>
+      <case name="tst_qmaillog-test_qmaillog">
+        <description>libqmf-tests:tst_qmaillog:test_qmaillog</description>
+        <step>/usr/tests/qmf/tst_qmaillog test_qmaillog</step>
+      </case>
+      <case name="tst_qmaillog-test_logsystem">
+        <description>libqmf-tests:tst_qmaillog:test_logsystem</description>
+        <step>/usr/tests/qmf/tst_qmaillog test_logsystem</step>
+      </case>
+      <case name="tst_qmaillog-test_loggers">
+        <description>libqmf-tests:tst_qmaillog:test_loggers</description>
+        <step>/usr/tests/qmf/tst_qmaillog test_loggers</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailnamespace">
+      <description>libqmf-tests:tst_qmailnamespace</description>
+      <case name="tst_qmailnamespace-test_qmailnamespace">
+        <description>libqmf-tests:tst_qmailnamespace:test_qmailnamespace</description>
+        <step>/usr/tests/qmf/tst_qmailnamespace test_qmailnamespace</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmail_listmodels">
+      <description>libqmf-tests:tst_qmail_listmodels</description>
+        <case name="tst_qmail_listmodels-test_qmailaccountlistmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_qmailaccountlistmodel</description>
+          <step>/usr/tests/qmf/tst_qmail_listmodels test_qmailaccountlistmodel</step>
+        </case>
+        <case name="tst_qmail_listmodels-test_qmailmessagelistmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_qmailmessagelistmodel</description>
+          <step>/usr/tests/qmf/tst_qmail_listmodels test_qmailmessagelistmodel</step>
+        </case>
+        <case name="tst_qmail_listmodels-test_messagethreadedmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_messagethreadedmodel</description>
+          <step>/usr/tests/qmf/tst_qmail_listmodels test_messagethreadedmodel</step>
+        </case>
+       <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmail_sortkeys">
+        <description>libqmf-tests:tst_qmail_sortkeys</description>
+          <case name="tst_qmail_sortkeys-test_foldersortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_foldersortkey</description>
+            <step>/usr/tests/qmf/tst_qmail_sortkeys test_foldersortkey</step>
+          </case>
+          <case name="tst_qmail_sortkeys-test_accountsortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_accountsortkey</description>
+            <step>/usr/tests/qmf/tst_qmail_sortkeys test_accountsortkey</step>
+          </case>
+          <case name="tst_qmail_sortkeys-test_messagesortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_messagesortkey</description>
+            <step>/usr/tests/qmf/tst_qmail_sortkeys test_messagesortkey</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmaildisconnected">
+        <description>libqmf-tests:tst_qmaildisconnected</description>
+          <case name="tst_qmaildisconnected-test_qmaildisconnected">
+            <description>libqmf-tests:tst_qmaildisconnected:test_qmaildisconnected</description>
+            <step>/usr/tests/qmf/tst_qmaildisconnected test_qmaildisconnected</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailmessageset">
+        <description>libqmf-tests:tst_qmailmessageset</description>
+          <case name="tst_qmailmessageset-test_foldermessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_foldermessageset</description>
+            <step>/usr/tests/qmf/tst_qmailmessageset test_foldermessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_accountmessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_accountmessageset</description>
+            <step>/usr/tests/qmf/tst_qmailmessageset test_accountmessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_filtermessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_filtermessageset</description>
+            <step>/usr/tests/qmf/tst_qmailmessageset test_filtermessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_messagesetcontainer">
+            <description>libqmf-tests:tst_qmailmessageset:test_messagesetcontainer</description>
+            <step>/usr/tests/qmf/tst_qmailmessageset test_messagesetcontainer</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailserviceaction">
+        <description>libqmf-tests:tst_qmailserviceaction</description>
+          <case name="tst_qmailserviceaction-test_retrievalaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_retrievalaction</description>
+            <step>/usr/tests/qmf/tst_qmailserviceaction test_retrievalaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_transmitaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_transmitaction</description>
+            <step>/usr/tests/qmf/tst_qmailserviceaction test_transmitaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_storageaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_storageaction</description>
+            <step>/usr/tests/qmf/tst_qmailserviceaction test_storageaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_searchaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_searchaction</description>
+            <step>/usr/tests/qmf/tst_qmailserviceaction test_searchaction</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_storagemanager">
+        <description>libqmf-tests:tst_storagemanager</description>
+          <case name="tst_storagemanager-test_init">
+            <description>libqmf-tests:tst_storagemanager:test_init</description>
+            <step>/usr/tests/qmf/tst_storagemanager test_init</step>
+          </case>
+          <case name="tst_storagemanager-test_add">
+            <description>libqmf-tests:tst_storagemanager:test_add</description>
+            <step>/usr/tests/qmf/tst_storagemanager test_add</step>
+          </case>
+          <case name="tst_storagemanager-test_remove">
+            <description>libqmf-tests:tst_storagemanager:test_remove</description>
+            <step>/usr/tests/qmf/tst_storagemanager test_remove</step>
+          </case>
+          <case name="tst_storagemanager-test_update">
+            <description>libqmf-tests:tst_storagemanager:test_update</description>
+            <step>/usr/tests/qmf/tst_storagemanager test_update</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailthread">
+        <description>libqmf-tests:tst_qmailthread</description>
+          <case name="tst_qmailthread-test_messageCount">
+            <description>libqmf-tests:tst_qmailthread:test_messageCount</description>
+            <step>/usr/tests/qmf/tst_qmailthread test_messageCount</step>
+          </case>
+          <case name="tst_qmailthread-test_UnreadCount">
+            <description>libqmf-tests:tst_qmailthread:test_UnreadCount</description>
+            <step>/usr/tests/qmf/tst_qmailthread test_UnreadCount</step>
+          </case>
+          <case name="tst_qmailthread-test_parentId">
+            <description>libqmf-tests:tst_qmailthread:test_parentId</description>
+            <step>/usr/tests/qmf/tst_qmailthread test_parentId</step>
+          </case>
+          <case name="tst_qmailthread-test_cloneId">
+            <description>libqmf-tests:tst_qmailthread:test_cloneId</description>
+            <step>/usr/tests/qmf/tst_qmailthread test_cloneId</step>
+          </case>
+          <case name="tst_qmailthread-test_threadKeys">
+            <description>libqmf-tests:tst_qmailthread:test_threadKeys</description>
+            <step>/usr/tests/qmf/tst_qmailthread test_threadKeys</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <!--set name="_usr_tests_qmf_">
+        <description>libqmf-tests:</description>
+          <case name="-">
+            <description>libqmf-tests::</description>
+            <step>/usr/tests/qmf/ </step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set-->
   </suite>
 </testdefinition>

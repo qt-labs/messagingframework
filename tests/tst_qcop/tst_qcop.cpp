@@ -71,6 +71,7 @@ private slots:
     void test_qcopserver();
     void test_qcopclient();
     void test_qcopadaptor();
+    void test_secondqcopserver();
 
 private:
     TestQCopServer *server;
@@ -247,4 +248,27 @@ void tst_QCop::test_qcopadaptor()
     adapt.send(SIGNAL(arg3(QString, QString, QString)), "one", "two", "three");
     adapt.send(SIGNAL(arg1(QVariant)), QVariantList() << "one");
 
+}
+
+void tst_QCop::test_secondqcopserver()
+{
+    QCopLocalSocket * sock = new QCopLocalSocket;
+    QCopClient *client = new QCopClient(sock, sock);
+    sock->setParent(client);
+
+    QString channel("testserverchannel");
+    QCopServerRegexp regexp(channel, client);
+    QVERIFY(regexp.match(channel));
+
+    QString channel_star=channel+"*";
+    QCopServerRegexp regexp1(channel_star, client);
+    QVERIFY(regexp1.match(channel)); // match only the non-* part
+
+    //QCopServer server;
+    TestQCopServer *server1 = new TestQCopServer();
+    QCOMPARE(server1->activateApp("invalidAppName"), qint64(-1));
+    server1->appExited(1391);
+
+    client->handleRegistered(channel);
+    delete server1;
 }

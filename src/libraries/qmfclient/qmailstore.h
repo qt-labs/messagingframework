@@ -249,6 +249,7 @@ private:
     friend class QMailMessageMetaDataPrivate; // for ensureCustomFields
     friend class tst_QMailStore;
     friend class tst_QMailStoreKeys;
+    friend class tst_qmailthread;
 
     QMailStore();
 

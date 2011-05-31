@@ -23,6 +23,8 @@ SUBDIRS = \
       tst_qmaildisconnected \
       tst_qmailnamespace \
       tst_qlogsystem \
+      tst_locks \
+      tst_qmailthread \
 
 
 CONFIG += unittest

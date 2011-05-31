@@ -101,8 +101,6 @@ private slots:
     void listModel();
     void threadedModel();
 
-    void locks();
-
 private:
     // We only want to compare sets, disregarding ordering
     const QSet<QMailAccountId> accountSet(const QMailAccountKey &key) const
@@ -702,14 +700,6 @@ void tst_QMailStoreKeys::accountMessageType()
     QCOMPARE(accountSet(QMailAccountKey::messageType(QMailMessage::Instant, NotEqual)), accountSet() << accountId1 << accountId3 << accountId4);
     QCOMPARE(accountSet(~QMailAccountKey::messageType(QMailMessage::Instant, NotEqual)), accountSet() << accountId2);
 
-    // Bitwise inclusion
-    QCOMPARE(accountSet(QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Mms, Includes)), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Mms, Includes)), allAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Email, Includes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(~QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Email, Includes)), accountSet() << accountId2 << accountId3 << accountId4);
-    QCOMPARE(accountSet(QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Instant, Includes)), accountSet() << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Instant, Includes)), accountSet() << accountId1 << accountId3 << accountId4);
-
     // Bitwise exclusion
     QCOMPARE(accountSet(QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Mms, Excludes)), allAccounts);
     QCOMPARE(accountSet(~QMailAccountKey::messageType(QMailMessage::Sms | QMailMessage::Mms, Excludes)), noAccounts);
@@ -798,16 +788,6 @@ void tst_QMailStoreKeys::accountStatus()
     QCOMPARE(accountSet(QMailAccountKey::status(accountStatus2, NotEqual)), accountSet() << accountId1 << accountId3 << accountId4);
     QCOMPARE(accountSet(~QMailAccountKey::status(accountStatus2, NotEqual)), accountSet() << accountId2);
 
-    // Bitwise inclusion
-    QCOMPARE(accountSet(QMailAccountKey::status(allSet, Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::status(allSet, Includes)), accountSet() << accountId3 << accountId4);
-    QCOMPARE(accountSet(QMailAccountKey::status(sourceSet, Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::status(sourceSet, Includes)), accountSet() << accountId3 << accountId4);
-    QCOMPARE(accountSet(QMailAccountKey::status(sinkSet, Includes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(~QMailAccountKey::status(sinkSet, Includes)), accountSet() << accountId2 << accountId3 << accountId4);
-    QCOMPARE(accountSet(QMailAccountKey::status(QMailAccount::SynchronizationEnabled | QMailAccount::CanTransmit, Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::status(QMailAccount::SynchronizationEnabled | QMailAccount::CanTransmit, Includes)), accountSet() << accountId3 << accountId4);
-
     // Bitwise exclusion
     QCOMPARE(accountSet(QMailAccountKey::status(allSet, Excludes)), accountSet() << accountId3 << accountId4);
     QCOMPARE(accountSet(~QMailAccountKey::status(allSet, Excludes)), accountSet() << accountId1 << accountId2);
@@ -848,65 +828,6 @@ void tst_QMailStoreKeys::accountCustomField()
     QCOMPARE(accountSet(~QMailAccountKey::customField(QString(""), Absent)), noAccounts);
     QCOMPARE(accountSet(QMailAccountKey::customField(QString(), Absent)), allAccounts);
     QCOMPARE(accountSet(~QMailAccountKey::customField(QString(), Absent)), noAccounts);
-
-    // Test for content equality
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "true")), verifiedAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "true")), accountSet() << accountId3);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "false")), accountSet() << accountId3);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "false")), verifiedAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "bicycle")), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "bicycle")), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", QString(""))), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", QString(""))), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", QString())), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", QString())), accountSet() << accountId1 << accountId2 << accountId3);
-
-    // Test for content inequality
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "true", NotEqual)), accountSet() << accountId3);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "true", NotEqual)), verifiedAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "false", NotEqual)), verifiedAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "false", NotEqual)), accountSet() << accountId3);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", "bicycle", NotEqual)), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", "bicycle", NotEqual)), noAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", QString(""), NotEqual)), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", QString(""), NotEqual)), noAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("verified", QString(), NotEqual)), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("verified", QString(), NotEqual)), noAccounts);
-
-    // Test for partial matches
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "Fi", Includes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "Fi", Includes)), accountSet() << accountId2);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "assi", Includes)), accountSet() << accountId2); 
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "assi", Includes)), accountSet() << accountId1); 
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "bicycle", Includes)), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "bicycle", Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(""), Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", QString(""), Includes)), noAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(), Includes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", QString(), Includes)), noAccounts);
-
-    // Test for partial match exclusion
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "Fi", Excludes)), accountSet() << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "Fi", Excludes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "assi", Excludes)), accountSet() << accountId1);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "assi", Excludes)), accountSet() << accountId2);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", "bicycle", Excludes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", "bicycle", Excludes)), noAccounts);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(""), Excludes)), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", QString(""), Excludes)), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(QMailAccountKey::customField("answer", QString(), Excludes)), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::customField("answer", QString(), Excludes)), accountSet() << accountId1 << accountId2);
-
-    // Test combinations
-    QMailAccountKey hasVerifiedKey(QMailAccountKey::customField("verified"));
-    QMailAccountKey hasQuestionKey(QMailAccountKey::customField("question"));
-
-    QCOMPARE(accountSet(hasVerifiedKey & hasQuestionKey), accountSet() << accountId1 << accountId2);
-    QCOMPARE(accountSet(hasVerifiedKey | hasQuestionKey), accountSet() << accountId1 << accountId2 << accountId3);
-    QCOMPARE(accountSet(hasVerifiedKey & ~hasQuestionKey), accountSet() << accountId3);
-    QCOMPARE(accountSet(hasVerifiedKey | ~hasQuestionKey), allAccounts);
-    QCOMPARE(accountSet(~hasVerifiedKey & hasQuestionKey), noAccounts);
-    QCOMPARE(accountSet(~hasVerifiedKey | hasQuestionKey), accountSet() << accountId1 << accountId2 << accountId4);
 }
 
 void tst_QMailStoreKeys::folderId()
@@ -2548,10 +2469,4 @@ void tst_QMailStoreKeys::threadedModel()
     QCOMPARE(model.idFromIndex(model.index(0, 0)), inboxMessage1);
     QCOMPARE(model.idFromIndex(model.index(1, 0)), savedMessage2);
     QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
-}
-
-void tst_QMailStoreKeys::locks()
-{
-    ProcessMutex mutex("invalid path", 0);
-    mutex.lock();
 }
