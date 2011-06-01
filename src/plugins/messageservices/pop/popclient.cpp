@@ -756,12 +756,8 @@ void PopClient::nextAction()
         PopConfiguration popCfg(config);
         if (popCfg.deleteRetrievedMailsFromServer()) {
             // Now that sqlite WAL is used, make sure mail metadata is sync'd 
-            // on device before removing from external mail server
-#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
-            qWarning() << "Unable to call sync in POP plugin.";
-#else
-            ::sync();
-#endif
+            // on device before removing mail from external mail server
+            QMailStore::instance()->ensureDurability();
             int pos = msgPosFromUidl(messageUid);
             emit updateStatus(tr("Removing message from server"));
             nextCommand = ("DELE " + QString::number(pos));
