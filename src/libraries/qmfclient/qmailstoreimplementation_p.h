@@ -282,6 +282,8 @@ public:
     virtual bool updateThread(QMailThread *t,
                               QMailThreadIdList *updatedThreadIds) = 0;
 
+    virtual bool ensureDurability() = 0;
+
     virtual void lock() = 0;
     virtual void unlock() = 0;
 
@@ -380,6 +382,8 @@ public:
 
     virtual bool updateThread(QMailThread *t,
                                  QMailThreadIdList *updatedThreadIds);
+
+    virtual bool ensureDurability();
 
     virtual void lock();
     virtual void unlock();

@@ -4090,6 +4090,12 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
                                    "updateMessagesMetaData"); // not 'updateMessagesStatus', due to function name exported by QMailStore
 }
 
+bool QMailStorePrivate::ensureDurability()
+{
+    return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptEnsureDurability, this),
+                                       "ensureDurability");
+}
+
 void QMailStorePrivate::lock()
 {
     Q_ASSERT(globalLocks >= 0);
@@ -6234,6 +6240,22 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
                                     "purgeMessageRemovalRecord delete query"));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
+    }
+
+    if (commitOnSuccess && !t.commit()) {
+        qWarning() << "Could not commit message removal record deletion to database";
+        return DatabaseFailure;
+    }
+
+    return Success;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptEnsureDurability(Transaction &t, bool commitOnSuccess)
+{
+    QSqlQuery query(simpleQuery("PRAGMA wal_checkpoint(FULL)", "ensure durability query"));
+    if (query.lastError().type() != QSqlError::NoError) {
+        qWarning() << "Could not ensure durability of mail store";
+        return DatabaseFailure;
     }
 
     if (commitOnSuccess && !t.commit()) {

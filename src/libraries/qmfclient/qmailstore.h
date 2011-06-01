@@ -146,6 +146,7 @@ public:
     bool updateMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data);
     bool updateMessagesMetaData(const QMailMessageKey& key, quint64 messageStatus, bool set);
     bool updateThread(QMailThread* t);
+    bool ensureDurability();
 
     int countAccounts(const QMailAccountKey& key = QMailAccountKey()) const;
     int countFolders(const QMailFolderKey& key = QMailFolderKey()) const;

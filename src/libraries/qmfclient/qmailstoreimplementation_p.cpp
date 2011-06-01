@@ -1167,6 +1167,11 @@ bool QMailStoreNullImplementation::updateThread(QMailThread *, QMailThreadIdList
     return false;
 }
 
+bool QMailStoreNullImplementation::ensureDurability()
+{
+    return false;
+}
+
 void QMailStoreNullImplementation::lock()
 {
 }

@@ -142,6 +142,8 @@ public:
     virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
                                 QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
+    virtual bool ensureDurability();
+
     virtual void lock();
     virtual void unlock();
 
@@ -519,6 +521,8 @@ private:
 
     AttemptResult attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
                                                     Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptEnsureDurability(Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptCountAccounts(const QMailAccountKey &key, int *result, 
                                        ReadLock &);

@@ -585,6 +585,20 @@ bool QMailStore::updateFolder(QMailFolder* folder)
  }
 
 /*!
+    Ensure mail store is durably written to the file system.
+
+    Returns \c true if the operation completed successfully, \c false otherwise.
+*/
+ bool QMailStore::ensureDurability()
+{
+     d->setLastError(NoError);
+     if (!d->ensureDurability())
+         return false;
+
+     return true;
+}
+
+/*!
     Updates the existing QMailMessage \a msg on the message store.
     Returns \c true if the operation completed successfully, or \c false otherwise. 
 */

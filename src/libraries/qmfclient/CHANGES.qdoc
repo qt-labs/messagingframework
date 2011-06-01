@@ -342,6 +342,8 @@ Changes since the development preview release on 16/01/09:
           'QMailMessageServer::addMessages(quint64, const QMailMessageMetaDataList &)' and
           'QMailMessageServer::updateMessages(quint64, const QMailMessageMetaDataList &)'.
 
+32. Added 'QMailStore::ensureDurabiilty()'.
+
 *****************************************************************************
 
 \endcode
