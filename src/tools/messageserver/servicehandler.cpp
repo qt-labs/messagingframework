@@ -1832,6 +1832,7 @@ void ServiceHandler::updateMessages(quint64 action, const QString &filename)
 
 void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList &messages)
 {
+    bool failure = false;
     QList<QMailMessageMetaData*> list;
     QString scheme;
     if (messages.count()) {
@@ -1856,12 +1857,9 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
         content->ensureDurability(contentIdentifiers(list));
         QMailStore *store = QMailStore::instance();
         store->addMessages(list);
-        if (store->lastError() != QMailStore::NoError) {
-            reportFailure(action,
-                          QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async update messages"));
-            return;
-        }
+        failure |= (store->lastError() != QMailStore::NoError);
+        store->ensureDurability();
+        failure |= (store->lastError() != QMailStore::NoError);
     }
 
     QMailMessageIdList ids;
@@ -1871,12 +1869,20 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
         delete data;
     }
 
+    if (failure) {
+        reportFailure(action,
+                      QMailServiceAction::Status::ErrFrameworkFault,
+                      tr("Unable to async update messages"));
+        return;
+    }
+
     emit messagesAdded(action, ids);
     emit storageActionCompleted(action);
 }
 
 void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataList &messages)
 {
+    bool failure = false;
     QList<QMailMessageMetaData*> list;
     QString scheme;
     if (messages.count()) {
@@ -1905,12 +1911,10 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
         }
         QMailStore *store = QMailStore::instance();
         store->updateMessages(list);
-        if (store->lastError() != QMailStore::NoError) {
-            reportFailure(action,
-                          QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async update messages"));
-            return;
-        }
+        failure |= (store->lastError() != QMailStore::NoError);
+        store->ensureDurability();
+        failure |= (store->lastError() != QMailStore::NoError);
+
         content->remove(obsoleteIds);
     }
 
@@ -1919,6 +1923,13 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
         QMailMessageMetaData *data(list.takeFirst());
         ids.append(data->id());
         delete data;
+    }
+
+    if (failure) {
+        reportFailure(action,
+                      QMailServiceAction::Status::ErrFrameworkFault,
+                      tr("Unable to async update messages"));
+        return;
     }
 
     emit messagesUpdated(action, ids);
