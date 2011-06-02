@@ -8090,9 +8090,6 @@ bool QMailMessage::contentModified() const
 
 bool QMailMessage::hasCalendarInvitation() const
 {
-    if (headerFieldText("Content-class") != "urn:content-classes:calendarmessage")
-        return false;
-
     QList<const QMailMessagePart*> parts;
     for (uint i = 0; i < partCount(); ++i)
         parts.append(&partAt(i));
