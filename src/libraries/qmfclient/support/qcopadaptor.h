@@ -111,6 +111,10 @@ public:
 
     bool isConnected(const QByteArray& signal);
 
+ signals:
+    void connectionFailed();
+    void reconnectionTimeout();
+
 protected:
     enum PublishType
     {

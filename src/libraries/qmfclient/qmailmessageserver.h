@@ -108,6 +108,9 @@ signals:
     void protocolResponse(quint64, const QString &response, const QVariant &data);
     void protocolRequestCompleted(quint64);
 
+    void connectionFailed();
+    void reconnectionTimeout();
+
 public slots:
     void acknowledgeNewMessages(const QMailMessageTypeList& types);
 

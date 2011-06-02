@@ -96,6 +96,10 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
             this, SLOT(statusChanged(quint64, const QMailServiceAction::Status)));
     connect(_server, SIGNAL(progressChanged(quint64, uint, uint)),
             this, SLOT(progressChanged(quint64, uint, uint)));
+    connect(_server, SIGNAL(connectionFailed()),
+            this, SLOT(serverFailure()));
+    connect(_server, SIGNAL(reconnectionTimeout()),
+            this, SLOT(serverFailure()));
 }
 
 QMailServiceActionPrivate::~QMailServiceActionPrivate()
@@ -223,6 +227,15 @@ void QMailServiceActionPrivate::clearSubActions()
             a.action->deleteLater();
         }
         _pendingActions.clear();
+}
+
+void QMailServiceActionPrivate::serverFailure()
+{
+    if (_isValid && _activity != QMailServiceAction::Failed) {
+        _activity = QMailServiceAction::Failed;
+        _activityChanged = true;
+        emitChanges();
+    }
 }
 
 void QMailServiceActionPrivate::init()

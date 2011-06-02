@@ -714,7 +714,11 @@ bool QCopAdaptor::connectRemoteToLocal
         } else {
             // Short-cut the signal emits in QCopChannel for greater
             // performance when dispatching incoming messages.
-            new QCopAdaptorChannel(chan, this);
+            QCopAdaptorChannel *channel = new QCopAdaptorChannel(chan, this);
+            QObject::connect(channel, SIGNAL(reconnectionTimeout()),
+                             this, SIGNAL(reconnectionTimeout()));
+            QObject::connect(channel, SIGNAL(connectionFailed()),
+                             this, SIGNAL(connectionFailed()));
         }
         d->connected = true;
     }

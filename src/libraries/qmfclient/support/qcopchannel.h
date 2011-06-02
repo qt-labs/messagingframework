@@ -86,9 +86,13 @@ Q_SIGNALS:
     void forwarded(const QString& msg, const QByteArray &data, const QString& channel);
     void connected();
     void connectionFailed();
+    void reconnectionTimeout();
 
 protected:
     void connectNotify(const char *);
+
+protected Q_SLOTS:
+    void connectClientSignals();
 
 private:
     QCopChannelPrivate* d;

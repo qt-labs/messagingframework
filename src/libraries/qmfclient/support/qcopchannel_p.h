@@ -177,6 +177,7 @@ signals:
     void startupComplete();
     void connected();
     void connectionFailed();
+    void reconnectionTimeout();
 
 private slots:
     void readyRead();
