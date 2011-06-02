@@ -2012,6 +2012,7 @@ void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity acti
             // Report failure
             const QMailServiceAction::Status status(action->status());
             qMailLog(Messaging) << "Failed to update message flags -" << status.text << "(" << status.errorCode << ")";
+            flagMessageIds.clear();
         } else if (activity != QMailServiceAction::Successful) {
             return;
         }
