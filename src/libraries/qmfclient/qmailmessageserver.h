@@ -108,7 +108,7 @@ signals:
     void protocolResponse(quint64, const QString &response, const QVariant &data);
     void protocolRequestCompleted(quint64);
 
-    void connectionFailed();
+    void connectionDown();
     void reconnectionTimeout();
 
 public slots:

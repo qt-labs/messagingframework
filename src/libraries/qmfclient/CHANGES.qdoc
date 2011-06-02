@@ -344,8 +344,8 @@ Changes since the development preview release on 16/01/09:
 
 32. Added 'QMailStore::ensureDurabiilty()'.
 
-32. Added 'QMailMessageServer::connectionFailed()', and
-          'QMailMessageServer::serverFailure()' signals.
+32. Added 'QMailMessageServer::connectionDown()', and
+          'QMailMessageServer::reconnectionTimeout()' signals.
 
 *****************************************************************************
 

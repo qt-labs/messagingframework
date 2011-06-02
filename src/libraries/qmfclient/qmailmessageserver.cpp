@@ -228,8 +228,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(protocolResponse(quint64, QString, QVariant)));
     connectIpc(adaptor, MESSAGE(protocolRequestCompleted(quint64)),
                parent, SIGNAL(protocolRequestCompleted(quint64)));
-    QObject::connect(adaptor, SIGNAL(connectionFailed()),
-                     parent, SIGNAL(connectionFailed()));
+    QObject::connect(adaptor, SIGNAL(connectionDown()),
+                     parent, SIGNAL(connectionDown()));
     QObject::connect(adaptor, SIGNAL(reconnectionTimeout()),
                      parent, SIGNAL(reconnectionTimeout()));
 }

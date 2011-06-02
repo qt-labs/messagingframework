@@ -193,6 +193,7 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
     QCopClient* client = td->clientConnection();
     Q_ASSERT (client);
     connect(client, SIGNAL(connected()), this, SIGNAL(connected()));
+    connect(client, SIGNAL(connectionFailed()), this, SIGNAL(connectionFailed()));
     connectClientSignals();
     // Inform the server about this channel
     td->clientConnection()->registerChannel(channel);
@@ -203,8 +204,8 @@ void QCopChannel::connectClientSignals()
     QCopThreadData *td = qcopThreadData();
     QCopClient* client = td->clientConnection();
     Q_ASSERT (client);
-    connect(client, SIGNAL(connectionFailed()), this, SIGNAL(connectionFailed()));
     connect(client, SIGNAL(reconnectionTimeout()), this, SIGNAL(reconnectionTimeout()));
+    connect(client, SIGNAL(destroyed(QObject*)), this, SIGNAL(connectionDown()));
     connect(client, SIGNAL(destroyed(QObject*)), this, SLOT(connectClientSignals()));
 }
 

@@ -96,7 +96,7 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
             this, SLOT(statusChanged(quint64, const QMailServiceAction::Status)));
     connect(_server, SIGNAL(progressChanged(quint64, uint, uint)),
             this, SLOT(progressChanged(quint64, uint, uint)));
-    connect(_server, SIGNAL(connectionFailed()),
+    connect(_server, SIGNAL(connectionDown()),
             this, SLOT(serverFailure()));
     connect(_server, SIGNAL(reconnectionTimeout()),
             this, SLOT(serverFailure()));

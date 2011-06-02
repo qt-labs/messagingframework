@@ -717,8 +717,8 @@ bool QCopAdaptor::connectRemoteToLocal
             QCopAdaptorChannel *channel = new QCopAdaptorChannel(chan, this);
             QObject::connect(channel, SIGNAL(reconnectionTimeout()),
                              this, SIGNAL(reconnectionTimeout()));
-            QObject::connect(channel, SIGNAL(connectionFailed()),
-                             this, SIGNAL(connectionFailed()));
+            QObject::connect(channel, SIGNAL(connectionDown()),
+                             this, SIGNAL(connectionDown()));
         }
         d->connected = true;
     }

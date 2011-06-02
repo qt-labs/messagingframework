@@ -112,7 +112,7 @@ public:
     bool isConnected(const QByteArray& signal);
 
  signals:
-    void connectionFailed();
+    void connectionDown();
     void reconnectionTimeout();
 
 protected:

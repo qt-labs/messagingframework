@@ -87,6 +87,7 @@ Q_SIGNALS:
     void connected();
     void connectionFailed();
     void reconnectionTimeout();
+    void connectionDown();
 
 protected:
     void connectNotify(const char *);
