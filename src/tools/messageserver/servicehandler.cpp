@@ -1905,10 +1905,12 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
     if (!list.isEmpty()) {
         QMailContentManager *content = QMailContentManagerFactory::create(scheme);
         QList<QString> obsoleteIds(obsoleteContentIdentifiers(list));
-        content->ensureDurability(contentIdentifiers(list));
-        foreach (QMailMessageMetaData *m, list) {
-            m->removeCustomField("qmf-obsolete-contentid");
-        }
+        if (!obsoleteIds.isEmpty()) {
+            content->ensureDurability(contentIdentifiers(list));
+            foreach (QMailMessageMetaData *m, list) {
+                m->removeCustomField("qmf-obsolete-contentid");
+            }
+        } // else only update metadata in mailstore
         QMailStore *store = QMailStore::instance();
         store->updateMessages(list);
         failure |= (store->lastError() != QMailStore::NoError);

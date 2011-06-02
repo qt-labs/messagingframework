@@ -344,8 +344,10 @@ Changes since the development preview release on 16/01/09:
 
 32. Added 'QMailStore::ensureDurabiilty()'.
 
-32. Added 'QMailMessageServer::connectionDown()', and
+33. Added 'QMailMessageServer::connectionDown()', and
           'QMailMessageServer::reconnectionTimeout()' signals.
+
+34. Added 'QMailStorageAction::updateMessages(const QMailMessageMetaDataList &list)'.
 
 *****************************************************************************
 

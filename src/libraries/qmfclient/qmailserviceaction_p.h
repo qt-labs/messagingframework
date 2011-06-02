@@ -259,6 +259,7 @@ public:
     void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
     void addMessages(const QMailMessageList &list);
     void updateMessages(const QMailMessageList &list);
+    void updateMessages(const QMailMessageMetaDataList &list);
 
     void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void renameFolder(const QMailFolderId &id, const QString &name);

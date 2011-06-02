@@ -1340,6 +1340,17 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
     emitChanges();
 }
 
+void QMailStorageActionPrivate::updateMessages(const QMailMessageMetaDataList &list)
+{
+    _ids.clear();
+    _addedOrUpdatedIds.clear();
+
+    QMailMessageMetaDataList metadata = list;
+    _server->updateMessages(newAction(), metadata);
+
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     _server->createFolder(newAction(), name, accountId, parentId);
@@ -1528,6 +1539,22 @@ QMailMessageIdList QMailStorageAction::messagesAdded() const
     \sa QMailStorageAction::messagesUpdated, QMailMessageData::contentScheme
 */
 void QMailStorageAction::updateMessages(const QMailMessageList &messages)
+{
+    impl(this)->updateMessages(messages);
+}
+
+/*!
+    Requests that the message server updates the meta data of the existing 
+    messages in the message store, to match each of the messages listed in 
+    \a messages.
+
+    The messages will be updated asynchronously.
+
+    All messages must use the same content scheme.
+
+    \sa QMailStorageAction::messagesUpdated, QMailMessageData::contentScheme
+*/
+void QMailStorageAction::updateMessages(const QMailMessageMetaDataList &messages)
 {
     impl(this)->updateMessages(messages);
 }
