@@ -458,6 +458,7 @@ private:
     QMailRetrievalAction* m_exportAction;
     QList<QMailStorageAction*> m_outboxActions; 
     QMailAccountIdList m_queuedExports;
+    QList<QMailMessage> m_outboxingMessages;
 };
 
 #if defined(SERVER_AS_DLL)

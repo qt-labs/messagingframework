@@ -1128,6 +1128,7 @@ void EmailClient::beginEnqueueMail(QMailMessage& mail)
     }
 
     mail.setStatus(QMailMessage::Outbox, true);
+    m_outboxingMessages.append(mail);
 
     QMailStorageAction *outboxAction(new QMailStorageAction());
     connect(outboxAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
@@ -1165,8 +1166,22 @@ void EmailClient::finishEnqueueMail(QMailServiceAction::Activity activity)
             closeApplication();
         }
     } else if (activity == QMailServiceAction::Failed) {
+        QMailStore *store = QMailStore::instance();
+        foreach (QMailMessage mail, m_outboxingMessages) {
+	    if (!mail.id().isValid()) {
+                mail.setStatus(QMailMessage::LocalOnly, true);
+                store->addMessage(&mail);
+            } else {
+                store->updateMessage(&mail);
+	    }
+        }
+        m_outboxingMessages.clear();
+        
         AcknowledgmentBox::show(tr("Message queuing failure"), tr("Failed to queue message in outbox."));
-        return;
+    }
+    if (m_outboxActions.isEmpty()) {
+        // No messages left to queue in outbox
+        m_outboxingMessages.clear();
     }
 }
 
