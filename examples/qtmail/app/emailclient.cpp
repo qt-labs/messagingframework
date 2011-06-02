@@ -1168,15 +1168,15 @@ void EmailClient::finishEnqueueMail(QMailServiceAction::Activity activity)
     } else if (activity == QMailServiceAction::Failed) {
         QMailStore *store = QMailStore::instance();
         foreach (QMailMessage mail, m_outboxingMessages) {
-	    if (!mail.id().isValid()) {
+        if (!mail.id().isValid()) {
                 mail.setStatus(QMailMessage::LocalOnly, true);
                 store->addMessage(&mail);
             } else {
                 store->updateMessage(&mail);
-	    }
+            }
         }
         m_outboxingMessages.clear();
-        
+
         AcknowledgmentBox::show(tr("Message queuing failure"), tr("Failed to queue message in outbox."));
     }
     if (m_outboxActions.isEmpty()) {
