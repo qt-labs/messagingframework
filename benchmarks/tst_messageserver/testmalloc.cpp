@@ -163,7 +163,11 @@ void TestMalloc::resetNow()
     D->now_overhead = 0;
 }
 
-void (*__malloc_initialize_hook) (void) = TestMallocPrivate::init;
+#ifndef __MALLOC_HOOK_VOLATILE
+#define __MALLOC_HOOK_VOLATILE
+#endif
+
+void (*__MALLOC_HOOK_VOLATILE __malloc_initialize_hook) (void) = TestMallocPrivate::init;
 
 void TestMallocPrivate::init()
 {
