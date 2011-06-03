@@ -235,11 +235,25 @@ QString QMail::dataPath()
 */
 QDateTime QMail::lastDbUpdated()
 {
-    static QString path(dataPath() + "database/qmailstore.db");
-    QFileInfo info(path);
+    static QString database_path(dataPath() + "database");
+    QDir dir(database_path);
+
+    if (!dir.exists()) {
+        qWarning() << Q_FUNC_INFO << " database dir doesn't exist";
+        return QDateTime();
+    }
+
+    QStringList entries(dir.entryList(QDir::NoFilter, QDir::Time));
+
+    if (entries.empty()) {
+        qWarning() << Q_FUNC_INFO << " found nothing in database dir";
+        return QDateTime();
+    }
+
+    QFileInfo info(dir, entries.first());
 
     if (!info.exists()) {
-        qWarning() << Q_FUNC_INFO << "Store file does not exist";
+        qWarning() << Q_FUNC_INFO << "Could not open file we just found?";
         return QDateTime();
     }
 
