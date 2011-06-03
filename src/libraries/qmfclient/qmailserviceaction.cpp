@@ -110,7 +110,11 @@ void QMailServiceActionPrivate::cancelOperation()
 {
     Q_ASSERT(_action != 0 && _isValid);
     if (_isValid) {
-        clearSubActions();
+        if (_pendingActions.count()) {
+            _pendingActions.first().action->cancelOperation();
+            clearSubActions();
+            return;
+	}
         _server->cancelTransfer(_action);
     }
 }
