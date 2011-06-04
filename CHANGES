@@ -4,6 +4,9 @@ Latest Changes
 201122
   * Fixes: NB#259331 Does not show new emails immediately
   * Fixes: NB#249858 Random crash observed with assert 
+  * Fixes: NB#207864 Protocol plugin services should only be restarted when necessary
+  * Fixes: NB#217492 "Unable to retrieve message list for unconfigured accounts" is displayed as title in Inbox 
+  * Fixes: NB#261611 - Random messageserver crash observed when disabling IMAP accounts  
 
 201121
   * Fixes: NB#232541 Calendar icon not displayed

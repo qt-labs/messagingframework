@@ -272,7 +272,7 @@ public:
 
     virtual bool available() const = 0;
 
-    virtual bool requiresReregistration() const { return true; }
+    virtual bool requiresReregistration() const { return false; }
     virtual bool usesConcurrentActions() const { return false; }
 public slots:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
