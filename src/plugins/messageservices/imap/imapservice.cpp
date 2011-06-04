@@ -1302,7 +1302,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
         // push email settings have changed, restart client
         if (_accountWasEnabled) {
             disable();
-	}
+    }
         enable();
     } else if (!_accountWasEnabled) {
         // account changed from disabled to enabled
