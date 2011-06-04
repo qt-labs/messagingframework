@@ -71,6 +71,7 @@ protected slots:
     void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void updateStatus(const QString& text);
+    void accountsUpdated(const QMailAccountIdList &ids);
 
 private:
     class Source;

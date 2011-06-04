@@ -306,6 +306,8 @@ PopService::PopService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
+            this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 
     _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
@@ -368,6 +370,25 @@ void PopService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const
 void PopService::updateStatus(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.accountId());
+}
+
+void PopService::accountsUpdated(const QMailAccountIdList &ids)
+{
+    if (!ids.contains(accountId()))
+        return;
+
+    QMailAccount account(accountId());
+    bool isEnabled(account.status() & QMailAccount::Enabled);
+    if (!isEnabled) {
+        // cancel any mail check in progress
+        cancelOperation(QMailServiceAction::Status::ErrConfiguration, tr("Account disabled"));
+        return;
+    }
+
+    // keep the check interval up to date
+    QMailAccountConfiguration accountCfg(accountId());
+    PopConfiguration popCfg(accountCfg);
+    _source->setIntervalTimer(popCfg.checkInterval());
 }
 
 

@@ -55,6 +55,9 @@ public:
     ImapService(const QMailAccountId &accountId);
     ~ImapService();
 
+    void enable();
+    void disable();
+
     virtual QString service() const;
     virtual QMailAccountId accountId() const;
 
@@ -70,6 +73,7 @@ public slots:
     virtual void initiatePushEmail();
 
 protected slots:
+    virtual void accountsUpdated(const QMailAccountIdList &ids);
     void errorOccurred(int code, const QString &text);
     void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
@@ -79,10 +83,15 @@ private:
     class Source;
     friend class Source;
 
-    ImapClient _client;
+    QMailAccountId _accountId;
+    ImapClient *_client;
     Source *_source;
+    QMailHeartbeatTimer *_restartPushEmailTimer;
     bool _establishingPushEmail;
     int _pushRetry;
+    bool _accountWasEnabled;
+    bool _accountWasPushEnabled;
+    QStringList _previousPushFolders;
     enum { ThirtySeconds = 30 };
 };
 
