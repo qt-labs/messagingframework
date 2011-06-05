@@ -1326,7 +1326,7 @@ QString ImapService::service() const
 
 QMailAccountId ImapService::accountId() const
 {
-    return _client->account();
+    return _accountId;
 }
 
 bool ImapService::hasSource() const
@@ -1396,7 +1396,7 @@ void ImapService::errorOccurred(int code, const QString &text)
     if (!pushEmailEstablished())
         return;
     _source->retrievalTerminated();
-    updateStatus(code, text, _client->account());
+    updateStatus(code, text, _accountId);
     emit actionCompleted(false);
 }
 
@@ -1405,13 +1405,13 @@ void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, cons
     if (!pushEmailEstablished())
         return;
     _source->retrievalTerminated();
-    updateStatus(code, text, _client->account());
+    updateStatus(code, text, _accountId);
     emit actionCompleted(false);
 }
 
 void ImapService::updateStatus(const QString &text)
 {
-    updateStatus(QMailServiceAction::Status::ErrNoError, text, _client->account());
+    updateStatus(QMailServiceAction::Status::ErrNoError, text, _accountId);
 }
 
 class ImapConfigurator : public QMailMessageServiceConfigurator
