@@ -336,6 +336,7 @@ public:
     // Update the protocol's mailbox properties
     void setMailbox(const QMailFolder &mailbox) { mProtocol->_mailbox = ImapMailboxProperties(mailbox); }
     void setExists(quint32 n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
+    quint32 exists() { return mProtocol->_mailbox.exists; }
     void setRecent(quint32 n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
     void setUnseen(quint32 n) { mProtocol->_mailbox.unseen = n; }
     void setUidValidity(const QString &validity) { mProtocol->_mailbox.uidValidity = validity; emit mProtocol->uidValidity(validity); }
@@ -2461,12 +2462,12 @@ void EnableState::taggedResponse(ImapContext *c, const QString &line)
     ImapState::taggedResponse(c, line);
 }
 
-class NoopState : public ImapState
+class NoopState : public SelectedState
 {
     Q_OBJECT
 
 public:
-    NoopState() : ImapState(IMAP_Noop, "Noop") {}
+    NoopState() : SelectedState(IMAP_Noop, "Noop") {}
 
     virtual bool permitsPipelining() const { return true; }
     virtual QString transmit(ImapContext *c);
@@ -2487,12 +2488,12 @@ public:
 };
 
 
-class IdleState : public ImapState
+class IdleState : public SelectedState
 {
     Q_OBJECT
 
 public:
-    IdleState() : ImapState(IMAP_Idle, "Idle") {}
+    IdleState() : SelectedState(IMAP_Idle, "Idle") {}
 
     void done(ImapContext *c);
 
@@ -2521,9 +2522,11 @@ void IdleState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str = line;
     QRegExp idleResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    quint32 previousExists = c->exists();
+    SelectedState::untaggedResponse(c, line);
     if (idleResponsePattern.indexIn(str) == 0) {
         // Treat this event as a continuation point
-       if (idleResponsePattern.cap(1).compare("EXISTS", Qt::CaseInsensitive) == 0) {
+        if (previousExists != c->exists()) {
              c->continuation(command(), QString("newmail"));
         } else if (idleResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0) {
             c->continuation(command(), QString("flagschanged"));
