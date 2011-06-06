@@ -5795,6 +5795,7 @@ QString QMailMessagePart::displayName() const
         bool isRFC822 = (contentType().type().toLower() == "message") &&
             (contentType().subType().toLower() == "rfc822");
         if (isRFC822) {
+            // TODO don't load entire body into memory
             QMailMessage msg = QMailMessage::fromRfc2822(body().data(QMailMessageBody::Decoded));
             id = msg.subject();
         }
@@ -8232,6 +8233,7 @@ void QMailMessage::refreshPreview()
         metaDataImpl()->setPreview(part->body().data().left(maxPreviewLength));
     } else if ((part = findHtmlContainer()) && part->hasBody()) {
         // TODO: this properly..
+        // TODO: don't load entire body into memory
         QString markup = part->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
         markup.remove(QRegExp("<(.)[^>]*>"));
