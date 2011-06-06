@@ -372,9 +372,9 @@ QSqlDatabase QMail::createDatabase()
     QSqlDatabase db;
     if(init) {
 #endif
-        db = QSqlDatabase::database();
+        db = QSqlDatabase::database("qmailstore_sql_connection");
     } else {
-        db = QSqlDatabase::addDatabase("QSQLITE");
+        db = QSqlDatabase::addDatabase("QSQLITE", "qmailstore_sql_connection");
         
 #if defined(Q_OS_SYMBIAN)
 #ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
