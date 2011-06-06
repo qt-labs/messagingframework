@@ -201,6 +201,8 @@ QCopChannel::QCopChannel(const QString& channel, QObject *parent)
 
 void QCopChannel::connectClientSignals()
 {
+    if (qApp->closingDown())
+        return;
     QCopThreadData *td = qcopThreadData();
     QCopClient* client = td->clientConnection();
     Q_ASSERT (client);
