@@ -1899,85 +1899,96 @@ QByteArray QMailMessageHeaderFieldPrivate::toString(bool includeName, bool prese
     return result;
 }
 
-static void outputHeaderPart(QDataStream& out, const QByteArray& text, int* lineLength, const int maxLineLength)
+static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* lineLength, const int maxLineLength)
 {
+    const int maxHeaderLength(10000);
+    QByteArray text(inText);
     QRegExp whitespace("\\s");
     QRegExp syntacticBreak(";|,");
 
-    int remaining = maxLineLength - *lineLength;
-    if (text.length() <= remaining)
-    {
-        out << DataString(text);
-        *lineLength += text.length();
+    if (text.length() > maxHeaderLength) {
+        qWarning() << "Maximum header length exceeded, truncating mail header";
+        text.truncate(maxHeaderLength);
     }
-    else
-    {
-        // See if we can find suitable whitespace to break the line
-        int wsIndex = -1;
-        int lastIndex = -1;
-        int preferredIndex = -1;
-        bool syntacticBreakUsed = false;
-        do 
+
+    while (true) {
+        int remaining = maxLineLength - *lineLength;
+        if (text.length() <= remaining)
         {
-            lastIndex = wsIndex;
-            if ((lastIndex > 0) 
-                && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
-                // Prefer to split after (possible) parameters and commas
-                preferredIndex = lastIndex;
-            }
-
-            wsIndex = whitespace.indexIn(text, wsIndex + 1);
-        } while ((wsIndex != -1) && (wsIndex < remaining));
-
-        if (preferredIndex != -1)
-            lastIndex = preferredIndex;
-
-        if (lastIndex == -1)
-        {
-            // We couldn't find any suitable whitespace, look for high-level syntactic break
-            // allow a maximum of 998 characters excl CRLF on a line without white space
-            remaining = 997 - *lineLength;
-            int syntacticIn = -1;
-            do {
-                lastIndex = syntacticIn;
-                syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
-            } while ((syntacticIn != -1) && (syntacticIn < remaining - 1));
-            
-            if (lastIndex != -1) {
-                syntacticBreakUsed = true;
-                ++lastIndex;
-            } else {
-                // We couldn't find any high-level syntactic break either - just break at the last char
-                //qWarning() << "Unable to break header field at white space or syntactic break";
-                lastIndex = remaining;
-            }
-        }
-
-        if (lastIndex == 0)
-        {
-            out << DataString('\n') << DataString(text[0]);
-            *lineLength = 1;
-            lastIndex = 1;
+          out << DataString(text);
+          *lineLength += text.length();
+          return;
         }
         else
         {
-            out << DataString(text.left(lastIndex)) << DataString('\n');
+          // See if we can find suitable whitespace to break the line
+          int wsIndex = -1;
+          int lastIndex = -1;
+          int preferredIndex = -1;
+          bool syntacticBreakUsed = false;
+          do 
+            {
+              lastIndex = wsIndex;
+              if ((lastIndex > 0) 
+              && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
+                    // Prefer to split after (possible) parameters and commas
+                    preferredIndex = lastIndex;
+              }
 
-            if ((lastIndex == remaining) || (syntacticBreakUsed)) {
-                // We need to insert some artifical whitespace
-                out << DataString(' ');
-            } else {
-                // Append the breaking whitespace (ensure it does not get CRLF-ified)
-                out << DataString(QByteArray(1, text[lastIndex]));
-                ++lastIndex;
+              wsIndex = whitespace.indexIn(text, wsIndex + 1);
+            } while ((wsIndex != -1) && (wsIndex < remaining));
+
+          if (preferredIndex != -1)
+                lastIndex = preferredIndex;
+
+          if (lastIndex == -1)
+          {
+              // We couldn't find any suitable whitespace, look for high-level syntactic break
+              // allow a maximum of 998 characters excl CRLF on a line without white space
+              remaining = 997 - *lineLength;
+              int syntacticIn = -1;
+              do {
+                    lastIndex = syntacticIn;
+                    syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
+              } while ((syntacticIn != -1) && (syntacticIn < remaining - 1));
+                
+              if (lastIndex != -1) {
+                    syntacticBreakUsed = true;
+                    ++lastIndex;
+              } else {
+                    // We couldn't find any high-level syntactic break either - just break at the last char
+                    //qWarning() << "Unable to break header field at white space or syntactic break";
+                    lastIndex = remaining;
+              }
             }
 
-            *lineLength = 1;
-        }
+          if (lastIndex == 0)
+            {
+              out << DataString('\n') << DataString(text[0]);
+              *lineLength = 1;
+              lastIndex = 1;
+            }
+          else
+            {
+              out << DataString(text.left(lastIndex)) << DataString('\n');
 
-        QByteArray remainder(text.mid(lastIndex));
-        if (!remainder.isEmpty())
-            outputHeaderPart(out, remainder, lineLength, maxLineLength);
+              if ((lastIndex == remaining) || (syntacticBreakUsed)) {
+                    // We need to insert some artifical whitespace
+                    out << DataString(' ');
+              } else {
+                    // Append the breaking whitespace (ensure it does not get CRLF-ified)
+                    out << DataString(QByteArray(1, text[lastIndex]));
+                    ++lastIndex;
+              }
+
+              *lineLength = 1;
+            }
+
+                text = text.mid(lastIndex);
+                if (text.isEmpty()) {
+                    return;
+                }
+        }
     }
 }
 
