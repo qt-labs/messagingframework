@@ -108,12 +108,22 @@ SmtpClient::SmtpClient(QObject* parent)
     , temporaryFile(0)
     , waitingForBytes(0)
 {
+    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
+            this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 }
 
 SmtpClient::~SmtpClient()
 {
     delete transport;
     delete temporaryFile;
+}
+
+void SmtpClient::accountsUpdated(const QMailAccountIdList &ids)
+{
+    if (!ids.contains(account()))
+        return;
+
+    setAccount(account());
 }
 
 QMailMessage::MessageType SmtpClient::messageType() const
