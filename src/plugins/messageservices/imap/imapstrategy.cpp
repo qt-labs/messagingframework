@@ -1468,10 +1468,11 @@ void ImapFetchSelectedMessagesStrategy::setOperation(
         ImapStrategyContextBase *context,
         QMailRetrievalAction::RetrievalSpecification spec)
 {
+    QMailAccountConfiguration accountCfg(context->config().id());
+    ImapConfiguration imapCfg(accountCfg);
     switch (spec) {
     case QMailRetrievalAction::Auto:
         {
-            ImapConfiguration imapCfg(context->config());
             if (imapCfg.isAutoDownload()) {
                 // Just download everything
                 _headerLimit = UINT_MAX;

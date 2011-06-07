@@ -485,11 +485,11 @@ ImapClient::~ImapClient()
 // Called to begin executing a strategy
 void ImapClient::newConnection()
 {
+    // Reload the account configuration
+    _config = QMailAccountConfiguration(_config.id());
     if (_protocol.loggingOut())
         _protocol.close();
     if (!_protocol.inUse()) {
-        // Reload the account configuration
-        _config = QMailAccountConfiguration(_config.id());
         _qresyncEnabled = false;
     }
     if (_requestRapidClose && !_inactiveTimer.isActive())

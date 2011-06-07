@@ -122,10 +122,9 @@ void PopClient::newConnection()
             status = Exit;
             closeConnection();
         }
-    } else {
-        // Re-load the configuration for this account
-        config = QMailAccountConfiguration(config.id());
     }
+    // Re-load the configuration for this account
+    config = QMailAccountConfiguration(config.id());
 
     PopConfiguration popCfg(config);
     if ( popCfg.mailServer().isEmpty() ) {
@@ -199,7 +198,8 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     switch (spec) {
     case QMailRetrievalAction::Auto:
         {
-            PopConfiguration popCfg(config);
+            // Re-load the configuration for this account
+            PopConfiguration popCfg(QMailAccountConfiguration(config.id()));
 
             if (popCfg.isAutoDownload()) {
                 // Just download everything
