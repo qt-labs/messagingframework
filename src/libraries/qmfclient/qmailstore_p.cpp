@@ -5645,6 +5645,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
         const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
     }
 
+    // Force evaluation of preview, to dirty metadata if it's changed
+    metaData->preview();
+
     if (metaData->dataModified()) {
         // Assume all the meta data fields have been updated
         updateProperties = QMailStorePrivate::updatableMessageProperties();
@@ -5723,9 +5726,6 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 // Use the default storage scheme
                 metaData->setContentScheme(defaultContentScheme());
             }
-
-            // TODO: remove hack to force eager preview generation
-            message->preview();
 
             MutexGuard lock(contentManagerMutex());
             lock.lock();
