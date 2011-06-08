@@ -107,6 +107,7 @@ SmtpClient::SmtpClient(QObject* parent)
     , transport(0)
     , temporaryFile(0)
     , waitingForBytes(0)
+    , notUsingAuth(false)
 {
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
@@ -319,6 +320,15 @@ void SmtpClient::incomingData()
         QString response = transport->readLine();
         qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
 
+        if (notUsingAuth) {
+            if (response.startsWith("530")) {
+                operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
+                return;
+            } else {
+                notUsingAuth = false;
+            }
+        }
+
         if (outstandingResponses > 0) {
             --outstandingResponses;
         }
@@ -489,6 +499,12 @@ void SmtpClient::nextAction(const QString &response)
             sendCommand(authCmd);
             status = Authenticating;
         } else {
+            foreach (QString const& capability, capabilities) {
+                if (capability.startsWith("AUTH", Qt::CaseInsensitive)) {
+                    notUsingAuth = true;
+                    break;
+                }
+            }
             status = Authenticated;
             nextAction(QString());
         }

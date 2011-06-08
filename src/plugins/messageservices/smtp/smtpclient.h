@@ -145,6 +145,7 @@ private:
     bool linestart;
 
     QString bufferedResponse;
+    bool notUsingAuth;
 };
 
 #endif
