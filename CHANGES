@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201123
+  * Fixes NB#257648 Use QTimer for "expire check" instead of syshb
+
 201122
   * Fixes: NB#259331 Does not show new emails immediately
   * Fixes: NB#249858 Random crash observed with assert 
