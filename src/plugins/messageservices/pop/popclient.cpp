@@ -199,7 +199,8 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     case QMailRetrievalAction::Auto:
         {
             // Re-load the configuration for this account
-            PopConfiguration popCfg(QMailAccountConfiguration(config.id()));
+            QMailAccountConfiguration accountCfg(config.id());
+            PopConfiguration popCfg(accountCfg);
 
             if (popCfg.isAutoDownload()) {
                 // Just download everything
