@@ -124,6 +124,10 @@ void SmtpClient::accountsUpdated(const QMailAccountIdList &ids)
     if (!ids.contains(account()))
         return;
 
+    QMailAccount acc(account());
+    bool isEnabled(acc.status() & QMailAccount::Enabled);
+    if (!isEnabled)
+        return;
     setAccount(account());
 }
 
