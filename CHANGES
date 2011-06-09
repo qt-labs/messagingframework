@@ -1,9 +1,6 @@
 Latest Changes
 ---------------
 
-201123
-  * Fixes NB#257648 Use QTimer for "expire check" instead of syshb
-
 201122
   * Fixes: NB#259331 Does not show new emails immediately
   * Fixes: NB#249858 Random crash observed with assert 
@@ -12,6 +9,10 @@ Latest Changes
   * Fixes: NB#261611 Random messageserver crash observed when disabling IMAP accounts  
   * Fixes: NB#252787 Unable to send an invitation if location is selected for the event
   * Fixes: NB#260769 gmail sync triggered every 10 minutes in "Always upto date" mode
+  * Fixes: NB#257648 Use QTimer for "expire check" instead of syshb
+  * Fixes: NB#195729 smtp authentication error not shown when account is configured with wrong settings
+  * Fixes: NB#264025 Messageserver crash while setting POP account
+  * Fixes: NB#264045 Messageserver crash while disabling other mail account
 
 201121
   * Fixes: NB#232541 Calendar icon not displayed
