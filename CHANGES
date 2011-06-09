@@ -3,6 +3,7 @@ Latest Changes
 
 201123
   * Fixes: NB#261810 Random crashes observed upon tapping send in reply/forward editor
+  * Fixes: NB#263850 Preview of the message shown with junk characters/links if message has Inlined image
 
 201122
   * Fixes: NB#259331 Does not show new emails immediately
