@@ -113,7 +113,6 @@ void QMailServiceActionPrivate::cancelOperation()
         if (_pendingActions.count()) {
             _pendingActions.first().action->cancelOperation();
             clearSubActions();
-            return;
         }
         _server->cancelTransfer(_action);
     }
