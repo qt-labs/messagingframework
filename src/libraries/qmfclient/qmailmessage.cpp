@@ -8232,11 +8232,14 @@ void QMailMessage::refreshPreview()
 
     QMailMessagePartContainer *part;
 
+    // TODO: don't load entire body into memory
+    // TODO: parse html correctly, e.g. closing brackets in quotes in tags
+
     if ((part = findPlainTextContainer()) && part->hasBody()) {
-        metaDataImpl()->setPreview(part->body().data().left(maxPreviewLength));
+        QString plaintext(part->body().data());
+        plaintext.remove(QRegExp("\\[(image|cid):[^\\]]*\\]", Qt::CaseInsensitive));
+        metaDataImpl()->setPreview(plaintext);
     } else if ((part = findHtmlContainer()) && part->hasBody()) {
-        // TODO: this properly..
-        // TODO: don't load entire body into memory
         QString markup = part->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
         markup.remove(QRegExp("<(.)[^>]*>"));
