@@ -257,7 +257,7 @@ QMailStore::ErrorCode QmfStorageManager::add(QMailMessage *message, QMailContent
 QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, const QString &existingIdentifier, QMailContentManager::DurabilityRequirement durability)
 {
     // Use the supplied identifier as a filename
-    QString filePath = generateUniqueFileName(message->parentAccountId(), message->contentIdentifier());
+    QString filePath = generateUniqueFileName(message->parentAccountId());
 
     message->setContentIdentifier(filePath);
 
