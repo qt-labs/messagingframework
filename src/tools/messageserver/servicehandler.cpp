@@ -1038,7 +1038,9 @@ void ServiceHandler::expireAction()
                 mActionExpiry.removeFirst();
 
                 // Restart the service(s) for each of these accounts
-                reregisterAccountServices(serviceAccounts.toList(), QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
+                QMailAccountIdList ids(serviceAccounts.toList());
+                deregisterAccountServices(ids, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
+                registerAccountServices(ids);
 
                 // See if there are more actions to dispatch
                 dispatchRequest();
