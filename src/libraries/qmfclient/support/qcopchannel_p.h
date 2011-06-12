@@ -207,7 +207,6 @@ private:
     bool connecting;
     bool reconnecting;
     int channelCount;
-    static int clientsCount;
 
     void detachAll();
     void detach(const QString& ch);
