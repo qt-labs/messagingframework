@@ -8238,7 +8238,7 @@ void QMailMessage::refreshPreview()
     if ((part = findPlainTextContainer()) && part->hasBody()) {
         QString plaintext(part->body().data());
         plaintext.remove(QRegExp("\\[(image|cid):[^\\]]*\\]", Qt::CaseInsensitive));
-        metaDataImpl()->setPreview(plaintext);
+        metaDataImpl()->setPreview(plaintext.left(maxPreviewLength));
     } else if ((part = findHtmlContainer()) && part->hasBody()) {
         QString markup = part->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
