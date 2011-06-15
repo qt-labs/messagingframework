@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 201123
+  * Fixes: NB#265223 Original message body shown empty in message view
   * Fixes: NB#259331 New mails not shown immediately
   * Fixes: NB#264055 Message body region gets blank after forwarding it from device
   * Fixes: NB#259082 Sync never stops

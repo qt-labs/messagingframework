@@ -1388,24 +1388,28 @@ QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* mess
     QMailMessageMetaData metaData;
     // init all the fields except custom fields
     metaData.setId(message->id());
-    metaData.setFrom(message->from());
-    metaData.setTo(message->to());
-    metaData.setSubject(message->subject());
-    metaData.setStatus(message->status());
-    metaData.setDate(message->date());
-    metaData.setParentAccountId(message->parentAccountId());
     metaData.setParentFolderId(message->parentFolderId());
+    metaData.setMessageType(message->messageType());
+    metaData.setFrom(message->from());
+    metaData.setSubject(message->subject());
+    metaData.setDate(message->date());
     metaData.setReceivedDate(message->receivedDate());
+    metaData.setTo(message->to());
+    metaData.setStatus(message->status());
+    metaData.setParentAccountId(message->parentAccountId());
     metaData.setServerUid(message->serverUid());
-    metaData.setPreviousParentFolderId(message->previousParentFolderId());
     metaData.setSize(message->size());
     metaData.setContent(message->content());
+    metaData.setPreviousParentFolderId(message->previousParentFolderId());
+    metaData.setContentScheme(message->contentScheme());
     metaData.setContentIdentifier(message->contentIdentifier());
+    metaData.setInResponseTo(message->inResponseTo());
     metaData.setResponseType(message->responseType());
-    metaData.setRestoreFolderId(message->restoreFolderId());
-    metaData.setRfcId(message->rfcId());
-    metaData.setCopyServerUid(message->copyServerUid());
     metaData.setPreview(message->preview());
+    metaData.setCopyServerUid(message->copyServerUid());
+    metaData.setRestoreFolderId(message->restoreFolderId());
+    metaData.setListId(message->listId());
+    metaData.setRfcId(message->rfcId());
     metaData.setParentThreadId(message->parentThreadId());
     metaData.setUnmodified();
 
