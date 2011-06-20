@@ -8094,12 +8094,11 @@ bool QMailMessage::contentModified() const
 
 bool QMailMessage::hasCalendarInvitation() const
 {
-    QList<const QMailMessagePart*> parts;
-    for (uint i = 0; i < partCount(); ++i)
-        parts.append(&partAt(i));
+    QList<const QMailMessagePartContainer*> parts;
+    parts.append(this);
 
     while (!parts.isEmpty()) {
-        const QMailMessagePart *part(parts.takeFirst());
+        const QMailMessagePartContainer *part(parts.takeFirst());
         if (part->multipartType() != QMailMessagePartContainer::MultipartNone) {
             for (uint i = 0; i < part->partCount(); ++i) {
             parts.append(&part->partAt(i));
