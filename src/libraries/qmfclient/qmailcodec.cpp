@@ -162,8 +162,14 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charse
 
     \sa QTextCodec::codecForName()
 */
-void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& charset)
+void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& icharset)
 {
+    QString charset = icharset;
+    if ((charset.toLower() == "gb2312") || (charset.toLower() == "gbk")) {
+        // gb18030 is a superset of gb2312 and gbk, prefer it
+        charset = "gb18030";
+    }
+
     if (QTextCodec* codec = codecForName(charset.toLatin1()))
     {
         QByteArray decoded;

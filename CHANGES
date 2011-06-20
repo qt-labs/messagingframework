@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201125
+  * Fixes: NB#215942 Traditional Chinese character is corrupted in mailbox
+
 201123
   * Fixes: NB#265223 Original message body shown empty in message view
   * Fixes: NB#259331 New mails not shown immediately

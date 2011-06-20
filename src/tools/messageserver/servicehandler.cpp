@@ -617,20 +617,117 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids, QM
 
 void ServiceHandler::reregisterAccountServices(QMailAccountIdList ids, QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    // Remove and re-create these accounts' services
+    QMailAccountIdList totalDeregisterAccountList; // Avoid deregistering each account individually (it's more expensive)
 
-    QMap<QPair<QMailAccountId, QString>,  QPointer<QMailMessageService> >::iterator it = serviceMap.begin();
-    while (it != serviceMap.end()) {
-        if (ids.contains(it.key().first)) {
-           QMailMessageService *service = it.value();
-           if (service && !service->requiresReregistration()) {
-               ids.removeAll(it.key().first);
-           }
+    // Remove and re-create these accounts' services (and only if we need to)
+    foreach(QMailAccountId const& id, ids) {
+        QMailAccount account(id);
+        if (account.status() & QMailAccount::Enabled) {
+            QMailAccountConfiguration config(id);
+
+            // See if this account is configured to use a master account
+            QMailServiceConfiguration internalCfg(&config, "qmf");
+            QString masterId(internalCfg.value("masterAccountId", ""));
+            if (!masterId.isEmpty()) {
+                QMailAccount master(QMailAccountId(masterId.toInt()));
+                if (master.id().isValid()) {
+                    // It's possible that before it was using a normal account
+                    deregisterAccountServices(QMailAccountIdList() << id, code, text); // this can't wait, as it clears the masterAccount list
+                    Q_ASSERT(!masterAccount.contains(id)); // no duplicates, as deregisterAccountServies should remove from this list
+                    masterAccount.insert(id, master.id());
+                } else {
+                    qWarning() << "Unable to locate master account:" << masterId << "for account:" << id;
+                }
+            } else { // not using a master account
+                QSet<QString> newServices;
+                QSet<QString> oldServices;
+
+                foreach (const QString& service, config.services()) {
+                    QMailServiceConfiguration svcCfg(&config, service);
+                    if (svcCfg.type() == QMailServiceConfiguration::Source ||  svcCfg.type() == QMailServiceConfiguration::Sink || svcCfg.type() == QMailServiceConfiguration::SourceAndSink) {
+                        newServices.insert(service);
+                    }
+                }
+
+                // First we will go through all services in serviceMap that belong to this account
+                // and check if they are still valid, if they are -- see if they need reloading
+                // if they're not, remove them. If there's new ones, add them
+                for (QMap< QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::iterator it(serviceMap.begin()); it != serviceMap.end(); ++it) {
+                    if (it.key().first == id) { // we're in the right account
+                        QString serviceName(it.key().second);
+                        QSet<QString>::iterator newServiceIt(newServices.find(serviceName));
+                        if (newServiceIt != newServices.end()) {
+                            // only some inner details have changed, only re-register if need be
+                            QPointer<QMailMessageService> service(it.value());
+                            Q_ASSERT(!service.isNull());
+                            if (service->requiresReregistration()) {
+                                // Ok, we must remove it
+                                qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
+                                service->cancelOperation(code, text);
+                                removeServiceFromActions(service);
+                                delete service;
+                            } else {
+                                // it could handle this change, we don't need to register a new one
+                                newServices.erase(newServiceIt);
+                            }
+                        } else {
+                            // It was using a service, that it is no longer using
+                            oldServices.insert(serviceName);
+                        }
+                    }
+                }
+
+                foreach(QString const& oldService, oldServices) {
+                    deregisterAccountService(id, oldService, code, text);
+                }
+                foreach(QString const& newService, newServices) {
+                    registerAccountService(id, QMailServiceConfiguration(&config, newService));
+                }
+            }
+        } else { // account is not enabled, disable all services
+            totalDeregisterAccountList.push_back(id);
         }
-        ++it;
     }
-    deregisterAccountServices(ids, code, text);
-    registerAccountServices(ids);
+
+    deregisterAccountServices(totalDeregisterAccountList, code, text);
+}
+
+void ServiceHandler::deregisterAccountService(const QMailAccountId &id, const QString &serviceName, QMailServiceAction::Status::ErrorCode code, const QString &text)
+{
+    QMailMessageService *service = 0;
+
+    QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> >::iterator it = serviceMap.begin();
+    while (it != serviceMap.end()) {
+        if (it.key().first == id && it.key().second == serviceName) {
+            // Remove any services associated with this account
+            service = it.value();
+            qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
+            service->cancelOperation(code, text);
+            removeServiceFromActions(service);
+
+            it = serviceMap.erase(it);
+            // Hm, probably should be breaking here ... but eh
+        } else {
+            ++it;
+        }
+    }
+
+    if (service) {
+        if (service->hasSource()) {
+            if (QMailMessageSource *source = accountSource(id)) {
+                sourceService.remove(source);
+                sourceMap.remove(id);
+            }
+        }
+        if (service->hasSink()) {
+            if (QMailMessageSink *sink = accountSink(id)) {
+                sinkService.remove(sink);
+                sinkMap.remove(id);
+            }
+        }
+    }
+
+    delete service;
 }
 
 void ServiceHandler::accountsAdded(const QMailAccountIdList &ids)
