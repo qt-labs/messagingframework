@@ -41,7 +41,6 @@
 
 
 #include "servicehandler.h"
-#include "qmailheartbeattimer.h"
 #include <longstream_p.h>
 #include <QDataStream>
 #include <QIODevice>

@@ -49,7 +49,6 @@
 #include <qmailfolder.h>
 #include <qmailnamespace.h>
 #include <qmaildisconnected.h>
-#include <qmailheartbeattimer.h>
 #include <limits.h>
 #include <QFile>
 #include <QDir>
@@ -242,8 +241,8 @@ protected:
     QMailFolder _folder;
 
 private:
-    QMailHeartbeatTimer _idleTimer; // Send a DONE command every 29 minutes
-    QMailHeartbeatTimer _idleRecoveryTimer; // Check command hasn't hung
+    QTimer _idleTimer; // Send a DONE command every 29 minutes
+    QTimer _idleRecoveryTimer; // Check command hasn't hung
     int _idleRetryDelay; // Try to restablish IDLE state
     enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
 };
@@ -278,15 +277,14 @@ bool IdleProtocol::open(const ImapConfiguration& config)
 
 void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 {
-    const int idleTimeOutMin = 25*60*1000;
-    const int idleTimeoutMax = 28*60*1000;
+    const int idleTimeout = 28*60*1000;
 
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
             qMailLog(IMAP) << "IDLE: Idle connection established.";
             
             // We are now idling
-            _idleTimer.start(idleTimeOutMin, idleTimeoutMax);
+            _idleTimer.start(idleTimeout);
             _idleRecoveryTimer.stop();
 
             handleIdling();
@@ -386,8 +384,7 @@ void IdleProtocol::idleTransportError()
 
     _idleRecoveryTimer.stop();
 
-    // 10 minute heartbeat window
-    QMailHeartbeatTimer::singleShot(qMax(1, _idleRetryDelay - 10*60)*1000, _idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
 }
 
 void IdleProtocol::idleErrorRecovery()
@@ -403,8 +400,7 @@ void IdleProtocol::idleErrorRecovery()
     }
     updateStatus(tr("Idle Error occurred"));
 
-    // 10 minute heartbeat window
-    QMailHeartbeatTimer::singleShot(qMax(1, _idleRetryDelay - 10*60)*1000, _idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
+    QTimer::singleShot(_idleRetryDelay*1000, this, SLOT(idleErrorRecovery()));
     _idleRetryDelay = qMin( oneHour, _idleRetryDelay*2 );
     
     emit openRequest(this);

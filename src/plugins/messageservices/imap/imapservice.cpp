@@ -47,7 +47,6 @@
 #include "imapstrategy.h"
 #include <QtPlugin>
 #include <QTimer>
-#include <qmailheartbeattimer.h>
 #include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
@@ -106,8 +105,7 @@ public:
     {
         _intervalTimer.stop();
         if (interval > 0) {
-            // 1 minute heartbeat window
-            _intervalTimer.start(qMax(1, interval-1)*1000*60, interval*1000*60); // interval minutes
+            _intervalTimer.start(interval*1000*60); // interval minutes
         }
     }
 
@@ -172,7 +170,7 @@ private:
     QMailFolderId _mailCheckFolderId;
     bool _unavailable;
     bool _synchronizing;
-    QMailHeartbeatTimer _intervalTimer;
+    QTimer _intervalTimer;
     QList<QMailFolderId> _queuedFolders;
     quint64 _setMask;
     quint64 _unsetMask;
@@ -1225,7 +1223,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _accountId(accountId),
       _client(0),
       _source(new Source(this)),
-      _restartPushEmailTimer(new QMailHeartbeatTimer(this)),
+      _restartPushEmailTimer(new QTimer(this)),
       _accountWasEnabled(false),
       _accountWasPushEnabled(false)
 {
@@ -1385,8 +1383,7 @@ bool ImapService::pushEmailEstablished()
     const int oneHour = 60*60;
     qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
 
-    // 1 minute heartbeat window
-    _restartPushEmailTimer->start(qMax(1, _pushRetry - 60)*1000, _pushRetry * 1000);
+    _restartPushEmailTimer->start(_pushRetry*1000);
     _pushRetry = qMin(oneHour, _pushRetry * 2);
     return false;
 }

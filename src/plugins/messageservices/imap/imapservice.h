@@ -86,7 +86,7 @@ private:
     QMailAccountId _accountId;
     ImapClient *_client;
     Source *_source;
-    QMailHeartbeatTimer *_restartPushEmailTimer;
+    QTimer *_restartPushEmailTimer;
     bool _establishingPushEmail;
     int _pushRetry;
     bool _accountWasEnabled;

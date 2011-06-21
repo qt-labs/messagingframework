@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qmailtransport.h"
-#include "qmailheartbeattimer.h"
 #include <QFile>
 #include <QTimer>
 
@@ -255,9 +254,8 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     
     mInUse = true;
 
-    const int oneMin = 1 * 60 * 1000;
     const int threeMin = 3 * 60 * 1000;
-    connectToHostTimeOut.start(oneMin, threeMin); // even this seems way too long?
+    connectToHostTimeOut.start(threeMin); // even this seems way too long?
     createSocket(encryptionType);
     emit updateStatus(tr("DNS lookup"));
 
