@@ -6,6 +6,7 @@ Latest Changes
   * Fixes: NB#232541 Invitations not displayed in the message viewer for Gmail 
   * Fixes: NB#265381 crash in QMailHeartbeatTimer::stop()
   * Fixes: NB#267768 messageserver segfaults @ QtMobility::QSystemAlignedTimerPrivate::error
+  * Fixes: NB#265236 "Error occurred" shown frequently when syncing emails
 
 201123
   * Fixes: NB#265223 Original message body shown empty in message view

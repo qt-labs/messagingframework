@@ -1305,11 +1305,7 @@ void ImapClient::transportError(QMailServiceAction::Status::ErrorCode code, cons
 void ImapClient::closeConnection()
 {
     _inactiveTimer.stop();
-
-    if ( _protocol.connected() ) {
-        emit updateStatus( tr("Logging out") );
-        _protocol.sendLogout();
-    } else if ( _protocol.inUse() ) {
+    if ( _protocol.inUse() ) {
         _protocol.close();
     }
 }
@@ -1349,7 +1345,13 @@ void ImapClient::connectionInactive()
     Q_ASSERT(_closeCount >= 0);
     if (_closeCount == 0) {
         _rapidClosing = false;
-        closeConnection();
+        if ( _protocol.connected()) {
+            emit updateStatus( tr("Logging out") );
+            _protocol.sendLogout();
+            // Client MUST read tagged response, but if connection hangs in logout state newConnection will autoClose.
+        } else {
+            closeConnection();
+        }
     } else {
         --_closeCount;
         _protocol.sendNoop();
