@@ -99,6 +99,7 @@ public:
         connect(_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
+        connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
     }
     
     void setIntervalTimer(int interval)
@@ -151,6 +152,8 @@ public slots:
     void intervalCheck();
     void queueMailCheck(QMailFolderId folderId);
     void queueFlagsChangedCheck();
+    void resetExpiryTimer();
+    void expireStrategy();
 
 private:
     bool doDelete(const QMailMessageIdList & ids);
@@ -175,6 +178,7 @@ private:
     quint64 _setMask;
     quint64 _unsetMask;
     QList<QPair<ImapStrategy*, QLatin1String> > _pendingStrategies;
+    QTimer _strategyExpiryTimer; // Required to expire interval mail check triggered by push email
 };
 
 bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
@@ -1054,6 +1058,7 @@ bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal
         connect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)), this, signal);
     }
 
+    resetExpiryTimer();
     _unavailable = true;
     _service->_client->setStrategy(strategy);
     _service->_client->newConnection();
@@ -1106,6 +1111,7 @@ void ImapService::Source::messageActionCompleted(const QString &uid)
 
 void ImapService::Source::retrievalCompleted()
 {
+    _strategyExpiryTimer.stop();
     _unavailable = false;
     _setMask = 0;
     _unsetMask = 0;
@@ -1205,6 +1211,7 @@ void ImapService::Source::queueFlagsChangedCheck()
 
 void ImapService::Source::retrievalTerminated()
 {
+    _strategyExpiryTimer.stop();
     _unavailable = false;
     _synchronizing = false;
     if (_queuedMailCheckInProgress) {
@@ -1217,6 +1224,18 @@ void ImapService::Source::retrievalTerminated()
     _flagsCheckQueued = false;
 }
 
+void ImapService::Source::resetExpiryTimer()
+{
+    static const int ExpirySeconds = 180; // Should be larger than imapservice.h value
+    _strategyExpiryTimer.start(ExpirySeconds * 1000);
+}
+
+void ImapService::Source::expireStrategy()
+{
+    qMailLog(Messaging) << "IMAP Strategy is not progressing. Internally reseting IMAP service for account" << _service->_accountId;
+    _service->disable();
+    _service->enable();
+}
 
 ImapService::ImapService(const QMailAccountId &accountId)
     : QMailMessageService(),
@@ -1245,6 +1264,7 @@ void ImapService::enable()
     _establishingPushEmail = false;
     _pushRetry = ThirtySeconds;
     connect(_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
+    connect(_client, SIGNAL(progressChanged(uint, uint)), _source, SLOT(resetExpiryTimer()));
     connect(_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
