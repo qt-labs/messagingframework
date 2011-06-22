@@ -2328,8 +2328,7 @@ void EmailClient::retrieveVisibleMessagesFlags()
     if (ids.isEmpty())
         return;
 
-    QMailServiceAction::Activity activity(m_flagRetrievalAction->activity());
-    if ((activity == QMailServiceAction::Pending) || (activity == QMailServiceAction::InProgress)) {
+    if (m_flagRetrievalAction->isRunning()) {
         // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
         flagMessageIds += ids.toSet();
     } else {
@@ -2650,8 +2649,7 @@ void EmailClient::runNextPendingExport()
         return;
     }
     
-    if ((m_exportAction->activity() != QMailServiceAction::InProgress)
-        && (m_exportAction->activity() != QMailServiceAction::Pending)) {
+    if (!m_exportAction->isRunning()) {
         QMailAccountId mailAccountId = m_queuedExports.first();
         
         ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_exportAction, "Exporting pending updates");
