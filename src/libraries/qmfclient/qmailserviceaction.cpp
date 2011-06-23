@@ -1284,6 +1284,32 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
     _ids.clear();
     _addedOrUpdatedIds.clear();
 
+    // Check to see if any of the messages has unresolved parts (forward without download)
+    // If so must use sync adding
+    bool fwod(false);
+    foreach (QMailMessage message, list) {
+        if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal)) {
+            fwod = true;
+            break;
+        }
+    }
+    if (fwod) {
+        foreach (QMailMessage mail, list) {
+            if (!mail.id().isValid()) {
+                mail.setStatus(QMailMessage::LocalOnly, true);
+                QMailStore::instance()->addMessage(&mail);
+            } else {
+                QMailStore::instance()->updateMessage(&mail);
+            }
+        }
+
+        if (validAction(newAction())) {
+            setActivity(QMailServiceAction::Successful);
+            emitChanges();
+        }
+        return;
+    }
+
     // Make non durable changes to the content manager
     // Existing message data in mail store and content manager should not be
     // changed directly by this function, instead the messageserver should do it.
@@ -1314,6 +1340,32 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
 {
     _ids.clear();
     _addedOrUpdatedIds.clear();
+
+    // Check to see if any of the messages has unresolved parts (forward without download)
+    // If so must use sync updating
+    bool fwod(false);
+    foreach (QMailMessage message, list) {
+        if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal)) {
+            fwod = true;
+            break;
+        }
+    }
+    if (fwod) {
+        foreach (QMailMessage mail, list) {
+            if (!mail.id().isValid()) {
+                mail.setStatus(QMailMessage::LocalOnly, true);
+                QMailStore::instance()->addMessage(&mail);
+            } else {
+                QMailStore::instance()->updateMessage(&mail);
+            }
+        }
+
+        if (validAction(newAction())) {
+            setActivity(QMailServiceAction::Successful);
+            emitChanges();
+        }
+        return;
+    }
 
     // Ensure that message non metadata is written and flushed to the filesystem,
     // but not synced
