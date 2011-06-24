@@ -262,6 +262,9 @@ bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
     unimportantStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderFwd::LocalStorageFolderId), QMailDataComparator::NotEqual);
     if (QMailStore::instance()->countMessages(accountKey & unimportantStatusKey))
         return true;
+        
+    if (!QMailStore::instance()->messageRemovalRecords(mailAccountId).isEmpty())
+        return true;
     
     return false;
 }
@@ -350,6 +353,8 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
         qWarning() << "Unable to rollback disconnected important->unimportant flagging for account:" << mailAccountId;
         return;
     }    
+
+    QMailStore::instance()->purgeMessageRemovalRecords(mailAccountId);
 }
 
 /*!
