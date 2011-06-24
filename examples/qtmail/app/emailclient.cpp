@@ -1984,7 +1984,6 @@ void EmailClient::activityChanged(QMailServiceAction::Activity activity)
                 action->deleteLater();
             } else if (action == m_exportAction) {
                 rollBackUpdates(status.accountId);
-                runNextPendingExport();
             } else {
                 transferFailure(status.accountId, status.text, status.errorCode);
             }
