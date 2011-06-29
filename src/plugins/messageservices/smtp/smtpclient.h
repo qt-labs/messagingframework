@@ -96,6 +96,7 @@ protected slots:
 
 private slots:
     void sendMoreData(qint64);
+    void authExpired();
 
 private:
     void sendCommand(const char *data, int len = -1);
@@ -146,6 +147,8 @@ private:
 
     QString bufferedResponse;
     bool notUsingAuth;
+
+    QTimer *authTimeout;
 };
 
 #endif
