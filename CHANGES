@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201126
+  * Fixes: NB#267169 "can't get your message" error shown when going back
+
 201125
   * Fixes: NB#215942 Traditional Chinese character is corrupted in mailbox
   * Fixes: NB#232541 Invitations not displayed in the message viewer for Gmail 

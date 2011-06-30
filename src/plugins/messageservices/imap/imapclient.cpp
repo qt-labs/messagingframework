@@ -887,7 +887,10 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 
     QMailMessage *bufferMessage(new QMailMessage(mail));
     _bufferedMessages.append(bufferMessage);
-    _strategyContext->messageFetched(*bufferMessage);
+    if (_strategyContext->messageFetched(*bufferMessage)) {
+        removeAllFromBuffer(bufferMessage);
+        return;
+    }
     QMailMessageBufferFlushCallback *callback = new MessageFlushedWrapper(_strategyContext);
     callbacks << callback;
     QMailMessageBuffer::instance()->setCallback(bufferMessage, callback);

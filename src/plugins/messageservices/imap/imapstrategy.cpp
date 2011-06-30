@@ -522,31 +522,40 @@ void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder
     Q_UNUSED(flags)
 }
 
-void ImapStrategy::messageFetched(ImapStrategyContextBase * /*context*/, QMailMessage &message)
+bool ImapStrategy::messageFetched(ImapStrategyContextBase * context, QMailMessage &message)
 {
     _folder[message.serverUid()] = false;
     // Store this message to the mail store
     if (message.id().isValid()) {
         if (!QMailMessageBuffer::instance()->updateMessage(&message)) {
             _error = true;
-            qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-            return;
+            qWarning() << "Unable to update message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+            return false;
         }
-    } else {
+   } else {
         QMailMessageKey duplicateKey(QMailMessageKey::serverUid(message.serverUid()) & QMailMessageKey::parentAccountId(message.parentAccountId()));
-        if (!QMailStore::instance()->removeMessages(duplicateKey)) {
-            _error = true;
-            qWarning() << "Unable to remove duplicate message(s) for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-            return;
-        }
-        if (!QMailMessageBuffer::instance()->addMessage(&message)) {
-            _error = true;
-            qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
-            return;
+        QMailMessageIdList ids(QMailStore::instance()->queryMessages(duplicateKey));
+        if (!ids.isEmpty()) {
+            QMailMessageId existingId(ids.takeFirst());
+            if (!ids.isEmpty() && !QMailStore::instance()->removeMessages(QMailMessageKey::id(ids))) {
+                _error = true;
+                qWarning() << "Unable to remove duplicate message(s) for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+                return true;
+            }
+            QMailMessage lv(existingId);
+            messageFlushed(context, lv);
+            return true; // flushing complete
+        } else {
+            if (!QMailMessageBuffer::instance()->addMessage(&message)) {
+                _error = true;
+                qWarning() << "Unable to add message for account:" << message.parentAccountId() << "UID:" << message.serverUid();
+                return false;
+            }
         }
 
         _folder[message.serverUid()] = true;
     }
+    return false;
 }
 
 void ImapStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -1653,11 +1662,12 @@ void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *co
     }
 }
 
-void ImapFetchSelectedMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+bool ImapFetchSelectedMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
-    ImapMessageListStrategy::messageFetched(context, message);
+    bool result = ImapMessageListStrategy::messageFetched(context, message);
 
     itemFetched(context, message.serverUid());
+    return result;
 }
 
 void ImapFetchSelectedMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -1755,13 +1765,14 @@ void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *
     context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
 }
 
-void ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+bool ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 {
     if(_canceled)
-        return;
+        return false;
 
     message.setStatus(QMailMessage::Temporary, true);
     ImapRetrieveFolderListStrategy::messageFetched(context, message);
+    return false;
 }
 
 void ImapSearchMessageStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -2216,11 +2227,12 @@ void ImapSynchronizeBaseStrategy::folderPreviewCompleted(ImapStrategyContextBase
 {
 }
 
-void ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+bool ImapSynchronizeBaseStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
-    ImapFolderListStrategy::messageFetched(context, message);
+    bool result = ImapFolderListStrategy::messageFetched(context, message);
     if (_transferState == Preview)
         context->progressChanged(_progress++, _total);
+    return result;
 }
 
 void ImapSynchronizeBaseStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -3877,12 +3889,13 @@ void ImapCopyMessagesStrategy::messageCreated(ImapStrategyContextBase *context, 
     ImapFetchSelectedMessagesStrategy::messageCreated(context, id, createdUid);
 }
 
-void ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+bool ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     QString sourceUid = copiedMessageFetched(context, message);
     _remember[message.serverUid()] = sourceUid;
 
     ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+    return false;
 }
 
 void ImapCopyMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -4196,11 +4209,12 @@ void ImapExternalizeMessagesStrategy::handleGenUrlAuth(ImapStrategyContextBase *
     resolveNextMessage(context);
 }
 
-void ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
+bool ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
 { 
     copiedMessageFetched(context, message);
 
     ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
+    return false;
 }
 
 void ImapExternalizeMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)

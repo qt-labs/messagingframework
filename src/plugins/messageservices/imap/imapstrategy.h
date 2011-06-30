@@ -137,7 +137,7 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) = 0;
 
     virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
     virtual void dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
@@ -314,7 +314,7 @@ public:
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
     virtual void downloadSize(ImapStrategyContextBase*, const QString &uid, int length);
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
     virtual void dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
@@ -441,7 +441,7 @@ public:
 
     virtual void newConnection(ImapStrategyContextBase *context);
     
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
@@ -623,7 +623,7 @@ protected:
     virtual void handleUidFetch(ImapStrategyContextBase *context);
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
 
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageListCompleted(ImapStrategyContextBase *context);
 
@@ -677,7 +677,7 @@ public:
     
     virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
     virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid);
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
 
 protected:
@@ -750,7 +750,7 @@ public:
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
-    virtual void messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
 
@@ -839,7 +839,7 @@ public:
     void commandTransition(const ImapCommand command, const OperationStatus status) { _strategy->transition(this, command, status); }
 
     void mailboxListed(QMailFolder& folder, const QString &flags) { _strategy->mailboxListed(this, folder, flags); }
-    void messageFetched(QMailMessage &message) { _strategy->messageFetched(this, message); }
+    bool messageFetched(QMailMessage &message) { return _strategy->messageFetched(this, message); }
     void messageFlushed(QMailMessage &message) { _strategy->messageFlushed(this, message); }
     void dataFetched(QMailMessage &message, const QString &uid, const QString &section) { _strategy->dataFetched(this, message, uid, section); }
     void dataFlushed(QMailMessage &message, const QString &uid, const QString &section) { _strategy->dataFlushed(this, message, uid, section); }
