@@ -108,6 +108,7 @@ SmtpClient::SmtpClient(QObject* parent)
     , temporaryFile(0)
     , waitingForBytes(0)
     , notUsingAuth(false)
+    , authTimeout(0)
 {
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
@@ -117,6 +118,7 @@ SmtpClient::~SmtpClient()
 {
     delete transport;
     delete temporaryFile;
+    delete authTimeout;
 }
 
 void SmtpClient::accountsUpdated(const QMailAccountIdList &ids)
@@ -245,6 +247,13 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
 
 void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 {
+    authTimeout = new QTimer;
+    authTimeout->setSingleShot(true);
+    const int twentySeconds = 20 * 1000;
+    connect(authTimeout, SIGNAL(timeout()), this, SLOT(authExpired()));
+    authTimeout->setInterval(twentySeconds);
+    authTimeout->start();
+
     SmtpConfiguration smtpCfg(config);
     if (smtpCfg.smtpEncryption() == encryptType) {
         qMailLog(SMTP) << "Connected" << flush;
@@ -332,6 +341,8 @@ void SmtpClient::incomingData()
                 notUsingAuth = false;
             }
         }
+        delete authTimeout;
+        authTimeout = 0;
 
         if (outstandingResponses > 0) {
             --outstandingResponses;
@@ -905,6 +916,13 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     waitingForBytes += dotstuffed.length();
     transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());
     //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
+}
+
+void SmtpClient::authExpired()
+{
+    status = Done;
+    operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Have not received any greeting from SMTP server, probably configuration error"));
+    return;
 }
 
 void SmtpClient::stopTransferring()
