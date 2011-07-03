@@ -1771,8 +1771,7 @@ bool ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context,
         return false;
 
     message.setStatus(QMailMessage::Temporary, true);
-    ImapRetrieveFolderListStrategy::messageFetched(context, message);
-    return false;
+    return ImapRetrieveFolderListStrategy::messageFetched(context, message);
 }
 
 void ImapSearchMessageStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
