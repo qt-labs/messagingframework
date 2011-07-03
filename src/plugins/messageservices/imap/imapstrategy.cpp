@@ -3894,8 +3894,7 @@ bool ImapCopyMessagesStrategy::messageFetched(ImapStrategyContextBase *context, 
     QString sourceUid = copiedMessageFetched(context, message);
     _remember[message.serverUid()] = sourceUid;
 
-    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
-    return false;
+    return ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
 }
 
 void ImapCopyMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
@@ -4213,8 +4212,7 @@ bool ImapExternalizeMessagesStrategy::messageFetched(ImapStrategyContextBase *co
 { 
     copiedMessageFetched(context, message);
 
-    ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
-    return false;
+    return ImapFetchSelectedMessagesStrategy::messageFetched(context, message);
 }
 
 void ImapExternalizeMessagesStrategy::messageFlushed(ImapStrategyContextBase *context, QMailMessage &message)
