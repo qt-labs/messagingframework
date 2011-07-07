@@ -1393,6 +1393,44 @@ bool ServiceHandler::dispatchRetrieveMessageList(quint64 action, const QByteArra
     return true;
 }
 
+void ServiceHandler::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve message list for unconfigured account"));
+    } else {
+        enqueueRequest(action, serialize(accountId, folderIds, minimum, sort), sources, &ServiceHandler::dispatchRetrieveMessageLists, &ServiceHandler::retrievalCompleted, RetrieveMessageListRequestType);
+    }
+}
+
+bool ServiceHandler::dispatchRetrieveMessageLists(quint64 action, const QByteArray &data)
+{
+    QMailAccountId accountId;
+    QMailFolderIdList folderIds;
+    uint minimum;
+    QMailMessageSortKey sort;
+
+    deserialize(data, accountId, folderIds, minimum, sort);
+
+    if (QMailMessageSource *source = accountSource(accountId)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+                            ? source->retrieveMessageLists(accountId, folderIds, minimum, sort, action)
+                            : source->retrieveMessageLists(accountId, folderIds, minimum, sort));
+        if (success) {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve message list for folders:" << folderIds;
+            return false;
+        }
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
+        return false;
+    }
+
+    return true;
+}
+
 void ServiceHandler::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));

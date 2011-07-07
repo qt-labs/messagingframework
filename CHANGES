@@ -4,7 +4,8 @@ Latest Changes
 201126
   * Fixes: NB#267169 "can't get your message" error shown when going back
   * Fixes: NB#195729 ConfigurationError not shown when account is configured with wrong settings 
-
+  * Fixes: NB#271151 [TASK] Provide a API that accepts a list of folders to be synced
+  
 201125
   * Fixes: NB#215942 Traditional Chinese character is corrupted in mailbox
   * Fixes: NB#232541 Invitations not displayed in the message viewer for Gmail 

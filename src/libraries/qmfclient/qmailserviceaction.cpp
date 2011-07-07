@@ -749,6 +749,12 @@ void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &acco
     retrieveMessageListHelper(accountId, folderId, minimum, sort);
 }
 
+void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    Q_ASSERT(!_pendingActions.count());
+    _server->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
+}
+
 void QMailRetrievalActionPrivate::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
     _server->retrieveMessages(newAction(), messageIds, spec);
@@ -840,7 +846,7 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     A range of functions are available to support varying client operations:
 
     The retrieveFolderList() function allows a client to retrieve the list of folders available for an account.
-    The retrieveMessageList() function allows a client to retrieve a subset of messages available for an account or folder.
+    The retrieveMessageList() and retrieveMessageLists() functions allows a client to retrieve a subset of messages available for an account or folder.
 
     The retrieveMessages() function allows a client to retrieve the flags, meta data or content of a 
     specific list of messages.
@@ -897,7 +903,7 @@ QMailRetrievalAction::~QMailRetrievalAction()
     folder that is searched for child folders; these properties are not updated 
     for folders that are merely discovered by searching.
     
-    \sa retrieveMessageList()
+    \sa retrieveMessageList(),  retrieveMessageLists()
 */
 void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
@@ -936,6 +942,48 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     impl(this)->retrieveMessageList(accountId, folderId, minimum, sort);
+}
+
+/*!
+    Requests that the message server retrieve the list of messages available for the account \a accountId.
+    If \a folderIds is not empty, then only messages within those folders should be retrieved and the 
+    lastSynchronized() time of the account updated; otherwise 
+    no messages should be retrieved, .  If \a minimum is non-zero, then that value will be used to restrict the 
+    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
+    
+    If \a sort is not empty, the external service will report the discovered messages in the 
+    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+    this facility.
+
+    If a folder messages are being retrieved from contains at least \a minimum messages then the 
+    messageserver should ensure that at least \a minimum messages are available from the mail 
+    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    messageserver should ensure all the messages for that folder are available from the mail store.
+    If a folder has messages locally available, then all previously undiscovered messages will be
+    retrieved for that folder, even if that number exceeds \a minimum.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    from which messages are retrieved.
+    
+    New messages will be added to the mail store as they are discovered, and 
+    marked with the \l QMailMessage::New status flag. Messages that are present
+    in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag.
+    
+    \sa QMailAccount::lastSynchronized()
+*/
+void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    if (folderIds.isEmpty()) {
+        // nothing to do
+        impl(this)->newAction();
+        impl(this)->setActivity(QMailServiceAction::Successful);
+        impl(this)->emitChanges();
+        return;
+    }
+
+    impl(this)->retrieveMessageLists(accountId, folderIds, minimum, sort);
 }
 
 /*!
@@ -1020,7 +1068,7 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
     marked with the \l QMailMessage::New status flag.  Messages that are no longer 
     available will be marked with the \l QMailMessage::Removed status flag.  
 
-    \sa retrieveFolderList(), retrieveMessageList()
+    \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists()
 */
 void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 {
@@ -1070,7 +1118,7 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
     the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
     QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
 
-    \sa retrieveFolderList(), retrieveMessageList(), exportUpdates()
+    \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), exportUpdates()
 */
 void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 {

@@ -117,7 +117,9 @@ signals:
 
 public slots:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
+    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
     virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
+    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool retrieveAll);
 
     virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     virtual bool retrieveMessagePart(const QMailMessagePart::Location &partLocation);
@@ -203,7 +205,23 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
     return true;
 }
 
+bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    if (folderIds.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No folders specified"));
+        return false;
+    }
+
+    return retrieveMessageLists(accountId, folderIds, minimum, sort, true /* accountCheck */);
+}
+
 bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+{
+    bool accountCheck = !folderId.isValid();
+    return retrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, accountCheck);
+}
+
+bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool accountCheck)
 {
     if (!_service->_client) {
         _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
@@ -223,17 +241,18 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     uint adjustedMinimum = minimum ? minimum : INT_MAX; // zero means retrieve all mail
     _service->_client->strategyContext()->retrieveMessageListStrategy.clearSelection();
     _service->_client->strategyContext()->retrieveMessageListStrategy.setMinimum(adjustedMinimum);
-    if (folderId.isValid()) {
-        folderIds.append(folderId);
-        _service->_client->strategyContext()->retrieveMessageListStrategy.setAccountCheck(false);
+    if (!_folderIds.isEmpty()) {
+        folderIds = _folderIds;
     } else {
         // Retrieve messages for all folders in the account that have undiscovered messages
         QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
         QMailFolderKey canSelectKey(QMailFolderKey::status(QMailFolder::MessagesPermitted));
         QMailFolderKey filterKey(accountKey & canSelectKey);
         folderIds = QMailStore::instance()->queryFolders(filterKey, QMailFolderSortKey::id(Qt::AscendingOrder));
-        _service->_client->strategyContext()->retrieveMessageListStrategy.setAccountCheck(true);
     }
+    // accountCheck false, just retrieve new mail or minimum mails whichever is more
+    // accountCheck is true, also update status of messages on device, and detect removed messages
+    _service->_client->strategyContext()->retrieveMessageListStrategy.setAccountCheck(accountCheck);
 
     _service->_client->strategyContext()->retrieveMessageListStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
     _service->_client->strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);

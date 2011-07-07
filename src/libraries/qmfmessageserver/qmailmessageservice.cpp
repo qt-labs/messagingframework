@@ -441,7 +441,7 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
     
     Return true if an operation is initiated.
 
-    \sa retrieveMessageList()
+    \sa retrieveMessageList(), retrieveMessageLists()
 */
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
@@ -482,12 +482,54 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
     
     Return true if an operation is initiated.
 
-    \sa QMailAccount::lastSynchronized()
+    \sa QMailAccount::lastSynchronized(), retrieveMessageLists()
 */
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
+    Q_UNUSED(minimum)
+    Q_UNUSED(sort)
+
+    notImplemented();
+    return false;
+}
+
+/*!
+    Retrieve the list of messages available for the account \a accountId.
+    If \a folderIds is not empty, then only messages within those folders should be retrieved and 
+    the lastSynchronized() time of the account updated; otherwise 
+    no messages should be retrieved. If \a minimum is non-zero, then that value will be used to restrict the 
+    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
+    
+    If \a sort is not empty, the external service will report the discovered messages in the 
+    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+    this facility.
+
+    If a folder messages are being retrieved from contains at least \a minimum messages then the 
+    messageserver should ensure that at least \a minimum messages are available from the mail 
+    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    messageserver should ensure all the messages for that folder are available from the mail store.
+    If a folder has messages locally available, then all previously undiscovered messages will be
+    retrieved for that folder, even if that number exceeds \a minimum.
+    
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    from which messages are retrieved.
+    
+    New messages will be added to the mail store as they are discovered, and 
+    marked with the \l QMailMessage::New status flag. Messages that are present
+    in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag.
+    
+    Return true if an operation is initiated.
+
+    \sa QMailAccount::lastSynchronized(), retrieveMessageList()
+*/
+bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    Q_UNUSED(accountId)
+    Q_UNUSED(folderIds)
     Q_UNUSED(minimum)
     Q_UNUSED(sort)
 
@@ -604,7 +646,7 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
 
     Return true if an operation is initiated.
     
-    \sa QMailAccount::lastSynchronized(), retrieveFolderList(), retrieveMessageList(), synchronize()
+    \sa QMailAccount::lastSynchronized(), retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), synchronize()
 */
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
 {
@@ -1477,6 +1519,18 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
+    Q_UNUSED(minimum)
+    Q_UNUSED(sort)
+    Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort, quint64 action)
+{
+    Q_UNUSED(accountId)
+    Q_UNUSED(folderIds)
     Q_UNUSED(minimum)
     Q_UNUSED(sort)
     Q_UNUSED(action)

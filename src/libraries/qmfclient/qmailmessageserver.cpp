@@ -66,6 +66,7 @@ signals:
     void transmitMessages(quint64, const QMailAccountId &accountId);
 
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
+    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
 
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
@@ -130,6 +131,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
     connectIpc(this, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),
                adaptor, MESSAGE(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
+    connectIpc(this, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
+               adaptor, MESSAGE(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
                adaptor, MESSAGE(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)));
     connectIpc(this, SIGNAL(retrieveMessagePart(quint64, QMailMessagePart::Location)),
@@ -541,6 +544,27 @@ void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId
 void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     emit d->retrieveMessageList(action, accountId, folderId, minimum, sort);
+}
+
+/*!
+    Requests that the message server retrieve the list of messages available for the account \a accountId.
+    If \a folderIdList is not empty, then only messages within those folders should be retrieved; otherwise 
+    no messages should be retrieved. If a folder messages are being 
+    retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
+    least \a minimum messages are available from the mail store for that folder; otherwise if the
+    folder contains less than \a minimum messages the messageserver should ensure all the messages for 
+    that folder are available from the mail store.
+    
+    If \a sort is not empty, the external service will 
+    discover the listed messages in the ordering indicated by the sort criterion, if possible.
+
+    The request has the identifier \a action.
+
+    \sa retrievalCompleted()
+*/
+void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    emit d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
 }
 
 /*!

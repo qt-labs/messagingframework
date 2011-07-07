@@ -82,6 +82,7 @@ public:
 public slots:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
+    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
 
     virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
 
@@ -122,6 +123,16 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
 
     Q_UNUSED(descending)
     Q_UNUSED(folderId)
+}
+
+bool PopService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+{
+    if (folderIds.isEmpty()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No folders specified"));
+        return false;
+    }
+
+    return retrieveMessageList(accountId, QMailFolderId(), minimum, sort);
 }
 
 bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
