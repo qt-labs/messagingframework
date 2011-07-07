@@ -53,11 +53,14 @@
 #include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
+#include <QPair>
 #include "qmailipc.h"
 
 class QMailMessageServerPrivate;
 
 typedef QMap<QMailMessage::MessageType, int> QMailMessageCountMap;
+
+typedef QList< QPair<QMailFolderId, uint> > QMailFolderMinimumPairList; // We need to use a type without a comma in it, to please the marashalling macros..
 
 class QMF_EXPORT QMailMessageServer : public QObject
 {
@@ -118,6 +121,7 @@ public slots:
 
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
+    void retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderMinimumPairList & folderMinimums, const QMailMessageSortKey &sort);
 
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
@@ -161,5 +165,8 @@ private:
 
 Q_DECLARE_METATYPE(QMailMessageCountMap)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
+
+Q_DECLARE_METATYPE(QMailFolderMinimumPairList)
+Q_DECLARE_USER_METATYPE_TYPEDEF(QMailFolderMinimumPairList, QMailFolderMinimumPairList)
 
 #endif
