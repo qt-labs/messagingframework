@@ -69,7 +69,6 @@ public slots:
     void transmitMessages(quint64 action, const QMailAccountId &accountId);
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderMinimumPairList &folderMinimums, const QMailMessageSortKey &sort);
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
@@ -220,8 +219,6 @@ private:
     typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
     typedef void (ServiceHandler::*CompletionSignal)(quint64);
 
-    void subMessageListsCompleted(quint64 action);
-
     void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, QMailServerRequestType description, const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
     bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
@@ -229,7 +226,6 @@ private:
     bool dispatchRetrieveFolderListAccount(quint64, const QByteArray &data);
     bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageList(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessageLists(quint64, const QByteArray &data);
     bool dispatchRetrieveMessages(quint64, const QByteArray &data);
     bool dispatchRetrieveMessagePart(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageRange(quint64, const QByteArray &data);
@@ -266,14 +262,6 @@ private:
     QMap<QMailAccountId, QMailAccountId> masterAccount;
 
     QSet<QMailMessageService*> mUnavailableServices;
-
-    struct LocalActionCompletionInfo {
-        quint64 rootAction;
-        int progress;
-        int total;
-    };
-
-    QMap<quint64, LocalActionCompletionInfo> localActions;
 
     class ActionData
     {

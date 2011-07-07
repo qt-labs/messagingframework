@@ -495,16 +495,6 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     return false;
 }
 
-bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QList< QPair<QMailFolderId, uint> > &folderMinimums, const QMailMessageSortKey &sort)
-{
-    Q_UNUSED(accountId)
-    Q_UNUSED(folderMinimums)
-    Q_UNUSED(sort)
-
-    notImplemented();
-    return false;
-}
-
 /*!
     Invoked by the message server to initiate a message retrieval operation.
 
@@ -1488,17 +1478,6 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
     Q_UNUSED(minimum)
-    Q_UNUSED(sort)
-    Q_UNUSED(action)
-
-    notImplemented(action);
-    return false;
-}
-
-bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QList< QPair<QMailFolderId, uint> > & folderMinimums, const QMailMessageSortKey &sort, quint64 action)
-{
-    Q_UNUSED(accountId)
-    Q_UNUSED(folderMinimums)
     Q_UNUSED(sort)
     Q_UNUSED(action)
 

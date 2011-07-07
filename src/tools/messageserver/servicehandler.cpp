@@ -978,21 +978,6 @@ quint64 ServiceHandler::serviceAction(QMailMessageService *service) const
     return 0;
 }
 
-void ServiceHandler::subMessageListsCompleted(quint64 action)
-{
-    QMap<quint64, LocalActionCompletionInfo>::iterator it(localActions.find(action));
-
-    if (it != localActions.end())
-    {
-        LocalActionCompletionInfo & ci = it.value();
-
-        emit progressChanged(ci.rootAction, ci.progress, ci.total);
-        localActions.erase(it);
-    } else {
-        qWarning() << "Could not find localAction: " << action;
-    }
-}
-
 void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, QMailServerRequestType description, const QSet<QMailMessageService*> &preconditions)
 {
     QSet<QPointer<QMailMessageService> > safeServices;
@@ -1398,75 +1383,6 @@ bool ServiceHandler::dispatchRetrieveMessageList(quint64 action, const QByteArra
             setRetrievalInProgress(accountId, true);
         } else {
             qWarning() << "Unable to service request to retrieve message list for folder:" << folderId;
-            return false;
-        }
-    } else {
-        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
-        return false;
-    }
-
-    return true;
-}
-
-void ServiceHandler::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderMinimumPairList &folderMinimums, const QMailMessageSortKey &sort)
-{
-    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
-    if (sources.isEmpty()) {
-        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve message list for unconfigured account"));
-    } else {
-        if (QMailMessageSource *source = accountSource(accountId)) {
-
-            if (source->supportsRetrieveMessageLists()) {
-                enqueueRequest(action, serialize(accountId, folderMinimums, sort), sources, &ServiceHandler::dispatchRetrieveMessageLists, &ServiceHandler::retrievalCompleted, RetrieveMessageListRequestType);
-            } else {
-                // TODO: remove this after all plugins support retrieveMessageLists
-
-                QList< QPair<QMailFolderId, uint> >::const_iterator it(folderMinimums.begin());
-
-                int i(0);
-                while (it != folderMinimums.end()) {
-                    QPair<QMailFolderId, uint> const& folderMin = *it;
-
-                    bool at_last = ++it == folderMinimums.end();
-
-                    quint64 actionId(at_last ? action : newLocalActionId());
-
-                    CompletionSignal completion(at_last ? &ServiceHandler::retrievalCompleted : &ServiceHandler::subMessageListsCompleted);
-
-                    if (!at_last) {
-                        LocalActionCompletionInfo ci;
-                        ci.rootAction = action;
-                        ci.progress = ++i;
-                        ci.total = folderMinimums.size();
-
-                        localActions.insert(actionId, ci);
-                    }
-                    enqueueRequest(actionId, serialize(accountId, folderMin.first, folderMin.second, sort), sources, &ServiceHandler::dispatchRetrieveMessageList, completion, RetrieveMessageListRequestType);
-                }
-            }
-        } else {
-            reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
-        }
-    }
-}
-
-bool ServiceHandler::dispatchRetrieveMessageLists(quint64 action, const QByteArray &data)
-{
-    QMailAccountId accountId;
-    QList< QPair<QMailFolderId, uint> > folderMinimums;
-    QMailMessageSortKey sort;
-
-    deserialize(data, folderMinimums, sort);
-
-    if (QMailMessageSource *source = accountSource(accountId)) {
-        bool success(sourceService.value(source)->usesConcurrentActions()
-                            ? source->retrieveMessageLists(accountId, folderMinimums, sort, action)
-                            : source->retrieveMessageLists(accountId, folderMinimums, sort));
-        if (success) {
-            // This account is now retrieving
-            setRetrievalInProgress(accountId, true);
-        } else {
-            qWarning() << "Unable to service request to retrieve message lists for account:" << accountId;
             return false;
         }
     } else {
@@ -2638,10 +2554,6 @@ void ServiceHandler::activityChanged(QMailServiceAction::Activity activity)
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender()))
         if (quint64 action = serviceAction(service)) {
             updateAction(action);
-            QMap<quint64, LocalActionCompletionInfo>::iterator it(localActions.find(action));
-            if (it != localActions.end()) {
-                action = it.value().rootAction;
-            }
             emit activityChanged(action, activity);
         }
 }
@@ -2651,12 +2563,6 @@ void ServiceHandler::statusChanged(const QMailServiceAction::Status status)
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender()))
         if (quint64 action = serviceAction(service)) {
             updateAction(action);
-            if (status.errorCode == status.ErrNoError) {
-                QMap<quint64, LocalActionCompletionInfo>::iterator it(localActions.find(action));
-                if (it != localActions.end()) {
-                    action = it.value().rootAction;
-                }
-            }
             reportFailure(action, status);
         }
 }
@@ -2665,25 +2571,8 @@ void ServiceHandler::progressChanged(uint progress, uint total)
 {
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender()))
         if (quint64 action = serviceAction(service)) {
-
             updateAction(action);
-
-            QMap<quint64, LocalActionCompletionInfo>::iterator it(localActions.find(action));
-            if (it != localActions.end()) {
-                LocalActionCompletionInfo & ci = it.value();
-
-                int major_done = ci.progress - 1;
-                int major_total = ci.total;
-
-                // result = (major_done + (progress / total)) / major_total
-                // but integer division will lose information so lets go multiple the num and denom by total:
-                // result = (total * major_done + progress) / (total * major_total)
-
-                int new_progress = total * major_done + progress;
-                int new_total = total * major_total;
-                emit progressChanged(ci.rootAction, new_progress, new_total);
-            } else
-                emit progressChanged(action, progress, total);
+            emit progressChanged(action, progress, total);
         }
 }
 

@@ -749,12 +749,6 @@ void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &acco
     retrieveMessageListHelper(accountId, folderId, minimum, sort);
 }
 
-void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &accountId, const QList< QPair<QMailFolderId, uint> > & folderMinimums, const QMailMessageSortKey &sort)
-{
-    Q_ASSERT(_pendingActions.empty());
-    _server->retrieveMessageLists(newAction(), accountId, folderMinimums, sort);
-}
-
 void QMailRetrievalActionPrivate::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
     _server->retrieveMessages(newAction(), messageIds, spec);
@@ -942,10 +936,6 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     impl(this)->retrieveMessageList(accountId, folderId, minimum, sort);
-}
-void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId, const QList< QPair<QMailFolderId, uint> > & folderMinimums, const QMailMessageSortKey &sort)
-{
-    impl(this)->retrieveMessageLists(accountId, folderMinimums, sort);
 }
 
 /*!

@@ -68,8 +68,6 @@ signals:
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
 
-    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderMinimumPairList & folderMinimums, const QMailMessageSortKey &sort);
-
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
 
@@ -132,8 +130,6 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
     connectIpc(this, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),
                adaptor, MESSAGE(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
-    connectIpc(this, SIGNAL(retrieveMessageLists(quint64, const QMailAccountId &, const QMailFolderMinimumPairList &, const QMailMessageSortKey &)),
-               adaptor, MESSAGE(retrieveMessageLists(quint64, const QMailAccountId &, const QMailFolderMinimumPairList &, const QMailMessageSortKey &)));
     connectIpc(this, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
                adaptor, MESSAGE(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)));
     connectIpc(this, SIGNAL(retrieveMessagePart(quint64, QMailMessagePart::Location)),
@@ -547,12 +543,6 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
     emit d->retrieveMessageList(action, accountId, folderId, minimum, sort);
 }
 
-void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderMinimumPairList & folderMinimums, const QMailMessageSortKey &sort)
-{
-    emit d->retrieveMessageLists(action, accountId, folderMinimums, sort);
-}
-
-
 /*!
     Requests that the message server retrieve data regarding the messages identified by \a messageIds.  
 
@@ -861,8 +851,6 @@ void QMailMessageServer::listActions()
     emit d->listActions();
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderMinimumPairList, QMailFolderMinimumPairList)
-
 /*!
     Requests that the MessageServer forward the protocol-specific request \a request
     to the QMailMessageSource configured for the account identified by \a accountId.
@@ -874,7 +862,6 @@ void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &a
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
-
 
 #include "qmailmessageserver.moc"
 

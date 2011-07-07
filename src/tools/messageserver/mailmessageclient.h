@@ -71,7 +71,6 @@ signals:
 
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderMinimumPairList &folderMinimums, const QMailMessageSortKey &sort);
 
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
