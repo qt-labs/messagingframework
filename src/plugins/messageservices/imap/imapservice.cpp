@@ -217,8 +217,13 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
 
 bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
-    bool accountCheck = !folderId.isValid();
-    return retrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, accountCheck);
+    if (folderId.isValid()) {
+        // Folder check
+        return retrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, false);
+    }
+    
+    // Full account check
+    return retrieveMessageLists(accountId, QMailFolderIdList(), minimum, sort, true);
 }
 
 bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool accountCheck)
