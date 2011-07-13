@@ -156,6 +156,7 @@ public slots:
     void queueFlagsChangedCheck();
     void resetExpiryTimer();
     void expireStrategy();
+    void emitActionSuccessfullyCompleted();
 
 private:
     bool doDelete(const QMailMessageIdList & ids);
@@ -207,12 +208,19 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
 
 bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
 {
-    if (folderIds.isEmpty()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No folders specified"));
-        return false;
+    QMailFolderIdList ids;
+
+    foreach (const QMailFolderId &id, folderIds) {
+        if (QMailFolder(id).status() & QMailFolder::MessagesPermitted)
+            ids.append(id);
     }
 
-    return retrieveMessageLists(accountId, folderIds, minimum, sort, true /* accountCheck */);
+    if (ids.isEmpty()) {
+        QTimer::singleShot(0, this, SLOT(emitActionSuccessfullyCompleted()));
+        return true;
+    }
+
+    return retrieveMessageLists(accountId, ids, minimum, sort, true /* accountCheck */);
 }
 
 bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
@@ -1259,6 +1267,11 @@ void ImapService::Source::expireStrategy()
     qMailLog(Messaging) << "IMAP Strategy is not progressing. Internally reseting IMAP service for account" << _service->_accountId;
     _service->disable();
     _service->enable();
+}
+
+void ImapService::Source::emitActionSuccessfullyCompleted()
+{
+    _service->actionCompleted(true);
 }
 
 ImapService::ImapService(const QMailAccountId &accountId)
