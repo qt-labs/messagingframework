@@ -247,6 +247,7 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
 
 void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 {
+    delete authTimeout;
     authTimeout = new QTimer;
     authTimeout->setSingleShot(true);
     const int twentySeconds = 20 * 1000;
@@ -333,6 +334,9 @@ void SmtpClient::incomingData()
         QString response = transport->readLine();
         qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
 
+        delete authTimeout;
+        authTimeout = 0;
+
         if (notUsingAuth) {
             if (response.startsWith("530")) {
                 operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
@@ -341,8 +345,6 @@ void SmtpClient::incomingData()
                 notUsingAuth = false;
             }
         }
-        delete authTimeout;
-        authTimeout = 0;
 
         if (outstandingResponses > 0) {
             --outstandingResponses;
@@ -824,6 +826,11 @@ void SmtpClient::messageProcessed(const QMailMessageId &id)
 
 void SmtpClient::operationFailed(int code, const QString &text)
 {
+    if (code != QMailServiceAction::Status::ErrNoError) {
+        delete authTimeout;
+        authTimeout = 0;
+    }
+
     if (sending) {
         stopTransferring();
         transport->close();
@@ -840,6 +847,11 @@ void SmtpClient::operationFailed(int code, const QString &text)
 
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
+    if (code != QMailServiceAction::Status::ErrNoError) {
+        delete authTimeout;
+        authTimeout = 0;
+    }
+
     if (sending) {
         stopTransferring();
         transport->close();

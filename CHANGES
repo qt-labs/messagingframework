@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201128
+  * Fixes: NB#270942 "Can't connect to SMTP server ..." error displayed on sending successive messages from IMAP
+
 201126
   * Fixes: NB#267169 "can't get your message" error shown when going back
   * Fixes: NB#195729 ConfigurationError not shown when account is configured with wrong settings 
