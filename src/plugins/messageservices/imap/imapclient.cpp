@@ -930,7 +930,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 
         // Separate the body into parts delimited by the boundary, and update them individually
         QByteArray partDelimiter = marker + boundary;
-        QByteArray partTerminator = newLine + partDelimiter + marker;
+        QByteArray partTerminator = QByteArray(1, QMailMessage::LineFeed) + partDelimiter + marker;
 
         int startPos = bodyData.indexOf(partDelimiter, 0);
         if (startPos != -1)
@@ -943,6 +943,9 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
         int partIndex = 0;
 
         int endPos = bodyData.indexOf(partTerminator, 0);
+        if (endPos > 0 && bodyData[endPos - 1] == QMailMessage::CarriageReturn) {
+            endPos--;
+        }
         while ((startPos != -1) && (startPos < endPos)) {
             // Skip the boundary line
             startPos = bodyData.indexOf(newLine, startPos);
@@ -950,6 +953,10 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
             if ((startPos != -1) && (startPos < endPos)) {
                 // Parse the section up to the next boundary marker
                 int nextPos = bodyData.indexOf(partDelimiter, startPos);
+
+                if (nextPos > 0 && bodyData[nextPos - 1] == QMailMessage::CarriageReturn) {
+                    nextPos--;
+                }
 
                 // Find the beginning of the part body
                 startPos = bodyData.indexOf(bodyDelimiter, startPos);
@@ -963,6 +970,9 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
                     ++partIndex;
                 }
 
+                if (bodyData[nextPos] == QMailMessage::CarriageReturn) {
+                    nextPos++;
+                }
                 // Move to the next part
                 startPos = nextPos + partDelimiter.length();
             }

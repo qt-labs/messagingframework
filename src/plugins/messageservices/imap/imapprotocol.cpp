@@ -193,24 +193,20 @@ static QString token( QString str, QChar c1, QChar c2, int *index )
 
     // The strings we're tokenizing use CRLF as the line delimiters - assume that the
     // caller considers the sequence to be atomic.
-    if (c1 == QMailMessage::LineFeed)
-        c1 = QMailMessage::CarriageReturn;
+    if (c1 == QMailMessage::CarriageReturn)
+        c1 = QMailMessage::LineFeed;
     start = str.indexOf( c1, *index, Qt::CaseInsensitive );
     if (start == -1)
         return QString();
 
-    // Bypass the LF if necessary
-    if (c1 == QMailMessage::CarriageReturn)
-        start += 1;
-
-    if (c2 == QMailMessage::LineFeed)
-        c2 = QMailMessage::CarriageReturn;
+    if (c2 == QMailMessage::CarriageReturn)
+        c2 = QMailMessage::LineFeed;
     stop = str.indexOf( c2, ++start, Qt::CaseInsensitive );
     if (stop == -1)
         return QString();
 
     // Bypass the LF if necessary
-    *index = stop + (c2 == QMailMessage::CarriageReturn ? 2 : 1);
+    *index = stop + 1;
 
     return str.mid( start, stop - start );
 }
@@ -3192,9 +3188,9 @@ void ImapProtocol::processResponse(QString line)
 
             setPrecedingLiteral(QString());
 
-            if (remainder.endsWith("\r\n")) {
+            if (remainder.endsWith("\n")) {
                 // Is this trailing part followed by a literal data segment?
-                QRegExp literalPattern("\\{(\\d*)\\}\\r\\n");
+                QRegExp literalPattern("\\{(\\d*)\\}\\r?\\n");
                 int literalIndex = literalPattern.indexIn(remainder);
                 if (literalIndex != -1) {
                     // We are waiting for literal data to complete this line
@@ -3216,7 +3212,7 @@ void ImapProtocol::processResponse(QString line)
         }
 
         // Is this line followed by a literal data segment?
-        QRegExp literalPattern("\\{(\\d*)\\}\\r\\n");
+        QRegExp literalPattern("\\{(\\d*)\\}\\r?\\n");
         int literalIndex = literalPattern.indexIn(line);
         if (literalIndex != -1) {
             // We are waiting for literal data to complete this line

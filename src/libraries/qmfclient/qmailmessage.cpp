@@ -2732,7 +2732,7 @@ QMailMessageHeaderPrivate::QMailMessageHeaderPrivate()
 {
 }
 
-enum NewLineStatus { None, Cr, CrLf };
+enum NewLineStatus { None, Cr, CrLf, Lf };
 
 static QList<QByteArray> parseHeaders(const QByteArray& input)
 {
@@ -2775,10 +2775,33 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
             else {
                 status = None;
             }
-        }
-        else {
+        } else if (status == Lf) {
+            if (*it == ' ' || *it == '\t') {
+                // The LF was folded
+                if ((it - begin) > 1) {
+                    progress.append(QByteArray(begin, (it - begin - 1)));
+                }
+                begin = it;
+            }
+            else {
+                // That was an unescaped CRLF
+                if ((it - begin) > 1) {
+                    progress.append(QByteArray(begin, (it - begin) - 1));
+                }
+                if (!progress.isEmpty()) {
+                    // Non-empty field
+                    result.append(progress);
+                    progress.clear();
+                }
+                begin = it;
+            }
+            status = None;
+
+        } else {
             if (*it == QMailMessage::CarriageReturn)
                 status = Cr;
+            else if (*it == QMailMessage::LineFeed)
+                status = Lf;
         }
     }
 
@@ -4195,7 +4218,7 @@ void QMailMessagePartContainerPrivate::parseMimeSinglePart(const QMailMessageHea
 
 void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHeader& partHeader, LongString body, bool insertIntoSelf)
 {
-    static const QByteArray newLine(QMailMessage::CRLF);
+    static const QByteArray lineFeed(1, QMailMessage::LineFeed);
     static const QByteArray marker("--");
 
     QMailMessagePart part;
@@ -4220,16 +4243,20 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
     // Separate the body into parts delimited by the boundary, and parse them individually
     QByteArray partDelimiter = marker + boundary;
-    QByteArray partTerminator = newLine + partDelimiter + marker;
+    QByteArray partTerminator = lineFeed + partDelimiter + marker;
 
     int startPos = body.indexOf(partDelimiter, 0);
     if (startPos != -1)
         startPos += partDelimiter.length();
 
     // Subsequent delimiters include the leading newline
-    partDelimiter.prepend(newLine);
+    partDelimiter.prepend(lineFeed);
 
     int endPos = body.indexOf(partTerminator, 0);
+
+    // Consider CRLF also (which happens to be the standard, so we honor it)
+    if (endPos > 1 && body.mid(endPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+        endPos--;
     
     // invalid message handling: handles truncated multipart messages
     if (endPos == -1)
@@ -4238,18 +4265,25 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     while ((startPos != -1) && (startPos < endPos))
     {
         // Skip the boundary line
-        startPos = body.indexOf(newLine, startPos);
+        startPos = body.indexOf(lineFeed, startPos);
 
         if ((startPos != -1) && (startPos < endPos))
         {
             // Parse the section up to the next boundary marker
             int nextPos = body.indexOf(partDelimiter, startPos);
 
+            // Honor CRLF too...
+            if (nextPos > 1 && body.mid(nextPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+                nextPos--;
+
             // invalid message handling: handles truncated multipart messages
             if (nextPos == -1)
                 nextPos = body.length() - 1;
             
             multipartContainer->parseMimePart(body.mid(startPos, (nextPos - startPos)));
+
+            if (body.mid(nextPos, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) ==0)
+                nextPos++;
 
             // Try the next part
             startPos = nextPos + partDelimiter.length();
@@ -4263,10 +4297,26 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
 bool QMailMessagePartContainerPrivate::parseMimePart(LongString body)
 {
-    static const QByteArray delimiter((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
+    static const QByteArray CRLFdelimiter((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
+    static const QByteArray CRdelimiter(2, QMailMessage::CarriageReturn);
+    static const QByteArray LFdelimiter(2, QMailMessage::LineFeed);
+
+    int CRLFindex = body.indexOf(CRLFdelimiter);
+    int LFindex = body.indexOf(LFdelimiter);
+    int CRindex = body.indexOf(CRdelimiter);
+
+    int endPos = CRLFindex;
+    QByteArray delimiter = CRLFdelimiter;
+    if (endPos == -1 || (LFindex > -1 && LFindex < endPos)) {
+        endPos = LFindex;
+        delimiter = LFdelimiter;
+    }
+    if (endPos == -1 || (CRindex > -1 && CRindex < endPos)) {
+        endPos = CRindex;
+        delimiter = CRdelimiter;
+    }
 
     int startPos = 0;
-    int endPos = body.indexOf(delimiter);
 
     if (startPos <= endPos) {
         // startPos is the offset of the header, endPos of the delimiter preceding the body
@@ -8275,12 +8325,28 @@ void QMailMessage::refreshPreview()
 /*! \internal */
 QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 {
-    const QByteArray terminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
+    const QByteArray CRLFterminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
+    const QByteArray LFterminator(2, QMailMessage::LineFeed);
+    const QByteArray CRterminator(2, QMailMessage::CarriageReturn);
 
     QMailMessage mail;
     mail.setMessageType(QMailMessage::Email);
 
-    int pos = ls.indexOf(terminator);
+    int CRLFindex = ls.indexOf(CRLFterminator);
+    int LFindex = ls.indexOf(LFterminator);
+    int CRindex = ls.indexOf(CRterminator);
+
+    int pos = CRLFindex;
+    QByteArray terminator = CRLFterminator;
+    if (pos == -1 || (LFindex > -1 && LFindex < pos)) {
+        pos = LFindex;
+        terminator = LFterminator;
+    }
+    if (pos == -1 || (CRindex > -1 && CRindex < pos)) {
+        pos = CRindex;
+        terminator = CRterminator;
+    }
+
     if (pos == -1) {
         // No body? Parse entirety as header
         mail.setHeader( QMailMessageHeader( ls.toQByteArray() ) );
@@ -8289,7 +8355,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
         mail.setHeader( QMailMessageHeader( ls.left(pos).toQByteArray() ) );
 
         // Parse the remainder as content
-        mail.partContainerImpl()->fromRfc2822( ls.mid(pos + 4) );
+        mail.partContainerImpl()->fromRfc2822( ls.mid(pos + terminator.length()) );
     }
 
     if (mail.metaDataImpl()->_date.isNull()) {
