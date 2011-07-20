@@ -4030,6 +4030,7 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
                                        QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
 {
     QSet<QString> contentSchemes;
+    QMap<QString, QStringList> contentSyncLater;
 
     Transaction t(this);
 
@@ -4038,7 +4039,7 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
     foreach (const PairType &pair, messages) {
         if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessage, this, 
                                           pair.first, pair.second,
-                                          updatedMessageIds, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds), 
+                                          updatedMessageIds, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds, &contentSyncLater),
                                      "updateMessages",
                                      &t)) {
             return false;
@@ -4063,6 +4064,23 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
             return false;
         }
     }
+
+    for (QMap<QString, QStringList>::const_iterator it(contentSyncLater.begin()); it != contentSyncLater.end() ; ++it) {
+        if (QMailContentManager *contentManager = QMailContentManagerFactory::create(it.key())) {
+            QMailStore::ErrorCode code = contentManager->remove(it.value());
+            if (code != QMailStore::NoError) {
+                setLastError(code);
+                qWarning() << "Unable to ensure message content durability for scheme:" << it.key();
+                return false;
+            }
+        } else {
+            setLastError(QMailStore::FrameworkFault);
+            qWarning() << "Unable to create content manager for scheme:" << it.key();
+            return false;
+        }
+    }
+
+
 
     if (!t.commit()) {
         qWarning() << "Unable to commit successful updateMessages!";
@@ -5621,8 +5639,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
     return Success;
 }
 
-QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *message, 
-                                                                         QMailMessageIdList *all_updatedMessageIds, QMailMessageIdList *all_modifiedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds,
+QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *message,
+                                                                         QMailMessageIdList *all_updatedMessageIds, QMailMessageIdList *all_modifiedMessageIds, QMailFolderIdList *all_modifiedFolderIds, QMailAccountIdList *all_modifiedAccountIds, QMap<QString, QStringList> *deleteLaterContent,
                                                                          Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->id().isValid())
@@ -5749,8 +5767,16 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                                 return Failure;
                             }
                         } else {
-                            QMailStore::ErrorCode code = contentManager->update(message, durability(commitOnSuccess));
-                            if (code != QMailStore::NoError) {
+
+                            QString oldContentIdentifier(message->contentIdentifier());
+                            QMailStore::ErrorCode code = contentManager->update(message, QMailContentManager::NoDurability);
+                            if (code == QMailStore::NoError) {
+                                QMap<QString, QStringList>::iterator it(deleteLaterContent->find(scheme));
+                                if (it == deleteLaterContent->end())
+                                    deleteLaterContent->insert(scheme, QStringList() << oldContentIdentifier);
+                                else
+                                    it.value().append(oldContentIdentifier);
+                            } else {
                                 qWarning() << "Unable to update message content:" << contentUri;
                                 if (code == QMailStore::ContentNotRemoved) {
                                     // The existing content could not be removed - try again later
