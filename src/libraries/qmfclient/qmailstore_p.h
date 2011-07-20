@@ -508,7 +508,7 @@ private:
                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *mail, 
-                                       QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                       QMailMessageIdList *updatedMessageIds, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, QMap<QString, QStringList> *deleteLaterContent,
                                        Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data, 
