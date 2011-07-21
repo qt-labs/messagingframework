@@ -205,6 +205,10 @@ static QString token( QString str, QChar c1, QChar c2, int *index )
     if (stop == -1)
         return QString();
 
+    // Exclude the CR if necessary
+    if (stop && (str[stop-1] == QMailMessage::CarriageReturn))
+        --stop;
+
     // Bypass the LF if necessary
     *index = stop + 1;
 
