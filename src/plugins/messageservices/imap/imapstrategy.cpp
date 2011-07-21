@@ -3040,6 +3040,11 @@ void ImapUpdateMessagesFlagsStrategy::selectedMailsAppend(const QMailMessageIdLi
     _selectedMessageIds += messageIds;
 }
 
+QMailMessageIdList ImapUpdateMessagesFlagsStrategy::selectedMails()
+{
+    return _selectedMessageIds;
+}
+
 void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
     switch( command ) {

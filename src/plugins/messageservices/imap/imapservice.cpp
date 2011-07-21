@@ -1223,6 +1223,9 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
 
 void ImapService::Source::queueFlagsChangedCheck()
 {
+    if (_service->_client->strategyContext()->updateMessagesFlagsStrategy.selectedMails().isEmpty()) 
+        return; // No flags previously checked, nothing to do
+    
     if (_unavailable) {
         _flagsCheckQueued = true;
         return;

@@ -405,6 +405,7 @@ public:
 
     virtual void clearSelection();      
     virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
+    virtual QMailMessageIdList selectedMails();
 
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
