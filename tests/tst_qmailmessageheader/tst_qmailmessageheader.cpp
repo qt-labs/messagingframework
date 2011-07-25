@@ -1194,16 +1194,16 @@ void tst_QMailMessageHeaderField::output_data()
         << QByteArray("This_text_string_is_too_long_to_fit_entirely_into_a_single_line_of_a_message_header_field...")
         << QByteArray(
 "X-Very-Long-Identifier-For-A-Header:" CRLF
-" This_text_string_is_too_long_to_fit_entirely_into_a_single_line_of_a_message_" CRLF
-" header_field..." CRLF);
+" This_text_string_is_too_long_to_fit_entirely_into_a_single_line_of_a_message_header_field..." CRLF
+" " CRLF);
 
     QTest::newRow("Unbreakable token after breakable whitespace")
         << QByteArray("Content-Disposition")
         << QByteArray("attachment; filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jpg")
         << QByteArray(
 "Content-Disposition: attachment;" CRLF
-" filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jp" CRLF
-" g" CRLF);
+" filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jpg" CRLF
+" " CRLF);
 }
 
 void tst_QMailMessageHeaderField::output()

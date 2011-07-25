@@ -1157,7 +1157,7 @@ void PopClient::retrieveOperationCompleted()
 
 void PopClient::deactivateConnection()
 {
-    const int inactivityPeriod = 20 * 1000;
+    const int inactivityPeriod = 300 * 1000;
 
     inactiveTimer.start(inactivityPeriod);
     selected = false;
