@@ -269,7 +269,7 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
             return QMailStore::NoError;
         }
     }
-    
+
     QSharedPointer<QFile> file(new QFile(filePath));
 
     if (!file->open(QIODevice::WriteOnly)) {
@@ -312,7 +312,7 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     if (!detachedFile.isEmpty()) {
         QFile::remove(detachedFile);
     }
-        
+
     return QMailStore::NoError;
 }
 
