@@ -2,6 +2,7 @@ Latest Changes
 ---------------
 
 201129
+  * Fixes: NB#272619 Messageserver crashes always when sending message from Outbox with huge files
   * Fixes: NB#259057 Random 'Error message' is displayed when manual synchronising Hot Mail
 
 201128
