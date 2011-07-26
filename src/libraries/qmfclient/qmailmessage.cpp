@@ -4267,13 +4267,16 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
         // Skip the boundary line
         startPos = body.indexOf(lineFeed, startPos);
 
+        if (startPos > 0 && body.mid(startPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+            startPos--;
+
         if ((startPos != -1) && (startPos < endPos))
         {
             // Parse the section up to the next boundary marker
             int nextPos = body.indexOf(partDelimiter, startPos);
 
             // Honor CRLF too...
-            if (nextPos > 1 && body.mid(nextPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+            if (nextPos > 0 && body.mid(nextPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
                 nextPos--;
 
             // invalid message handling: handles truncated multipart messages
