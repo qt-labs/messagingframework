@@ -4511,7 +4511,7 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
 {
     static const unsigned int MinRetryDelay = 64;
     static const unsigned int MaxRetryDelay = 2048;
-    static const unsigned int MaxAttempts = 100;
+    static const unsigned int MaxAttempts = 10;
 
     // This function calls the supplied function repeatedly, retrying whenever it
     // returns the DatabaseFailure result and the database's last error is SQLITE_BUSY.
