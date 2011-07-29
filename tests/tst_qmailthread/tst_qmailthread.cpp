@@ -470,10 +470,12 @@ void tst_qmailthread::test_parentId()
 
 void tst_qmailthread::test_cloneId()
 {
-    QMailThread thread1(mailthread.id());
-    QCOMPARE(thread1.id(), mailthread.id());
-    QCOMPARE(thread1.serverUid(), mailthread.serverUid());
-    QCOMPARE(thread1.messageCount(), mailthread.messageCount());
+    QMailThread emptyThread;
+
+    QMailThread thread1(emptyThread.id());
+    QCOMPARE(thread1.id(), emptyThread.id());
+    QCOMPARE(thread1.serverUid(), emptyThread.serverUid());
+    QCOMPARE(thread1.messageCount(), emptyThread.messageCount());
 }
 
 void tst_qmailthread::test_threadKeys()
