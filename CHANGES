@@ -3,6 +3,7 @@ Latest Changes
 
 201131
   * Fixes: NB#252133 Mix of French specific characters and arabic characters not always rendered in email subject
+
 201130
   * Fixes: NB#264753 Email; The header and content of Sohu email can't be shown in Chinese PRC
 
