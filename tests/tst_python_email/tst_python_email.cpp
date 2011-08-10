@@ -634,8 +634,8 @@ Subject: =?ISO-8859-1?Q?Die_Mieter_treten_hier_ein_werden_mit_einem_Foerderband=
  =?UTF-8?B?44KT44CC5LiA6YOo44Gv44OJ44Kk44OE6Kqe44Gn44GZ44GM44CB44GC44Go?=\
  =?UTF-8?B?44Gv44Gn44Gf44KJ44KB44Gn44GZ44CC5a6f6Zqb44Gr44Gv44CMV2VubiBp?=\
  =?UTF-8?B?c3QgZGFzIE51bnN0dWNrIGdpdCB1bmQgU2xvdGVybWV5ZXI/IEphISBCZWlo?=\
- =?UTF-8?B?ZXJodW5kIGRhcyBPZGVyIGRpZSBGbGlwcGVyd2FsZHQgZ2Vyc3B1dC7jgI3j?=\
- =?UTF-8?B?gajoqIDjgaPjgabjgYTjgb7jgZnjgII=?=";
+ =?UTF-8?B?ZXJodW5kIGRhcyBPZGVyIGRpZSBGbGlwcGVyd2FsZHQgZ2Vyc3B1dC7jgI0=?=\
+ =?UTF-8?B?44Go6KiA44Gj44Gm44GE44G+44GZ44CC?=";
 
     QMailMessageHeaderField subject("Subject", input);
     QCOMPARE( subject.toString(), output );

@@ -370,6 +370,56 @@ static QByteArray generateEncodedWord(const QByteArray& codec, char encoding, co
     return result;
 }
 
+static inline bool isFirstCodePoint(const char *b)
+{
+    return (*b & 0xc0) != 0x80;
+}
+
+static QList<QByteArray> splitUtf8(const QByteArray& input, int maximumEncoded)
+{
+    QList<QByteArray> result;
+
+    // Maximum Utf8 string to be codified in base64.
+    int maxUtf8Chars = maximumEncoded / 4 * 3;
+
+    // Utf8 string shorter than maximumEncoded in base64.
+    if (input.length() < maxUtf8Chars) {
+        result.append(input);
+        return result;
+    }
+
+    qMailLog(Messaging) << Q_FUNC_INFO << "Need to cut the UTF-8 string !!!";
+
+    // Need to cut the utf8 string.
+    QByteArray str(input);
+    do {
+
+        const char *iter = str.constData() + maxUtf8Chars;
+
+        // Check if we reached a valid cutting point.
+        int index = maxUtf8Chars;
+        while (!isFirstCodePoint(iter--)) {
+            qMailLog(Messaging) << Q_FUNC_INFO << "Cutting point not valid, looking for the previous one !!!";
+            Q_ASSERT (index >= 0);
+            index--;
+        }
+
+        // Create substrings.
+        result.append(str.left(index));
+        str = str.mid(index);
+
+        qMailLog(Messaging) << Q_FUNC_INFO << "The STR is still too long !!!";
+
+    } while (str.length() > maxUtf8Chars);
+
+    // Append te rest of the string.
+    if (str.length() > 0) {
+        result.append(str);
+    }
+
+    return result;
+}
+
 static QList<QByteArray> split(const QByteArray& input, const QByteArray& separator)
 {
     QList<QByteArray> result;
@@ -405,9 +455,15 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     // If this is an encodedWord, we need to include any whitespace that we don't want to lose
     if (insensitiveIndexOf("utf-8", charset) == 0)
     {
-        QMailBase64Codec codec(QMailBase64Codec::Binary, maximumEncoded);
-        QByteArray encoded = codec.encode(text, charset);
-        return generateEncodedWord(charset, 'B', split(encoded, QMailMessage::CRLF));
+        QList<QByteArray> listEnc;
+        QList<QByteArray> list = splitUtf8(text.toUtf8(), maximumEncoded);
+        foreach (const QByteArray &item, list) {
+            QMailBase64Codec codec(QMailBase64Codec::Binary, maximumEncoded);
+            QByteArray encoded = codec.encode(item);
+            listEnc.append(encoded);
+        }
+
+        return generateEncodedWord(charset, 'B', listEnc);
     }
     else if (insensitiveIndexOf("iso-8859-", charset) == 0)
     {
