@@ -1,7 +1,7 @@
 Latest Changes
 ---------------
 
-201131
+201132
   * Fixes: NB#252133 Mix of French specific characters and arabic characters not always rendered in email subject
 
 201130
