@@ -1083,6 +1083,16 @@ void PopClient::createMail()
         mail->setStatus(QMailMessage::CalendarInvitation, mail->hasCalendarInvitation());
     }
 
+    // Special case to handle spurious hotmail messages. Hide in UI, but do not delete from server
+    if (mail->from().toString().isEmpty()) {
+        mail->setStatus(QMailMessage::Removed, true);
+        QFile file(detachedFile);
+        QByteArray contents;
+        if (file.open(QFile::ReadOnly)) {
+            contents = file.read(2048);
+        }
+        qMailLog(POP) << "Bad message retrieved serverUid" << mail->serverUid() << "contents" << contents;
+    }
 
     classifier.classifyMessage(*mail);
 
