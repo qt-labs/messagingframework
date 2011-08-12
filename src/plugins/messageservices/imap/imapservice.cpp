@@ -80,7 +80,6 @@ public:
     Source(ImapService *service)
         : QMailMessageSource(service),
           _service(service),
-          _flagsCheckQueued(false),
           _queuedMailCheckInProgress(false),
           _mailCheckPhase(RetrieveFolders),
           _unavailable(false),
@@ -97,7 +96,7 @@ public:
         connect(_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
         connect(_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
         connect(_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
-        connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
+        connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
         connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
     }
@@ -153,7 +152,7 @@ public slots:
     void retrievalTerminated();
     void intervalCheck();
     void queueMailCheck(QMailFolderId folderId);
-    void queueFlagsChangedCheck();
+    void queueFlagsChangedCheck(QMailFolderId folderId);
     void resetExpiryTimer();
     void expireStrategy();
     void emitActionSuccessfullyCompleted();
@@ -170,14 +169,14 @@ private:
     enum MailCheckPhase { RetrieveFolders = 0, RetrieveMessages, CheckFlags };
 
     ImapService *_service;
-    bool _flagsCheckQueued;
     bool _queuedMailCheckInProgress;
     MailCheckPhase _mailCheckPhase;
     QMailFolderId _mailCheckFolderId;
     bool _unavailable;
     bool _synchronizing;
     QTimer _intervalTimer;
-    QList<QMailFolderId> _queuedFolders;
+    QList<QMailFolderId> _queuedFolders; // require new mail check
+    QList<QMailFolderId> _queuedFoldersFullCheck; // require flags check also
     quint64 _setMask;
     quint64 _unsetMask;
     QList<QPair<ImapStrategy*, QLatin1String> > _pendingStrategies;
@@ -1156,7 +1155,14 @@ void ImapService::Source::retrievalCompleted()
     if (_queuedMailCheckInProgress) {
         if (_mailCheckPhase == RetrieveFolders) {
             _mailCheckPhase = RetrieveMessages;
-            retrieveMessageList(_service->accountId(), _mailCheckFolderId, 1, QMailMessageSortKey());
+            // full check including flags if interval checking, or flags have changed on server for this folder
+            int minimum = 1;
+            if (!_mailCheckFolderId.isValid() || _queuedFoldersFullCheck.contains(_mailCheckFolderId)) {
+                minimum = INT_MAX; // zero means retrieve all mail
+            }
+            _queuedFoldersFullCheck.removeAll(_mailCheckFolderId);
+
+            retrieveMessageList(_service->accountId(), _mailCheckFolderId, minimum, QMailMessageSortKey());
             return;
         } else {
             // Push email must be established
@@ -1184,18 +1190,14 @@ void ImapService::Source::retrievalCompleted()
     if (!_queuedFolders.isEmpty()) {
         queueMailCheck(_queuedFolders.first());
     }
-    if (_flagsCheckQueued) {
-        queueFlagsChangedCheck();
-    }
 }
 
 // Interval mail checking timer has expired, perform mail check on all folders
 void ImapService::Source::intervalCheck()
 {
-    _flagsCheckQueued = true; // Convenient for user to check for flag changes on server also
     _service->_client->requestRapidClose();
     exportUpdates(_service->accountId()); // Convenient for user to export pending changes also
-    queueMailCheck(QMailFolderId());
+    queueMailCheck(QMailFolderId()); // Full check including flags
 }
 
 void ImapService::Source::queueMailCheck(QMailFolderId folderId)
@@ -1221,27 +1223,12 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
     }
 }
 
-void ImapService::Source::queueFlagsChangedCheck()
+void ImapService::Source::queueFlagsChangedCheck(QMailFolderId folderId)
 {
-    if (_service->_client->strategyContext()->updateMessagesFlagsStrategy.selectedMails().isEmpty()) 
-        return; // No flags previously checked, nothing to do
-    
-    if (_unavailable) {
-        _flagsCheckQueued = true;
-        return;
+    if (!_queuedFoldersFullCheck.contains(folderId)) {
+        _queuedFoldersFullCheck.append(folderId);
     }
-    
-    _flagsCheckQueued = false;
-    _queuedMailCheckInProgress = true;
-    _mailCheckPhase = CheckFlags;
-
-    emit _service->availabilityChanged(false);
-    _service->_client->requestRapidClose();
-    
-    // Check same messages as last time
-    appendStrategy(&_service->_client->strategyContext()->updateMessagesFlagsStrategy);
-    if(!_unavailable)
-        initiateStrategy();
+    queueMailCheck(folderId);
 }
 
 void ImapService::Source::retrievalTerminated()
@@ -1256,7 +1243,7 @@ void ImapService::Source::retrievalTerminated()
     
     // Just give up if an error occurs
     _queuedFolders.clear();
-    _flagsCheckQueued = false;
+    _queuedFoldersFullCheck.clear();
 }
 
 void ImapService::Source::resetExpiryTimer()

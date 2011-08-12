@@ -2526,10 +2526,12 @@ void IdleState::untaggedResponse(ImapContext *c, const QString &line)
     SelectedState::untaggedResponse(c, line);
     if (idleResponsePattern.indexIn(str) == 0) {
         // Treat this event as a continuation point
-        if (previousExists != c->exists()) {
+        if (previousExists < c->exists()) { // '<' to avoid double check for expunges
              c->continuation(command(), QString("newmail"));
         } else if (idleResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0) {
             c->continuation(command(), QString("flagschanged"));
+        } else if (idleResponsePattern.cap(1).compare("EXPUNGE", Qt::CaseInsensitive) == 0) {
+            c->continuation(command(), QString("flagschanged")); // flags check will find expunged messages
         }
     }
 }
