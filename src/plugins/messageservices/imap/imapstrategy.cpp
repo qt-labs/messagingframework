@@ -2558,7 +2558,7 @@ void ImapSynchronizeAllStrategy::handleUidStore(ImapStrategyContextBase *context
             qWarning() << "Unable to update marked as unimportant message metadata for account:" << context->config().id() << "folder" << _currentMailbox.id();
         }
     }
-    
+
     if (!setNextSeen(context) && !setNextNotSeen(context) && !setNextImportant(context) && !setNextNotImportant(context) && !setNextDeleted(context)) {
         if (!_storedRemovedUids.isEmpty()) {
             // Remove records of deleted messages, after EXPUNGE
@@ -2925,8 +2925,13 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     if (imapCfg.canDeleteMail()) {
         // Also find messages deleted locally
         foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(c->account())) {
-            if (!r.serverUid().isEmpty() && r.parentFolderId().isValid()) {
-                deleted[r.parentFolderId()] += r.serverUid();
+            int index = r.serverUid().indexOf(UID_SEPARATOR);
+            if (index > 0) {
+                const QMailFolderId folderId(r.serverUid().left(index).toUInt());
+                if (folderId.isValid())
+                    deleted[folderId] += r.serverUid();
+                else
+                    qWarning() << "invalid folder id" << folderId.toULongLong() <<"for serverUid" << r.serverUid();
             } else {
                 qWarning() << "Unable to process malformed message removal record for account" << c->account();
                 if (!QMailStore::instance()->purgeMessageRemovalRecords(c->account(), QStringList() << r.serverUid())) {
@@ -3399,6 +3404,19 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
 
     IntegerRegion missingRegion(rawServerRegion.subtract(trueClientRegion));
     missingRegion = missingRegion.subtract(IntegerRegion(1, clientMin-1)).subtract(IntegerRegion(clientMax+1, properties.uidNext));
+    if (missingRegion.cardinality()) {
+        // Don't fetch message deleted on client but not yet deleted on remote server
+        IntegerRegion removedRegion;
+        foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(context->config().id(), folder.id())) {
+            if (!r.serverUid().isEmpty() && (r.parentFolderId() == folder.id())) {
+                const QString uid(r.serverUid());
+                int serverUid(stripFolderPrefix(uid).toUInt());
+                removedRegion.add(serverUid);
+            }
+        }
+        missingRegion = missingRegion.subtract(removedRegion);
+    }
+
     if (missingRegion.cardinality()) {
         qWarning() << "WARNING server contains uids in contiguous region not on client!!!" << missingRegion.toString();
         qWarning() << "WARNING clientMin" << clientMin << "clientMax" << clientMax;
