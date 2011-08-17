@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201133
+  * Fixes: NB#274801 MfE: Always up-to date mails receive stops for one of the folder or Inbox after some time
+  * Fixes: MFE sync last for long time when multiple accounts configured (other mail and MFE)
+
 201132
   * Fixes: NB#252133 Mix of French specific characters and arabic characters not always rendered in email subject
   * Fixes: NB#273309 Corrupted messages received from hotmail pop server.
