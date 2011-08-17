@@ -2143,6 +2143,11 @@ QMailContentManager::DurabilityRequirement durability(bool commitOnSuccess)
 
 } // namespace
 
+
+// We need to support recursive locking, per-process
+static volatile int mutexLockCount = 0;
+
+
 class QMailStorePrivate::Transaction
 {
     QMailStorePrivate *m_d;
@@ -2163,15 +2168,30 @@ QMailStorePrivate::Transaction::Transaction(QMailStorePrivate* d)
       m_initted(false),
       m_committed(false)
 {
-    m_d->databaseMutex().lock();
-    m_d->databaseMutex().unlock();
-    m_initted = m_d->transaction();
+    if (mutexLockCount > 0) {
+        // Increase lock recursion depth
+        ++mutexLockCount;
+        m_initted = true;
+    } else {
+        // This process does not yet have a mutex lock
+        m_d->databaseMutex().lock();
+        if (m_d->transaction()) {
+            ++mutexLockCount;
+            m_initted = true;
+        } else {
+            m_d->databaseMutex().unlock();
+        }
+    }
 }
 
 QMailStorePrivate::Transaction::~Transaction()
 {
     if (m_initted && !m_committed) {
         m_d->rollback();
+
+        --mutexLockCount;
+        if (mutexLockCount == 0)
+            m_d->databaseMutex().unlock();
     }
 }
 
@@ -2179,7 +2199,13 @@ bool QMailStorePrivate::Transaction::commit()
 {
     if (m_initted && !m_committed) {
         m_committed = m_d->commit();
+        if (m_committed) {
+            --mutexLockCount;
+            if (mutexLockCount == 0)
+                m_d->databaseMutex().unlock();
+        }
     }
+
     return m_committed;
 }
 
