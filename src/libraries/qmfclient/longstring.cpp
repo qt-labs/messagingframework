@@ -490,7 +490,10 @@ const QByteArray LongStringPrivate::toQByteArray() const
 {
     if (mapping) {
         // Does not copy:
-        return QByteArray::fromRawData(mapping->toQByteArray().constData() + offset, len);
+        const QByteArray input = mapping->toQByteArray();
+        if(!input.isEmpty()) {
+            return QByteArray::fromRawData(input.constData() + offset, len);
+        }
     }
     if (!data.isEmpty()) {
         return QByteArray::fromRawData(data.constData() + offset, len);
