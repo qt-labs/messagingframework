@@ -4,6 +4,7 @@ Latest Changes
 201126
   * Fixes: NB#267169 "can't get your message" error shown when going back
   * Fixes: NB#195729 ConfigurationError not shown when account is configured with wrong settings 
+  * Fixes: NB#275840 Legal bug - license header change in qt4-messagingframework
 
 201125
   * Fixes: NB#215942 Traditional Chinese character is corrupted in mailbox
