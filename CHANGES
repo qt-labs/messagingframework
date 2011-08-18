@@ -5,6 +5,7 @@ Latest Changes
   * Fixes: NB#274801 MfE: Always up-to date mails receive stops for one of the folder or Inbox after some time
   * Fixes: NB#277324 MFE sync last for long time when multiple accounts configured (other mail and MFE)
   * Fixes: NB#276243 Email Sync fails when not synced for a day and shows connecting to server always. 
+  * Fixes: NB#275840 Legal bug - license header change in qt4-messagingframework
 
 201132
   * Fixes: NB#252133 Mix of French specific characters and arabic characters not always rendered in email subject
