@@ -3,7 +3,8 @@ Latest Changes
 
 201133
   * Fixes: NB#274801 MfE: Always up-to date mails receive stops for one of the folder or Inbox after some time
-  * Fixes: MFE sync last for long time when multiple accounts configured (other mail and MFE)
+  * Fixes: NB#277324 MFE sync last for long time when multiple accounts configured (other mail and MFE)
+  * Fixes: NB#276243 Email Sync fails when not synced for a day and shows connecting to server always. 
 
 201132
   * Fixes: NB#252133 Mix of French specific characters and arabic characters not always rendered in email subject
