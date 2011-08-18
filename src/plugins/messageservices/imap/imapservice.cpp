@@ -89,6 +89,7 @@ public:
           _unsetMask(0)
     {
         connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(intervalCheck()));
+        connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
     }
 
     void initClientConnections() {
@@ -99,7 +100,6 @@ public:
         connect(_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck()));
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
-        connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
     }
     
     void setIntervalTimer(int interval)
