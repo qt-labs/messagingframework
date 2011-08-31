@@ -91,9 +91,7 @@ QMailThread::QMailThread()
 
 QMailThread::QMailThread(const QMailThreadId& id)
 {
-    QMailThread thread(QMailStore::instance()->thread(id));
-    d = thread.d;
-    thread.d = 0;
+    *this = QMailStore::instance()->thread(id);
 }
 
 /*!
@@ -112,7 +110,6 @@ QMailThread::QMailThread(const QMailThread& other)
 
 QMailThread::~QMailThread()
 {
-    delete d;
 }
 
 /*!
