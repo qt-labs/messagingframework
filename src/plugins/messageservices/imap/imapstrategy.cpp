@@ -1135,7 +1135,7 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
             handleClose(context);
             break;
         }
-        
+
         case IMAP_Logout:
         {
             break;
@@ -2811,6 +2811,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
 
             context->updateStatus(msg);
             context->protocol().sendUidStore(MFlag_Deleted, true, numericUidSequence(msgUidl));
+            return true;
         } else if (_expungeRequired) {
             // All messages flagged as deleted, expunge them
             context->protocol().sendExpunge();

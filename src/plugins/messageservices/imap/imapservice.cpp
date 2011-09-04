@@ -468,13 +468,11 @@ void ImapService::Source::queueDisconnectedOperations(const QMailAccountId &acco
 {
     //sync disconnected move and copy operations for account
 
-    QMailAccount account(accountId);
     QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
     bool pendingDisconnectedOperations = false;
     _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
 
     foreach(const QMailFolderId& folderId, folderList) {
-        
         if (!folderId.isValid())
             continue;
 
