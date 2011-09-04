@@ -1155,14 +1155,26 @@ void ImapService::Source::retrievalCompleted()
     if (_queuedMailCheckInProgress) {
         if (_mailCheckPhase == RetrieveFolders) {
             _mailCheckPhase = RetrieveMessages;
-            // full check including flags if interval checking, or flags have changed on server for this folder
-            int minimum = 1;
-            if (!_mailCheckFolderId.isValid() || _queuedFoldersFullCheck.contains(_mailCheckFolderId)) {
-                minimum = INT_MAX; // zero means retrieve all mail
+            bool accountCheck = false;
+            QMailFolderIdList folders;
+            if (!_mailCheckFolderId.isValid()) {
+                // Full check all folders
+                accountCheck = true;
+            } else if (_queuedFoldersFullCheck.contains(_mailCheckFolderId)) {
+                // Full check only _mailCheckFolderId
+                accountCheck = true;
+                folders.append(_mailCheckFolderId);
+            } else {
+                // Retrieve only new mail in _mailCheckFolderId
+                folders.append(_mailCheckFolderId);
             }
             _queuedFoldersFullCheck.removeAll(_mailCheckFolderId);
 
-            retrieveMessageList(_service->accountId(), _mailCheckFolderId, minimum, QMailMessageSortKey());
+            retrieveMessageLists(_service->accountId(),
+                                folders,
+                                1,
+                                QMailMessageSortKey(),
+                                accountCheck);
             return;
         } else {
             // Push email must be established
@@ -1415,7 +1427,8 @@ void ImapService::initiatePushEmail()
     if (ids.count()) {
         _establishingPushEmail = true;
         foreach(QMailFolderId id, ids) {
-            _source->queueMailCheck(id);
+            // Check for flag changes and new mail
+            _source->queueFlagsChangedCheck(id);
         }
     }
 }
