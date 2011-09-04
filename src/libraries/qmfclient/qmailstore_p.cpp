@@ -3606,7 +3606,7 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
     QSqlQuery query(simpleQuery("SELECT count(*) FROM sqlite_master WHERE `type` = \"table\" AND `name` = \"mailmessages\" AND `sql` LIKE \"%latestinconversation%\"", "old check"));
     if (query.next()) {
         if (query.value(0).toInt() != 0) {
-            qFatal("Unsupported database. Please delete the .qmf directory and try again.");
+            qFatal("Unsupported database. Please delete the %s directory and try again.", qPrintable(QMail::dataPath()));
         }
     } else {
         qWarning() << "Failure running check";
