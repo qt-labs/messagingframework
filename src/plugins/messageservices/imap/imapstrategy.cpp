@@ -3305,7 +3305,7 @@ void ImapRetrieveMessageListStrategy::messageListCompleted(ImapStrategyContextBa
     _updatedFolders.clear();
     _newMinMaxMap.clear();
     
-    if (!_error && _accountCheck) {
+    if (!_error) {
         updateAccountLastSynchronized(context);
     }
         
