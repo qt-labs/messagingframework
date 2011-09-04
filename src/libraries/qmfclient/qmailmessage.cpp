@@ -8240,12 +8240,7 @@ void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMe
     foreach (const QMailMessageHeaderField& field, headerFields()) {
         QByteArray duplicatedId(duplicatedData(field.id()));
         if (!duplicatedId.isNull()) {
-            QMailMessageContentType ct(headerField("Content-Type"));
-            if (!is7BitAscii(field.content()) && unicodeConvertingCharset(ct.charset())) {
-                updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset()));
-            } else {
-                updateMetaData(duplicatedId, field.decodedContent());
-            }
+            updateMetaData(duplicatedId, field.decodedContent());
         }
     }
 }
