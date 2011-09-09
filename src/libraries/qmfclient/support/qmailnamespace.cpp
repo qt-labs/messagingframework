@@ -673,9 +673,10 @@ static QString normaliseIdentifier(const QString& str)
     Returns the sequence of message identifiers that can be extracted from \a str.
     Message identifiers must conform to the definition given by RFC 5256.
 */
-QStringList QMail::messageIdentifiers(const QString& str)
+QStringList QMail::messageIdentifiers(const QString& aStr)
 {
     QStringList result;
+    QString str(aStr.left(1000)); // Handle long strings quickly
 
     QRegExp identifierPattern("("
                                 "(?:[ \\t]*)"           // Optional leading whitespace

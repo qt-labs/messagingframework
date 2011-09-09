@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201137
+  * Fixes: NB#225787 Slow parsing of long header field 
+
 201133
   * Fixes: NB#274801 MfE: Always up-to date mails receive stops for one of the folder or Inbox after some time
   * Fixes: NB#277324 MFE sync last for long time when multiple accounts configured (other mail and MFE)
