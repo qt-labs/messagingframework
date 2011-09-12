@@ -3,6 +3,7 @@ Latest Changes
 
 201137
   * Fixes: NB#225787 Slow parsing of long header field 
+  * Fixes: NB#271244 rich-text e-mail with an inline .txt attachment breaks preview
 
 201133
   * Fixes: NB#274801 MfE: Always up-to date mails receive stops for one of the folder or Inbox after some time
