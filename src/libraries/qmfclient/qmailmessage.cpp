@@ -8337,18 +8337,20 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
 void QMailMessage::refreshPreview()
 {
     const int maxPreviewLength = 280;
-
-    QMailMessagePartContainer *part;
-
     // TODO: don't load entire body into memory
     // TODO: parse html correctly, e.g. closing brackets in quotes in tags
+    QMailMessagePartContainer *htmlPart= findHtmlContainer();
+    QMailMessagePartContainer *plainTextPart= findPlainTextContainer();
 
-    if ((part = findPlainTextContainer()) && part->hasBody()) {
-        QString plaintext(part->body().data());
+    if (multipartType() == MultipartRelated && htmlPart) // force taking the html in this case
+        plainTextPart=0;
+
+    if ( plainTextPart && plainTextPart->hasBody()) {
+        QString plaintext(plainTextPart->body().data());
         plaintext.remove(QRegExp("\\[(image|cid):[^\\]]*\\]", Qt::CaseInsensitive));
         metaDataImpl()->setPreview(plaintext.left(maxPreviewLength));
-    } else if ((part = findHtmlContainer()) && part->hasBody()) {
-        QString markup = part->body().data();
+    } else if (htmlPart && ( multipartType() == MultipartRelated || htmlPart->hasBody())) {
+        QString markup = htmlPart->body().data();
         markup.remove(QRegExp("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>", Qt::CaseInsensitive));
         markup.remove(QRegExp("<(.)[^>]*>"));
         markup.replace("&quot;", "\"", Qt::CaseInsensitive);
