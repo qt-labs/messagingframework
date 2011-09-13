@@ -76,7 +76,7 @@ struct QMF_EXPORT QMailThread
     void setMessageCount(uint value);
 
 private:
-    QSharedDataPointer<QMailThreadPrivate> d;
+    QMailThreadPrivate *d;
 };
 
 typedef QList<QMailThread> QMailThreadList;
