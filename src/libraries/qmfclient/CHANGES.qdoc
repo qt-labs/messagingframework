@@ -175,6 +175,7 @@ Changes since the QMF-1.0 release on 15/05/09:
      Added QMailHeartBeatTimer::setInterval(int)
      Remove inline keyword from QMailHeartBeatTimer member functions
 
+43.  Binary compatibility broken in qmailthread.h (change of QMailThread d ptr type)
 
 *****************************************************************************
 
