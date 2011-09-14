@@ -44,11 +44,12 @@
 #include "qmaillog.h"
 
 
-class QMailThreadPrivate
+class QMailThreadPrivate : public QSharedData
 {
 public:
     QMailThreadPrivate()
-        : messageCount(0),
+        : QSharedData(),
+          messageCount(0),
           unreadCount(0)
     {
     }
@@ -91,9 +92,7 @@ QMailThread::QMailThread()
 
 QMailThread::QMailThread(const QMailThreadId& id)
 {
-    QMailThread thread(QMailStore::instance()->thread(id));
-    d = thread.d;
-    thread.d = 0;
+    *this = QMailStore::instance()->thread(id);
 }
 
 /*!
@@ -101,8 +100,8 @@ QMailThread::QMailThread(const QMailThreadId& id)
 */
 
 QMailThread::QMailThread(const QMailThread& other)
-    : d(new QMailThreadPrivate(*other.d))
 {
+    d = other.d;
 }
 
 
@@ -112,7 +111,6 @@ QMailThread::QMailThread(const QMailThread& other)
 
 QMailThread::~QMailThread()
 {
-    delete d;
 }
 
 /*!
