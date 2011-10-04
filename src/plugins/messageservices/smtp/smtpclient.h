@@ -80,7 +80,7 @@ public:
 
 signals:
     void errorOccurred(int, const QString &);
-    void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
+    void errorOccurred(const QMailServiceAction::Status &, const QString &);
     void updateStatus(const QString &);
 
     void progressChanged(uint, uint);

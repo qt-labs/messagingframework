@@ -847,6 +847,10 @@ void SmtpClient::operationFailed(int code, const QString &text)
 
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
+    QMailServiceAction::Status status;
+    status.messageId = mailItr->mail.id();
+    status.errorCode = code;
+
     if (code != QMailServiceAction::Status::ErrNoError) {
         delete authTimeout;
         authTimeout = 0;
@@ -873,7 +877,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
     msg.append(bufferedResponse);
     msg.append(text);
 
-    emit errorOccurred(code, msg);
+    emit errorOccurred(status, msg);
 }
 
 void SmtpClient::sendMoreData(qint64 bytesWritten)
