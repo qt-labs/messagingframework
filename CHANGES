@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201141
+  * Fixes: NB#272117 "Error occurred" keeps on popping up when sending mail to wrong recipient (other server error) 
+
 201137
   * Fixes: NB#225787 Slow parsing of long header field 
   * Fixes: NB#271244 rich-text e-mail with an inline .txt attachment breaks preview
