@@ -41,6 +41,11 @@
 
 #include "qmailcodec.h"
 #include "qmaillog.h"
+
+#ifdef HAVE_LIBICU
+#include "qcharsetdetector.h"
+#endif
+
 #include <QIODevice>
 #include <QTextCodec>
 #include <QtDebug>
@@ -52,7 +57,6 @@ int QMF_EXPORT MaxCharacters = QMailCodec::ChunkCharacters;
 int QMF_EXPORT Base64MaxLineLength = 76;
 // Can be any number:
 int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
-
 
 /*!
   \class QMailCodec
@@ -235,6 +239,8 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
     it will use the Latin-1 codec.
 
     Returns 0 if could not locate a codec.
+    
+    \sa QTextCodec::autoDetectEncoding()
 */
 QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAscii)
 {
@@ -371,6 +377,24 @@ QByteArray QMailCodec::decode(const QByteArray& input)
     return result;
 }
 
+/*!
+    Returns the charset of \a text using automatic detection; or an empty
+    string if detection fails.
+    
+    \sa QTextCodec::codecForName()
+*/
+QString QMailCodec::autoDetectEncoding(const QByteArray& text)
+{
+#ifdef HAVE_LIBICU
+    if (text.isEmpty()) return "";
+    QCharsetDetector charsetDetector;
+    charsetDetector.setText(text);
+    QString result(charsetDetector.detect().name());
+    return result;
+#else
+    return QString("");
+#endif
+}
 
 // ASCII character values used throughout
 const unsigned char MinPrintableRange = 0x20;

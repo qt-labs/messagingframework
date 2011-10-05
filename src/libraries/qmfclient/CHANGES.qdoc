@@ -350,6 +350,8 @@ Changes since the development preview release on 16/01/09:
 
 34. Added 'QMailStorageAction::updateMessages(const QMailMessageMetaDataList &list)'.
 
+35. Added 'static QString QMailCodec::autoDetectEncoding(const QByteArray& text)'.
+
 *****************************************************************************
 
 \endcode

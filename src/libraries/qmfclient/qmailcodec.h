@@ -76,6 +76,7 @@ public:
     static QTextCodec * codecForName(const QByteArray& charset, bool translateAscii = true);
     static void copy(QDataStream& out, QDataStream& in);
     static void copy(QTextStream& out, QTextStream& in);
+    static QString autoDetectEncoding(const QByteArray& text);
 
 protected:
     // Helper functions to convert stream chunks

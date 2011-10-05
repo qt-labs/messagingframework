@@ -3,6 +3,7 @@ Latest Changes
 
 201141
   * Fixes: NB#272117 "Error occurred" keeps on popping up when sending mail to wrong recipient (other server error) 
+  * Fixes: NB#281177 Preview and message headers displayed as junk characters for some Traditional Chinese mails
 
 201137
   * Fixes: NB#225787 Slow parsing of long header field 

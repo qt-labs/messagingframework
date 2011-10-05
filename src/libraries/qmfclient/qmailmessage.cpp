@@ -117,6 +117,18 @@ QByteArray to7BitAscii(const StringType& src)
     return result;
 }
 
+template<typename StringType>
+bool is7BitAscii(const StringType& src)
+{
+    bool result = true;
+
+    typename StringType::const_iterator it = src.begin();
+    for (const typename StringType::const_iterator end = it + src.length(); it != end && result; ++it)
+        result &= (asciiRepresentable(*it));
+
+    return result;
+}
+
 
 // Parsing functions
 static int insensitiveIndexOf(const QByteArray& content, const QByteArray& container, int from = 0)
@@ -215,6 +227,16 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset)
             return textCodec->toUnicode(input);
 
         qWarning() << "toUnicode: unable to find codec for charset:" << charset;
+    } else {
+        QByteArray autoCharset = QMailCodec::autoDetectEncoding(input).toLatin1();
+        // We don't trust on Encoding Detection for the case of "ISO-8859-* charsets.
+        if (insensitiveIndexOf("ISO-8859-", autoCharset) == -1) {
+            QTextCodec* textCodec = QMailCodec::codecForName(autoCharset);
+            if (!autoCharset.isEmpty() && textCodec)
+                return textCodec->toUnicode(input);
+
+            qWarning() << "toUnicode: unable to find codec for autodetected charset:" << autoCharset;
+        }
     }
 
     return to7BitAscii(QString::fromLatin1(input.constData(), input.length()));
@@ -3107,6 +3129,26 @@ QMailMessageBodyPrivate::QMailMessageBodyPrivate()
 {
 }
 
+void QMailMessageBodyPrivate::ensureCharsetExist()
+{
+    QByteArray charset = _type.charset();
+    const QByteArray &data(_bodyData.toQByteArray());
+    if (!data.isEmpty() && (charset.isEmpty() || insensitiveIndexOf("ascii", charset) != -1)) {
+        QByteArray autoCharset;
+        if (_encoded && _encoding != QMailMessageBody::SevenBit) {
+            QMailCodec* codec = codecForEncoding(_encoding, _type);
+            const QByteArray &decoded = codec->decode(data);
+            autoCharset = QMailCodec::autoDetectEncoding(decoded).toLatin1();
+            delete codec;
+        } else {
+            autoCharset = QMailCodec::autoDetectEncoding(data).toLatin1();
+        }
+        if (!autoCharset.isEmpty() && (insensitiveIndexOf("ISO-8859-", autoCharset) == -1)) {
+            _type.setCharset(autoCharset);
+        }
+    }
+}
+
 void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
 {
     _encoding = te;
@@ -3114,6 +3156,8 @@ void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageC
     _encoded = (status == QMailMessageBody::AlreadyEncoded);
     _filename.clear();
     _bodyData = ls;
+
+    ensureCharsetExist();
 }
 
 void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
@@ -3123,6 +3167,8 @@ void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageCo
     _encoded = (status == QMailMessageBody::AlreadyEncoded);
     _filename = file;
     _bodyData = LongString(file);
+
+    ensureCharsetExist();
 }
 
 void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
@@ -3132,7 +3178,7 @@ void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageCont
     _encoded = true;
     _filename.clear();
     _bodyData = LongString();
-    
+
     // If the data is already encoded, we don't need to do it again
     if (status == QMailMessageBody::AlreadyEncoded)
         te = QMailMessageBody::SevenBit;
@@ -3149,6 +3195,8 @@ void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageCont
         _bodyData = LongString(encoded);
         delete codec;
     }
+
+    ensureCharsetExist();
 }
 
 void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te)
@@ -3179,6 +3227,8 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
         _bodyData = LongString(encoded);
         delete codec;
     }
+
+    ensureCharsetExist();
 }
 
 static bool unicodeConvertingCharset(const QByteArray& charset)
@@ -3330,7 +3380,7 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
 bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
 {
     QByteArray charset = _type.charset();
-    if (charset.isEmpty() || (insensitiveIndexOf("ascii", charset) != -1)) {
+    if (charset.isEmpty() || insensitiveIndexOf("ascii", charset) != -1) {
         // We'll assume the text is plain ASCII, to be extracted to Latin-1
         charset = "ISO-8859-1";
     }
@@ -8240,7 +8290,12 @@ void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMe
     foreach (const QMailMessageHeaderField& field, headerFields()) {
         QByteArray duplicatedId(duplicatedData(field.id()));
         if (!duplicatedId.isNull()) {
-            updateMetaData(duplicatedId, field.decodedContent());
+            QMailMessageContentType ct(headerField("Content-Type"));
+            if (!is7BitAscii(field.content())) {
+                updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset()));
+            } else {
+                updateMetaData(duplicatedId, field.decodedContent());
+            }
         }
     }
 }
