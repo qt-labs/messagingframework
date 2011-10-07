@@ -379,10 +379,6 @@ void SmtpClient::nextAction(const QString &response)
     {
         if (responseCode == 220) {
             mailItr = mailList.begin();
-            statusMailId = QMailMessageId();
-            if (mailItr != mailList.end()) {
-                statusMailId = mailItr->mail.id();
-            }
             capabilities.clear();
 
             // We need to know if extensions are supported
@@ -769,11 +765,9 @@ void SmtpClient::nextAction(const QString &response)
             mailItr++;
             if (mailItr == mailList.end()) {
                 status = Quit;
-                statusMailId = QMailMessageId();
             } else {
                 // More messages to send
                 status = MetaData;
-                statusMailId = mailItr->mail.id();
             }
             nextAction(QString());
         } else {
@@ -854,7 +848,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
     QMailServiceAction::Status actionStatus;
-    actionStatus.messageId = statusMailId;
+    actionStatus.messageId = sendingId;
     actionStatus.errorCode = code;
 
     if (code != QMailServiceAction::Status::ErrNoError) {
