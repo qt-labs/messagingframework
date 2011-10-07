@@ -241,6 +241,7 @@ unix: {
         PRIVATE_HEADERS += support/qcharsetdetector_p.h \
                            support/qcharsetdetector.h
         SOURCES += support/qcharsetdetector.cpp
+        DEFINES += HAVE_LIBICU
 }
 
 include(../../../common.pri)
