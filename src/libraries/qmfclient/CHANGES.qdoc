@@ -177,6 +177,8 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 43.  Binary compatibility broken in qmailthread.h (change of QMailThread d ptr type)
 
+44.  Added dependency on libicu-dev
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:

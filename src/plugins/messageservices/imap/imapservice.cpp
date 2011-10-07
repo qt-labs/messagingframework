@@ -88,6 +88,7 @@ public:
           _unsetMask(0)
     {
         connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(intervalCheck()));
+        connect(&_pushIntervalTimer, SIGNAL(timeout()), this, SLOT(pushIntervalCheck()));
         connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
     }
 
@@ -106,6 +107,14 @@ public:
         _intervalTimer.stop();
         if (interval > 0) {
             _intervalTimer.start(interval*1000*60); // interval minutes
+        }
+    }
+
+    void setPushIntervalTimer(int pushInterval)
+    {
+        _pushIntervalTimer.stop();
+        if (pushInterval > 0) {
+            _pushIntervalTimer.start(pushInterval*1000*60); // interval minutes
         }
     }
 
@@ -151,6 +160,7 @@ public slots:
     void retrievalCompleted();
     void retrievalTerminated();
     void intervalCheck();
+    void pushIntervalCheck();
     void queueMailCheck(QMailFolderId folderId);
     void queueFlagsChangedCheck(QMailFolderId folderId);
     void resetExpiryTimer();
@@ -175,6 +185,7 @@ private:
     bool _unavailable;
     bool _synchronizing;
     QTimer _intervalTimer;
+    QTimer _pushIntervalTimer;
     QList<QMailFolderId> _queuedFolders; // require new mail check
     QList<QMailFolderId> _queuedFoldersFullCheck; // require flags check also
     quint64 _setMask;
@@ -1210,6 +1221,20 @@ void ImapService::Source::intervalCheck()
     queueMailCheck(QMailFolderId()); // Full check including flags
 }
 
+// Push interval mail checking timer has expired, perform mail check on all push enabled folders
+void ImapService::Source::pushIntervalCheck()
+{
+    _service->_client->requestRapidClose();
+    exportUpdates(_service->accountId()); // Convenient for user to export pending changes also
+    QMailFolderIdList ids(_service->_client->configurationIdleFolderIds());
+    if (ids.count()) {
+        foreach(QMailFolderId id, ids) {
+            // Check for flag changes and new mail
+            _service->_source->queueFlagsChangedCheck(id);
+        }
+    }
+}
+
 void ImapService::Source::queueMailCheck(QMailFolderId folderId)
 {
     if (_unavailable) {
@@ -1326,6 +1351,7 @@ void ImapService::disable()
     _previousPushFolders = imapCfg.pushFolders();
     _restartPushEmailTimer->stop();
     _source->setIntervalTimer(0);
+    _source->setPushIntervalTimer(0);
     _source->retrievalTerminated();
     delete _client;
     _client = 0;
@@ -1357,7 +1383,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
         // push email settings have changed, restart client
         if (_accountWasEnabled) {
             disable();
-    }
+        }
         enable();
     } else if (!_accountWasEnabled) {
         // account changed from disabled to enabled
@@ -1429,6 +1455,8 @@ void ImapService::initiatePushEmail()
             _source->queueFlagsChangedCheck(id);
         }
     }
+    // Interval check to update flags on servers that do not push flag changes when idling e.g. gmail
+    _source->setPushIntervalTimer(60); // minutes    
 }
 
 bool ImapService::pushEmailEstablished()
