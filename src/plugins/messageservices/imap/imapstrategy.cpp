@@ -873,7 +873,7 @@ void ImapPrepareMessagesStrategy::newConnection(ImapStrategyContextBase *context
         while (!_locations.isEmpty()) {
             const QPair<QMailMessagePart::Location, QMailMessagePart::Location> &pair(_locations.first());
 
-            QString url(ImapProtocol::url(pair.first, false, true));
+            QString url(ImapProtocol::url(pair.first, false, false));
             urlAuthorized(context, url);
 
             _locations.removeFirst();
@@ -3869,7 +3869,7 @@ void ImapCopyMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *
     if (_currentMailbox.id().isValid() && (_currentMailbox.id() == _destination.id())) {
         // This message is already in the destination folder - we need to append a new copy
         // after closing the destination folder
-        context->protocol().sendClose();
+        context->protocol().sendClose(); //TODO: change this, e.g. use expunge
     } else {
         ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
     }
