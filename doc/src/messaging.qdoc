@@ -50,7 +50,7 @@ For detailed information refer to:
 
 \section1 Building and Compiling 
 
-To build the Messaging Framework, ensure qt4 and libicu development packages are installed, and  run \c qmake on the top level \c messagingframework.pro file as follows:
+To build the Messaging Framework, ensure qt4, zlib and libicu development packages are installed, and  run \c qmake on the top level \c messagingframework.pro file as follows:
 
 \code 
 qmake "QMF_INSTALL_ROOT=<image directory path>" messagingframework.pro 

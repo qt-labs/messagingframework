@@ -53,6 +53,12 @@
 #include <QFile>
 #include <QDir>
 
+#ifdef QT_QMF_HAVE_ZLIB
+#define QMFALLOWCOMPRESS 1
+#else
+#define QMFALLOWCOMPRESS 0
+#endif
+
 class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {
     ImapStrategyContext *context;
@@ -343,8 +349,16 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
             sendLogin(config);
             break;
         }
-        case IMAP_Login:
+        case IMAP_Login: // Fall through
+        case IMAP_Compress:
         {
+            if (QMFALLOWCOMPRESS && capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive) && !compress()) {
+                // Server supports COMPRESS and we are not yet compressing
+                sendCompress(); // Must not pipeline compress
+                return;
+            }
+
+            // Server does not support COMPRESS or already compressing
             sendSelect(_folder);
             return;
         }
@@ -681,8 +695,20 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
             }
 
-            if (!_protocol.capabilities().contains("QRESYNC")) {
-                _strategyContext->commandTransition(command, status);
+            if (QMFALLOWCOMPRESS && _protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive) && !_protocol.compress()) {
+                _protocol.sendCompress(); // MUST not pipeline compress
+                return;
+            }
+            // Server does not support compression, continue with post compress step
+            commandTransition(IMAP_Compress, status);
+            return;
+        }
+
+        case IMAP_Compress:
+        {
+            // Sent a compress, or logged in and server doesn't support compress
+            if (!_protocol.capabilities().contains("QRESYNC", Qt::CaseInsensitive)) {
+                _strategyContext->commandTransition(IMAP_Login, status);
             } else {
                 if (!_qresyncEnabled) {
                     _protocol.sendEnable("QRESYNC CONDSTORE");

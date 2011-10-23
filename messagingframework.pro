@@ -42,3 +42,7 @@ dox.depends =
 QMAKE_EXTRA_TARGETS += dox
 
 include(doc/src/doc.pri)
+
+!unix {
+     warning("IMAP COMPRESS capability is currently not supported on non unix platforms")
+}

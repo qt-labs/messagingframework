@@ -90,7 +90,8 @@ enum ImapCommand
     IMAP_Enable,
     IMAP_QResync,
     IMAP_FetchFlags,
-    IMAP_Noop
+    IMAP_Noop,
+    IMAP_Compress
 };
 
 enum MessageFlag
@@ -159,6 +160,9 @@ public:
     QChar delimiter() const;
     void setDelimiter(QChar delimiter);
 
+    bool compress() const;
+    void setCompress(bool comp);
+
     bool authenticated() const;
     void setAuthenticated(bool auth);
 
@@ -206,6 +210,7 @@ public:
     void sendNoop();
     void sendIdle();
     void sendIdleDone();
+    void sendCompress();
 
     /*  Valid in all states */
     void sendLogout();

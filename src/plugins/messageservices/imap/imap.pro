@@ -27,7 +27,8 @@ HEADERS += imapclient.h \
            imapstructure.h \
            imapauthenticator.h \
            imapstrategy.h \
-           integerregion.h
+           integerregion.h \
+           imaptransport.h
 
 SOURCES += imapclient.cpp \
            imapconfiguration.cpp \
@@ -36,7 +37,8 @@ SOURCES += imapclient.cpp \
            imapstructure.cpp \
            imapauthenticator.cpp \
            imapstrategy.cpp \
-           integerregion.cpp
+           integerregion.cpp \
+           imaptransport.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
 QT += gui
@@ -86,6 +88,16 @@ symbian: {
     DEPLOYMENT += pluginstub
 
     load(armcc_warnings)
+}
+
+unix {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += zlib
+    DEFINES += QT_QMF_HAVE_ZLIB
+}
+
+!unix {
+     warning("IMAP COMPRESS capability is currently not supported on non unix platforms")
 }
 
 include(../../../../common.pri)

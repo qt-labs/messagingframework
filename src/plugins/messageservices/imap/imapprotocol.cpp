@@ -45,6 +45,7 @@
 #include "imapconfiguration.h"
 #include "imapstructure.h"
 #include "integerregion.h"
+#include "imaptransport.h"
 
 #include <QTemporaryFile>
 #include <QFileInfo>
@@ -61,31 +62,6 @@
 #ifndef QT_NO_OPENSSL
 #include <QSslError>
 #endif
-
-class ImapTransport : public QMailTransport
-{
-public:
-    ImapTransport(const char* name) :
-        QMailTransport(name)
-    {
-    }
-
-#ifndef QT_NO_OPENSSL
-protected:
-    virtual bool ignoreCertificateErrors(const QList<QSslError>& errors)
-    {
-        QMailTransport::ignoreCertificateErrors(errors);
-
-        // Because we can't ask the user (due to string freeze), let's default
-        // to ignoring these errors...
-        foreach (const QSslError& error, errors)
-            if (error.error() == QSslError::NoSslSupport)
-                return false;
-
-        return true;
-    }
-#endif
-};
 
 // Pack both the source mailbox path and the numeric UID into the UID value
 // that we store for IMAP messages.  This will allow us find the owner 
@@ -2540,6 +2516,31 @@ void IdleState::untaggedResponse(ImapContext *c, const QString &line)
     }
 }
 
+class CompressState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    CompressState() : ImapState(IMAP_Compress, "Compress") {}
+
+    virtual QString transmit(ImapContext *c);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual bool permitsPipelining() const { return true; }
+};
+
+QString CompressState::transmit(ImapContext *c)
+{
+    return c->sendCommand("COMPRESS DEFLATE");
+}
+
+void CompressState::taggedResponse(ImapContext *c, const QString &line)
+{
+    Q_UNUSED(line);
+    c->protocol()->setCompress(true);
+    ImapState::taggedResponse(c, line);
+}
+
+
 
 class ImapContextFSM : public ImapContext
 {
@@ -2574,6 +2575,7 @@ public:
     CloseState closeState;
     FullState fullState;
     IdleState idleState;
+    CompressState compressState;
 
     virtual QString sendCommandLiteral(const QString &cmd, uint length);
 
@@ -2767,7 +2769,7 @@ bool ImapProtocol::open( const ImapConfiguration& config )
 void ImapProtocol::close()
 {
     if (_transport)
-        _transport->close();
+        _transport->imapClose();
     _stream.reset();
     _fsm->reset();
 
@@ -2814,6 +2816,16 @@ QChar ImapProtocol::delimiter() const
 void ImapProtocol::setDelimiter(QChar delimiter)
 {
     _delimiter = delimiter;
+}
+
+bool ImapProtocol::compress() const
+{
+    return _transport->compress();
+}
+
+void ImapProtocol::setCompress(bool comp)
+{
+    _transport->setCompress(comp);
 }
 
 bool ImapProtocol::authenticated() const
@@ -2893,6 +2905,11 @@ void ImapProtocol::sendIdleDone()
 {
     if (_fsm->state() == &_fsm->idleState)
         _fsm->idleState.done(_fsm);
+}
+
+void ImapProtocol::sendCompress()
+{
+    _fsm->setState(&_fsm->compressState);
 }
 
 void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbox )
@@ -3070,18 +3087,16 @@ void ImapProtocol::errorHandling(int status, QString msg)
 
 void ImapProtocol::sendData(const QString &cmd)
 {
-    const QByteArray &output(cmd.toAscii());
-
-    QDataStream &out(_transport->stream());
-    out.writeRawData(output.data(), output.length());
-    out.writeRawData("\r\n", 2);
+    QByteArray output(cmd.toAscii());
+    output.append("\r\n");
+    _transport->imapWrite(&output);
 
     QString logCmd(cmd);
     QRegExp loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s");
     if (loginExp.indexIn(cmd) != -1) {
         logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
     }
-    qMailLog(IMAP) << objectName() << "SEND:" << qPrintable(logCmd);
+    qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);
 }
 
 void ImapProtocol::sendDataLiteral(const QString &cmd, uint length)
@@ -3115,8 +3130,8 @@ QString ImapProtocol::sendCommandLiteral(const QString &cmd, uint length)
 void ImapProtocol::incomingData()
 {
     int readLines = 0;
-    while (_transport->canReadLine()) {
-        processResponse(_transport->readLine());
+    while (_transport->imapCanReadLine()) {
+        processResponse(_transport->imapReadLine());
 
         readLines++;
         if (readLines >= MAX_LINES) {
