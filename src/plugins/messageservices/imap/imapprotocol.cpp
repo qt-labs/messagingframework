@@ -417,6 +417,9 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
         QString temp = token(line, '[', ']', &start);
         QStringList capabilities = temp.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
+    } else if (line.indexOf("* CAPABILITY ", 0) != -1) {
+        QStringList capabilities = line.mid(13).trimmed().split(' ', QString::SkipEmptyParts);
+        c->protocol()->setCapabilities(capabilities);
     }
 
     c->buffer().append(line);
@@ -615,6 +618,7 @@ void LoginState::taggedResponse(ImapContext *c, const QString &line)
         c->protocol()->setCapabilities(capabilities);
     }
 
+    c->protocol()->setAuthenticated(true);
     ImapState::taggedResponse(c, line);
 }
 
@@ -638,6 +642,7 @@ QString LogoutState::transmit(ImapContext *c)
 void LogoutState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
+        c->protocol()->setAuthenticated(false);
         c->protocol()->close();
         c->operationCompleted(command(), OpOk);
     } else {
@@ -2685,7 +2690,9 @@ ImapProtocol::ImapProtocol()
       _transport(0),
       _literalDataRemaining(0),
       _flatHierarchy(false),
-      _delimiter(0)
+      _delimiter(0),
+      _authenticated(false),
+      _receivedCapabilities(false)
 {
     connect(&_incomingDataTimer, SIGNAL(timeout()), this, SLOT(incomingData()));
     connect(&_fsm->listState, SIGNAL(mailboxListed(QString, QString)),
@@ -2736,6 +2743,8 @@ bool ImapProtocol::open( const ImapConfiguration& config )
     _precedingLiteral.clear();
 
     _mailbox = ImapMailboxProperties();
+    _authenticated = false;
+    _receivedCapabilities = false;
 
     if (!_transport) {
         _transport = new ImapTransport("IMAP");
@@ -2763,6 +2772,8 @@ void ImapProtocol::close()
     _fsm->reset();
 
     _mailbox = ImapMailboxProperties();
+    _authenticated = false;
+    _receivedCapabilities = false;
 }
 
 bool ImapProtocol::connected() const
@@ -2805,6 +2816,27 @@ void ImapProtocol::setDelimiter(QChar delimiter)
     _delimiter = delimiter;
 }
 
+bool ImapProtocol::authenticated() const
+{
+    return _authenticated;
+}
+
+void ImapProtocol::setAuthenticated(bool auth)
+{
+    _authenticated = auth;
+}
+
+// capabilities info has been sent by server, possibly as a result of unsolicited response.
+bool ImapProtocol::receivedCapabilities() const
+{
+    return _receivedCapabilities;
+}
+
+void ImapProtocol::setReceivedCapabilities(bool received)
+{
+    _receivedCapabilities = received;
+}
+
 bool ImapProtocol::loggingOut() const
 {
     return _fsm->state() == &_fsm->logoutState;
@@ -2817,6 +2849,7 @@ const QStringList &ImapProtocol::capabilities() const
 
 void ImapProtocol::setCapabilities(const QStringList &newCapabilities)
 {
+    setReceivedCapabilities(true);
     _capabilities = newCapabilities;
 }
 

@@ -314,6 +314,12 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     switch( command ) {
         case IMAP_Init:
         {
+            if (receivedCapabilities()) {
+                // Already received capabilities in unsolicited response, no need to request them again
+                setReceivedCapabilities(false);
+                idleCommandTransition(IMAP_Capability, status);
+                return;
+            }
             // We need to request the capabilities
             sendCapability();
             return;
@@ -580,7 +586,11 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
     switch( command ) {
         case IMAP_Init:
         {
-            // We need to request the capabilities
+            // We need to request the capabilities. Even in the case that an unsolicited response
+            // has been received, as some servers report incomplete info in unsolicited responses,
+            // missing the IDLE capability.
+            // Currently idle connections must be established before main connection will
+            // service requests.
             emit updateStatus( tr("Checking capabilities" ) );
             _protocol.sendCapability();
             break;
@@ -588,6 +598,14 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         
         case IMAP_Capability:
         {
+            if (_protocol.authenticated()) {
+                // Received capabilities after logging in, continue with post login process
+                Q_ASSERT(_protocol.receivedCapabilities());
+                _protocol.setReceivedCapabilities(true);
+                commandTransition(IMAP_Login, status);
+                return;
+            }
+
             if (!_protocol.encrypted()) {
                 if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _protocol.capabilities())) {
                     // Switch to encrypted mode
@@ -637,11 +655,16 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Login:
         {
-            // Once we have logged in, we now have the full set of capabilities (either from 
-            // a capability command or from an untagged response)
+            // After logging in server capabilities reported may change  so we need to request 
+            // capabilities again, unless already received in an unsolicited response
+            if (!_protocol.receivedCapabilities()) {
+                emit updateStatus( tr("Checking capabilities" ) );
+                _protocol.sendCapability();
+                return;
+            }
 
             // Now that we know the capabilities, check for Reference support
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH"));
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive));
 
             QMailAccount account(_config.id());
             ImapConfiguration imapCfg(_config);

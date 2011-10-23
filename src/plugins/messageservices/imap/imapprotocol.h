@@ -159,6 +159,12 @@ public:
     QChar delimiter() const;
     void setDelimiter(QChar delimiter);
 
+    bool authenticated() const;
+    void setAuthenticated(bool auth);
+
+    bool receivedCapabilities() const;
+    void setReceivedCapabilities(bool received);
+
     QString lastError() const { return _lastError; };
 
     const QStringList &capabilities() const;
@@ -299,6 +305,8 @@ private:
     QTimer _incomingDataTimer;
     bool _flatHierarchy;
     QChar _delimiter;
+    bool _authenticated;
+    bool _receivedCapabilities;
 
     static const int MAX_LINES = 30;
 };
