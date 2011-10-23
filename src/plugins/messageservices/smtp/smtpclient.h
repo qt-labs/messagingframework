@@ -122,6 +122,7 @@ private:
     TransferStatus status;
     QList<RawEmail> mailList;
     QList<RawEmail>::Iterator mailItr;
+    statusMailId;
     QList<QMailMessage::MessageChunk> mailChunks;
     QMailMessageId sendingId;
     uint messageLength;
