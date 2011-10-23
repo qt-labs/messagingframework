@@ -398,41 +398,6 @@ QList<QString> contentIdentifiers(QList<QMailMessageMetaData*> list)
     return result;
 }
 
-const QString DontSend = "dontSend";
-const QString SendFailedTime = "sendFailedTime";
-const uint MaxSendFailedAttempts = 5;
-
-void markFailedMessage(QMailServerRequestType requestType, const QMailServiceAction::Status & status)
-{
-    switch (requestType) {
-    case TransmitMessagesRequestType:
-        {
-            if (status.messageId.isValid()) {
-                QMailMessageMetaData metaData(status.messageId);
-
-                if (metaData.customField(DontSend) != "true") {
-                    uint sendFailedCount = metaData.customField(DontSend).toUInt();
-                    ++sendFailedCount;
-                    if (sendFailedCount >= MaxSendFailedAttempts) {
-                        metaData.setCustomField(DontSend, "true");
-                    }
-                    else {
-                        metaData.setCustomField(DontSend, QString::number(sendFailedCount));
-                    }
-                }
-                metaData.setCustomField(SendFailedTime,
-                                        QString::number(QDateTime::currentDateTimeUtc().toTime_t()));
-                QMailStore::instance()->updateMessagesMetaData(
-                            QMailMessageKey::id(status.messageId),
-                            QMailMessageKey::Custom, metaData);
-            }
-        }
-        break;
-    default:
-        break;
-    }
-}
-
 }
 
 
@@ -1330,12 +1295,8 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
         // Transmit any messages in the Outbox for this account
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
         QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
-        QMailMessageKey sendKey(QMailMessageKey::customField("dontSend", "true", QMailDataComparator::NotEqual));
-        QMailMessageKey noSendKey(QMailMessageKey::customField("dontSend", QMailDataComparator::Absent));
 
-        QMailMessageIdList toTransmit(
-                    QMailStore::instance()->queryMessages(
-                        accountKey & outboxKey & (noSendKey | sendKey)));
+        QMailMessageIdList toTransmit(QMailStore::instance()->queryMessages(accountKey & outboxKey));
 
         bool success(sinkService.value(sink)->usesConcurrentActions()
                      ? sink->transmitMessages(toTransmit, action)
@@ -2674,10 +2635,6 @@ void ServiceHandler::reportFailure(quint64 action, QMailServiceAction::Status::E
 
 void ServiceHandler::reportFailure(quint64 action, const QMailServiceAction::Status status)
 {
-    if (status.errorCode != QMailServiceAction::Status::ErrNoError) {
-        markFailedMessage(mActiveActions[action].description, status);
-    }
-
     emit statusChanged(action, status);
 
     // Treat all errors as failures

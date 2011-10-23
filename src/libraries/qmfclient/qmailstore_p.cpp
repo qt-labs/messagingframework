@@ -3385,6 +3385,10 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                 metaData.setResponseType(extractor.responseType());
                 break;
 
+            case QMailMessageKey::Custom:
+                metaData.setCustomFields(customFields);
+                break;
+
             case QMailMessageKey::CopyServerUid:
                 metaData.setCopyServerUid(extractor.copyServerUid());
                 break;
@@ -3420,11 +3424,6 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
 
     if (it != values.constEnd())
         qWarning() << QString("updateMessageValues: %1 values not consumed!").arg(values.constEnd() - it);
-
-    // QMailMessageKey::Custom is a "special" kid.
-    if ((properties & QMailMessageKey::Custom)) {
-        metaData.setCustomFields(customFields);
-    }
 
     // The target message is not completely loaded
     metaData.setStatus(QMailMessage::UnloadedData, true);
@@ -4322,9 +4321,8 @@ QMailThread QMailStorePrivate::thread(const QMailThreadId &id) const
 
 QMailMessageMetaData QMailStorePrivate::messageMetaData(const QMailMessageId &id) const
 {
-    if (messageCache.contains(id)) {
+    if (messageCache.contains(id))
         return messageCache.lookup(id);
-    }
 
     //if not in the cache, then preload the cache with the id and its most likely requested siblings
     preloadHeaderCache(id);
@@ -6203,7 +6201,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
     foreach (const QMailMessageId& id, *updatedMessageIds) {
         if (messageCache.contains(id)) {
             QMailMessageMetaData cachedMetaData = messageCache.lookup(id);
-            updateMessageValues(props, extractedValues, data.customFields(), cachedMetaData);
+            updateMessageValues(properties, extractedValues, data.customFields(), cachedMetaData);
             cachedMetaData.setUnmodified();
             messageCache.insert(cachedMetaData);
             uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
@@ -6973,9 +6971,8 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
         if (metaData.id().isValid()) {
             messageCache.insert(metaData);
             uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
-            if (metaData.id() == id) {
+            if (metaData.id() == id)
                 result = metaData;
-            }
         }
     }
 }
@@ -8262,9 +8259,6 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
 
         if(messageCache.contains(id)) {
             QMailMessageMetaData metaData = messageCache.lookup(id);
-            if ((properties & QMailMessageKey::Custom)) {
-                metaData.setCustomFields(data.customFields());
-            }
             foreach (QMailMessageKey::Property p, messagePropertyList()) {
                 switch (properties & p)
                 {
