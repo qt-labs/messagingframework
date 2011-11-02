@@ -83,12 +83,13 @@ Rfc1951Compressor::Rfc1951Compressor(int chunkSize)
     _zStream.zfree = Z_NULL;
     _zStream.opaque = Z_NULL;
 
-    Q_ASSERT(deflateInit2(&_zStream,
+    bool ok(deflateInit2(&_zStream,
                           Z_DEFAULT_COMPRESSION, 
                           Z_DEFLATED, 
                           -MAX_WBITS, // MAX_WBITS == 15 (zconf.h) MEM128K
                           MAX_MEM_LEVEL, // MAX_MEM_LEVEL = 9 (zconf.h) MEM256K
                           Z_DEFAULT_STRATEGY) == Z_OK);
+    Q_ASSERT(ok);
 }
 
 Rfc1951Compressor::~Rfc1951Compressor()
@@ -145,7 +146,8 @@ Rfc1951Decompressor::Rfc1951Decompressor(int chunkSize)
     _zStream.opaque = Z_NULL;
     _zStream.avail_in = 0;
     _zStream.next_in = Z_NULL;
-    Q_ASSERT(inflateInit2(&_zStream, -MAX_WBITS) == Z_OK);
+    bool ok(inflateInit2(&_zStream, -MAX_WBITS) == Z_OK);
+    Q_ASSERT(ok);
 }
 
 Rfc1951Decompressor::~Rfc1951Decompressor()
