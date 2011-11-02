@@ -508,7 +508,7 @@ bool QMailMessagePartContainer::foreachPart(F func)
         if (!func(part)) {
             return false;
         } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
-            if (!part.foreachPart(func)) {
+            if (!part.foreachPart<F>(func)) {
                 return false;
             }
         }
@@ -526,7 +526,7 @@ bool QMailMessagePartContainer::foreachPart(F func) const
         if (!func(part)) {
             return false;
         } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
-            if (!part.foreachPart(func)) {
+            if (!part.foreachPart<F>(func)) {
                 return false;
             }
         }
