@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201143
+  * Fixes: NB#286059 QMailMessagePartContainer::foreachPart(F func) may ignore template argument
+  * Fixes: NB#280917 QFileSystemWatcher on /var/tmp 
+
 201141
   * Fixes: NB#281177 Preview and message headers displayed as junk characters for some Traditional Chinese mails
 
