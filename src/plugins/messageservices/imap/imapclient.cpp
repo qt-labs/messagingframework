@@ -678,7 +678,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
 
             // Now that we know the capabilities, check for Reference support
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive));
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
+                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive));
 
             QMailAccount account(_config.id());
             ImapConfiguration imapCfg(_config);
