@@ -1122,7 +1122,8 @@ void EmailClient::beginEnqueueMail(QMailMessage& mail)
 {
     // Does this account support sending a message by reference from an external sent folder?
     QMailAccount account(mail.parentAccountId());
-    if ((account.status() & (QMailAccount::CanReferenceExternalData | QMailAccount::CanTransmitViaReference)) &&
+    if ((account.status() & QMailAccount::CanReferenceExternalData) &&
+        (account.status() & QMailAccount::CanTransmitViaReference) &&
         account.standardFolder(QMailFolder::SentFolder).isValid()) {
         mail.setStatus(QMailMessage::TransmitFromExternal, true);
     }
