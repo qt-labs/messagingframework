@@ -1718,8 +1718,6 @@ QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
 
 QMailSearchActionPrivate::~QMailSearchActionPrivate()
 {
-    QMailMessageKey temporaryMessages = QMailMessageKey::status(QMailMessage::Temporary) & QMailMessageKey::id(_matchingIds);
-    QMailStore::instance()->removeMessages(temporaryMessages, QMailStore::NoRemovalRecord);
 }
 
 void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
