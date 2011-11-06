@@ -178,6 +178,34 @@ void ImapConfiguration::setTimeTillLogout(int milliseconds)
     setValue("timeTillLogout", QString::number(milliseconds));
 }
 
+// For server based searching, when retrieving messages from server not yet on device, specifies
+// the maximum number of messages to retrieve metadata for.
+//
+// 0 means unlimited.
+//
+// 0 is the default.
+int ImapConfiguration::searchLimit() const
+{
+    const int defaultLimit = 0;
+    QString t(value("searchLimit", QString::number(defaultLimit)));
+
+    bool ok;
+    int val(t.toInt(&ok));
+    if (!ok) {
+        qWarning() << "Could not parse searchLimit";
+        return 0;
+    } else {
+        return val;
+    }
+}
+
+void ImapConfiguration::setSearchLimit(int limit)
+{
+    Q_ASSERT(limit >= 0);
+
+    setValue("searchLimit", QString::number(limit));
+}
+
 ImapConfigurationEditor::ImapConfigurationEditor(QMailAccountConfiguration *config)
     : ImapConfiguration(*config)
 {

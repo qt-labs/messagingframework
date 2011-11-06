@@ -90,6 +90,9 @@ public:
 
     int timeTillLogout() const;
     void setTimeTillLogout(int milliseconds);
+
+    int searchLimit() const;
+    void setSearchLimit(int limit);
 };
 
 class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration
