@@ -1788,12 +1788,12 @@ void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
 
         int index = 7;
         QString temp;
-        while (!(temp = token(line, ' ', ' ', &index)).isNull()) {
+        while (!(temp = token(line, ' ', ' ', &index)).isEmpty()) {
             uidList.append(messageUid(c->mailbox().id, temp));
             index--;
         }
         temp = token(line, ' ', '\n', &index);
-        if (!temp.isNull())
+        if (!temp.isEmpty())
             uidList.append(messageUid(c->mailbox().id, temp));
         c->setUidList(uidList);
     } else {
