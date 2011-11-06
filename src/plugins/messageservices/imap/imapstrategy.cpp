@@ -1814,6 +1814,18 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
     if(!searchResults.isEmpty())
         context->matchingMessageIds(searchResults);
 
+    ImapConfiguration imapCfg(context->config());
+    int limit = imapCfg.searchLimit();
+    if (limit) {
+        QStringList uids = uidsToFetch.toStringList();
+        int start = qMax(0, uids.count() - limit);
+        if (start < uids.count()) {
+            uidsToFetch = IntegerRegion(uids.mid(start, -1));
+        } else {
+            uidsToFetch.clear();
+        }
+    }
+
     if(uidsToFetch.isEmpty())
         processNextFolder(context);
     else
