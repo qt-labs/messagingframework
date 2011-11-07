@@ -83,6 +83,7 @@ public:
     static const quint64 &CanTransmitViaReference;
     static const quint64 &CanCreateFolders;
     static const quint64 &UseSmartReply;
+    static const quint64 &CanSearchOnServer;
 
     QMailAccount();
     explicit QMailAccount(const QMailAccountId& id);

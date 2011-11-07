@@ -67,6 +67,7 @@ static quint64 canReferenceExternalDataFlag = 0;
 static quint64 canTransmitViaReferenceFlag = 0;
 static quint64 canCreateFoldersFlag = 0;
 static quint64 useSmartReplyFlag = 0;
+static quint64 canSearchOnServerFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -338,6 +339,18 @@ public:
     manually.
 */
 
+/*!
+    \variable QMailAccount::CanSearchOnServer
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "CanSearchOnServer" against the result of QMailAccount::status().
+
+    This flag indicates that the remote server associated with the account supports
+    server based searching.
+    
+    \sa QMailSearchAction::searchMessages()
+*/
+
 const quint64 &QMailAccount::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailAccount::Synchronized = synchronizedFlag;
 const quint64 &QMailAccount::AppendSignature = appendSignatureFlag;
@@ -353,6 +366,7 @@ const quint64 &QMailAccount::CanReferenceExternalData = canReferenceExternalData
 const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFlag;
 const quint64 &QMailAccount::CanCreateFolders = canCreateFoldersFlag;
 const quint64 &QMailAccount::UseSmartReply = useSmartReplyFlag;
+const quint64 &QMailAccount::CanSearchOnServer = canSearchOnServerFlag;
 
 /*!
     Creates an uninitialised account object.

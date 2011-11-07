@@ -177,7 +177,11 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 43.  Binary compatibility broken in qmailthread.h (change of QMailThread d ptr type)
 
-44.  Added dependency on libicu-dev
+44.  Added dependency on libicu-dev (for autodetection of charset)
+
+45.  Added dependency on zlib (for IMAP COMPRESS support)
+
+46.  Added 'QMailAccount::CanSearchOnServer'.
 
 *****************************************************************************
 
