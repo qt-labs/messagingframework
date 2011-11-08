@@ -9,7 +9,11 @@ SUBDIRS = src/libraries/qmfclient \
           src/plugins/messageservices/qmfsettings \
           src/plugins/contentmanagers/qmfstoragemanager \
           src/tools/messageserver \
-          tests \
+          tests
+
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+
+SUBDIRS += \
           examples/qtmail/libs/qmfutil \
           examples/qtmail/app \
           examples/qtmail/plugins/viewers/generic \
@@ -22,6 +26,8 @@ SUBDIRS = src/libraries/qmfclient \
     !SERVER_AS_DLL {
           SUBDIRS += benchmarks
     }
+}
+
 }
 
 symbian {
