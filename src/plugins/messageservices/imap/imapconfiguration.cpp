@@ -186,7 +186,7 @@ void ImapConfiguration::setTimeTillLogout(int milliseconds)
 // 0 is the default.
 int ImapConfiguration::searchLimit() const
 {
-    const int defaultLimit = 0;
+    const int defaultLimit = 100;
     QString t(value("searchLimit", QString::number(defaultLimit)));
 
     bool ok;
