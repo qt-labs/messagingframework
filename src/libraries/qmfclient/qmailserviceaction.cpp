@@ -1812,8 +1812,8 @@ QMailSearchAction::~QMailSearchAction()
 
 /*!
     Requests that the message server identify all messages that match the criteria
-    specified by \a filter.  If \a bodyText is non-empty, identified messages must
-    also contain the supplied text in their content.  
+    specified by \a filter.  If \a bodyText is non-empty then messages that
+    contain the supplied text in their content will also be identified.  
 
     If \a spec is \l{QMailSearchAction::Remote}{Remote}, then the external service 
     will be requested to perform the search for messages not stored locally. 

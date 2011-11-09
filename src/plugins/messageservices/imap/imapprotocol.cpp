@@ -1532,13 +1532,15 @@ QString SearchMessageState::transmit(ImapContext *c)
     _utf8 |= !(isPrintable(search.body));
     if (_utf8)
         prefix.append("CHARSET UTF-8 ");
+    if (!search.body.isEmpty())
+        prefix.append("OR (");
     searchQueries.prepend(searchQueries.takeFirst().prepend(prefix));
 
     if (!search.body.isEmpty()) {
         QString tempLast = searchQueries.takeLast();
         QString searchBody = search.body.toUtf8(); //utf8 is backwards compatible with 7 bit ascii
-        searchQueries.append(tempLast + QString(" BODY {%2}").arg(searchBody.size()));
-        searchQueries.append(searchBody);
+        searchQueries.append(tempLast + QString(") (BODY {%2}").arg(searchBody.size()));
+        searchQueries.append(searchBody + ")");
     }
 
     QString suffix = " NOT DELETED"; //needed because of limitations in fetching deleted messages
