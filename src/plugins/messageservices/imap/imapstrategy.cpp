@@ -1787,6 +1787,7 @@ void ImapSearchMessageStrategy::handleUidFetch(ImapStrategyContextBase *context)
     if(_canceled)
         return;
 
+    QMailMessageBuffer::instance()->flush();
     context->matchingMessageIds(_fetchedList);
     _fetchedList.clear();
 
