@@ -211,7 +211,7 @@ public:
 
     bool consume(QIODevice *) { return true; }
     bool canReadLine() const { return true; }
-    QByteArray readLine() {}
+    QByteArray readLine() { return QByteArray(); }
 };
 #endif
 
