@@ -1710,6 +1710,8 @@ QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
 {
     connect(_server, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)),
             this, SLOT(matchingMessageIds(quint64, QMailMessageIdList)));
+    connect(_server, SIGNAL(remainingMessagesCount(quint64, uint)),
+            this, SLOT(remainingMessagesCount(quint64, uint)));
     connect(_server, SIGNAL(searchCompleted(quint64)),
             this, SLOT(searchCompleted(quint64)));
 
@@ -1726,6 +1728,12 @@ void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, con
     emitChanges();
 }
 
+void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+{
+    _server->searchMessages(newAction(), filter, bodyText, spec, limit, sort);
+    emitChanges();
+}
+
 void QMailSearchActionPrivate::cancelOperation()
 {
     Q_ASSERT(_isValid && _action != 0);
@@ -1738,6 +1746,7 @@ void QMailSearchActionPrivate::init()
     QMailServiceActionPrivate::init();
 
     _matchingIds.clear();
+    _remainingMessagesCount = 0;
 }
 
 void QMailSearchActionPrivate::matchingMessageIds(quint64 action, const QMailMessageIdList &ids)
@@ -1746,6 +1755,15 @@ void QMailSearchActionPrivate::matchingMessageIds(quint64 action, const QMailMes
         _matchingIds += ids;
 
         emit messageIdsMatched(ids);
+    }
+}
+
+void QMailSearchActionPrivate::remainingMessagesCount(quint64 action, uint count)
+{
+    if (validAction(action)) {
+        _remainingMessagesCount = count;
+
+        emit remainingMessagesCount(count);
     }
 }
 
@@ -1803,6 +1821,7 @@ QMailSearchAction::QMailSearchAction(QObject *parent)
     : QMailServiceAction(new QMailSearchActionPrivate(this), parent)
 {
     connect(impl(this), SIGNAL(messageIdsMatched(QMailMessageIdList)), this, SIGNAL(messageIdsMatched(QMailMessageIdList)));
+    connect(impl(this), SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
 }
 
 /*! \internal */
@@ -1827,6 +1846,24 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
 }
 
 /*!
+    Requests that the message server identify all messages that match the criteria
+    specified by \a filter.  If \a bodyText is non-empty then messages that
+    contain the supplied text in their content will also be identified.  
+
+    If \a spec is \l{QMailSearchAction::Remote}{Remote}, then the external service 
+    will be requested to perform the search for messages not stored locally. 
+
+    A maximum of \a limit messages will be retrieved from the remote server. 
+
+    If \a sort is not empty, the external service will return matching messages in 
+    the ordering indicated by the sort criterion if possible.
+*/
+void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+{
+    impl(this)->searchMessages(filter, bodyText, spec, limit, sort);
+}
+
+/*!
     Attempts to cancel the last requested search operation.
 */
 void QMailSearchAction::cancelOperation()
@@ -1841,6 +1878,16 @@ void QMailSearchAction::cancelOperation()
 QMailMessageIdList QMailSearchAction::matchingMessageIds() const
 {
     return impl(this)->_matchingIds;
+}
+
+/*!
+    Returns the count of messages remaining on the remote server; that
+    is the count of matching messages that will not be retrieved
+    to the device.
+*/
+uint QMailSearchAction::remainingMessagesCount() const
+{
+    return impl(this)->_remainingMessagesCount;
 }
 
 /*!
@@ -1859,6 +1906,15 @@ QMailMessageKey QMailSearchAction::temporaryKey()
     the criteria of the search in progress.
 
     \sa matchingMessageIds()
+*/
+
+/*!
+    \fn QMailSearchAction::remainingMessagesCount(uint count)
+
+    This signal emits the \a count of messages remaining on the remote server; that
+    is the count of matching messages that will not be retrieved to the device.
+
+    \sa remainingMessagesCount()
 */
 
 QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType requestType, QMailActionInfo *i)

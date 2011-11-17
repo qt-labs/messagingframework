@@ -475,6 +475,11 @@ void ImapStrategyContextBase::matchingMessageIds(const QMailMessageIdList &msgs)
     emit _client->matchingMessageIds(msgs);
 }
 
+void ImapStrategyContextBase::remainingMessagesCount(uint count)
+{
+    emit _client->remainingMessagesCount(count);
+}
+
 /* A basic strategy to achieve an authenticated state with the server,
    and to provide default responses to IMAP command completion notifications,
 */
@@ -1707,11 +1712,12 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
 }
 /* A strategy to search all folders */
 
-void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
+void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
 {
     SearchData search;
     search.criteria = searchCriteria;
     search.bodyText = bodyText;
+    search.limit = limit;
     search.sort = sort;
 
     _searches.append(search);
@@ -1722,6 +1728,7 @@ void ImapSearchMessageStrategy::cancelSearch()
 {
     _searches.clear();
     _canceled = true;
+    _limit = -1;
 }
 
 void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapCommand cmd, OperationStatus status)
@@ -1742,6 +1749,7 @@ void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *con
     ImapRetrieveFolderListStrategy::folderListCompleted(context);
     if(_currentMailbox.id().isValid()) {
         _searches.removeFirst();
+        _limit = -1;
     } else {
         QSet<QMailFolderId> accountFolders(_mailboxList.toSet());
 
@@ -1762,6 +1770,7 @@ void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *
         return; //stop it searching
 
     SearchData search(_searches.first());
+    _limit = search.limit;
     context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
 }
 
@@ -1815,8 +1824,9 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
     if(!searchResults.isEmpty())
         context->matchingMessageIds(searchResults);
 
-    ImapConfiguration imapCfg(context->config());
-    int limit = imapCfg.searchLimit();
+    int limit(_limit);
+    context->remainingMessagesCount(qMax(0, int(uidsToFetch.cardinality()) - limit));
+
     if (limit) {
         QStringList uids = uidsToFetch.toStringList();
         int start = qMax(0, uids.count() - limit);

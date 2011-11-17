@@ -140,6 +140,8 @@ MessageServer::MessageServer(QObject *parent)
                 client, SIGNAL(storageActionCompleted(quint64)));
         connect(handler, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
                 client, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
+        connect(handler, SIGNAL(remainingMessagesCount(quint64, uint)), 
+                client, SIGNAL(remainingMessagesCount(quint64, uint)));
         connect(handler, SIGNAL(searchCompleted(quint64)),
                 client, SIGNAL(searchCompleted(quint64)));
         connect(handler, SIGNAL(actionsListed(QMailActionDataList)),
@@ -209,6 +211,8 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(protocolRequest(quint64, QMailAccountId, QString, QVariant)));
         connect(client, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                 handler, SLOT(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
+        connect(client, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
+                handler, SLOT(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)));
         connect(client, SIGNAL(shutdown()),
                 handler, SLOT(shutdown()));
         connect(client, SIGNAL(listActions()),

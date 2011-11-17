@@ -90,6 +90,8 @@ public slots:
     void deleteFolder(quint64 action, const QMailFolderId &folderId);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
+    void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, int limit, const QMailMessageSortKey &sort);
     void cancelLocalSearch(quint64 action);
     void shutdown();
     void listActions();
@@ -125,6 +127,7 @@ signals:
     void storageActionCompleted(quint64 action);
 
     void matchingMessageIds(quint64 action, const QMailMessageIdList&);
+    void remainingMessagesCount(quint64 action, uint);
     void remoteSearchCompleted(quint64 action);
     void searchCompleted(quint64 action);
 
@@ -167,6 +170,8 @@ private slots:
     void messagesPrepared(const QMailMessageIdList&, quint64);
     void matchingMessageIds(const QMailMessageIdList&);
     void matchingMessageIds(const QMailMessageIdList&, quint64);
+    void remainingMessagesCount(uint count);
+    void remainingMessagesCount(uint count, quint64);
 
     void protocolResponse(const QString &response, const QVariant &data);
     void protocolResponse(const QString &response, const QVariant &data, quint64);

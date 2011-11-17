@@ -100,6 +100,7 @@ public:
         connect(_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
+        connect(_service->_client, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
     }
     
     void setIntervalTimer(int interval)
@@ -151,6 +152,7 @@ public slots:
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
 
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
+    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort);
     virtual bool cancelSearch();
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
@@ -996,6 +998,13 @@ bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QStr
 
 bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
 {
+    QMailAccountConfiguration accountCfg(_service->accountId());
+    ImapConfiguration imapCfg(accountCfg);
+    return searchMessages(searchCriteria, bodyText, imapCfg.searchLimit(), sort);
+}
+
+bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+{
     if (!_service->_client) {
         _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
         return false;
@@ -1007,7 +1016,7 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
         return false;
     }
 
-    _service->_client->strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, sort);
+    _service->_client->strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, limit, sort);
     appendStrategy(&_service->_client->strategyContext()->searchMessageStrategy);
     if(!_unavailable)
         initiateStrategy();

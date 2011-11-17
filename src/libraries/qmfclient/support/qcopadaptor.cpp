@@ -519,6 +519,23 @@ void QCopAdaptor::send(const QByteArray& member, const QVariant &arg1,
 
 /* !
     Sends a message on the Qt Extended IPC channel which will cause the invocation
+    of the quad-argument \a member on receiving objects, with the
+    arguments \a arg1, \a arg2, \a arg3 and \a arg4.
+*/
+void QCopAdaptor::send(const QByteArray& member, const QVariant &arg1,
+                       const QVariant &arg2, const QVariant &arg3,
+                       const QVariant &arg4)
+{
+    QList<QVariant> args;
+    args.append(arg1);
+    args.append(arg2);
+    args.append(arg3);
+    args.append(arg4);
+    sendMessage(memberToMessage(member), args);
+}
+
+/* !
+    Sends a message on the Qt Extended IPC channel which will cause the invocation
     of the multi-argument \a member on receiving objects, with the
     argument list \a args.
 */

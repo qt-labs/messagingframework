@@ -107,6 +107,9 @@ public:
               const QVariant &arg2);
     void send(const QByteArray& member, const QVariant &arg1,
               const QVariant &arg2, const QVariant &arg3);
+    void send(const QByteArray& member, const QVariant &arg1,
+              const QVariant &arg2, const QVariant &arg3,
+              const QVariant &arg4);
     void send(const QByteArray& member, const QList<QVariant>& args);
 
     bool isConnected(const QByteArray& signal);

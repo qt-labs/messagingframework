@@ -845,9 +845,9 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
     Invoked by the message server to initiate a remote message search operation.
 
     Search the remote server for messages that match the search criteria encoded by 
-    \a searchCriteria.  If \a bodyText is non-empty, matching messages must also 
-    contain the specified string.  Messages whose content is already present on
-    the local device should be excluded from the remote search.
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    specified string will also be matched.  Messages whose content is already present on
+    the local device should not be retrieved from the remote server.
 
     If \a sort is not empty, matched messages should be discovered by testing for
     matches in the ordering indicated by the sort criterion, if possible.
@@ -864,6 +864,38 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 {
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
+    Q_UNUSED(sort)
+
+    notImplemented();
+    return false;
+}
+
+/*!
+    Invoked by the message server to initiate a remote message search operation.
+
+    Search the remote server for messages that match the search criteria encoded by 
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    specified string will also be matched.  Messages whose content is already present on
+    the local device should not be retrieved from the remote server.
+
+    A maximum of \a limit messages should be retrieved from the remote server.
+
+    If \a sort is not empty, matched messages should be discovered by testing for
+    matches in the ordering indicated by the sort criterion, if possible.
+
+    Messages matching the search criteria should be added to the mail store in
+    meta data form marked with the \l QMailMessage::New status flag, and 
+    progressively reported via matchingMessageIds().
+
+    Return true if a search operation is initiated.
+    
+    \sa matchingMessageIds(), retrieveMessages()
+*/
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+{
+    Q_UNUSED(searchCriteria)
+    Q_UNUSED(bodyText)
+    Q_UNUSED(limit)
     Q_UNUSED(sort)
 
     notImplemented();
@@ -961,6 +993,15 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
     \fn void QMailMessageSource::matchingMessageIds(const QMailMessageIdList &ids);
 
     Signal emitted by the source to report the messages listed in \a ids as matching the current search.
+*/
+
+/*!
+    \fn void QMailMessageSource::remainingMessagesCount(uint);
+
+    Signal emitted by the source to report the number of messages matching the current search criteria 
+    remaining on the remote server; that is not retrieved to the device.
+
+    Only emitted for remote searches.
 */
 
 /*!
@@ -1679,6 +1720,18 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QSt
 {
     Q_UNUSED(filter)
     Q_UNUSED(bodyText)
+    Q_UNUSED(sort)
+    Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
+{
+    Q_UNUSED(filter)
+    Q_UNUSED(bodyText)
+    Q_UNUSED(limit)
     Q_UNUSED(sort)
     Q_UNUSED(action)
 

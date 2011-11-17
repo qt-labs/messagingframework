@@ -97,6 +97,7 @@ signals:
     void deleteMessages(quint64, const QMailMessageIdList& id, QMailStore::MessageRemovalOption);
 
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
+    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
 
     void cancelSearch(quint64);
 
@@ -173,6 +174,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(deleteFolder(quint64, QMailFolderId)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
+    connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
+               adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(cancelSearch(quint64)),
                adaptor, MESSAGE(cancelSearch(quint64)));
     connectIpc(this, SIGNAL(shutdown()),
@@ -223,6 +226,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(transmissionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(matchingMessageIds(quint64, QMailMessageIdList)),
                parent, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
+    connectIpc(adaptor, MESSAGE(remainingMessagesCount(quint64, uint)),
+               parent, SIGNAL(remainingMessagesCount(quint64, uint)));
     connectIpc(adaptor, MESSAGE(searchCompleted(quint64)),
                parent, SIGNAL(searchCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(actionsListed(QMailActionDataList)),
@@ -447,8 +452,20 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::matchingMessageIds(quint64 action, const QMailMessageIdList& ids);
 
-    Emitted after the successful completion of the search operation identified by \a action; 
+    Emitted by the search operation identified by \a action; 
     \a ids contains the list of message identifiers located by the search.
+
+    \sa searchMessages()
+*/
+
+/*!
+    \fn void QMailMessageServer::remainingMessagesCount(uint count);
+
+    Emitted by search operation identified by \a action; 
+    Returns the \a count of matching messages remaining on the remote server, that is the count
+    of messages that will not be retrieved from the remote server to the device.
+
+    Only applicable for remote searches.
 
     \sa searchMessages()
 */
@@ -830,8 +847,8 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
 
 /*!
     Requests that the MessageServer search for messages that meet the criteria encoded
-    in \a filter.  If \a bodyText is non-empty, messages must also contain the specified
-    text in their content to be considered matching.  If \a spec is 
+    in \a filter.  If \a bodyText is non-empty, messages containing the specified text 
+    in their content will also be matched.  If \a spec is 
     \l{QMailSearchAction::Remote}{Remote} then the MessageServer will extend the search
     to consider messages held at external servers that are not present on the local device.
     If \a sort is not empty, the external service will return matching messages in 
@@ -842,11 +859,35 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
     The identifiers of all matching messages are returned via matchingMessageIds() after 
     the search is completed.
 
-    \sa matchingMessageIds()
+    \sa matchingMessageIds(), remainingMessagesCount()
 */
 void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     emit d->searchMessages(action, filter, bodyText, spec, sort);
+}
+
+/*!
+    Requests that the MessageServer search for messages that meet the criteria encoded
+    in \a filter.  If \a bodyText is non-empty, messages containing the specified text 
+    in their content will also be matched.  If \a spec is 
+    \l{QMailSearchAction::Remote}{Remote} then the MessageServer will extend the search
+    to consider messages held at external servers that are not present on the local device.
+
+    A maximum of \a limit messages will be retrieved from the remote server.
+
+    If \a sort is not empty, the external service will return matching messages in 
+    the ordering indicated by the sort criterion if possible.
+
+    The request has the identifier \a action.
+
+    The identifiers of all matching messages are returned via matchingMessageIds() after 
+    the search is completed.
+
+    \sa matchingMessageIds(), remainingMessagesCount()
+*/
+void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+{
+    emit d->searchMessages(action, filter, bodyText, spec, limit, sort);
 }
 
 /*!
