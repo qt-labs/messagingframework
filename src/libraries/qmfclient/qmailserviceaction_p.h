@@ -325,6 +325,7 @@ public:
 
     void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void countMessages(const QMailMessageKey &filter, const QString &bodyText);
     void cancelOperation();
 
 protected:
@@ -333,10 +334,12 @@ protected:
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);
     void remainingMessagesCount(uint);
+    void messagesCount(uint);
 
 private slots:
     void matchingMessageIds(quint64 action, const QMailMessageIdList &ids);
     void remainingMessagesCount(quint64 action, uint count);
+    void messagesCount(quint64 action, uint count);
     void searchCompleted(quint64 action);
 
     void finaliseSearch();
@@ -346,6 +349,7 @@ private:
 
     QMailMessageIdList _matchingIds;
     uint _remainingMessagesCount;
+    uint _messagesCount;
 };
 
 class QMailActionInfoPrivate : public QMailServiceActionPrivate

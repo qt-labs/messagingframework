@@ -59,6 +59,7 @@ struct ImapMailboxProperties
           recent(0),
           unseen(0),
           uidNext(0),
+          searchCount(0),
           noModSeq(true)
     {
     }
@@ -75,6 +76,7 @@ struct ImapMailboxProperties
     quint32 uidNext;
     QString flags;
     QStringList uidList;
+    uint searchCount;
     QList<uint> msnList;
     QString highestModSeq;
     bool noModSeq;

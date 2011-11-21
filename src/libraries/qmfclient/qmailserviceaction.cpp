@@ -1712,6 +1712,8 @@ QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
             this, SLOT(matchingMessageIds(quint64, QMailMessageIdList)));
     connect(_server, SIGNAL(remainingMessagesCount(quint64, uint)),
             this, SLOT(remainingMessagesCount(quint64, uint)));
+    connect(_server, SIGNAL(messagesCount(quint64, uint)),
+            this, SLOT(messagesCount(quint64, uint)));
     connect(_server, SIGNAL(searchCompleted(quint64)),
             this, SLOT(searchCompleted(quint64)));
 
@@ -1734,6 +1736,12 @@ void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, con
     emitChanges();
 }
 
+void QMailSearchActionPrivate::countMessages(const QMailMessageKey &filter, const QString &bodyText)
+{
+    _server->countMessages(newAction(), filter, bodyText);
+    emitChanges();
+}
+
 void QMailSearchActionPrivate::cancelOperation()
 {
     Q_ASSERT(_isValid && _action != 0);
@@ -1747,6 +1755,7 @@ void QMailSearchActionPrivate::init()
 
     _matchingIds.clear();
     _remainingMessagesCount = 0;
+    _messagesCount = 0;
 }
 
 void QMailSearchActionPrivate::matchingMessageIds(quint64 action, const QMailMessageIdList &ids)
@@ -1764,6 +1773,15 @@ void QMailSearchActionPrivate::remainingMessagesCount(quint64 action, uint count
         _remainingMessagesCount = count;
 
         emit remainingMessagesCount(count);
+    }
+}
+
+void QMailSearchActionPrivate::messagesCount(quint64 action, uint count)
+{
+    if (validAction(action)) {
+        _messagesCount = count;
+
+        emit messagesCount(count);
     }
 }
 
@@ -1822,6 +1840,7 @@ QMailSearchAction::QMailSearchAction(QObject *parent)
 {
     connect(impl(this), SIGNAL(messageIdsMatched(QMailMessageIdList)), this, SIGNAL(messageIdsMatched(QMailMessageIdList)));
     connect(impl(this), SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
+    connect(impl(this), SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
 }
 
 /*! \internal */
@@ -1864,6 +1883,16 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
 }
 
 /*!
+    Requests that the message server count all messages that match the criteria
+    specified by \a filter.  If \a bodyText is non-empty then messages that
+    contain the supplied text in their content will also be matched and counted.
+*/
+void QMailSearchAction::countMessages(const QMailMessageKey &filter, const QString &bodyText)
+{
+    impl(this)->countMessages(filter, bodyText);
+}
+
+/*!
     Attempts to cancel the last requested search operation.
 */
 void QMailSearchAction::cancelOperation()
@@ -1891,6 +1920,14 @@ uint QMailSearchAction::remainingMessagesCount() const
 }
 
 /*!
+    Returns the count of matching messages on the remote server.
+*/
+uint QMailSearchAction::messagesCount() const
+{
+    return impl(this)->_messagesCount;
+}
+
+/*!
     Returns a key matching messages that are temporary messages existing only as 
     the result of a search action.
 */
@@ -1914,7 +1951,19 @@ QMailMessageKey QMailSearchAction::temporaryKey()
     This signal emits the \a count of messages remaining on the remote server; that
     is the count of matching messages that will not be retrieved to the device.
 
+    Only emitted for remote searches.
+
     \sa remainingMessagesCount()
+*/
+
+/*!
+    \fn QMailSearchAction::messagesCount(uint count)
+
+    This signal emits the \a count of matching messages on the remote server.
+
+    Only emitted for remote searches.
+
+    \sa messagesCount()
 */
 
 QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType requestType, QMailActionInfo *i)

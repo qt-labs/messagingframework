@@ -903,6 +903,24 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 }
 
 /*!
+    Invoked by the message server to initiate a remote message count operation.
+
+    Search the remote server to count messages that match the search criteria encoded by 
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    specified string will also be matched and counted.
+
+    \sa countMessages()
+*/
+bool QMailMessageSource::countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText)
+{
+    Q_UNUSED(searchCriteria)
+    Q_UNUSED(bodyText)
+
+    notImplemented();
+    return false;
+}
+
+/*!
     This method is obsolete. It is no longer invoked. QMailMessageService::cancelOperation is used instead.
 
     Previously was invoked by the message server to initiate a request to stop remote searching.
@@ -1000,6 +1018,14 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
 
     Signal emitted by the source to report the number of messages matching the current search criteria 
     remaining on the remote server; that is not retrieved to the device.
+
+    Only emitted for remote searches.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesCount(uint);
+
+    Signal emitted by the source to report the number of messages matching the current search criteria.
 
     Only emitted for remote searches.
 */
@@ -1733,6 +1759,16 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QSt
     Q_UNUSED(bodyText)
     Q_UNUSED(limit)
     Q_UNUSED(sort)
+    Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+bool QMailMessageSource::countMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 action)
+{
+    Q_UNUSED(filter)
+    Q_UNUSED(bodyText)
     Q_UNUSED(action)
 
     notImplemented(action);

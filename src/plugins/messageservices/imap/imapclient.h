@@ -113,6 +113,7 @@ signals:
 
     void matchingMessageIds(const QMailMessageIdList &messages);
     void remainingMessagesCount(uint);
+    void messagesCount(uint);
 
     void allMessagesReceived();
     void idleNewMailNotification(QMailFolderId);

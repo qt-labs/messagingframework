@@ -172,6 +172,8 @@ public slots:
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action);
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort);
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action);
+    virtual bool countMessages(const QMailMessageKey &filter, const QString& bodyText);
+    virtual bool countMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 action);
     virtual bool cancelSearch();
     virtual bool cancelSearch(quint64 action);
 
@@ -198,6 +200,8 @@ signals:
     void matchingMessageIds(const QMailMessageIdList &ids, quint64 action);
     void remainingMessagesCount(uint);
     void remainingMessagesCount(uint, quint64 action);
+    void messagesCount(uint);
+    void messagesCount(uint, quint64 action);
 
     void messagesPrepared(const QMailMessageIdList &ids);
     void messagesPrepared(const QMailMessageIdList &ids, quint64 action);

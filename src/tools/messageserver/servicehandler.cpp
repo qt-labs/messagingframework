@@ -105,6 +105,15 @@ QByteArray serialize(const T1& v1, const T2& v2, const T3& v3, const T4& v4, con
     return data;
 }
 
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+QByteArray serialize(const T1& v1, const T2& v2, const T3& v3, const T4& v4, const T5& v5, const T6& v6)
+{
+    QByteArray data;
+    QDataStream os(&data, QIODevice::WriteOnly);
+    os << v1 << v2 << v3 << v4 << v5 << v6;
+    return data;
+}
+
 template <typename T1>
 void deserialize(const QByteArray &data, T1& v1)
 {
@@ -138,6 +147,13 @@ void deserialize(const QByteArray &data, T1& v1, T2& v2, T3& v3, T4& v4, T5& v5)
 {
     QDataStream is(data);
     is >> v1 >> v2 >> v3 >> v4 >> v5;
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+void deserialize(const QByteArray &data, T1& v1, T2& v2, T3& v3, T4& v4, T5& v5, T6& v6)
+{
+    QDataStream is(data);
+    is >> v1 >> v2 >> v3 >> v4 >> v5 >> v6;
 }
 
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
@@ -796,6 +812,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(messagesPrepared(QMailMessageIdList, quint64)), this, SLOT(messagesPrepared(QMailMessageIdList, quint64)));
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList, quint64)), this, SLOT(matchingMessageIds(QMailMessageIdList, quint64)));
     connect(source, SIGNAL(remainingMessagesCount(uint, quint64)), this, SLOT(remainingMessagesCount(uint, quint64)));
+    connect(source, SIGNAL(messagesCount(uint, quint64)), this, SLOT(messagesCount(uint, quint64)));
     connect(source, SIGNAL(protocolResponse(QString, QVariant, quint64)), this, SLOT(protocolResponse(QString, QVariant, quint64)));
     // } else {
     connect(source, SIGNAL(messagesDeleted(QMailMessageIdList)), this, SLOT(messagesDeleted(QMailMessageIdList)));
@@ -805,6 +822,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(messagesPrepared(QMailMessageIdList)), this, SLOT(messagesPrepared(QMailMessageIdList)));
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SLOT(matchingMessageIds(QMailMessageIdList)));
     connect(source, SIGNAL(remainingMessagesCount(uint)), this, SLOT(remainingMessagesCount(uint)));
+    connect(source, SIGNAL(messagesCount(uint)), this, SLOT(messagesCount(uint)));
     connect(source, SIGNAL(protocolResponse(QString, QVariant)), this, SLOT(protocolResponse(QString, QVariant)));
     // }
 }
@@ -2228,15 +2246,20 @@ bool ServiceHandler::dispatchDeleteFolder(quint64 action, const QByteArray &data
 
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
-    searchMessages(action, filter, bodyText, spec, -1, sort);
+    searchMessages(action, filter, bodyText, spec, 0, sort, NoLimit);
 }
 
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
 {
-    searchMessages(action, filter, bodyText, spec, int(limit), sort);
+    searchMessages(action, filter, bodyText, spec, limit, sort, Limit);
 }
 
-void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, int limit, const QMailMessageSortKey &sort)
+void ServiceHandler::countMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText)
+{
+    searchMessages(action, filter, bodyText, QMailSearchAction::Remote, 0, QMailMessageSortKey(), Count);
+}
+
+void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort, SearchType searchType)
 {
     if (spec == QMailSearchAction::Remote) {
         // Find the accounts that we need to search within from the criteria
@@ -2246,7 +2269,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to search messages for unconfigured account"));
         } else {
-            enqueueRequest(action, serialize(searchAccountIds, filter, bodyText, limit, sort), sources, &ServiceHandler::dispatchSearchMessages, &ServiceHandler::searchCompleted, SearchMessagesRequestType);
+            enqueueRequest(action, serialize(searchAccountIds, filter, bodyText, limit, sort, static_cast<int>(searchType)), sources, &ServiceHandler::dispatchSearchMessages, &ServiceHandler::searchCompleted, SearchMessagesRequestType);
         }
     } else {
         // Find the messages that match the filter criteria
@@ -2263,30 +2286,45 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
     QSet<QMailAccountId> accountIds;
     QMailMessageKey filter;
     QString bodyText;
-    int limit;
+    qint64 limit;
     QMailMessageSortKey sort;
+    int searchType;
     bool sentSearch = false;
 
-
-    deserialize(data, accountIds, filter, bodyText, limit, sort);
+    deserialize(data, accountIds, filter, bodyText, limit, sort, searchType);
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
             bool success;
             bool concurrent(sourceService.value(source)->usesConcurrentActions());
-            if (limit == -1) {
+            switch (searchType)
+            {
+            case NoLimit:
                 if (concurrent) {
                     success = source->searchMessages(filter, bodyText, sort, action);
                 } else {
                     success = source->searchMessages(filter, bodyText, sort);
                 }
-            } else {
+                break;
+            case Limit:
                 if (concurrent) {
                     success = source->searchMessages(filter, bodyText, limit, sort, action);
                 } else {
                     success = source->searchMessages(filter, bodyText, limit, sort);
                 }
+                break;
+            case Count:
+                if (concurrent) {
+                    success = source->countMessages(filter, bodyText, action);
+                } else {
+                    success = source->countMessages(filter, bodyText);
+                }
+                break;
+            default:
+                qWarning() << "Unknown SearchType";
+                break;
             }
+
             //only dispatch to appropriate account
             if (success) {
                 sentSearch = true; //we've at least sent one
@@ -2508,6 +2546,11 @@ void ServiceHandler::remainingMessagesCount(uint count, quint64 a)
     emit remainingMessagesCount(a, count);
 }
 
+void ServiceHandler::messagesCount(uint count, quint64 a)
+{
+    emit messagesCount(a, count);
+}
+
 void ServiceHandler::protocolResponse(const QString &response, const QVariant &data, quint64 a)
 {
     emit protocolResponse(a, response, data);
@@ -2588,6 +2631,12 @@ void ServiceHandler::remainingMessagesCount(uint count)
 {
     if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
         emit remainingMessagesCount(action, count);
+}
+
+void ServiceHandler::messagesCount(uint count)
+{
+    if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
+        emit messagesCount(action, count);
 }
 
 void ServiceHandler::protocolResponse(const QString &response, const QVariant &data)

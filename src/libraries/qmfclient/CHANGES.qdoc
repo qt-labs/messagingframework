@@ -183,7 +183,14 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 46.  Added 'QMailAccount::CanSearchOnServer'.
 
-47.  Added 'void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)' function, and 'QMailMessageServer::remainingMessagesCount(uint count)' signal.
+47.  Added 'void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)',
+       'uint QMailSearchAction::remainingMessagesCount()' functions, and 
+       'QMailMessageServer::remainingMessagesCount(uint count)' signal.
+
+48.  Added 'void QMailSearchAction::countMessages(const QMailMessageKey &filter, const QString &bodyText)',
+       'uint QMailSearchAction::messagesCount()' functions, and 
+       'QMailMessageServer::messagesCount(uint count)' signal.
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:

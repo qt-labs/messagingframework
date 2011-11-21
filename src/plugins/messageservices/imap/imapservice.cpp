@@ -101,6 +101,7 @@ public:
         connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck(QMailFolderId)));
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
         connect(_service->_client, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
+        connect(_service->_client, SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
     }
     
     void setIntervalTimer(int interval)
@@ -153,6 +154,8 @@ public slots:
 
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort);
+    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count);
+    virtual bool countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText);
     virtual bool cancelSearch();
 
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
@@ -1000,10 +1003,24 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
 {
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
-    return searchMessages(searchCriteria, bodyText, imapCfg.searchLimit(), sort);
+    return searchMessages(searchCriteria, bodyText, imapCfg.searchLimit(), sort, false);
 }
 
 bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+{
+    QMailAccountConfiguration accountCfg(_service->accountId());
+    ImapConfiguration imapCfg(accountCfg);
+    return searchMessages(searchCriteria, bodyText, limit, sort, false);
+}
+
+bool ImapService::Source::countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText)
+{
+    QMailAccountConfiguration accountCfg(_service->accountId());
+    ImapConfiguration imapCfg(accountCfg);
+    return searchMessages(searchCriteria, bodyText, 0, QMailMessageSortKey(), true);
+}
+
+bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count)
 {
     if (!_service->_client) {
         _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
@@ -1016,7 +1033,7 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
         return false;
     }
 
-    _service->_client->strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, limit, sort);
+    _service->_client->strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, limit, sort, count);
     appendStrategy(&_service->_client->strategyContext()->searchMessageStrategy);
     if(!_unavailable)
         initiateStrategy();

@@ -480,6 +480,11 @@ void ImapStrategyContextBase::remainingMessagesCount(uint count)
     emit _client->remainingMessagesCount(count);
 }
 
+void ImapStrategyContextBase::messagesCount(uint count)
+{
+    emit _client->messagesCount(count);
+}
+
 /* A basic strategy to achieve an authenticated state with the server,
    and to provide default responses to IMAP command completion notifications,
 */
@@ -1712,13 +1717,14 @@ void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *con
 }
 /* A strategy to search all folders */
 
-void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+void ImapSearchMessageStrategy::searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count)
 {
     SearchData search;
     search.criteria = searchCriteria;
     search.bodyText = bodyText;
     search.limit = limit;
     search.sort = sort;
+    search.count = count;
 
     _searches.append(search);
     _canceled = false;
@@ -1729,6 +1735,7 @@ void ImapSearchMessageStrategy::cancelSearch()
     _searches.clear();
     _canceled = true;
     _limit = -1;
+    _count = false;
 }
 
 void ImapSearchMessageStrategy::transition(ImapStrategyContextBase *c, ImapCommand cmd, OperationStatus status)
@@ -1750,6 +1757,7 @@ void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *con
     if(_currentMailbox.id().isValid()) {
         _searches.removeFirst();
         _limit = -1;
+        _count = false;
     } else {
         QSet<QMailFolderId> accountFolders(_mailboxList.toSet());
 
@@ -1771,7 +1779,8 @@ void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *
 
     SearchData search(_searches.first());
     _limit = search.limit;
-    context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort);
+    _count = search.count;
+    context->protocol().sendSearchMessages(search.criteria, search.bodyText, search.sort, _count);
 }
 
 bool ImapSearchMessageStrategy::messageFetched(ImapStrategyContextBase *context, QMailMessage &message)
@@ -1812,6 +1821,12 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
     QList<QMailMessageId> searchResults;
     IntegerRegion uidsToFetch;
 
+    if (_count) {
+        context->messagesCount(properties.searchCount);
+        processNextFolder(context);
+        return;
+    }
+
     foreach(const QString &uidString, properties.uidList) {
         QMailMessageIdList ids(QMailStore::instance()->queryMessages(QMailMessageKey::serverUid(uidString) & QMailMessageKey::parentAccountId(context->config().id())));
         Q_ASSERT(ids.size() == 1 || ids.size() == 0);
@@ -1820,6 +1835,8 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
         else
             uidsToFetch.add(stripFolderPrefix(uidString).toInt());
     }
+
+    context->messagesCount(properties.searchCount);
 
     if(!searchResults.isEmpty())
         context->matchingMessageIds(searchResults);

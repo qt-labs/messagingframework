@@ -98,6 +98,7 @@ signals:
 
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void countMessages(quint64, const QMailMessageKey& filter, const QString& bodyText);
 
     void cancelSearch(quint64);
 
@@ -176,6 +177,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)));
+    connectIpc(this, SIGNAL(countMessages(quint64, QMailMessageKey, QString)),
+               adaptor, MESSAGE(countMessages(quint64, QMailMessageKey, QString)));
     connectIpc(this, SIGNAL(cancelSearch(quint64)),
                adaptor, MESSAGE(cancelSearch(quint64)));
     connectIpc(this, SIGNAL(shutdown()),
@@ -228,6 +231,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
     connectIpc(adaptor, MESSAGE(remainingMessagesCount(quint64, uint)),
                parent, SIGNAL(remainingMessagesCount(quint64, uint)));
+    connectIpc(adaptor, MESSAGE(messagesCount(quint64, uint)),
+               parent, SIGNAL(messagesCount(quint64, uint)));
     connectIpc(adaptor, MESSAGE(searchCompleted(quint64)),
                parent, SIGNAL(searchCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(actionsListed(QMailActionDataList)),
@@ -468,6 +473,17 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Only applicable for remote searches.
 
     \sa searchMessages()
+*/
+
+/*!
+    \fn void QMailMessageServer::messagesCount(uint count);
+
+    Emitted by search operation identified by \a action; 
+    Returns the \a count of matching messages on the remote server.
+
+    Only applicable for remote searches.
+
+    \sa countMessages()
 */
 
 /*!
@@ -856,10 +872,9 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
 
     The request has the identifier \a action.
 
-    The identifiers of all matching messages are returned via matchingMessageIds() after 
-    the search is completed.
+    The identifiers of all matching messages are returned via matchingMessageIds() signals.
 
-    \sa matchingMessageIds(), remainingMessagesCount()
+    \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
 void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
@@ -880,14 +895,29 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 
     The request has the identifier \a action.
 
-    The identifiers of all matching messages are returned via matchingMessageIds() after 
-    the search is completed.
+    The identifiers of all matching messages are returned via matchingMessageIds() signals.
 
-    \sa matchingMessageIds(), remainingMessagesCount()
+    \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
 void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
 {
     emit d->searchMessages(action, filter, bodyText, spec, limit, sort);
+}
+
+/*!
+    Requests that the MessageServer counts the number of messages that match the criteria 
+    specified by \a filter.  If \a bodyText is non-empty, messages containing the specified text 
+    in their content will also be matched.
+
+    The request has the identifier \a action.
+
+    The count of all matching messages is returned via a messagesCount() signal.
+
+    \sa messagesCount()
+*/
+void QMailMessageServer::countMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText)
+{
+    emit d->countMessages(action, filter, bodyText);
 }
 
 /*!

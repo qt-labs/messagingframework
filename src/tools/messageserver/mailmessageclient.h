@@ -102,6 +102,7 @@ signals:
 
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void countMessages(quint64, const QMailMessageKey& filter, const QString& bodyText);
 
     void cancelSearch(quint64);
 
@@ -137,6 +138,7 @@ signals:
 
     void matchingMessageIds(quint64, const QMailMessageIdList&);
     void remainingMessagesCount(quint64, uint);
+    void messagesCount(quint64, uint);
     void searchCompleted(quint64);
 
     void actionsListed(const QMailActionDataList &);

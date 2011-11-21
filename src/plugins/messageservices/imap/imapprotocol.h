@@ -196,7 +196,7 @@ public:
     void sendRename(const QMailFolder &mailbox, const QString &newname);
 
     /*  Valid in Selected state only */
-    void sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort);
+    void sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count);
     void sendSearch(MessageFlags flags, const QString &range = QString());
     void sendUidSearch(MessageFlags flags, const QString &range = QString());
     void sendFetchFlags(const QString &range, const QString &prefix = QString());

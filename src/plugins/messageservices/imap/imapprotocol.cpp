@@ -319,6 +319,7 @@ public:
     void setUidNext(quint32 n) { mProtocol->_mailbox.uidNext = n; }
     void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
     void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
+    void setSearchCount(uint count) { mProtocol->_mailbox.searchCount = count; }
     void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
     void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
     void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
@@ -1491,7 +1492,7 @@ class SearchMessageState : public SelectedState
 public:
     SearchMessageState() : SelectedState(IMAP_Search_Message, "Search_Message"), _utf8(false) { }
     virtual bool permitsPipelining() const { return true; }
-    void setParameters(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort);
+    void setParameters(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count);
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
     virtual bool continuationResponse(ImapContext *c, const QString &line);
@@ -1506,21 +1507,25 @@ protected:
         QMailMessageKey key;
         QString body;
         QMailMessageSortKey sort;
+        bool count;
     };
     QList<SearchArgument> _searches;
     QStringList _literals;
     bool _utf8;
+    bool _esearch;
 };
 
-void SearchMessageState::setParameters(const QMailMessageKey &searchKey, const QString &bodyText, const QMailMessageSortKey &sortKey)
+void SearchMessageState::setParameters(const QMailMessageKey &searchKey, const QString &bodyText, const QMailMessageSortKey &sortKey, bool count)
 {
     SearchArgument arg;
     arg.key = searchKey;
     arg.body = bodyText;
     arg.sort = sortKey;
+    arg.count = count;
     _searches.append(arg);
     _literals.clear();
     _utf8 = false;
+    _esearch = false;
 }
 
 QString SearchMessageState::transmit(ImapContext *c)
@@ -1530,6 +1535,10 @@ QString SearchMessageState::transmit(ImapContext *c)
 
     QString prefix = "UID SEARCH ";
     _utf8 |= !(isPrintable(search.body));
+    if (search.count && c->protocol()->capabilities().contains("ESEARCH", Qt::CaseInsensitive)) {
+        prefix.append("RETURN (COUNT) ");
+        _esearch = true;
+    }
     if (_utf8)
         prefix.append("CHARSET UTF-8 ");
     if (!search.body.isEmpty())
@@ -1785,7 +1794,25 @@ void SearchMessageState::leave(ImapContext *)
 
 void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (line.startsWith(QLatin1String("* SEARCH"))) {
+    if (line.startsWith(QLatin1String("* ESEARCH"))) {
+        int index = 8;
+        QString temp;
+        QString check;
+        QString countStr;
+        uint count = 0;
+        bool ok;
+        while (!(temp = token(line, ' ', ' ', &index)).isEmpty()) {
+            check = temp;
+            index--;
+        }
+        countStr = token(line, ' ', '\n', &index);
+        if (check.toLower() != "count") {
+            qWarning() << "Bad ESEARCH result, count expected";
+        }
+        count = countStr.toUInt(&ok);
+        c->setUidList(QStringList());
+        c->setSearchCount(count);
+    } else if (line.startsWith(QLatin1String("* SEARCH"))) {
         QStringList uidList;
 
         int index = 7;
@@ -1798,6 +1825,7 @@ void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
         if (!temp.isEmpty())
             uidList.append(messageUid(c->mailbox().id, temp));
         c->setUidList(uidList);
+        c->setSearchCount(uidList.count());
     } else {
         SelectedState::untaggedResponse(c, line);
     }
@@ -3083,9 +3111,9 @@ void ImapProtocol::sendRename(const QMailFolder &mailbox, const QString &newName
     _fsm->setState(&_fsm->renameState);
 }
 
-void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort)
+void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count)
 {
-    _fsm->searchMessageState.setParameters(key, body, sort);
+    _fsm->searchMessageState.setParameters(key, body, sort, count);
     _fsm->setState(&_fsm->searchMessageState);
 }
 

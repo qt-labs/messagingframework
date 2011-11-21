@@ -122,6 +122,7 @@ public:
     void operationCompleted();
     void matchingMessageIds(const QMailMessageIdList &msgs);
     void remainingMessagesCount(uint count);
+    void messagesCount(uint count);
 
 private:
     ImapClient *_client;
@@ -617,7 +618,7 @@ public:
     virtual ~ImapSearchMessageStrategy() {}
 
     virtual void cancelSearch();
-    virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort);
+    virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count);
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
 protected:
     virtual void folderListCompleted(ImapStrategyContextBase *context);
@@ -634,11 +635,13 @@ protected:
         QString bodyText;
         QMailMessageSortKey sort;
         uint limit;
+        bool count;
     };
     QList<SearchData> _searches;
     QList<QMailMessageId> _fetchedList;
     bool _canceled;
     uint _limit;
+    uint _count;
 };
 
 class ImapExportUpdatesStrategy : public ImapSynchronizeAllStrategy

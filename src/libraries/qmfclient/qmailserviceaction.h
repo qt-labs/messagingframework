@@ -269,15 +269,18 @@ public:
 
     QMailMessageIdList matchingMessageIds() const;
     uint remainingMessagesCount() const;
+    uint messagesCount() const;
     static QMailMessageKey temporaryKey();
 
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);
     void remainingMessagesCount(uint);
+    void messagesCount(uint);
 
 public slots:
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    void countMessages(const QMailMessageKey &filter, const QString& bodyText);
     void cancelOperation();
 };
 
