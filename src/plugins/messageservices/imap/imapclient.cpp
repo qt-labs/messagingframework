@@ -216,7 +216,76 @@ namespace {
     {
         return decodeModUTF7(name);
     }
+    
+    struct FlagInfo
+    {
+        FlagInfo(QString flagName, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
+            :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
+        
+        QString _flagName;
+        quint64 _flag;
+        QMailFolder::StandardFolder _standardFolder;
+        quint64 _messageFlag;
+    };
+    
+    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags)
+    {
+        // Set permitted flags
+        bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
+        bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
+        folder->setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
+        folder->setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
+        if (!folder->id().isValid()) {
+            qWarning() << "setFolderFlags must be called on folder in store " << folder->id();
+            return;
+        }
 
+        // Set standard folder flags
+        QList<FlagInfo> flagInfoList;
+        flagInfoList << FlagInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
+            << FlagInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
+            << FlagInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
+            << FlagInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
+        
+        for (int i = 0; i < flagInfoList.count(); ++i) {
+            QString flagName(flagInfoList[i]._flagName);
+            quint64 flag(flagInfoList[i]._flag);
+            QMailFolder::StandardFolder standardFolder(flagInfoList[i]._standardFolder);
+            quint64 messageFlag(flagInfoList[i]._messageFlag);
+            bool isFlagged(flags.contains(flagName, Qt::CaseInsensitive));
+
+            folder->setStatus(flag, isFlagged);
+            if (isFlagged) {
+                QMailFolderId oldFolderId = account->standardFolder(standardFolder);
+                if (oldFolderId.isValid() && (oldFolderId != folder->id())) {
+                    QMailFolder oldFolder(oldFolderId);
+                    oldFolder.setStatus(flag, false);
+                    // Do the updates in the right order, so if there is a crash
+                    // there will be a graceful recovery next time folders are list.
+                    // It is expected that no disconnected move operations will be outstanding
+                    // otherwise flags for those messages may be updated incorrectly.
+                    // So call exportUpdates before retrieveFolderList
+                    QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
+                    if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
+                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagName;
+                    }
+                    if (!QMailStore::instance()->updateFolder(&oldFolder)) {
+                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flag" << flagName;
+                    }
+                }
+                if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
+                    account->setStandardFolder(standardFolder, folder->id());                
+                    if (!QMailStore::instance()->updateAccount(account)) {
+                        qWarning() << "Unable to update account" << account->id() << "to set flag" << flagName;
+                    }
+                    QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
+                    if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
+                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flag" << flagName;
+                    }
+                }
+            }
+        }
+    }
 }
 
 class IdleProtocol : public ImapProtocol {
@@ -804,8 +873,6 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
-        bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
-        bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
         
         if (!mailboxPath.isEmpty())
             mailboxPath.append(_protocol.delimiter());
@@ -817,8 +884,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             if (mailboxPath == path) {
                 QMailFolder folder(boxId); 
                 QMailFolder folderOriginal(folder); 
-                folder.setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
-                folder.setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
+                setFolderFlags(&account, &folder, flags);
                 
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -845,8 +911,6 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 folder.setStatus(QMailFolder::DeletionPermitted, true);
                 folder.setStatus(QMailFolder::RenamePermitted, true);
             }
-            folder.setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
-            folder.setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
 
             // The reported flags pertain to the listed folder only
             QString folderFlags;
@@ -854,7 +918,24 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 folderFlags = flags;
             }
 
+            // Only folders beneath the base folder are relevant
+            QString path(folder.path());
+            QString baseFolder(_strategyContext->baseFolder());
+
+            if (baseFolder.isEmpty() || 
+                (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length())) ||
+                (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
+                if (!QMailStore::instance()->addFolder(&folder)) {
+                    qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                }
+            }
+            
+            setFolderFlags(&account, &folder, flags); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
+            
+            if (!QMailStore::instance()->updateFolder(&folder)) {
+                qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+            }
 
             boxId = mailboxId(mailboxPath);
             parentId = boxId;

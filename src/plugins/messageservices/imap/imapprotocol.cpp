@@ -834,7 +834,7 @@ class ListState : public ImapState
 public:
     ListState() : ImapState(IMAP_List, "List") { ListState::init(); }
 
-    void setParameters(const QString &reference, const QString &mailbox);
+    void setParameters(const QString &reference, const QString &mailbox, bool xlist = false);
     void setDiscoverDelimiter();
 
     virtual bool permitsPipelining() const { return true; }
@@ -848,13 +848,27 @@ signals:
     void mailboxListed(const QString &flags, const QString &path);
 
 private:
+    struct ListParameters
+    {
+        ListParameters() : _xlist(false) {}
+        
+        QString _reference;
+        QString _mailbox;
+        bool _xlist;
+    };
+    
     // The list of reference/mailbox pairs we're listing (via multiple commands), in order
-    QList<QPair<QString, QString> > _parameters;
+    QList<ListParameters> _parameters;
 };
 
-void ListState::setParameters(const QString &reference, const QString &mailbox)
+void ListState::setParameters(const QString &reference, const QString &mailbox, bool xlist)
 {
-    _parameters.append(qMakePair(reference, mailbox));
+    ListParameters params;
+    params._reference = reference;
+    params._mailbox = mailbox;
+    params._xlist = xlist;
+
+    _parameters.append(params);
 }
 
 void ListState::setDiscoverDelimiter()
@@ -870,23 +884,26 @@ void ListState::init()
 
 QString ListState::transmit(ImapContext *c)
 {
-    const QPair<QString, QString> &params(_parameters.last());
+    ListParameters &params(_parameters.last());
 
-    if (!params.first.isEmpty()) {
+    if (!params._reference.isEmpty()) {
         if (c->protocol()->delimiterUnknown()) {
             //Don't do anything, we're waiting on our delimiter.
             return QString();
         }
     }
 
-    QString reference = params.first;
-    QString mailbox = params.second;
+    QString reference = params._reference;
+    QString mailbox = params._mailbox;
     if (!reference.isEmpty())
         reference.append(c->protocol()->delimiter());
     reference = ImapProtocol::quoteString(reference);
     mailbox = ImapProtocol::quoteString(mailbox);
 
-    return c->sendCommand(QString("LIST %1 %2").arg(reference).arg(mailbox));
+    QString command("LIST");
+    if (params._xlist)
+        command = "XLIST";
+    return c->sendCommand(QString("%1 %2 %3").arg(command).arg(reference).arg(mailbox));
 }
 
 void ListState::leave(ImapContext *)
@@ -897,12 +914,16 @@ void ListState::leave(ImapContext *)
 
 void ListState::untaggedResponse(ImapContext *c, const QString &line)
 {
-    if (!line.startsWith(QLatin1String("* LIST"))) {
+    QString str;
+    if (line.startsWith(QLatin1String("* LIST"))) {
+        str = line.mid(7);
+    } else if (line.startsWith(QLatin1String("* XLIST"))) {
+        str = line.mid(8);
+    } else {
         ImapState::untaggedResponse(c, line);
         return;
     }
 
-    QString str = line.mid(7);
     QString flags, path, delimiter;
     int pos, index = 0;
 
@@ -940,9 +961,9 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
 
 void ListState::taggedResponse(ImapContext *c, const QString &line)
 {
-    const QPair<QString, QString> &params(_parameters.first());
+    ListParameters &params(_parameters.first());
 
-    if (params.first.isNull() && params.second.isNull()) {
+    if (params._reference.isNull() && params._mailbox.isNull()) {
         // This was a delimiter discovery request - don't report it to the client
     } else {
         ImapState::taggedResponse(c, line);
@@ -3041,7 +3062,7 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
 
 
     // Now request the actual list
-    _fsm->listState.setParameters(path, mailbox);
+    _fsm->listState.setParameters(path, mailbox, capabilities().contains("XLIST"));
     _fsm->setState(&_fsm->listState);
 }
 

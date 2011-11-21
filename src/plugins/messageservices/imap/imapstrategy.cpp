@@ -515,20 +515,8 @@ void ImapStrategy::initialAction(ImapStrategyContextBase *context)
 
 void ImapStrategy::mailboxListed(ImapStrategyContextBase *c, QMailFolder& folder, const QString &flags)
 {
-    if (!folder.id().isValid()) {
-        // Only folders beneath the base folder are relevant
-        QString path(folder.path());
-
-        if (_baseFolder.isEmpty() || 
-            (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
-            (path.startsWith(_baseFolder + c->protocol().delimiter(), Qt::CaseInsensitive))) {
-            if (!QMailStore::instance()->addFolder(&folder)) {
-                _error = true;
-                qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
-            }
-        }
-    }
-
+    Q_UNUSED(c)
+    Q_UNUSED(folder)
     Q_UNUSED(flags)
 }
 
@@ -2056,17 +2044,17 @@ void ImapFolderListStrategy::mailboxListed(ImapStrategyContextBase *context, QMa
     if (folder.id().isValid()) {
         // Record the status of the listed mailbox
         int status = 0;
-        if (flags.indexOf("NoInferiors", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\NoInferiors", 0, Qt::CaseInsensitive) != -1)
             status |= NoInferiors;
-        if (flags.indexOf("NoSelect", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\NoSelect", 0, Qt::CaseInsensitive) != -1)
             status |= NoSelect;
-        if (flags.indexOf("Marked", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\Marked", 0, Qt::CaseInsensitive) != -1)
             status |= Marked;
-        if (flags.indexOf("Unmarked", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\Unmarked", 0, Qt::CaseInsensitive) != -1)
             status |= Unmarked;
-        if (flags.indexOf("HasChildren", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\HasChildren", 0, Qt::CaseInsensitive) != -1)
             status |= HasChildren;
-        if (flags.indexOf("HasNoChildren", 0, Qt::CaseInsensitive) != -1)
+        if (flags.indexOf("\\HasNoChildren", 0, Qt::CaseInsensitive) != -1)
             status |= HasNoChildren;
 
         _folderStatus[folder.id()] = static_cast<FolderStatus>(status);

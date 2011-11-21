@@ -156,6 +156,7 @@ public:
 
     void clearError() { _error = false; }
     bool error() { return _error; }
+    QString baseFolder() { return _baseFolder; }
 
 protected:
     virtual void initialAction(ImapStrategyContextBase *context);
@@ -859,6 +860,7 @@ public:
     void folderCreated(const QString &folder) { _strategy->folderCreated(this, folder); }
     void folderDeleted(const QMailFolder &folder) { _strategy->folderDeleted(this, folder); }
     void folderRenamed(const QMailFolder &folder, const QString &name) { _strategy->folderRenamed(this, folder, name); }
+    QString baseFolder() { return _strategy->baseFolder(); }
 
     ImapStrategy *strategy() const { return _strategy; }
     void setStrategy(ImapStrategy *strategy) { _strategy = strategy; }
