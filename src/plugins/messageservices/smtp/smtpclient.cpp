@@ -250,7 +250,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
     delete authTimeout;
     authTimeout = new QTimer;
     authTimeout->setSingleShot(true);
-    const int twentySeconds = 20 * 1000;
+    const int twentySeconds = 40 * 1000;
     connect(authTimeout, SIGNAL(timeout()), this, SLOT(authExpired()));
     authTimeout->setInterval(twentySeconds);
     authTimeout->start();
@@ -880,6 +880,16 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 {
     Q_ASSERT(status == Body && temporaryFile);
 
+    // Check if we have any pending data still waiting to be sent.
+#ifndef QT_NO_OPENSSL
+    QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
+    Q_ASSERT(socket);
+    if (socket->encryptedBytesToWrite()
+        || socket->bytesToWrite()) {
+        // There is still pending data to be written.
+        return;
+    }
+#else
     waitingForBytes -= bytesWritten;
 
     // If anyone else writes bytes we end up with a negative value... just reset to 0 when that happens.
@@ -887,15 +897,6 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 
     // Don't send more data until all bytes have been written.
     if (waitingForBytes) return;
-
-    // There are more encrypted bytes written than what we send (encryption overhead)
-    // but we can't find out exactly how many bytes there are. Now that we think we've
-    // written everything, check to see if the connection has any pending encrypted
-    // bytes to write and if so, wait for them to be sent.
-#ifndef QT_NO_OPENSSL
-    QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
-    Q_ASSERT(socket);
-    if (socket->encryptedBytesToWrite()) return;
 #endif
 
     // No more data to send
@@ -925,7 +926,9 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
         }
     }
     
+#ifdef QT_NO_OPENSSL
     waitingForBytes += dotstuffed.length();
+#endif
     transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());
     //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
 }
