@@ -3131,9 +3131,24 @@ QMailMessageBodyPrivate::QMailMessageBodyPrivate()
 
 void QMailMessageBodyPrivate::ensureCharsetExist()
 {
+    if (_type.type().toLower() != "text"
+        || (_type.subType().toLower() != "plain"
+            && _type.subType().toLower() != "html")) {
+        return;
+    }
+
     QByteArray charset = _type.charset();
-    const QByteArray &data(_bodyData.toQByteArray());
-    if (!data.isEmpty() && (charset.isEmpty() || insensitiveIndexOf("ascii", charset) != -1)) {
+    if (charset == "UNKNOWN_PARAMETER_VALUE") {
+        charset = "";
+    }
+    if (charset.isEmpty() || insensitiveIndexOf("ascii", charset) != -1) {
+        // Load the data and do the charset detection only when absolutely
+        // necessary. It can be a slow operation if it contains megabytes
+        // of data.
+        const QByteArray &data(_bodyData.toQByteArray());
+        if (data.isEmpty()) {
+            return;
+        }
         QByteArray autoCharset;
         if (_encoded && _encoding != QMailMessageBody::SevenBit) {
             QMailCodec* codec = codecForEncoding(_encoding, _type);
@@ -3536,7 +3551,9 @@ QMailMessageBody::QMailMessageBody()
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
     conformance to RFC 2045.
 
-    Note that the data is not actually read from the file until it is requested by another function.
+    Note that the data is not actually read from the file until it is requested by another function,
+    unless it is of type "text/plain" or "text/html". In these latter cases, automatic character
+    set detection may take place by reading all the data from the file.
 
     \sa QMailCodec, QMailQuotedPrintableCodec, QMailMessageContentType, QTextCodec
 */
