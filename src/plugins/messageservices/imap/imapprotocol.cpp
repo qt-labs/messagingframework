@@ -915,9 +915,11 @@ void ListState::leave(ImapContext *)
 void ListState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str;
+    bool isXList(false);
     if (line.startsWith(QLatin1String("* LIST"))) {
         str = line.mid(7);
     } else if (line.startsWith(QLatin1String("* XLIST"))) {
+        isXList = true;
         str = line.mid(8);
     } else {
         ImapState::untaggedResponse(c, line);
@@ -955,6 +957,10 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     }
 
     if (!path.isEmpty()) {
+        // Translate the inbox folder to force the path "INBOX" as returned by normal LIST command
+        if (isXList && flags.indexOf("Inbox", 0, Qt::CaseInsensitive) != -1) {
+            path = "INBOX";
+        }
         emit mailboxListed(flags, path);
     }
 }
