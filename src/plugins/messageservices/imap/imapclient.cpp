@@ -242,7 +242,8 @@ namespace {
 
         // Set standard folder flags
         QList<FlagInfo> flagInfoList;
-        flagInfoList << FlagInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
+        flagInfoList << FlagInfo("\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
+            << FlagInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
             << FlagInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
             << FlagInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
             << FlagInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);

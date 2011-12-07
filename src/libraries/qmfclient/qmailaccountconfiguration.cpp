@@ -132,6 +132,19 @@ private:
     }
     \endcode
 
+    Several predefined sets of key/value pairs are used to control the behavior of retrieval
+    services, such as IMAP and POP services, as described in the following table. Other
+    retrieval protocols should behave similarly.
+    
+    \table
+    \header \o Desired retrieval behavior \o Required key/value pair settings
+    \row \o Headers only \o "downloadAttachments" = "0", "autoDownload" = "0", "maxSize" = "0"
+    \row \o Entire message including attachments \o "downloadAttachments" = "1", "autoDownload" = "1", "maxSize" = "0"
+    \row \o Message headers, body and when available structure, no attachments \o "downloadAttachments" = "0", "autoDownload" = "1", "maxSize" = "0"
+    \endtable
+    
+    Structure refers to MIME body structure information.
+    
     \sa QMailAccountConfiguration::serviceConfiguration()
 */
 
