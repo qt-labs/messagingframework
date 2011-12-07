@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201149
+  * Fixes: NB#292081 Messageserver with high CPU utilization and mail is not sync'd
+ 
 201143
   * Fixes: NB#286059 QMailMessagePartContainer::foreachPart(F func) may ignore template argument
   * Fixes: NB#280917 QFileSystemWatcher on /var/tmp 
