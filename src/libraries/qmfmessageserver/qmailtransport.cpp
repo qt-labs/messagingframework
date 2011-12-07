@@ -289,7 +289,7 @@ void QMailTransport::close()
 {
     connectToHostTimeOut.stop();
 
-    while (mSocket->bytesToWrite()) {
+    while ((mSocket->bytesToWrite()) && (mSocket->state() != QAbstractSocket::UnconnectedState)) {
         // Flush any pending write data before closing
         mSocket->flush();
         mSocket->waitForBytesWritten(-1);
@@ -423,6 +423,14 @@ bool QMailTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
     return !failed;
 }
 #endif
+
+/*! \internal */
+void QMailTransport::disconnected()
+{
+    connectToHostTimeOut.stop();
+    mConnected = false;
+    mInUse = false;
+}
 
 /*! \internal */
 void QMailTransport::errorHandling(int status, QString msg)
