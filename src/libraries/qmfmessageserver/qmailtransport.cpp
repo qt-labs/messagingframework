@@ -425,14 +425,6 @@ bool QMailTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
 #endif
 
 /*! \internal */
-void QMailTransport::disconnected()
-{
-    connectToHostTimeOut.stop();
-    mConnected = false;
-    mInUse = false;
-}
-
-/*! \internal */
 void QMailTransport::errorHandling(int status, QString msg)
 {
     connectToHostTimeOut.stop();
