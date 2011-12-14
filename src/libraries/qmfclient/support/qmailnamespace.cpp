@@ -115,9 +115,9 @@ int QMail::fileLock(const QString& lockFile)
 {
     QString path = QDir::tempPath() + '/' + lockFile;
 #ifdef Q_OS_UNIX
-    //Store the file in /var/run instead of /var/tmp
-    if (QDir("/var/run").exists()) {
-        path = QString("/var/run") + '/' + lockFile;
+    //Store the file in /var/lock instead system's temporary directory
+    if (QDir("/var/lock").exists() && QFileInfo("/var/lock").isWritable()) {
+        path = QString("/var/lock") + '/' + lockFile;
     }
 #endif
 
@@ -331,9 +331,9 @@ QString QMail::messageServerLockFilePath()
     static QString path(QDir::tempPath() + QString("/messageserver-instance.lock"));
     //check unix path
 #ifdef Q_OS_UNIX
-    //Store the file in /var/run instead of /var/tmp
-    if (QDir("/var/run").exists()) {
-        path = "/var/run/messageserver-instance.lock";
+    //Store the file in /var/lock instead system's temporary directory
+    if (QDir("/var/lock").exists() && QFileInfo("/var/lock").isWritable()) {
+        path = "/var/lock/messageserver-instance.lock";
     }
 #endif
     return path;
