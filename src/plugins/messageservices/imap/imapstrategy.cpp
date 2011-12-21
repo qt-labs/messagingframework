@@ -3453,6 +3453,10 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     
     int serverMinimum = properties.uidNext;
     int serverMaximum = properties.uidNext;
+    if (!trueClientRegion.isEmpty()) {
+        // Workaround for imap servers that don't return a UIDNEXT response when a folder is SELECTed
+        serverMaximum = qMax(serverMaximum, trueClientRegion.maximum());
+    }
     if (rawServerRegion.cardinality()) {
         // Found region on server
         serverMinimum = rawServerRegion.minimum();
