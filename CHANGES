@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201151
+  * Fixes: NB#295512 Deleting mails using another client not detected on device for some imap servers
+
 201149
   * Fixes: NB#292081 Messageserver with high CPU utilization and mail is not sync'd
  
