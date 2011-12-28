@@ -920,8 +920,9 @@ namespace findBody
         QByteArray contentSubtype;
     };
 
-    // Forward declaration
+    // Forward declarations
     bool inMultipartRelated(const QMailMessagePartContainer &container, Context &ctx);
+    bool inMultipartMixed(const QMailMessagePartContainer &container, Context &ctx);
 
     bool inMultipartNone(const QMailMessagePartContainer &container, Context &ctx)
     {
@@ -971,6 +972,11 @@ namespace findBody
                 }
                 break;
             default:
+                // Default to handling as MultipartMixed
+                if (inMultipartMixed(part, ctx)) {
+                    ctx.alternateParent = const_cast<QMailMessagePartContainer*> (&container);
+                    return true;
+                }
                 break;
             }
         }
@@ -997,6 +1003,9 @@ namespace findBody
                 break;
             default:
                 qWarning() << Q_FUNC_INFO << "Multipart related message with unexpected subpart";
+                // Default to handling as MultipartMixed
+                if (inMultipartMixed(part, ctx))
+                    bodyPart = i;
                 break;
             }
         }
@@ -1046,7 +1055,8 @@ namespace findBody
 
         default:
             qWarning() << Q_FUNC_INFO << "Multipart signed message with unexpected multipart type";
-            return false;
+            // Default to handling as MultipartMixed
+            return inMultipartMixed(part, ctx);
         }
     }
 
@@ -1075,6 +1085,9 @@ namespace findBody
                 break;
             default:
                 qWarning() << Q_FUNC_INFO << "Multipart mixed message with unexpected multipart type";
+                // Default to handling as MultipartMixed
+                if (inMultipartMixed(part, ctx))
+                    return true;
                 break;
             }
             // we haven't found what we looking for..
@@ -1095,12 +1108,9 @@ namespace findBody
         if (container.multipartType() == QMailMessagePart::MultipartSigned)
             return inMultipartSigned(container, ctx);
 
-        // Not implemented multipartTypes ...
-        qWarning() << Q_FUNC_INFO
-                   << "Found unhandled multipart type:"
-                   << container.contentType().toString();
-
-        return false;
+        // Not implemented multipartTypes ... 
+        // default to handling like MultipartMixed
+        return inMultipartMixed(container, ctx);
     }
 
 }
