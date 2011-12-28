@@ -250,7 +250,7 @@ QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAs
     {
         int index;
 
-        if (translateAscii && encoding.contains("ascii"))
+        if (translateAscii && (encoding.contains("ascii") || (encoding.contains("unicode-1-1-utf-7"))))
         {
             // We'll assume the text is plain ASCII, to be extracted to Latin-1
             encoding = "ISO-8859-1";
