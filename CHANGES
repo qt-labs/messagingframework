@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201152
+  * Fixes: NB#294936 [Hotmail] 'Can't get your message' is shown on opening delivery status failure notification mail
+
 201151
   * Fixes: NB#295512 Deleting mails using another client not detected on device for some imap servers
 
