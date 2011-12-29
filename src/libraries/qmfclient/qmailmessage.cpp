@@ -218,10 +218,9 @@ static QByteArray fromUnicode(const QString& input, const QByteArray& charset)
     return to7BitAscii(input.toLatin1());
 }
 
-static QString toUnicode(const QByteArray& input, const QByteArray& charset)
+static QString toUnicode(const QByteArray& input, const QByteArray& charset, const QByteArray& bodyCharset = QByteArray())
 {
-    if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1))
-    {
+    if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1)) {
         // See if we can convert using the nominated charset
         if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->toUnicode(input);
@@ -238,7 +237,16 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset)
             qWarning() << "toUnicode: unable to find codec for autodetected charset:" << autoCharset;
         }
     }
+    if (is7BitAscii(input)) {
+        return QString::fromLatin1(input.constData(), input.length());
+    }
+    if (!bodyCharset.isEmpty()) {
+        // See if we can convert using the body charset
+        if (QTextCodec* textCodec = QMailCodec::codecForName(bodyCharset))
+            return textCodec->toUnicode(input);
 
+        qWarning() << "toUnicode: unable to find codec for charset:" << charset;
+    }
     return to7BitAscii(QString::fromLatin1(input.constData(), input.length()));
 }
 
@@ -8312,21 +8320,8 @@ void QMailMessage::setUnmodified()
 void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMessagePartContainerPrivate* parent)
 {
     QMailMessagePartContainer::setHeader(partHeader, parent);
-
-    // See if any of the header fields need to be propagated to the meta data object
-    foreach (const QMailMessageHeaderField& field, headerFields()) {
-        QByteArray duplicatedId(duplicatedData(field.id()));
-        if (!duplicatedId.isNull()) {
-            QMailMessageContentType ct(headerField("Content-Type"));
-            if (!is7BitAscii(field.content())) {
-                updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset()));
-            } else {
-                updateMetaData(duplicatedId, field.decodedContent());
-            }
-        }
-    }
-}
-
+}    
+    
 /*! \internal */
 QByteArray QMailMessage::duplicatedData(const QString& id) const
 {
@@ -8496,9 +8491,37 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     } else {
         // Parse the header part to know what we've got
         mail.setHeader( QMailMessageHeader( ls.left(pos).toQByteArray() ) );
-
+ 
         // Parse the remainder as content
         mail.partContainerImpl()->fromRfc2822( ls.mid(pos + terminator.length()) );
+    }
+
+    // See if any of the header fields need to be propagated to the meta data object
+    QMailMessagePartContainer *textBody(0);
+    QByteArray auxCharset;
+    QMailMessageContentType ct(mail.headerField("Content-Type"));
+    if (ct.charset().isEmpty()) {
+        if (!textBody) {
+            textBody = mail.findPlainTextContainer();
+        }
+        if (!textBody) {
+            textBody = mail.findHtmlContainer();
+        }
+        if (textBody) {
+            QMailMessageHeaderField hf(textBody->headerField("Content-Type"));
+            auxCharset = QMailMessageContentType(hf).charset();
+        }
+    }
+
+    foreach (const QMailMessageHeaderField& field, mail.headerFields()) {
+        QByteArray duplicatedId(mail.duplicatedData(field.id()));
+        if (!duplicatedId.isNull()) {
+            if (!is7BitAscii(field.content())) {
+                mail.updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset(), auxCharset));
+            } else {
+                mail.updateMetaData(duplicatedId, field.decodedContent());
+            }
+        }
     }
 
     if (mail.metaDataImpl()->_date.isNull()) {
