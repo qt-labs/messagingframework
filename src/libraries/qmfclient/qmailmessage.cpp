@@ -239,7 +239,7 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset)
         }
     }
 
-    return to7BitAscii(QString::fromLatin1(input.constData(), input.length()));
+    return QString::fromLatin1(input.constData(), input.length());
 }
 
 static QMailMessageBody::TransferEncoding encodingForName(const QByteArray& name)
