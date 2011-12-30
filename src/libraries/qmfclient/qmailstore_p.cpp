@@ -305,7 +305,7 @@ public:
 
     QVariant from() const { return _data.from().toString(); }
 
-    QVariant to() const { return QMailAddress::toStringList(_data.to()).join(","); }
+    QVariant to() const { return QMailAddress::toStringList(_data.recipients()).join(","); }
 
     QVariant copyServerUid() const { return _data.copyServerUid(); }
 
@@ -2958,7 +2958,7 @@ void QMailStorePrivate::extractMessageMetaData(const QSqlRecord& r,
             break;
 
         case QMailMessageKey::Recipients:
-            metaData->setTo(messageRecord.to());
+            metaData->setRecipients(messageRecord.to());
             break;
 
         case QMailMessageKey::Subject:
@@ -3321,7 +3321,7 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                 break;
 
             case QMailMessageKey::Recipients:
-                metaData.setTo(extractor.to());
+                metaData.setRecipients(extractor.to());
                 break;
 
             case QMailMessageKey::Subject:
@@ -5125,7 +5125,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     QString fromText(from.isPhoneNumber() ? from.minimalPhoneNumber() : from.toString());
 
     QStringList recipients;
-    foreach (const QMailAddress& address, metaData->to())
+    foreach (const QMailAddress& address, metaData->recipients())
         recipients.append(address.isPhoneNumber() ? address.minimalPhoneNumber() : address.toString());
 
     quint64 insertId;
@@ -8280,7 +8280,7 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
                     break;
 
                 case QMailMessageKey::Recipients:
-                    metaData.setTo(data.to());
+                    metaData.setRecipients(data.recipients());
                     break;
 
                 case QMailMessageKey::Subject:

@@ -53,7 +53,7 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
         QMailAddress fromAddress(m.from());
         return fromAddress.toString();
     } else {
-        QMailAddressList toAddressList(m.to());
+        QMailAddressList toAddressList(m.recipients());
         if (!toAddressList.isEmpty()) {
             QMailAddress firstRecipient(toAddressList.first());
             QString text = firstRecipient.toString();

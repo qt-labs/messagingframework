@@ -379,7 +379,7 @@ public:
     void setDate(const QMailTimeStamp& timeStamp);
     void setReceivedDate(const QMailTimeStamp& timeStamp);
     void setFrom(const QString& s);
-    void setTo(const QString& s);
+    void setRecipients(const QString& s);
 
     void setCopyServerUid(const QString &copyServerUid);
     void setListId(const QString &listId);

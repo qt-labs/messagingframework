@@ -256,6 +256,21 @@ void tst_QMailMessagePart::setHeaderField()
     QCOMPARE(m.headerField("X-My-Own-Header").content(), ownHdr.toLatin1());
     QCOMPARE(m.to(), (QList<QMailAddress>() << QMailAddress(addr1)));
 
+    QCOMPARE(m.recipients(), (QList<QMailAddress>() << QMailAddress(addr1)));
+    QMailMessageMetaData mtdata = *static_cast<QMailMessageMetaData*>(&m);
+    QCOMPARE(mtdata.recipients(), (QList<QMailAddress>() << QMailAddress(addr1)));
+    m.setHeaderField("Cc", addr2);
+    QCOMPARE(m.recipients(), (QList<QMailAddress>() << QMailAddress(addr1) << QMailAddress(addr2)));
+    mtdata = *static_cast<QMailMessageMetaData*>(&m);
+    QCOMPARE(mtdata.recipients(), (QList<QMailAddress>() << QMailAddress(addr1) << QMailAddress(addr2)));
+    QCOMPARE(m.cc(), (QList<QMailAddress>()  << QMailAddress(addr2)));
+    QString addr3("john@example.org");
+    m.setHeaderField("Bcc", addr3);
+    QCOMPARE(m.recipients(), (QList<QMailAddress>() << QMailAddress(addr1) << QMailAddress(addr2) << QMailAddress(addr3)));
+    mtdata = *static_cast<QMailMessageMetaData*>(&m);
+    QCOMPARE(mtdata.recipients(), (QList<QMailAddress>() << QMailAddress(addr1) << QMailAddress(addr2) << QMailAddress(addr3)));
+    QCOMPARE(m.bcc(), (QList<QMailAddress>()  << QMailAddress(addr3)));
+
     QString rfc822 = m.toRfc2822();
 
     QMailMessage m2 = QMailMessage::fromRfc2822(rfc822.toLatin1());

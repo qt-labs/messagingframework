@@ -6380,7 +6380,7 @@ void QMailMessageMetaDataPrivate::setFrom(const QString& s)
     updateMember(_from, s);
 } 
 
-void QMailMessageMetaDataPrivate::setTo(const QString& s)
+void QMailMessageMetaDataPrivate::setRecipients(const QString& s)
 {
     updateMember(_to, s);
 }
@@ -7102,29 +7102,29 @@ void QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &timeStamp)
 }
 
 /*! 
-    Returns the list of primary recipients for the message.
+    Returns the list of all recipients for the message.
 
     \sa QMailAddress
 */
-QList<QMailAddress> QMailMessageMetaData::to() const
+QList<QMailAddress> QMailMessageMetaData::recipients() const
 {
     return QMailAddress::fromStringList(impl(this)->_to);
 }
 
 /*! 
-    Sets the list of primary recipients for the message to \a toList.
+    Sets the list of recipients for the message to \a toList.
 */
-void QMailMessageMetaData::setTo(const QList<QMailAddress>& toList)
+void QMailMessageMetaData::setRecipients(const QList<QMailAddress>& toList)
 {
-    impl(this)->setTo(QMailAddress::toStringList(toList).join(", "));
+    impl(this)->setRecipients(QMailAddress::toStringList(toList).join(", "));
 }
 
 /*! 
     Sets the list of primary recipients for the message to contain \a address.
 */
-void QMailMessageMetaData::setTo(const QMailAddress& address)
+void QMailMessageMetaData::setRecipients(const QMailAddress& address)
 {
-    setTo(QList<QMailAddress>() << address);
+    setRecipients(QList<QMailAddress>() << address);
 }
 
 /*!
@@ -8075,12 +8075,21 @@ void QMailMessage::setDate(const QMailTimeStamp &timeStamp)
     partContainerImpl()->setDate(timeStamp);
 }
 
+/*!
+    Returns a list of all the primary recipients specified for the message.
+
+    \sa cc(), bcc(), QMailAddress
+*/
+QList<QMailAddress> QMailMessage::to() const
+{
+    return QMailAddress::fromStringList(headerFieldText("To"));
+}
+
 /*! \reimp */
 void QMailMessage::setTo(const QList<QMailAddress>& toList)
 {
-    QString flattened(QMailAddress::toStringList(toList).join(", "));
-    metaDataImpl()->setTo(flattened);
-    partContainerImpl()->setTo(flattened);
+    metaDataImpl()->setRecipients(QMailAddress::toStringList(toList+cc()+bcc()).join(", "));
+    partContainerImpl()->setTo(QMailAddress::toStringList(toList).join(", "));
 }
 
 /*! \reimp */
@@ -8106,6 +8115,7 @@ QList<QMailAddress> QMailMessage::cc() const
 */  
 void QMailMessage::setCc(const QList<QMailAddress>& ccList)
 {
+    metaDataImpl()->setRecipients(QMailAddress::toStringList(to()+ccList+bcc()).join(", "));
     partContainerImpl()->setCc(QMailAddress::toStringList(ccList).join(", "));
 }
 
@@ -8126,6 +8136,7 @@ QList<QMailAddress> QMailMessage::bcc() const
 */  
 void QMailMessage::setBcc(const QList<QMailAddress>& bccList)
 {
+    metaDataImpl()->setRecipients(QMailAddress::toStringList(to()+cc()+bccList).join(", "));
     partContainerImpl()->setBcc(QMailAddress::toStringList(bccList).join(", "));
 }
 
@@ -8332,7 +8343,8 @@ QByteArray QMailMessage::duplicatedData(const QString& id) const
     QByteArray plainId( to7BitAscii(id).trimmed().toLower() );
 
     if ((plainId == "from") || (plainId == "to") || (plainId == "subject") ||
-        (plainId == "date") || (plainId == "list-id") || plainId == "message-id")
+        (plainId == "date") || (plainId == "list-id") || plainId == "message-id" ||
+        plainId == "cc" || plainId == "bcc")
         return plainId;
 
     return QByteArray();
@@ -8344,7 +8356,11 @@ void QMailMessage::updateMetaData(const QByteArray& id, const QString& value)
     if (id == "from") {
         metaDataImpl()->setFrom(value);
     } else if (id == "to") {
-        metaDataImpl()->setTo(value);
+        metaDataImpl()->setRecipients(QMailAddress::toStringList(QMailAddress::fromStringList(value)+cc()+bcc()).join(", "));
+    } else if (id == "cc") {
+        metaDataImpl()->setRecipients(QMailAddress::toStringList(to()+QMailAddress::fromStringList(value)+bcc()).join(", "));
+    } else if (id == "bcc") {
+        metaDataImpl()->setRecipients(QMailAddress::toStringList(to()+cc()+QMailAddress::fromStringList(value)).join(", "));
     } else if (id == "subject") {
         metaDataImpl()->setSubject(value);
     } else if (id == "date") {

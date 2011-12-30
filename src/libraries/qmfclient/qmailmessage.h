@@ -601,9 +601,7 @@ public:
     virtual QMailTimeStamp receivedDate() const;
     virtual void setReceivedDate(const QMailTimeStamp &s);
 
-    virtual QList<QMailAddress> to() const;
-    virtual void setTo(const QList<QMailAddress>& s);
-    virtual void setTo(const QMailAddress& s);
+    virtual QList<QMailAddress> recipients() const;
 
     virtual quint64 status() const;
     virtual void setStatus(quint64 newStatus);
@@ -664,6 +662,10 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
+
+protected:
+    virtual void setRecipients(const QList<QMailAddress>& s);
+    virtual void setRecipients(const QMailAddress& s);
 
 private:
     friend class QMailMessage;
@@ -747,6 +749,7 @@ public:
     
     virtual void setDate(const QMailTimeStamp &s);
 
+    virtual QList<QMailAddress> to() const;
     virtual void setTo(const QList<QMailAddress>& s);
     virtual void setTo(const QMailAddress& s);
 

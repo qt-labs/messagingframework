@@ -1394,7 +1394,7 @@ QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* mess
     metaData.setSubject(message->subject());
     metaData.setDate(message->date());
     metaData.setReceivedDate(message->receivedDate());
-    metaData.setTo(message->to());
+    metaData.setRecipients(message->recipients());
     metaData.setStatus(message->status());
     metaData.setParentAccountId(message->parentAccountId());
     metaData.setServerUid(message->serverUid());

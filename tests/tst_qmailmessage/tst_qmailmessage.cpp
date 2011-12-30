@@ -869,6 +869,13 @@ void tst_QMailMessage::fromRfc2822()
     QTEST( m.body().data(), "plain_text" );
     QTEST( int(m.partCount()), "message_part_count" );
 
+    QFETCH(QStringList, to);
+    QFETCH(QStringList, cc);
+    QFETCH(QStringList, bcc);
+    QMailMessageMetaData metaData = *static_cast<QMailMessageMetaData*>(&m);
+    QCOMPARE(QMailAddress::toStringList(metaData.recipients()), (to + cc + bcc));
+
+
     // Test that conversion to-and-from RFC2822 yields equivalence
     QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);
 
@@ -1177,10 +1184,15 @@ void tst_QMailMessage::recipients()
     QCOMPARE(m.recipients(), QList<QMailAddress>());
 
     m.setTo(to);
+    QCOMPARE(m.to(),to);
     m.setCc(cc);
+    QCOMPARE(m.cc(), cc);
     m.setBcc(bcc);
+    QCOMPARE(m.bcc(), bcc);
     QCOMPARE(m.hasRecipients(), (!to.isEmpty() || !cc.isEmpty() || !bcc.isEmpty()));
     QCOMPARE(m.recipients(), (to + cc + bcc));
+    QMailMessageMetaData metaData = *static_cast<QMailMessageMetaData*>(&m);
+    QCOMPARE(metaData.recipients(), (to + cc + bcc));
 }
 
 void tst_QMailMessage::hasRecipients()

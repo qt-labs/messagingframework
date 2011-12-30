@@ -191,6 +191,17 @@ Changes since the QMF-1.0 release on 15/05/09:
        'uint QMailSearchAction::messagesCount()' functions, and 
        'QMailMessageServer::messagesCount(uint count)' signal.
 
+49.  Added QList<QMailAddress> QMailMessage::to() const
+           virtual QList<QMailAddress> QMailMessageMetaData::recipients() const
+        protected:
+           virtual void QMailMessageMetaData::setRecipients(const QList<QMailAddress>& s);
+           virtual void QMailMessageMetaData::setRecipients(const QMailAddress& s);
+
+     Removed QList<QMailAddress> QMailMessageMetaData::to() const
+             void QMailMessageMetaData::setTo(const QList<QMailAddress>& s);
+             void QMailMessageMetaData::setTo(const QMailAddress& s);
+
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
