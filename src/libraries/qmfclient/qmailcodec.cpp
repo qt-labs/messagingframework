@@ -168,13 +168,7 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charse
 */
 void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& icharset)
 {
-    QString charset = icharset;
-    if ((charset.toLower() == "gb2312") || (charset.toLower() == "gbk")) {
-        // gb18030 is a superset of gb2312 and gbk, prefer it
-        charset = "gb18030";
-    }
-
-    if (QTextCodec* codec = codecForName(charset.toLatin1()))
+    if (QTextCodec* codec = codecForName(icharset.toLatin1()))
     {
         QByteArray decoded;
         {
@@ -235,6 +229,37 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
 }
 
 /*!
+    Returns a charset that may be better supported than the one specified. If charset is ascii and \a translateAscii is true,
+    it will use the Latin-1 codec.
+*/
+QByteArray QMailCodec::bestCompatibleCharset(const QByteArray& charset, bool translateAscii)
+{
+    QByteArray encoding(charset.toLower());
+
+    if (!encoding.isEmpty()) {
+        int index;
+
+        if (translateAscii && (encoding.contains("ascii") || (encoding.contains("unicode-1-1-utf-7")))) {
+            // We'll assume the text is plain ASCII, to be extracted to Latin-1
+            encoding = "ISO-8859-1";
+        } else if(encoding.contains("ks_c_5601")) {
+            encoding = "EUC-KR";
+        } else if (encoding == "gb2312" || encoding == "gbk") {
+            // gb18030 is a superset of gb2312 and gbk, prefer it
+            encoding = "gb18030";
+        } else if (encoding == "windows-874") {
+            // windows-874 is unsupported, but compatible with ibm874
+            encoding = "ibm874";
+        } else if ((index = encoding.indexOf('*')) != -1) {
+            // This charset specification includes a trailing language specifier
+            encoding = encoding.left(index);
+        }
+    }
+
+    return encoding;
+}
+
+/*!
     Returns a pointer to an appropriate QTextCodec based on \a charset. If charset is ascii and \a translateAscii is true,
     it will use the Latin-1 codec.
 
@@ -244,26 +269,9 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
 */
 QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAscii)
 {
-    QByteArray encoding(charset.toLower());
+    QByteArray encoding(bestCompatibleCharset(charset, translateAscii));
 
-    if (!encoding.isEmpty())
-    {
-        int index;
-
-        if (translateAscii && (encoding.contains("ascii") || (encoding.contains("unicode-1-1-utf-7"))))
-        {
-            // We'll assume the text is plain ASCII, to be extracted to Latin-1
-            encoding = "ISO-8859-1";
-        } else if(encoding.contains("ks_c_5601"))
-        {
-            encoding = "EUC-KR";
-        }
-        else if ((index = encoding.indexOf('*')) != -1)
-        {
-            // This charset specification includes a trailing language specifier
-            encoding = encoding.left(index);
-        }
-
+    if (!encoding.isEmpty()) {
         QTextCodec* codec = QTextCodec::codecForName(encoding);
         if (!codec)
         {

@@ -74,6 +74,7 @@ public:
 
     // Static helper functions
     static QTextCodec * codecForName(const QByteArray& charset, bool translateAscii = true);
+    static QByteArray bestCompatibleCharset(const QByteArray& charset, bool translateAscii);
     static void copy(QDataStream& out, QDataStream& in);
     static void copy(QTextStream& out, QTextStream& in);
     static QString autoDetectEncoding(const QByteArray& text);
