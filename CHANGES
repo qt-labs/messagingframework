@@ -4,6 +4,7 @@ Latest Changes
 201152
   * Fixes: NB#294936 [Hotmail] 'Can't get your message' is shown on opening delivery status failure notification mail
   * Fixes: NB#295637 Encoding from body parts in a multi-part email should be used for header's textual data
+  * Fixes: NB#294947 Preview in Hong Kong special Chinese characters (Big5) displays as garbage after downloading the attachment.
 
 201151
   * Fixes: NB#295512 Deleting mails using another client not detected on device for some imap servers
