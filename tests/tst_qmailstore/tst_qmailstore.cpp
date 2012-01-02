@@ -42,6 +42,7 @@
 #include <QObject>
 #include <QTest>
 #include <QSqlQuery>
+#include <QSignalSpy>
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
@@ -335,6 +336,9 @@ void tst_QMailStore::addFolder()
 
 void tst_QMailStore::addMessage()
 {
+    QSignalSpy spyMessagesAdded(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)));
+    QSignalSpy spyMessageDataAdded(QMailStore::instance(), SIGNAL(messageDataAdded(QMailMessageMetaDataList)));
+
     QMailAccount account;
     account.setName("Account");
 
@@ -423,10 +427,17 @@ void tst_QMailStore::addMessage()
     QCOMPARE(message3.customField("answer"), QString("Fido"));
     QCOMPARE(message3.dataModified(), false);
     QCOMPARE(message3.contentModified(), false);
+
+    //Verify that the signals are only emitted once
+    QCOMPARE(spyMessagesAdded.count(), 1);
+    QCOMPARE(spyMessageDataAdded.count(), 1);
 }
 
 void tst_QMailStore::addMessages()
 {
+    QSignalSpy spyMessagesAdded(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)));
+    QSignalSpy spyMessageDataAdded(QMailStore::instance(), SIGNAL(messageDataAdded(QMailMessageMetaDataList)));
+
     QMailAccount account;
     account.setName("Account");
 
@@ -496,6 +507,10 @@ void tst_QMailStore::addMessages()
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 0), messageIds.mid(0, 9));
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 9, 1), messageIds.mid(1, 9));
     QCOMPARE(QMailStore::instance()->queryMessages(key, sort, 10, 0), messageIds);
+
+    //Verify that the signals are only emitted once
+    QCOMPARE(spyMessagesAdded.count(), 1);
+    QCOMPARE(spyMessageDataAdded.count(), 1);
 }
 
 void tst_QMailStore::addMessages2()
@@ -848,6 +863,9 @@ void tst_QMailStore::updateFolder()
 
 void tst_QMailStore::updateMessage()
 {
+    QSignalSpy spyMessagesUpdated(QMailStore::instance(), SIGNAL(messagesUpdated(QMailMessageIdList)));
+    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), SIGNAL(messageDataUpdated(QMailMessageMetaDataList)));
+
     QMailAccount account;
     account.setName("Account");
 
@@ -948,6 +966,10 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(message2.customField("tag"), QString("Work"));
     QCOMPARE(message2.dataModified(), false);
     QCOMPARE(message2.contentModified(), false);
+
+    //Verify that the signals are only emitted once
+    QCOMPARE(spyMessagesUpdated.count(), 1);
+    QCOMPARE(spyMessagesDataUpdated.count(), 1);
 
     // Add an additional message
     QMailMessage message3;
@@ -1117,6 +1139,9 @@ void tst_QMailStore::updateMessage()
 
 void tst_QMailStore::updateMessages()
 {
+    QSignalSpy spyMessagesUpdated(QMailStore::instance(), SIGNAL(messagesUpdated(QMailMessageIdList)));
+    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), SIGNAL(messageDataUpdated(QMailMessageMetaDataList)));
+
     QMailAccount account;
     account.setName("Account");
 
@@ -1190,6 +1215,10 @@ void tst_QMailStore::updateMessages()
         QCOMPARE(message.subject(), QString("Message %1").arg(i + 100));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i + 100));
     }
+
+    //Verify that the signals are only emitted once
+    QCOMPARE(spyMessagesUpdated.count(), 1);
+    QCOMPARE(spyMessagesDataUpdated.count(), 1);
 }
 
 void tst_QMailStore::removeAccount()

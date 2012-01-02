@@ -296,6 +296,8 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 
     emitMessageNotification(Added, addedMessageIds);
     emitThreadNotification(Added, addedThreadIds);
+    emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
+    emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
@@ -322,6 +324,8 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
+    emitMessageNotification(Added, addedMessageIds);
+    emitMessageNotification(Updated, updatedMessageIds);
     emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
     emitThreadNotification(Added, addedThreadIds);
     emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
@@ -690,6 +694,7 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
     if (!d->updateMessagesMetaData(key, properties, data, &updatedMessages, &modifiedFolders, &modifiedAccounts))
         return false;
 
+    emitMessageNotification(Updated, updatedMessages);
     emitMessageDataNotification(updatedMessages, properties, data);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
@@ -1275,8 +1280,6 @@ void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdLi
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
         QMailMessageIdList idList(ids.toSet().toList());
-
-        d->notifyMessagesChange(type, idList);
 
         switch (type) {
         case Added:
