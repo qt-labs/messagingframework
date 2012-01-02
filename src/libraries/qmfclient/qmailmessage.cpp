@@ -3152,7 +3152,10 @@ void QMailMessageBodyPrivate::ensureCharsetExist()
     if (_type.type().toLower() != "text"
         || (_type.subType().toLower() != "plain"
             && _type.subType().toLower() != "html")) {
-        _type.setCharset(QMailCodec::bestCompatibleCharset(_type.charset(), true));
+        QByteArray best(QMailCodec::bestCompatibleCharset(_type.charset(), true));
+        if (!best.isEmpty()) {
+            _type.setCharset(best);
+        }
         return;
     }
 
@@ -3178,10 +3181,16 @@ void QMailMessageBodyPrivate::ensureCharsetExist()
             autoCharset = QMailCodec::autoDetectEncoding(data).toLatin1();
         }
         if (!autoCharset.isEmpty() && (insensitiveIndexOf("ISO-8859-", autoCharset) == -1)) {
-            _type.setCharset(QMailCodec::bestCompatibleCharset(autoCharset, true));
+            QByteArray best(QMailCodec::bestCompatibleCharset(autoCharset, true));
+            if (!best.isEmpty()) {
+                _type.setCharset(best);
+            }
         }
     } else {
-        _type.setCharset(QMailCodec::bestCompatibleCharset(charset, true));
+        QByteArray best(QMailCodec::bestCompatibleCharset(charset, true));
+        if (!best.isEmpty()) {
+            _type.setCharset(best);
+        }
     }
 }
 
