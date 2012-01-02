@@ -273,7 +273,7 @@ void tst_QMailMessage::toRfc2822_data()
         /* to                */ << toAddressList
         /* subject           */ << "Test"
         /* time_stamp        */ << "Fri, 21 Nov 1997 09:55:06 -0600"
-        /* content_type      */ << QByteArray("text/plain; charset=UTF-8")
+        /* content_type      */ << QByteArray("text/plain; charset=utf-8")
         /* plain_text        */ << "Plain text."
         /* text_parts        */ << QList<pair_type>()
         /* rfc_header_text   */ << QByteArray(
@@ -281,7 +281,7 @@ void tst_QMailMessage::toRfc2822_data()
 "To: =?UTF-8?B?2LbZqdql2rQ=?= <address@test>, mary@example.net" CRLF
 "Subject: Test" CRLF
 "Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
-"Content-Type: text/plain; charset=UTF-8" CRLF
+"Content-Type: text/plain; charset=utf-8" CRLF
 "<ENCODING>"
 "MIME-Version: 1.0" CRLF )
         /* rfc_body_text     */ << QByteArray(
@@ -1237,7 +1237,7 @@ void tst_QMailMessage::multiMultipart()
     type = "text/plain; charset=UTF-8";
     data = "P1: This is a plain text part.", 
     p1.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type), QMailMessageBody::EightBit, QMailMessageBody::RequiresEncoding));
-    QCOMPARE( p1.contentType().toString(), QByteArray("Content-Type: text/plain; charset=UTF-8") );
+    QCOMPARE( p1.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=UTF-8").toLower() );
     QCOMPARE( p1.transferEncoding(), QMailMessageBody::EightBit );
     QCOMPARE( p1.partCount(), static_cast<uint>(0) );
     for (uint i = 0; i < p1.partCount(); ++i)
@@ -1262,14 +1262,14 @@ void tst_QMailMessage::multiMultipart()
 #endif
 "</html>";
     p3.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type), QMailMessageBody::EightBit, QMailMessageBody::RequiresEncoding));
-    QCOMPARE( p3.contentType().toString(), QByteArray("Content-Type: text/html; charset=UTF-8") );
+    QCOMPARE( p3.contentType().toString().toLower(), QByteArray("Content-Type: text/html; charset=UTF-8").toLower() );
     QCOMPARE( p3.transferEncoding(), QMailMessageBody::EightBit );
 
     QMailMessagePart p4;
     type = "text/plain;\n charset=\"ISO-8859-1\"";
     data = "P4: This is a plain text part that should be referenced by p3...";
     p4.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type), QMailMessageBody::EightBit, QMailMessageBody::RequiresEncoding));
-    QCOMPARE( p4.contentType().toString(), QByteArray("Content-Type: text/plain; charset=ISO-8859-1") );
+    QCOMPARE( p4.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=ISO-8859-1").toLower() );
     QCOMPARE( p4.transferEncoding(), QMailMessageBody::EightBit );
 
     QMailMessagePart p5;
@@ -1279,7 +1279,7 @@ void tst_QMailMessage::multiMultipart()
 #else
     p5.setBody(QMailMessageBody::fromFile("/etc/hosts", QMailMessageContentType(type), QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
 #endif
-    QCOMPARE( p5.contentType().toString(), QByteArray("Content-Type: text/plain; charset=us-ascii") );
+    QCOMPARE( p5.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=us-ascii").toLower() );
     QCOMPARE( p5.transferEncoding(), QMailMessageBody::SevenBit );
 
     p2.setMultipartType(QMailMessagePartContainer::MultipartRelated);
@@ -1288,7 +1288,7 @@ void tst_QMailMessage::multiMultipart()
 #ifndef FIT_MESSAGE_WITHIN_QDEBUG_LIMIT
     p2.appendPart(p5);
 #endif
-    QCOMPARE( p2.contentType().toString(), QByteArray("Content-Type: multipart/related") );
+    QCOMPARE( p2.contentType().toString().toLower(), QByteArray("Content-Type: multipart/related").toLower() );
     QCOMPARE( p2.transferEncoding(), QMailMessageBody::NoEncoding );
 #ifndef FIT_MESSAGE_WITHIN_QDEBUG_LIMIT
     QCOMPARE( p2.partCount(), static_cast<uint>(3) );
@@ -1306,7 +1306,7 @@ void tst_QMailMessage::multiMultipart()
     m.setMultipartType(QMailMessagePartContainer::MultipartAlternative);
     m.appendPart(p1);
     m.appendPart(p2);
-    QCOMPARE( m.contentType().toString(), QByteArray("Content-Type: multipart/alternative") );
+    QCOMPARE( m.contentType().toString().toLower(), QByteArray("Content-Type: multipart/alternative").toLower() );
     QCOMPARE( m.transferEncoding(), QMailMessageBody::NoEncoding );
     QCOMPARE( m.partCount(), static_cast<uint>(2) );
     for (uint i = 0; i < m.partCount(); ++i)
@@ -1359,7 +1359,7 @@ void tst_QMailMessage::multiMultipart()
 
     QMailMessage m4 = QMailMessage::fromRfc2822(identity);
 
-    QCOMPARE( m4.contentType().toString(), m.contentType().toString() );
+    QCOMPARE( m4.contentType().toString().toLower(), m.contentType().toString().toLower() );
     QCOMPARE( m4.transferEncoding(), m.transferEncoding() );
     QCOMPARE( m4.partCount(), m.partCount() );
     for (uint i = 0; i < m.partCount(); ++i) {

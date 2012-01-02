@@ -546,9 +546,9 @@ void tst_QMailMessageBody::fromFile()
         QCOMPARE( body.data( QMailMessageBody::Encoded ), encoded );
         QCOMPARE( body.data(), string_decoded );
 
-        QCOMPARE( body.contentType().type(), content_properties[0].toLatin1() );
-        QCOMPARE( body.contentType().subType(), content_properties[1].toLatin1() );
-        QCOMPARE( body.contentType().charset(), content_properties[2].toLatin1() );
+        QCOMPARE( body.contentType().type().toLower(), content_properties[0].toLatin1().toLower() );
+        QCOMPARE( body.contentType().subType().toLower(), content_properties[1].toLatin1().toLower() );
+        QCOMPARE( body.contentType().charset().toLower(), content_properties[2].toLatin1().toLower() );
     }
     else
     {
@@ -563,9 +563,9 @@ void tst_QMailMessageBody::fromFile()
         QCOMPARE( body.data( QMailMessageBody::Encoded ), encoded );
         QCOMPARE( body.data( QMailMessageBody::Decoded ), bytearray_decoded );
 
-        QCOMPARE( body.contentType().type(), content_properties[0].toLatin1() );
-        QCOMPARE( body.contentType().subType(), content_properties[1].toLatin1() );
-        QCOMPARE( body.contentType().charset(), content_properties[2].toLatin1() );
+        QCOMPARE( body.contentType().type().toLower(), content_properties[0].toLatin1().toLower() );
+        QCOMPARE( body.contentType().subType().toLower(), content_properties[1].toLatin1().toLower() );
+        QCOMPARE( body.contentType().charset().toLower(), content_properties[2].toLatin1().toLower() );
     }
 }
 

@@ -360,7 +360,7 @@ void tst_QMailMessagePart::testSerialization()
     p1.setContentID("P1");
     p1.setContentLocation("After the header");
     p1.setContentDescription("The first part");
-    QCOMPARE( p1.contentType().toString(), QByteArray("Content-Type: text/plain; charset=us-ascii") );
+    QCOMPARE( p1.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=us-ascii").toLower() );
     QCOMPARE( p1.transferEncoding(), QMailMessageBody::SevenBit );
 
     type = "text/html; charset=UTF-8";
@@ -372,7 +372,7 @@ void tst_QMailMessagePart::testSerialization()
     QMailMessagePart p2;
     p2.setBody(QMailMessageBody::fromData(data, ct, QMailMessageBody::EightBit, QMailMessageBody::RequiresEncoding));
     p2.setContentDisposition(cd);
-    QCOMPARE( p2.contentType().toString(), QByteArray("Content-Type: text/html; charset=UTF-8; name=P2") );
+    QCOMPARE( p2.contentType().toString().toLower(), QByteArray("Content-Type: text/html; charset=UTF-8; name=P2").toLower() );
     QCOMPARE( p2.transferEncoding(), QMailMessageBody::EightBit );
 
     QMailMessage m;
@@ -383,7 +383,7 @@ void tst_QMailMessagePart::testSerialization()
     m.setMultipartType(QMailMessagePartContainer::MultipartAlternative);
     m.appendPart(p1);
     m.appendPart(p2);
-    QCOMPARE( m.contentType().toString(), QByteArray("Content-Type: multipart/alternative") );
+    QCOMPARE( m.contentType().toString().toLower(), QByteArray("Content-Type: multipart/alternative").toLower() );
     QCOMPARE( m.transferEncoding(), QMailMessageBody::NoEncoding );
 
     const QByteArray expected(
@@ -404,7 +404,7 @@ CRLF
 CRLF
 "P1: This is a plain text part." CRLF
 "--" BOUNDARY CRLF
-"Content-Type: text/html; charset=UTF-8; name=P2" CRLF
+"Content-Type: text/html; charset=utf-8; name=P2" CRLF
 "Content-Transfer-Encoding: 8bit" CRLF
 "Content-Disposition: inline; filename=p2.html" CRLF
 CRLF
