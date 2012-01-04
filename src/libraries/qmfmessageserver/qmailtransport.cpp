@@ -50,6 +50,8 @@
 #include <QTcpSocket>
 #endif
 
+#include <QNetworkProxy>
+
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 
@@ -106,6 +108,17 @@ QMailTransport::Socket::Socket(QObject *parent)
     // We'll connect to servers offering any variant of encryption
     setProtocol(QSsl::AnyProtocol);
 #endif
+
+    // we are library and if application sets proxy somewhere else
+    // nothing is done here
+    QNetworkProxy appProxy = QNetworkProxy::applicationProxy();
+    if (appProxy.type() == QNetworkProxy::NoProxy) {
+        QNetworkProxyFactory::setUseSystemConfiguration(true);
+
+        qMailLog(Messaging) << "QMailTransport::Socket::Socket SET PROXY" <<
+                    "host=" << QNetworkProxy::applicationProxy().hostName() <<
+                    "port=" << QNetworkProxy::applicationProxy().port();
+    }
 }
 
 void QMailTransport::Socket::mark()
