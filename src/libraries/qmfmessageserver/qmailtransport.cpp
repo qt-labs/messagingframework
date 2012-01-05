@@ -51,6 +51,7 @@
 #endif
 
 #include <QNetworkProxy>
+#include <QUrl>
 
 #include <qmaillog.h>
 #include <qmailnamespace.h>
@@ -120,7 +121,17 @@ QMailTransport::Socket::Socket(QObject *parent)
                     "host=" << QNetworkProxy::applicationProxy().hostName() <<
                     "port=" << QNetworkProxy::applicationProxy().port();
     }
-#endif
+#else
+    QByteArray env = qgetenv("http_proxy") ;
+    if (env.length()) {
+        QUrl url(env) ;
+        QString host = url.host() ;
+        int port = url.port(8080) ;
+        QNetworkProxy proxy(QNetworkProxy::HttpProxy,host,port) ;
+        setProxy(proxy);
+        qMailLog(Messaging) << "QMailTransport::Socket::Socket SET PROXY host=" << host << " port=" << port ;
+    }
+#endif    
 }
 
 void QMailTransport::Socket::mark()
