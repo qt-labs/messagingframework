@@ -84,19 +84,19 @@ signals:
 
     void synchronize(quint64, const QMailAccountId &accountId);
 
-    void deleteMessages(quint64, const QMailMessageIdList&, QMailStore::MessageRemovalOption);
+    void onlineDeleteMessages(quint64, const QMailMessageIdList&, QMailStore::MessageRemovalOption);
 
-    void copyMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
-    void moveMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
-    void flagMessages(quint64, const QMailMessageIdList&, quint64 setMask, quint64 unsetMask);
+    void onlineCopyMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
+    void onlineMoveMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
+    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList&, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &metadata);
     void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &metadata);
 
-    void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
-    void deleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
+    void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
 
     void cancelTransfer(quint64);
 

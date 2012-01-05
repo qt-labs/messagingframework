@@ -233,20 +233,20 @@ public:
     QMailMessageIdList messagesUpdated() const;
 
 public slots:
-    void deleteMessages(const QMailMessageIdList &ids);
+    void onlineDeleteMessages(const QMailMessageIdList &ids);
     void discardMessages(const QMailMessageIdList &ids);
 
-    void copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
-    void moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    void onlineCopyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    void onlineMoveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
-    void flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+    void onlineFlagMessagesAndMoveToStandardFolder(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
     void addMessages(const QMailMessageList &list);
     void updateMessages(const QMailMessageList &list);
     void updateMessages(const QMailMessageMetaDataList &list);
 
-    void createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    void renameFolder(const QMailFolderId &folderId, const QString &name);
-    void deleteFolder(const QMailFolderId &folderId);
+    void onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void onlineRenameFolder(const QMailFolderId &folderId, const QString &name);
+    void onlineDeleteFolder(const QMailFolderId &folderId);
 };
 
 

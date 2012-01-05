@@ -1749,7 +1749,7 @@ void EmailClient::deleteSelectedMessages()
             deleteList = (deleteList.toSet().subtract(localOnlyIds.toSet())).toList();
         }
         if(!deleteList.isEmpty())
-            storageAction("Deleting messages..")->deleteMessages(deleteList);
+            storageAction("Deleting messages..")->onlineDeleteMessages(deleteList);
     }
     else
     {
@@ -1792,7 +1792,7 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
     // handle copied messages
     copyToFolder(copyList,destination);
 #else 
-    storageAction("Copying messages")->copyMessages(copyList, destination);
+    storageAction("Copying messages")->onlineCopyMessages(copyList, destination);
 #endif
 
     AcknowledgmentBox::show(tr("Copying"), tr("Copying %n message(s)", "%1: number of messages", copyList.count()));
@@ -1938,7 +1938,7 @@ void EmailClient::emptyTrashFolder()
 
     if (confirmDelete(this, "Empty trash", tr("all messages in the trash"))) {
         AcknowledgmentBox::show(tr("Deleting"), tr("Deleting %n message(s)", "%1: number of messages", trashIds.count()));
-        storageAction("Deleting messages")->deleteMessages(trashIds);
+        storageAction("Deleting messages")->onlineDeleteMessages(trashIds);
     }
 }
 
@@ -2108,7 +2108,7 @@ void EmailClient::deleteFolder()
 
     if(QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         return;
-    storageAction("Deleting folder ")->deleteFolder(selectedFolderId);
+    storageAction("Deleting folder ")->onlineDeleteFolder(selectedFolderId);
 }
 
 void EmailClient::createFolder()
@@ -2118,7 +2118,7 @@ void EmailClient::createFolder()
     if(name.isEmpty())
         return;
 
-    storageAction("Creating folder ")->createFolder(name, selectedAccountId, selectedFolderId);
+    storageAction("Creating folder ")->onlineCreateFolder(name, selectedAccountId, selectedFolderId);
 
 }
 
@@ -2132,7 +2132,7 @@ void EmailClient::renameFolder()
         if(newName.isEmpty())
             return;
 
-        storageAction("Renaming folder")->renameFolder(selectedFolderId, newName);
+        storageAction("Renaming folder")->onlineRenameFolder(selectedFolderId, newName);
     }
 }
 

@@ -1735,7 +1735,7 @@ bool ServiceHandler::dispatchSynchronize(quint64 action, const QByteArray &data)
     return true;
 }
 
-void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& messageIds, QMailStore::MessageRemovalOption option)
+void ServiceHandler::onlineDeleteMessages(quint64 action, const QMailMessageIdList& messageIds, QMailStore::MessageRemovalOption option)
 {
     QSet<QMailMessageService*> sources;
 
@@ -1749,7 +1749,7 @@ void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& me
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to delete messages for unconfigured account"));
         } else {
             QString description(tr("Deleting messages"));
-            enqueueRequest(action, serialize(messageLists), sources, &ServiceHandler::dispatchDeleteMessages, &ServiceHandler::storageActionCompleted, DeleteMessagesRequestType);
+            enqueueRequest(action, serialize(messageLists), sources, &ServiceHandler::dispatchOnlineDeleteMessages, &ServiceHandler::storageActionCompleted, DeleteMessagesRequestType);
         }
     }
 }
@@ -1780,7 +1780,7 @@ bool ServiceHandler::dispatchDiscardMessages(quint64 action, const QByteArray &d
     return true;
 }
 
-bool ServiceHandler::dispatchDeleteMessages(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineDeleteMessages(quint64 action, const QByteArray &data)
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
 
@@ -1806,7 +1806,7 @@ bool ServiceHandler::dispatchDeleteMessages(quint64 action, const QByteArray &da
     return true;
 }
 
-void ServiceHandler::copyMessages(quint64 action, const QMailMessageIdList& messageIds, const QMailFolderId &destination)
+void ServiceHandler::onlineCopyMessages(quint64 action, const QMailMessageIdList& messageIds, const QMailFolderId &destination)
 {
     QSet<QMailAccountId> accountIds(folderAccount(destination));
 
@@ -1821,12 +1821,12 @@ void ServiceHandler::copyMessages(quint64 action, const QMailMessageIdList& mess
         } else if (sources.count() > 1) {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to copy messages to multiple destination accounts!"));
         } else {
-            enqueueRequest(action, serialize(messageIds, destination), sources, &ServiceHandler::dispatchCopyMessages, &ServiceHandler::storageActionCompleted, CopyMessagesRequestType);
+            enqueueRequest(action, serialize(messageIds, destination), sources, &ServiceHandler::dispatchOnlineCopyMessages, &ServiceHandler::storageActionCompleted, CopyMessagesRequestType);
         }
     }
 }
 
-bool ServiceHandler::dispatchCopyMessages(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineCopyMessages(quint64 action, const QByteArray &data)
 {
     QMailMessageIdList messageIds;
     QMailFolderId destination;
@@ -1897,7 +1897,7 @@ bool ServiceHandler::dispatchCopyToLocal(quint64 action, const QByteArray &data)
     return true;
 }
 
-void ServiceHandler::moveMessages(quint64 action, const QMailMessageIdList& messageIds, const QMailFolderId &destination)
+void ServiceHandler::onlineMoveMessages(quint64 action, const QMailMessageIdList& messageIds, const QMailFolderId &destination)
 {
     QSet<QMailMessageService*> sources;
 
@@ -1906,11 +1906,11 @@ void ServiceHandler::moveMessages(quint64 action, const QMailMessageIdList& mess
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
     } else {
-        enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchMoveMessages, &ServiceHandler::storageActionCompleted, MoveMessagesRequestType);
+        enqueueRequest(action, serialize(messageLists, destination), sources, &ServiceHandler::dispatchOnlineMoveMessages, &ServiceHandler::storageActionCompleted, MoveMessagesRequestType);
     }
 }
 
-bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineMoveMessages(quint64 action, const QByteArray &data)
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
     QMailFolderId destination;
@@ -1938,7 +1938,7 @@ bool ServiceHandler::dispatchMoveMessages(quint64 action, const QByteArray &data
     return true;
 }
 
-void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& messageIds, quint64 setMask, quint64 unsetMask)
+void ServiceHandler::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& messageIds, quint64 setMask, quint64 unsetMask)
 {
     QSet<QMailMessageService*> sources;
 
@@ -1947,7 +1947,7 @@ void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& mess
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to flag messages for unconfigured account"));
     } else {
-        enqueueRequest(action, serialize(messageLists, setMask, unsetMask), sources, &ServiceHandler::dispatchFlagMessages, &ServiceHandler::storageActionCompleted, FlagMessagesRequestType);
+        enqueueRequest(action, serialize(messageLists, setMask, unsetMask), sources, &ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder, &ServiceHandler::storageActionCompleted, FlagMessagesRequestType);
     }
 }
 
@@ -2110,7 +2110,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
     emit storageActionCompleted(action);
 }
 
-bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QByteArray &data)
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
     quint64 setMask;
@@ -2140,19 +2140,19 @@ bool ServiceHandler::dispatchFlagMessages(quint64 action, const QByteArray &data
     return true;
 }
 
-void ServiceHandler::createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     if(accountId.isValid()) {
         QSet<QMailAccountId> accounts = folderAccount(parentId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
-        enqueueRequest(action, serialize(name, accountId, parentId), sources, &ServiceHandler::dispatchCreateFolder, &ServiceHandler::storageActionCompleted, CreateFolderRequestType);
+        enqueueRequest(action, serialize(name, accountId, parentId), sources, &ServiceHandler::dispatchOnlineCreateFolder, &ServiceHandler::storageActionCompleted, CreateFolderRequestType);
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to create folder for invalid account"));
     }
 }
 
-bool ServiceHandler::dispatchCreateFolder(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineCreateFolder(quint64 action, const QByteArray &data)
 {
     QString name;
     QMailAccountId accountId;
@@ -2177,19 +2177,19 @@ bool ServiceHandler::dispatchCreateFolder(quint64 action, const QByteArray &data
     }
 }
 
-void ServiceHandler::renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
+void ServiceHandler::onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
 {
     if(folderId.isValid()) {
         QSet<QMailAccountId> accounts = folderAccount(folderId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
-        enqueueRequest(action, serialize(folderId, name), sources, &ServiceHandler::dispatchRenameFolder, &ServiceHandler::storageActionCompleted, RenameFolderRequestType);
+        enqueueRequest(action, serialize(folderId, name), sources, &ServiceHandler::dispatchOnlineRenameFolder, &ServiceHandler::storageActionCompleted, RenameFolderRequestType);
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to rename invalid folder"));
     }
 }
 
-bool ServiceHandler::dispatchRenameFolder(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineRenameFolder(quint64 action, const QByteArray &data)
 {
     QMailFolderId folderId;
     QString newFolderName;
@@ -2213,19 +2213,19 @@ bool ServiceHandler::dispatchRenameFolder(quint64 action, const QByteArray &data
     }
 }
 
-void ServiceHandler::deleteFolder(quint64 action, const QMailFolderId &folderId)
+void ServiceHandler::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
 {
     if(folderId.isValid()) {
         QSet<QMailAccountId> accounts = folderAccount(folderId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
-        enqueueRequest(action, serialize(folderId), sources, &ServiceHandler::dispatchDeleteFolder, &ServiceHandler::storageActionCompleted, DeleteFolderRequestType);
+        enqueueRequest(action, serialize(folderId), sources, &ServiceHandler::dispatchOnlineDeleteFolder, &ServiceHandler::storageActionCompleted, DeleteFolderRequestType);
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to delete invalid folder"));
     }
 }
 
-bool ServiceHandler::dispatchDeleteFolder(quint64 action, const QByteArray &data)
+bool ServiceHandler::dispatchOnlineDeleteFolder(quint64 action, const QByteArray &data)
 {
     QMailFolderId folderId;
 
@@ -2438,7 +2438,7 @@ void ServiceHandler::actionCompleted(bool success, QMailMessageService *service,
                     enqueueRequest(newLocalActionId(),
                         serialize(groupedMessages, setMask, unsetMask),
                         sourceServiceSet(service->accountId()),
-                        &ServiceHandler::dispatchFlagMessages,
+                        &ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder,
                         &ServiceHandler::storageActionCompleted,
                         FlagMessagesRequestType);
                 }

@@ -80,21 +80,21 @@ signals:
 
     void synchronize(quint64, const QMailAccountId &accountId);
 
-    void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
-    void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
-    void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
+    void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
+    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &list);
     void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &list);
 
-    void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
-    void deleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
+    void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
 
     void cancelTransfer(quint64);
 
-    void deleteMessages(quint64, const QMailMessageIdList& id, QMailStore::MessageRemovalOption);
+    void onlineDeleteMessages(quint64, const QMailMessageIdList& id, QMailStore::MessageRemovalOption);
 
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
@@ -151,14 +151,14 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(synchronize(quint64, QMailAccountId)));
     connectIpc(this, SIGNAL(cancelTransfer(quint64)),
                adaptor, MESSAGE(cancelTransfer(quint64)));
-    connectIpc(this, SIGNAL(copyMessages(quint64, QMailMessageIdList, QMailFolderId)),
-               adaptor, MESSAGE(copyMessages(quint64, QMailMessageIdList, QMailFolderId)));
-    connectIpc(this, SIGNAL(moveMessages(quint64, QMailMessageIdList, QMailFolderId)),
-               adaptor, MESSAGE(moveMessages(quint64, QMailMessageIdList, QMailFolderId)));
-    connectIpc(this, SIGNAL(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)),
-               adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
-    connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
-               adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+    connectIpc(this, SIGNAL(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)),
+               adaptor, MESSAGE(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)));
+    connectIpc(this, SIGNAL(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)),
+               adaptor, MESSAGE(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)));
+    connectIpc(this, SIGNAL(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)),
+               adaptor, MESSAGE(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
+    connectIpc(this, SIGNAL(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)),
+               adaptor, MESSAGE(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)));
     connectIpc(this, SIGNAL(addMessages(quint64, QString)),
                adaptor, MESSAGE(addMessages(quint64, QString)));
     connectIpc(this, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
@@ -167,12 +167,12 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(updateMessages(quint64, QString)));
     connectIpc(this, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
                adaptor, MESSAGE(updateMessages(quint64, QMailMessageMetaDataList)));
-    connectIpc(this, SIGNAL(createFolder(quint64, QString, QMailAccountId, QMailFolderId)),
-               adaptor, MESSAGE(createFolder(quint64, QString, QMailAccountId, QMailFolderId)));
-    connectIpc(this, SIGNAL(renameFolder(quint64, QMailFolderId, QString)),
-               adaptor, MESSAGE(renameFolder(quint64, QMailFolderId, QString)));
-    connectIpc(this, SIGNAL(deleteFolder(quint64, QMailFolderId)),
-               adaptor, MESSAGE(deleteFolder(quint64, QMailFolderId)));
+    connectIpc(this, SIGNAL(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)),
+               adaptor, MESSAGE(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)));
+    connectIpc(this, SIGNAL(onlineRenameFolder(quint64, QMailFolderId, QString)),
+               adaptor, MESSAGE(onlineRenameFolder(quint64, QMailFolderId, QString)));
+    connectIpc(this, SIGNAL(onlineDeleteFolder(quint64, QMailFolderId)),
+               adaptor, MESSAGE(onlineDeleteFolder(quint64, QMailFolderId)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
@@ -261,8 +261,8 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     \ingroup messaginglibrary
 
-    Qt Extended messaging applications can send and receive messages of various types by
-    communicating with the external MessageServer application.  The MessageServer application
+    QMF client messaging applications can send and receive messages of various types by
+    communicating with the MessageServer.  The MessageServer
     is a separate process, communicating with clients via inter-process messages.  
     QMailMessageServer acts as a proxy object for the server process, providing an
     interface for communicating with the MessageServer by the use of signals and slots 
@@ -272,16 +272,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     For most messaging client applications, the QMailServiceAction objects offer a simpler
     interface for requesting actions from the messageserver, and assessing their results.
-
-    \section1 New Messages
-
-    When a client initiates communication with the MessageServer, the server informs the
-    client of the number and type of 'new' messages, via the newCountChanged() signal.
-    'New' messages are those that arrive without the client having first requested their
-    retrieval.  The client may choose to invalidate the 'new' status of these messages;
-    if the acknowledgeNewMessages() slot is invoked, the count of 'new' messages is reset
-    to zero for the nominated message types.  If the count of 'new' messages changes while
-    a client is active, the newCountChanged() signal is emitted with the updated information.
 
     \section1 Sending Messages
 
@@ -299,7 +289,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     store by the message server, from where clients can retrieve their meta data or
     content.
 
-    An instance of QMailRetrievalAction should be used to request retrievel of 
+    An instance of QMailRetrievalAction should be used to request retrieval of 
     folders and messages.
 
     \sa QMailServiceAction, QMailStore
@@ -337,6 +327,8 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     \fn void QMailMessageServer::newCountChanged(const QMailMessageCountMap& counts);
 
     Emitted when the count of 'new' messages changes; the new count is described by \a counts.
+    
+    \deprecated
 
     \sa acknowledgeNewMessages()
 */
@@ -381,7 +373,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been deleted from the mail store,
     in response to the request identified by \a action.
 
-    \sa deleteMessages()
+    \sa onlineDeleteMessages()
 */
 
 /*!
@@ -390,7 +382,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been copied to the destination 
     folder on the external service, in response to the request identified by \a action.
 
-    \sa copyMessages()
+    \sa onlineCopyMessages()
 */
 
 /*!
@@ -399,7 +391,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been moved to the destination 
     folder on the external service, in response to the request identified by \a action.
 
-    \sa moveMessages()
+    \sa onlineMoveMessages()
 */
 
 /*!
@@ -408,7 +400,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been flagged with the specified
     set of status flags, in response to the request identified by \a action.
 
-    \sa flagMessages()
+    \sa onlineFlagMessagesAndMoveToStandardFolder()
 */
 
 /*!
@@ -417,7 +409,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the folder identified by \a folderId has been created, in response to the request
     identified by \a action.
 
-    \sa createFolder()
+    \sa onlineCreateFolder()
 */
 
 /*!
@@ -426,7 +418,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the folder identified by \a folderId has been renamed, in response to the request
     identified by \a action.
 
-    \sa renameFolder()
+    \sa onlineRenameFolder()
 */
 
 /*!
@@ -435,7 +427,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the folder identified by \a folderId has been deleted, in response to the request
     identified by \a action.
 
-    \sa deleteFolder()
+    \sa onlineDeleteFolder()
 */
 
 /*!
@@ -443,7 +435,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     Emitted when the storage operation identified by \a action is completed.
 
-    \sa deleteMessages(), copyMessages(), moveMessages(), flagMessages()
+    \sa onlineDeleteMessages(), onlineCopyMessages(), onlineMoveMessages(), onlineFlagMessagesAndMoveToStandardFolder()
 */
 
 /*!
@@ -538,6 +530,9 @@ QMailMessageServer::~QMailMessageServer()
     account identified by \a accountId that are currently in the Outbox folder.
     The request has the identifier \a action.
 
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+    
     \sa transmissionCompleted()
 */
 void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &accountId)
@@ -550,6 +545,11 @@ void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &
     If \a folderId is valid, the folders within that folder should be retrieved.  If \a descending is true,
     the search should also recursively retrieve the folders available within the previously retrieved folders.
     The request has the identifier \a action.
+
+    The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -572,6 +572,9 @@ void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId
 
     The request has the identifier \a action.
 
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
     \sa retrievalCompleted()
 */
 void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
@@ -580,7 +583,7 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 }
 
 /*!
-    Requests that the message server retrieve the list of messages available for the account \a accountId.
+    Requests that the messageserver retrieve the list of messages available for the account \a accountId.
     If \a folderIdList is not empty, then only messages within those folders should be retrieved; otherwise 
     no messages should be retrieved. If a folder messages are being 
     retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
@@ -592,6 +595,9 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
     discover the listed messages in the ordering indicated by the sort criterion, if possible.
 
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -617,6 +623,9 @@ void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccount
 
     The request has the identifier \a action.
 
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
     \sa retrievalCompleted()
 */
 void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
@@ -627,7 +636,11 @@ void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdLi
 /*!
     Requests that the message server retrieve the message part that is indicated by the 
     location \a partLocation.
+
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -640,6 +653,9 @@ void QMailMessageServer::retrieveMessagePart(quint64 action, const QMailMessageP
     Requests that the message server retrieve a subset of the message \a messageId, such that
     at least \a minimum bytes are available from the mail store.
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -654,6 +670,9 @@ void QMailMessageServer::retrieveMessageRange(quint64 action, const QMailMessage
     bytes are available from the mail store.
     The request has the identifier \a action.
 
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
     \sa retrievalCompleted()
 */
 void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMessagePart::Location &partLocation, uint minimum)
@@ -665,6 +684,9 @@ void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMes
     Requests that the message server retrieve the meta data for all messages available 
     for the account \a accountId.
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -682,6 +704,9 @@ void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accou
     external server.
     The request has the identifier \a action.
 
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
     \sa retrievalCompleted()
 */
 void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &accountId)
@@ -692,12 +717,17 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
 /*!
     Requests that the message server synchronize the messages and folders in the account 
     identified by \a accountId.
+
     Newly discovered messages should have their meta data retrieved,
     local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
     flags should be exported to the external server, and messages that have been removed
     locally using the \l QMailStore::CreateRemovalRecord option should be removed from the 
     external server.
+
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa retrievalCompleted()
 */
@@ -709,21 +739,29 @@ void QMailMessageServer::synchronize(quint64 action, const QMailAccountId &accou
 /*!
     Requests that the MessageServer create a copy of each message listed in \a mailList 
     in the folder identified by \a destinationId.
+    
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 */
-void QMailMessageServer::copyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
+void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
 {
-    emit d->copyMessages(action, mailList, destinationId);
+    emit d->onlineCopyMessages(action, mailList, destinationId);
 }
 
 /*!
     Requests that the MessageServer move each message listed in \a mailList from its 
     current location to the folder identified by \a destinationId.
+
     The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 */
-void QMailMessageServer::moveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
+void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
 {
-    emit d->moveMessages(action, mailList, destinationId);
+    emit d->onlineMoveMessages(action, mailList, destinationId);
 }
 
 /*!
@@ -734,15 +772,22 @@ void QMailMessageServer::moveMessages(quint64 action, const QMailMessageIdList& 
     The protocol must ensure that the local message records are appropriately modified, 
     although the external changes may be buffered and effected at the next invocation 
     of exportUpdates().
+
+    The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 */
-void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
+void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
 {
-    emit d->flagMessages(action, mailList, setMask, unsetMask);
+    emit d->onlineFlagMessagesAndMoveToStandardFolder(action, mailList, setMask, unsetMask);
 }
 
 /*!
     Requests that the MessageServer add the messages in 
     \a filename to the message store.
+
+    The request has the identifier \a action.
 
     \deprecated
 */
@@ -754,6 +799,8 @@ void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 /*!
     Requests that the MessageServer update the list of \a messages
     in the message store, and ensure the durability of the content of \messages.
+
+    The request has the identifier \a action.
 */
 void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
@@ -764,8 +811,9 @@ void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataL
     Requests that the MessageServer update the messages in 
     \a filename to the message store.
 
-    \deprecated
+    The request has the identifier \a action.
 
+    \deprecated
 */
 void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
 {
@@ -775,6 +823,8 @@ void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
 /*!
     Requests that the MessageServer add the list of \a messages
     to the message store, and ensure the durability of the content of \messages..
+
+    The request has the identifier \a action.
 */
 void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
@@ -786,39 +836,52 @@ void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDa
 /*!
     Requests that the MessageServer create a new folder named \a name, created in the
     account identified by \a accountId.
+
     If \a parentId is a valid folder identifier the new folder will be a child of the parent;
     otherwise the folder will be have no parent and will be created at the highest level.
 
     The request has the identifier \a action.
 
-    \sa deleteFolder()
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
+    \sa onlineDeleteFolder()
 */
-void QMailMessageServer::createFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    emit d->createFolder(action, name, accountId, parentId);
+    emit d->onlineCreateFolder(action, name, accountId, parentId);
 }
 
 /*!
     Requests that the MessageServer rename the folder identified by \a folderId to \a name.
     The request has the identifier \a action.
 
-    \sa createFolder()
+    The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
+    \sa onlineCreateFolder()
 */
-void QMailMessageServer::renameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
+void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
 {
-    emit d->renameFolder(action, folderId, name);
+    emit d->onlineRenameFolder(action, folderId, name);
 }
 
 /*!
     Requests that the MessageServer delete the folder identified by \a folderId.
     Any existing folders or messages contained by the folder will also be deleted.
+
     The request has the identifier \a action.
 
-    \sa createFolder(), renameFolder()
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
+    \sa onlineCreateFolder(), onlineRenameFolder()
 */
-void QMailMessageServer::deleteFolder(quint64 action, const QMailFolderId &folderId)
+void QMailMessageServer::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
 {
-    emit d->deleteFolder(action, folderId);
+    emit d->onlineDeleteFolder(action, folderId);
 }
 
 /*!
@@ -834,6 +897,8 @@ void QMailMessageServer::cancelTransfer(quint64 action)
 /*!
     Requests that the MessageServer reset the counts of 'new' messages to zero, for
     each message type listed in \a types.
+    
+    \deprecated
 
     \sa newCountChanged()
 */
@@ -844,21 +909,21 @@ void QMailMessageServer::acknowledgeNewMessages(const QMailMessageTypeList& type
 
 /*!
     Requests that the MessageServer delete the messages in \a mailList from the external
-    server, if necessary for the relevant message type.  If \a option is 
+    server, if necessary for the relevant message type.  
+    
+    If \a option is 
     \l{QMailStore::CreateRemovalRecord}{CreateRemovalRecord} then a QMailMessageRemovalRecord
-    will be created in the mail store for each deleted message.
+    will be created in the mail store for each deleted message. In this case
+    the function requires the device to be online, it may initiate communication 
+    with external servers.
+    
     The request has the identifier \a action.
-
-    Deleting messages using this slot does not initiate communication with any external
-    server; instead the information needed to delete the messages is recorded.  Deletion
-    from the external server will occur when messages are next retrieved from that server.
-    Invoking this slot does not remove a message from the mail store.
 
     \sa QMailStore::removeMessage()
 */
-void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption option)
+void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption option)
 {
-    emit d->deleteMessages(action, mailList, option);
+    emit d->onlineDeleteMessages(action, mailList, option);
 }
 
 /*!
@@ -870,9 +935,12 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
     If \a sort is not empty, the external service will return matching messages in 
     the ordering indicated by the sort criterion if possible.
 
+    The identifiers of all matching messages are returned via matchingMessageIds() signals.
+
     The request has the identifier \a action.
 
-    The identifiers of all matching messages are returned via matchingMessageIds() signals.
+    If a remote search is specified then this function requires the device to be online, 
+    it may initiate communication with external servers.
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
@@ -893,9 +961,12 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
     If \a sort is not empty, the external service will return matching messages in 
     the ordering indicated by the sort criterion if possible.
 
+    The identifiers of all matching messages are returned via matchingMessageIds() signals.
+
     The request has the identifier \a action.
 
-    The identifiers of all matching messages are returned via matchingMessageIds() signals.
+    If a remote search is specified then this function requires the device to be online, 
+    it may initiate communication with external servers.
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
@@ -906,12 +977,15 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 
 /*!
     Requests that the MessageServer counts the number of messages that match the criteria 
-    specified by \a filter.  If \a bodyText is non-empty, messages containing the specified text 
-    in their content will also be matched.
+    specified by \a filter by on the device and remote servers.  If \a bodyText is non-empty, 
+    messages containing the specified text in their content will also be matched.
+
+    The count of all matching messages is returned via a messagesCount() signal.
 
     The request has the identifier \a action.
 
-    The count of all matching messages is returned via a messagesCount() signal.
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
 
     \sa messagesCount()
 */

@@ -133,21 +133,21 @@ public slots:
 
     void synchronize(quint64, const QMailAccountId &accountId);
 
-    void copyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
-    void moveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
-    void flagMessages(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
+    void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
+    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &messages);
     void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &messages);
 
-    void createFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    void renameFolder(quint64, const QMailFolderId &folderId, const QString &name);
-    void deleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
+    void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
 
     void cancelTransfer(quint64);
 
-    void deleteMessages(quint64, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
+    void onlineDeleteMessages(quint64, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
 
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);

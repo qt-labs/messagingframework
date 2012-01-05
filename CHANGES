@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201201_1
+  * Made API renaming changes as documented in src/libraries/qmfclient/CHANGES.qdoc item 51.
+
 201201
   * Use QNetworkProxy::applicationProxy() requires qt 4.8
   * Revert removal emission of IPC notification

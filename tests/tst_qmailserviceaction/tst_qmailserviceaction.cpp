@@ -445,12 +445,12 @@ void tst_QMailServiceAction::test_storageaction()
 {
     QMailStorageAction action;
 
-    action.copyMessages(QMailMessageIdList()<<inboxMessage1, archivedId1);
-    action.moveMessages(QMailMessageIdList()<<inboxMessage2, savedId2);
+    action.onlineCopyMessages(QMailMessageIdList()<<inboxMessage1, archivedId1);
+    action.onlineMoveMessages(QMailMessageIdList()<<inboxMessage2, savedId2);
 
-    action.createFolder("saved1child", accountId1, savedId1);
-    action.renameFolder(savedId1, "saved1new");
-    action.deleteFolder(archivedId2);
+    action.onlineCreateFolder("saved1child", accountId1, savedId1);
+    action.onlineRenameFolder(savedId1, "saved1new");
+    action.onlineDeleteFolder(archivedId2);
 
     action.addMessages(QMailMessageList() << QMailMessage());
     action.updateMessages(QMailMessageList() << QMailMessage());
