@@ -1,6 +1,10 @@
 Latest Changes
 ---------------
 
+201201
+  * Use QNetworkProxy::applicationProxy() requires qt 4.8
+  * Revert removal emission of IPC notification
+
 201152
   * Fixes: NB#294936 [Hotmail] 'Can't get your message' is shown on opening delivery status failure notification mail
   * Fixes: NB#295637 Encoding from body parts in a multi-part email should be used for header's textual data
