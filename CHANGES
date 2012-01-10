@@ -1,7 +1,10 @@
 Latest Changes
 ---------------
 
-201201_2
+201202_1
+  * Fixes: NB#291875 QMF doesn't have message flag for marking emails as todo
+
+201202
   * Made API additions as documented in src/libraries/qmfclient/CHANGES.qdoc item 52.
 
 201201_1

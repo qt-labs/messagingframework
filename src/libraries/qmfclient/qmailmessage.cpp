@@ -6300,6 +6300,7 @@ static quint64 importantFlag = 0;
 static quint64 highPriorityFlag = 0;
 static quint64 lowPriorityFlag = 0;
 static quint64 calendarInvitationFlag = 0;
+static quint64 todoFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -6946,6 +6947,7 @@ const quint64 &QMailMessageMetaData::Important = importantFlag;
 const quint64 &QMailMessageMetaData::HighPriority = highPriorityFlag;
 const quint64 &QMailMessageMetaData::LowPriority = lowPriorityFlag;
 const quint64 &QMailMessageMetaData::CalendarInvitation = calendarInvitationFlag;
+const quint64 &QMailMessageMetaData::Todo = todoFlag;
 
 /*!
     Constructs an empty message meta data object.
