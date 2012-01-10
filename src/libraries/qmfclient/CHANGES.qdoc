@@ -206,14 +206,14 @@ Changes since the QMF-1.0 release on 15/05/09:
 51. Renamed 'void QMailStorageAction::deleteMessages(const QMailMessageIdList &ids)' to onlineDeleteMessages,
             'void QMailStorageAction::copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)' to onlineCopyMessages,
             'void QMailStorageAction::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)' to onlineMoveMessages,
-            'void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessages,
+            'void QMailStorageAction::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessagesAndMoveToStandardFolder,
             'void QMailStorageAction::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)' to onlineCreateFolder,
             'void QMailStorageAction::renameFolder(const QMailFolderId &folderId, const QString &name)' to onlineRenameFolder,
             'void QMailStorageAction::deleteFolder(const QMailFolderId &folderId)' to onlineDeleteFolder.
             'void QMailMessageServer::deleteMessages(const QMailMessageIdList &ids)' to onlineDeleteMessages,
             'void QMailMessageServer::copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)' to onlineCopyMessages,
             'void QMailMessageServer::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)' to onlineMoveMessages,
-            'void QMailMessageServer::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessages,
+            'void QMailMessageServer::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessagesAndMoveToStandardFolder,
             'void QMailMessageServer::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)' to onlineCreateFolder,
             'void QMailMessageServer::renameFolder(const QMailFolderId &folderId, const QString &name)' to onlineRenameFolder,
             'void QMailMessageServer::deleteFolder(const QMailFolderId &folderId)' to onlineDeleteFolder.
