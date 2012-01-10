@@ -1362,6 +1362,7 @@ void EmailClient::retrievalCompleted()
 void EmailClient::storageActionCompleted()
 {
     clearStatusText();
+    exportPendingChanges();
 }
 
 void EmailClient::getNewMail()
@@ -1749,7 +1750,7 @@ void EmailClient::deleteSelectedMessages()
             deleteList = (deleteList.toSet().subtract(localOnlyIds.toSet())).toList();
         }
         if(!deleteList.isEmpty())
-            storageAction("Deleting messages..")->onlineDeleteMessages(deleteList);
+            storageAction("Deleting messages..")->deleteMessages(deleteList);
     }
     else
     {
@@ -1938,7 +1939,7 @@ void EmailClient::emptyTrashFolder()
 
     if (confirmDelete(this, "Empty trash", tr("all messages in the trash"))) {
         AcknowledgmentBox::show(tr("Deleting"), tr("Deleting %n message(s)", "%1: number of messages", trashIds.count()));
-        storageAction("Deleting messages")->onlineDeleteMessages(trashIds);
+        storageAction("Deleting messages")->deleteMessages(trashIds);
     }
 }
 

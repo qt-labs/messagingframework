@@ -145,6 +145,12 @@ public slots:
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
 
+    void deleteMessages(quint64, const QMailMessageIdList &ids);
+    void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);
+    void moveToStandardFolder(quint64, const QMailMessageIdList& ids, quint64 standardFolder);
+    void moveToFolder(quint64, const QMailMessageIdList& ids, const QMailFolderId& folderId);
+    void flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
+    void restoreToPreviousFolder(quint64, const QMailMessageKey& key);
     void cancelTransfer(quint64);
 
     void onlineDeleteMessages(quint64, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);

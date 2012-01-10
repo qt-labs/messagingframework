@@ -390,7 +390,7 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
     Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
     folder flags as appropriate.
 
-    Moving to another accounts are not supported.
+    Moving to another account is not supported.
 
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
 */
@@ -505,7 +505,7 @@ void QMailDisconnected::copyToFolder(const QMailMessageIdList& ids, const QMailF
     Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
     to on and setting the flags set by the bit mask \a unsetMask to off.
     
-    For example this function may be used to mark messages as important or 'move to trash' messages.
+    For example this function may be used to mark messages as important.
 
     The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
     
@@ -527,7 +527,7 @@ void QMailDisconnected::flagMessages(const QMailMessageIdList &ids, quint64 setM
     Disconnected flags the list a message identified by \a id, setting the flags specified by the bit mask \a setMask 
     to on and setting the flags set by the bit mask \a unsetMask to off.
     
-    For example this function may be used to mark a message as important or 'move to trash' a message.
+    For example this function may be used to mark a message as important.
 
     The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
     
@@ -543,6 +543,8 @@ void QMailDisconnected::flagMessage(const QMailMessageId &id, quint64 setMask, q
     previous folder it was contained by.
 
     Returns \c true if the operation completed successfully, \c false otherwise.
+
+    \sa QMailDisconnected::moveToFolder(), QMailDisconnected::moveToStandardFolder()
 */
 void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId& id)
 {
@@ -552,8 +554,6 @@ void QMailDisconnected::restoreToPreviousFolder(const QMailMessageId& id)
 /*!
     Updates all QMailMessages identified by the key \a key to move the messages back to the
     previous folder they were contained by.
-
-    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)
 {

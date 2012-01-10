@@ -1516,6 +1516,52 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageMetaDataList &l
     emitChanges();
 }
 
+void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
+{
+    _server->deleteMessages(newAction(), ids);
+
+    _ids = ids;
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::rollBackUpdates(const QMailAccountId &mailAccountId)
+{
+    _server->rollBackUpdates(newAction(), mailAccountId);
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::moveToStandardFolder(const QMailMessageIdList& ids, quint64 standardFolder)
+{
+    _server->moveToStandardFolder(newAction(), ids, standardFolder);
+
+    _ids = ids;
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    _server->moveToFolder(newAction(), ids, folderId);
+                
+    _ids = ids;
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+{
+    // Ensure that nothing is both set and unset
+    setMask &= ~unsetMask;
+    _server->flagMessages(newAction(), ids, setMask, unsetMask);
+
+    _ids = ids;
+    emitChanges();
+}
+
+void QMailStorageActionPrivate::restoreToPreviousFolder(const QMailMessageKey& key)
+{
+    _server->restoreToPreviousFolder(newAction(), key);
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     _server->onlineCreateFolder(newAction(), name, accountId, parentId);
@@ -1743,6 +1789,110 @@ void QMailStorageAction::updateMessages(const QMailMessageMetaDataList &messages
 QMailMessageIdList QMailStorageAction::messagesUpdated() const
 {
     return impl(this)->_addedOrUpdatedIds;
+}
+
+/*!
+    Asynchronously deletes the messages in \a mailList, messages
+    will be removed locally from the device, and if necessary information needed 
+    to delete messages from an external server is recorded.
+
+    Deleting messages using this slot does not initiate communication with any external
+    server; Deletion from the external server will occur when 
+    QMailRetrievalAction::exportUpdates is called successfully.
+    
+    The request has the identifier \a action.
+
+    \sa QMailStore::removeMessage()
+*/
+void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
+{
+    emit impl(this)->deleteMessages(mailList);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::rollBackUpdates()
+    
+    Rolls back all disconnected move and copy operations that have been applied to the 
+    message store since the most recent synchronization of the message with the account 
+    specified by \a mailAccountId.
+    
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::updatesOutstanding()
+*/
+void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
+{
+    impl(this)->rollBackUpdates(mailAccountId);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::moveToStandardFolder()
+
+    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    folder flags as appropriate.
+    
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+            
+    The request has the identifier \a action.
+
+    \sa QMailDisconnected::moveToStandardFolder()
+*/
+void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
+{
+    impl(this)->moveToStandardFolder(ids, standardFolder);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::moveToFolder()
+
+    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    folder flags as appropriate.
+
+    Moving to another account is not supported.
+
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+    
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::moveToFolder()
+*/
+void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    emit impl(this)->moveToFolder(ids, folderId);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::flagMessages()
+
+    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
+    to on and setting the flags set by the bit mask \a unsetMask to off.
+    
+    For example this function may be used to mark messages as important.
+
+    The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+            
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::flagMessages(), QMailStorageAction::moveToFolder(), QMailStorageAction::moveToStandardFolder()
+*/
+void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
+{
+    emit impl(this)->flagMessages(ids, setMask, unsetMask);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::restoreToPreviousFolder()
+
+    Updates all QMailMessages identified by the key \a key to move the messages back to the
+    previous folder they were contained by.
+        
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::restoreToPreviousFolder()
+*/
+void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)
+{
+    emit impl(this)->restoreToPreviousFolder(key);
 }
 
 /*!

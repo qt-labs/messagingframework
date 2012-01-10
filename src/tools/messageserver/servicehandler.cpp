@@ -47,6 +47,7 @@
 #include <qmailmessageserver.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>
+#include <qmaildisconnected.h>
 #include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmailcontentmanager.h>
@@ -1995,11 +1996,13 @@ void ServiceHandler::addOrUpdateMessages(quint64 action, const QString &filename
 void ServiceHandler::addMessages(quint64 action, const QString &filename)
 {
     addOrUpdateMessages(action, filename, true);
+    QMailStore::instance()->flushIpcNotifications();
 }
 
 void ServiceHandler::updateMessages(quint64 action, const QString &filename)
 {
     addOrUpdateMessages(action, filename, false);
+    QMailStore::instance()->flushIpcNotifications();
 }
 
 void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList &messages)
@@ -2050,6 +2053,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
 
     emit messagesAdded(action, ids);
     emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
 }
 
 void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataList &messages)
@@ -2108,6 +2112,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
 
     emit messagesUpdated(action, ids);
     emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
 }
 
 bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QByteArray &data)
@@ -2138,6 +2143,73 @@ bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(quint64 a
     }
 
     return true;
+}
+
+void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& messageIds)
+{
+    uint total = messageIds.count();
+
+    // Just delete all these messages from device and mark for deletion on server when exportUpdates is called
+    if (!messageIds.isEmpty() && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::CreateRemovalRecord)) {
+        qWarning() << "Unable to service request to delete messages";
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Could not delete messages"));
+        return;
+    }
+
+    emit progressChanged(action, total, total);
+    emit messagesDeleted(action, messageIds);
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
+}
+
+void ServiceHandler::rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId)
+{
+    QMailDisconnected::rollBackUpdates(mailAccountId);
+    
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
+}
+
+void ServiceHandler::moveToStandardFolder(quint64 action, const QMailMessageIdList& ids, quint64 standardFolder)
+{
+    QMailDisconnected::moveToStandardFolder(ids, static_cast<QMailFolder::StandardFolder>(standardFolder));
+    messagesMoved(ids, action);
+    messagesFlagged(ids, action);
+
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;    
+}
+
+void ServiceHandler::moveToFolder(quint64 action, const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    QMailDisconnected::moveToFolder(ids, folderId);
+    messagesMoved(ids, action);
+    
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
+}
+
+void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
+{
+    QMailDisconnected::flagMessages(ids, setMask, unsetMask, "");
+    messagesFlagged(ids, action);
+    
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
+}
+
+void ServiceHandler::restoreToPreviousFolder(quint64 action, const QMailMessageKey& key)
+{
+    QMailDisconnected::restoreToPreviousFolder(key);
+    
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
 }
 
 void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)

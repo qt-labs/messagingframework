@@ -261,6 +261,12 @@ public:
     void addMessages(const QMailMessageList &list);
     void updateMessages(const QMailMessageList &list);
     void updateMessages(const QMailMessageMetaDataList &list);
+    void deleteMessages(const QMailMessageIdList &ids);
+    void rollBackUpdates(const QMailAccountId &mailAccountId);
+    void moveToStandardFolder(const QMailMessageIdList& ids, quint64 standardFolder);
+    void moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
+    void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
+    void restoreToPreviousFolder(const QMailMessageKey& key);
 
     void onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(const QMailFolderId &id, const QString &name);

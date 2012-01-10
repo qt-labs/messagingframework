@@ -201,6 +201,18 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(addMessages(quint64, QMailMessageMetaDataList)));
         connect(client, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
                 handler, SLOT(updateMessages(quint64, QMailMessageMetaDataList)));
+        connect(client, SIGNAL(deleteMessages(quint64, QMailMessageIdList)),
+                handler, SLOT(deleteMessages(quint64, QMailMessageIdList)));
+        connect(client, SIGNAL(rollBackUpdates(quint64, QMailAccountId)),
+                handler, SLOT(rollBackUpdates(quint64, QMailAccountId)));
+        connect(client, SIGNAL(moveToStandardFolder(quint64, QMailMessageIdList, quint64)),
+                handler, SLOT(moveToStandardFolder(quint64, QMailMessageIdList, quint64)));
+        connect(client, SIGNAL(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)),
+                handler, SLOT(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)));
+        connect(client, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
+                handler, SLOT(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+        connect(client, SIGNAL(restoreToPreviousFolder(quint64, QMailMessageKey)),
+                handler, SLOT(restoreToPreviousFolder(quint64, QMailMessageKey)));
         connect(client, SIGNAL(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)),
                 handler, SLOT(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)));
         connect(client, SIGNAL(onlineRenameFolder(quint64, QMailFolderId, QString)),

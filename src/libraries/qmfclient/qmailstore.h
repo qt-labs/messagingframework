@@ -251,6 +251,7 @@ private:
     friend class tst_QMailStore;
     friend class tst_QMailStoreKeys;
     friend class tst_qmailthread;
+    friend class tst_QMailStorageAction;
 
     QMailStore();
 

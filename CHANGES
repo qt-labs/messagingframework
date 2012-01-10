@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201201_2
+  * Made API additions as documented in src/libraries/qmfclient/CHANGES.qdoc item 52.
+
 201201_1
   * Made API renaming changes as documented in src/libraries/qmfclient/CHANGES.qdoc item 51.
 

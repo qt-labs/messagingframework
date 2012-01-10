@@ -48,6 +48,7 @@
 #include "qmailmessagekey.h"
 #include "qmailmessagesortkey.h"
 #include "qmailmessage.h"
+#include "qmailfolder.h"
 #include "qmailaction.h"
 #include <QString>
 #include <QStringList>
@@ -247,6 +248,13 @@ public slots:
     void onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(const QMailFolderId &folderId);
+
+    void deleteMessages(const QMailMessageIdList &ids);
+    void rollBackUpdates(const QMailAccountId &mailAccountId);
+    void moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder);
+    void moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
+    void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
+    void restoreToPreviousFolder(const QMailMessageKey& key);
 };
 
 

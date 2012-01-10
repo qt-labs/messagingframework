@@ -87,7 +87,12 @@ signals:
     void addMessages(quint64, const QMailMessageMetaDataList &list);
     void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &list);
-
+    void deleteMessages(quint64, const QMailMessageIdList &ids);
+    void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);
+    void moveToStandardFolder(quint64, const QMailMessageIdList& ids, quint64 standardFolder);
+    void moveToFolder(quint64, const QMailMessageIdList& ids, const QMailFolderId& folderId);
+    void flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
+    void restoreToPreviousFolder(quint64, const QMailMessageKey& key);
     void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
@@ -173,6 +178,18 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(onlineRenameFolder(quint64, QMailFolderId, QString)));
     connectIpc(this, SIGNAL(onlineDeleteFolder(quint64, QMailFolderId)),
                adaptor, MESSAGE(onlineDeleteFolder(quint64, QMailFolderId)));
+    connectIpc(this, SIGNAL(deleteMessages(quint64, QMailMessageIdList)),
+               adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList)));
+    connectIpc(this, SIGNAL(rollBackUpdates(quint64, QMailAccountId)),
+               adaptor, MESSAGE(rollBackUpdates(quint64, QMailAccountId)));
+    connectIpc(this, SIGNAL(moveToStandardFolder(quint64, QMailMessageIdList, quint64)),
+               adaptor, MESSAGE(moveToStandardFolder(quint64, QMailMessageIdList, quint64)));
+    connectIpc(this, SIGNAL(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)),
+               adaptor, MESSAGE(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)));
+    connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
+               adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
+    connectIpc(this, SIGNAL(restoreToPreviousFolder(quint64, QMailMessageKey)),
+               adaptor, MESSAGE(restoreToPreviousFolder(quint64, QMailMessageKey)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
                adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
@@ -373,7 +390,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been deleted from the mail store,
     in response to the request identified by \a action.
 
-    \sa onlineDeleteMessages()
+    \sa deleteMessages(), onlineDeleteMessages()
 */
 
 /*!
@@ -391,7 +408,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been moved to the destination 
     folder on the external service, in response to the request identified by \a action.
 
-    \sa onlineMoveMessages()
+    \sa moveToFolder(), moveToStandardFolder(), onlineMoveMessages()
 */
 
 /*!
@@ -400,7 +417,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     Emitted when the messages identified by \a list have been flagged with the specified
     set of status flags, in response to the request identified by \a action.
 
-    \sa onlineFlagMessagesAndMoveToStandardFolder()
+    \sa flagMessages(), moveToStandardFolder(), onlineFlagMessagesAndMoveToStandardFolder()
 */
 
 /*!
@@ -434,8 +451,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     \fn void QMailMessageServer::storageActionCompleted(quint64 action);
 
     Emitted when the storage operation identified by \a action is completed.
-
-    \sa onlineDeleteMessages(), onlineCopyMessages(), onlineMoveMessages(), onlineFlagMessagesAndMoveToStandardFolder()
 */
 
 /*!
@@ -924,6 +939,110 @@ void QMailMessageServer::acknowledgeNewMessages(const QMailMessageTypeList& type
 void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption option)
 {
     emit d->onlineDeleteMessages(action, mailList, option);
+}
+
+/*!
+    Requests that the MessageServer delete the messages in \a mailList, messages
+    will be removed locally from the device, and if necessary information needed 
+    to delete messages from an external server is recorded.
+
+    Deleting messages using this slot does not initiate communication with any external
+    server; Deletion from the external server will occur when 
+    QMailRetrievalAction::exportUpdates is called successfully.
+    
+    The request has the identifier \a action.
+
+    \sa QMailStore::removeMessage()
+*/
+void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList& mailList)
+{
+    emit d->deleteMessages(action, mailList);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::rollBackUpdates()
+    
+    Rolls back all disconnected move and copy operations that have been applied to the 
+    message store since the most recent synchronization of the message with the account 
+    specified by \a mailAccountId.
+    
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::updatesOutstanding()
+*/
+void QMailMessageServer::rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId)
+{
+    emit d->rollBackUpdates(action, mailAccountId);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::moveToStandardFolder()
+
+    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    folder flags as appropriate.
+    
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+            
+    The request has the identifier \a action.
+
+    \sa QMailDisconnected::moveToStandardFolder()
+*/
+void QMailMessageServer::moveToStandardFolder(quint64 action, const QMailMessageIdList& ids, quint64 standardFolder)
+{
+    emit d->moveToStandardFolder(action, ids, standardFolder);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::moveToFolder()
+
+    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    folder flags as appropriate.
+
+    Moving to another account is not supported.
+
+    The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+    
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::moveToFolder()
+*/
+void QMailMessageServer::moveToFolder(quint64 action, const QMailMessageIdList& ids, const QMailFolderId& folderId)
+{
+    emit d->moveToFolder(action, ids, folderId);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::flagMessages()
+
+    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
+    to on and setting the flags set by the bit mask \a unsetMask to off.
+    
+    For example this function may be used to mark messages as important.
+
+    The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
+            
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::flagMessages()
+*/
+void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
+{
+    emit d->flagMessages(action, ids, setMask, unsetMask);
+}
+
+/*!
+    Asynchronous version of QMailDisconnected::restoreToPreviousFolder()
+
+    Updates all QMailMessages identified by the key \a key to move the messages back to the
+    previous folder they were contained by.
+        
+    The request has the identifier \a action.
+    
+    \sa QMailDisconnected::restoreToPreviousFolder(), QMailMessageServer::moveToFolder(), QMailMessageServer::moveToStandardFolder()
+*/
+void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMessageKey& key)
+{
+    emit d->restoreToPreviousFolder(action, key);
 }
 
 /*!

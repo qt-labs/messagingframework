@@ -218,6 +218,19 @@ Changes since the QMF-1.0 release on 15/05/09:
             'void QMailMessageServer::renameFolder(const QMailFolderId &folderId, const QString &name)' to onlineRenameFolder,
             'void QMailMessageServer::deleteFolder(const QMailFolderId &folderId)' to onlineDeleteFolder.
 
+52. Added 'void QMailStorageAction::deleteMessages(quint64, const QMailMessageIdList &ids)',
+          'void QMailStorageAction::rollBackUpdates(quint64, const QMailAccountId &mailAccountId)',
+          'void QMailStorageAction::moveToStandardFolder(quint64, const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)',
+          'void QMailStorageAction::moveToFolder(quint64, const QMailMessageIdList& ids, const QMailFolderId& folderId)',
+          'void QMailStorageAction::flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)',
+          'void QMailStorageAction::restoreToPreviousFolder(quint64, const QMailMessageKey& key)',
+          'void QMailMessageServer::deleteMessages(quint64, const QMailMessageIdList &ids)',
+          'void QMailMessageServer::rollBackUpdates(quint64, const QMailAccountId &mailAccountId)',
+          'void QMailMessageServer::moveToStandardFolder(quint64, const QMailMessageIdList& ids, quint64 standardFolder)',
+          'void QMailMessageServer::moveToFolder(quint64, const QMailMessageIdList& ids, const QMailFolderId& folderId)',
+          'void QMailMessageServer::flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)' and
+          'void QMailMessageServer::restoreToPreviousFolder(quint64, const QMailMessageKey& key)'.
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:

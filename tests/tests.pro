@@ -15,6 +15,7 @@ SUBDIRS = \
       tst_longstream \
       tst_qmailmessageset \
       tst_qmailserviceaction \
+      tst_qmailstorageaction \
       tst_qmail_sortkeys \
       tst_qmail_listmodels \
       tst_qmaillog \
