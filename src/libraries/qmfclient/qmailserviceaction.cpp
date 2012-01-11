@@ -1249,7 +1249,7 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
 
     \brief The QMailTransmitAction class provides the interface for transmitting messages to external message services.
 
-    QMailSearchAction provides the mechanism for messaging clients to request that the message
+    QMailTransmitAction provides the mechanism for messaging clients to request that the message
     server transmit messages to external services.  The transmit action object reports on
     the progress and outcome of its activities via the signals inherited from QMailServiceAction.
 
