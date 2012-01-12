@@ -357,7 +357,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
-            qMailLog(IMAP) << "IDLE: Idle connection established.";
+            qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
             
             // We are now idling
             _idleTimer.start(idleTimeout);
@@ -365,11 +365,11 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 
             handleIdling();
         } else if (type == QString("newmail")) {
-            qMailLog(IMAP) << "IDLE: new mail event occurred";
+            qMailLog(IMAP) << objectName() << "IDLE: new mail event occurred";
             // A new mail event occurred during idle 
             emit idleNewMailNotification(_folder.id());
         } else if (type == QString("flagschanged")) {
-            qMailLog(IMAP) << "IDLE: flags changed event occurred";
+            qMailLog(IMAP) << objectName() << "IDLE: flags changed event occurred";
             // A flags changed event occurred during idle 
             emit idleFlagsChangedNotification(_folder.id());
         } else {
@@ -451,7 +451,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         }
         default:        //default = all critical messages
         {
-            qMailLog(IMAP) << "IDLE: IMAP Idle unknown command response: " << command;
+            qMailLog(IMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
             return;
         }
     }
@@ -466,7 +466,8 @@ void IdleProtocol::idleTimeOut()
 
 void IdleProtocol::idleTransportError()
 {
-    qMailLog(IMAP) << "IDLE: An IMAP IDLE related error occurred.\n"
+    qMailLog(IMAP) << objectName()
+                   << "IDLE: An IMAP IDLE related error occurred.\n"
                    << "An attempt to automatically recover is scheduled in" << _idleRetryDelay << "seconds.";
 
     if (inUse())
@@ -482,7 +483,7 @@ void IdleProtocol::idleErrorRecovery()
     const int oneHour = 60*60;
     _idleRecoveryTimer.stop();
     if (connected() && _idleTimer.isActive()) {
-        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery was successful. About to check for new mail.";
+        qMailLog(IMAP) << objectName() << "IDLE: IMAP IDLE error recovery was successful. About to check for new mail.";
         _idleRetryDelay = InitialIdleRetryDelay;
         emit idleNewMailNotification(_folder.id()); // Check for new messages arriving while idle connection was down
         emit idleFlagsChangedNotification(_folder.id());
@@ -621,7 +622,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             case IMAP_UIDStore:
             {
                 // Couldn't set a flag, ignore as we can stil continue
-                qMailLog(IMAP) << "could not store message flag";
+                qMailLog(IMAP) << _protocol.objectName() << "could not store message flag";
                 break;
             }
 
@@ -1665,8 +1666,10 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
 {
     if (_protocol.inUse()) { // Setting up new idle connection may be in progress
-        qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
-            "busy. Retrying to establish IDLE state in" << idleProtocol->idleRetryDelay()/2 << "seconds.";
+        qMailLog(IMAP) << _protocol.objectName() 
+                       << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
+                          "busy. Retrying to establish IDLE state in" 
+                       << idleProtocol->idleRetryDelay()/2 << "seconds.";
         return;
     }
     _protocol.close();
@@ -1677,7 +1680,8 @@ void ImapClient::idleOpenRequested(IdleProtocol *idleProtocol)
         delete protocol;
     }
     _idlesEstablished = false;
-    qMailLog(IMAP) << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
+    qMailLog(IMAP) << _protocol.objectName() 
+                   << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
     emit restartPushEmail();
 }
 
