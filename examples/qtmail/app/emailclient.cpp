@@ -1210,7 +1210,12 @@ void EmailClient::saveAsDraft(QMailMessage& mail)
         mail.setStatus(QMailMessage::LocalOnly, true);
         inserted = QMailStore::instance()->addMessage(&mail);
     } else {
-        inserted = QMailStore::instance()->updateMessage(&mail);
+        QMailMessageId msgId = mail.id();
+        mail.setId(QMailMessageId());
+        mail.setStatus(QMailMessage::LocalOnly, true);
+        mail.setServerUid(QString());
+        inserted = QMailStore::instance()->addMessage(&mail);
+        QMailStore::instance()->removeMessage(msgId, QMailStore::CreateRemovalRecord);
     }
 
     if (inserted) {
