@@ -139,7 +139,8 @@ bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
         // We might have a deletion record for this UID
         vanishedIds << uid;
     }
-    if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
+    if (!vanishedIds.isEmpty() && // guard to protect against deleting all removal records when vanishedIds is empty!
+        !QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), vanishedIds)) {
         result = false;
         qWarning() << "Unable to purge message records for account:" << context->config().id();
     }
