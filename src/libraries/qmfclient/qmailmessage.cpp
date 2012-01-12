@@ -1551,7 +1551,8 @@ namespace attachments
             disposition.setFilename(partName.toLatin1());
             disposition.setSize(fi.size());
             container->appendPart(QMailMessagePart::fromFile(filePath, disposition,
-                                                             attach_type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding));
+                                                             attach_type, QMailMessageBody::Base64,
+                                                             QMailMessageBody::RequiresEncoding));
             addedSome = true;
         }
 

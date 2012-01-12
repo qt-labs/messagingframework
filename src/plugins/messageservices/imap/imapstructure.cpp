@@ -298,7 +298,13 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
         disposition.setType(QMailMessageContentDisposition::Inline);
     }
 
-    if (!size.isEmpty()) {
+    if (!size.isEmpty() && disposition.size() == -1) {
+        // We prefer the Content-Disposition/Size to the body size.
+        // From RFC3501 INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1:
+        // body size
+        //   A number giving the size of the body in octets.  Note that
+        //   this size is the size in its transfer encoding and not the
+        //   resulting size after any decoding.
         disposition.setSize(size.toInt());
     }
 
