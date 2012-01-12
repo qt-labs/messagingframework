@@ -400,15 +400,14 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
         return;
     }
 
-    //if the key is empty the id's will be returned valid and invalid
-    if(!d->key.isEmpty())
+    // Remove invalid ids from model
+    foreach(const QMailAccountId &id,ids)
     {
-        QMailAccountIdList invalidIds = QMailStore::instance()->queryAccounts(idKey & ~d->key);
-        foreach(const QMailAccountId &id,invalidIds)
+        if (!validIds.contains(id))
         {
             //get the index
             int index = d->idList.indexOf(id);
-            if (index == -1) 
+            if (index == -1)
                 continue;
 
             d->deletionId = id;
