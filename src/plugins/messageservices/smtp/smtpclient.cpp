@@ -102,6 +102,7 @@ static QByteArray localName()
 
 SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
+    , mailItr(mailList.end())
     , messageLength(0)
     , sending(false)
     , transport(0)
@@ -240,6 +241,7 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
     rawmail.mail = mail;
 
     mailList.append(rawmail);
+    mailItr = mailList.end();
     sendSize.insert(mail.id(), mail.indicativeSize());
 
     return QMailServiceAction::Status::ErrNoError;
@@ -790,6 +792,7 @@ void SmtpClient::nextAction(const QString &response)
         int count = mailList.count();
         if (count) {
             mailList.clear();
+            mailItr = mailList.end();
             emit updateStatus(tr("Sent %n messages", "", count));
         }
         emit sendCompleted();
@@ -839,6 +842,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
         sendingId = QMailMessageId();
         sending = false;
         mailList.clear();
+        mailItr = mailList.end();
         sendSize.clear();
     }
 
@@ -868,6 +872,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
         sendingId = QMailMessageId();
         sending = false;
         mailList.clear();
+        mailItr = mailList.end();
         sendSize.clear();
     }
 
