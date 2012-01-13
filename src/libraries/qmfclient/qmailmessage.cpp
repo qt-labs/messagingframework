@@ -129,7 +129,6 @@ bool is7BitAscii(const StringType& src)
     return result;
 }
 
-
 // Parsing functions
 static int insensitiveIndexOf(const QByteArray& content, const QByteArray& container, int from = 0)
 {
@@ -1541,17 +1540,23 @@ namespace attachments
                 continue;
             }
 
-            const QString &partName = fi.fileName();
             const QString &filePath = fi.absoluteFilePath();
 
             QMailMessageContentType attach_type(QMail::mimeTypeFromFileName(attachmentPath).toLatin1());
-            attach_type.setName(partName.toLatin1());
 
             QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
-            disposition.setFilename(partName.toLatin1());
             disposition.setSize(fi.size());
-            container->appendPart(QMailMessagePart::fromFile(filePath, disposition,
-                                                             attach_type, QMailMessageBody::Base64,
+
+            QString input(fi.fileName());
+            if (is7BitAscii(input)) {
+                attach_type.setName(input.toLatin1());
+                disposition.setFilename(input.toLatin1());
+            } else {
+                attach_type.setParameter("name*", QMailMessageContentDisposition::encodeParameter(input, "UTF-8"));
+                disposition.setParameter("filename*", QMailMessageContentDisposition::encodeParameter(input, "UTF-8"));
+            }
+
+            container->appendPart(QMailMessagePart::fromFile(filePath, disposition,attach_type, QMailMessageBody::Base64,
                                                              QMailMessageBody::RequiresEncoding));
             addedSome = true;
         }
@@ -5270,12 +5275,29 @@ void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
 
 /*!
   Sets the attachment list of a container to \a attachments.
-  \param attachments List of already created message parts representing the attachments (might come from other existing messages)
+  \param attachments String paths to local files to be attached of already created message
+   parts representing the attachments (might come from other existing messages)
  */
 void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePart*> attachments)
 {
     attachments::removeAll(*this);
 
+    if (attachments.isEmpty()) {
+        return;
+    }
+
+    // Add attachments
+    attachments::convertMessageToMultipart(*this);
+    attachments::addAttachmentsToMultipart(this, attachments);
+}
+
+/*!
+  Sets the attachment list of a container to \a attachments.
+  \param attachments String paths to local files to be attached of already created message
+   parts representing the attachments (might come from other existing messages)
+ */
+void QMailMessagePartContainer::addAttachments(const QStringList& attachments)
+{
     if (attachments.isEmpty()) {
         return;
     }

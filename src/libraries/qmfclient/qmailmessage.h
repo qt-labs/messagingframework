@@ -392,6 +392,7 @@ public:
     void setInlineImages(const QList<const QMailMessagePart*> images);
     void setAttachments(const QStringList& attachments);
     void setAttachments(const QList<const QMailMessagePart*> attachments);
+    void addAttachments(const QStringList& attachments);
 
 protected:
     template<typename Subclass>
