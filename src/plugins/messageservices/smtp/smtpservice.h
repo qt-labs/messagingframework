@@ -68,7 +68,7 @@ public slots:
 
 protected slots:
     void errorOccurred(int code, const QString &text);
-    void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
+    void errorOccurred(const QMailServiceAction::Status & status, const QString &text);
 
     void updateStatus(const QString& text);
 
