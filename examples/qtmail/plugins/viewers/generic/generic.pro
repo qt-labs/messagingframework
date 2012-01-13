@@ -2,7 +2,7 @@ TEMPLATE = lib
 TARGET = genericviewer 
 CONFIG += qmfclient qmfutil plugin
 
-target.path += $$QMF_INSTALL_ROOT/plugins/viewers
+target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/viewers
 
 # Use webkit to render mail if available
 contains(QT_CONFIG,webkit){

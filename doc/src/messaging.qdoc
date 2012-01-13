@@ -86,7 +86,6 @@ After \c{make install} has run, the following layout should exist in your image 
 bin
 include
 lib
-plugins
 tests
 \endcode
 
@@ -96,7 +95,7 @@ Set the following evironment variables prior to running these files:
 \code
 PATH=<imagedir/bin>:$PATH
 LD_LIBRARY_PATH=<imagedir/lib>:$LD_LIBRARY_PATH
-QMF_PLUGINS=<imagedir/plugins>
+QMF_PLUGINS=<imagedir/lib/qmf/plugins>
 \endcode
 
 Optionally set \c QMF_DATA to the location where you want the framework data files stored. If this is not set, the

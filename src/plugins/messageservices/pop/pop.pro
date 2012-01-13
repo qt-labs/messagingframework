@@ -2,7 +2,7 @@ TEMPLATE = lib
 TARGET = pop 
 CONFIG += qmfclient qmfmessageserver plugin
 
-target.path = $$QMF_INSTALL_ROOT/plugins/messageservices
+target.path = $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
 QT = core network
 

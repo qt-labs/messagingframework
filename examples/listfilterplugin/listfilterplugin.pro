@@ -3,7 +3,7 @@ TARGET = listfilterplugin
 CONFIG += qmfclient plugin
 QT = core
 
-target.path += $$QMF_INSTALL_ROOT/plugins/contentmanagers
+target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers
 
 DEFINES += PLUGIN_INTERNAL
 
