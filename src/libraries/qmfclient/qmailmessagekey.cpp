@@ -496,7 +496,7 @@ QMailMessageKey QMailMessageKey::sender(const QStringList &values, QMailDataComp
 }
 
 /*!
-    Return a key matching messages whose sender is alphabetically matches \value according to \cmp
+    Return a key matching messages whose sender alphabetically matches \value according to \a cmp
 */
 QMailMessageKey QMailMessageKey::sender(const QString &value, QMailDataComparator::RelationComparator cmp)
 {
@@ -1116,7 +1116,16 @@ QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMail
 
 //create implementations for QDataStream
 #ifndef Q_OS_SYMBIAN
+/*!
+    \fn void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+    Serialize the message key to \a stream.
+*/
 template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+
+/*!
+    \fn void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+    Deserialize the message key from \a stream.
+*/
 template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
 #endif
 

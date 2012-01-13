@@ -168,10 +168,10 @@ public slots:
     virtual bool deleteFolder(const QMailFolderId &folderId);
     virtual bool deleteFolder(const QMailFolderId &folderId, quint64 action);
 
-    virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
-    virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action);
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort);
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action);
+    virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort);
+    virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action);
     virtual bool countMessages(const QMailMessageKey &filter, const QString& bodyText);
     virtual bool countMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 action);
     virtual bool cancelSearch();

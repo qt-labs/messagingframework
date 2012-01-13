@@ -927,19 +927,19 @@ QModelIndex QMailMessageThreadedModel::parent(const QModelIndex &idx) const
     return d->parent(idx);
 }
 
-/*! \reimp */
+/*! \internal */
 QModelIndex QMailMessageThreadedModel::generateIndex(int row, int column, void *ptr)
 {
     return createIndex(row, column, ptr);
 }
 
-/*! \reimp */
+/*! \internal */
 QMailMessageModelImplementation *QMailMessageThreadedModel::impl()
 {
     return d;
 }
 
-/*! \reimp */
+/*! \internal */
 const QMailMessageModelImplementation *QMailMessageThreadedModel::impl() const
 {
     return d;

@@ -587,7 +587,7 @@ QModelIndex QMailMessageListModel::parent(const QModelIndex &idx) const
     return QModelIndex();
 }
 
-/*! \reimp */
+/*! \internal */
 QModelIndex QMailMessageListModel::generateIndex(int row, int column, void *ptr)
 {
     Q_UNUSED(ptr)
@@ -595,13 +595,13 @@ QModelIndex QMailMessageListModel::generateIndex(int row, int column, void *ptr)
     return index(row, column, QModelIndex());
 }
 
-/*! \reimp */
+/*! \internal */
 QMailMessageModelImplementation *QMailMessageListModel::impl()
 {
     return d;
 }
 
-/*! \reimp */
+/*! \internal */
 const QMailMessageModelImplementation *QMailMessageListModel::impl() const
 {
     return d;

@@ -5207,8 +5207,8 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
 }
 
 /*!
-  Sets the image list of a container to \a images.
-  \param images String paths to local files to be added
+  Sets the image map of a container to \a htmlImagesMap.
+  \a htmlImagesMap String paths to local files to be added
  */
 void QMailMessagePartContainer::setInlineImages(const QMap<QString, QString> &htmlImagesMap)
 {
@@ -5224,9 +5224,9 @@ void QMailMessagePartContainer::setInlineImages(const QMap<QString, QString> &ht
 }
 
 /*!
-  Sets the images list of a container to \a images.
-  \param images List of already created message parts representing the inline images (might come from other existing messages)
- */
+  Sets the images list of a container to \a imageParts.
+  \a imageParts List of already created message parts representing the inline images (might come from other existing messages)
+*/
 void QMailMessagePartContainer::setInlineImages(const QList<const QMailMessagePart*> imageParts)
 {
     attachments::removeAllInlineImages(*this);
@@ -5242,7 +5242,7 @@ void QMailMessagePartContainer::setInlineImages(const QList<const QMailMessagePa
 
 /*!
   Sets the attachment list of a container to \a attachments.
-  \param attachments String paths to local files to be attached
+  \a attachments String paths to local files to be attached
  */
 void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
 {
@@ -5275,7 +5275,7 @@ void QMailMessagePartContainer::setAttachments(const QStringList& attachments)
 
 /*!
   Sets the attachment list of a container to \a attachments.
-  \param attachments String paths to local files to be attached of already created message
+  \a attachments String paths to local files to be attached of already created message
    parts representing the attachments (might come from other existing messages)
  */
 void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePart*> attachments)
@@ -5293,7 +5293,7 @@ void QMailMessagePartContainer::setAttachments(const QList<const QMailMessagePar
 
 /*!
   Sets the attachment list of a container to \a attachments.
-  \param attachments String paths to local files to be attached of already created message
+  \a attachments String paths to local files to be attached of already created message
    parts representing the attachments (might come from other existing messages)
  */
 void QMailMessagePartContainer::addAttachments(const QStringList& attachments)
@@ -5548,7 +5548,7 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 
 
 /*!
-    \class QMailMessagePart::Location
+    \class QMailMessagePartContainer::Location
     \preliminary
 
     \brief The Location class contains a specification of the location of a message part
@@ -8119,14 +8119,22 @@ QList<QMailAddress> QMailMessage::to() const
     return QMailAddress::fromStringList(headerFieldText("To"));
 }
 
-/*! \reimp */
+/*!
+    Set the list of to recipients for the message to \a toList.
+
+    \sa setCc(), setBcc()
+*/  
 void QMailMessage::setTo(const QList<QMailAddress>& toList)
 {
     metaDataImpl()->setRecipients(QMailAddress::toStringList(toList+cc()+bcc()).join(", "));
     partContainerImpl()->setTo(QMailAddress::toStringList(toList).join(", "));
 }
 
-/*! \reimp */
+/*!
+    Set the list of to recipients for the message to a list containing a single item \a address.
+
+    \sa setCc(), setBcc(), QMailAddress
+*/  
 void QMailMessage::setTo(const QMailAddress& address)
 {
     setTo(QList<QMailAddress>() << address);
@@ -8334,6 +8342,10 @@ bool QMailMessage::contentModified() const
     return partContainerImpl()->contentModified();
 }
 
+/*!
+    Returns true if the message contains a calendar invitation;
+    otherwise returns false.
+*/  
 bool QMailMessage::hasCalendarInvitation() const
 {
     QList<const QMailMessagePartContainer*> parts;

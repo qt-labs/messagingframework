@@ -162,7 +162,7 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charse
 /*!
     Writes the data read from the stream \a in to the stream \a out, converting from 
     a sequence of 7-bit ASCII characters.  The characters read from \a in are 
-    decoded from the text encoding \a charset to unicode.
+    decoded from the text encoding \a icharset to unicode.
 
     \sa QTextCodec::codecForName()
 */
@@ -229,8 +229,9 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
 }
 
 /*!
-    Returns a charset that may be better supported than the one specified. If charset is ascii and \a translateAscii is true,
-    it will use the Latin-1 codec.
+    Returns a charset that may be better supported than the specified \a
+    charset. If charset is ascii and \a translateAscii is true, then
+    the Latin-1 codec will be returned.
 */
 QByteArray QMailCodec::bestCompatibleCharset(const QByteArray& charset, bool translateAscii)
 {
@@ -261,11 +262,11 @@ QByteArray QMailCodec::bestCompatibleCharset(const QByteArray& charset, bool tra
 
 /*!
     Returns a pointer to an appropriate QTextCodec based on \a charset. If charset is ascii and \a translateAscii is true,
-    it will use the Latin-1 codec.
+    then the Latin-1 codec will be returned.
 
-    Returns 0 if could not locate a codec.
+    Returns 0 if a codec could not be found.
     
-    \sa QTextCodec::autoDetectEncoding()
+    \sa QMailCodec::autoDetectEncoding()
 */
 QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAscii)
 {

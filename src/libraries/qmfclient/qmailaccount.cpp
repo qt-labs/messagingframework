@@ -325,7 +325,7 @@ public:
 
     This flag indicates that top level folders can be created for the account.
 
-    \sa QMailStorageAction::createFolder(), QMailFolder::ChildCreationPermitted
+    \sa QMailStorageAction::onlineCreateFolder(), QMailFolder::ChildCreationPermitted
 */
 
 /*!

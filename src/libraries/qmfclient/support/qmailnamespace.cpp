@@ -81,6 +81,7 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
 /*!
     \namespace QMail
+    \ingroup messaginglibrary
 
     \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
 */
@@ -326,6 +327,10 @@ QString QMail::messageSettingsPath()
     return QCoreApplication::applicationDirPath() + '/';
 }
 
+/*!
+  Returns the full path to the file used to ensure that only one instance of the 
+  messageserver is running.
+*/
 QString QMail::messageServerLockFilePath()
 {
     static QString path(QDir::tempPath() + QString("/messageserver-instance.lock"));
@@ -683,7 +688,7 @@ static QString normaliseIdentifier(const QString& str)
 }
 
 /*!
-    Returns the sequence of message identifiers that can be extracted from \a str.
+    Returns the sequence of message identifiers that can be extracted from \a aStr.
     Message identifiers must conform to the definition given by RFC 5256.
 */
 QStringList QMail::messageIdentifiers(const QString& aStr)

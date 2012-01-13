@@ -80,6 +80,8 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey)
     \value ServerUid The ServerUid of thread.
     \value MessageCount The number of messages in the thread
     \value UnreadCount The number of unread messages in the thread.
+    \value Includes List of message identifiers.
+    \value ParentAccountId The identifier of the parent account of the thread.
     \value Custom For internal use, may be removed.
 */
 
@@ -393,7 +395,7 @@ QMailThreadKey QMailThreadKey::includes(const QMailMessageIdList &ids, QMailData
 }
 
 /*!
-    Returns a key matching threads that include a message in \a keys, according to \a cmp.
+    Returns a key matching threads that include a message in \a key, according to \a cmp.
 */
 
 QMailThreadKey QMailThreadKey::includes(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp)

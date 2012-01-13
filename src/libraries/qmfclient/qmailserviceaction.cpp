@@ -1738,7 +1738,7 @@ void QMailStorageAction::onlineFlagMessagesAndMoveToStandardFolder(const QMailMe
 
     All messages must use the same content scheme.
 
-    \sa QMailStorageAction::messagesAdded, QMailMessageData::contentScheme
+    \sa QMailStorageAction::messagesAdded(), QMailMessageMetaData::contentScheme()
 */
 void QMailStorageAction::addMessages(const QMailMessageList &messages)
 {
@@ -1760,7 +1760,7 @@ QMailMessageIdList QMailStorageAction::messagesAdded() const
 
     All messages must use the same content scheme.
 
-    \sa QMailStorageAction::messagesUpdated, QMailMessageData::contentScheme
+    \sa QMailStorageAction::messagesUpdated(), QMailMessageMetaData::contentScheme()
 */
 void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 {
@@ -1776,7 +1776,7 @@ void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 
     All messages must use the same content scheme.
 
-    \sa QMailStorageAction::messagesUpdated, QMailMessageData::contentScheme
+    \sa QMailStorageAction::messagesUpdated(), QMailMessageMetaData::contentScheme()
 */
 void QMailStorageAction::updateMessages(const QMailMessageMetaDataList &messages)
 {
@@ -1800,8 +1800,6 @@ QMailMessageIdList QMailStorageAction::messagesUpdated() const
     server; Deletion from the external server will occur when 
     QMailRetrievalAction::exportUpdates is called successfully.
     
-    The request has the identifier \a action.
-
     \sa QMailStore::removeMessage()
 */
 void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
@@ -1815,8 +1813,6 @@ void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
     Rolls back all disconnected move and copy operations that have been applied to the 
     message store since the most recent synchronization of the message with the account 
     specified by \a mailAccountId.
-    
-    The request has the identifier \a action.
     
     \sa QMailDisconnected::updatesOutstanding()
 */
@@ -1833,8 +1829,6 @@ void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
     
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
             
-    The request has the identifier \a action.
-
     \sa QMailDisconnected::moveToStandardFolder()
 */
 void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
@@ -1851,8 +1845,6 @@ void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMa
     Moving to another account is not supported.
 
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-    
-    The request has the identifier \a action.
     
     \sa QMailDisconnected::moveToFolder()
 */
@@ -1871,8 +1863,6 @@ void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMail
 
     The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
             
-    The request has the identifier \a action.
-    
     \sa QMailDisconnected::flagMessages(), QMailStorageAction::moveToFolder(), QMailStorageAction::moveToStandardFolder()
 */
 void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
@@ -1886,8 +1876,6 @@ void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 set
     Updates all QMailMessages identified by the key \a key to move the messages back to the
     previous folder they were contained by.
         
-    The request has the identifier \a action.
-    
     \sa QMailDisconnected::restoreToPreviousFolder()
 */
 void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)

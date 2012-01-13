@@ -849,6 +849,38 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
     specified string will also be matched.  Messages whose content is already present on
     the local device should not be retrieved from the remote server.
 
+    A maximum of \a limit messages should be retrieved from the remote server.
+
+    If \a sort is not empty, matched messages should be discovered by testing for
+    matches in the ordering indicated by the sort criterion, if possible.
+
+    Messages matching the search criteria should be added to the mail store in
+    meta data form marked with the \l QMailMessage::New status flag, and 
+    progressively reported via matchingMessageIds().
+
+    Returns true if a search operation is initiated.
+    
+    \sa matchingMessageIds(), retrieveMessages()
+*/
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+{
+    Q_UNUSED(searchCriteria)
+    Q_UNUSED(bodyText)
+    Q_UNUSED(limit)
+    Q_UNUSED(sort)
+
+    notImplemented();
+    return false;
+}
+
+/*!
+    Invoked by the message server to initiate a remote message search operation.
+
+    Search the remote server for messages that match the search criteria encoded by 
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    specified string will also be matched.  Messages whose content is already present on
+    the local device should not be retrieved from the remote server.
+
     If \a sort is not empty, matched messages should be discovered by testing for
     matches in the ordering indicated by the sort criterion, if possible.
 
@@ -871,45 +903,15 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 }
 
 /*!
-    Invoked by the message server to initiate a remote message search operation.
-
-    Search the remote server for messages that match the search criteria encoded by 
-    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
-    specified string will also be matched.  Messages whose content is already present on
-    the local device should not be retrieved from the remote server.
-
-    A maximum of \a limit messages should be retrieved from the remote server.
-
-    If \a sort is not empty, matched messages should be discovered by testing for
-    matches in the ordering indicated by the sort criterion, if possible.
-
-    Messages matching the search criteria should be added to the mail store in
-    meta data form marked with the \l QMailMessage::New status flag, and 
-    progressively reported via matchingMessageIds().
-
-    Return true if a search operation is initiated.
-    
-    \sa matchingMessageIds(), retrieveMessages()
-*/
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
-{
-    Q_UNUSED(searchCriteria)
-    Q_UNUSED(bodyText)
-    Q_UNUSED(limit)
-    Q_UNUSED(sort)
-
-    notImplemented();
-    return false;
-}
-
-/*!
     Invoked by the message server to initiate a remote message count operation.
 
     Search the remote server to count messages that match the search criteria encoded by 
     \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
     specified string will also be matched and counted.
 
-    \sa countMessages()
+    Returns true if the counting operation is initiated.
+
+    \sa QMailStore::countMessages(), searchMessages()
 */
 bool QMailMessageSource::countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText)
 {
@@ -927,7 +929,7 @@ bool QMailMessageSource::countMessages(const QMailMessageKey &searchCriteria, co
 
     Searches in progress will be stopped, and no further results returned.
 
-    \sa QMailMessageService::cancelOperation
+    \sa QMailMessageService::cancelOperation()
 */
 bool QMailMessageSource::cancelSearch()
 {
@@ -1014,18 +1016,18 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
 */
 
 /*!
-    \fn void QMailMessageSource::remainingMessagesCount(uint);
+    \fn void QMailMessageSource::remainingMessagesCount(uint number);
 
-    Signal emitted by the source to report the number of messages matching the current search criteria 
+    Signal emitted by the source to report the \a number of messages matching the current search criteria 
     remaining on the remote server; that is not retrieved to the device.
 
     Only emitted for remote searches.
 */
 
 /*!
-    \fn void QMailMessageSource::messagesCount(uint);
+    \fn void QMailMessageSource::messagesCount(uint number);
 
-    Signal emitted by the source to report the number of messages matching the current search criteria.
+    Signal emitted by the source to report the \a number of messages matching the current search criteria.
 
     Only emitted for remote searches.
 */
@@ -1427,8 +1429,8 @@ QMailMessageSink &QMailMessageService::sink() const
 */
 
 /*!
-    Emits the statusChanged() signal with the Status object constructed from \a code, \a text, \a accountId, \a folderId and \a messageId.
-
+    Emits the statusChanged() signal with the Status object constructed from \a code, \a text, \a accountId, \a folderId, \a messageId and \a action.
+    
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
 void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
@@ -1571,6 +1573,13 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
 #endif
 
 
+/*!
+    \overload retrieveFolderList()
+
+    Concurrent version of retrieveFolderList().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1582,6 +1591,13 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
     return false;
 }
 
+/*!
+    \overload retrieveMessageList()
+
+    Concurrent version of retrieveMessageList().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1594,6 +1610,13 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     return false;
 }
 
+/*!
+    \overload retrieveMessageLists()
+
+    Concurrent version of retrieveMessageLists().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1606,6 +1629,13 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
     return false;
 }
 
+/*!
+    \overload retrieveMessages()
+
+    Concurrent version of retrieveMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
 {
     Q_UNUSED(messageIds)
@@ -1616,6 +1646,13 @@ bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &messageIds, 
     return false;
 }
 
+/*!
+    \overload retrieveMessagePart()
+
+    Concurrent version of retrieveMessagePart().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &partLocation, quint64 action)
 {
     Q_UNUSED(partLocation)
@@ -1625,6 +1662,13 @@ bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &p
     return false;
 }
 
+/*!
+    \overload retrieveMessageRange()
+
+    Concurrent version of retrieveMessageRange().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, uint minimum, quint64 action)
 {
     Q_UNUSED(messageId)
@@ -1635,6 +1679,13 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
     return false;
 }
 
+/*!
+    \overload retrieveMessagePartRange()
+
+    Concurrent version of retrieveMessagePartRange().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action)
 {
     Q_UNUSED(partLocation)
@@ -1645,6 +1696,13 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
     return false;
 }
 
+/*!
+    \overload retrieveAll()
+
+    Concurrent version of retrieveAll().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1654,6 +1712,13 @@ bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId, quint64 ac
     return false;
 }
 
+/*!
+    \overload exportUpdates()
+
+    Concurrent version of exportUpdates().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1663,6 +1728,13 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId, quint64 
     return false;
 }
 
+/*!
+    \overload synchronize()
+
+    Concurrent version of synchronize().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::synchronize(const QMailAccountId &accountId, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1672,6 +1744,13 @@ bool QMailMessageSource::synchronize(const QMailAccountId &accountId, quint64 ac
     return false;
 }
 
+/*!
+    \overload deleteMessages()
+
+    Concurrent version of deleteMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1681,6 +1760,13 @@ bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids, quint64 a
     return false;
 }
 
+/*!
+    \overload copyMessages()
+
+    Concurrent version of copyMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1691,6 +1777,13 @@ bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMail
     return false;
 }
 
+/*!
+    \overload moveMessages()
+
+    Concurrent version of moveMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1701,6 +1794,13 @@ bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMail
     return false;
 }
 
+/*!
+    \overload flagMessages()
+
+    Concurrent version of flagMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1712,6 +1812,13 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
     return false;
 }
 
+/*!
+    \overload createFolder()
+
+    Concurrent version of createFolder().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action)
 {
     Q_UNUSED(name)
@@ -1723,6 +1830,13 @@ bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId 
     return false;
 }
 
+/*!
+    \overload renameFolder()
+
+    Concurrent version of renameFolder().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action)
 {
     Q_UNUSED(folderId)
@@ -1733,6 +1847,13 @@ bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QStri
     return false;
 }
 
+/*!
+    \overload deleteFolder()
+
+    Concurrent version of deleteFolder().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 action)
 {
     Q_UNUSED(folderId)
@@ -1742,18 +1863,14 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 act
     return false;
 }
 
-bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
-{
-    Q_UNUSED(filter)
-    Q_UNUSED(bodyText)
-    Q_UNUSED(sort)
-    Q_UNUSED(action)
+/*!
+    \overload searchMessages()
 
-    notImplemented(action);
-    return false;
-}
+    Concurrent version of searchMessages().
 
-bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
+    The request has the identifier \a action.
+*/
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCritera, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(filter)
     Q_UNUSED(bodyText)
@@ -1765,7 +1882,32 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &filter, const QSt
     return false;
 }
 
-bool QMailMessageSource::countMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 action)
+/*!
+    \overload searchMessages()
+
+    Concurrent version of searchMessages().
+
+    The request has the identifier \a action.
+*/
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
+{
+    Q_UNUSED(filter)
+    Q_UNUSED(bodyText)
+    Q_UNUSED(sort)
+    Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+/*!
+    \overload countMessages()
+
+    Concurrent version of countMessages().
+
+    The request has the identifier \a action.
+*/
+bool QMailMessageSource::countMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, quint64 action)
 {
     Q_UNUSED(filter)
     Q_UNUSED(bodyText)
@@ -1775,6 +1917,13 @@ bool QMailMessageSource::countMessages(const QMailMessageKey &filter, const QStr
     return false;
 }
 
+/*!
+    \overload cancelSearch()
+
+    Concurrent version of cancelSearch().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::cancelSearch(quint64 action)
 {
     Q_UNUSED(action)
@@ -1783,6 +1932,13 @@ bool QMailMessageSource::cancelSearch(quint64 action)
     return false;
 }
 
+/*!
+    \overload prepareMessages()
+
+    Concurrent version of prepareMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1792,6 +1948,13 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
     return false;
 }
 
+/*!
+    \overload protocolRequest()
+
+    Concurrent version of protocolRequest().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action)
 {
     Q_UNUSED(accountId)
@@ -1803,6 +1966,13 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
     return false;
 }
 
+/*!
+    \overload notImplemented()
+
+    Concurrent version of notImplemented().
+
+    The request has the identifier \a action.
+*/
 void QMailMessageSource::notImplemented(quint64 action)
 {
     Q_UNUSED(action)
@@ -1810,6 +1980,13 @@ void QMailMessageSource::notImplemented(quint64 action)
     notImplemented();
 }
 
+/*!
+    \overload transmitMessages()
+
+    Concurrent version of transmitMessages().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids, quint64 action)
 {
     Q_UNUSED(ids)
@@ -1819,6 +1996,13 @@ bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids, quint64 a
     return false;
 }
 
+/*!
+    \overload notImplemented()
+
+    Concurrent version of notImplemented().
+
+    The request has the identifier \a action.
+*/
 void QMailMessageSink::notImplemented(quint64 action)
 {
     Q_UNUSED(action)
@@ -1826,6 +2010,13 @@ void QMailMessageSink::notImplemented(quint64 action)
     notImplemented();
 }
 
+/*!
+    \overload cancelOperation()
+
+    Concurrent version of cancelOperation().
+
+    The request has the identifier \a action.
+*/
 bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action)
 {
     Q_UNUSED(code)
@@ -1835,3 +2026,149 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     Q_ASSERT(0);
     return false;
 }
+
+/*!
+    \fn void QMailMessageSource::messagesDeleted(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesDeleted() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesCopied(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesCopied() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesMoved(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesMoved() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesFlagged(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesFlagged() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::matchingMessageIds(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of matchingMessageIds() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::remainingMessagesCount(uint number, quint64 action)
+
+    \overload
+    
+    Concurrent version of remainingMessagesCount() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::messagesCount(uint number, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesCount() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::newMessagesAvailable(quint64 action)
+
+    \overload
+    
+    Concurrent version of newMessagesAvailable() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSink::messagesTransmitted(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesTransmitted() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSink::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesFailedTransmission() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageService::cancelOperation(quint64 action)
+
+    \overload
+    
+    Concurrent version of cancelOperation().
+    
+    The request to be cancelled has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageService::progressChanged(uint progress, uint total, quint64 action)
+
+    \overload
+    
+    Concurrent version of progressChanged() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageService::actionCompleted(bool success, quint64 action)
+
+    \overload
+    
+    Concurrent version of actionCompleted() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn bool QMailMessageService::usesConcurrentActions() const
+
+    Returns true if the service supports concurrent servicing of requests;
+    otherwise returns false.
+
+    By default QMailMessageService objects are only expected to service a 
+    single request at a time. The message server will queue requests as
+    necessary and dispatch them when the service is available.
+    
+    However if a service implementation is able to handle multiple requests
+    in parallel then it should override this function returning true.
+*/
+                                                                           
+                                                                           

@@ -1131,6 +1131,8 @@ void QMailStore::setTransmissionInProgress(const QMailAccountIdList &ids)
 
     Any events occurring before flushIpcNotifications() is invoked will be processed by 
     recipient processes before any IPC packets generated after the invocation.
+    
+    \sa isIpcConnectionEstablished(), disconnectIpc(), reconnectIpc()
 */
 void QMailStore::flushIpcNotifications()
 {
@@ -1138,18 +1140,39 @@ void QMailStore::flushIpcNotifications()
 }
 
 /*!
-    Returns true if connection to QQopServer is established
+    Returns true if a connection to the messageserver is established.
+    
+    The messageserver is used to notify a QMF client in one process of changes
+    that have been made by QMF clients in other processes. For example 
+    QMailStore::messagesAdded() signal, will inform a client in one process
+    when a client in another process, such as the messageserver, has added
+    messages to the message store.
+
+    \sa flushIpcNotifications(), disconnectIpc(), reconnectIpc(), QMailServiceAction
 */
 bool QMailStore::isIpcConnectionEstablished() const
 {
     return d->isIpcConnectionEstablished();
 }
 
+/*!
+    Disconnect from messageserver
+    
+    Useful for reducing battery consumption when the client application is not 
+    visible to the end user.
+
+    \sa flushIpcNotifications(), isIpcConnectionEstablished(), reconnectIpc()
+*/
 void QMailStore::disconnectIpc()
 {
     d->disconnectIpc();
 }
 
+/*!
+    Reconnect to messageserver
+
+    \sa flushIpcNotifications(), isIpcConnectionEstablished(), disconnectIpc()
+*/
 void QMailStore::reconnectIpc()
 {
     d->reconnectIpc();
@@ -1744,6 +1767,14 @@ QMailStore* QMailStore::instance()
     affect the content of the threads in the list \a ids.
 
     \sa messagesAdded(), messagesUpdated(), messagesRemoved()
+*/
+
+/*!
+    \fn bool QMailStore::ipcConnectionEstablished()
+
+    Signal that is emitted when a connection to the messageserver is established.
+
+    \sa isIpcConnectionEstablished()
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)

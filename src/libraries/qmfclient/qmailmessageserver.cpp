@@ -471,7 +471,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 */
 
 /*!
-    \fn void QMailMessageServer::remainingMessagesCount(uint count);
+    \fn void QMailMessageServer::remainingMessagesCount(quint64 action, uint count);
 
     Emitted by search operation identified by \a action; 
     Returns the \a count of matching messages remaining on the remote server, that is the count
@@ -483,7 +483,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 */
 
 /*!
-    \fn void QMailMessageServer::messagesCount(uint count);
+    \fn void QMailMessageServer::messagesCount(quint64 action, uint count);
 
     Emitted by search operation identified by \a action; 
     Returns the \a count of matching messages on the remote server.
@@ -599,7 +599,7 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 
 /*!
     Requests that the messageserver retrieve the list of messages available for the account \a accountId.
-    If \a folderIdList is not empty, then only messages within those folders should be retrieved; otherwise 
+    If \a folderIds is not empty, then only messages within those folders should be retrieved; otherwise 
     no messages should be retrieved. If a folder messages are being 
     retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
     least \a minimum messages are available from the mail store for that folder; otherwise if the
@@ -813,7 +813,7 @@ void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 
 /*!
     Requests that the MessageServer update the list of \a messages
-    in the message store, and ensure the durability of the content of \messages.
+    in the message store, and ensure the durability of the content of \a messages.
 
     The request has the identifier \a action.
 */
@@ -837,7 +837,7 @@ void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
 
 /*!
     Requests that the MessageServer add the list of \a messages
-    to the message store, and ensure the durability of the content of \messages..
+    to the message store, and ensure the durability of the content of \a messages.
 
     The request has the identifier \a action.
 */
@@ -1150,6 +1150,44 @@ void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &a
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
+
+/*!
+    \fn bool QMailMessageServer::connectionDown()
+
+    Signal that is emitted when the connection to the messageserver has been destroyed.
+
+    \sa reconnectionTimeout()
+*/
+
+/*!
+    \fn bool QMailMessageServer::reconnectionTimeout()
+
+    Signal that is emitted when the connection to the messageserver has been lost.
+
+    \sa connectionDown()
+*/
+
+/*!
+    \fn void QMailMessageServer::messagesAdded(quint64 action, const QMailMessageIdList& ids);
+
+    Signal that is emitted when messages have been asynchronously added to the message store.
+    
+    \a action is the identifier of the request that caused the messages to be added, and \a ids
+    is a list of identifiers of messages that have been added.
+
+    \sa QMailStorageAction::addMessages()
+*/
+
+/*!
+    \fn void QMailMessageServer::messagesUpdated(quint64 action, const QMailMessageIdList& ids);
+
+    Signal that is emitted when messages have been asynchronously updated in the message store.
+
+    \a action is the identifier of the request that caused the messages to be updated, and \a ids
+    is a list of identifiers of messages that have been updated.
+
+    \sa QMailStorageAction::updateMessages()
+*/
 
 #include "qmailmessageserver.moc"
 
