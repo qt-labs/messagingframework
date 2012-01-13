@@ -77,6 +77,7 @@ typedef QTcpServer QCopLocalServer;
 #include <QtCore/qshareddata.h>
 #include <QtCore/qregexp.h>
 #include <qringbuffer_p.h>
+#include "qmailglobal.h"
 
 class QCopChannel;
 class QCopChannelMonitor;
@@ -104,7 +105,7 @@ QT_END_NAMESPACE
 #define QCopCmd_Ack                 13
 #define QCopCmd_StartupComplete     14
 
-class QCopClient : public QObject
+class QMF_EXPORT QCopClient : public QObject
 {
     Q_OBJECT
 
@@ -281,7 +282,7 @@ private:
     void applicationUnregistered(QCopServerAppInfo *info);
 };
 
-class QCopServerRegexp
+class QMF_EXPORT QCopServerRegexp
 {
 public:
     QCopServerRegexp(const QString& ch, QCopClient *cl);

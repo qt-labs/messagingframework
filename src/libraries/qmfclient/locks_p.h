@@ -61,6 +61,7 @@
 // clients come and go...
 
 #include <QString>
+#include "qmailglobal.h"
 
 class ProcessMutexPrivate;
 
@@ -82,7 +83,7 @@ private:
 
 class ProcessReadLockPrivate;
 
-class ProcessReadLock
+class QMF_EXPORT ProcessReadLock
 {
 public:
     ProcessReadLock(const QString &path, int id = 0);

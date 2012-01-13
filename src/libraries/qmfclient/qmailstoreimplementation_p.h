@@ -61,7 +61,7 @@
 #include <QTimer>
 
 
-class QMailStoreImplementationBase : public QObject
+class QMF_EXPORT QMailStoreImplementationBase : public QObject
 {
     Q_OBJECT
 
@@ -328,7 +328,7 @@ public:
     virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id) = 0;
 };
 
-class QMailStoreNullImplementation : public QMailStoreImplementation
+class QMF_EXPORT QMailStoreNullImplementation : public QMailStoreImplementation
 {
 public:
     QMailStoreNullImplementation(QMailStore* parent);
