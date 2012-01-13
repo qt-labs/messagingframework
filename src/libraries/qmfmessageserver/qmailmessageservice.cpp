@@ -1636,7 +1636,7 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
+bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
 {
     Q_UNUSED(messageIds)
     Q_UNUSED(spec)
@@ -2098,6 +2098,26 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
 */
 
 /*!
+    \fn void QMailMessageSource::messagesPrepared(const QMailMessageIdList &ids, quint64 action)
+
+    \overload
+    
+    Concurrent version of messagesPrepared() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariant &data, quint64 action)
+
+    \overload
+    
+    Concurrent version of protocolResponse() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
     \fn void QMailMessageSource::newMessagesAvailable(quint64 action)
 
     \overload
@@ -2135,6 +2155,26 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     Concurrent version of cancelOperation().
     
     The request to be cancelled has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageService::activityChanged(QMailServiceAction::Activity activity, quint64 action)
+
+    \overload
+    
+    Concurrent version of activityChanged() signal.
+    
+    The generating request has identifier \a action.
+*/
+
+/*!
+    \fn void QMailMessageService::statusChanged(const QMailServiceAction::Status status, quint64 action)
+
+    \overload
+    
+    Concurrent version of statusChanged() signal.
+    
+    The generating request has identifier \a action.
 */
 
 /*!
