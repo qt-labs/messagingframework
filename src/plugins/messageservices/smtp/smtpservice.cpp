@@ -124,7 +124,7 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
 
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
-    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
+    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
 
     _client.setAccount(accountId);
@@ -172,9 +172,9 @@ void SmtpService::errorOccurred(int code, const QString &text)
     emit actionCompleted(false);
 }
 
-void SmtpService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
+void SmtpService::errorOccurred(const QMailServiceAction::Status & status, const QString &text)
 {
-    updateStatus(code, text, _client.account());
+    updateStatus(status.errorCode, text, _client.account(), status.folderId, status.messageId);
     emit actionCompleted(false);
 }
 
