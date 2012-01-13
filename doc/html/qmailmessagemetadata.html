@@ -48,6 +48,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#preview">preview</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailTimeStamp </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#receivedDate">receivedDate</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QList&lt;QMailAddress&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#recipients">recipients</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#removeCustomField">removeCustomField</a></b> ( const QString &amp; <i>name</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual ResponseType </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#responseType">responseType</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailFolderId </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#restoreFolderId">restoreFolderId</a></b> () const</td></tr>
@@ -78,12 +79,9 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setStatus">setStatus</a></b> ( quint64 <i>newStatus</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setStatus-2">setStatus</a></b> ( quint64 <i>mask</i>, bool <i>set</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setSubject">setSubject</a></b> ( const QString &amp; <i>subject</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setTo">setTo</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>toList</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setTo-2">setTo</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#size">size</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#status">status</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#subject">subject</a></b> () const</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual QList&lt;QMailAddress&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#to">to</a></b> () const</td></tr>
 </table>
 <hr />
 <a name="static-public-members"></a>
@@ -118,6 +116,13 @@
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#Trash-var">Trash</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const quint64 &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#UnloadedData-var">UnloadedData</a></b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#statusMask">statusMask</a></b> ( const QString &amp; <i>flagName</i> )</td></tr>
+</table>
+<hr />
+<a name="protected-functions"></a>
+<h2>Protected Functions</h2>
+<table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setRecipients">setRecipients</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>toList</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagemetadata.html#setRecipients-2">setRecipients</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
 </table>
 <a name="details"></a>
 <hr />
@@ -196,6 +201,9 @@
 <h3 class="fn"><a name="receivedDate"></a><a href="qmailtimestamp.html">QMailTimeStamp</a> QMailMessageMetaData::receivedDate () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns the timestamp placed in the message during reception by the messageserver, if present; otherwise returns an empty timestamp.</p>
 <p>See also <a href="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</a>().</p>
+<h3 class="fn"><a name="recipients"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessageMetaData::recipients () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns the list of all recipients for the message.</p>
+<p>See also <a href="qmailmessagemetadata.html#setRecipients">setRecipients</a>() and <a href="qmailaddress.html">QMailAddress</a>.</p>
 <h3 class="fn"><a name="removeCustomField"></a>void QMailMessageMetaData::removeCustomField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
 <p>Removes the custom field named <i>name</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#customField">customField</a>() and <a href="qmailmessagemetadata.html#customFields">customFields</a>().</p>
@@ -264,6 +272,11 @@
 <h3 class="fn"><a name="setReceivedDate"></a>void QMailMessageMetaData::setReceivedDate ( const <a href="qmailtimestamp.html">QMailTimeStamp</a> &amp; <i>timeStamp</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the timestamp indicating the time of message reception by the messageserver to <i>timeStamp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#receivedDate">receivedDate</a>().</p>
+<h3 class="fn"><a name="setRecipients"></a>void QMailMessageMetaData::setRecipients ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; &amp; <i>toList</i> )&nbsp;&nbsp;<tt> [virtual protected]</tt></h3>
+<p>Sets the list of recipients for the message to <i>toList</i>.</p>
+<p>See also <a href="qmailmessagemetadata.html#recipients">recipients</a>().</p>
+<h3 class="fn"><a name="setRecipients-2"></a>void QMailMessageMetaData::setRecipients ( const <a href="qmailaddress.html">QMailAddress</a> &amp; <i>address</i> )&nbsp;&nbsp;<tt> [virtual protected]</tt></h3>
+<p>Sets the list of primary recipients for the message to contain <i>address</i>.</p>
 <h3 class="fn"><a name="setResponseType"></a>void QMailMessageMetaData::setResponseType ( <a href="qmailmessagemetadatafwd.html#ResponseType-enum">ResponseType</a> <i>type</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the type of response that this message was created as to <i>type</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#responseType">responseType</a>() and <a href="qmailmessagemetadata.html#setInResponseTo">setInResponseTo</a>().</p>
@@ -288,11 +301,6 @@
 <h3 class="fn"><a name="setSubject"></a>void QMailMessageMetaData::setSubject ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>subject</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Sets the subject of the message to <i>subject</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#subject">subject</a>().</p>
-<h3 class="fn"><a name="setTo"></a>void QMailMessageMetaData::setTo ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; &amp; <i>toList</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Sets the list of primary recipients for the message to <i>toList</i>.</p>
-<p>See also <a href="qmailmessagemetadata.html#to">to</a>().</p>
-<h3 class="fn"><a name="setTo-2"></a>void QMailMessageMetaData::setTo ( const <a href="qmailaddress.html">QMailAddress</a> &amp; <i>address</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Sets the list of primary recipients for the message to contain <i>address</i>.</p>
 <h3 class="fn"><a name="size"></a><a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> QMailMessageMetaData::size () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns the complete size of the message as indicated on the originating server.</p>
 <p>See also <a href="qmailmessagemetadata.html#setSize">setSize</a>().</p>
@@ -305,9 +313,6 @@
 <h3 class="fn"><a name="subject"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessageMetaData::subject () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns the subject of the message, if present; otherwise returns an empty string.</p>
 <p>See also <a href="qmailmessagemetadata.html#setSubject">setSubject</a>().</p>
-<h3 class="fn"><a name="to"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessageMetaData::to () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Returns the list of primary recipients for the message.</p>
-<p>See also <a href="qmailmessagemetadata.html#setTo">setTo</a>() and <a href="qmailaddress.html">QMailAddress</a>.</p>
 <hr />
 <h2>Member Variable Documentation</h2>
 <h3 class="fn"><a name="ContentAvailable-var"></a>const <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> &amp; QMailMessageMetaData::ContentAvailable</h3>

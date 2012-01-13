@@ -24,7 +24,7 @@
 <h2>Public Functions</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">virtual </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#dtor.QMailCodec">~QMailCodec</a></b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#decode">decode</a></b> ( QTextStream &amp; <i>out</i>, QDataStream &amp; <i>in</i>, const QString &amp; <i>charset</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#decode">decode</a></b> ( QTextStream &amp; <i>out</i>, QDataStream &amp; <i>in</i>, const QString &amp; <i>icharset</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#decode-2">decode</a></b> ( QDataStream &amp; <i>out</i>, QDataStream &amp; <i>in</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#decode-3">decode</a></b> ( const QByteArray &amp; <i>input</i>, const QString &amp; <i>charset</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QByteArray </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#decode-4">decode</a></b> ( const QByteArray &amp; <i>input</i> )</td></tr>
@@ -38,6 +38,8 @@
 <a name="static-public-members"></a>
 <h2>Static Public Members</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#autoDetectEncoding">autoDetectEncoding</a></b> ( const QByteArray &amp; <i>text</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QByteArray </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#bestCompatibleCharset">bestCompatibleCharset</a></b> ( const QByteArray &amp; <i>charset</i>, bool <i>translateAscii</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QTextCodec * </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#codecForName">codecForName</a></b> ( const QByteArray &amp; <i>charset</i>, bool <i>translateAscii</i> = true )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#copy">copy</a></b> ( QDataStream &amp; <i>out</i>, QDataStream &amp; <i>in</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcodec.html#copy-2">copy</a></b> ( QTextStream &amp; <i>out</i>, QTextStream &amp; <i>in</i> )</td></tr>
@@ -62,15 +64,21 @@
 <h2>Member Function Documentation</h2>
 <h3 class="fn"><a name="dtor.QMailCodec"></a>QMailCodec::~QMailCodec ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Destroys a <a href="qmailcodec.html">QMailCodec</a> instance.</p>
+<h3 class="fn"><a name="autoDetectEncoding"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailCodec::autoDetectEncoding ( const <a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> &amp; <i>text</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns the charset of <i>text</i> using automatic detection; or an empty string if detection fails.</p>
+<p>See also <a href="http://doc.trolltech.com/4.5/qtextcodec.html#codecForName">QTextCodec::codecForName</a>().</p>
+<h3 class="fn"><a name="bestCompatibleCharset"></a><a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> QMailCodec::bestCompatibleCharset ( const <a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> &amp; <i>charset</i>, bool <i>translateAscii</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a charset that may be better supported than the specified <i>charset</i>. If charset is ascii and <i>translateAscii</i> is true, then the Latin-1 codec will be returned.</p>
 <h3 class="fn"><a name="codecForName"></a><a href="http://doc.trolltech.com/4.5/qtextcodec.html">QTextCodec</a> * QMailCodec::codecForName ( const <a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> &amp; <i>charset</i>, bool <i>translateAscii</i> = true )&nbsp;&nbsp;<tt> [static]</tt></h3>
-<p>Returns a pointer to an appropriate <a href="http://doc.trolltech.com/4.5/qtextcodec.html">QTextCodec</a> based on <i>charset</i>. If charset is ascii and <i>translateAscii</i> is true, it will use the Latin-1 codec.</p>
-<p>Returns 0 if could not locate a codec.</p>
+<p>Returns a pointer to an appropriate <a href="http://doc.trolltech.com/4.5/qtextcodec.html">QTextCodec</a> based on <i>charset</i>. If charset is ascii and <i>translateAscii</i> is true, then the Latin-1 codec will be returned.</p>
+<p>Returns 0 if a codec could not be found.</p>
+<p>See also <a href="qmailcodec.html#autoDetectEncoding">QMailCodec::autoDetectEncoding</a>().</p>
 <h3 class="fn"><a name="copy"></a>void QMailCodec::copy ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>out</i>, <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>in</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Writes the data read from the stream <i>in</i> to the stream <i>out</i>, without conversion.</p>
 <h3 class="fn"><a name="copy-2"></a>void QMailCodec::copy ( <a href="http://doc.trolltech.com/4.5/qtextstream.html">QTextStream</a> &amp; <i>out</i>, <a href="http://doc.trolltech.com/4.5/qtextstream.html">QTextStream</a> &amp; <i>in</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Writes the data read from the stream <i>in</i> to the stream <i>out</i>, without conversion.</p>
-<h3 class="fn"><a name="decode"></a>void QMailCodec::decode ( <a href="http://doc.trolltech.com/4.5/qtextstream.html">QTextStream</a> &amp; <i>out</i>, <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>in</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>charset</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Writes the data read from the stream <i>in</i> to the stream <i>out</i>, converting from a sequence of 7-bit ASCII characters. The characters read from <i>in</i> are decoded from the text encoding <i>charset</i> to unicode.</p>
+<h3 class="fn"><a name="decode"></a>void QMailCodec::decode ( <a href="http://doc.trolltech.com/4.5/qtextstream.html">QTextStream</a> &amp; <i>out</i>, <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>in</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>icharset</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Writes the data read from the stream <i>in</i> to the stream <i>out</i>, converting from a sequence of 7-bit ASCII characters. The characters read from <i>in</i> are decoded from the text encoding <i>icharset</i> to unicode.</p>
 <p>See also <a href="http://doc.trolltech.com/4.5/qtextcodec.html#codecForName">QTextCodec::codecForName</a>().</p>
 <h3 class="fn"><a name="decode-2"></a>void QMailCodec::decode ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>out</i>, <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>in</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Writes the data read from the stream <i>in</i> to the stream <i>out</i>, converting from a sequence of 7-bit ASCII characters.</p>

@@ -7,6 +7,7 @@
         <keyword ref="qmailmessagepartcontainer-location.html#isValid">isValid</keyword>
         <keyword ref="qmailmessagepartcontainer-location.html#setContainingMessageId">setContainingMessageId</keyword>
         <keyword ref="qmailmessagepartcontainer-location.html#toString">toString</keyword>
+        <keyword ref="qmailmessagepartcontainer-location.html#operator-eq-eq">operator==</keyword>
         <section ref="qmailmessagepartcontainer-location-members.html" title="List of all members"/>
     </section>
     <section ref="qmail.html" title="QMail Namespace Reference">
@@ -22,8 +23,10 @@
         <keyword ref="qmail.html#extensionsForMimeType">extensionsForMimeType</keyword>
         <keyword ref="qmail.html#fileLock">fileLock</keyword>
         <keyword ref="qmail.html#fileUnlock">fileUnlock</keyword>
+        <keyword ref="qmail.html#lastDbUpdated">lastDbUpdated</keyword>
         <keyword ref="qmail.html#lastSystemErrorMessage">lastSystemErrorMessage</keyword>
         <keyword ref="qmail.html#messageIdentifiers">messageIdentifiers</keyword>
+        <keyword ref="qmail.html#messageServerLockFilePath">messageServerLockFilePath</keyword>
         <keyword ref="qmail.html#messageServerPath">messageServerPath</keyword>
         <keyword ref="qmail.html#messageSettingsPath">messageSettingsPath</keyword>
         <keyword ref="qmail.html#mimeTypeFromFileName">mimeTypeFromFileName</keyword>
@@ -66,6 +69,7 @@
         <keyword ref="qmailaccount.html#CanCreateFolders-var">CanCreateFolders</keyword>
         <keyword ref="qmailaccount.html#CanReferenceExternalData-var">CanReferenceExternalData</keyword>
         <keyword ref="qmailaccount.html#CanRetrieve-var">CanRetrieve</keyword>
+        <keyword ref="qmailaccount.html#CanSearchOnServer-var">CanSearchOnServer</keyword>
         <keyword ref="qmailaccount.html#CanTransmit-var">CanTransmit</keyword>
         <keyword ref="qmailaccount.html#CanTransmitViaReference-var">CanTransmitViaReference</keyword>
         <keyword ref="qmailaccount.html#Enabled-var">Enabled</keyword>
@@ -215,6 +219,7 @@
         <keyword ref="qmailactionobserver.html">QMailActionObserver</keyword>
         <keyword ref="qmailactionobserver.html#actions">actions</keyword>
         <keyword ref="qmailactionobserver.html#actionsChanged">actionsChanged</keyword>
+        <keyword ref="qmailactionobserver.html#listActionsRequest">listActionsRequest</keyword>
         <section ref="qmailactionobserver-members.html" title="List of all members"/>
     </section>
     <section ref="qmailaddress.html" title="QMailAddress Class Reference">
@@ -250,6 +255,8 @@
     </section>
     <section ref="qmailcodec.html" title="QMailCodec Class Reference">
         <keyword ref="qmailcodec.html">QMailCodec</keyword>
+        <keyword ref="qmailcodec.html#autoDetectEncoding">autoDetectEncoding</keyword>
+        <keyword ref="qmailcodec.html#bestCompatibleCharset">bestCompatibleCharset</keyword>
         <keyword ref="qmailcodec.html#codecForName">codecForName</keyword>
         <keyword ref="qmailcodec.html#copy">copy</keyword>
         <keyword ref="qmailcodec.html#decode">decode</keyword>
@@ -264,6 +271,7 @@
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</keyword>
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::DeferDurability</keyword>
         <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::EnsureDurability</keyword>
+        <keyword ref="qmailcontentmanager.html#DurabilityRequirement-enum">QMailContentManager::NoDurability</keyword>
         <keyword ref="qmailcontentmanager.html#ManagerRole-enum">ManagerRole</keyword>
         <keyword ref="qmailcontentmanager.html#ManagerRole-enum">QMailContentManager::IndexRole</keyword>
         <keyword ref="qmailcontentmanager.html#ManagerRole-enum">QMailContentManager::StorageRole</keyword>
@@ -384,6 +392,7 @@
         <keyword ref="qmailfolder.html#ChildCreationPermitted-var">ChildCreationPermitted</keyword>
         <keyword ref="qmailfolder.html#DeletionPermitted-var">DeletionPermitted</keyword>
         <keyword ref="qmailfolder.html#Drafts-var">Drafts</keyword>
+        <keyword ref="qmailfolder.html#Favourite-var">Favourite</keyword>
         <keyword ref="qmailfolder.html#Incoming-var">Incoming</keyword>
         <keyword ref="qmailfolder.html#Junk-var">Junk</keyword>
         <keyword ref="qmailfolder.html#MessagesPermitted-var">MessagesPermitted</keyword>
@@ -530,11 +539,13 @@
         <keyword ref="qmailmessage.html#externalLocationReference">externalLocationReference</keyword>
         <keyword ref="qmailmessage.html#fromRfc2822">fromRfc2822</keyword>
         <keyword ref="qmailmessage.html#fromRfc2822File">fromRfc2822File</keyword>
+        <keyword ref="qmailmessage.html#hasCalendarInvitation">hasCalendarInvitation</keyword>
         <keyword ref="qmailmessage.html#hasRecipients">hasRecipients</keyword>
         <keyword ref="qmailmessage.html#inReplyTo">inReplyTo</keyword>
         <keyword ref="qmailmessage.html#indicativeSize">indicativeSize</keyword>
         <keyword ref="qmailmessage.html#partAt">partAt</keyword>
         <keyword ref="qmailmessage.html#partialContentAvailable">partialContentAvailable</keyword>
+        <keyword ref="qmailmessage.html#preview">preview</keyword>
         <keyword ref="qmailmessage.html#recipients">recipients</keyword>
         <keyword ref="qmailmessage.html#removeHeaderField">removeHeaderField</keyword>
         <keyword ref="qmailmessage.html#replyTo">replyTo</keyword>
@@ -550,6 +561,7 @@
         <keyword ref="qmailmessage.html#setReplyTo">setReplyTo</keyword>
         <keyword ref="qmailmessage.html#setSubject">setSubject</keyword>
         <keyword ref="qmailmessage.html#setTo">setTo</keyword>
+        <keyword ref="qmailmessage.html#to">to</keyword>
         <keyword ref="qmailmessage.html#toRfc2822">toRfc2822</keyword>
         <keyword ref="qmailmessage.html#toRfc2822Chunks">toRfc2822Chunks</keyword>
         <section ref="qmailmessage-members.html" title="List of all members"/>
@@ -739,6 +751,7 @@
         <keyword ref="qmailmessagekey.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailmessagekey.html#parentFolderId">parentFolderId</keyword>
         <keyword ref="qmailmessagekey.html#parentThreadId">parentThreadId</keyword>
+        <keyword ref="qmailmessagekey.html#preview">preview</keyword>
         <keyword ref="qmailmessagekey.html#previousParentFolderId">previousParentFolderId</keyword>
         <keyword ref="qmailmessagekey.html#receptionTimeStamp">receptionTimeStamp</keyword>
         <keyword ref="qmailmessagekey.html#recipients">recipients</keyword>
@@ -766,8 +779,6 @@
     </section>
     <section ref="qmailmessagelistmodel.html" title="QMailMessageListModel Class Reference">
         <keyword ref="qmailmessagelistmodel.html">QMailMessageListModel</keyword>
-        <keyword ref="qmailmessagelistmodel.html#generateIndex">generateIndex</keyword>
-        <keyword ref="qmailmessagelistmodel.html#impl">impl</keyword>
         <keyword ref="qmailmessagelistmodel.html#index">index</keyword>
         <keyword ref="qmailmessagelistmodel.html#parent">parent</keyword>
         <section ref="qmailmessagelistmodel-members.html" title="List of all members"/>
@@ -795,6 +806,7 @@
         <keyword ref="qmailmessagemetadata.html#preview">preview</keyword>
         <keyword ref="qmailmessagemetadata.html#previousParentFolderId">previousParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#receivedDate">receivedDate</keyword>
+        <keyword ref="qmailmessagemetadata.html#recipients">recipients</keyword>
         <keyword ref="qmailmessagemetadata.html#removeCustomField">removeCustomField</keyword>
         <keyword ref="qmailmessagemetadata.html#responseType">responseType</keyword>
         <keyword ref="qmailmessagemetadata.html#restoreFolderId">restoreFolderId</keyword>
@@ -817,6 +829,7 @@
         <keyword ref="qmailmessagemetadata.html#setPreview">setPreview</keyword>
         <keyword ref="qmailmessagemetadata.html#setPreviousParentFolderId">setPreviousParentFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#setReceivedDate">setReceivedDate</keyword>
+        <keyword ref="qmailmessagemetadata.html#setRecipients">setRecipients</keyword>
         <keyword ref="qmailmessagemetadata.html#setResponseType">setResponseType</keyword>
         <keyword ref="qmailmessagemetadata.html#setRestoreFolderId">setRestoreFolderId</keyword>
         <keyword ref="qmailmessagemetadata.html#setRfcId">setRfcId</keyword>
@@ -824,12 +837,10 @@
         <keyword ref="qmailmessagemetadata.html#setSize">setSize</keyword>
         <keyword ref="qmailmessagemetadata.html#setStatus">setStatus</keyword>
         <keyword ref="qmailmessagemetadata.html#setSubject">setSubject</keyword>
-        <keyword ref="qmailmessagemetadata.html#setTo">setTo</keyword>
         <keyword ref="qmailmessagemetadata.html#size">size</keyword>
         <keyword ref="qmailmessagemetadata.html#status">status</keyword>
         <keyword ref="qmailmessagemetadata.html#statusMask">statusMask</keyword>
         <keyword ref="qmailmessagemetadata.html#subject">subject</keyword>
-        <keyword ref="qmailmessagemetadata.html#to">to</keyword>
         <keyword ref="qmailmessagemetadata.html#ContentAvailable-var">ContentAvailable</keyword>
         <keyword ref="qmailmessagemetadata.html#Draft-var">Draft</keyword>
         <keyword ref="qmailmessagemetadata.html#Forwarded-var">Forwarded</keyword>
@@ -963,6 +974,7 @@
     </section>
     <section ref="qmailmessagepartcontainer.html" title="QMailMessagePartContainer Class Reference">
         <keyword ref="qmailmessagepartcontainer.html">QMailMessagePartContainer</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#addAttachments">addAttachments</keyword>
         <keyword ref="qmailmessagepartcontainer.html#appendHeaderField">appendHeaderField</keyword>
         <keyword ref="qmailmessagepartcontainer.html#appendPart">appendPart</keyword>
         <keyword ref="qmailmessagepartcontainer.html#body">body</keyword>
@@ -972,6 +984,7 @@
         <keyword ref="qmailmessagepartcontainer.html#contentType">contentType</keyword>
         <keyword ref="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</keyword>
         <keyword ref="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#findInlineImageLocations">findInlineImageLocations</keyword>
         <keyword ref="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</keyword>
         <keyword ref="qmailmessagepartcontainer.html#foreachPart">foreachPart</keyword>
         <keyword ref="qmailmessagepartcontainer.html#hasAttachments">hasAttachments</keyword>
@@ -996,6 +1009,7 @@
         <keyword ref="qmailmessagepartcontainer.html#setBoundary">setBoundary</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</keyword>
+        <keyword ref="qmailmessagepartcontainer.html#setInlineImages">setInlineImages</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</keyword>
         <keyword ref="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</keyword>
         <keyword ref="qmailmessagepartcontainer.html#transferEncoding">transferEncoding</keyword>
@@ -1040,12 +1054,12 @@
         <keyword ref="qmailmessageserver.html#actionStarted">actionStarted</keyword>
         <keyword ref="qmailmessageserver.html#actionsListed">actionsListed</keyword>
         <keyword ref="qmailmessageserver.html#activityChanged">activityChanged</keyword>
+        <keyword ref="qmailmessageserver.html#addMessages">addMessages</keyword>
         <keyword ref="qmailmessageserver.html#cancelSearch">cancelSearch</keyword>
         <keyword ref="qmailmessageserver.html#cancelTransfer">cancelTransfer</keyword>
+        <keyword ref="qmailmessageserver.html#connectionDown">connectionDown</keyword>
         <keyword ref="qmailmessageserver.html#connectivityChanged">connectivityChanged</keyword>
-        <keyword ref="qmailmessageserver.html#copyMessages">copyMessages</keyword>
-        <keyword ref="qmailmessageserver.html#createFolder">createFolder</keyword>
-        <keyword ref="qmailmessageserver.html#deleteFolder">deleteFolder</keyword>
+        <keyword ref="qmailmessageserver.html#countMessages">countMessages</keyword>
         <keyword ref="qmailmessageserver.html#deleteMessages">deleteMessages</keyword>
         <keyword ref="qmailmessageserver.html#exportUpdates">exportUpdates</keyword>
         <keyword ref="qmailmessageserver.html#flagMessages">flagMessages</keyword>
@@ -1054,27 +1068,42 @@
         <keyword ref="qmailmessageserver.html#folderRenamed">folderRenamed</keyword>
         <keyword ref="qmailmessageserver.html#listActions">listActions</keyword>
         <keyword ref="qmailmessageserver.html#matchingMessageIds">matchingMessageIds</keyword>
+        <keyword ref="qmailmessageserver.html#messagesAdded">messagesAdded</keyword>
         <keyword ref="qmailmessageserver.html#messagesCopied">messagesCopied</keyword>
+        <keyword ref="qmailmessageserver.html#messagesCount">messagesCount</keyword>
         <keyword ref="qmailmessageserver.html#messagesDeleted">messagesDeleted</keyword>
         <keyword ref="qmailmessageserver.html#messagesFailedTransmission">messagesFailedTransmission</keyword>
         <keyword ref="qmailmessageserver.html#messagesFlagged">messagesFlagged</keyword>
         <keyword ref="qmailmessageserver.html#messagesMoved">messagesMoved</keyword>
         <keyword ref="qmailmessageserver.html#messagesTransmitted">messagesTransmitted</keyword>
-        <keyword ref="qmailmessageserver.html#moveMessages">moveMessages</keyword>
+        <keyword ref="qmailmessageserver.html#messagesUpdated">messagesUpdated</keyword>
+        <keyword ref="qmailmessageserver.html#moveToFolder">moveToFolder</keyword>
+        <keyword ref="qmailmessageserver.html#moveToStandardFolder">moveToStandardFolder</keyword>
         <keyword ref="qmailmessageserver.html#newCountChanged">newCountChanged</keyword>
+        <keyword ref="qmailmessageserver.html#onlineCopyMessages">onlineCopyMessages</keyword>
+        <keyword ref="qmailmessageserver.html#onlineCreateFolder">onlineCreateFolder</keyword>
+        <keyword ref="qmailmessageserver.html#onlineDeleteFolder">onlineDeleteFolder</keyword>
+        <keyword ref="qmailmessageserver.html#onlineDeleteMessages">onlineDeleteMessages</keyword>
+        <keyword ref="qmailmessageserver.html#onlineFlagMessagesAndMoveToStandardFolder">onlineFlagMessagesAndMoveToStandardFolder</keyword>
+        <keyword ref="qmailmessageserver.html#onlineMoveMessages">onlineMoveMessages</keyword>
+        <keyword ref="qmailmessageserver.html#onlineRenameFolder">onlineRenameFolder</keyword>
         <keyword ref="qmailmessageserver.html#progressChanged">progressChanged</keyword>
         <keyword ref="qmailmessageserver.html#protocolRequest">protocolRequest</keyword>
         <keyword ref="qmailmessageserver.html#protocolRequestCompleted">protocolRequestCompleted</keyword>
         <keyword ref="qmailmessageserver.html#protocolResponse">protocolResponse</keyword>
-        <keyword ref="qmailmessageserver.html#renameFolder">renameFolder</keyword>
+        <keyword ref="qmailmessageserver.html#reconnectionTimeout">reconnectionTimeout</keyword>
+        <keyword ref="qmailmessageserver.html#remainingMessagesCount">remainingMessagesCount</keyword>
+        <keyword ref="qmailmessageserver.html#restoreToPreviousFolder">restoreToPreviousFolder</keyword>
         <keyword ref="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</keyword>
         <keyword ref="qmailmessageserver.html#retrieveAll">retrieveAll</keyword>
         <keyword ref="qmailmessageserver.html#retrieveFolderList">retrieveFolderList</keyword>
         <keyword ref="qmailmessageserver.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailmessageserver.html#retrieveMessageLists">retrieveMessageLists</keyword>
         <keyword ref="qmailmessageserver.html#retrieveMessagePart">retrieveMessagePart</keyword>
         <keyword ref="qmailmessageserver.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
         <keyword ref="qmailmessageserver.html#retrieveMessageRange">retrieveMessageRange</keyword>
         <keyword ref="qmailmessageserver.html#retrieveMessages">retrieveMessages</keyword>
+        <keyword ref="qmailmessageserver.html#rollBackUpdates">rollBackUpdates</keyword>
         <keyword ref="qmailmessageserver.html#searchCompleted">searchCompleted</keyword>
         <keyword ref="qmailmessageserver.html#searchMessages">searchMessages</keyword>
         <keyword ref="qmailmessageserver.html#shutdown">shutdown</keyword>
@@ -1083,6 +1112,7 @@
         <keyword ref="qmailmessageserver.html#synchronize">synchronize</keyword>
         <keyword ref="qmailmessageserver.html#transmissionCompleted">transmissionCompleted</keyword>
         <keyword ref="qmailmessageserver.html#transmitMessages">transmitMessages</keyword>
+        <keyword ref="qmailmessageserver.html#updateMessages">updateMessages</keyword>
         <section ref="qmailmessageserver-members.html" title="List of all members"/>
     </section>
     <section ref="qmailmessageservice.html" title="QMailMessageService Class Reference">
@@ -1268,6 +1298,7 @@
         <keyword ref="qmailmessagesource.html">QMailMessageSource</keyword>
         <keyword ref="qmailmessagesource.html#cancelSearch">cancelSearch</keyword>
         <keyword ref="qmailmessagesource.html#copyMessages">copyMessages</keyword>
+        <keyword ref="qmailmessagesource.html#countMessages">countMessages</keyword>
         <keyword ref="qmailmessagesource.html#createFolder">createFolder</keyword>
         <keyword ref="qmailmessagesource.html#deleteFolder">deleteFolder</keyword>
         <keyword ref="qmailmessagesource.html#deleteMessages">deleteMessages</keyword>
@@ -1276,6 +1307,7 @@
         <keyword ref="qmailmessagesource.html#matchingMessageIds">matchingMessageIds</keyword>
         <keyword ref="qmailmessagesource.html#messageRemovalOption">messageRemovalOption</keyword>
         <keyword ref="qmailmessagesource.html#messagesCopied">messagesCopied</keyword>
+        <keyword ref="qmailmessagesource.html#messagesCount">messagesCount</keyword>
         <keyword ref="qmailmessagesource.html#messagesDeleted">messagesDeleted</keyword>
         <keyword ref="qmailmessagesource.html#messagesFlagged">messagesFlagged</keyword>
         <keyword ref="qmailmessagesource.html#messagesMoved">messagesMoved</keyword>
@@ -1286,10 +1318,12 @@
         <keyword ref="qmailmessagesource.html#prepareMessages">prepareMessages</keyword>
         <keyword ref="qmailmessagesource.html#protocolRequest">protocolRequest</keyword>
         <keyword ref="qmailmessagesource.html#protocolResponse">protocolResponse</keyword>
+        <keyword ref="qmailmessagesource.html#remainingMessagesCount">remainingMessagesCount</keyword>
         <keyword ref="qmailmessagesource.html#renameFolder">renameFolder</keyword>
         <keyword ref="qmailmessagesource.html#retrieveAll">retrieveAll</keyword>
         <keyword ref="qmailmessagesource.html#retrieveFolderList">retrieveFolderList</keyword>
         <keyword ref="qmailmessagesource.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailmessagesource.html#retrieveMessageLists">retrieveMessageLists</keyword>
         <keyword ref="qmailmessagesource.html#retrieveMessagePart">retrieveMessagePart</keyword>
         <keyword ref="qmailmessagesource.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
         <keyword ref="qmailmessagesource.html#retrieveMessageRange">retrieveMessageRange</keyword>
@@ -1300,8 +1334,6 @@
     </section>
     <section ref="qmailmessagethreadedmodel.html" title="QMailMessageThreadedModel Class Reference">
         <keyword ref="qmailmessagethreadedmodel.html">QMailMessageThreadedModel</keyword>
-        <keyword ref="qmailmessagethreadedmodel.html#generateIndex">generateIndex</keyword>
-        <keyword ref="qmailmessagethreadedmodel.html#impl">impl</keyword>
         <keyword ref="qmailmessagethreadedmodel.html#index">index</keyword>
         <keyword ref="qmailmessagethreadedmodel.html#parent">parent</keyword>
         <section ref="qmailmessagethreadedmodel-members.html" title="List of all members"/>
@@ -1344,6 +1376,7 @@
         <keyword ref="qmailretrievalaction.html#retrieveAll">retrieveAll</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveFolderList">retrieveFolderList</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessageList">retrieveMessageList</keyword>
+        <keyword ref="qmailretrievalaction.html#retrieveMessageLists">retrieveMessageLists</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessagePart">retrieveMessagePart</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessagePartRange">retrieveMessagePartRange</keyword>
         <keyword ref="qmailretrievalaction.html#retrieveMessageRange">retrieveMessageRange</keyword>
@@ -1358,8 +1391,11 @@
         <keyword ref="qmailsearchaction.html#SearchSpecification-enum">QMailSearchAction::Remote</keyword>
         <keyword ref="qmailsearchaction.html#SearchSpecification-enum">QMailSearchAction::Local</keyword>
         <keyword ref="qmailsearchaction.html#cancelOperation">cancelOperation</keyword>
+        <keyword ref="qmailsearchaction.html#countMessages">countMessages</keyword>
         <keyword ref="qmailsearchaction.html#matchingMessageIds">matchingMessageIds</keyword>
         <keyword ref="qmailsearchaction.html#messageIdsMatched">messageIdsMatched</keyword>
+        <keyword ref="qmailsearchaction.html#messagesCount">messagesCount</keyword>
+        <keyword ref="qmailsearchaction.html#remainingMessagesCount">remainingMessagesCount</keyword>
         <keyword ref="qmailsearchaction.html#searchMessages">searchMessages</keyword>
         <keyword ref="qmailsearchaction.html#temporaryKey">temporaryKey</keyword>
         <section ref="qmailsearchaction-members.html" title="List of all members"/>
@@ -1381,6 +1417,7 @@
         <keyword ref="qmailserviceaction.html#cancelOperation">cancelOperation</keyword>
         <keyword ref="qmailserviceaction.html#connectivity">connectivity</keyword>
         <keyword ref="qmailserviceaction.html#connectivityChanged">connectivityChanged</keyword>
+        <keyword ref="qmailserviceaction.html#isRunning">isRunning</keyword>
         <keyword ref="qmailserviceaction.html#progress">progress</keyword>
         <keyword ref="qmailserviceaction.html#progressChanged">progressChanged</keyword>
         <keyword ref="qmailserviceaction.html#setStatus">setStatus</keyword>
@@ -1412,14 +1449,24 @@
     </section>
     <section ref="qmailstorageaction.html" title="QMailStorageAction Class Reference">
         <keyword ref="qmailstorageaction.html">QMailStorageAction</keyword>
-        <keyword ref="qmailstorageaction.html#copyMessages">copyMessages</keyword>
-        <keyword ref="qmailstorageaction.html#createFolder">createFolder</keyword>
-        <keyword ref="qmailstorageaction.html#deleteFolder">deleteFolder</keyword>
+        <keyword ref="qmailstorageaction.html#addMessages">addMessages</keyword>
         <keyword ref="qmailstorageaction.html#deleteMessages">deleteMessages</keyword>
         <keyword ref="qmailstorageaction.html#discardMessages">discardMessages</keyword>
         <keyword ref="qmailstorageaction.html#flagMessages">flagMessages</keyword>
-        <keyword ref="qmailstorageaction.html#moveMessages">moveMessages</keyword>
-        <keyword ref="qmailstorageaction.html#renameFolder">renameFolder</keyword>
+        <keyword ref="qmailstorageaction.html#messagesAdded">messagesAdded</keyword>
+        <keyword ref="qmailstorageaction.html#messagesUpdated">messagesUpdated</keyword>
+        <keyword ref="qmailstorageaction.html#moveToFolder">moveToFolder</keyword>
+        <keyword ref="qmailstorageaction.html#moveToStandardFolder">moveToStandardFolder</keyword>
+        <keyword ref="qmailstorageaction.html#onlineCopyMessages">onlineCopyMessages</keyword>
+        <keyword ref="qmailstorageaction.html#onlineCreateFolder">onlineCreateFolder</keyword>
+        <keyword ref="qmailstorageaction.html#onlineDeleteFolder">onlineDeleteFolder</keyword>
+        <keyword ref="qmailstorageaction.html#onlineDeleteMessages">onlineDeleteMessages</keyword>
+        <keyword ref="qmailstorageaction.html#onlineFlagMessagesAndMoveToStandardFolder">onlineFlagMessagesAndMoveToStandardFolder</keyword>
+        <keyword ref="qmailstorageaction.html#onlineMoveMessages">onlineMoveMessages</keyword>
+        <keyword ref="qmailstorageaction.html#onlineRenameFolder">onlineRenameFolder</keyword>
+        <keyword ref="qmailstorageaction.html#restoreToPreviousFolder">restoreToPreviousFolder</keyword>
+        <keyword ref="qmailstorageaction.html#rollBackUpdates">rollBackUpdates</keyword>
+        <keyword ref="qmailstorageaction.html#updateMessages">updateMessages</keyword>
         <section ref="qmailstorageaction-members.html" title="List of all members"/>
     </section>
     <section ref="qmailstore.html" title="QMailStore Class Reference">
@@ -1465,6 +1512,8 @@
         <keyword ref="qmailstore.html#countFolders">countFolders</keyword>
         <keyword ref="qmailstore.html#countMessages">countMessages</keyword>
         <keyword ref="qmailstore.html#countThreads">countThreads</keyword>
+        <keyword ref="qmailstore.html#disconnectIpc">disconnectIpc</keyword>
+        <keyword ref="qmailstore.html#ensureDurability">ensureDurability</keyword>
         <keyword ref="qmailstore.html#errorOccurred">errorOccurred</keyword>
         <keyword ref="qmailstore.html#flushIpcNotifications">flushIpcNotifications</keyword>
         <keyword ref="qmailstore.html#folder">folder</keyword>
@@ -1475,6 +1524,8 @@
         <keyword ref="qmailstore.html#foldersUpdated">foldersUpdated</keyword>
         <keyword ref="qmailstore.html#initializationState">initializationState</keyword>
         <keyword ref="qmailstore.html#instance">instance</keyword>
+        <keyword ref="qmailstore.html#ipcConnectionEstablished">ipcConnectionEstablished</keyword>
+        <keyword ref="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</keyword>
         <keyword ref="qmailstore.html#lastError">lastError</keyword>
         <keyword ref="qmailstore.html#lock">lock</keyword>
         <keyword ref="qmailstore.html#message">message</keyword>
@@ -1497,6 +1548,7 @@
         <keyword ref="qmailstore.html#queryFolders">queryFolders</keyword>
         <keyword ref="qmailstore.html#queryMessages">queryMessages</keyword>
         <keyword ref="qmailstore.html#queryThreads">queryThreads</keyword>
+        <keyword ref="qmailstore.html#reconnectIpc">reconnectIpc</keyword>
         <keyword ref="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</keyword>
         <keyword ref="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</keyword>
         <keyword ref="qmailstore.html#registerMessageStatusFlag">registerMessageStatusFlag</keyword>
@@ -1573,19 +1625,23 @@
         <keyword ref="qmailthreadkey.html">QMailThreadKey</keyword>
         <keyword ref="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">Property</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::ParentAccountId</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::ServerUid</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::UnreadCount</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::Id</keyword>
+        <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::Includes</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::MessageCount</keyword>
         <keyword ref="qmailthreadkey.html#Property-enum">QMailThreadKey::Custom</keyword>
         <keyword ref="qmailthreadkey.html#arguments">arguments</keyword>
         <keyword ref="qmailthreadkey.html#combiner">combiner</keyword>
         <keyword ref="qmailthreadkey.html#deserialize">deserialize</keyword>
         <keyword ref="qmailthreadkey.html#id">id</keyword>
+        <keyword ref="qmailthreadkey.html#includes">includes</keyword>
         <keyword ref="qmailthreadkey.html#isEmpty">isEmpty</keyword>
         <keyword ref="qmailthreadkey.html#isNegated">isNegated</keyword>
         <keyword ref="qmailthreadkey.html#isNonMatching">isNonMatching</keyword>
         <keyword ref="qmailthreadkey.html#nonMatchingKey">nonMatchingKey</keyword>
+        <keyword ref="qmailthreadkey.html#parentAccountId">parentAccountId</keyword>
         <keyword ref="qmailthreadkey.html#serialize">serialize</keyword>
         <keyword ref="qmailthreadkey.html#serverUid">serverUid</keyword>
         <keyword ref="qmailthreadkey.html#subKeys">subKeys</keyword>
@@ -1692,6 +1748,7 @@
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNotImplemented</keyword>
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrConnectionInUse</keyword>
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrLoginFailed</keyword>
+        <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrInternalServer</keyword>
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrInternalStateReset</keyword>
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrTimeout</keyword>
         <keyword ref="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrNoConnection</keyword>

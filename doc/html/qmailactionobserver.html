@@ -26,9 +26,10 @@
 <tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailactionobserver.html#QMailActionObserver">QMailActionObserver</a></b> ( QObject * <i>parent</i> = 0 )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual </td><td class="memItemRight" valign="bottom"><b><a href="qmailactionobserver.html#dtor.QMailActionObserver">~QMailActionObserver</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QList&lt;QSharedPointer&lt;QMailActionInfo&gt; &gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailactionobserver.html#actions">actions</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailactionobserver.html#listActionsRequest">listActionsRequest</a></b> ()</td></tr>
 </table>
 <ul>
-<li><div bar="2" class="fn"></div>4 public functions inherited from <a href="qmailserviceaction.html#public-functions">QMailServiceAction</a></li>
+<li><div bar="2" class="fn"></div>5 public functions inherited from <a href="qmailserviceaction.html#public-functions">QMailServiceAction</a></li>
 <li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
 </ul>
 <hr />
@@ -71,6 +72,8 @@
 <p>This signal is emitted whenever the list of actions we are observing changes. This can be for three reasons: actions have started, actions have finished or the action list has just been initialized.</p>
 <p>New list given by <i>newActions</i></p>
 <p>See also <a href="qmailactionobserver.html#actions">actions</a>().</p>
+<h3 class="fn"><a name="listActionsRequest"></a>void QMailActionObserver::listActionsRequest ()</h3>
+<p>Makes request of running actions. Result will be returned with <a href="qmailactionobserver.html#actionsChanged">actionsChanged</a>() signal.</p>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>

@@ -31,11 +31,11 @@
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#contains">contains</a></b> ( const QMailMessagePart::Location &amp; <i>location</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#contentSize">contentSize</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#externalLocationReference">externalLocationReference</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#hasCalendarInvitation">hasCalendarInvitation</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#hasRecipients">hasRecipients</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#inReplyTo">inReplyTo</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const QMailMessagePart &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#partAt">partAt</a></b> ( const QMailMessagePart::Location &amp; <i>location</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessagePart &amp; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#partAt-2">partAt</a></b> ( const QMailMessagePart::Location &amp; <i>location</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual QList&lt;QMailAddress&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#recipients">recipients</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailAddress </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#replyTo">replyTo</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setBcc">setBcc</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>bccList</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setCc">setCc</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>ccList</i> )</td></tr>
@@ -43,6 +43,9 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setExternalLocationReference">setExternalLocationReference</a></b> ( const QString &amp; <i>location</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setInReplyTo">setInReplyTo</a></b> ( const QString &amp; <i>messageId</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setReplyTo">setReplyTo</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setTo">setTo</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>toList</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setTo-2">setTo</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QList&lt;QMailAddress&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#to">to</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QByteArray </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#toRfc2822">toRfc2822</a></b> ( EncodingFormat <i>format</i> = TransmissionFormat ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#toRfc2822-2">toRfc2822</a></b> ( QDataStream &amp; <i>out</i>, EncodingFormat <i>format</i> = TransmissionFormat ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QList&lt;QMailMessage::MessageChunk&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#toRfc2822Chunks">toRfc2822Chunks</a></b> ( EncodingFormat <i>format</i> = TransmissionFormat ) const</td></tr>
@@ -56,6 +59,8 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#contentAvailable">contentAvailable</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual uint </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#indicativeSize">indicativeSize</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#partialContentAvailable">partialContentAvailable</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QString </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#preview">preview</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QList&lt;QMailAddress&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#recipients">recipients</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#removeHeaderField">removeHeaderField</a></b> ( const QString &amp; <i>id</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setDate">setDate</a></b> ( const QMailTimeStamp &amp; <i>timeStamp</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setFrom">setFrom</a></b> ( const QMailAddress &amp; <i>from</i> )</td></tr>
@@ -63,12 +68,10 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setHeaderField-2">setHeaderField</a></b> ( const QMailMessageHeaderField &amp; <i>field</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setId">setId</a></b> ( const QMailMessageId &amp; <i>id</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setSubject">setSubject</a></b> ( const QString &amp; <i>subject</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setTo">setTo</a></b> ( const QList&lt;QMailAddress&gt; &amp; <i>toList</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessage.html#setTo-2">setTo</a></b> ( const QMailAddress &amp; <i>address</i> )</td></tr>
 </table>
 <ul>
-<li><div bar="2" class="fn"></div>57 public functions inherited from <a href="qmailmessagemetadata.html#public-functions">QMailMessageMetaData</a></li>
-<li><div bar="2" class="fn"></div>40 public functions inherited from <a href="qmailmessagepartcontainer.html#public-functions">QMailMessagePartContainer</a></li>
+<li><div bar="2" class="fn"></div>55 public functions inherited from <a href="qmailmessagemetadata.html#public-functions">QMailMessageMetaData</a></li>
+<li><div bar="2" class="fn"></div>44 public functions inherited from <a href="qmailmessagepartcontainer.html#public-functions">QMailMessagePartContainer</a></li>
 </ul>
 <hr />
 <a name="static-public-members"></a>
@@ -80,6 +83,10 @@
 <ul>
 <li><div bar="2" class="fn"></div>29 static public members inherited from <a href="qmailmessagemetadata.html#static-public-members">QMailMessageMetaData</a></li>
 <li><div bar="2" class="fn"></div>2 static public members inherited from <a href="qmailmessagepartcontainer.html#static-public-members">QMailMessagePartContainer</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li><div class="fn"></div>2 protected functions inherited from <a href="qmailmessagemetadata.html#protected-functions">QMailMessageMetaData</a></li>
 </ul>
 <a name="details"></a>
 <hr />
@@ -105,10 +112,10 @@
 <p>Reimplemented from <a href="qmailmessagepartcontainer.html#appendHeaderField-2">QMailMessagePartContainer::appendHeaderField</a>().</p>
 <h3 class="fn"><a name="bcc"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessage::bcc () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns a list of all the bcc (blind carbon copy) recipients specified for the message.</p>
-<p>See also <a href="qmailmessage.html#setBcc">setBcc</a>(), <a href="qmailmessagemetadata.html#to">to</a>(), <a href="qmailmessage.html#cc">cc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
+<p>See also <a href="qmailmessage.html#setBcc">setBcc</a>(), <a href="qmailmessage.html#to">to</a>(), <a href="qmailmessage.html#cc">cc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
 <h3 class="fn"><a name="cc"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessage::cc () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns a list of all the cc (carbon copy) recipients specified for the message.</p>
-<p>See also <a href="qmailmessage.html#setCc">setCc</a>(), <a href="qmailmessagemetadata.html#to">to</a>(), <a href="qmailmessage.html#bcc">bcc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
+<p>See also <a href="qmailmessage.html#setCc">setCc</a>(), <a href="qmailmessage.html#to">to</a>(), <a href="qmailmessage.html#bcc">bcc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
 <h3 class="fn"><a name="contains"></a>bool QMailMessage::contains ( const <a href="qmailmessagepartcontainer-location.html">QMailMessagePart::Location</a> &amp; <i>location</i> ) const</h3>
 <p>Returns true if the message contains a part with the location <i>location</i>.</p>
 <h3 class="fn"><a name="contentAvailable"></a>bool QMailMessage::contentAvailable () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
@@ -123,6 +130,8 @@
 <p>Constructs a mail message from the RFC 2822 data contained in <i>byteArray</i>.</p>
 <h3 class="fn"><a name="fromRfc2822File"></a>QMailMessage QMailMessage::fromRfc2822File ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>fileName</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Constructs a mail message from the RFC 2822 data contained in the file <i>fileName</i>.</p>
+<h3 class="fn"><a name="hasCalendarInvitation"></a>bool QMailMessage::hasCalendarInvitation () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns true if the message contains a calendar invitation; otherwise returns false.</p>
 <h3 class="fn"><a name="hasRecipients"></a>bool QMailMessage::hasRecipients () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Returns true if there are any recipients (either To, CC or BCC addresses) defined for this message; otherwise returns false.</p>
 <h3 class="fn"><a name="inReplyTo"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessage::inReplyTo () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
@@ -136,9 +145,12 @@
 <p>Returns a non-const reference to the part at the location <i>location</i> within the message.</p>
 <h3 class="fn"><a name="partialContentAvailable"></a>bool QMailMessage::partialContentAvailable () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Reimplemented from <a href="qmailmessagemetadata.html#partialContentAvailable">QMailMessageMetaData::partialContentAvailable</a>().</p>
+<h3 class="fn"><a name="preview"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMailMessage::preview () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="qmailmessagemetadata.html#preview">QMailMessageMetaData::preview</a>().</p>
 <h3 class="fn"><a name="recipients"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessage::recipients () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="qmailmessagemetadata.html#recipients">QMailMessageMetaData::recipients</a>().</p>
 <p>Returns a list of all the recipients specified for the message, either as To, CC, or BCC addresses.</p>
-<p>See also <a href="qmailmessagemetadata.html#to">to</a>(), <a href="qmailmessage.html#cc">cc</a>(), <a href="qmailmessage.html#bcc">bcc</a>(), and <a href="qmailmessage.html#hasRecipients">hasRecipients</a>().</p>
+<p>See also <a href="qmailmessage.html#to">to</a>(), <a href="qmailmessage.html#cc">cc</a>(), <a href="qmailmessage.html#bcc">bcc</a>(), and <a href="qmailmessage.html#hasRecipients">hasRecipients</a>().</p>
 <h3 class="fn"><a name="removeHeaderField"></a>void QMailMessage::removeHeaderField ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>id</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Reimplemented from <a href="qmailmessagepartcontainer.html#removeHeaderField">QMailMessagePartContainer::removeHeaderField</a>().</p>
 <h3 class="fn"><a name="replyTo"></a><a href="qmailaddress.html">QMailAddress</a> QMailMessage::replyTo () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
@@ -175,9 +187,14 @@
 <h3 class="fn"><a name="setSubject"></a>void QMailMessage::setSubject ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>subject</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Reimplemented from <a href="qmailmessagemetadata.html#setSubject">QMailMessageMetaData::setSubject</a>().</p>
 <h3 class="fn"><a name="setTo"></a>void QMailMessage::setTo ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; &amp; <i>toList</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Reimplemented from <a href="qmailmessagemetadata.html#setTo">QMailMessageMetaData::setTo</a>().</p>
+<p>Set the list of to recipients for the message to <i>toList</i>.</p>
+<p>See also <a href="qmailmessage.html#to">to</a>(), <a href="qmailmessage.html#setCc">setCc</a>(), and <a href="qmailmessage.html#setBcc">setBcc</a>().</p>
 <h3 class="fn"><a name="setTo-2"></a>void QMailMessage::setTo ( const <a href="qmailaddress.html">QMailAddress</a> &amp; <i>address</i> )&nbsp;&nbsp;<tt> [virtual]</tt></h3>
-<p>Reimplemented from <a href="qmailmessagemetadata.html#setTo-2">QMailMessageMetaData::setTo</a>().</p>
+<p>Set the list of to recipients for the message to a list containing a single item <i>address</i>.</p>
+<p>See also <a href="qmailmessage.html#setCc">setCc</a>(), <a href="qmailmessage.html#setBcc">setBcc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
+<h3 class="fn"><a name="to"></a><a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="qmailaddress.html">QMailAddress</a>&gt; QMailMessage::to () const&nbsp;&nbsp;<tt> [virtual]</tt></h3>
+<p>Returns a list of all the primary recipients specified for the message.</p>
+<p>See also <a href="qmailmessage.html#setTo">setTo</a>(), <a href="qmailmessage.html#cc">cc</a>(), <a href="qmailmessage.html#bcc">bcc</a>(), and <a href="qmailaddress.html">QMailAddress</a>.</p>
 <h3 class="fn"><a name="toRfc2822"></a><a href="http://doc.trolltech.com/4.5/qbytearray.html">QByteArray</a> QMailMessage::toRfc2822 ( <a href="qmailmessagefwd.html#EncodingFormat-enum">EncodingFormat</a> <i>format</i> = TransmissionFormat ) const</h3>
 <p>Returns the message in RFC 2822 format. The encoded content will vary depending on the value of <i>format</i>.</p>
 <h3 class="fn"><a name="toRfc2822-2"></a>void QMailMessage::toRfc2822 ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>out</i>, <a href="qmailmessagefwd.html#EncodingFormat-enum">EncodingFormat</a> <i>format</i> = TransmissionFormat ) const</h3>

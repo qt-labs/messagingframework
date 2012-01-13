@@ -19,6 +19,7 @@
 <li><div class="fn">class <b><a href="qmailmessagepartcontainer-location.html">Location</a></b></div></li>
 <li><div class="fn">enum <b><a href="qmailmessagepartcontainerfwd.html#MultipartType-enum">MultipartType</a></b></div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#QMailMessagePartContainer">QMailMessagePartContainer</a></b> ( Subclass * )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#addAttachments">addAttachments</a></b> ( const QStringList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#appendHeaderField">appendHeaderField</a></b> ( const QString &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#appendHeaderField-2">appendHeaderField</a></b> ( const QMailMessageHeaderField &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#appendPart">appendPart</a></b> ( const QMailMessagePart &amp; )</div></li>
@@ -29,6 +30,7 @@
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#contentType">contentType</a></b> () const : QMailMessageContentType</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findAttachmentLocations">findAttachmentLocations</a></b> () const : QList&lt;QMailMessagePartContainer::Location&gt;</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findHtmlContainer">findHtmlContainer</a></b> () const : QMailMessagePartContainer *</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findInlineImageLocations">findInlineImageLocations</a></b> () const : QList&lt;QMailMessagePartContainer::Location&gt;</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#findPlainTextContainer">findPlainTextContainer</a></b> () const : QMailMessagePartContainer *</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart">foreachPart</a></b> ( F ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#foreachPart-2">foreachPart</a></b> ( F ) const : bool</div></li>
@@ -59,6 +61,8 @@
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHeaderField">setHeaderField</a></b> ( const QString &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHeaderField-2">setHeaderField</a></b> ( const QMailMessageHeaderField &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setHtmlAndPlainTextBody">setHtmlAndPlainTextBody</a></b> ( const QMailMessageBody &amp;, const QMailMessageBody &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setInlineImages">setInlineImages</a></b> ( const QMap&lt;QString, QString&gt; &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setInlineImages-2">setInlineImages</a></b> ( const QList&lt;const QMailMessagePart *&gt; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setMultipartType">setMultipartType</a></b> ( MultipartType )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#setPlainTextBody">setPlainTextBody</a></b> ( const QMailMessageBody &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagepartcontainer.html#transferEncoding">transferEncoding</a></b> () const : QMailMessageBody::TransferEncoding</div></li>

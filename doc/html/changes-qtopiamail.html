@@ -162,6 +162,87 @@
 
     40. Add 'QMailRetrievalAction::Auto'
 
+    41. Removed QMailMessage::latestInConversation()
+
+        Added QMailThreadId, QMailThread, QMailThreadKey and QMailThreadSortKey classes
+
+        Added 'QMailStore::addThread(QMailThread *t)',
+          'QMailStore::removeThread(const QMailThreadId &amp;id, MessageRemovalOption option = NoRemovalRecord)',
+          'QMailStore::removeThreads(const QMailThreadKey&amp; key, QMailStore::MessageRemovalOption option = NoRemovalRecord)',
+          'QMailStore::updateThread(QMailThread* t)',
+          'QMailStore::countThreads(const QMailThreadKey &amp; key = QMailThreadKey())',
+          'QMailStore::queryThreadsconst QMailThreadKey &amp;key = QMailThreadKey(), const QMailThreadSortKey &amp;sortKey = QMailThreadSortKey(), uint limit = 0, uint offset = 0) const',
+          'QMailStore::thread(const QMailThreadId &amp;id)',
+          'QMailStore::threadsAdded(const QMailThreadIdList&amp; ids)',
+          'QMailStore::threadsRemoved(const QMailThreadIdList&amp; ids)',
+          'QMailStore::threadsUpdated(const QMailThreadIdList&amp; ids)',
+          'QMailStore::threadContentsModified(const QMailThreadIdList&amp; ids)',
+          'QMailThreadId QMailMessageKey::parentThreadId() const',
+          'void QMailMessageKey::setParentThreadId(const QMailThreadId &amp;id)',
+          'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadId &amp;id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal)',
+          'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadIdList &amp;ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)' and
+          'static QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &amp;key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes)'.
+
+    42.  Change return type of 'QMailHeartBeatTimer::interval() const' from 'int' to 'QPair&lt;int, int&gt;'
+         Added QMailHeartBeatTimer::setInterval(int)
+         Remove inline keyword from QMailHeartBeatTimer member functions
+
+    43.  Binary compatibility broken in qmailthread.h (change of QMailThread d ptr type)
+
+    44.  Added dependency on libicu-dev (for autodetection of charset)
+
+    45.  Added dependency on zlib (for IMAP COMPRESS support)
+
+    46.  Added 'QMailAccount::CanSearchOnServer'.
+
+    47.  Added 'void QMailSearchAction::searchMessages(const QMailMessageKey &amp;filter, const QString &amp;bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &amp;sort)',
+           'uint QMailSearchAction::remainingMessagesCount()' functions, and
+           'QMailMessageServer::remainingMessagesCount(uint count)' signal.
+
+    48.  Added 'void QMailSearchAction::countMessages(const QMailMessageKey &amp;filter, const QString &amp;bodyText)',
+           'uint QMailSearchAction::messagesCount()' functions, and
+           'QMailMessageServer::messagesCount(uint count)' signal.
+
+    49.  Added 'QList&lt;QMailAddress&gt; QMailMessage::to() const',
+               'virtual QList&lt;QMailAddress&gt; QMailMessageMetaData::recipients() const',
+            protected:
+               'virtual void QMailMessageMetaData::setRecipients(const QList&lt;QMailAddress&gt;&amp; s)',
+               'virtual void QMailMessageMetaData::setRecipients(const QMailAddress&amp; s)' functions.
+
+         Removed 'QList&lt;QMailAddress&gt; QMailMessageMetaData::to() const',
+                 'void QMailMessageMetaData::setTo(const QList&lt;QMailAddress&gt;&amp; s)',
+                 'void QMailMessageMetaData::setTo(const QMailAddress&amp; s)' functions.
+
+    50. Added 'static QByteArray QMailCodec::bestCompatibleCharset(const QByteArray&amp; charset, bool translateAscii)' function.
+
+    51. Renamed 'void QMailStorageAction::deleteMessages(const QMailMessageIdList &amp;ids)' to onlineDeleteMessages,
+                'void QMailStorageAction::copyMessages(const QMailMessageIdList &amp;ids, const QMailFolderId &amp;destinationId)' to onlineCopyMessages,
+                'void QMailStorageAction::moveMessages(const QMailMessageIdList &amp;ids, const QMailFolderId &amp;destinationId)' to onlineMoveMessages,
+                'void QMailStorageAction::flagMessages(const QMailMessageIdList &amp;ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessagesAndMoveToStandardFolder,
+                'void QMailStorageAction::createFolder(const QString &amp;name, const QMailAccountId &amp;accountId, const QMailFolderId &amp;parentId)' to onlineCreateFolder,
+                'void QMailStorageAction::renameFolder(const QMailFolderId &amp;folderId, const QString &amp;name)' to onlineRenameFolder,
+                'void QMailStorageAction::deleteFolder(const QMailFolderId &amp;folderId)' to onlineDeleteFolder.
+                'void QMailMessageServer::deleteMessages(const QMailMessageIdList &amp;ids)' to onlineDeleteMessages,
+                'void QMailMessageServer::copyMessages(const QMailMessageIdList &amp;ids, const QMailFolderId &amp;destinationId)' to onlineCopyMessages,
+                'void QMailMessageServer::moveMessages(const QMailMessageIdList &amp;ids, const QMailFolderId &amp;destinationId)' to onlineMoveMessages,
+                'void QMailMessageServer::flagMessages(const QMailMessageIdList &amp;ids, quint64 setMask, quint64 unsetMask)' to onlineFlagMessagesAndMoveToStandardFolder,
+                'void QMailMessageServer::createFolder(const QString &amp;name, const QMailAccountId &amp;accountId, const QMailFolderId &amp;parentId)' to onlineCreateFolder,
+                'void QMailMessageServer::renameFolder(const QMailFolderId &amp;folderId, const QString &amp;name)' to onlineRenameFolder,
+                'void QMailMessageServer::deleteFolder(const QMailFolderId &amp;folderId)' to onlineDeleteFolder.
+
+    52. Added 'void QMailStorageAction::deleteMessages(quint64, const QMailMessageIdList &amp;ids)',
+              'void QMailStorageAction::rollBackUpdates(quint64, const QMailAccountId &amp;mailAccountId)',
+              'void QMailStorageAction::moveToStandardFolder(quint64, const QMailMessageIdList&amp; ids, QMailFolder::StandardFolder standardFolder)',
+              'void QMailStorageAction::moveToFolder(quint64, const QMailMessageIdList&amp; ids, const QMailFolderId&amp; folderId)',
+              'void QMailStorageAction::flagMessages(quint64, const QMailMessageIdList&amp; ids, quint64 setMask, quint64 unsetMask)',
+              'void QMailStorageAction::restoreToPreviousFolder(quint64, const QMailMessageKey&amp; key)',
+              'void QMailMessageServer::deleteMessages(quint64, const QMailMessageIdList &amp;ids)',
+              'void QMailMessageServer::rollBackUpdates(quint64, const QMailAccountId &amp;mailAccountId)',
+              'void QMailMessageServer::moveToStandardFolder(quint64, const QMailMessageIdList&amp; ids, quint64 standardFolder)',
+              'void QMailMessageServer::moveToFolder(quint64, const QMailMessageIdList&amp; ids, const QMailFolderId&amp; folderId)',
+              'void QMailMessageServer::flagMessages(quint64, const QMailMessageIdList&amp; ids, quint64 setMask, quint64 unsetMask)' and
+              'void QMailMessageServer::restoreToPreviousFolder(quint64, const QMailMessageKey&amp; key)'.
+
     *****************************************************************************
 
     Changes since the development preview release on 03/04/09:
@@ -311,6 +392,31 @@
 
     29. Changed 'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx)' to
                 'QMailMessageModelBase::emitDataChanged(const QModelIndex &amp;idx, const QModelIndex &amp;jdx)'.
+
+    30. Added 'QMailStorageAction::addMessages(const QMailMessageList &amp;list)',
+              'QMailStorageAction::updateMessages(const QMailMessageList &amp;list)',
+              'QMailMessageIdList QMailStorageAction::messagesAdded() const',
+              'QMailMessageIdList QMailStorageAction::messagesUpdated() const'.
+              'QMailMessageServer::addMessages(quint64, const QString &amp;filename)',
+              'QMailMessageServer::updateMessages(quint64, const QString &amp;filename)',
+              'QMailMessageServer::messagesAdded(quint64, QMailMessageIdList)' and
+              'QMailMessageServer::messagesUpdated(quint64, QMailMessageIdList)'.
+
+    31. Added 'QMailMessage::hasCalendarInvitation()'
+
+    32. Added 'QMailContentManager::NoDurability' enum value,
+              'QMailContentManager::ensureDurability(const QList&lt;QString&gt; &amp;)',
+              'QMailMessageServer::addMessages(quint64, const QMailMessageMetaDataList &amp;)' and
+              'QMailMessageServer::updateMessages(quint64, const QMailMessageMetaDataList &amp;)'.
+
+    32. Added 'QMailStore::ensureDurabiilty()'.
+
+    33. Added 'QMailMessageServer::connectionDown()', and
+              'QMailMessageServer::reconnectionTimeout()' signals.
+
+    34. Added 'QMailStorageAction::updateMessages(const QMailMessageMetaDataList &amp;list)'.
+
+    35. Added 'static QString QMailCodec::autoDetectEncoding(const QByteArray&amp; text)'.
 
     *****************************************************************************</pre>
 <p /><address><hr /><div align="center">

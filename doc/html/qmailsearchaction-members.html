@@ -32,6 +32,7 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connectNotify">connectNotify</a></b> ( const char * )</div></li>
 <li><div class="fn"><b><a href="qmailserviceaction.html#connectivity">connectivity</a></b> () const : Connectivity</div></li>
 <li><div class="fn"><b><a href="qmailserviceaction.html#connectivityChanged">connectivityChanged</a></b> ( QMailServiceAction::Connectivity )</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#countMessages">countMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#customEvent">customEvent</a></b> ( QEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#d_ptr-var">d_ptr</a></b> : </div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#deleteLater">deleteLater</a></b> ()</div></li>
@@ -49,12 +50,15 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren">findChildren</a></b> ( const QString &amp; ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren-2">findChildren</a></b> ( const QRegExp &amp; ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#inherits">inherits</a></b> ( const char * ) const</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#installEventFilter">installEventFilter</a></b> ( QObject * )</div></li>
+<li><div class="fn"><b><a href="qmailserviceaction.html#isRunning">isRunning</a></b> () const : bool</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#isWidgetType">isWidgetType</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#killTimer">killTimer</a></b> ( int )</div></li>
 <li><div class="fn"><b><a href="qmailsearchaction.html#matchingMessageIds">matchingMessageIds</a></b> () const : QMailMessageIdList</div></li>
 <li><div class="fn"><b><a href="qmailsearchaction.html#messageIdsMatched">messageIdsMatched</a></b> ( const QMailMessageIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#messagesCount">messagesCount</a></b> () const : uint</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#messagesCount-2">messagesCount</a></b> ( uint )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#metaObject">metaObject</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#moveToThread">moveToThread</a></b> ( QThread * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">objectName</a></b> () const</div></li>
@@ -63,8 +67,11 @@
 <li><div class="fn"><b><a href="qmailserviceaction.html#progressChanged">progressChanged</a></b> ( uint, uint )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#property">property</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#remainingMessagesCount">remainingMessagesCount</a></b> () const : uint</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#remainingMessagesCount-2">remainingMessagesCount</a></b> ( uint )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#removeEventFilter">removeEventFilter</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="qmailsearchaction.html#searchMessages">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, SearchSpecification, const QMailMessageSortKey &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailsearchaction.html#searchMessages-2">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, SearchSpecification, quint64, const QMailMessageSortKey &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#sender">sender</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">setObjectName</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#setParent">setParent</a></b> ( QObject * )</div></li>

@@ -49,9 +49,12 @@
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#countFolders">countFolders</a></b> ( const QMailFolderKey &amp; <i>key</i> = QMailFolderKey() ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#countMessages">countMessages</a></b> ( const QMailMessageKey &amp; <i>key</i> = QMailMessageKey() ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#countThreads">countThreads</a></b> ( const QMailThreadKey &amp; <i>key</i> = QMailThreadKey() ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#disconnectIpc">disconnectIpc</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#ensureDurability">ensureDurability</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#flushIpcNotifications">flushIpcNotifications</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailFolder </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#folder">folder</a></b> ( const QMailFolderId &amp; <i>id</i> ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">quint64 </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#folderStatusMask">folderStatusMask</a></b> ( const QString &amp; <i>name</i> ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#lastError">lastError</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#lock">lock</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessage </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#message">message</a></b> ( const QMailMessageId &amp; <i>id</i> ) const</td></tr>
@@ -66,6 +69,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">const QMailFolderIdList </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#queryFolders">queryFolders</a></b> ( const QMailFolderKey &amp; <i>key</i> = QMailFolderKey(), const QMailFolderSortKey &amp; <i>sortKey</i> = QMailFolderSortKey(), uint <i>limit</i> = 0, uint <i>offset</i> = 0 ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const QMailMessageIdList </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#queryMessages">queryMessages</a></b> ( const QMailMessageKey &amp; <i>key</i> = QMailMessageKey(), const QMailMessageSortKey &amp; <i>sortKey</i> = QMailMessageSortKey(), uint <i>limit</i> = 0, uint <i>offset</i> = 0 ) const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const QMailThreadIdList </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#queryThreads">queryThreads</a></b> ( const QMailThreadKey &amp; <i>key</i> = QMailThreadKey(), const QMailThreadSortKey &amp; <i>sortKey</i> = QMailThreadSortKey(), uint <i>limit</i> = 0, uint <i>offset</i> = 0 ) const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#reconnectIpc">reconnectIpc</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</a></b> ( const QString &amp; <i>name</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</a></b> ( const QString &amp; <i>name</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#registerMessageStatusFlag">registerMessageStatusFlag</a></b> ( const QString &amp; <i>name</i> )</td></tr>
@@ -109,6 +113,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#foldersAdded">foldersAdded</a></b> ( const QMailFolderIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#foldersRemoved">foldersRemoved</a></b> ( const QMailFolderIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#foldersUpdated">foldersUpdated</a></b> ( const QMailFolderIdList &amp; <i>ids</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#ipcConnectionEstablished">ipcConnectionEstablished</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#messageContentsModified">messageContentsModified</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#messageDataAdded">messageDataAdded</a></b> ( const QMailMessageMetaDataList &amp; <i>data</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailstore.html#messageDataUpdated">messageDataUpdated</a></b> ( const QMailMessageMetaDataList &amp; <i>data</i> )</td></tr>
@@ -256,12 +261,20 @@
 <p>Returns the count of the number of messages which pass the filtering criteria defined in <a href="qmailmessagekey.html">QMailMessageKey</a> <i>key</i>. If key is empty a count of all messages is returned.</p>
 <h3 class="fn"><a name="countThreads"></a>int QMailStore::countThreads ( const <a href="qmailthreadkey.html">QMailThreadKey</a> &amp; <i>key</i> = QMailThreadKey() ) const</h3>
 <p>Returns the count of the number of threads which pass the filtering criteria defined in <a href="qmailthreadkey.html">QMailThreadKey</a> <i>key</i>. If key is empty a count of all folders is returned.</p>
+<h3 class="fn"><a name="disconnectIpc"></a>void QMailStore::disconnectIpc ()</h3>
+<p>Disconnect from messageserver</p>
+<p>Useful for reducing battery consumption when the client application is not visible to the end user.</p>
+<p>See also <a href="qmailstore.html#flushIpcNotifications">flushIpcNotifications</a>(), <a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a>(), and <a href="qmailstore.html#reconnectIpc">reconnectIpc</a>().</p>
+<h3 class="fn"><a name="ensureDurability"></a>bool QMailStore::ensureDurability ()</h3>
+<p>Ensure mail store is durably written to the file system.</p>
+<p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
 <h3 class="fn"><a name="errorOccurred"></a>void QMailStore::errorOccurred ( <a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> <i>code</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <p>Signal that is emitted when an error is encountered in processing a <a href="qmailstore.html">QMailStore</a> operation. The error condition is indeicated by <i>code</i>.</p>
 <p>See also <a href="qmailstore.html#lastError">lastError</a>().</p>
 <h3 class="fn"><a name="flushIpcNotifications"></a>void QMailStore::flushIpcNotifications ()</h3>
 <p>Forces any queued event notifications to immediately be synchronously emitted, and processed synchronously by recipient processes.</p>
 <p>Any events occurring before flushIpcNotifications() is invoked will be processed by recipient processes before any IPC packets generated after the invocation.</p>
+<p>See also <a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a>(), <a href="qmailstore.html#disconnectIpc">disconnectIpc</a>(), and <a href="qmailstore.html#reconnectIpc">reconnectIpc</a>().</p>
 <h3 class="fn"><a name="folder"></a><a href="qmailfolder.html">QMailFolder</a> QMailStore::folder ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i> ) const</h3>
 <p>Returns the <a href="qmailfolder.html">QMailFolder</a> defined by the <a href="qmailfolderid.html">QMailFolderId</a> <i>id</i> from the store.</p>
 <h3 class="fn"><a name="folderContentsModified"></a>void QMailStore::folderContentsModified ( const <a href="qmailfolderid.html#QMailFolderIdList-typedef">QMailFolderIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
@@ -285,6 +298,13 @@
 <p>Returns the single instance of the <a href="qmailstore.html">QMailStore</a> class.</p>
 <p>If necessary, the store will be instantiated and initialized.</p>
 <p>See also <a href="qmailstore.html#initializationState">initializationState</a>().</p>
+<h3 class="fn"><a name="ipcConnectionEstablished"></a>void QMailStore::ipcConnectionEstablished ()&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>Signal that is emitted when a connection to the messageserver is established.</p>
+<p>See also <a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a>().</p>
+<h3 class="fn"><a name="isIpcConnectionEstablished"></a>bool QMailStore::isIpcConnectionEstablished () const</h3>
+<p>Returns true if a connection to the messageserver is established.</p>
+<p>The messageserver is used to notify a QMF client in one process of changes that have been made by QMF clients in other processes. For example <a href="qmailstore.html#messagesAdded">QMailStore::messagesAdded</a>() signal, will inform a client in one process when a client in another process, such as the messageserver, has added messages to the message store.</p>
+<p>See also <a href="qmailstore.html#flushIpcNotifications">flushIpcNotifications</a>(), <a href="qmailstore.html#disconnectIpc">disconnectIpc</a>(), <a href="qmailstore.html#reconnectIpc">reconnectIpc</a>(), and <a href="qmailserviceaction.html">QMailServiceAction</a>.</p>
 <h3 class="fn"><a name="lastError"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailStore::lastError () const</h3>
 <p>Returns the code of the last error condition reported by the <a href="qmailstore.html">QMailStore</a>.</p>
 <h3 class="fn"><a name="lock"></a>void QMailStore::lock ()</h3>
@@ -351,6 +371,9 @@
 <h3 class="fn"><a name="queryThreads"></a>const <a href="qmailthreadid.html#QMailThreadIdList-typedef">QMailThreadIdList</a> QMailStore::queryThreads ( const <a href="qmailthreadkey.html">QMailThreadKey</a> &amp; <i>key</i> = QMailThreadKey(), const <a href="qmailthreadsortkey.html">QMailThreadSortKey</a> &amp; <i>sortKey</i> = QMailThreadSortKey(), <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>limit</i> = 0, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a> <i>offset</i> = 0 ) const</h3>
 <p>Returns the <a href="qmailthreadid.html">QMailThreadId</a>s of threads in the message store. If <i>key</i> is not empty only threads matching the parameters set by <i>key</i> will be returned, otherwise all thread identifiers will be returned. If <i>sortKey</i> is not empty, the identifiers will be sorted by the parameters set by <i>sortKey</i>. If <i>limit</i> is non-zero, then no more than <i>limit</i> matching thread IDs should be returned. If <i>offset</i> is non-zero, then the first <i>offset</i> matching IDs should be omitted from the returned list.</p>
 <p>Note: if the implementation cannot support the <i>limit</i> and <i>offset</i> parameters, it should not attempt to perform a query where either of these values is non-zero; instead, it should return an empty list and set <a href="qmailstore.html#lastError">lastError</a>() to <a href="qmailstore.html#ErrorCode-enum">QMailStore::NotYetImplemented</a>.</p>
+<h3 class="fn"><a name="reconnectIpc"></a>void QMailStore::reconnectIpc ()</h3>
+<p>Reconnect to messageserver</p>
+<p>See also <a href="qmailstore.html#flushIpcNotifications">flushIpcNotifications</a>(), <a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a>(), and <a href="qmailstore.html#disconnectIpc">disconnectIpc</a>().</p>
 <h3 class="fn"><a name="registerAccountStatusFlag"></a>bool QMailStore::registerAccountStatusFlag ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>name</i> )</h3>
 <p>Registers a status flag for <a href="qmailaccount.html">QMailAccount</a> objects, with the identifier <i>name</i>. Returns true if the flag is already registered, or if it is successfully registered; otherwise returns false.</p>
 <p>See also <a href="qmailstore.html#accountStatusMask">accountStatusMask</a>().</p>

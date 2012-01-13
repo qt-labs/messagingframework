@@ -21,7 +21,7 @@
 <a name="public-types"></a>
 <h2>Public Types</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
-<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</a></b> { EnsureDurability, DeferDurability }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#DurabilityRequirement-enum">DurabilityRequirement</a></b> { EnsureDurability, DeferDurability, NoDurability }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#ManagerRole-enum">ManagerRole</a></b> { FilterRole, StorageRole, IndexRole }</td></tr>
 </table>
 <hr />
@@ -31,6 +31,7 @@
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#add">add</a></b> ( QMailMessage * <i>message</i>, DurabilityRequirement <i>durability</i> ) = 0</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual void </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#clearContent">clearContent</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#ensureDurability">ensureDurability</a></b> () = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#ensureDurability-2">ensureDurability</a></b> ( const QList&lt;QString&gt; &amp; <i>identifiers</i> ) = 0</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#init">init</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#load">load</a></b> ( const QString &amp; <i>identifier</i>, QMailMessage * <i>message</i> ) = 0</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">virtual QMailStore::ErrorCode </td><td class="memItemRight" valign="bottom"><b><a href="qmailcontentmanager.html#remove">remove</a></b> ( const QString &amp; <i>identifier</i> ) = 0</td></tr>
@@ -58,6 +59,7 @@
 <tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
 <tr><td valign="top"><tt>QMailContentManager::EnsureDurability</tt></td><td align="center" valign="top"><tt>0</tt></td><td valign="top">The content manager should make the requested changes durable before reporting success.</td></tr>
 <tr><td valign="top"><tt>QMailContentManager::DeferDurability</tt></td><td align="center" valign="top"><tt>1</tt></td><td valign="top">The content manager may defer ensuring that changes are durable until the next invocation of <a href="qmailcontentmanager.html#ensureDurability">ensureDurability</a>().</td></tr>
+<tr><td valign="top"><tt>QMailContentManager::NoDurability</tt></td><td align="center" valign="top"><tt>2</tt></td><td valign="top">The content manager will not make changes durable.</td></tr>
 </table></p>
 <h3 class="fn"><a name="ManagerRole-enum"></a>enum QMailContentManager::ManagerRole</h3>
 <p>This enum type is used to define the purpose of the plugin</p>
@@ -79,6 +81,9 @@
 <p>This function is called by the mail store to remove all existing data, typically in test conditions.</p>
 <h3 class="fn"><a name="ensureDurability"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::ensureDurability ()&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
 <p>Requests that the content manager ensure that any previous actions that were performed with the <a href="qmailcontentmanager.html#DurabilityRequirement-enum">DeferDurability</a> option be made durable.</p>
+<h3 class="fn"><a name="ensureDurability-2"></a><a href="qmailstore.html#ErrorCode-enum">QMailStore::ErrorCode</a> QMailContentManager::ensureDurability ( const <a href="http://doc.trolltech.com/4.5/qlist.html">QList</a>&lt;<a href="http://doc.trolltech.com/4.5/qstring.html">QString</a>&gt; &amp; <i>identifiers</i> )&nbsp;&nbsp;<tt> [pure virtual]</tt></h3>
+<p>Requests that the content manager ensure that message data will be made durable for messages identified by the given content <i>identifiers</i>.</p>
+<p>To be used with the <a href="qmailcontentmanager.html#DurabilityRequirement-enum">NoDurability</a> option.</p>
 <h3 class="fn"><a name="init"></a>bool QMailContentManager::init ()&nbsp;&nbsp;<tt> [virtual]</tt></h3>
 <p>Directs the content manager to perform any initialization tasks required. The content manager should return false if unable to perform initialization tasks; otherwise return true.</p>
 <p>This function is called by the mail store after it has been successfully initialized.</p>

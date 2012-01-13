@@ -54,10 +54,12 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect">disconnect</a></b> ( const QObject *, const char *, const QObject *, const char * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect-2">disconnect</a></b> ( const char *, const QObject *, const char * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect-3">disconnect</a></b> ( const QObject *, const char * )</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#disconnectIpc">disconnectIpc</a></b> ()</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnectNotify">disconnectNotify</a></b> ( const char * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#dumpObjectInfo">dumpObjectInfo</a></b> ()</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#dumpObjectTree">dumpObjectTree</a></b> ()</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#dynamicPropertyNames">dynamicPropertyNames</a></b> () const</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#ensureDurability">ensureDurability</a></b> () : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#errorOccurred">errorOccurred</a></b> ( QMailStore::ErrorCode )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#event">event</a></b> ( QEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#eventFilter">eventFilter</a></b> ( QObject *, QEvent * )</div></li>
@@ -75,6 +77,8 @@
 <li><div class="fn"><b><a href="qmailstore.html#initializationState">initializationState</a></b> () : InitializationState</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#installEventFilter">installEventFilter</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#instance">instance</a></b> () : QMailStore *</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#ipcConnectionEstablished">ipcConnectionEstablished</a></b> ()</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#isIpcConnectionEstablished">isIpcConnectionEstablished</a></b> () const : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#isWidgetType">isWidgetType</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#killTimer">killTimer</a></b> ( int )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#lastError">lastError</a></b> () const : QMailStore::ErrorCode</div></li>
@@ -82,9 +86,9 @@
 <li><div class="fn"><b><a href="qmailstore.html#message">message</a></b> ( const QMailMessageId &amp; ) const : QMailMessage</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#message-2">message</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessage</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageContentsModified">messageContentsModified</a></b> ( const QMailMessageIdList &amp; )</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#messageDataAdded">messageDataAdded</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageDataUpdated">messageDataUpdated</a></b> ( const QMailMessageMetaDataList &amp; )</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData">messageMetaData</a></b> ( const QMailMessageId &amp; ) const : QMailMessageMetaData</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messageMetaData-2">messageMetaData</a></b> ( const QString &amp;, const QMailAccountId &amp; ) const : QMailMessageMetaData</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#messagePropertyUpdated">messagePropertyUpdated</a></b> ( const QMailMessageIdList &amp;, const QMailMessageKey::Properties &amp;, const QMailMessageMetaData &amp; )</div></li>
@@ -108,6 +112,7 @@
 <li><div class="fn"><b><a href="qmailstore.html#queryMessages">queryMessages</a></b> ( const QMailMessageKey &amp;, const QMailMessageSortKey &amp;, uint, uint ) const : const QMailMessageIdList</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#queryThreads">queryThreads</a></b> ( const QMailThreadKey &amp;, const QMailThreadSortKey &amp;, uint, uint ) const : const QMailThreadIdList</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
+<li><div class="fn"><b><a href="qmailstore.html#reconnectIpc">reconnectIpc</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#registerAccountStatusFlag">registerAccountStatusFlag</a></b> ( const QString &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#registerFolderStatusFlag">registerFolderStatusFlag</a></b> ( const QString &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailstore.html#registerMessageStatusFlag">registerMessageStatusFlag</a></b> ( const QString &amp; ) : bool</div></li>

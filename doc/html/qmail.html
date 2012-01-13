@@ -32,8 +32,10 @@
 <tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#extensionsForMimeType">extensionsForMimeType</a></b> ( const QString &amp; <i>mimeType</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#fileLock">fileLock</a></b> ( const QString &amp; <i>lockFile</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#fileUnlock">fileUnlock</a></b> ( int <i>id</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QDateTime </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#lastDbUpdated">lastDbUpdated</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#lastSystemErrorMessage">lastSystemErrorMessage</a></b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#messageIdentifiers">messageIdentifiers</a></b> ( const QString &amp; <i>str</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QStringList </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#messageIdentifiers">messageIdentifiers</a></b> ( const QString &amp; <i>aStr</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#messageServerLockFilePath">messageServerLockFilePath</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#messageServerPath">messageServerPath</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#messageSettingsPath">messageSettingsPath</a></b> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QString </td><td class="memItemRight" valign="bottom"><b><a href="qmail.html#mimeTypeFromFileName">mimeTypeFromFileName</a></b> ( const QString &amp; <i>filename</i> )</td></tr>
@@ -77,10 +79,14 @@
 <p>Convenience function that attempts to unlock the file with identifier <i>id</i> that was locked by <tt>QMail::fileLock</tt>.</p>
 <p>Returns <tt>true</tt> for success or <tt>false</tt> otherwise.</p>
 <p>See also <a href="qmail.html#fileLock">QMail::fileLock</a>().</p>
+<h3 class="fn"><a name="lastDbUpdated"></a><a href="http://doc.trolltech.com/4.5/qdatetime.html">QDateTime</a> QMail::lastDbUpdated ()</h3>
+<p>Returns the the time when the Messaging framework store file was las updated.</p>
 <h3 class="fn"><a name="lastSystemErrorMessage"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMail::lastSystemErrorMessage ()</h3>
 <p>Returns the text describing the last error reported by the underlying platform.</p>
-<h3 class="fn"><a name="messageIdentifiers"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMail::messageIdentifiers ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>str</i> )</h3>
-<p>Returns the sequence of message identifiers that can be extracted from <i>str</i>. Message identifiers must conform to the definition given by RFC 5256.</p>
+<h3 class="fn"><a name="messageIdentifiers"></a><a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> QMail::messageIdentifiers ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>aStr</i> )</h3>
+<p>Returns the sequence of message identifiers that can be extracted from <i>aStr</i>. Message identifiers must conform to the definition given by RFC 5256.</p>
+<h3 class="fn"><a name="messageServerLockFilePath"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMail::messageServerLockFilePath ()</h3>
+<p>Returns the full path to the file used to ensure that only one instance of the messageserver is running.</p>
 <h3 class="fn"><a name="messageServerPath"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMail::messageServerPath ()</h3>
 <p>Returns the path to where the Messaging framework will invoke the messageserver process.</p>
 <h3 class="fn"><a name="messageSettingsPath"></a><a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> QMail::messageSettingsPath ()</h3>

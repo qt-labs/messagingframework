@@ -23,7 +23,7 @@
 <h2>Public Types</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">typedef </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#ArgumentType-typedef">ArgumentType</a></b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#Property-enum">Property</a></b> { Id, ServerUid, MessageCount, UnreadCount, Custom }</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#Property-enum">Property</a></b> { Id, ServerUid, MessageCount, UnreadCount, ..., Custom }</td></tr>
 </table>
 <hr />
 <a name="public-functions"></a>
@@ -57,7 +57,12 @@
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id">id</a></b> ( const QMailThreadId &amp; <i>id</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id-2">id</a></b> ( const QMailThreadIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#id-3">id</a></b> ( const QMailThreadKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#includes">includes</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#includes-2">includes</a></b> ( const QMailMessageKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#nonMatchingKey">nonMatchingKey</a></b> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#parentAccountId">parentAccountId</a></b> ( const QMailAccountId &amp; <i>id</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#parentAccountId-2">parentAccountId</a></b> ( const QMailAccountIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#parentAccountId-3">parentAccountId</a></b> ( const QMailAccountKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid">serverUid</a></b> ( const QString &amp; <i>uid</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid-2">serverUid</a></b> ( const QString &amp; <i>uid</i>, QMailDataComparator::InclusionComparator <i>cmp</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailThreadKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailthreadkey.html#serverUid-3">serverUid</a></b> ( const QStringList &amp; <i>uids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
@@ -82,6 +87,8 @@
 <tr><td valign="top"><tt>QMailThreadKey::ServerUid</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;1 )</tt></td><td valign="top">The ServerUid of thread.</td></tr>
 <tr><td valign="top"><tt>QMailThreadKey::MessageCount</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;2 )</tt></td><td valign="top">The number of messages in the thread</td></tr>
 <tr><td valign="top"><tt>QMailThreadKey::UnreadCount</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;3 )</tt></td><td valign="top">The number of unread messages in the thread.</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::Includes</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;5 )</tt></td><td valign="top">List of message identifiers.</td></tr>
+<tr><td valign="top"><tt>QMailThreadKey::ParentAccountId</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;6 )</tt></td><td valign="top">The identifier of the parent account of the thread.</td></tr>
 <tr><td valign="top"><tt>QMailThreadKey::Custom</tt></td><td align="center" valign="top"><tt>( 1&lt;&lt;4 )</tt></td><td valign="top">For internal use, may be removed.</td></tr>
 </table></p>
 <hr />
@@ -99,7 +106,7 @@
 <h3 class="fn"><a name="combiner"></a><a href="qmailkey.html#Combiner-enum">QMailKey::Combiner</a> QMailThreadKey::combiner () const</h3>
 <p>Returns the combiner used to combine arguments or sub keys of this <a href="qmailthreadkey.html">QMailThreadKey</a>.</p>
 <h3 class="fn"><a name="deserialize"></a>void QMailThreadKey::deserialize ( Stream &amp; <i>stream</i> )</h3>
-<p>Reads the contents of a QMailThradKey from <i>stream</i>.</p>
+<p>Reads the contents of a <a href="qmailthreadkey.html">QMailThreadKey</a> from <i>stream</i>.</p>
 <h3 class="fn"><a name="id"></a>QMailThreadKey QMailThreadKey::id ( const <a href="qmailthreadid.html">QMailThreadId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching threads whose identifier matches <i>id</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailfolder.html#id">QMailFolder::id</a>().</p>
@@ -109,6 +116,10 @@
 <h3 class="fn"><a name="id-3"></a>QMailThreadKey QMailThreadKey::id ( const QMailThreadKey &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching thread whose identifier is a member of the set yielded by <i>key</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailthread.html#id">QMailThread::id</a>().</p>
+<h3 class="fn"><a name="includes"></a>QMailThreadKey QMailThreadKey::includes ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads that include a message in <i>ids</i>, according to <i>cmp</i>.</p>
+<h3 class="fn"><a name="includes-2"></a>QMailThreadKey QMailThreadKey::includes ( const <a href="qmailmessagekey.html">QMailMessageKey</a> &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads that include a message in <i>key</i>, according to <i>cmp</i>.</p>
 <h3 class="fn"><a name="isEmpty"></a>bool QMailThreadKey::isEmpty () const</h3>
 <p>Returns true if the key remains empty after default construction; otherwise returns false.</p>
 <p>An empty key matches all threads.</p>
@@ -126,6 +137,15 @@
 <h3 class="fn"><a name="nonMatchingKey"></a>QMailThreadKey QMailThreadKey::nonMatchingKey ()&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key that does not match any threads (unlike an empty key).</p>
 <p>See also <a href="qmailthreadkey.html#isNonMatching">isNonMatching</a>() and <a href="qmailthreadkey.html#isEmpty">isEmpty</a>().</p>
+<h3 class="fn"><a name="parentAccountId"></a>QMailThreadKey QMailThreadKey::parentAccountId ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose parent account's identifier is <i>id</i> according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#parentAccountId">QMailThread::parentAccountId</a>().</p>
+<h3 class="fn"><a name="parentAccountId-2"></a>QMailThreadKey QMailThreadKey::parentAccountId ( const <a href="qmailaccountid.html#QMailAccountIdList-typedef">QMailAccountIdList</a> &amp; <i>ids</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose parent account's identifier is a member of <i>ids</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#parentAccountId">QMailThread::parentAccountId</a>().</p>
+<h3 class="fn"><a name="parentAccountId-3"></a>QMailThreadKey QMailThreadKey::parentAccountId ( const <a href="qmailaccountkey.html">QMailAccountKey</a> &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching threads whose parent account's identifier is a member of the set yielded by <i>key</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailthread.html#parentAccountId">QMailThread::parentAccountId</a>().</p>
 <h3 class="fn"><a name="serialize"></a>void QMailThreadKey::serialize ( Stream &amp; <i>stream</i> ) const</h3>
 <p>Writes the contents of a <a href="qmailthreadkey.html">QMailThreadKey</a> to a <i>stream</i>.</p>
 <h3 class="fn"><a name="serverUid"></a>QMailThreadKey QMailThreadKey::serverUid ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>uid</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>

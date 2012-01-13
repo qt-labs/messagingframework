@@ -39,7 +39,7 @@
 </ul>
 <a name="building-and-compiling"></a>
 <h2>Building and Compiling</h2>
-<p>To build the Messaging Framework, run <tt>qmake</tt> on the top level <tt>messagingframework.pro</tt> file as follows:</p>
+<p>To build the Messaging Framework, ensure qt4, zlib and libicu development packages are installed, and run <tt>qmake</tt> on the top level <tt>messagingframework.pro</tt> file as follows:</p>
 <pre>    qmake &quot;QMF_INSTALL_ROOT=&lt;image directory path&gt;&quot; messagingframework.pro</pre>
 <p>Where <tt>&lt;image</tt> <tt>directory</tt> <tt>path&gt;</tt> is the location that <tt>make</tt> <tt>install</tt> will put the resultant binary files. It is optional but desirable to set this variable as it is not possible to run the applications from within their build directories due to dependencies. The <tt>debug</tt> configuration parameter is also optional.</p>
 <p>Following this simply run:</p>

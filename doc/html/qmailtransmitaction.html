@@ -26,7 +26,7 @@
 <tr><td class="memItemLeft" align="right" valign="top"></td><td class="memItemRight" valign="bottom"><b><a href="qmailtransmitaction.html#QMailTransmitAction">QMailTransmitAction</a></b> ( QObject * <i>parent</i> = 0 )</td></tr>
 </table>
 <ul>
-<li><div bar="2" class="fn"></div>4 public functions inherited from <a href="qmailserviceaction.html#public-functions">QMailServiceAction</a></li>
+<li><div bar="2" class="fn"></div>5 public functions inherited from <a href="qmailserviceaction.html#public-functions">QMailServiceAction</a></li>
 <li><div bar="2" class="fn"></div>29 public functions inherited from <a href="http://doc.trolltech.com/4.5/qobject.html#public-functions">QObject</a></li>
 </ul>
 <hr />
@@ -63,8 +63,10 @@
 <hr />
 <h2>Detailed Description</h2>
 <p>The QMailTransmitAction class provides the interface for transmitting messages to external message services.</p>
-<p><a href="qmailsearchaction.html">QMailSearchAction</a> provides the mechanism for messaging clients to request that the message server transmit messages to external services. The transmit action object reports on the progress and outcome of its activities via the signals inherited from <a href="qmailserviceaction.html">QMailServiceAction</a>.</p>
+<p>QMailTransmitAction provides the mechanism for messaging clients to request that the message server transmit messages to external services. The transmit action object reports on the progress and outcome of its activities via the signals inherited from <a href="qmailserviceaction.html">QMailServiceAction</a>.</p>
 <p>The send() slot requests that the message server transmit each identified message to the external service associated with each messages' account.</p>
+<p>A QMailTransmitAction instance supports only a single request at any time. Attempting to initiate an operation on a QMailTransmitAction instace while another operation is already in progress for that action is not supported.</p>
+<p>An application may however use multiple QMailTransmitAction instances to send independent requests concurrently. Each <a href="qmailserviceaction.html">QMailServiceAction</a> instance will report only the changes pertaining to the request that instance delivered. Whether or not concurrent requests are concurrently serviced by the messageserver depends on whether those requests must be serviced by the same <a href="qmailmessageservice.html">QMailMessageService</a> instance.</p>
 <p>Note: the slots exported by QMailTransmitAction are expected to change in future releases, as the message server is extended to provide a finer-grained interface for message transmission.</p>
 <hr />
 <h2>Member Function Documentation</h2>
@@ -78,6 +80,7 @@
 <h3 class="fn"><a name="transmitMessages"></a>void QMailTransmitAction::transmitMessages ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>accountId</i> )&nbsp;&nbsp;<tt> [slot]</tt></h3>
 <p>Requests that the message server transmit each message belonging to the account identified by <i>accountId</i> that is currently scheduled for transmission (located in the Outbox folder).</p>
 <p>Any message successfully transmitted will be moved to the account's Sent folder.</p>
+<p>This function requires the device to be online, it may initiate communication with external servers.</p>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>

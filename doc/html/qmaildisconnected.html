@@ -70,17 +70,17 @@
 <p>See also <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <h3 class="fn"><a name="flagMessage"></a>void QMailDisconnected::flagMessage ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>setMask</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>unsetMask</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>description</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected flags the list a message identified by <i>id</i>, setting the flags specified by the bit mask <i>setMask</i> to on and setting the flags set by the bit mask <i>unsetMask</i> to off.</p>
-<p>For example this function may be used to mark a message as important or 'move to trash' a message.</p>
+<p>For example this function may be used to mark a message as important.</p>
 <p>The flagging operation will be propagated to the server by a successful call to <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <p>During synchronization with the server a status message with contents <i>description</i> may be emitted.</p>
 <h3 class="fn"><a name="flagMessages"></a>void QMailDisconnected::flagMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>setMask</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>unsetMask</i>, const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>description</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected flags the list of messages identified by <i>ids</i>, setting the flags specified by the bit mask <i>setMask</i> to on and setting the flags set by the bit mask <i>unsetMask</i> to off.</p>
-<p>For example this function may be used to mark messages as important or 'move to trash' messages.</p>
+<p>For example this function may be used to mark messages as important.</p>
 <p>The flagging operation will be propagated to the server by a successful call to <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <p>During synchronization with the server a status message with contents <i>description</i> may be emitted.</p>
 <h3 class="fn"><a name="moveToFolder"></a>void QMailDisconnected::moveToFolder ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected moves the list of messages identified by <i>ids</i> into the folder identified by <i>folderId</i>, setting standard folder flags as appropriate.</p>
-<p>Moving to another accounts are not supported.</p>
+<p>Moving to another account is not supported.</p>
 <p>The move operation will be propagated to the server by a successful call to <a href="qmailretrievalaction.html#exportUpdates">QMailRetrievalAction::exportUpdates</a>().</p>
 <h3 class="fn"><a name="moveToFolder-2"></a>void QMailDisconnected::moveToFolder ( <a href="qmailmessagemetadata.html">QMailMessageMetaData</a> * <i>message</i>, const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>folderId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Disconnected updates <i>message</i> to be moved to the folder identified <i>folderId</i>. This function does NOT update the message in <a href="qmailstore.html">QMailStore</a>, <a href="qmailstore.html#updateMessage">QMailStore::updateMessage</a>() should be used to ensure that changes are to propagated to the server.</p>
@@ -96,9 +96,9 @@
 <h3 class="fn"><a name="restoreToPreviousFolder"></a>void QMailDisconnected::restoreToPreviousFolder ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Updates the <a href="qmailmessage.html">QMailMessage</a> with <a href="qmailmessageid.html">QMailMessageId</a> <i>id</i> to move the message back to the previous folder it was contained by.</p>
 <p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
+<p>See also <a href="qmaildisconnected.html#moveToFolder">QMailDisconnected::moveToFolder</a>() and <a href="qmaildisconnected.html#moveToStandardFolder">QMailDisconnected::moveToStandardFolder</a>().</p>
 <h3 class="fn"><a name="restoreToPreviousFolder-2"></a>void QMailDisconnected::restoreToPreviousFolder ( const <a href="qmailmessagekey.html">QMailMessageKey</a> &amp; <i>key</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Updates all QMailMessages identified by the key <i>key</i> to move the messages back to the previous folder they were contained by.</p>
-<p>Returns <tt>true</tt> if the operation completed successfully, <tt>false</tt> otherwise.</p>
 <h3 class="fn"><a name="rollBackUpdates"></a>void QMailDisconnected::rollBackUpdates ( const <a href="qmailaccountid.html">QMailAccountId</a> &amp; <i>mailAccountId</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Rolls back all disconnected move and copy operations that have been applied to the message store since the most recent synchronization of the message with the account specified by <i>mailAccountId</i>.</p>
 <p>See also <a href="qmaildisconnected.html#updatesOutstanding">updatesOutstanding</a>().</p>

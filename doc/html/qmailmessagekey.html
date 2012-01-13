@@ -95,6 +95,9 @@
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#parentThreadId">parentThreadId</a></b> ( const QMailThreadId &amp; <i>id</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#parentThreadId-2">parentThreadId</a></b> ( const QMailThreadIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#parentThreadId-3">parentThreadId</a></b> ( const QMailThreadKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#preview">preview</a></b> ( const QString &amp; <i>value</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#preview-2">preview</a></b> ( const QString &amp; <i>value</i>, QMailDataComparator::InclusionComparator <i>cmp</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#preview-3">preview</a></b> ( const QStringList &amp; <i>values</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#previousParentFolderId">previousParentFolderId</a></b> ( const QMailFolderId &amp; <i>id</i>, QMailDataComparator::EqualityComparator <i>cmp</i> = QMailDataComparator::Equal )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#previousParentFolderId-2">previousParentFolderId</a></b> ( const QMailFolderIdList &amp; <i>ids</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QMailMessageKey </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagekey.html#previousParentFolderId-3">previousParentFolderId</a></b> ( const QMailFolderKey &amp; <i>key</i>, QMailDataComparator::InclusionComparator <i>cmp</i> = QMailDataComparator::Includes )</td></tr>
@@ -255,6 +258,7 @@
 <h3 class="fn"><a name="deserialize"></a>void QMailMessageKey::deserialize ( Stream &amp; <i>stream</i> )</h3>
 <p>Reads the contents of a <a href="qmailmessagekey.html">QMailMessageKey</a> from <i>stream</i>.</p>
 <h3 class="fn"><a name="deserialize-2"></a>void QMailMessageKey::deserialize ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>stream</i> )</h3>
+<p>Deserialize the message key from <i>stream</i>.</p>
 <h3 class="fn"><a name="id"></a>QMailMessageKey QMailMessageKey::id ( const <a href="qmailmessageid.html">QMailMessageId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose identifier matches <i>id</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#id">QMailMessage::id</a>().</p>
@@ -326,6 +330,15 @@
 <p>Returns a key matching messages whose thread is a member of <i>ids</i>, according to <i>cmp</i>.</p>
 <h3 class="fn"><a name="parentThreadId-3"></a>QMailMessageKey QMailMessageKey::parentThreadId ( const <a href="qmailthreadkey.html">QMailThreadKey</a> &amp; <i>key</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose thread matched <i>key</i>, according to <i>cmp</i>.</p>
+<h3 class="fn"><a name="preview"></a>QMailMessageKey QMailMessageKey::preview ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching messages whose preview matches <i>value</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailmessage.html#preview">QMailMessage::preview</a>().</p>
+<h3 class="fn"><a name="preview-2"></a>QMailMessageKey QMailMessageKey::preview ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching messages whose preview matches the substring <i>value</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailmessage.html#preview">QMailMessage::preview</a>().</p>
+<h3 class="fn"><a name="preview-3"></a>QMailMessageKey QMailMessageKey::preview ( const <a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> &amp; <i>values</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
+<p>Returns a key matching messages whose preview is a member of <i>values</i>, according to <i>cmp</i>.</p>
+<p>See also <a href="qmailmessage.html#preview">QMailMessage::preview</a>().</p>
 <h3 class="fn"><a name="previousParentFolderId"></a>QMailMessageKey QMailMessageKey::previousParentFolderId ( const <a href="qmailfolderid.html">QMailFolderId</a> &amp; <i>id</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose previous parent folder's identifier matches <i>id</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#previousParentFolderId">QMailMessage::previousParentFolderId</a>().</p>
@@ -343,10 +356,10 @@
 <p>See also <a href="qmailmessagemetadata.html#receivedDate">QMailMessage::receivedDate</a>().</p>
 <h3 class="fn"><a name="recipients"></a>QMailMessageKey QMailMessageKey::recipients ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose recipients include <i>value</i>, according to <i>cmp</i>.</p>
-<p>See also <a href="qmailmessagemetadata.html#to">QMailMessage::to</a>(), <a href="qmailmessage.html#cc">QMailMessage::cc</a>(), and <a href="qmailmessage.html#bcc">QMailMessage::bcc</a>().</p>
+<p>See also <a href="qmailmessage.html#to">QMailMessage::to</a>(), <a href="qmailmessage.html#cc">QMailMessage::cc</a>(), and <a href="qmailmessage.html#bcc">QMailMessage::bcc</a>().</p>
 <h3 class="fn"><a name="recipients-2"></a>QMailMessageKey QMailMessageKey::recipients ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose recipients include the substring <i>value</i>, according to <i>cmp</i>.</p>
-<p>See also <a href="qmailmessagemetadata.html#to">QMailMessage::to</a>(), <a href="qmailmessage.html#cc">QMailMessage::cc</a>(), and <a href="qmailmessage.html#bcc">QMailMessage::bcc</a>().</p>
+<p>See also <a href="qmailmessage.html#to">QMailMessage::to</a>(), <a href="qmailmessage.html#cc">QMailMessage::cc</a>(), and <a href="qmailmessage.html#bcc">QMailMessage::bcc</a>().</p>
 <h3 class="fn"><a name="responseType"></a>QMailMessageKey QMailMessageKey::responseType ( <a href="qmailmessagemetadatafwd.html#ResponseType-enum">QMailMessageMetaDataFwd::ResponseType</a> <i>type</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose response type matches <i>type</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#responseType">QMailMessage::responseType</a>().</p>
@@ -375,10 +388,10 @@
 <p>Returns a key matching messages whose sender matches the substring <i>value</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#from">QMailMessage::from</a>().</p>
 <h3 class="fn"><a name="sender-3"></a>QMailMessageKey QMailMessageKey::sender ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>value</i>, <a href="qmaildatacomparator.html#RelationComparator-enum">QMailDataComparator::RelationComparator</a> <i>cmp</i> )&nbsp;&nbsp;<tt> [static]</tt></h3>
-<p>Return a key matching messages whose sender is alphabetically matches</p>
+<p>Return a key matching messages whose sender alphabetically matches</p>
 <p><table class="valuelist" border="1" cellpadding="2" cellspacing="1" width="100%">
 <tr><th width="25%">Constant</th><th width="15%">Value</th><th width="60%">Description</th></tr>
-<tr><td valign="top"><tt>QMailMessageKey::according</tt></td><td align="center" valign="top">?</td><td valign="top">to <font color="red"><b><code>\cmp</code></b></font></td></tr>
+<tr><td valign="top"><tt>QMailMessageKey::according</tt></td><td align="center" valign="top">?</td><td valign="top">to <i>cmp</i></td></tr>
 </table></p>
 <h3 class="fn"><a name="sender-4"></a>QMailMessageKey QMailMessageKey::sender ( const <a href="http://doc.trolltech.com/4.5/qstringlist.html">QStringList</a> &amp; <i>values</i>, <a href="qmaildatacomparator.html#InclusionComparator-enum">QMailDataComparator::InclusionComparator</a> <i>cmp</i> = QMailDataComparator::Includes )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose sender is a member of <i>values</i>, according to <i>cmp</i>.</p>
@@ -386,6 +399,7 @@
 <h3 class="fn"><a name="serialize"></a>void QMailMessageKey::serialize ( Stream &amp; <i>stream</i> ) const</h3>
 <p>Writes the contents of a <a href="qmailmessagekey.html">QMailMessageKey</a> to a <i>stream</i>.</p>
 <h3 class="fn"><a name="serialize-2"></a>void QMailMessageKey::serialize ( <a href="http://doc.trolltech.com/4.5/qdatastream.html">QDataStream</a> &amp; <i>stream</i> ) const</h3>
+<p>Serialize the message key to <i>stream</i>.</p>
 <h3 class="fn"><a name="serverUid"></a>QMailMessageKey QMailMessageKey::serverUid ( const <a href="http://doc.trolltech.com/4.5/qstring.html">QString</a> &amp; <i>uid</i>, <a href="qmaildatacomparator.html#EqualityComparator-enum">QMailDataComparator::EqualityComparator</a> <i>cmp</i> = QMailDataComparator::Equal )&nbsp;&nbsp;<tt> [static]</tt></h3>
 <p>Returns a key matching messages whose serverUid matches <i>uid</i>, according to <i>cmp</i>.</p>
 <p>See also <a href="qmailmessagemetadata.html#serverUid">QMailMessage::serverUid</a>().</p>

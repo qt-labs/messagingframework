@@ -33,7 +33,7 @@
 <h2>Signals</h2>
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesink.html#messagesFailedTransmission">messagesFailedTransmission</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailServiceAction::Status::ErrorCode <i>error</i> )</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesink.html#messagesFailedTransmission-2">messagesFailedTransmission</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailServiceAction::Status::ErrorCode, quint64 <i>action</i> )</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesink.html#messagesFailedTransmission-2">messagesFailedTransmission</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, QMailServiceAction::Status::ErrorCode <i>error</i>, quint64 <i>action</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesink.html#messagesTransmitted">messagesTransmitted</a></b> ( const QMailMessageIdList &amp; <i>ids</i> )</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void </td><td class="memItemRight" valign="bottom"><b><a href="qmailmessagesink.html#messagesTransmitted-2">messagesTransmitted</a></b> ( const QMailMessageIdList &amp; <i>ids</i>, quint64 <i>action</i> )</td></tr>
 </table>
@@ -71,11 +71,20 @@
 <h3 class="fn"><a name="messagesFailedTransmission"></a>void QMailMessageSink::messagesFailedTransmission ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCode</a> <i>error</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <p>Signal emitted by the sink to report the failure of an attempt at transmission of the messages listed in <i>ids</i>.</p>
 <p>The failure is of type <i>error</i>.</p>
-<h3 class="fn"><a name="messagesFailedTransmission-2"></a>void QMailMessageSink::messagesFailedTransmission ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCode</a>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<h3 class="fn"><a name="messagesFailedTransmission-2"></a>void QMailMessageSink::messagesFailedTransmission ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="qmailserviceaction-status.html#ErrorCode-enum">QMailServiceAction::Status::ErrorCode</a> <i>error</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This is an overloaded function.</p>
+<p>Concurrent version of <a href="qmailmessagesink.html#messagesFailedTransmission">messagesFailedTransmission</a>() signal.</p>
+<p>The generating request has identifier <i>action</i>.</p>
 <h3 class="fn"><a name="messagesTransmitted"></a>void QMailMessageSink::messagesTransmitted ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <p>Signal emitted by the sink to report the successful transmission of the messages listed in <i>ids</i>.</p>
 <h3 class="fn"><a name="messagesTransmitted-2"></a>void QMailMessageSink::messagesTransmitted ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
+<p>This is an overloaded function.</p>
+<p>Concurrent version of <a href="qmailmessagesink.html#messagesTransmitted">messagesTransmitted</a>() signal.</p>
+<p>The generating request has identifier <i>action</i>.</p>
 <h3 class="fn"><a name="notImplemented"></a>void QMailMessageSink::notImplemented ( <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [protected]</tt></h3>
+<p>This function overloads notImplemented().</p>
+<p>Concurrent version of notImplemented().</p>
+<p>The request has the identifier <i>action</i>.</p>
 <h3 class="fn"><a name="transmitMessages"></a>bool QMailMessageSink::transmitMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
 <p>Invoked by the message server to initiate a transmission operation.</p>
 <p>Attempt to transmit each message listed in <i>ids</i> to the external server.</p>
@@ -83,6 +92,9 @@
 <p>Messages for which for which an unsuccessful attempt to transmit has been made should be progressively reported via <a href="qmailmessagesink.html#messagesFailedTransmission">messagesFailedTransmission</a>().</p>
 <p>Return true if an operation is initiated.</p>
 <h3 class="fn"><a name="transmitMessages-2"></a>bool QMailMessageSink::transmitMessages ( const <a href="qmailmessageid.html#QMailMessageIdList-typedef">QMailMessageIdList</a> &amp; <i>ids</i>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#quint64-typedef">quint64</a> <i>action</i> )&nbsp;&nbsp;<tt> [virtual slot]</tt></h3>
+<p>This function overloads <a href="qmailmessagesink.html#transmitMessages">transmitMessages</a>().</p>
+<p>Concurrent version of <a href="qmailmessagesink.html#transmitMessages">transmitMessages</a>().</p>
+<p>The request has the identifier <i>action</i>.</p>
 <p /><address><hr /><div align="center">
 <table width="100%" cellspacing="0" border="0"><tr class="address">
 <td align="left">Copyright &copy; 2010 QtSoftware</td>

@@ -34,6 +34,7 @@
 <table class="alignedsummary" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr><td class="memItemLeft" align="right" valign="top">Activity </td><td class="memItemRight" valign="bottom"><b><a href="qmailserviceaction.html#activity">activity</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">Connectivity </td><td class="memItemRight" valign="bottom"><b><a href="qmailserviceaction.html#connectivity">connectivity</a></b> () const</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool </td><td class="memItemRight" valign="bottom"><b><a href="qmailserviceaction.html#isRunning">isRunning</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">QPair&lt;uint, uint&gt; </td><td class="memItemRight" valign="bottom"><b><a href="qmailserviceaction.html#progress">progress</a></b> () const</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const Status </td><td class="memItemRight" valign="bottom"><b><a href="qmailserviceaction.html#status">status</a></b> () const</td></tr>
 </table>
@@ -85,7 +86,8 @@
 <p>QMailServiceAction provides the mechanisms for messaging clients to request actions from external services, and to receive information in response. The details of requests differ for each derived action, and the specific data returned is also variable. However, all actions present the same interface for communicating status, connectivity and progress information.</p>
 <p>All actions communicate changes in their operational state by emitting the <a href="qmailserviceaction.html#activityChanged">activityChanged</a>() signal. If the execution of the action requires connectivity to an external service, then changes in connectivity state are emitted via the <a href="qmailserviceaction.html#connectivityChanged">connectivityChanged</a>() signal. Some actions are able to provide progress information as they execute; these changes are reported via the <a href="qmailserviceaction.html#progressChanged">progressChanged</a>() signal. If error conditions are encountered, the <a href="qmailserviceaction.html#statusChanged">statusChanged</a>() signal is emitted to report the new status.</p>
 <p>A user may attempt to cancel an operation after it has been initiated. The <a href="qmailserviceaction.html#cancelOperation">cancelOperation</a>() slot is provided for this purpose.</p>
-<p>A QMailServiceAction instance supports only a single request at any time. An application may, however, use multiple QMailServiceAction instances to send independent requests concurrently. Each QMailServiceAction instance will report only the changes pertaining to the request that instance delivered. Whether or not concurrent requests are concurrently serviced by the message server depends on whether those requests must be serviced by the same <a href="qmailmessageservice.html">QMailMessageService</a> instance.</p>
+<p>A QMailServiceAction instance supports only a single request at any time. Attempting to initiate an operation on a QMailServiceAction instace while another operation is already in progress for that action is not supported.</p>
+<p>An application may however use multiple QMailServiceAction instances to send independent requests concurrently. Each QMailServiceAction instance will report only the changes pertaining to the request that instance delivered. Whether or not concurrent requests are concurrently serviced by the messageserver depends on whether those requests must be serviced by the same <a href="qmailmessageservice.html">QMailMessageService</a> instance.</p>
 <p>See also <a href="qmailmessageservice.html">QMailMessageService</a>.</p>
 <hr />
 <h2>Member Type Documentation</h2>
@@ -123,6 +125,8 @@
 <h3 class="fn"><a name="connectivityChanged"></a>void QMailServiceAction::connectivityChanged ( <a href="qmailserviceaction.html#Connectivity-enum">QMailServiceAction::Connectivity</a> <i>c</i> )&nbsp;&nbsp;<tt> [signal]</tt></h3>
 <p>This signal is emitted when the connectivity status of the service performing the action changes, with the new state described by <i>c</i>.</p>
 <p>See also <a href="qmailserviceaction.html#connectivity">connectivity</a>().</p>
+<h3 class="fn"><a name="isRunning"></a>bool QMailServiceAction::isRunning () const</h3>
+<p>Returns if the service action is currently running (i.e&#x2e; if it's doing something, but hasn't yet finished)</p>
 <h3 class="fn"><a name="progress"></a><a href="http://doc.trolltech.com/4.5/qpair.html">QPair</a>&lt;<a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a>, <a href="http://doc.trolltech.com/4.5/qtglobal.html#uint-typedef">uint</a>&gt; QMailServiceAction::progress () const</h3>
 <p>Returns the current progress of the service action.</p>
 <p>See also <a href="qmailserviceaction.html#progressChanged">progressChanged</a>().</p>

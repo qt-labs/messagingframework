@@ -26,7 +26,9 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connect-2">connect</a></b> ( const QObject *, const char *, const char *, Qt::ConnectionType ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connectNotify">connectNotify</a></b> ( const char * )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#copyMessages">copyMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#copyMessages-2">copyMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#copyMessages-3">copyMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#countMessages">countMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#countMessages-2">countMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#createFolder">createFolder</a></b> ( const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#createFolder-2">createFolder</a></b> ( const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#customEvent">customEvent</a></b> ( QEvent * )</div></li>
@@ -35,7 +37,7 @@
 <li><div class="fn"><b><a href="qmailmessagesource.html#deleteFolder-2">deleteFolder</a></b> ( const QMailFolderId &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#deleteLater">deleteLater</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#deleteMessages">deleteMessages</a></b> ( const QMailMessageIdList &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#deleteMessages-2">deleteMessages</a></b> ( const QMailMessageIdList &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#deleteMessages-3">deleteMessages</a></b> ( const QMailMessageIdList &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#destroyed">destroyed</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect">disconnect</a></b> ( const QObject *, const char *, const QObject *, const char * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect-2">disconnect</a></b> ( const char *, const QObject *, const char * )</div></li>
@@ -52,7 +54,7 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren">findChildren</a></b> ( const QString &amp; ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#findChildren-2">findChildren</a></b> ( const QRegExp &amp; ) const</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#flagMessages">flagMessages</a></b> ( const QMailMessageIdList &amp;, quint64, quint64 ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#flagMessages-2">flagMessages</a></b> ( const QMailMessageIdList &amp;, quint64, quint64, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#flagMessages-3">flagMessages</a></b> ( const QMailMessageIdList &amp;, quint64, quint64, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#inherits">inherits</a></b> ( const char * ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#installEventFilter">installEventFilter</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#isWidgetType">isWidgetType</a></b> () const</div></li>
@@ -62,18 +64,20 @@
 <li><div class="fn"><b><a href="qmailmessagesource.html#messageRemovalOption">messageRemovalOption</a></b> () const : QMailStore::MessageRemovalOption</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesCopied">messagesCopied</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesCopied-2">messagesCopied</a></b> ( const QMailMessageIdList &amp;, quint64 )</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#messagesCount">messagesCount</a></b> ( uint )</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#messagesCount-2">messagesCount</a></b> ( uint, quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesDeleted">messagesDeleted</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesDeleted-2">messagesDeleted</a></b> ( const QMailMessageIdList &amp;, quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesFlagged">messagesFlagged</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesFlagged-2">messagesFlagged</a></b> ( const QMailMessageIdList &amp;, quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesMoved">messagesMoved</a></b> ( const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesMoved-2">messagesMoved</a></b> ( const QMailMessageIdList &amp;, quint64 )</div></li>
-</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesPrepared">messagesPrepared</a></b> ( const QMailMessageIdList &amp; )</div></li>
+</ul></td><td valign="top"><ul>
 <li><div class="fn"><b><a href="qmailmessagesource.html#messagesPrepared-2">messagesPrepared</a></b> ( const QMailMessageIdList &amp;, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#metaObject">metaObject</a></b> () const</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#moveMessages">moveMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#moveMessages-2">moveMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#moveMessages-3">moveMessages</a></b> ( const QMailMessageIdList &amp;, const QMailFolderId &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#moveToThread">moveToThread</a></b> ( QThread * )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#newMessagesAvailable">newMessagesAvailable</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#newMessagesAvailable-2">newMessagesAvailable</a></b> ( quint64 )</div></li>
@@ -88,6 +92,8 @@
 <li><div class="fn"><b><a href="qmailmessagesource.html#protocolResponse">protocolResponse</a></b> ( const QString &amp;, const QVariant &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#protocolResponse-2">protocolResponse</a></b> ( const QString &amp;, const QVariant &amp;, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#remainingMessagesCount">remainingMessagesCount</a></b> ( uint )</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#remainingMessagesCount-2">remainingMessagesCount</a></b> ( uint, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#removeEventFilter">removeEventFilter</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#renameFolder">renameFolder</a></b> ( const QMailFolderId &amp;, const QString &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#renameFolder-2">renameFolder</a></b> ( const QMailFolderId &amp;, const QString &amp;, quint64 ) : bool</div></li>
@@ -97,6 +103,8 @@
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveFolderList-2">retrieveFolderList</a></b> ( const QMailAccountId &amp;, const QMailFolderId &amp;, bool, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessageList">retrieveMessageList</a></b> ( const QMailAccountId &amp;, const QMailFolderId &amp;, uint, const QMailMessageSortKey &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessageList-2">retrieveMessageList</a></b> ( const QMailAccountId &amp;, const QMailFolderId &amp;, uint, const QMailMessageSortKey &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessageLists">retrieveMessageLists</a></b> ( const QMailAccountId &amp;, const QMailFolderIdList &amp;, uint, const QMailMessageSortKey &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessageLists-2">retrieveMessageLists</a></b> ( const QMailAccountId &amp;, const QMailFolderIdList &amp;, uint, const QMailMessageSortKey &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessagePart">retrieveMessagePart</a></b> ( const QMailMessagePart::Location &amp; ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessagePart-2">retrieveMessagePart</a></b> ( const QMailMessagePart::Location &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessagePartRange">retrieveMessagePartRange</a></b> ( const QMailMessagePart::Location &amp;, uint ) : bool</div></li>
@@ -105,8 +113,10 @@
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessageRange-2">retrieveMessageRange</a></b> ( const QMailMessageId &amp;, uint, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessages">retrieveMessages</a></b> ( const QMailMessageIdList &amp;, QMailRetrievalAction::RetrievalSpecification ) : bool</div></li>
 <li><div class="fn"><b><a href="qmailmessagesource.html#retrieveMessages-2">retrieveMessages</a></b> ( const QMailMessageIdList &amp;, QMailRetrievalAction::RetrievalSpecification, quint64 ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, const QMailMessageSortKey &amp; ) : bool</div></li>
-<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages-2">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, const QMailMessageSortKey &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, quint64, const QMailMessageSortKey &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages-2">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, const QMailMessageSortKey &amp; ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages-3">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, quint64, const QMailMessageSortKey &amp;, quint64 ) : bool</div></li>
+<li><div class="fn"><b><a href="qmailmessagesource.html#searchMessages-4">searchMessages</a></b> ( const QMailMessageKey &amp;, const QString &amp;, const QMailMessageSortKey &amp;, quint64 ) : bool</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#sender">sender</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">setObjectName</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#setParent">setParent</a></b> ( QObject * )</div></li>

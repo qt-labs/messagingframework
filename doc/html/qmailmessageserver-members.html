@@ -22,6 +22,8 @@
 <li><div class="fn"><b><a href="qmailmessageserver.html#actionStarted">actionStarted</a></b> ( QMailActionData )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#actionsListed">actionsListed</a></b> ( const QMailActionDataList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#activityChanged">activityChanged</a></b> ( quint64, QMailServiceAction::Activity )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#addMessages">addMessages</a></b> ( quint64, const QMailMessageMetaDataList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#addMessages-2">addMessages</a></b> ( quint64, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#blockSignals">blockSignals</a></b> ( bool )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#cancelSearch">cancelSearch</a></b> ( quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#cancelTransfer">cancelTransfer</a></b> ( quint64 )</div></li>
@@ -30,14 +32,13 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connect">connect</a></b> ( const QObject *, const char *, const QObject *, const char *, Qt::ConnectionType )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connect-2">connect</a></b> ( const QObject *, const char *, const char *, Qt::ConnectionType ) const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#connectNotify">connectNotify</a></b> ( const char * )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#connectionDown">connectionDown</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#connectivityChanged">connectivityChanged</a></b> ( quint64, QMailServiceAction::Connectivity )</div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#copyMessages">copyMessages</a></b> ( quint64, const QMailMessageIdList &amp;, const QMailFolderId &amp; )</div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#createFolder">createFolder</a></b> ( quint64, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#countMessages">countMessages</a></b> ( quint64, const QMailMessageKey &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#customEvent">customEvent</a></b> ( QEvent * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#d_ptr-var">d_ptr</a></b> : </div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#deleteFolder">deleteFolder</a></b> ( quint64, const QMailFolderId &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#deleteLater">deleteLater</a></b> ()</div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#deleteMessages">deleteMessages</a></b> ( quint64, const QMailMessageIdList &amp;, QMailStore::MessageRemovalOption )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#deleteMessages">deleteMessages</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#destroyed">destroyed</a></b> ( QObject * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect">disconnect</a></b> ( const QObject *, const char *, const QObject *, const char * )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#disconnect-2">disconnect</a></b> ( const char *, const QObject *, const char * )</div></li>
@@ -62,18 +63,29 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#killTimer">killTimer</a></b> ( int )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#listActions">listActions</a></b> ()</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#matchingMessageIds">matchingMessageIds</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#messagesAdded">messagesAdded</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesCopied">messagesCopied</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
-</ul></td><td valign="top"><ul>
+<li><div class="fn"><b><a href="qmailmessageserver.html#messagesCount">messagesCount</a></b> ( quint64, uint )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesDeleted">messagesDeleted</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesFailedTransmission">messagesFailedTransmission</a></b> ( quint64, const QMailMessageIdList &amp;, QMailServiceAction::Status::ErrorCode )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesFlagged">messagesFlagged</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesMoved">messagesMoved</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#messagesTransmitted">messagesTransmitted</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#messagesUpdated">messagesUpdated</a></b> ( quint64, const QMailMessageIdList &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#metaObject">metaObject</a></b> () const</div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#moveMessages">moveMessages</a></b> ( quint64, const QMailMessageIdList &amp;, const QMailFolderId &amp; )</div></li>
+</ul></td><td valign="top"><ul>
+<li><div class="fn"><b><a href="qmailmessageserver.html#moveToFolder">moveToFolder</a></b> ( quint64, const QMailMessageIdList &amp;, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#moveToStandardFolder">moveToStandardFolder</a></b> ( quint64, const QMailMessageIdList &amp;, quint64 )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#moveToThread">moveToThread</a></b> ( QThread * )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#newCountChanged">newCountChanged</a></b> ( const QMailMessageCountMap &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">objectName</a></b> () const</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineCopyMessages">onlineCopyMessages</a></b> ( quint64, const QMailMessageIdList &amp;, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineCreateFolder">onlineCreateFolder</a></b> ( quint64, const QString &amp;, const QMailAccountId &amp;, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineDeleteFolder">onlineDeleteFolder</a></b> ( quint64, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineDeleteMessages">onlineDeleteMessages</a></b> ( quint64, const QMailMessageIdList &amp;, QMailStore::MessageRemovalOption )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineFlagMessagesAndMoveToStandardFolder">onlineFlagMessagesAndMoveToStandardFolder</a></b> ( quint64, const QMailMessageIdList &amp;, quint64, quint64 )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineMoveMessages">onlineMoveMessages</a></b> ( quint64, const QMailMessageIdList &amp;, const QMailFolderId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#onlineRenameFolder">onlineRenameFolder</a></b> ( quint64, const QMailFolderId &amp;, const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#parent">parent</a></b> () const</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#progressChanged">progressChanged</a></b> ( quint64, uint, uint )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#property">property</a></b> ( const char * ) const</div></li>
@@ -81,18 +93,23 @@
 <li><div class="fn"><b><a href="qmailmessageserver.html#protocolRequestCompleted">protocolRequestCompleted</a></b> ( quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#protocolResponse">protocolResponse</a></b> ( quint64, const QString &amp;, const QVariant &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#receivers">receivers</a></b> ( const char * ) const</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#reconnectionTimeout">reconnectionTimeout</a></b> ()</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#remainingMessagesCount">remainingMessagesCount</a></b> ( quint64, uint )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#removeEventFilter">removeEventFilter</a></b> ( QObject * )</div></li>
-<li><div class="fn"><b><a href="qmailmessageserver.html#renameFolder">renameFolder</a></b> ( quint64, const QMailFolderId &amp;, const QString &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#restoreToPreviousFolder">restoreToPreviousFolder</a></b> ( quint64, const QMailMessageKey &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrievalCompleted">retrievalCompleted</a></b> ( quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveAll">retrieveAll</a></b> ( quint64, const QMailAccountId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveFolderList">retrieveFolderList</a></b> ( quint64, const QMailAccountId &amp;, const QMailFolderId &amp;, bool )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessageList">retrieveMessageList</a></b> ( quint64, const QMailAccountId &amp;, const QMailFolderId &amp;, uint, const QMailMessageSortKey &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessageLists">retrieveMessageLists</a></b> ( quint64, const QMailAccountId &amp;, const QMailFolderIdList &amp;, uint, const QMailMessageSortKey &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessagePart">retrieveMessagePart</a></b> ( quint64, const QMailMessagePart::Location &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessagePartRange">retrieveMessagePartRange</a></b> ( quint64, const QMailMessagePart::Location &amp;, uint )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessageRange">retrieveMessageRange</a></b> ( quint64, const QMailMessageId &amp;, uint )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#retrieveMessages">retrieveMessages</a></b> ( quint64, const QMailMessageIdList &amp;, QMailRetrievalAction::RetrievalSpecification )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#rollBackUpdates">rollBackUpdates</a></b> ( quint64, const QMailAccountId &amp; )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#searchCompleted">searchCompleted</a></b> ( quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#searchMessages">searchMessages</a></b> ( quint64, const QMailMessageKey &amp;, const QString &amp;, QMailSearchAction::SearchSpecification, const QMailMessageSortKey &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#searchMessages-2">searchMessages</a></b> ( quint64, const QMailMessageKey &amp;, const QString &amp;, QMailSearchAction::SearchSpecification, quint64, const QMailMessageSortKey &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#sender">sender</a></b> () const</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#objectName-prop">setObjectName</a></b> ( const QString &amp; )</div></li>
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#setParent">setParent</a></b> ( QObject * )</div></li>
@@ -111,6 +128,8 @@
 <li><div class="fn"><b><a href="http://doc.trolltech.com/4.5/qobject.html#trUtf8">trUtf8</a></b> ( const char *, const char *, int )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#transmissionCompleted">transmissionCompleted</a></b> ( quint64 )</div></li>
 <li><div class="fn"><b><a href="qmailmessageserver.html#transmitMessages">transmitMessages</a></b> ( quint64, const QMailAccountId &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#updateMessages">updateMessages</a></b> ( quint64, const QMailMessageMetaDataList &amp; )</div></li>
+<li><div class="fn"><b><a href="qmailmessageserver.html#updateMessages-2">updateMessages</a></b> ( quint64, const QString &amp; )</div></li>
 </ul>
 </td></tr>
 </table></p>
