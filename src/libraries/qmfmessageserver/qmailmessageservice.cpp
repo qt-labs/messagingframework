@@ -1870,9 +1870,9 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 act
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCritera, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
 {
-    Q_UNUSED(filter)
+    Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
     Q_UNUSED(limit)
     Q_UNUSED(sort)
@@ -1891,7 +1891,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCritera, co
 */
 bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
 {
-    Q_UNUSED(filter)
+    Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
     Q_UNUSED(sort)
     Q_UNUSED(action)
@@ -1909,7 +1909,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 */
 bool QMailMessageSource::countMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, quint64 action)
 {
-    Q_UNUSED(filter)
+    Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
     Q_UNUSED(action)
 
