@@ -13,8 +13,6 @@ qhp.QMF.indexRoot       =
 qhp.QMF.extraFiles      = \
                           classic.css \
                           images/codeless.png \
-                          images/messagenavigator-example.png \
-                          images/messageviewer-example.png \
                           images/qtlogo.png
 
 imagedirs               = images
@@ -40,16 +38,13 @@ sourcedirs              = ../../src/libraries/qmfclient \
                           ../../src/plugins/contentmanagers/qmfstoragemanager \
                           ../../examples/messagingaccounts \
                           ../../src/tools/messageserver \
-                          ../../examples/messagenavigator \
-                          ../../examples/messageviewer \
                           ./api \
-                          ./examples \
                           ./modules \
                           .
 
 sources.fileextensions  = "*.qdoc *.cpp"
 
-exampledirs             = ../../examples \
+exampledirs = ../../examples \
 
 indexes                 = ./qt.index
 
@@ -133,6 +128,8 @@ Cpp.ignoredirectives    = Q_DECLARE_INTERFACE \
                           Q_FLAGS \
                           Q_INTERFACES \
                           QT_MODULE \
+                          QT_BEGIN_NAMESPACE \
+                          QT_END_NAMESPACE \
                           __attribute__
 
 HTML.stylesheets          = classic.css

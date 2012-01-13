@@ -43,6 +43,4 @@ QMAKE_EXTRA_TARGETS += html_docs qch_docs docs
 OTHER_FILES = $$HELP_DEP_FILES \
               $$_PRO_FILE_PWD_/doc/src/api/api-pages.qdoc \
               $$_PRO_FILE_PWD_/doc/src/api/classhierarchy.qdoc \
-              $$_PRO_FILE_PWD_/doc/src/api/groups.qdoc \
-              $$_PRO_FILE_PWD_/doc/src/examples/messageviewer.qdoc \
-              $$_PRO_FILE_PWD_/doc/src/examples/messagenavigator.qdoc
+              $$_PRO_FILE_PWD_/doc/src/api/groups.qdoc
