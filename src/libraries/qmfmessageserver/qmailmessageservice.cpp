@@ -1638,7 +1638,7 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
 */
 bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
 {
-    Q_UNUSED(messageIds)
+    Q_UNUSED(ids)
     Q_UNUSED(spec)
     Q_UNUSED(action)
 
