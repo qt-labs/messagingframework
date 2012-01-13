@@ -2901,6 +2901,7 @@ bool ImapProtocol::open( const ImapConfiguration& config )
                 this, SLOT(incomingData()));
     }
 
+    qMailLog(IMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
     _transport->open( config.mailServer(), config.mailPort(), static_cast<QMailTransport::EncryptType>(config.mailEncryption()) );
 
     return true;
