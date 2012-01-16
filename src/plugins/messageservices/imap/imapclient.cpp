@@ -619,10 +619,22 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 {
     if ( status != OpOk ) {
         switch ( command ) {
+            case IMAP_Enable:
+            {
+                // Couldn't enable QRESYNC, remove capability and continue
+                qMailLog(IMAP) << _protocol.objectName() << "unable to enable QRESYNC";
+                QStringList capa(_protocol.capabilities());
+                capa.removeAll("QRESYNC");
+                capa.removeAll("CONDSTORE");
+                _protocol.setCapabilities(capa);
+                commandTransition(command, OpOk);
+                break;
+            }
             case IMAP_UIDStore:
             {
                 // Couldn't set a flag, ignore as we can stil continue
                 qMailLog(IMAP) << _protocol.objectName() << "could not store message flag";
+                commandTransition(command, OpOk);
                 break;
             }
 
