@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201203
+  * Fixes: NB#296686 Problems configuring and accessing “.eim” & “emirates.net.ae” mail accounts
+
 201202_2
   * Fixes: NB#291875 QMF doesn't have message flag for marking emails as todo
 
