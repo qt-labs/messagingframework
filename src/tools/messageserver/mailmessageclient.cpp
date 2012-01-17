@@ -108,6 +108,8 @@ MailMessageClient::MailMessageClient(QObject* parent)
 
     connectIpc(adaptor, MESSAGE(transmitMessages(quint64, QMailAccountId)),
                this, SIGNAL(transmitMessages(quint64, QMailAccountId)));
+    connectIpc(adaptor, MESSAGE(transmitMessage(quint64, QMailMessageId)),
+               this, SIGNAL(transmitMessage(quint64, QMailMessageId)));
     connectIpc(adaptor, MESSAGE(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)),
                this, SIGNAL(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
     connectIpc(adaptor, MESSAGE(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),

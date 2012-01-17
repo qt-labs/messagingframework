@@ -68,6 +68,7 @@ signals:
     void acknowledgeNewMessages(const QMailMessageTypeList&);
 
     void transmitMessages(quint64, const QMailAccountId &accountId);
+    void transmitMessage(quint64, const QMailMessageId &messageId);
 
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);

@@ -1212,6 +1212,13 @@ void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountI
     emitChanges();
 }
 
+void QMailTransmitActionPrivate::transmitMessage(const QMailMessageId &messageId)
+{
+    _server->transmitMessage(newAction(), messageId);
+
+    emitChanges();
+}
+
 void QMailTransmitActionPrivate::init()
 {
     QMailServiceActionPrivate::init();
@@ -1321,6 +1328,16 @@ void QMailTransmitAction::transmitMessages(const QMailAccountId &accountId)
     impl(this)->transmitMessages(accountId);
 }
 
+/*!
+    Requests that the message server transmit the message identified by
+    by \a messageId that is currently scheduled for transmission (located in the Outbox folder).
+
+    Any message successfully transmitted will be moved to the account's Sent folder.
+*/
+void QMailTransmitAction::transmitMessage(const QMailMessageId &messageId)
+{
+    impl(this)->transmitMessage(messageId);
+}
 
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     : QMailServiceActionPrivate(this, i)

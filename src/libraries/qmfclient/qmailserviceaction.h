@@ -214,7 +214,7 @@ signals:
 
 public slots:
     void transmitMessages(const QMailAccountId &accountId);
-
+    void transmitMessage(const QMailMessageId &messageId);
 };
 
 

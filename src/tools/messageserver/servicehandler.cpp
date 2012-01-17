@@ -1331,6 +1331,42 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
     }
 }
 
+void ServiceHandler::transmitMessage(quint64 action, const QMailMessageId &messageId)
+{
+    QMailAccountId accountId(QMailMessageMetaData(messageId).parentAccountId());
+    // Ensure that this account has a sink configured
+    QSet<QMailMessageService*> sinks(sinkServiceSet(accountId));
+    if (sinks.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to enqueue messages for transmission"));
+    } else {
+        // We need to see if any sources are required to prepare these messages
+        // We need to prepare messages to:
+        // - resolve references
+        // - move to the Sent folder prior to transmission
+        quint64 preparationStatus(QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal);
+
+        QMailMessageIdList unresolvedMessages;
+        QMailMessageMetaData metaData(messageId);
+        if (metaData.status() & preparationStatus) {
+            unresolvedMessages << messageId;
+        }
+
+        QSet<QMailMessageService*> sources;
+        if (!unresolvedMessages.isEmpty()) {
+            // Find the accounts that own these messages
+            QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists(messageResolvers(unresolvedMessages));
+
+            sources = sourceServiceSet(unresolvedLists.keys().toSet());
+
+            // Emit no signal after completing preparation
+            enqueueRequest(action, serialize(unresolvedLists), sources, &ServiceHandler::dispatchPrepareMessages, 0, TransmitMessagesRequestType);
+        }
+
+        // The transmit action is dependent on the availability of the sources, since they must complete their preparation step first
+        enqueueRequest(action, serialize(messageId), sinks, &ServiceHandler::dispatchTransmitMessage, &ServiceHandler::transmissionCompleted, TransmitMessagesRequestType, sources);
+    }
+}
+
 bool ServiceHandler::dispatchPrepareMessages(quint64 action, const QByteArray &data)
 {
     QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists;
@@ -1383,6 +1419,42 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
             setTransmissionInProgress(accountId, true);
         } else {
             qWarning() << "Unable to service request to add messages to sink for account:" << accountId;
+            return false;
+        }
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate sink for account"), accountId);
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceHandler::dispatchTransmitMessage(quint64 action, const QByteArray &data)
+{
+    QMailMessageId messageId;
+
+    deserialize(data, messageId);
+
+    QMailMessageMetaData metaData(messageId);
+    QMailAccountId accountId(metaData.parentAccountId());
+    if (QMailMessageSink *sink = accountSink(accountId)) {
+        // Transmit the messages if it's in the Outbox.
+        quint64 outboxStatus(QMailMessage::Outbox & ~QMailMessage::Trash);
+        bool success = false;
+        QMailMessageIdList toTransmit;
+        if (metaData.status() & outboxStatus) {
+            toTransmit << messageId;
+
+            success = sinkService.value(sink)->usesConcurrentActions()
+                ? sink->transmitMessages(toTransmit, action)
+                : sink->transmitMessages(toTransmit);
+        }
+
+        if (success) {
+            // This account is now transmitting
+            setTransmissionInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to add message " << messageId << " to sink for account:" << accountId;
             return false;
         }
     } else {

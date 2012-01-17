@@ -64,6 +64,7 @@ signals:
     void initialise();
 
     void transmitMessages(quint64, const QMailAccountId &accountId);
+    void transmitMessage(quint64, const QMailMessageId &messageId);
 
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
@@ -134,6 +135,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(initialise()));
     connectIpc(this, SIGNAL(transmitMessages(quint64, QMailAccountId)),
                adaptor, MESSAGE(transmitMessages(quint64, QMailAccountId)));
+    connectIpc(this, SIGNAL(transmitMessage(quint64, QMailMessageId)),
+               adaptor, MESSAGE(transmitMessage(quint64, QMailMessageId)));
     connectIpc(this, SIGNAL(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)),
                adaptor, MESSAGE(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
     connectIpc(this, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),
@@ -553,6 +556,18 @@ QMailMessageServer::~QMailMessageServer()
 void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &accountId)
 {
     emit d->transmitMessages(action, accountId);
+}
+
+/*!
+    Requests that the MessageServer application transmit the message
+    identified by \a messageId that are currently in the Outbox folder.
+    The request has the identifier \a action.
+
+    \sa transmissionCompleted()
+*/
+void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &messageId)
+{
+    emit d->transmitMessage(action, messageId);
 }
 
 /*!

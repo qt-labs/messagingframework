@@ -165,6 +165,8 @@ MessageServer::MessageServer(QObject *parent)
         // The email handler should handle the email client signals
         connect(client, SIGNAL(transmitMessages(quint64, QMailAccountId)),
                 handler, SLOT(transmitMessages(quint64, QMailAccountId)));
+        connect(client, SIGNAL(transmitMessage(quint64, QMailMessageId)),
+                handler, SLOT(transmitMessage(quint64, QMailMessageId)));
         connect(client, SIGNAL(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)),
                 handler, SLOT(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
         connect(client, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),

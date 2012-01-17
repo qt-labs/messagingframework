@@ -67,6 +67,7 @@ public:
 
 public slots:
     void transmitMessages(quint64 action, const QMailAccountId &accountId);
+    void transmitMessage(quint64, const QMailMessageId &messageId);
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
@@ -247,6 +248,7 @@ private:
 
     bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
     bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
+    bool dispatchTransmitMessage(quint64 action, const QByteArray& data);
     bool dispatchRetrieveFolderListAccount(quint64, const QByteArray &data);
     bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageList(quint64, const QByteArray &data);

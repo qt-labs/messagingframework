@@ -226,6 +226,7 @@ public:
     QMailTransmitActionPrivate(QMailTransmitAction *i);
 
     void transmitMessages(const QMailAccountId &accountId);
+    void transmitMessage(const QMailMessageId &messageId);
 
 signals:
     void messagesTransmitted(const QMailMessageIdList &ids);
