@@ -44,21 +44,22 @@
 
 #include "qmailglobal.h"
 #include "qmailid.h"
+#include "qmailaddress.h"
+#include "qmailtimestamp.h"
+#include "qprivateimplementation.h"
 #include <QString>
 #include <QList>
 #include <QSharedData>
 
 class QMailThreadPrivate;
 
-struct QMF_EXPORT QMailThread
+class QMF_EXPORT QMailThread : public QPrivatelyImplemented<QMailThreadPrivate>
 {
+public:
+    typedef QMailThreadPrivate ImplementationType;
+
     QMailThread();
     explicit QMailThread(const QMailThreadId &id);
-    ~QMailThread();
-
-    QMailThread(const QMailThread& other);
-
-    QMailThread& operator=(const QMailThread& other);
 
     QMailThreadId id() const;
     void setId(const QMailThreadId& id);
@@ -75,8 +76,26 @@ struct QMF_EXPORT QMailThread
     uint messageCount() const;
     void setMessageCount(uint value);
 
+    QString subject() const;
+    void setSubject(const QString &value);
+
+    QMailAddressList senders() const;
+    void setSenders(const QMailAddressList &value);
+    void addSender(const QMailAddress &value);
+
+    QString preview() const;
+    void setPreview(const QString &value);
+
+    QMailTimeStamp lastDate() const;
+    void setLastDate(const QMailTimeStamp &value);
+
+    QMailTimeStamp startedDate() const;
+    void setStartedDate(const QMailTimeStamp &value);
+
+    quint64 status() const;
+    void setStatus(quint64 value);
+
 private:
-    QSharedDataPointer<QMailThreadPrivate> d;
 };
 
 typedef QList<QMailThread> QMailThreadList;

@@ -4,5 +4,11 @@ CREATE TABLE mailthreads (
     unreadcount INTEGER NOT NULL,
     serveruid VARCHAR NOT NULL,
     parentaccountid INTEGER NOT NULL,
+    subject VARCHAR,
+    preview VARCHAR,
+    senders VARCHAR,
+    lastDate TIMESTAMP,
+    startedDate TIMESTAMP,
+    status INTEGER,
     FOREIGN KEY (parentaccountid) REFERENCES mailaccounts(id)
 );
