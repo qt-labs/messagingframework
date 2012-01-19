@@ -286,12 +286,13 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
     QMailMessageIdList addedMessageIds;
     QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
+    QMailThreadIdList updatedThreadIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &updatedThreadIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -301,6 +302,7 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
+    emitThreadNotification(Updated, updatedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
 
     return true;
@@ -316,12 +318,13 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     QMailMessageIdList addedMessageIds;
     QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
+    QMailThreadIdList updatedThreadIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &updatedThreadIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -329,6 +332,7 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
     emitThreadNotification(Added, addedThreadIds);
     emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
+    emitThreadNotification(Updated, updatedThreadIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);

@@ -44,6 +44,7 @@
 
 #include "qmailaccountkey.h"
 #include "qmailmessagekey.h"
+#include <QDateTime>
 #include <QStringList>
 
 using namespace QMailKey;
@@ -432,3 +433,31 @@ QMailThreadKey QMailThreadKey::parentAccountId(const QMailAccountKey &key, QMail
 {
     return QMailThreadKey(ParentAccountId, key, QMailKey::comparator(cmp));
 }
+
+QMailThreadKey QMailThreadKey::countMessages(const int count, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailThreadKey(MessageCount, count, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose LastDate matches \a value, according to \a cmp.
+
+    \sa QMailThread::lastDate()
+*/
+QMailThreadKey QMailThreadKey::lastDate(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
+{
+    // An invalid QDateTime does not exist-compare correctly, so use a substitute value
+    QDateTime x(value.isNull() ? QDateTime::fromTime_t(0) : value);
+    return QMailThreadKey(LastDate, x, QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching messages whose LastDate has the relation to \a value that is specified by \a cmp.
+
+    \sa QMailThread::lastDate()
+*/
+QMailThreadKey QMailThreadKey::lastDate(const QDateTime &value, QMailDataComparator::RelationComparator cmp)
+{
+    return QMailThreadKey(LastDate, value, QMailKey::comparator(cmp));
+}
+

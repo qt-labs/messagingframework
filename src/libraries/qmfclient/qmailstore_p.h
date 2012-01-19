@@ -147,10 +147,10 @@ public:
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual bool addMessages(const QList<QMailMessage *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual bool addThread(QMailThread *t,
                                QMailThreadIdList *addedThreadIds);
@@ -279,6 +279,8 @@ private:
     qint64 incrementTableVersion(const QString &name, qint64 current);
     bool upgradeTableVersion(const QString &name, qint64 current, qint64 final);
 
+    bool fullThreadTableUpdate();
+
     bool createTable(const QString &name);
 
     typedef QPair<QString, qint64> TableInfo;
@@ -398,6 +400,7 @@ private:
                         QMailAccountIdList& modifiedAccountIds);
 
     void removeExpiredData(const QMailMessageIdList& messageIds,
+                           const QMailThreadIdList& threadIds,
                            const QStringList& mailfiles,
                            const QMailFolderIdList& folderIds = QMailFolderIdList(),
                            const QMailAccountIdList& accountIds = QMailAccountIdList());
@@ -427,12 +430,14 @@ private:
         AttemptAddMessageOut( QMailMessageIdList * addedMessages
                             , QMailThreadIdList * addedThreads
                             , QMailMessageIdList * updatedMessages
+                            , QMailThreadIdList * updatedThreads
                             , QMailFolderIdList * modifiedFolders
                             , QMailThreadIdList * modifiedThreads
                             , QMailAccountIdList * modifiedAccounts)
             : addedMessageIds(addedMessages)
             , addedThreadIds(addedThreads)
             , updatedMessageIds(updatedMessages)
+            , updatedThreadIds(updatedThreads)
             , modifiedFolderIds(modifiedFolders)
             , modifiedThreadIds(modifiedThreads)
             , modifiedAccountIds(modifiedAccounts)
@@ -441,6 +446,7 @@ private:
         QMailMessageIdList *addedMessageIds;
         QMailThreadIdList* addedThreadIds;
         QMailMessageIdList *updatedMessageIds;
+        QMailThreadIdList *updatedThreadIds;
         QMailFolderIdList *modifiedFolderIds;
         QMailThreadIdList *modifiedThreadIds;
         QMailAccountIdList *modifiedAccountIds;
@@ -711,6 +717,7 @@ private:
 
     virtual void emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal, const QMailAccountIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal, const QMailFolderIdList &ids);
+    virtual void emitIpcNotification(QMailStoreImplementation::ThreadUpdateSignal signal, const QMailThreadIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids);
     virtual void emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data);
     virtual void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
