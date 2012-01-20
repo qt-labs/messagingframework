@@ -388,6 +388,11 @@ bool QMailMessageThreadedModelPrivate::addMessages(const QMailMessageIdList &ids
                 }
             }
 
+            if (descendants.indexOf(messageId) != -1) {
+                qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;  
+                insertParent = &_root;
+            }
+
             if (insertParent != 0) {
                 int insertIndex = 0;
 
@@ -793,6 +798,10 @@ void QMailMessageThreadedModelPrivate::init() const
                     }
                 }
 
+                if (descendants.indexOf(messageId) != -1) {
+                    qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants; 
+                    insertParent = &_root;
+                }
                 if (insertParent != 0) {
                     // Append the message to the existing children of the parent
                     QList<QMailMessageThreadedModelItem> &container(insertParent->_children);

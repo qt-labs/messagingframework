@@ -7211,6 +7211,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
     }
 
     if (!potentialPredecessors.isEmpty()) {
+         // Don't potentially overflow sqlite max arg limit of 1000, 100 potential predecessors is more than enough
+        potentialPredecessors = potentialPredecessors.mid(0, 100);
         quint64 predecessorId(0);
         quint64 messageId(metaData->id().toULongLong());
 
@@ -7220,8 +7222,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
 
             {
 
-                // Find the predecessor message for every message in the same thread as us
-                QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE parentthreadid = %1").arg(metaData->id().toULongLong()),
+                // Find the predecessor message for every message in the same thread as us or the thread of any potential predecessor of us
+                QVariantList vl;
+                vl << messageId;
+                foreach(quint64 p, potentialPredecessors) {
+                    vl << p;
+                }
+                QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE parentthreadid IN (SELECT parentthreadid FROM mailmessages WHERE id IN %1)").arg(expandValueList(vl)),
                                             "identifyAncestors mailmessages query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
@@ -7297,6 +7304,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::identifyAncestors(const QMai
             messageId = predecessor[messageId];
         }
     }
+    
+    if (predecessorId.isValid()) {
+        ancestorIds->append(predecessorId);
+    }
 
     return Success;
 }
@@ -7329,6 +7340,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
             descendants.remove(id);
         }
     }
+    descendants.remove(QMailMessageId(messageId));
 
     if (!descendants.isEmpty()) {
         QVariantList descendantIds;
@@ -7435,6 +7447,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                 ids.removeAll(id);
             }
         }
+        ids.removeAll(QMailMessageId(messageId));
 
         if (!ids.isEmpty()) {
             {
@@ -7603,7 +7616,6 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailThreadIdList& modifiedThreadIds,
                                        QMailAccountIdList& modifiedAccountIds)
 {
-
     QString elements("id,mailfile,parentaccountid,parentfolderid,parentthreadid");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";
@@ -7620,7 +7632,10 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
+        bool noMessages = true;
         while (query.next()) {
+            noMessages = false;
+            
             QMailMessageId messageId(extractValue<quint64>(query.value(0)));
             deletedMessageIds.append(messageId);
             
@@ -7647,11 +7662,11 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 removalFolderIds.append(folderId.toULongLong());
             }
         }
+            
+        // No messages? Then we're already done
+        if (noMessages)
+            return true;
     }
-
-    // No messages? Then we're already done
-    if (deletedMessageIds.isEmpty())
-        return true;
 
     if (!modifiedFolderIds.isEmpty()) {
         // Any ancestor folders of the directly modified folders are indirectly modified
@@ -7895,13 +7910,17 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
-            deletedFolderIds.append(QMailFolderId(extractValue<quint64>(query.value(0))));
-    }
+        bool noFolders = true;
+        while (query.next()) {
+            noFolders = false;
 
-    // No folders? Then we're already done
-    if (deletedFolderIds.isEmpty()) 
-        return true;
+            deletedFolderIds.append(QMailFolderId(extractValue<quint64>(query.value(0))));
+        }
+
+        // No folders? Then we're already done
+        if (noFolders) 
+            return true;
+    }
 
     // Create a key to select messages in the folders to be deleted
     QMailMessageKey messagesKey(QMailMessageKey::parentFolderId(key));
@@ -7990,13 +8009,17 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
+        bool noAccounts = true;
+        while (query.next()) {
+            noAccounts = false;
+            
             deletedAccountIds.append(QMailAccountId(extractValue<quint64>(query.value(0))));
-    }
+        }
 
-    // No accounts? Then we're already done
-    if (deletedAccountIds.isEmpty()) 
-        return true;
+        // No accounts? Then we're already done
+        if (noAccounts)
+            return true;
+    }
 
     // Create a key to select folders from the accounts to be deleted
     QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(key));
