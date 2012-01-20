@@ -460,4 +460,3 @@ QMailThreadKey QMailThreadKey::lastDate(const QDateTime &value, QMailDataCompara
 {
     return QMailThreadKey(LastDate, value, QMailKey::comparator(cmp));
 }
-

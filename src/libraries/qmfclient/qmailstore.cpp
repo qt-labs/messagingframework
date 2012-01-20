@@ -526,6 +526,10 @@ bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageR
     emitMessageNotification(Removed, deletedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
+    emitThreadNotification(Updated, modifiedThreadIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitThreadNotification(Removed, deletedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
@@ -682,7 +686,11 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
     }
 
     emitMessageNotification(Updated, updatedMessages);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
     emitThreadNotification(Updated, modifiedThreads);
+    emitThreadNotification(ContentsModified, modifiedThreads);
     emitMessageNotification(ContentsModified, modifiedMessages);
     emitMessageDataNotification(Updated, dataList(data, updatedMessages));
     emitFolderNotification(ContentsModified, modifiedFolders);
@@ -713,6 +721,10 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
     emitMessageNotification(Updated, updatedMessages);
     emitMessageDataNotification(updatedMessages, properties, data);
     emitThreadNotification(Removed, deletedThreads);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
+    emitThreadNotification(Updated, modifiedThreads);
     emitThreadNotification(ContentsModified, modifiedThreads);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);

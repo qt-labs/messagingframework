@@ -1472,7 +1472,7 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
     // If so must use sync updating
     bool fwod(false);
     foreach (QMailMessage message, list) {
-        if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal)) {
+        if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal | QMailMessage::Outgoing)) {
             fwod = true;
             break;
         }

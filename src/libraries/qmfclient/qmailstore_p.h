@@ -410,6 +410,10 @@ private:
     template<typename AccessType, typename FunctionType>
     bool repeatedly(FunctionType func, const QString &description, Transaction *t = 0) const;
 
+    quint64 threadId(const QMailMessageId &id);
+    AttemptResult updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo = 0);
+    AttemptResult updateLatestInConversation(const QSet<quint64> &threadIds, QMailMessageIdList *messagesUpdated);
+
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult customFields(quint64 id, QMap<QString, QString> *fields, const QString &tableName);
