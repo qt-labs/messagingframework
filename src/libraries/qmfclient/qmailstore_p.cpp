@@ -7229,6 +7229,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                     vl << p;
                 }
                 QSqlQuery query(simpleQuery(QString("SELECT id,responseid FROM mailmessages WHERE parentthreadid IN (SELECT parentthreadid FROM mailmessages WHERE id IN %1)").arg(expandValueList(vl)),
+                                            vl,
                                             "identifyAncestors mailmessages query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
