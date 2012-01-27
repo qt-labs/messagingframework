@@ -265,6 +265,7 @@ protected slots:
     void readReplyRequested(const QMailMessageMetaData&);
 
     void settings();
+    void createStandardFolders();
     void notificationStateChanged();
     void connectionStateChanged();
     void exportPendingChanges();
@@ -388,6 +389,7 @@ private:
     QAction *deleteFolderAction;
     QAction *renameFolderAction;
     QAction *settingsAction;
+    QAction *standardFoldersAction;
     QAction *emptyTrashAction;
     QAction *deleteMailAction;
     QAction *detachThreadAction;
@@ -439,6 +441,7 @@ private:
 
     QMailAccountIdList transmitAccountIds;
     QMailAccountIdList retrievalAccountIds;
+    QMailAccountIdList availableAccounts;
 
     QMailMessageId lastDraftId;
 

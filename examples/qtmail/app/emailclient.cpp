@@ -818,6 +818,10 @@ void EmailClient::initActions()
         connect(settingsAction, SIGNAL(triggered()), this, SLOT(settings()));
         settingsAction->setIconText(QString());
 
+        standardFoldersAction = new QAction( Qtmail::icon("Create standard folders"), tr("Create standard folders"), this );
+        connect(standardFoldersAction, SIGNAL(triggered()), this, SLOT(createStandardFolders()));
+        standardFoldersAction->setIconText(QString());
+
         workOfflineAction = new QAction( Qtmail::icon("workoffline"), tr("Work offline"), this );
         connect(workOfflineAction, SIGNAL(triggered()), this, SLOT(connectionStateChanged()));
         workOfflineAction->setCheckable(true);
@@ -919,6 +923,7 @@ void EmailClient::initActions()
         fileMenu->addAction( cancelButton );
         fileMenu->addAction( emptyTrashAction );
         fileMenu->addAction( settingsAction );
+        fileMenu->addAction(standardFoldersAction);
         fileMenu->addAction( workOfflineAction );
         fileMenu->addAction( notificationAction );
         fileMenu->addSeparator();
@@ -1063,6 +1068,7 @@ void EmailClient::init()
     searchButton = 0;
     synchronizeAction = 0;
     settingsAction = 0;
+    standardFoldersAction = 0;
     workOfflineAction = 0;
     emptyTrashAction = 0;
     moveAction = 0;
@@ -2585,6 +2591,18 @@ void EmailClient::settings()
 
     AccountSettings settingsDialog(this);
     settingsDialog.exec();
+}
+
+void EmailClient::createStandardFolders()
+{
+    QMailAccountKey retrieveKey(QMailAccountKey::status(QMailAccount::CanRetrieve, QMailDataComparator::Includes));
+    QMailAccountKey enabledKey(QMailAccountKey::status(QMailAccount::Enabled, QMailDataComparator::Includes));
+    availableAccounts = QMailStore::instance()->queryAccounts(retrieveKey & enabledKey);
+
+    if (!availableAccounts.isEmpty()) {
+        foreach(QMailAccountId accountId, availableAccounts)
+            retrieveAction("createStandardfolders")->createStandardFolders(accountId);
+    }
 }
 
 void EmailClient::notificationStateChanged()

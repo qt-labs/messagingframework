@@ -163,6 +163,8 @@ public slots:
 
     virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action);
+    virtual bool createStandardFolders(const QMailAccountId &accountId);
+    virtual bool createStandardFolders(const QMailAccountId &accountId, quint64 action);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action);
     virtual bool deleteFolder(const QMailFolderId &folderId);

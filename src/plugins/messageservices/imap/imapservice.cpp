@@ -149,6 +149,7 @@ public slots:
     virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
 
     virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    virtual bool createStandardFolders(const QMailAccountId &accountId);
     virtual bool deleteFolder(const QMailFolderId &folderId);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
 
@@ -942,10 +943,69 @@ bool ImapService::Source::createFolder(const QString &name, const QMailAccountId
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot create empty named folder"));
         return false;
     }
-
-    _service->_client->strategyContext()->createFolderStrategy.createFolder(parentId, name);
+    bool matchFolderRequired = false;
+    _service->_client->strategyContext()->createFolderStrategy.createFolder(parentId, name, matchFolderRequired);
 
     appendStrategy(&_service->_client->strategyContext()->createFolderStrategy);
+    if(!_unavailable)
+        return initiateStrategy();
+    return true;
+}
+
+bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
+{
+    if (!_service->_client) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
+        return false;
+    }
+
+    if (!accountId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
+        return false;
+    }
+
+    QMailAccount account = QMailAccount(accountId);
+    QStringList folderNames;
+    QList<QMailFolder::StandardFolder> defaultFolders;
+    defaultFolders << QMailFolder::DraftsFolder << QMailFolder::SentFolder <<
+                     QMailFolder::TrashFolder << QMailFolder::JunkFolder;
+
+    //fix me create the names from the translations
+    foreach (QMailFolder::StandardFolder folder, defaultFolders) {
+        QMailFolderId standardFolderId = account.standardFolder(folder);
+
+        if (!standardFolderId.isValid()) {
+            switch (folder) {
+            case QMailFolder::DraftsFolder:
+                folderNames << tr("Drafts");
+                break;
+            case QMailFolder::SentFolder:
+                folderNames << tr("Sent");
+                break;
+            case QMailFolder::JunkFolder:
+                folderNames << tr("Junk");
+                break;
+            case QMailFolder::TrashFolder:
+                folderNames << tr("Trash");
+                break;
+            default:
+                return false;
+                break;
+            }
+        }
+    }
+
+    //Create the folder in the root
+    QMailFolder dummyParent;
+    for (int i = 0; i < folderNames.size(); ++i) {
+        qMailLog(Messaging) << "Creating folder: " << folderNames.at(i);
+        bool matchFolderRequired = true;
+        _service->_client->strategyContext()->createFolderStrategy.createFolder(dummyParent.id(), folderNames.at(i), matchFolderRequired);
+    }
+
+    appendStrategy(&_service->_client->strategyContext()->createFolderStrategy);
+
+
     if(!_unavailable)
         return initiateStrategy();
     return true;

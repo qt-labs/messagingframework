@@ -154,6 +154,8 @@ public:
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
 
+    void createStandardFolders(const QMailAccountId &accountId);
+
     void retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(const QMailMessagePart::Location &partLocation);
 

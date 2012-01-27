@@ -70,6 +70,8 @@ signals:
     void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
 
+    void createStandardFolders(quint64, const QMailAccountId &accountId);
+
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
 
@@ -143,6 +145,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
                adaptor, MESSAGE(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
+    connectIpc(this, SIGNAL(createStandardFolders(quint64, QMailAccountId)),
+               adaptor, MESSAGE(createStandardFolders(quint64, QMailAccountId)));
     connectIpc(this, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
                adaptor, MESSAGE(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)));
     connectIpc(this, SIGNAL(retrieveMessagePart(quint64, QMailMessagePart::Location)),
@@ -634,6 +638,11 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
 {
     emit d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
+}
+
+void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccountId &accountId)
+{
+    emit d->createStandardFolders(action, accountId);
 }
 
 /*!

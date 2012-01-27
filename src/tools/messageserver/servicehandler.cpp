@@ -1579,6 +1579,40 @@ bool ServiceHandler::dispatchRetrieveMessageLists(quint64 action, const QByteArr
     return true;
 }
 
+void ServiceHandler::createStandardFolders(quint64 action, const QMailAccountId &accountId)
+{
+    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve standard folders for unconfigured account"));
+    }
+    else {
+        enqueueRequest(action, serialize(accountId), sources, &ServiceHandler::dispatchCreateStandardFolders, &ServiceHandler::retrievalCompleted, RetrieveFolderListRequestType);
+    }
+}
+
+bool ServiceHandler::dispatchCreateStandardFolders(quint64 action, const QByteArray &data)
+{
+    QMailAccountId accountId;
+
+    deserialize(data, accountId);
+
+    if (QMailMessageSource *source = accountSource(accountId)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->createStandardFolders(accountId, action)
+            : source->createStandardFolders(accountId));
+        if (success) {
+            return true;
+        } else {
+            qWarning() << "Unable to service request to create standard folder for account:" << accountId;
+            return false;
+        }
+
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
+        return false;
+    }
+}
+
 void ServiceHandler::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));

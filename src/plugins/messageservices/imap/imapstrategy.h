@@ -176,7 +176,7 @@ public:
     virtual ~ImapCreateFolderStrategy() {}
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
-    virtual void createFolder(const QMailFolderId &folder, const QString &name);
+    virtual void createFolder(const QMailFolderId &folder, const QString &name, bool matchFoldersRequired);
     virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
 protected:
     virtual void handleCreate(ImapStrategyContextBase *context);
@@ -185,6 +185,9 @@ protected:
 
     QList<QPair<QMailFolderId, QString> > _folders;
     int _inProgress;
+
+private:
+    bool _matchFoldersRequired;
 };
 
 
