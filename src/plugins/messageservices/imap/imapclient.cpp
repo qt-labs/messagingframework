@@ -760,12 +760,14 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 return;
             }
 
-            // Now that we know the capabilities, check for Reference support
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
-                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive));
-
+            // Now that we know the capabilities, check for Reference and idle support
             QMailAccount account(_config.id());
             ImapConfiguration imapCfg(_config);
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
+                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive) && 
+                                    // No FWOD support for IMAPS
+                                    (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL));
+
             if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
                 (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences) ||
                 (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE")) ||
