@@ -55,14 +55,14 @@
    use.  The Z_FULL_FLUSH argument to deflate() can be used to clear the
    dictionary (the receiving peer does not need to do anything)."
    
-   Total zlib mem use is 464KB plus a 'few kilobytes' per connection that uses COMPRESS:
-   384K for deflate, 48KB for 3x16KB buffers, 32KB plus a 'few' kilobytes for inflate.
+   Total zlib mem use is 176KB plus a 'few kilobytes' per connection that uses COMPRESS:
+   96KB for deflate, 24KB for 3x8KB buffers, 32KB plus a 'few' kilobytes for inflate.
 */
 
 class Rfc1951Compressor
 {
 public:
-    Rfc1951Compressor(int chunkSize = 16384);
+    Rfc1951Compressor(int chunkSize = 8192);
     ~Rfc1951Compressor();
 
     bool write(QDataStream *out, QByteArray *in);
@@ -86,8 +86,8 @@ Rfc1951Compressor::Rfc1951Compressor(int chunkSize)
     bool ok(deflateInit2(&_zStream,
                           Z_DEFAULT_COMPRESSION, 
                           Z_DEFLATED, 
-                          -MAX_WBITS, // MAX_WBITS == 15 (zconf.h) MEM128K
-                          MAX_MEM_LEVEL, // MAX_MEM_LEVEL = 9 (zconf.h) MEM256K
+                          -(MAX_WBITS-2), // 32KB // MAX_WBITS == 15 (zconf.h) MEM128KB
+                          MAX_MEM_LEVEL-2 , // 64KB // MAX_MEM_LEVEL = 9 (zconf.h) MEM256KB
                           Z_DEFAULT_STRATEGY) == Z_OK);
     Q_ASSERT(ok);
 }
@@ -120,7 +120,7 @@ bool Rfc1951Compressor::write(QDataStream *out, QByteArray *in)
 class Rfc1951Decompressor
 {
 public:
-    Rfc1951Decompressor(int chunkSize = 16384);
+    Rfc1951Decompressor(int chunkSize = 8192);
     ~Rfc1951Decompressor();
 
     bool consume(QIODevice *in);
