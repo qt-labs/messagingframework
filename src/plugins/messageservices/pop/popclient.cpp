@@ -82,7 +82,8 @@ PopClient::PopClient(QObject* parent)
       additional(0),
       partialContent(false),
       dataStream(new LongStream),
-      transport(0)
+      transport(0),
+      testing(false)
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
@@ -109,8 +110,41 @@ QMailMessage::MessageType PopClient::messageType() const
     return QMailMessage::Email;
 }
 
+void PopClient::createTransport()
+{
+    if (!transport) {
+        // Set up the transport
+        transport = new QMailTransport("POP");
+
+        connect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
+        connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
+        connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
+        connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
+    }
+}
+
+void PopClient::testConnection()
+{
+    testing = true;
+    closeConnection();
+    
+    PopConfiguration popCfg(config);
+    if ( popCfg.mailServer().isEmpty() ) {
+        status = Exit;
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without POP server configuration"));
+        return;
+    }
+    
+    createTransport();
+
+    status = Init;
+    capabilities.clear();
+    transport->open(popCfg.mailServer(), popCfg.mailPort(), static_cast<QMailTransport::EncryptType>(popCfg.mailEncryption()));
+}
+
 void PopClient::newConnection()
 {
+    testing = false;
     lastStatusTimer.start();
     if (transport && transport->connected()) {
         if (selected) {
@@ -118,8 +152,6 @@ void PopClient::newConnection()
             inactiveTimer.stop();
         } else {
             // We won't get an updated listing until we re-connect
-            sendCommand("QUIT");
-            status = Exit;
             closeConnection();
         }
     }
@@ -151,15 +183,7 @@ void PopClient::newConnection()
         status = RequestMessage;
         nextAction();
     } else {
-        if (!transport) {
-            // Set up the transport
-            transport = new QMailTransport("POP");
-
-            connect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
-            connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
-            connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
-            connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
-        }
+        createTransport();
 
         status = Init;
         capabilities.clear();
@@ -324,8 +348,9 @@ void PopClient::closeConnection()
                 transport->close();
             } else {
                 // Send a quit command
-                status = Quit;
-                nextAction();
+                sendCommand("QUIT");
+                status = Exit;
+                transport->close();
             }
         } else if (transport->inUse()) {
             transport->close();
@@ -654,8 +679,12 @@ void PopClient::nextAction()
     }
     case Auth:
     {
-        // we're authenticated - get the list of UIDs
-        nextStatus = RequestUids;
+        if (testing) {
+            nextStatus = Done;
+        } else {
+            // we're authenticated - get the list of UIDs
+            nextStatus = RequestUids;
+        }
         break;
     }
     case RequestUids:

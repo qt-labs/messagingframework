@@ -116,9 +116,8 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
     
     _service->_client.findInbox(); // find/create local inbox
 
-    // Just report success
-    _service->updateStatus("");
-    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+    _service->_client.testConnection();
+    _unavailable = true;
     return true;
 
     Q_UNUSED(descending)

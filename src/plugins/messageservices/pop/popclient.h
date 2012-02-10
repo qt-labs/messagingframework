@@ -74,6 +74,8 @@ public:
     QMailAccountId accountId() const;
     bool synchronizationEnabled(const QMailFolderId &id) const;
 
+    void createTransport();
+    void testConnection();
     void newConnection();
     void closeConnection();
     void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
@@ -184,6 +186,7 @@ private:
     QTime lastStatusTimer;
     QVector<QMailMessage*> _bufferedMessages;
     QVector<QMailMessageBufferFlushCallback*> callbacks;
+    bool testing;
 };
 
 #endif
