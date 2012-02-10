@@ -233,6 +233,8 @@ Changes since the QMF-1.0 release on 15/05/09:
 
 53. Added 'void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &messageId)'
 
+54. Added 'void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)'
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:

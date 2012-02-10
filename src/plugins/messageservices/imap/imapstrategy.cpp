@@ -677,8 +677,9 @@ void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, cons
     }
 }
 
-void ImapCreateFolderStrategy::createFolder(const QMailFolderId &folderParent, const QString &name)
+void ImapCreateFolderStrategy::createFolder(const QMailFolderId &folderParent, const QString &name, bool matchFoldersRequired)
 {
+    _matchFoldersRequired = matchFoldersRequired;
     _folders.append(qMakePair(folderParent, name));
 }
 
@@ -703,9 +704,13 @@ void ImapCreateFolderStrategy::process(ImapStrategyContextBase *context)
 
 void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
 {
-    if(--_inProgress == 0)
+    if (--_inProgress == 0) {
+        if (_matchFoldersRequired) {
+            QMailAccountId accountId = context->config().id();
+            QMail::detectStandardFolders(accountId);
+        }
         context->operationCompleted();
-
+    }
     Q_UNUSED(folder)
 }
 

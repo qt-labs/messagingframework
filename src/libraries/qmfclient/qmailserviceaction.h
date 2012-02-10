@@ -182,6 +182,8 @@ public slots:
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
 
+    void createStandardFolders(const QMailAccountId &accountId);
+
     void retrieveMessages(const QMailMessageIdList &messageIds, RetrievalSpecification spec = MetaData);
     void retrieveMessagePart(const QMailMessagePart::Location &partLocation);
 

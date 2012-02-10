@@ -802,6 +802,14 @@ bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId 
     return false;
 }
 
+bool QMailMessageSource::createStandardFolders(const QMailAccountId &accountId)
+{
+    Q_UNUSED(accountId);
+
+    notImplemented();
+    return false;
+}
+
 /*!
     Invoked by the message server to rename a folder.
 
@@ -1827,6 +1835,15 @@ bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId 
     Q_UNUSED(action)
 
     notImplemented(action);
+    return false;
+}
+
+bool QMailMessageSource::createStandardFolders(const QMailAccountId &accountId, quint64 action)
+{
+    Q_UNUSED(accountId);
+    Q_UNUSED(action);
+
+    notImplemented();
     return false;
 }
 

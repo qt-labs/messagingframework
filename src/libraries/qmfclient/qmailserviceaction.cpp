@@ -758,6 +758,34 @@ void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &acc
     _server->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
 }
 
+void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &accountId)
+{
+    Q_ASSERT(!_pendingActions.count());
+
+    QMailAccount account(accountId);
+
+    if (!QMail::detectStandardFolders(accountId)) {
+        if (!(account.status() & QMailAccount::CanCreateFolders)) {
+            qMailLog(Messaging) << "Unable to create folders for account: " << accountId;
+            if (validAction(newAction())) {
+                setActivity(QMailServiceAction::Successful);
+                emitChanges();
+            }
+            return;
+        }
+        else {
+            _server->createStandardFolders(newAction(), accountId);
+        }
+    }
+    else {
+        qMailLog(Messaging) << "Standard folders matched for account: " << accountId;
+        if (validAction(newAction())) {
+            setActivity(QMailServiceAction::Successful);
+            emitChanges();
+        }
+    }
+}
+
 void QMailRetrievalActionPrivate::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
     _server->retrieveMessages(newAction(), messageIds, spec);
@@ -1009,6 +1037,23 @@ void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId,
     }
 
     impl(this)->retrieveMessageLists(accountId, folderIds, minimum, sort);
+}
+
+/*!
+    Requests that the message server create the standard folders for the
+    account \a accountId. If all standard folders are already set in the storage
+    the service action will return success immediately, in case some standard folders are
+    not set, a matching attempt against a predefined list of translations will be made,
+    if the folders can't be matched, messageserver will try to create them in the server side
+    and match them if the creation is successful. In case folder creation is not allowed for
+    the account \a accountId the service action will return.
+
+    \sa retrieveFolderList
+*/
+
+void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)
+{
+    impl(this)->createStandardFolders(accountId);
 }
 
 /*!

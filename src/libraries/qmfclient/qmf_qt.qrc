@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/qmf">
         <file alias="mime.types">resources/mime.types</file>
+        <file alias="translations.conf">resources/translations.conf</file>
     </qresource>
 </RCC>

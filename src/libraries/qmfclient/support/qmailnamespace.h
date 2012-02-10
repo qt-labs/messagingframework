@@ -43,6 +43,8 @@
 #define QMAILNAMESPACE_H
 
 #include "qmailglobal.h"
+#include "qmailaccount.h"
+#include "qmailfolder.h"
 #include <QDate>
 #include <QPair>
 #include <QString>
@@ -59,6 +61,18 @@ class QSqlDatabase;
 
 QT_END_NAMESPACE
 #endif
+
+struct StandardFolderInfo
+{
+    StandardFolderInfo(QString flagName, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag, QStringList paths)
+        :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag), _paths(paths) {};
+
+    QString _flagName;
+    quint64 _flag;
+    QMailFolder::StandardFolder _standardFolder;
+    quint64 _messageFlag;
+    QStringList _paths;
+};
 
 namespace QMail
 {
@@ -88,6 +102,7 @@ namespace QMail
 
     QMF_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
     QMF_EXPORT QStringList messageIdentifiers(const QString& str);
+    QMF_EXPORT bool detectStandardFolders(const QMailAccountId &accountId);
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)
@@ -140,7 +155,6 @@ namespace QMail
         PlainMechanism = 2,
         CramMd5Mechanism = 3
     };
-
 }
 
 #endif

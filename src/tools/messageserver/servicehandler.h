@@ -71,6 +71,7 @@ public slots:
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
+    void createStandardFolders(quint64, const QMailAccountId &accountId);
     void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
@@ -253,6 +254,7 @@ private:
     bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageList(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageLists(quint64, const QByteArray &data);
+    bool dispatchCreateStandardFolders(quint64, const QByteArray &data);
     bool dispatchRetrieveMessages(quint64, const QByteArray &data);
     bool dispatchRetrieveMessagePart(quint64, const QByteArray &data);
     bool dispatchRetrieveMessageRange(quint64, const QByteArray &data);

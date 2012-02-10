@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qmailnamespace.h"
+#include "qmailfolderkey.h"
+#include "qmailstore.h"
+#include "qmaillog.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
@@ -753,6 +756,132 @@ QString QMail::lastSystemErrorMessage()
 #else
     return QString(::strerror(errno));
 #endif
+}
+
+QMap<QString, QStringList> standardFolderTranslations()
+{
+    QMap<QString, QStringList> folderTranslations;
+
+    QFile file(":/qmf/translations.conf");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Unable to read " << "translations";
+        return folderTranslations;
+    }
+
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList list = line.split("=", QString::SkipEmptyParts);
+        QString folderName = list.at(0);
+        QString transList = list.at(1);
+
+        if (folderName == "inbox") {
+            QStringList inboxList = transList.split(",", QString::SkipEmptyParts);
+            folderTranslations.insert("inbox", inboxList);
+        }
+        else if (folderName == "drafts") {
+            QStringList draftsList = transList.split(",", QString::SkipEmptyParts);
+            folderTranslations.insert("drafts", draftsList);
+        }
+        else if(folderName == "trash") {
+            QStringList trashList = transList.split(",", QString::SkipEmptyParts);
+            folderTranslations.insert("trash", trashList);
+        }
+        else if (folderName == "sent") {
+            QStringList sentList = transList.split(",", QString::SkipEmptyParts);
+            folderTranslations.insert("sent", sentList);
+        }
+        else if (folderName == "spam") {
+            QStringList spamList = transList.split(",", QString::SkipEmptyParts);
+            folderTranslations.insert("spam", spamList);
+        }
+    }
+    return folderTranslations;
+}
+
+QList<StandardFolderInfo> standardFolders()
+{
+    QList<StandardFolderInfo> standardFoldersList;
+
+    QMap<QString,QStringList> folderTranslations = standardFolderTranslations();
+
+    if (!folderTranslations.empty()) {
+        standardFoldersList << StandardFolderInfo("\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming, folderTranslations.value("inbox"))
+                            << StandardFolderInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft, folderTranslations.value("drafts"))
+                            << StandardFolderInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash, folderTranslations.value("trash"))
+                            << StandardFolderInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent, folderTranslations.value("sent"))
+                            << StandardFolderInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk, folderTranslations.value("spam"));
+    }
+    return standardFoldersList;
+}
+
+bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo standardFolderInfo)
+{
+    QMailFolderId folderId;
+    QMailAccount account = QMailAccount(accountId);
+
+    QMailFolderKey accountKey(QMailFolderKey::parentAccountId(accountId));
+    QStringList paths = standardFolderInfo._paths;
+    QMailFolder::StandardFolder standardFolder(standardFolderInfo._standardFolder);
+    quint64 messageFlag(standardFolderInfo._messageFlag);
+    quint64 flag(standardFolderInfo._flag);
+
+    QMailFolderIdList folders;
+
+    if (!paths.isEmpty()) {
+        QMailFolderKey exactMatchKey = QMailFolderKey::displayName(paths, QMailDataComparator::Includes);
+        folders = QMailStore::instance()->queryFolders(exactMatchKey & accountKey);
+        if (folders.isEmpty()) {
+            QMailFolderKey pathKey;
+            foreach (const QString& path, paths) {
+                pathKey |= QMailFolderKey::displayName(path, QMailDataComparator::Includes);
+            }
+            folders = QMailStore::instance()->queryFolders(pathKey & accountKey);
+        }
+    }
+
+    if (!folders.isEmpty()) {
+        folderId = folders.first();
+
+        if (folderId.isValid()) {
+            qMailLog(Messaging) << "Setting folder: " << QMailFolder(folderId).displayName();
+            QMailFolder folder(folderId);
+            folder.setStatus(flag,true);
+            account.setStandardFolder(standardFolder, folderId);
+            if (!QMailStore::instance()->updateAccount(&account)) {
+                qWarning() << "Unable to update account" << account.id() << "to set standard folder" << QMailFolder(folderId).displayName();
+            }
+            QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folderId));
+            if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
+                qWarning() << "Unable to update messages in folder" << folderId << "to set flag" << messageFlag;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool QMail::detectStandardFolders(const QMailAccountId &accountId)
+{
+    QMailAccount account = QMailAccount(accountId);
+    bool status = true;
+    QList<StandardFolderInfo> standardFoldersList = standardFolders();
+
+    if (standardFoldersList.empty()) {
+        return true;
+    }
+
+    foreach (StandardFolderInfo folder, standardFoldersList) {
+        QMailFolderId standardFolderId = account.standardFolder(folder._standardFolder);
+        if (!standardFolderId.isValid()) {
+            if (!detectStandardFolder(accountId, folder)) {
+                status = false;
+            }
+        }
+    }
+    QMailStore::instance()->flushIpcNotifications();
+    return status;
 }
 
 /*!
