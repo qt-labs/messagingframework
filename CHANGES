@@ -1,6 +1,9 @@
 Latest Changes
 ---------------
 
+201207_2
+  * Fixes: NB#293664 Forward without download is not working for the first time when the other mail account is created.
+
 201203
   * Fixes: NB#296686 Problems configuring and accessing “.eim” & “emirates.net.ae” mail accounts
 
