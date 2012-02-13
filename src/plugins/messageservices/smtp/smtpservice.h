@@ -45,6 +45,8 @@
 #include "smtpclient.h"
 #include <qmailmessageservice.h>
 
+#include <QPointer>
+
 class SmtpService : public QMailMessageService
 {
     Q_OBJECT
@@ -72,12 +74,21 @@ protected slots:
 
     void updateStatus(const QString& text);
 
+private slots:
+    void fetchCapabilities();
+    void onCapabilityFetchingActivityChanged(QMailServiceAction::Activity activity);
+    void onOnlineStateChanged(bool isOnline);
+    void onAccountsUpdated(const QMailAccountIdList & accountIds);
+
 private:
     class Sink;
     friend class Sink;
 
     SmtpClient _client;
     Sink *_sink;
+    QMailTransmitAction *_capabilityFetchAction;
+    QTimer *_capabilityFetchTimeout;
+    class QNetworkConfigurationManager *_networkManager;
 };
 
 
