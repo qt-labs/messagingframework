@@ -919,19 +919,20 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             folder.setStatus(QMailFolder::SynchronizationEnabled, true);
             folder.setStatus(QMailFolder::Incoming, true);
 
-            if(QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
-                //don't let inbox be deleted/renamed
-                folder.setStatus(QMailFolder::DeletionPermitted, false);
-                folder.setStatus(QMailFolder::RenamePermitted, false);
-            } else {
-                folder.setStatus(QMailFolder::DeletionPermitted, true);
-                folder.setStatus(QMailFolder::RenamePermitted, true);
-            }
-
             // The reported flags pertain to the listed folder only
             QString folderFlags;
             if (mailboxPath == path) {
                 folderFlags = flags;
+            }
+
+            if(QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
+                //don't let inbox be deleted/renamed
+                folder.setStatus(QMailFolder::DeletionPermitted, false);
+                folder.setStatus(QMailFolder::RenamePermitted, false);
+                folderFlags.append(" \\Inbox");
+            } else {
+                folder.setStatus(QMailFolder::DeletionPermitted, true);
+                folder.setStatus(QMailFolder::RenamePermitted, true);
             }
 
             // Only folders beneath the base folder are relevant
@@ -946,7 +947,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 }
             }
             
-            setFolderFlags(&account, &folder, flags); // requires valid folder.id()
+            setFolderFlags(&account, &folder, folderFlags); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
             
             if (!QMailStore::instance()->updateFolder(&folder)) {

@@ -263,10 +263,15 @@ void PopClient::findInbox()
         childFolder.setDisplayName(tr("Inbox"));
         childFolder.setStatus(QMailFolder::SynchronizationEnabled, true);
         childFolder.setStatus(QMailFolder::Incoming, true);
+        childFolder.setStatus(QMailFolder::InboxFolder, true);
 
         if(!QMailStore::instance()->addFolder(&childFolder))
             qWarning() << "Unable to add child folder to pop account";
         folderId = childFolder.id();
+        account.setStandardFolder(QMailFolder::InboxFolder, folderId);
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to update account" << account.id();
+        }
     }
     partialContent = QMailFolder(folderId).status() & QMailFolder::PartialContent;
 }
