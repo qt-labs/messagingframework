@@ -279,6 +279,8 @@ private:
     qint64 incrementTableVersion(const QString &name, qint64 current);
     bool upgradeTableVersion(const QString &name, qint64 current, qint64 final);
 
+    bool upgradeTimeStampToUtc();
+
     bool fullThreadTableUpdate();
 
     bool createTable(const QString &name);

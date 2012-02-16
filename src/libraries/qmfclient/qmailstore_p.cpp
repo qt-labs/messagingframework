@@ -317,9 +317,9 @@ public:
 
     QVariant subject() const { return _data.subject(); }
 
-    QVariant date() const { return _data.date().toLocalTime(); }
+    QVariant date() const { return _data.date().toUTC(); }
 
-    QVariant receivedDate() const { return _data.receivedDate().toLocalTime(); }
+    QVariant receivedDate() const { return _data.receivedDate().toUTC(); }
 
     // Don't record the value of the UnloadedData flag:
     QVariant status() const { return (_data.status() & ~QMailMessage::UnloadedData); }
@@ -2486,7 +2486,7 @@ bool QMailStorePrivate::initStore()
                                             << tableInfo("mailfoldercustom", 100)
                                             << tableInfo("mailfolderlinks", 100)
                                             << tableInfo("mailthreads", 102)
-                                            << tableInfo("mailmessages", 113)
+                                            << tableInfo("mailmessages", 114)
                                             << tableInfo("mailmessagecustom", 101)
                                             << tableInfo("mailstatusflags", 101)
                                             << tableInfo("mailmessageidentifiers", 101)
@@ -3436,11 +3436,11 @@ QVariantList QMailStorePrivate::threadValues(const QMailThreadKey::Properties &p
                 break;
 
             case QMailThreadKey::LastDate:
-                values.append(thread.lastDate().toLocalTime());
+                values.append(thread.lastDate().toUTC());
                 break;
 
             case QMailThreadKey::StartedDate:
-                values.append(thread.startedDate().toLocalTime());
+                values.append(thread.startedDate().toUTC());
                 break;
 
             case QMailThreadKey::Status:
@@ -3661,7 +3661,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
         } else {
             sql.append(QString(", %1 = (?)").arg(threadPropertyMap().value(QMailThreadKey::LastDate)));
         }
-        bindValues << updateData.mNewLastDate.toLocalTime();
+        bindValues << updateData.mNewLastDate.toUTC();
     }
     if (!updateData.mNewStartedDate.isNull()) {
         if (firstProperty) {
@@ -3670,7 +3670,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
         } else {
             sql.append(QString(", %1 = (?)").arg(threadPropertyMap().value(QMailThreadKey::StartedDate)));
         }
-        bindValues << updateData.mNewStartedDate.toLocalTime();
+        bindValues << updateData.mNewStartedDate.toUTC();
     }
     if (!updateData.mNewPreview.isEmpty()) {
         if (firstProperty) {
@@ -3774,13 +3774,12 @@ qint64 QMailStorePrivate::tableVersion(const QString &name) const
 
 bool QMailStorePrivate::setTableVersion(const QString &name, qint64 version)
 {
-    QString sql("DELETE FROM versioninfo WHERE tableName=? AND versionNum=?");
+    QString sql("DELETE FROM versioninfo WHERE tableName=?");
 
     // Delete any existing entry for this table
     QSqlQuery query(database);
     query.prepare(sql);
     query.addBindValue(name);
-    query.addBindValue(version);
 
     if (!query.exec()) {
         qWarning() << "Failed to delete versioninfo - query:" << sql << "- error:" << query.lastError().text();
@@ -3823,6 +3822,32 @@ qint64 QMailStorePrivate::incrementTableVersion(const QString &name, qint64 curr
     }
 
     return current;
+}
+
+bool QMailStorePrivate::upgradeTimeStampToUtc()
+{
+    QMailMessageIdList allMessageIds = queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0);
+
+    qDebug() << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
+
+    QMailMessageKey::Properties updateDateProperties = QMailMessageKey::TimeStamp | QMailMessageKey::ReceptionTimeStamp;
+    foreach(const QMailMessageId &updateId, allMessageIds)
+    {
+        const QMailMessageMetaData m(updateId);
+        const MessageValueExtractor<QMailMessageMetaData> extractor(m);
+        QVariantList bindValues;
+        bindValues << QDateTime(qVariantValue<QDateTime>(extractor.date())).toUTC();
+        bindValues << QDateTime(qVariantValue<QDateTime>(extractor.receivedDate())).toUTC();
+        bindValues << extractor.id();
+        QString sql("UPDATE mailmessages SET %1 WHERE id=?");
+
+        QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateDateProperties, true)),
+                                    bindValues,
+                                    "updateMessage mailmessages update"));
+        if (query.lastError().type() != QSqlError::NoError)
+            return false;
+    }
+    return true;
 }
 
 bool QMailStorePrivate::upgradeTableVersion(const QString &name, qint64 current, qint64 final)
@@ -3950,7 +3975,7 @@ bool QMailStorePrivate::fullThreadTableUpdate()
                 QVariantList bindValues;
                 bindValues << QVariant(senders)
                            << QVariant(metaData->preview())
-                           << QVariant(metaData->date().toLocalTime())
+                           << QVariant(metaData->date().toUTC())
                            << QVariant(metaData->parentThreadId().toULongLong());
                 QSqlQuery query = simpleQuery(sql, bindValues, "fullThreadTableUpdate update thread");
 
@@ -3968,8 +3993,8 @@ bool QMailStorePrivate::fullThreadTableUpdate()
                 values.insert("subject", metaData->subject());
                 values.insert("preview", metaData->preview());
                 values.insert("senders", metaData->from().toString());
-                values.insert("lastdate", metaData->date().toLocalTime());
-                values.insert("starteddate", metaData->date().toLocalTime());
+                values.insert("lastdate", metaData->date().toUTC());
+                values.insert("starteddate", metaData->date().toUTC());
                 values.insert("status", metaData->status());
                 const QString &columns = QStringList(values.keys()).join(",");
                 QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
@@ -4063,13 +4088,24 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
         } else {
             // Ensure the table does not have an incompatible version
             qint64 dbVersion = tableVersion(tableName);
+
             if (dbVersion == 0) {
                 qWarning() << "No version for existing table:" << tableName;
                 result = false;
             } else if (dbVersion != version) {
                 if (version > dbVersion) {
+
+                    //  Migration from localTime time stamp to Utc
+                    if (tableName == "mailmessages" && dbVersion <= 113 && version >= 114) {
+                        //upgrade time stamp
+                        if (!upgradeTimeStampToUtc()) {
+                            qWarning() << Q_FUNC_INFO << "Can't upgrade time stamp";
+                            result = false;
+                        }
+                    }
+
                     // Try upgrading the table
-                    result = upgradeTableVersion(tableName, dbVersion, version);
+                    result = result && upgradeTableVersion(tableName, dbVersion, version);
                     qWarning() << (result ? "Upgraded" : "Unable to upgrade") << "version for table:" << tableName << " from" << dbVersion << "to" << version;
                 } else {
                     qWarning() << "Incompatible version for table:" << tableName << "- existing" << dbVersion << "!=" << version;
@@ -5460,8 +5496,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddThread(QMailThread
                                             << thread->subject()
                                             << thread->preview()
                                             << senders
-                                            << thread->lastDate().toLocalTime()
-                                            << thread->startedDate().toLocalTime()
+                                            << thread->lastDate().toUTC()
+                                            << thread->startedDate().toUTC()
                                             << thread->status(),
                                 "addFolder mailfolders query"));
 
@@ -5660,9 +5696,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             if (newLastMessage && !metaData->preview().isEmpty())
                 bindValues << QVariant(metaData->preview());
             if (newLastMessage)
-                bindValues << QVariant(metaData->date().toLocalTime());
+                bindValues << QVariant(metaData->date().toUTC());
             if (newStartedMessage)
-                bindValues << QVariant(metaData->date().toLocalTime());
+                bindValues << QVariant(metaData->date().toUTC());
             bindValues << QVariant(metaData->parentThreadId().toULongLong());
             QSqlQuery query = simpleQuery(sql, bindValues, "addMessage update thread");
 
@@ -5684,8 +5720,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         values.insert("subject", metaData->subject());
         values.insert("preview", metaData->preview());
         values.insert("senders", metaData->from().toString());
-        values.insert("lastdate", metaData->date().toLocalTime());
-        values.insert("starteddate", metaData->date().toLocalTime());
+        values.insert("lastdate", metaData->date().toUTC());
+        values.insert("starteddate", metaData->date().toUTC());
         values.insert("status", metaData->status());
         const QString &columns = QStringList(values.keys()).join(",");
         QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
@@ -6146,8 +6182,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateThread(QMailThr
                                              << thread->subject()
                                              << thread->preview()
                                              << senders
-                                             << thread->lastDate().toLocalTime()
-                                             << thread->startedDate().toLocalTime()
+                                             << thread->lastDate().toUTC()
+                                             << thread->startedDate().toUTC()
                                              << thread->status()
                                              << thread->id().toULongLong(),
                                 "AttemptUpdateThread update"));
@@ -6511,8 +6547,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                     values.insert("subject", metaData->subject());
                     values.insert("preview", metaData->preview());
                     values.insert("senders", metaData->from().toString());
-                    values.insert("lastdate", metaData->date().toLocalTime());
-                    values.insert("starteddate", metaData->date().toLocalTime());
+                    values.insert("lastdate", metaData->date().toUTC());
+                    values.insert("starteddate", metaData->date().toUTC());
                     values.insert("status", metaData->status());
                     const QString &columns = QStringList(values.keys()).join(",");
                     QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
@@ -6597,7 +6633,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 } else {
                     QMailThread thread(metaData->parentThreadId());
                     const bool& updatePreview = (metaData->date() >= thread.lastDate()) && (thread.preview() != metaData->preview()) && !metaData->preview().isEmpty();
-                    const bool& updateSubject = (metaData->inResponseTo() == QMailMessageId()) && (metaData->date().toLocalTime() == thread.startedDate().toLocalTime());
+                    const bool& updateSubject = (metaData->inResponseTo() == QMailMessageId()) && (metaData->date().toUTC() == thread.startedDate().toUTC());
                     const bool& messageUnreadStatusChanged = (status & QMailMessage::Read) != (metaData->status() & QMailMessage::Read);
                     const bool& threadStatusChanged = (!thread.status() & metaData->status());
                     const bool& threadSendersChanged = !thread.senders().contains(metaData->from()) || metaData->date() > thread.lastDate();
@@ -8559,9 +8595,9 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
         // messages are sorted by time stamp, so we can set preview, lastDate, subject and startedDate easily by taking them from last and first message in the list
         QMailMessageMetaData firstMessage(threadsMessagesList.at(firstMessageIndex));
         QMailMessageMetaData lastMessage(threadsMessagesList.at(lastMessageIndex));
-        thread.setLastDate(QMailTimeStamp(lastMessage.date().toLocalTime()));
+        thread.setLastDate(QMailTimeStamp(lastMessage.date().toUTC()));
         thread.setPreview(lastMessage.preview());
-        thread.setStartedDate(QMailTimeStamp(firstMessage.date().toLocalTime()));
+        thread.setStartedDate(QMailTimeStamp(firstMessage.date().toUTC()));
         thread.setSubject(firstMessage.subject());
         thread.setMessageCount(messagesCount);
         thread.setUnreadCount(unreadCount);
