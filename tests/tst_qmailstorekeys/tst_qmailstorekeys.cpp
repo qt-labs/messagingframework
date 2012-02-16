@@ -1640,7 +1640,9 @@ void tst_QMailStoreKeys::messageSubject()
 void tst_QMailStoreKeys::messageTimeStamp()
 {
     QDateTime today(QDate::currentDate()), yesterday(QDate::currentDate().addDays(-1)), lastWeek(QDate::currentDate().addDays(-7));
-
+    today = today.toUTC();
+    yesterday = yesterday.toUTC();
+    lastWeek = lastWeek.toUTC();
     // Comparisons
     QCOMPARE(messageSet(QMailMessageKey::timeStamp(today, Equal)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::timeStamp(today, Equal)), messageSet() << archivedMessage1 << savedMessage2);
@@ -1698,6 +1700,9 @@ void tst_QMailStoreKeys::messageTimeStamp()
 void tst_QMailStoreKeys::messageReceptionTimeStamp()
 {
     QDateTime today(QDate::currentDate()), yesterday(QDate::currentDate().addDays(-1)), lastWeek(QDate::currentDate().addDays(-7));
+    today = today.toUTC();
+    yesterday = yesterday.toUTC();
+    lastWeek = lastWeek.toUTC();
 
     // Comparisons
     QCOMPARE(messageSet(QMailMessageKey::receptionTimeStamp(today, Equal)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);

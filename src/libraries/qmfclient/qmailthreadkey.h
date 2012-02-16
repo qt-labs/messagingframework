@@ -70,8 +70,15 @@ public:
         UnreadCount = (1 << 3),
         Custom = (1 << 4), // This is for internal use only. It will be removed without notice
         Includes = (1 << 5),
-        ParentAccountId = (1 << 6)
+        ParentAccountId = (1 << 6),
+        Subject = (1 << 7),
+        Senders = (1 << 8),
+        LastDate = (1 << 9),
+        StartedDate = (1 << 10),
+        Status = (1 << 11),
+        Preview = (1 << 12)
     };
+    Q_DECLARE_FLAGS(Properties,Property)
 
     typedef QMailThreadId IdType;
     typedef QMailKeyArgument<Property> ArgumentType;
@@ -122,6 +129,11 @@ public:
     static QMailThreadKey parentAccountId(const QMailAccountId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailThreadKey parentAccountId(const QMailAccountIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailThreadKey parentAccountId(const QMailAccountKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+
+    static QMailThreadKey countMessages(const int count, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+
+    static QMailThreadKey lastDate(const QDateTime &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailThreadKey lastDate(const QDateTime &value, QMailDataComparator::RelationComparator cmp);
 
 private:
     QMailThreadKey(Property p, const QVariant& value, QMailKey::Comparator c);

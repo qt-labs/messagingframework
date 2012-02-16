@@ -299,7 +299,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
     }
 
     if (!size.isEmpty() && disposition.size() == -1) {
-        // We prefer the Content-Disposition/Size to the body size.
+        // We use the body size only if Content-Disposition/Size is not available.
         // From RFC3501 INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1:
         // body size
         //   A number giving the size of the body in octets.  Note that

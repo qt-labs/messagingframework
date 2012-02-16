@@ -59,7 +59,16 @@
     This enum type describes the sortable data properties of a QMailThread.
 
     \value Id The ID of the thread.
+    \value ParentAccountId The ID of the account thread is in.
     \value ServerUid The ServerUid of the thread.
+    \value UnreadCount The UnreadCount of the thread.
+    \value MessageCount The MessageCount of the thread.
+    \value Subject The Subject of the thread.
+    \value Senders The Senders of the thread.
+    \value Preview The Preview of the thread.
+    \value StartedDate The StartedDate of the thread.
+    \value LastDate The LastDate of the thread.
+    \value Status The Status of the thread.
 */
 
 /*!
@@ -204,6 +213,17 @@ QMailThreadSortKey QMailThreadSortKey::id(Qt::SortOrder order)
 
 
 /*!
+    Returns a key that sorts threads by their account identifiers, according to \a order.
+
+    \sa QMailThread::parentAccountId()
+*/
+QMailThreadSortKey QMailThreadSortKey::parentAccountId(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(Id, order);
+}
+
+
+/*!
     Returns a key that sorts threads by their server uid string according to \a order.
 
     \sa QMailThread::serverUid()
@@ -211,6 +231,86 @@ QMailThreadSortKey QMailThreadSortKey::id(Qt::SortOrder order)
 QMailThreadSortKey QMailThreadSortKey::serverUid(Qt::SortOrder order)
 {
     return QMailThreadSortKey(ServerUid, order);
+}
+
+/*!
+    Returns a key that sorts threads by their unread count according to \a order.
+
+    \sa QMailThread::unreadCount()
+*/
+QMailThreadSortKey QMailThreadSortKey::unreadCount(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(UnreadCount, order);
+}
+
+/*!
+    Returns a key that sorts threads by their message count according to \a order.
+
+    \sa QMailThread::messageCount()
+*/
+QMailThreadSortKey QMailThreadSortKey::messageCount(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(MessageCount, order);
+}
+
+/*!
+    Returns a key that sorts threads by their subjects, according to \a order.
+
+    \sa QMailThread::subject()
+*/
+QMailThreadSortKey QMailThreadSortKey::subject(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(Subject, order);
+}
+
+/*!
+    Returns a key that sorts threads by their senders, according to \a order.
+
+    \sa QMailThread::senders()
+*/
+QMailThreadSortKey QMailThreadSortKey::senders(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(Senders, order);
+}
+
+/*!
+    Returns a key that sorts threads by their previews, according to \a order.
+
+    \sa QMailThread::preview()
+*/
+QMailThreadSortKey QMailThreadSortKey::preview(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(Preview, order);
+}
+
+/*!
+    Returns a key that sorts threads by their last dates, according to \a order.
+
+    \sa QMailThread::lastDate()
+*/
+QMailThreadSortKey QMailThreadSortKey::lastDate(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(LastDate, order);
+}
+
+/*!
+    Returns a key that sorts threads by their start dates, according to \a order.
+
+    \sa QMailThread::startedDate()
+*/
+QMailThreadSortKey QMailThreadSortKey::startedDate(Qt::SortOrder order)
+{
+    return QMailThreadSortKey(StartedDate, order);
+}
+
+/*!
+    Returns a key that sorts threads by comparing their status value bitwise ANDed with \a mask, according to \a order.
+
+    \sa QMailThread::status()
+*/
+QMailThreadSortKey QMailThreadSortKey::status(quint64 mask, Qt::SortOrder order)
+{
+    return QMailThreadSortKey(Status, order, mask);
 }
 
 

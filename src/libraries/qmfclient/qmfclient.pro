@@ -133,6 +133,7 @@ PRIVATE_HEADERS += bind_p.h \
                    qmailserviceaction_p.h \
                    qmailstore_p.h \
                    qmailstoreimplementation_p.h \
+                   qmailthread_p.h \
                    qmailthreadkey_p.h \
                    qmailthreadsortkey_p.h \
                    longstring_p.h \
@@ -146,6 +147,7 @@ PRIVATE_HEADERS += bind_p.h \
                    support/qcopserver.h
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
+
 
 SOURCES += longstream.cpp \
            longstring.cpp \

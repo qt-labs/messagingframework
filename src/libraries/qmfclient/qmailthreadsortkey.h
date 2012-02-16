@@ -56,7 +56,16 @@ public:
     enum Property
     {
         Id,
-        ServerUid
+        ParentAccountId,
+        ServerUid,
+        UnreadCount,
+        MessageCount,
+        Subject,
+        Senders,
+        Preview,
+        StartedDate,
+        LastDate,
+        Status
     };
 
     typedef QMailSortKeyArgument<Property> ArgumentType;
@@ -82,7 +91,17 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
     static QMailThreadSortKey id(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailThreadSortKey serverUid(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey unreadCount(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey messageCount(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey subject(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey senders(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey preview(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey startedDate(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailThreadSortKey lastDate(Qt::SortOrder order = Qt::AscendingOrder);
+
+    static QMailThreadSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
 private:
     QMailThreadSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
     QMailThreadSortKey(const QList<ArgumentType> &args);

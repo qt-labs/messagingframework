@@ -2360,7 +2360,15 @@ void ServiceHandler::restoreToPreviousFolder(quint64 action, const QMailMessageK
 void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     if(accountId.isValid()) {
-        QSet<QMailAccountId> accounts = folderAccount(parentId);
+
+        QSet<QMailAccountId> accounts;
+        if (parentId.isValid()) {
+            accounts = folderAccount(parentId);
+        }
+        else {
+            accounts.insert(accountId);
+        }
+
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
         enqueueRequest(action, serialize(name, accountId, parentId), sources, &ServiceHandler::dispatchOnlineCreateFolder, &ServiceHandler::storageActionCompleted, CreateFolderRequestType);

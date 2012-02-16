@@ -53,9 +53,8 @@
 // We mean it.
 //
 
-#include "qmailfolderkey.h"
+#include "qmailthreadkey.h"
 #include "mailkeyimpl_p.h"
-
 
 class QMailThreadKeyPrivate : public MailKeyImpl<QMailThreadKey>
 {
@@ -71,4 +70,3 @@ public:
 
 
 #endif
-
