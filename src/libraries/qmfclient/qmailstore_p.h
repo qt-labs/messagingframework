@@ -405,6 +405,8 @@ private:
                            const QMailFolderIdList& folderIds = QMailFolderIdList(),
                            const QMailAccountIdList& accountIds = QMailAccountIdList());
 
+    AttemptResult findPotentialPredecessorsBySubject(QMailMessageMetaData *metaData, const QString& baseSubject, bool* missingAncestor, QList<quint64>& potentialPredecessors);
+
     bool obsoleteContent(const QString& identifier);
 
     template<typename AccessType, typename FunctionType>

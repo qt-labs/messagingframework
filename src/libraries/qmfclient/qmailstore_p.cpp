@@ -8006,6 +8006,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         if (referencedMessages.isEmpty()) {
             // All the references are missing
             *missingReferences = references;
+            if(findPotentialPredecessorsBySubject(metaData, baseSubject, missingAncestor, potentialPredecessors) == DatabaseFailure)
+                return DatabaseFailure;
         } else {
             for (int i = references.count() - 1; i >= 0; --i) {
                 const QString &refId(references.at(i));
@@ -9100,6 +9102,36 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
     }
 
     return true;
+}
+
+QMailStorePrivate::AttemptResult QMailStorePrivate::findPotentialPredecessorsBySubject(QMailMessageMetaData *metaData, const QString& baseSubject, bool *missingAncestor, QList<quint64> &potentialPredecessors)
+{
+    // This message has a thread ancestor,  but we can only estimate which is the best choice
+    *missingAncestor = true;
+
+    // Find the preceding messages of all thread matching this base subject
+    QSqlQuery query(simpleQuery("SELECT id FROM mailmessages "
+                                "WHERE id!=? "
+                                "AND parentaccountid=? "
+                                "AND stamp<? "
+                                "AND parentthreadid IN ("
+                                        "SELECT threadid FROM mailthreadsubjects WHERE subjectid = ("
+                                            "SELECT id FROM mailsubjects WHERE basesubject=?"
+                                    ")"
+                                 ")"
+                                "ORDER BY stamp DESC",
+                                QVariantList() << metaData->id().toULongLong()
+                                                << metaData->parentAccountId().toULongLong()
+                                                << metaData->date().toLocalTime()
+                                                << baseSubject,
+                                "messagePredecessor mailmessages select query"));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    while (query.next()) {
+        potentialPredecessors.append(extractValue<quint64>(query.value(0)));
+    }
+    return Success;
 }
 
 bool QMailStorePrivate::obsoleteContent(const QString& identifier)
