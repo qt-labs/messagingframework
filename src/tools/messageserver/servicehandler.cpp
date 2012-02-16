@@ -2364,8 +2364,7 @@ void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, con
         QSet<QMailAccountId> accounts;
         if (parentId.isValid()) {
             accounts = folderAccount(parentId);
-        }
-        else {
+        } else {
             accounts.insert(accountId);
         }
 
