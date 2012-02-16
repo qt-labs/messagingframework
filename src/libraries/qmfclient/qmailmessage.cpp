@@ -8380,8 +8380,20 @@ void QMailMessage::setUnmodified()
 void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMessagePartContainerPrivate* parent)
 {
     QMailMessagePartContainer::setHeader(partHeader, parent);
-}    
-    
+    // See if any of the header fields need to be propagated to the meta data object
+    foreach (const QMailMessageHeaderField& field, headerFields()) {
+        QByteArray duplicatedId(duplicatedData(field.id()));
+        if (!duplicatedId.isNull()) {
+            QMailMessageContentType ct(headerField("Content-Type"));
+            if (!is7BitAscii(field.content()) && unicodeConvertingCharset(ct.charset())) {
+                updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset()));
+            } else {
+                updateMetaData(duplicatedId, field.decodedContent());
+            }
+        }
+    }
+}
+
 /*! \internal */
 QByteArray QMailMessage::duplicatedData(const QString& id) const
 {
