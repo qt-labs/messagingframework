@@ -2569,6 +2569,12 @@ bool QMailStorePrivate::initStore()
             return false;
         }
 
+        if (!queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0).isEmpty()
+                && queryThreads(QMailThreadKey(), QMailThreadSortKey(), 0, 0).isEmpty()) {
+            if (!fullThreadTableUpdate())
+                qWarning() << Q_FUNC_INFO << "Full thread's table update is not completed.";
+        }
+
         if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolder::LocalStorageFolderId, tr("Local Storage"), QMailFolder::MessagesPermitted))) {
             qWarning() << "Error setting up folders";
             return false;
@@ -3939,7 +3945,7 @@ bool QMailStorePrivate::fullThreadTableUpdate()
                 }
 
                 QString sql("UPDATE mailthreads SET messagecount = messagecount + 1, senders = (?), preview = (?), lastdate = (?)"
-                            + (metaData->status() & QMailMessage::Read ? QString("") : QString(", unreadcount = unreadcount + 1 "))
+                            + ((metaData->status() & QMailMessage::Read) ? QString("") : QString(", unreadcount = unreadcount + 1 "))
                             + QString(", status = (status | %1)").arg(metaData->status()) + " WHERE id= (?)");
                 QVariantList bindValues;
                 bindValues << QVariant(senders)
@@ -3954,10 +3960,9 @@ bool QMailStorePrivate::fullThreadTableUpdate()
                 quint64 threadId = 0;
 
                 // Add a new thread for this message
-
                 QMap<QString, QVariant> values;
                 values.insert("messagecount", 1);
-                values.insert("unreadcount", metaData->status() & QMailMessage::Read ? 0 : 1);
+                values.insert("unreadcount", ((metaData->status() & QMailMessage::Read) ? 0 : 1));
                 values.insert("serveruid", "");
                 values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
                 values.insert("subject", metaData->subject());
@@ -4085,11 +4090,6 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
         qWarning() << "Failure running check";
     }
 
-    if (!queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0).isEmpty()
-            && queryThreads(QMailThreadKey(), QMailThreadSortKey(), 0, 0).isEmpty()) {
-        if (!fullThreadTableUpdate())
-            qWarning() << Q_FUNC_INFO << "Full thread's table update is not completed.";
-    }
     return result;
 }
 
