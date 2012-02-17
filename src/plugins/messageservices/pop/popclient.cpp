@@ -127,7 +127,7 @@ void PopClient::testConnection()
 {
     testing = true;
     closeConnection();
-    
+
     PopConfiguration popCfg(config);
     if ( popCfg.mailServer().isEmpty() ) {
         status = Exit;
@@ -247,8 +247,10 @@ void PopClient::setOperation(QMailRetrievalAction::RetrievalSpecification spec)
     findInbox();
 }
 
-void PopClient::findInbox()
+// Returns true if inbox already exists, otherwise returns false
+bool PopClient::findInbox()
 {
+    bool result = false;
     QMailAccount account(config.id());
 
     // get/create child folder
@@ -256,8 +258,10 @@ void PopClient::findInbox()
     if (folderList.count() > 1) {
         qWarning() << "Pop account has more than one child folder, account" << account.id();
         folderId = folderList.first();
+        result = true;
     } else if (folderList.count() == 1) {
         folderId = folderList.first();
+        result = true;
     } else {
         QMailFolder childFolder("Inbox", QMailFolderId(), account.id());
         childFolder.setDisplayName(tr("Inbox"));
@@ -274,6 +278,7 @@ void PopClient::findInbox()
         }
     }
     partialContent = QMailFolder(folderId).status() & QMailFolder::PartialContent;
+    return result;
 }
 
 void PopClient::setAdditional(uint _additional)
@@ -361,6 +366,10 @@ void PopClient::closeConnection()
             transport->close();
         }
     }
+    // A Qt socket remains in an unusuable state for a short time after closing,
+    // thus it can't be immediately reused
+    transport->deleteLater();
+    transport = 0;
 }
 
 void PopClient::sendCommand(const char *data, int len)

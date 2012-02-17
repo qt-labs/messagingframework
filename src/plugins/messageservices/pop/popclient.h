@@ -79,7 +79,7 @@ public:
     void newConnection();
     void closeConnection();
     void setOperation(QMailRetrievalAction::RetrievalSpecification spec);
-    void findInbox();
+    bool findInbox();
     void setAdditional(uint _additional = 0);
     void setDeleteOperation();
     void setSelectedMails(const SelectionMap& data);
