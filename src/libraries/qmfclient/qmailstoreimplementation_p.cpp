@@ -864,6 +864,16 @@ QMailStoreImplementationBase::FolderUpdateSignalMap QMailStoreImplementationBase
     return sig;
 }
 
+QMailStoreImplementationBase::ThreadUpdateSignalMap QMailStoreImplementationBase::initThreadUpdateSignals()
+{
+    ThreadUpdateSignalMap sig;
+    sig[QMailStoreImplementationBase::threadAddedSig()] = &QMailStore::threadsAdded;
+    sig[QMailStoreImplementationBase::threadUpdatedSig()] = &QMailStore::threadsUpdated;
+    sig[QMailStoreImplementationBase::threadRemovedSig()] = &QMailStore::threadsRemoved;
+    sig[QMailStoreImplementationBase::threadContentsModifiedSig()] = &QMailStore::threadContentsModified;
+    return sig;
+}
+
 QMailStoreImplementationBase::MessageUpdateSignalMap QMailStoreImplementationBase::initMessageUpdateSignals()
 {
     MessageUpdateSignalMap sig;
@@ -887,9 +897,10 @@ void QMailStoreImplementationBase::flushNotifications()
     static NotifyFunctionMap sigAccount(initAccountFunctions());
     static NotifyFunctionMap sigFolder(initFolderFunctions());
     static NotifyFunctionMap sigMessage(initMessageFunctions());
+    static NotifyFunctionMap sigthread(initThreadFunctions());
     static NotifyFunctionMap sigRemoval(initMessageRemovalRecordFunctions());
     static NotifyFunctionMap sigMessageData(initMessageDataFunctions());
- 
+
     // There is no need to emit content modification notifications for items subsequently deleted
     folderContentsModifiedBuffer -= removeFoldersBuffer;
     accountContentsModifiedBuffer -= removeAccountsBuffer;
@@ -898,15 +909,18 @@ void QMailStoreImplementationBase::flushNotifications()
     dispatchNotifications(addAccountsBuffer, sigAccount[QMailStore::Added]);
     dispatchNotifications(addFoldersBuffer, sigFolder[QMailStore::Added]);
     dispatchNotifications(addMessagesBuffer, sigMessage[QMailStore::Added]);
+    dispatchNotifications(addThreadsBuffer, sigthread[QMailStore::Added]);
     dispatchNotifications(addMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Added]);
 
     dispatchNotifications(messageContentsModifiedBuffer, sigMessage[QMailStore::ContentsModified]);
     dispatchNotifications(updateMessagesBuffer, sigMessage[QMailStore::Updated]);
+    dispatchNotifications(updateThreadsBuffer, sigthread[QMailStore::Updated]);
     dispatchNotifications(updateFoldersBuffer, sigFolder[QMailStore::Updated]);
     dispatchNotifications(updateAccountsBuffer, sigAccount[QMailStore::Updated]);
-    
+
     dispatchNotifications(removeMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Removed]);
     dispatchNotifications(removeMessagesBuffer, sigMessage[QMailStore::Removed]);
+    dispatchNotifications(removeThreadsBuffer, sigthread[QMailStore::Removed]);
     dispatchNotifications(removeFoldersBuffer, sigFolder[QMailStore::Removed]);
     dispatchNotifications(removeAccountsBuffer, sigAccount[QMailStore::Removed]);
 
@@ -967,11 +981,13 @@ bool QMailStoreImplementationBase::emitIpcNotification()
 
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
     static FolderUpdateSignalMap folderUpdateSignals(initFolderUpdateSignals());
+    static ThreadUpdateSignalMap threadUpdateSignals(initThreadUpdateSignals());
     static MessageUpdateSignalMap messageUpdateSignals(initMessageUpdateSignals());
     static MessageDataPreCacheSignalMap messageDataPreCacheSignals(initMessageDataPreCacheSignals());
 
     AccountUpdateSignalMap::const_iterator ait;
     FolderUpdateSignalMap::const_iterator fit;
+    ThreadUpdateSignalMap::const_iterator tit;
     MessageUpdateSignalMap::const_iterator mit;
     MessageDataPreCacheSignalMap::const_iterator mdit;
 
@@ -1019,6 +1035,12 @@ bool QMailStoreImplementationBase::emitIpcNotification()
         messageQueue.removeFirst();
 
         emitIpcNotification(ids, status, set);
+    } else if ((tit = threadUpdateSignals.find(message)) != threadUpdateSignals.end()) {
+        QMailThreadIdList ids;
+        ds >> ids;
+        messageQueue.removeFirst();
+
+        emitIpcNotification(tit.value(), ids);
     } else {
         qWarning() << "No update signal for message:" << message;
         messageQueue.removeFirst();
@@ -1035,6 +1057,13 @@ void QMailStoreImplementationBase::emitIpcNotification(AccountUpdateSignal signa
 }
 
 void QMailStoreImplementationBase::emitIpcNotification(FolderUpdateSignal signal, const QMailFolderIdList &ids)
+{
+    asyncEmission = true;
+    emit (q->*signal)(ids);
+    asyncEmission = false;
+}
+
+void QMailStoreImplementationBase::emitIpcNotification(ThreadUpdateSignal signal, const QMailThreadIdList &ids)
 {
     asyncEmission = true;
     emit (q->*signal)(ids);
@@ -1096,12 +1125,12 @@ bool QMailStoreNullImplementation::addFolder(QMailFolder *, QMailFolderIdList *,
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -1111,17 +1140,17 @@ bool QMailStoreNullImplementation::addThread(QMailThread *, QMailThreadIdList *)
     return false;
 }
 
-bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailThreadIdList*, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -1147,17 +1176,17 @@ bool QMailStoreNullImplementation::updateFolder(QMailFolder *, QMailFolderIdList
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, const QMailMessageMetaData &, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, const QMailMessageMetaData &, QMailMessageIdList *, QMailThreadIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -1273,6 +1302,11 @@ QMailMessageMetaData QMailStoreNullImplementation::messageMetaData(const QString
 QMailMessageMetaDataList QMailStoreNullImplementation::messagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, QMailStore::ReturnOption) const
 {
     return QMailMessageMetaDataList();
+}
+
+QMailThreadList QMailStoreNullImplementation::threads(const QMailThreadKey &, QMailStore::ReturnOption) const
+{
+    return QMailThreadList();
 }
 
 QMailMessageRemovalRecordList QMailStoreNullImplementation::messageRemovalRecords(const QMailAccountId &, const QMailFolderId &) const

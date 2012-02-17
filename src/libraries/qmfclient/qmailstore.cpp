@@ -286,12 +286,13 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
     QMailMessageIdList addedMessageIds;
     QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
+    QMailThreadIdList updatedThreadIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &updatedThreadIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -301,6 +302,7 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
+    emitThreadNotification(Updated, updatedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
 
     return true;
@@ -316,12 +318,13 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     QMailMessageIdList addedMessageIds;
     QMailThreadIdList addedThreadIds;
     QMailMessageIdList updatedMessageIds;
+    QMailThreadIdList updatedThreadIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->addMessages(messages, &addedMessageIds, &addedThreadIds, &updatedMessageIds, &updatedThreadIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitMessageNotification(Added, addedMessageIds);
@@ -329,6 +332,7 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
     emitMessageDataNotification(Added, dataList(messages, addedMessageIds));
     emitThreadNotification(Added, addedThreadIds);
     emitMessageDataNotification(Updated, dataList(messages, updatedMessageIds));
+    emitThreadNotification(Updated, updatedThreadIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
@@ -360,6 +364,7 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
 {
     QMailAccountIdList deletedAccountIds;
     QMailFolderIdList deletedFolderIds;
+    QMailThreadIdList deletedThreadIds;
     QMailMessageIdList deletedMessageIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
@@ -367,11 +372,13 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeAccounts(key, &deletedAccountIds, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->removeAccounts(key, &deletedAccountIds, &deletedFolderIds, &deletedThreadIds, &deletedMessageIds,
+                           &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Removed, deletedAccountIds);
     emitMessageNotification(Removed, deletedMessageIds);
+    emitThreadNotification(Removed, deletedThreadIds);
     emitFolderNotification(Removed, deletedFolderIds);
     emitAccountNotification(Removed, deletedAccountIds);
     emitMessageNotification(Updated, updatedMessageIds);
@@ -414,20 +421,23 @@ bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRem
 {
     QMailFolderIdList deletedFolderIds;
     QMailMessageIdList deletedMessageIds;
+    QMailThreadIdList deletedThreadIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeFolders(key, option, &deletedFolderIds, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->removeFolders(key, option, &deletedFolderIds, &deletedMessageIds, &deletedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Added, modifiedAccountIds);
     emitMessageNotification(Removed, deletedMessageIds);
+    emitThreadNotification(Removed, deletedThreadIds);
     emitFolderNotification(Removed, deletedFolderIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    emitThreadNotification(ContentsModified, modifiedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
@@ -502,20 +512,26 @@ bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemo
 bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageRemovalOption option)
 {
     QMailMessageIdList deletedMessageIds;
+    QMailThreadIdList deletedThreadIds;
     QMailMessageIdList updatedMessageIds;
     QMailFolderIdList modifiedFolderIds;
     QMailThreadIdList modifiedThreadIds;
     QMailAccountIdList modifiedAccountIds;
 
     d->setLastError(NoError);
-    if (!d->removeMessages(key, option, &deletedMessageIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
+    if (!d->removeMessages(key, option, &deletedMessageIds, &deletedThreadIds, &updatedMessageIds, &modifiedFolderIds, &modifiedThreadIds, &modifiedAccountIds))
         return false;
 
     emitRemovalRecordNotification(Added, modifiedAccountIds);
     emitMessageNotification(Removed, deletedMessageIds);
     emitMessageNotification(Updated, updatedMessageIds);
     emitFolderNotification(ContentsModified, modifiedFolderIds);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
+    emitThreadNotification(Updated, modifiedThreadIds);
     emitThreadNotification(ContentsModified, modifiedThreadIds);
+    emitThreadNotification(Removed, deletedThreadIds);
     emitAccountNotification(ContentsModified, modifiedAccountIds);
     return true;
 }
@@ -653,12 +669,13 @@ bool QMailStore::updateMessages(const QList<QMailMessageMetaData*>& messages)
 bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> >& messages)
 {
     QMailMessageIdList updatedMessages;
+    QMailThreadIdList modifiedThreads;
     QMailMessageIdList modifiedMessages;
     QMailFolderIdList modifiedFolders;
     QMailAccountIdList modifiedAccounts;
 
     d->setLastError(NoError);
-    if (!d->updateMessages(messages, &updatedMessages, &modifiedMessages, &modifiedFolders, &modifiedAccounts))
+    if (!d->updateMessages(messages, &updatedMessages, &modifiedThreads, &modifiedMessages, &modifiedFolders, &modifiedAccounts))
         return false;
 
     QList<QMailMessageMetaData*> data;
@@ -669,6 +686,11 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
     }
 
     emitMessageNotification(Updated, updatedMessages);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
+    emitThreadNotification(Updated, modifiedThreads);
+    emitThreadNotification(ContentsModified, modifiedThreads);
     emitMessageNotification(ContentsModified, modifiedMessages);
     emitMessageDataNotification(Updated, dataList(data, updatedMessages));
     emitFolderNotification(ContentsModified, modifiedFolders);
@@ -684,18 +706,26 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
 */
 bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
                                         const QMailMessageKey::Properties& properties,
-                                        const QMailMessageMetaData& data) 
+                                        const QMailMessageMetaData& data)
 {
     QMailMessageIdList updatedMessages;
+    QMailThreadIdList deletedThreads;
+    QMailThreadIdList modifiedThreads;
     QMailFolderIdList modifiedFolders;
     QMailAccountIdList modifiedAccounts;
 
     d->setLastError(NoError);
-    if (!d->updateMessagesMetaData(key, properties, data, &updatedMessages, &modifiedFolders, &modifiedAccounts))
+    if (!d->updateMessagesMetaData(key, properties, data, &updatedMessages, &deletedThreads, &modifiedThreads, &modifiedFolders, &modifiedAccounts))
         return false;
 
     emitMessageNotification(Updated, updatedMessages);
     emitMessageDataNotification(updatedMessages, properties, data);
+    emitThreadNotification(Removed, deletedThreads);
+    // FIXME: use updatedThreadIds instead of modifiedThreadIds
+    // to emit signal about updated threads. However, do so we should write
+    // one more bind impl, otherwise we've got too much args for bind in QMailStorePrivate.
+    emitThreadNotification(Updated, modifiedThreads);
+    emitThreadNotification(ContentsModified, modifiedThreads);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;
@@ -712,13 +742,15 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key, quint64 stat
     QMailMessageIdList updatedMessages;
     QMailFolderIdList modifiedFolders;
     QMailAccountIdList modifiedAccounts;
+    QMailThreadIdList modifiedThreads;
 
     d->setLastError(NoError);
-    if (!d->updateMessagesMetaData(key, status, set, &updatedMessages, &modifiedFolders, &modifiedAccounts))
+    if (!d->updateMessagesMetaData(key, status, set, &updatedMessages, &modifiedThreads, &modifiedFolders, &modifiedAccounts))
         return false;
 
     emitMessageNotification(Updated, updatedMessages);
     emitMessageDataNotification(updatedMessages, status, set);
+    emitThreadNotification(Updated, modifiedThreads);
     emitFolderNotification(ContentsModified, modifiedFolders);
     emitAccountNotification(ContentsModified, modifiedAccounts);
     return true;

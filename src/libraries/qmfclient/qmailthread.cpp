@@ -39,27 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qmailthread.h"
+#include "qmailthread_p.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
 
-
-class QMailThreadPrivate : public QSharedData
-{
-public:
-    QMailThreadPrivate()
-        : QSharedData(),
-          messageCount(0),
-          unreadCount(0)
-    {
-    }
-
-    QMailThreadId id;
-    uint messageCount;
-    uint unreadCount;
-    QString serverUid;
-    QMailAccountId parentAccountId;
-};
 
 /*!
     \class QMailThread
@@ -80,7 +63,7 @@ public:
 */
 
 QMailThread::QMailThread()
-    : d(new QMailThreadPrivate)
+    : QPrivatelyImplemented<QMailThreadPrivate>(new QMailThreadPrivate())
 {
 }
 
@@ -91,36 +74,9 @@ QMailThread::QMailThread()
 */
 
 QMailThread::QMailThread(const QMailThreadId& id)
+  : QPrivatelyImplemented<QMailThreadPrivate>(NULL)
 {
     *this = QMailStore::instance()->thread(id);
-}
-
-/*!
-  Creates a copy of the \c QMailThread object \a other.
-*/
-
-QMailThread::QMailThread(const QMailThread& other)
-{
-    d = other.d;
-}
-
-
-/*!
-  Destroys the \c QMailThread object.
-*/
-
-QMailThread::~QMailThread()
-{
-}
-
-/*!
-  Assigns the value of the \c QMailThread object \a other to this.
-*/
-
-QMailThread& QMailThread::operator=(const QMailThread& other)
-{
-    d = other.d;
-    return *this;
 }
 
 /*!
@@ -206,3 +162,72 @@ void QMailThread::setUnreadCount(uint value)
     d->unreadCount = value;
 }
 
+
+QString QMailThread::subject() const
+{
+    return d->subject;
+}
+
+void QMailThread::setSubject(const QString &value)
+{
+    d->subject = value;
+}
+
+
+QMailAddressList QMailThread::senders() const
+{
+    return QMailAddress::fromStringList(d->senders);
+}
+
+void QMailThread::setSenders(const QMailAddressList &value)
+{
+    d->senders.clear();
+    d->senders = QMailAddress::toStringList(value).join(",");
+}
+
+void QMailThread::addSender(const QMailAddress &value)
+{
+    d->senders.prepend(value.address());
+}
+
+QString QMailThread::preview() const
+{
+    return d->preview;
+}
+
+void QMailThread::setPreview(const QString &value)
+{
+    d->preview = value;
+}
+
+QMailTimeStamp QMailThread::lastDate() const
+{
+    return d->lastDate;
+}
+
+void QMailThread::setLastDate(const QMailTimeStamp &value)
+{
+    d->lastDate = value;
+}
+
+
+QMailTimeStamp QMailThread::startedDate() const
+{
+    return d->startedDate;
+}
+
+void QMailThread::setStartedDate(const QMailTimeStamp &value)
+{
+    d->startedDate = value;
+}
+
+
+quint64 QMailThread::status() const
+{
+    return d->status;
+}
+
+void QMailThread::setStatus(quint64 value)
+{
+    d->status = value;
+}

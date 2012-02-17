@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qmailmessage_p.h"
+#include "qmailthread_p.h"
 #ifndef QTOPIAMAIL_PARSING_ONLY
 #include "qmailmessageset_p.h"
 #include "qmailserviceaction_p.h"
@@ -57,6 +58,8 @@ template class QPrivateImplementationPointer<QMailMessagePartContainerPrivate>;
 template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
 template class QPrivateImplementationPointer<QMailMessageMetaDataPrivate>;
 template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
+template class QPrivateImplementationPointer<QMailThreadPrivate>;
+template class QPrivatelyImplemented<QMailThreadPrivate>;
 
 #ifndef QTOPIAMAIL_PARSING_ONLY
 template class QPrivateNoncopyablePointer<QMailMessageSetContainerPrivate>;
