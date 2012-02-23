@@ -758,6 +758,12 @@ void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &acc
     _server->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
 }
 
+void QMailRetrievalActionPrivate::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
+{
+    Q_ASSERT(!_pendingActions.count());
+    _server->retrieveNewMessages(newAction(), accountId, folderIds);
+}
+
 void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_pendingActions.count());
@@ -962,7 +968,7 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
     If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
     messages within all folders in the account should be retrieved, and the lastSynchronized() time 
     of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the 
-    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
+    number of messages to be retrieved from each folder.
     
     If \a sort is not empty, the external service will report the discovered messages in the 
     ordering indicated by the sort criterion, if possible.  Services are not required to support 
@@ -980,9 +986,11 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
     from which messages are retrieved.
     
     New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages that are present
-    in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag.
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
+    are present in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
+    that are present in the mail store will be updated including the QMailMessage::Read and 
+    QMailMessage::Important flags.
     
     This function requires the device to be online, it may initiate communication 
     with external servers.
@@ -999,7 +1007,7 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
     If \a folderIds is not empty, then only messages within those folders should be retrieved and the 
     lastSynchronized() time of the account updated; otherwise 
     no messages should be retrieved, .  If \a minimum is non-zero, then that value will be used to restrict the 
-    number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
+    number of messages to be retrieved from each folder.
     
     If \a sort is not empty, the external service will report the discovered messages in the 
     ordering indicated by the sort criterion, if possible.  Services are not required to support 
@@ -1017,9 +1025,11 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
     from which messages are retrieved.
     
     New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages that are present
-    in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag.
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
+    are present in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
+    that are present in the mail store will be updated including the QMailMessage::Read and 
+    QMailMessage::Important flags.
     
     This function requires the device to be online, it may initiate communication 
     with external servers.
@@ -1039,6 +1049,24 @@ void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId,
     impl(this)->retrieveMessageLists(accountId, folderIds, minimum, sort);
 }
 
+/*
+    Requests that the message server retrieve new messages for the account \a accountId in the
+    folders specified by \a folderIds.
+    
+    If a folder inspected has been previously inspected then new mails in that folder will
+    be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
+    
+    This function is intended for use by protocol plugins to retrieve new messages when
+    a push notification event is received from the remote server.
+    
+    Detection of deleted messages, and flag updates for messages in the mail store will
+    not necessarily be performed.    
+*/
+void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
+{
+    impl(this)->retrieveNewMessages(accountId, folderIds);
+}
+
 /*!
     Requests that the message server create the standard folders for the
     account \a accountId. If all standard folders are already set in the storage
@@ -1046,11 +1074,11 @@ void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId,
     not set, a matching attempt against a predefined list of translations will be made,
     if the folders can't be matched, messageserver will try to create them in the server side
     and match them if the creation is successful. In case folder creation is not allowed for
-    the account \a accountId the service action will return.
+    the account \a accountId the service action will still complete successfully, clients
+    must use local standard folders only in this case.
 
     \sa retrieveFolderList
 */
-
 void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)
 {
     impl(this)->createStandardFolders(accountId);

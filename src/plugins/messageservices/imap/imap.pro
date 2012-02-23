@@ -28,7 +28,8 @@ HEADERS += imapclient.h \
            imapauthenticator.h \
            imapstrategy.h \
            integerregion.h \
-           imaptransport.h
+           imaptransport.h \
+           serviceactionqueue.h
 
 SOURCES += imapclient.cpp \
            imapconfiguration.cpp \
@@ -38,7 +39,8 @@ SOURCES += imapclient.cpp \
            imapauthenticator.cpp \
            imapstrategy.cpp \
            integerregion.cpp \
-           imaptransport.cpp
+           imaptransport.cpp \
+           serviceactionqueue.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
 QT += gui

@@ -173,6 +173,8 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
         connect(client, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
                 handler, SLOT(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
+        connect(client, SIGNAL(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)),
+                handler, SLOT(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)));
         connect(client, SIGNAL(createStandardFolders(quint64, QMailAccountId)),
                 handler, SLOT(createStandardFolders(quint64, QMailAccountId)));
         connect(client, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),

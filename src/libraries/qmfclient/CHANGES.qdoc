@@ -231,9 +231,12 @@ Changes since the QMF-1.0 release on 15/05/09:
           'void QMailMessageServer::flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)' and
           'void QMailMessageServer::restoreToPreviousFolder(quint64, const QMailMessageKey& key)'.
 
-53. Added 'void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &messageId)'
+53. Added 'void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &messageId)'.
 
-54. Added 'void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)'
+54. Added 'void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)'.
+
+55. Added 'void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)' and
+          'void QMailMessageServer::retrieveNewMessages(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds)'.
 
 *****************************************************************************
 

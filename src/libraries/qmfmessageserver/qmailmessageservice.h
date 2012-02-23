@@ -133,6 +133,9 @@ public slots:
     virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
     virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort, quint64 action);
 
+    virtual bool retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
+    virtual bool retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, quint64 action);
+
     virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
     virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec, quint64 action);
     virtual bool retrieveMessagePart(const QMailMessagePart::Location &partLocation);

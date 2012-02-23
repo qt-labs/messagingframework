@@ -1579,6 +1579,42 @@ bool ServiceHandler::dispatchRetrieveMessageLists(quint64 action, const QByteArr
     return true;
 }
 
+void ServiceHandler::retrieveNewMessages(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
+{
+    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
+    if (sources.isEmpty()) {
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve new messages for unconfigured account"));
+    } else {
+        enqueueRequest(action, serialize(accountId, folderIds), sources, &ServiceHandler::dispatchRetrieveNewMessages, &ServiceHandler::retrievalCompleted, RetrieveNewMessagesRequestType);
+    }
+}
+
+bool ServiceHandler::dispatchRetrieveNewMessages(quint64 action, const QByteArray &data)
+{
+    QMailAccountId accountId;
+    QMailFolderIdList folderIds;
+
+    deserialize(data, accountId, folderIds);
+
+    if (QMailMessageSource *source = accountSource(accountId)) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+                            ? source->retrieveNewMessages(accountId, folderIds)
+                            : source->retrieveNewMessages(accountId, folderIds));
+        if (success) {
+            // This account is now retrieving
+            setRetrievalInProgress(accountId, true);
+        } else {
+            qWarning() << "Unable to service request to retrieve new messages for folders:" << folderIds;
+            return false;
+        }
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), accountId);
+        return false;
+    }
+
+    return true;
+}
+
 void ServiceHandler::createStandardFolders(quint64 action, const QMailAccountId &accountId)
 {
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));

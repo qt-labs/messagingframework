@@ -51,6 +51,7 @@ enum QMailServerRequestType
     TransmitMessagesRequestType,
     RetrieveFolderListRequestType,
     RetrieveMessageListRequestType,
+    RetrieveNewMessagesRequestType,
     RetrieveMessagesRequestType,
     RetrieveMessagePartRequestType,
     RetrieveMessageRangeRequestType,

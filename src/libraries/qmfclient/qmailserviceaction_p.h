@@ -153,6 +153,7 @@ public:
     void retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
+    void retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(const QMailAccountId &accountId);
 

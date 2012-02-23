@@ -476,9 +476,11 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
     from which messages are retrieved.
     
     New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages that are present
-    in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag.
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
+    are present in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
+    that are present in the mail store will be updated including the QMailMessage::Read and 
+    QMailMessage::Important flags.
     
     Return true if an operation is initiated.
 
@@ -518,9 +520,11 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     from which messages are retrieved.
     
     New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages that are present
-    in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag.
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
+    are present in the mail store but found to be no longer available are marked with the 
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
+    that are present in the mail store will be updated including the QMailMessage::Read and 
+    QMailMessage::Important flags.
     
     Return true if an operation is initiated.
 
@@ -535,6 +539,25 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
 
     notImplemented();
     return false;
+}
+
+/*
+    Requests that the message server retrieve new messages for the account \a accountId in the
+    folders specified by \a folderIds.
+    
+    If a folder inspected has been previously inspected then new mails in that folder will
+    be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
+    
+    This function is intended for use by protocol plugins to retrieve new messages when
+    a push notification is received from the remote server.
+    
+    Detection of deleted messages, and flag updates for messages in the mail store will
+    not necessarily be performed.
+    
+*/
+bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
+{
+    return retrieveMessageLists(accountId, folderIds, 1, QMailMessageSortKey());
 }
 
 /*!
@@ -1632,6 +1655,22 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
     Q_UNUSED(minimum)
     Q_UNUSED(sort)
     Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+/*!
+    \overload retrieveNewMessages()
+
+    Concurrent version of retrieveNewMessages().
+
+    The request has the identifier \a action.
+*/
+bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, quint64 action)
+{
+    Q_UNUSED(accountId)
+    Q_UNUSED(folderIds)
 
     notImplemented(action);
     return false;

@@ -69,6 +69,7 @@ signals:
     void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
     void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
+    void retrieveNewMessages(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(quint64, const QMailAccountId &accountId);
 
@@ -145,6 +146,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
     connectIpc(this, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
                adaptor, MESSAGE(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
+    connectIpc(this, SIGNAL(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)),
+               adaptor, MESSAGE(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)));
     connectIpc(this, SIGNAL(createStandardFolders(quint64, QMailAccountId)),
                adaptor, MESSAGE(createStandardFolders(quint64, QMailAccountId)));
     connectIpc(this, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
@@ -640,6 +643,46 @@ void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccount
     emit d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
 }
 
+/*!
+    Requests that the message server retrieve new messages for the account \a accountId in the
+    folders specified by \a folderIds.
+    
+    If a folder inspected has been previously inspected then new mails in that folder will
+    be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
+    
+    This function is intended for use by protocol plugins to retrieve new messages when
+    a push notification event is received from the remote server.
+    
+    Detection of deleted messages, and flag updates for messages in the mail store will
+    not necessarily be performed.
+
+    The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
+    \sa retrievalCompleted()
+*/
+void QMailMessageServer::retrieveNewMessages(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
+{
+    emit d->retrieveNewMessages(action, accountId, folderIds);
+}
+
+/*!
+    Requests that the message server create the standard folders for the
+    account \a accountId. If all standard folders are already set in the storage
+    the service action will return success immediately, in case some standard folders are
+    not set, a matching attempt against a predefined list of translations will be made,
+    if the folders can't be matched, messageserver will try to create them in the server side
+    and match them if the creation is successful. In case folder creation is not allowed for
+    the account \a accountId the service action will still complete successfully, clients
+    must use local standard folders only in this case.
+
+    This function requires the device to be online, it may initiate communication 
+    with external servers.
+
+    \sa retrieveFolderList
+*/
 void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccountId &accountId)
 {
     emit d->createStandardFolders(action, accountId);
