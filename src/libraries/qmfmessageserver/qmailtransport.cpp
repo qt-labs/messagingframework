@@ -256,7 +256,7 @@ void QMailTransport::createSocket(EncryptType encryptType)
     Q_UNUSED(encryptType);
 #endif
 
-    const int bufferLimit = 100*1024; // Limit memory used when downloading
+    const int bufferLimit = 101*1024; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
     mSocket->setObjectName(QString(mName) + "-socket");
     connect(mSocket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
