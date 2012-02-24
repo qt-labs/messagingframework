@@ -5656,7 +5656,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         QMailAccount acc(metaData->parentAccountId());
         QMailFolderId trashFolderId = acc.standardFolder(QMailFolder::TrashFolder);
         QMailFolderId draftFolderId = acc.standardFolder(QMailFolder::DraftsFolder);
-        const bool& TrashOrDraft = (metaData->status() & (QMailMessage::Trash | QMailMessage::Draft) != 0) ||
+        const bool& TrashOrDraft = ((metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0) ||
                 (trashFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == trashFolderId) ||
                 (draftFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == draftFolderId);
         if (!TrashOrDraft) {
