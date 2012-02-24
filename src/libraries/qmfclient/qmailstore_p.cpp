@@ -1512,8 +1512,8 @@ public:
 
     QVariant preview() const { return stringValue(); }
 
-    // WTF: why MessageKeyArgumentExtractor::sender returns QVariantList of stringValues?
-    // Mail specs 2.8: %1 = Names of the message senders, latest message sender as
+    // Why MessageKeyArgumentExtractor::sender returns QVariantList of stringValues?
+    // Senders: %1 = Names of the message senders, latest message sender as
     // first. Names are separated with comma (,)
     QVariant senders() const { return stringValue(); }
 
