@@ -55,6 +55,7 @@
 
 namespace {
 
+// NOTE: messageserver ServiceHandler::dispatchRequest() relies on internal format defined below.
 uint messageCounter = 0;
 const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 

@@ -51,6 +51,7 @@
 #include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmailcontentmanager.h>
+#include <qmailnamespace.h>
 #include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
@@ -1091,6 +1092,26 @@ void ServiceHandler::dispatchRequest()
             continue;
         }
 
+        // Limit number of concurrent actions serviced on the device 
+        if (mActiveActions.count() >= QMail::maximumConcurrentServiceActions())
+            return;
+
+        // Limit number of concurrent actions serviced per process
+        const quint64 requestProcess = request->action >> 32;
+        int requestProcessCount = 1; // including the request
+        foreach(quint64 actionId, mActiveActions.keys()) {
+            if ((actionId >> 32) == requestProcess) {
+                if (++requestProcessCount > QMail::maximumConcurrentServiceActionsPerProcess()) {
+                    break;
+                }
+            }
+        }
+
+        if (requestProcessCount > QMail::maximumConcurrentServiceActionsPerProcess()) {
+            ++request;
+            continue;
+        }
+    
         // Associate the services with the action, so that signals are reported correctly
         foreach (QMailMessageService *service, request->services)
             mServiceAction.insert(service, request->action);
@@ -2996,7 +3017,8 @@ void ServiceHandler::reportFailure(quint64 action, QMailServiceAction::Status::E
 
 void ServiceHandler::reportFailure(quint64 action, const QMailServiceAction::Status status)
 {
-    if (status.errorCode != QMailServiceAction::Status::ErrNoError) {
+    if (status.errorCode != QMailServiceAction::Status::ErrNoError
+        && mActiveActions.contains(action)) {
         markFailedMessage(mActiveActions[action].description, status);
     }
 
