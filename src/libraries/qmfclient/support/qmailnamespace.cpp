@@ -862,6 +862,15 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
     return false;
 }
 
+/*!
+    Detects standard folders for the account specified by \a accountId, and
+    updates the mail store if standard folders are found.
+    
+    Detection is based on matching folder names, that is QMailFolder::displayName() 
+    against a predefined list of translations.
+  
+    Returns true if all standard folders are detected; otherwise returns false;
+*/
 bool QMail::detectStandardFolders(const QMailAccountId &accountId)
 {
     QMailAccount account = QMailAccount(accountId);
@@ -884,6 +893,31 @@ bool QMail::detectStandardFolders(const QMailAccountId &accountId)
     return status;
 }
 
+/*
+  Returns the maximum number of service actions that can be serviced
+  concurrently on the device. Service actions that can't be serviced
+  immediately are queued until an appropriate service becomes available.
+  
+  Used to limit peak memory (RAM) used by the messageserver.
+*/
+int QMail::maximumConcurrentServiceActions()
+{
+    return 2;
+}
+
+/*
+  Returns the maximum number of service actions that can be serviced
+  concurrently per process. Service actions that can't be serviced
+  immediately are queued until an appropriate service becomes available.
+
+  Used by the messageserver to prevent a client form monopolizing usage 
+  of shared services.
+*/
+int QMail::maximumConcurrentServiceActionsPerProcess()
+{
+    return 1;
+}
+ 
 /*!
     \enum QMail::SaslMechanism
 
