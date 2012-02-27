@@ -514,8 +514,8 @@ void PopClient::processResponse(const QString &response)
                 int number(pattern.cap(1).toInt());
                 QString uid(pattern.cap(2));
 
-                serverUidNumber.insert(uid, number);
-                serverUid.insert(number, uid);
+                serverUidNumber.insert(uid.toLocal8Bit(), number);
+                serverUid.insert(number, uid.toLocal8Bit());
             }
 
             // More to follow
@@ -917,7 +917,7 @@ void PopClient::nextAction()
 
 int PopClient::msgPosFromUidl(QString uidl)
 {
-    QMap<QString, int>::const_iterator it = serverUidNumber.find(uidl);
+    QMap<QByteArray, int>::const_iterator it = serverUidNumber.find(uidl.toLocal8Bit());
     if (it != serverUidNumber.end())
         return it.value();
 
@@ -1022,7 +1022,7 @@ void PopClient::uidlIntegrityCheck()
             // no 'gap' to fill
             gapFilled = true;
         }
-        QMapIterator<int, QString> it(serverUid);
+        QMapIterator<int, QByteArray> it(serverUid);
         QString uid;
         it.toBack();
         while (it.hasPrevious()) {

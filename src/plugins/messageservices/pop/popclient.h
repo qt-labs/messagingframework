@@ -155,8 +155,8 @@ private:
     uint additional;
     bool partialContent;
 
-    QMap<QString, int> serverUidNumber;
-    QMap<int, QString> serverUid;
+    QMap<QByteArray, int> serverUidNumber;
+    QMap<int, QByteArray> serverUid;
     QMap<int, uint> serverSize;
 
     QString messageUid;
