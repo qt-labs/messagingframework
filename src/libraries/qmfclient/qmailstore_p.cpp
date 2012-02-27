@@ -950,9 +950,21 @@ public:
 
     QString subject() const { return value<QString>(QMailMessageKey::Subject); }
 
-    QMailTimeStamp date() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::TimeStamp)); }
+    QMailTimeStamp date() const
+    {
+        //Database date/time is in UTC format
+        QDateTime tmp = value<QDateTime>(QMailMessageKey::TimeStamp);
+        tmp.setTimeSpec(Qt::UTC);
+        return QMailTimeStamp(tmp);
+    }
 
-    QMailTimeStamp receivedDate() const { return QMailTimeStamp(value<QDateTime>(QMailMessageKey::ReceptionTimeStamp)); }
+    QMailTimeStamp receivedDate() const
+    {
+        //Database date/time is in UTC format
+        QDateTime tmp = value<QDateTime>(QMailMessageKey::ReceptionTimeStamp);
+        tmp.setTimeSpec(Qt::UTC);
+        return QMailTimeStamp(tmp);
+    }
 
     quint64 status() const { return value<quint64>(QMailMessageKey::Status, 0); }
 
@@ -1472,8 +1484,20 @@ public:
     QString subject() const { return value<QString>(QMailThreadKey::Subject); }
     QString preview() const { return value<QString>(QMailThreadKey::Preview); }
     QMailAddressList senders() const { return QMailAddress::fromStringList(value<QString>(QMailThreadKey::Senders)); }
-    QMailTimeStamp lastDate() const { return QMailTimeStamp(value<QDateTime>(QMailThreadKey::LastDate)); }
-    QMailTimeStamp startedDate() const { return QMailTimeStamp(value<QDateTime>(QMailThreadKey::StartedDate)); }
+    QMailTimeStamp lastDate() const
+    {
+        //Database date/time is in UTC format
+        QDateTime tmp = value<QDateTime>(QMailThreadKey::LastDate);
+        tmp.setTimeSpec(Qt::UTC);
+        return QMailTimeStamp(tmp);
+    }
+    QMailTimeStamp startedDate() const
+    {
+        //Database date/time is in UTC format
+        QDateTime tmp = value<QDateTime>(QMailThreadKey::StartedDate);
+        tmp.setTimeSpec(Qt::UTC);
+        return QMailTimeStamp(tmp);
+    }
     quint64 status() const { return value<quint64>(QMailThreadKey::Status); }
 
 private:
