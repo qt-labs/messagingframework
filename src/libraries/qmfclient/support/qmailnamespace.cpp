@@ -917,7 +917,17 @@ int QMail::maximumConcurrentServiceActionsPerProcess()
 {
     return 1;
 }
- 
+
+/*
+  Returns the maximum number of push connections that may
+  be started by the message server process.
+*/
+int QMail::maximumPushConnections()
+{
+    return 10;
+}
+
+
 /*!
     \enum QMail::SaslMechanism
 

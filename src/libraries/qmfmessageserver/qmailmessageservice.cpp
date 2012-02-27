@@ -50,6 +50,7 @@
 #include <qmailpluginmanager.h>
 #include <QTimer>
 #include <qmaillog.h>
+#include <qmailnamespace.h>
 
 #define PLUGIN_KEY "messageservices"
 
@@ -2267,4 +2268,39 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     in parallel then it should override this function returning true.
 */
                                                                            
+static int reservedPushConnections = 0;
+
+/*!
+    \fn int QMailMessageService::reservePushConnections(int connections)
+
+    Attempts to reserve push \a connections, returns the number of connections reserved.
+    
+    Used by protocol pugins to limit RAM used by the message server.
+    
+    \sa QMail::maximumPushConnections(), releasePushConnections()
+*/
+int QMailMessageService::reservePushConnections(int connections)
+{
+    if (connections + reservedPushConnections > QMail::maximumPushConnections()) {
+        return 0;
+    }
+    reservedPushConnections += connections;
+    return connections;
+}
+
+/*!
+    \fn void QMailMessageService::releasePushConnections(int connections)
+
+    Release push \a connections earlier reserved by reservePushConnections().
+*/
+void QMailMessageService::releasePushConnections(int connections)
+{
+    if (connections > reservedPushConnections) {
+        qWarning() << Q_FUNC_INFO << "Unable to release" << connections << "push connections, as only" << reservedPushConnections << "connections reserved.";
+        reservedPushConnections = 0;
+    } else {
+        reservedPushConnections -= connections;
+    }
+}
+
                                                                            

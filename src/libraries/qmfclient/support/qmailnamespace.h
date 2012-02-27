@@ -105,6 +105,7 @@ namespace QMail
     QMF_EXPORT bool detectStandardFolders(const QMailAccountId &accountId);
     QMF_EXPORT int maximumConcurrentServiceActions();
     QMF_EXPORT int maximumConcurrentServiceActionsPerProcess();
+    QMF_EXPORT int maximumPushConnections();
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)

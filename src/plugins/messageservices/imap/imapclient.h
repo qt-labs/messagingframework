@@ -97,6 +97,8 @@ public:
     QMailFolderIdList configurationIdleFolderIds();
     void monitor(const QMailFolderIdList &mailboxIds);
     void removeAllFromBuffer(QMailMessage *message);
+    int pushConnectionsReserved() { return _pushConnectionsReserved; }
+    void setPushConnectionsReserved(int reserved) { _pushConnectionsReserved = reserved; }
 
 signals:
     void errorOccurred(int, const QString &);
@@ -176,6 +178,7 @@ private:
     QMap<QMailFolderId, IdleProtocol*> _monitored;
     QList<QMailMessageBufferFlushCallback*> callbacks;
     QVector<QMailMessage*> _bufferedMessages;
+    int _pushConnectionsReserved;
 };
 
 #endif

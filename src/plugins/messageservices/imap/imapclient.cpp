@@ -504,7 +504,8 @@ ImapClient::ImapClient(QObject* parent)
       _idlesEstablished(false),
       _qresyncEnabled(false),
       _requestRapidClose(false),
-      _rapidClosing(false)
+      _rapidClosing(false),
+      _pushConnectionsReserved(0)
 {
     static int count(0);
     ++count;
@@ -718,7 +719,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
             if (!_idlesEstablished
                 && _protocol.supportsCapability("IDLE")
-                && !_waitingForIdleFolderIds.isEmpty()) {
+                && !_waitingForIdleFolderIds.isEmpty()
+                && _pushConnectionsReserved) {
                 _waitingForIdle = true;
                 emit updateStatus( tr("Logging in idle connection" ) );
                 monitor(_waitingForIdleFolderIds);

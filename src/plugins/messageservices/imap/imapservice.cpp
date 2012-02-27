@@ -1457,7 +1457,12 @@ void ImapService::enable()
     ImapConfiguration imapCfg(accountCfg);
     _accountWasPushEnabled = imapCfg.pushEnabled();
     _previousPushFolders = imapCfg.pushFolders();
-    if (imapCfg.pushEnabled()) {
+    
+    if (imapCfg.pushEnabled() && imapCfg.pushFolders().count()) {
+        _client->setPushConnectionsReserved(reservePushConnections(imapCfg.pushFolders().count()));
+    }
+    
+    if (imapCfg.pushEnabled() && _client->pushConnectionsReserved()) {
         initiatePushEmail();
     }
     _source->setIntervalTimer(imapCfg.checkInterval());
@@ -1474,6 +1479,9 @@ void ImapService::disable()
     _source->setIntervalTimer(0);
     _source->setPushIntervalTimer(0);
     _source->retrievalTerminated();
+    if (_client) {
+        releasePushConnections(_client->pushConnectionsReserved());
+    }
     delete _client;
     _client = 0;
 }
@@ -1518,6 +1526,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
 
 ImapService::~ImapService()
 {
+    disable();
     delete _source;
 }
 
