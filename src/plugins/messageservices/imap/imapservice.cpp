@@ -70,7 +70,19 @@ QMailFolderIdList statusFolders(const QMailAccountId &accountId, quint64 mask)
 {
     return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::status(mask));
 }
- 
+
+QString connectionSettings(ImapConfiguration &config)
+{
+    QStringList result;
+    result << config.mailUserName();
+    result << config.mailPassword();
+    result << config.mailServer();
+    result << QString::number(config.mailPort());
+    result << QString::number(config.mailEncryption());
+    result << QString::number(config.mailAuthentication());
+    return result.join(QChar('\x0A')); // 0x0A is not a valid character in any connection setting
+}
+
 }
 
 class ImapService::Source : public QMailMessageSource
@@ -1457,6 +1469,7 @@ void ImapService::enable()
     ImapConfiguration imapCfg(accountCfg);
     _accountWasPushEnabled = imapCfg.pushEnabled();
     _previousPushFolders = imapCfg.pushFolders();
+    _previousConnectionSettings = connectionSettings(imapCfg);
     
     if (imapCfg.pushEnabled() && imapCfg.pushFolders().count()) {
         _client->setPushConnectionsReserved(reservePushConnections(imapCfg.pushFolders().count()));
@@ -1475,6 +1488,7 @@ void ImapService::disable()
     _accountWasEnabled = false;
     _accountWasPushEnabled = imapCfg.pushEnabled();
     _previousPushFolders = imapCfg.pushFolders();
+    _previousConnectionSettings = connectionSettings(imapCfg);
     _restartPushEmailTimer->stop();
     _source->setIntervalTimer(0);
     _source->setPushIntervalTimer(0);
@@ -1497,6 +1511,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
     bool isEnabled(account.status() & QMailAccount::Enabled);
     bool isPushEnabled(imapCfg.pushEnabled());
     QStringList pushFolders(imapCfg.pushFolders());
+    QString newConnectionSettings(connectionSettings(imapCfg));
     if (!isEnabled) {
         if (_accountWasEnabled) {
             // Account changed from enabled to disabled
@@ -1507,9 +1522,10 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
         return;
     }
 
-    if ((_accountWasPushEnabled != isPushEnabled) ||
-        (_previousPushFolders != pushFolders)) {
-        // push email settings have changed, restart client
+    if ((_accountWasPushEnabled != isPushEnabled)
+        || (_previousPushFolders != pushFolders) 
+        || (_previousConnectionSettings != newConnectionSettings)) {
+        // push email or connection settings have changed, restart client
         if (_accountWasEnabled) {
             disable();
         }

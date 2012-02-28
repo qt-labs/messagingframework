@@ -92,6 +92,7 @@ private:
     bool _accountWasEnabled;
     bool _accountWasPushEnabled;
     QStringList _previousPushFolders;
+    QString _previousConnectionSettings; // Connection related settings
     enum { ThirtySeconds = 30 };
 };
 
