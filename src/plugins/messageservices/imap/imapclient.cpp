@@ -422,7 +422,8 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         case IMAP_Login: // Fall through
         case IMAP_Compress:
         {
-            if (QMFALLOWCOMPRESS && capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive) && !compress()) {
+            bool compressCapable(capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
+            if (!encrypted() && QMFALLOWCOMPRESS && compressCapable && !compress()) {
                 // Server supports COMPRESS and we are not yet compressing
                 sendCompress(); // Must not pipeline compress
                 return;
@@ -783,7 +784,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
             }
 
-            if (QMFALLOWCOMPRESS && _protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive) && !_protocol.compress()) {
+            bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
+            if (!_protocol.encrypted() && QMFALLOWCOMPRESS && compressCapable && !_protocol.compress()) {
                 _protocol.sendCompress(); // MUST not pipeline compress
                 return;
             }
