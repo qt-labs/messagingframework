@@ -158,14 +158,14 @@ void ImapConfiguration::setPushCapable(bool b)
 // parts. So using no (or very low) timeToLogout is not recommended
 int ImapConfiguration::timeTillLogout() const
 {
-    const int fiveMinutes(5 * 60 * 1000);
-    QString t(value("timeTillLogout", QString::number(fiveMinutes)));
+    const int tenSeconds(10 * 1000);
+    QString t(value("timeTillLogout", QString::number(tenSeconds)));
 
     bool ok;
     int val(t.toInt(&ok));
     if (!ok) {
         qWarning() << "Could not parse timeTillLogout";
-        return fiveMinutes;
+        return tenSeconds;
     } else {
         return val;
     }
