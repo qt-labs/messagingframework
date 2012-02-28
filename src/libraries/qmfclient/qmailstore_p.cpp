@@ -8309,17 +8309,18 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                 obsoleteThreadIds.append(QVariant(extractValue<quint64>(query.value(0))));
         }
 
-        {
-            // Attach the descendants to the thread of their new predecessor
-            QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?)",
-                                        QVariantList() << message.id().toULongLong(),
-                                        Key("id", QMailMessageKey::id(*updatedMessageIds)),
-                                        "resolveMissingMessages mailmessages update query"));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
-
         if (!obsoleteThreadIds.isEmpty()) {
+            {
+                // Attach the descendants to the thread of their new predecessor
+                QString sql("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=%1) "
+                            "WHERE parentthreadid IN %2");
+                QSqlQuery query(simpleQuery(sql.arg(message.id().toULongLong()).arg(expandValueList(obsoleteThreadIds)),
+                                 QVariantList() << obsoleteThreadIds,
+                                             "resolveMissingMessages mailmessages update query"));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+            }
+
             {
                 // TODO: fix other columns as well if necessary
                 QString sql("UPDATE mailthreads "
@@ -8332,6 +8333,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
             }
+
             {
             // Delete the obsolete threads
             QString sql("DELETE FROM mailthreads WHERE id IN %1");
@@ -8340,8 +8342,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
                                         "resolveMissingMessages mailthreads delete query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
+            }
         }
-    }
     }
 
     if (!baseSubject.isEmpty()) {
