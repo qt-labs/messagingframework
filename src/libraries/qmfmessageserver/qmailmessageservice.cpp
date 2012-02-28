@@ -2282,6 +2282,8 @@ static int reservedPushConnections = 0;
 int QMailMessageService::reservePushConnections(int connections)
 {
     if (connections + reservedPushConnections > QMail::maximumPushConnections()) {
+        qWarning() << Q_FUNC_INFO << "Unable to reserve" << connections + reservedPushConnections
+                   << "push connections, as only" << QMail::maximumPushConnections() << "connections allowed.";
         return 0;
     }
     reservedPushConnections += connections;
