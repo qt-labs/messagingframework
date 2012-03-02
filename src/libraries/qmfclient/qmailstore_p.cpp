@@ -8549,15 +8549,22 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
     QMap<QMailThreadId, QMailMessageMetaDataList> existedMessagesMap;
     {
         QVariantList bindValues;
+        QVariantList bindValuesBatch;
         foreach (const QMailThreadId& threadId, modifiedThreads)
         {
             bindValues << threadId.toULongLong();
         }
 
-        if (!bindValues.isEmpty()) {
+        while (!bindValues.isEmpty()) {
+            bindValuesBatch = bindValues.mid(0, 500);
+            if (bindValues.count() > 500) {
+                bindValues = bindValues.mid(500);
+            } else {
+                bindValues.clear();
+            }
             QString sql;
-                sql = QString("SELECT id, parentfolderid, sender, subject, status, preview, parentthreadid  FROM mailmessages WHERE parentthreadid IN %1 ORDER BY stamp").arg(expandValueList(bindValues));
-            QSqlQuery query(simpleQuery(sql, bindValues,
+                sql = QString("SELECT id, parentfolderid, sender, subject, status, preview, parentthreadid  FROM mailmessages WHERE parentthreadid IN %1 ORDER BY stamp").arg(expandValueList(bindValuesBatch));
+            QSqlQuery query(simpleQuery(sql, bindValuesBatch,
                                 "recalculateThreadsColumns select messages info query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
