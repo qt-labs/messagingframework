@@ -181,6 +181,7 @@ public slots:
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    static uint defaultMinimum() { return 20; }
     void retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(const QMailAccountId &accountId);

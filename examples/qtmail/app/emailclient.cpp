@@ -162,9 +162,6 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
     return r == QMessageBox::Yes;
 }
 
-// Number of new messages to request per increment
-static const int MoreMessagesIncrement = 20;
-
 // This is used regularly:
 #ifndef Q_OS_SYMBIAN
 static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
@@ -1384,7 +1381,7 @@ void EmailClient::getNewMail()
         selectedMessageId = QMailMessageId();
 
     setRetrievalInProgress(true);
-    retrieveAction("Exporting account updates")->synchronize(mailAccountId, MoreMessagesIncrement);
+    retrieveAction("Exporting account updates")->synchronize(mailAccountId, QMailRetrievalAction::defaultMinimum());
 }
 
 void EmailClient::getAllNewMail()
@@ -2313,7 +2310,7 @@ void EmailClient::retrieveMoreMessages()
         int retrievedMinimum = QMailStore::instance()->countMessages(countKey);
 
         // Request more messages
-        retrievedMinimum += MoreMessagesIncrement;
+        retrievedMinimum += QMailRetrievalAction::defaultMinimum();
 
         setRetrievalInProgress(true);
         retrieveAction("Retrieving message list for folder")->retrieveMessageList(folder.parentAccountId(), folderId, retrievedMinimum);
