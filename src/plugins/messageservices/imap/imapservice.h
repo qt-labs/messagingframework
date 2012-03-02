@@ -94,6 +94,8 @@ private:
     QStringList _previousPushFolders;
     QString _previousConnectionSettings; // Connection related settings
     enum { ThirtySeconds = 30 };
+    static QMap<QMailAccountId, int> _initiatePushDelay; // Limit battery consumption
+    QTimer *_initiatePushEmailTimer;
 };
 
 class ImapServicePlugin : public QMailMessageServicePlugin
