@@ -3627,13 +3627,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
     if (!threadsToDelete.isEmpty()) {
         QString sql("DELETE FROM mailthreads WHERE id IN %1");
         QVariantList bindValues;
-        foreach (const QMailThreadId& threadId, threadsToDelete)
-        {
+        foreach (const QMailThreadId& threadId, threadsToDelete) {
             bindValues << threadId.toULongLong();
         }
-        QSqlQuery query = simpleQuery(sql.arg(expandValueList(bindValues)), bindValues, "updateThreads mailthreads delete");
-        if (query.lastError().type() != QSqlError::NoError)
-            return DatabaseFailure;
+        QVariantList bindValuesBatch;
+        while (!bindValues.isEmpty()) {
+            bindValuesBatch = bindValues.mid(0, 500);
+            if (bindValues.count() > 500) {
+                bindValues = bindValues.mid(500);
+            } else {
+                bindValues.clear();
+            }
+            QSqlQuery query = simpleQuery(sql.arg(expandValueList(bindValuesBatch)), bindValuesBatch, "updateThreads mailthreads delete");
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+        }
     }
     if (modifiedThreadsIds.isEmpty())
         return Success;
