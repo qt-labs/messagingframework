@@ -278,7 +278,10 @@ void QCharsetDetector::setText(const QByteArray &ba)
     } else { // ba is empty, possibly null.
         d->_ba = "";
         d->_baExtended = "";
-    }    
+    }
+    // Workaround for libicu bug, it seems to sometimes read past end of input buffer by one byte
+    // This was causing messageserver to abnormally terminate when running in valgrind
+    d->_baExtended.append(char(0));
     
     ucsdet_setText(d->_uCharsetDetector, d->_baExtended.constData(), int32_t(-1), &(d->_status));
     if(hasError())
