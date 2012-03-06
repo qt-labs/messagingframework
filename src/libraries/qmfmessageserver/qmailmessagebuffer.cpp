@@ -221,8 +221,24 @@ int QMailMessageBuffer::messagePending() {
     return d->waitingForFlush.size();
 }
 
+int QMailMessageBuffer::maximumBufferSize() const
+{
+    // 1MB buffer = 900KB + 100KB for largest message (default 100KB body limit)
+    return 1024*900;
+}
+
 bool QMailMessageBuffer::isFull() {
-    return messagePending() >= d->maxPending;
+    if (messagePending() >= d->maxPending) {
+        return true;
+    }
+    int totalSize = 0;
+    foreach (BufferItem *item, d->waitingForFlush) {
+        totalSize += item->message->body().length();
+        if (totalSize > maximumBufferSize()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void QMailMessageBuffer::readConfig()

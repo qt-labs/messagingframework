@@ -72,6 +72,7 @@ public:
     bool addMessage(QMailMessage *message);
     bool updateMessage(QMailMessage *message);
     bool setCallback(QMailMessage *message, QMailMessageBufferFlushCallback *callback);
+    int maximumBufferSize() const;
 
     void flush();
 
