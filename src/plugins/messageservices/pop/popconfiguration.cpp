@@ -94,7 +94,7 @@ bool PopConfiguration::isAutoDownload() const
 
 int PopConfiguration::maxMailSize() const
 {
-    return value("maxSize", "20").toInt();
+    return value("maxSize", "100").toInt();
 }
 
 int PopConfiguration::checkInterval() const

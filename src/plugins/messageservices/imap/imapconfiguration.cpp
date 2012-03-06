@@ -100,7 +100,7 @@ bool ImapConfiguration::isAutoDownload() const
 
 int ImapConfiguration::maxMailSize() const
 {
-    return value("maxSize", "20").toInt();
+    return value("maxSize", "100").toInt();
 }
 
 QString ImapConfiguration::preferredTextSubtype() const
