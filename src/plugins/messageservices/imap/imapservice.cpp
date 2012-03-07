@@ -1428,7 +1428,7 @@ void ImapService::Source::emitActionSuccessfullyCompleted()
     _service->actionCompleted(true);
 }
 
-QMap<QMailAccountId, int> ImapService::_initiatePushDelay = QMap<QMailAccountId, int>();;
+QMap<QMailAccountId, int> ImapService::_initiatePushDelay = QMap<QMailAccountId, int>();
 
 ImapService::ImapService(const QMailAccountId &accountId)
     : QMailMessageService(),
