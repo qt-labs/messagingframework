@@ -297,7 +297,7 @@ public:
     virtual ~IdleProtocol() {}
 
     virtual void handleIdling() { _client->idling(_folder.id()); }
-    virtual bool open(const ImapConfiguration& config);
+    virtual bool open(const ImapConfiguration& config, qint64 bufferSize = 10);
     int idleRetryDelay() { return _idleRetryDelay; }
 
 signals:
@@ -345,10 +345,10 @@ IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder)
             this, SLOT(idleErrorRecovery()));
 }
 
-bool IdleProtocol::open(const ImapConfiguration& config)
+bool IdleProtocol::open(const ImapConfiguration& config, qint64 bufferSize)
 {
     _idleRecoveryTimer.start(_idleRetryDelay*1000);
-    return ImapProtocol::open(config);
+    return ImapProtocol::open(config, bufferSize);
 }
 
 void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)

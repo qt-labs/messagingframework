@@ -145,7 +145,7 @@ public:
     ImapProtocol();
     ~ImapProtocol();
 
-    virtual bool open(const ImapConfiguration& config);
+    virtual bool open(const ImapConfiguration& config, qint64 bufferSize = 0);
     void close();
     bool connected() const;
     bool encrypted() const;

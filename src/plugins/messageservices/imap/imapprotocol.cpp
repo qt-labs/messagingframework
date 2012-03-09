@@ -2865,7 +2865,7 @@ ImapProtocol::~ImapProtocol()
     delete _fsm;
 }
 
-bool ImapProtocol::open( const ImapConfiguration& config )
+bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
 {
     if ( _transport && _transport->inUse() ) {
         QString msg("Cannot open account; transport in use");
@@ -2902,7 +2902,11 @@ bool ImapProtocol::open( const ImapConfiguration& config )
     }
 
     qMailLog(IMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
-    _transport->open( config.mailServer(), config.mailPort(), static_cast<QMailTransport::EncryptType>(config.mailEncryption()) );
+    _transport->open( config.mailServer(), config.mailPort(), static_cast<QMailTransport::EncryptType>(config.mailEncryption()));
+    if (bufferSize) {
+        qMailLog(IMAP) << objectName() << "Setting read buffer size to" << bufferSize;
+        _transport->socket().setReadBufferSize(bufferSize);
+    }
 
     return true;
 }
