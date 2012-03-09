@@ -93,6 +93,7 @@ namespace QMail
     QMF_EXPORT int fileLock(const QString& filePath);
     QMF_EXPORT bool fileUnlock(int id);
 
+    void closeDatabase();
 #if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
     SymbianSqlDatabase createDatabase();
 #else
@@ -106,6 +107,7 @@ namespace QMail
     QMF_EXPORT int maximumConcurrentServiceActions();
     QMF_EXPORT int maximumConcurrentServiceActionsPerProcess();
     QMF_EXPORT int maximumPushConnections();
+    QMF_EXPORT int databaseAutoCloseTimeout();
 
     template<typename StringType>
     StringType unquoteString(const StringType& src)

@@ -53,10 +53,6 @@ symbian: {
                    symbian/ipcserver.cpp
     }
 
-    contains(CONFIG, SYMBIAN_THREAD_SAFE_MAILSTORE) {
-        DEFINES += SYMBIAN_THREAD_SAFE_MAILSTORE
-    }
-
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 
     TARGET.EPOCALLOWDLLDATA = 1

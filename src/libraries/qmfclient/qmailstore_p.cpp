@@ -54,6 +54,10 @@
 #include <QSqlRecord>
 #include <QTextCodec>
 
+#if defined(Q_OS_LINUX)
+#include <malloc.h>
+#endif
+
 #if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
 #include "sqlquery.h"
 #define QSqlQuery SymbianSqlQuery
@@ -2438,16 +2442,25 @@ QString QMailStorePrivate::databaseIdentifier() const
 #if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
     return "C:/resource/qt/plugins/qtmail";
 #else
-    return database.databaseName();
+    return database()->databaseName();
 #endif
 }
 
+QSqlDatabase *QMailStorePrivate::database() const
+{
+    if (!databaseptr) {
+        databaseptr = new QSqlDatabase(QMail::createDatabase());
+    }
+    databaseUnloadTimer.start(QMail::databaseAutoCloseTimeout());
+    return databaseptr;
+}
 
 ProcessMutex* QMailStorePrivate::contentMutex = 0;
 
 QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     : QMailStoreImplementation(parent),
       q_ptr(parent),
+      databaseptr(0),
       messageCache(messageCacheSize),
       uidCache(uidCacheSize),
       folderCache(folderCacheSize),
@@ -2462,18 +2475,17 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     MutexGuard guard(creationMutex);
     guard.lock();
 
-    //open the database
-    database = QMail::createDatabase();
-
     mutex = new ProcessMutex(databaseIdentifier(), 1);
     if (contentMutex == 0) {
         contentMutex = new ProcessMutex(databaseIdentifier(), 3);
     }
+    connect(&databaseUnloadTimer, SIGNAL(timeout()), this, SLOT(unloadDatabase()));
 }
 
 QMailStorePrivate::~QMailStorePrivate()
 {
     delete mutex;
+    delete databaseptr;
 }
 
 ProcessMutex& QMailStorePrivate::databaseMutex(void) const
@@ -2492,7 +2504,7 @@ bool QMailStorePrivate::initStore()
     MutexGuard guard(creationMutex);
     guard.lock();
 
-    if (!database.isOpen()) {
+    if (!database()->isOpen()) {
         qWarning() << "Unable to open database in initStore!";
         return false;
     }
@@ -2612,12 +2624,19 @@ bool QMailStorePrivate::initStore()
     }
 
 #if defined(Q_USE_SQLITE)
-    QSqlQuery query( database );
+    QSqlQuery query( *database() );
     query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
     if (query.next() && query.value(0).toString().toLower() != "wal") {
         qWarning() << "res" << query.value(0).toString().toLower();
         qWarning() << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
         qWarning() << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
+    }
+    {
+        // Reduce page cache from 2MB (2000 pages) to 1MB
+        QSqlQuery query( *database() );
+        if (!query.exec(QLatin1String("PRAGMA cache_size=1000;"))) {
+            qWarning() << "Unable to reduce page cache size" << query.lastQuery().simplified();
+        }
     }
 #endif
 
@@ -2646,10 +2665,10 @@ void QMailStorePrivate::clearContent()
     Transaction t(this);
 
     // Drop all data
-    foreach (const QString &table, database.tables()) {
+    foreach (const QString &table, database()->tables()) {
         if (table != "versioninfo" && table != "mailstatusflags") {
             QString sql("DELETE FROM %1");
-            QSqlQuery query(database);
+            QSqlQuery query(*database());
             if (!query.exec(sql.arg(table))) {
                 qWarning() << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
             }
@@ -2676,8 +2695,8 @@ bool QMailStorePrivate::transaction(void)
     // Ensure any outstanding temp tables are removed before we begin this transaction
     destroyTemporaryTables();
 
-    if (!database.transaction()) {
-        setQueryError(database.lastError(), "Failed to initiate transaction");
+    if (!database()->transaction()) {
+        setQueryError(database()->lastError(), "Failed to initiate transaction");
         return false;
     }
 
@@ -2731,7 +2750,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
             QString tableName = temporaryTableName(*arg);
 
             {
-                QSqlQuery createQuery(database);
+                QSqlQuery createQuery(*database());
                 if (!createQuery.exec(QString("CREATE TEMP TABLE %1 ( id %2 PRIMARY KEY )").arg(tableName).arg(key.second))) { 
                     setQueryError(createQuery.lastError(), "Failed to create temporary table", queryText(createQuery));
                     qWarning() << "Unable to prepare query:" << sql;
@@ -2778,7 +2797,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
 
                 // Add the ID values to the temp table
                 {
-                    QSqlQuery insertQuery(database);
+                    QSqlQuery insertQuery(*database());
                     insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) { 
@@ -2793,7 +2812,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                 }
 
                 {
-                    QSqlQuery insertQuery(database);
+                    QSqlQuery insertQuery(*database());
                     insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) { 
@@ -2806,7 +2825,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
         }
     }
 
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     query.setForwardOnly(true);
     if (!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
@@ -2843,8 +2862,8 @@ bool QMailStorePrivate::commit(void)
         qWarning() << "Transaction does not exist at commit!";
     }
     
-    if (!database.commit()) {
-        setQueryError(database.lastError(), "Failed to commit transaction");
+    if (!database()->commit()) {
+        setQueryError(database()->lastError(), "Failed to commit transaction");
         return false;
     } else {
         inTransaction = false;
@@ -2866,8 +2885,8 @@ void QMailStorePrivate::rollback(void)
     
     inTransaction = false;
 
-    if (!database.rollback()) {
-        setQueryError(database.lastError(), "Failed to rollback transaction");
+    if (!database()->rollback()) {
+        setQueryError(database()->lastError(), "Failed to rollback transaction");
     }
 }
 
@@ -2925,7 +2944,7 @@ void QMailStorePrivate::destroyTemporaryTables()
         const QMailMessageKey::ArgumentType *arg = expiredTableKeys.takeFirst();
         QString tableName = temporaryTableName(*arg);
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         if (!query.exec(QString("DROP TABLE %1").arg(tableName))) {
             QString sql = queryText(query);
             QString err = query.lastError().text();
@@ -2949,7 +2968,7 @@ QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessage
 
 bool QMailStorePrivate::idValueExists(quint64 id, const QString& table)
 {
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     QString sql = "SELECT id FROM " + table + " WHERE id=?";
     if(!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare idExists query", queryText(query));
@@ -2983,7 +3002,7 @@ bool QMailStorePrivate::idExists(const QMailMessageId& id, const QString& table)
 
 bool QMailStorePrivate::messageExists(const QString &serveruid, const QMailAccountId &id)
 {
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     QString sql = "SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?";
     if(!query.prepare(sql)) {
         setQueryError(query.lastError(), "Failed to prepare messageExists query");
@@ -3759,7 +3778,7 @@ bool QMailStorePrivate::executeFile(QFile &file)
     
     QString sql = parseSql(ts);
     while (result && !sql.isEmpty()) {
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         if (!query.exec(sql)) {
             qWarning() << "Failed to exec table creation SQL query:" << sql << "- error:" << query.lastError().text();
             result = false;
@@ -3772,7 +3791,7 @@ bool QMailStorePrivate::executeFile(QFile &file)
 
 bool QMailStorePrivate::ensureVersionInfo()
 {
-    if (!database.tables().contains("versioninfo", Qt::CaseInsensitive)) {
+    if (!database()->tables().contains("versioninfo", Qt::CaseInsensitive)) {
         // Use the same version scheme as dbmigrate, in case we need to cooperate later
         QString sql("CREATE TABLE versioninfo ("
                     "   tableName NVARCHAR (255) NOT NULL,"
@@ -3780,7 +3799,7 @@ bool QMailStorePrivate::ensureVersionInfo()
                     "   lastUpdated NVARCHAR(20) NOT NULL,"
                     "   PRIMARY KEY(tableName, versionNum))");
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         if (!query.exec(sql)) {
             qWarning() << "Failed to create versioninfo table - query:" << sql << "- error:" << query.lastError().text();
             return false;
@@ -3794,7 +3813,7 @@ qint64 QMailStorePrivate::tableVersion(const QString &name) const
 {
     QString sql("SELECT COALESCE(MAX(versionNum), 0) FROM versioninfo WHERE tableName=?");
 
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     query.prepare(sql);
     query.addBindValue(name);
     if (query.exec() && query.first())
@@ -3809,7 +3828,7 @@ bool QMailStorePrivate::setTableVersion(const QString &name, qint64 version)
     QString sql("DELETE FROM versioninfo WHERE tableName=?");
 
     // Delete any existing entry for this table
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     query.prepare(sql);
     query.addBindValue(name);
 
@@ -3820,7 +3839,7 @@ bool QMailStorePrivate::setTableVersion(const QString &name, qint64 version)
         sql = "INSERT INTO versioninfo (tablename,versionNum,lastUpdated) VALUES (?,?,?)";
 
         // Insert the updated info
-        query = QSqlQuery(database);
+        query = QSqlQuery(*database());
         query.prepare(sql);
         query.addBindValue(name);
         query.addBindValue(version);
@@ -3840,7 +3859,7 @@ qint64 QMailStorePrivate::incrementTableVersion(const QString &name, qint64 curr
     qint64 next = current + 1;
 
     QString versionInfo("-" + QString::number(current) + "-" + QString::number(next));
-    QString scriptName(":/QmfSql/" + database.driverName() + '/' + name + versionInfo);
+    QString scriptName(":/QmfSql/" + database()->driverName() + '/' + name + versionInfo);
 
     QFile data(scriptName);
     if (!data.open(QIODevice::ReadOnly)) {
@@ -4093,7 +4112,7 @@ bool QMailStorePrivate::createTable(const QString &name)
     bool result = true;
 
     // load schema.
-    QFile data(":/QmfSql/" + database.driverName() + '/' + name);
+    QFile data(":/QmfSql/" + database()->driverName() + '/' + name);
     if (!data.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to load table schema resource:" << name;
         result = false;
@@ -4108,7 +4127,7 @@ bool QMailStorePrivate::setupTables(const QList<TableInfo> &tableList)
 {
     bool result = true;
 
-    QStringList tables = database.tables();
+    QStringList tables = database()->tables();
 
     foreach (const TableInfo &table, tableList) {
         const QString &tableName(table.first);
@@ -4201,7 +4220,7 @@ bool QMailStorePrivate::purgeMissingAncestors()
 {
     QString sql("DELETE FROM missingancestors WHERE state=1");
 
-    QSqlQuery query(database);
+    QSqlQuery query(*database());
     query.prepare(sql);
     if (!query.exec()) {
         qWarning() << "Failed to purge missing ancestors - query:" << sql << "- error:" << query.lastError().text();
@@ -4217,7 +4236,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
     {
         QString sql("SELECT mailfile FROM obsoletefiles");
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         if (!query.exec(sql)) {
             qWarning() << "Failed to purge obsolete files - query:" << sql << "- error:" << query.lastError().text();
             return false;
@@ -4261,7 +4280,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
 
          QString sql("DELETE FROM obsoletefiles");
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         if (!query.exec(sql)) {
             qWarning() << "Failed to purge obsolete file - query:" << sql << "- error:" << query.lastError().text();
             return false;
@@ -4279,7 +4298,7 @@ bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint seconds
     {
         QString sql("SELECT performed FROM maintenancerecord WHERE task=?");
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         query.prepare(sql);
         query.addBindValue(task);
         if (!query.exec()) {
@@ -4307,7 +4326,7 @@ bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint seconds
             sql = "UPDATE maintenancerecord SET performed=? WHERE task=?";
         }
 
-        QSqlQuery query(database);
+        QSqlQuery query(*database());
         query.prepare(sql);
         query.addBindValue(currentTime);
         query.addBindValue(task);
@@ -4711,6 +4730,40 @@ bool QMailStorePrivate::ensureDurability()
 {
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptEnsureDurability, this),
                                        "ensureDurability");
+}
+
+void QMailStorePrivate::unloadDatabase()
+{
+    if (databaseptr) {
+        shrinkMemory();
+        databaseptr->close();
+        delete databaseptr;
+        databaseptr = 0;
+    }
+    // Clear all caches
+    accountCache.clear();
+    folderCache.clear();
+    messageCache.clear();
+    uidCache.clear();
+    threadCache.clear();
+    // Close database
+    QMail::closeDatabase();
+    databaseUnloadTimer.stop();
+#if defined(Q_OS_LINUX)
+    malloc_trim(0);
+#endif
+}
+
+bool QMailStorePrivate::shrinkMemory()
+{
+#if defined(Q_USE_SQLITE)
+    QSqlQuery query( *database() );
+    if (!query.exec(QLatin1String("PRAGMA shrink_memory"))) {
+        qWarning() << "Unable to shrink memory" << query.lastQuery().simplified();
+        return false;
+    }
+#endif
+    return true;
 }
 
 void QMailStorePrivate::lock()

@@ -61,6 +61,7 @@
 #endif
 #include <QSqlDatabase>
 #include <QCache>
+#include <QTimer>
 
 //#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
 //#define QMAILSTORE_USE_RTTI //define if RTTI is available to assist debugging
@@ -189,6 +190,7 @@ public:
                                 QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds);
 
     virtual bool ensureDurability();
+    virtual bool shrinkMemory();
 
     virtual void lock();
     virtual void unlock();
@@ -250,6 +252,8 @@ public:
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
 
     enum AttemptResult { Success = 0, Failure, DatabaseFailure };
+public slots:
+    void unloadDatabase();
     
 private:
     friend class Transaction;
@@ -788,10 +792,12 @@ private:
     };
 
 #if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-    mutable SymbianSqlDatabase database;
+    SymbianSqlDatabase *database() const;
 #else
-    mutable QSqlDatabase database;
+    QSqlDatabase *database() const;
 #endif
+    mutable QSqlDatabase *databaseptr;
+    mutable QTimer databaseUnloadTimer;
 
     mutable QMailMessageIdList lastQueryMessageResult;
     mutable QMailThreadIdList lastQueryThreadResult;

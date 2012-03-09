@@ -50,9 +50,7 @@
 #include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
-#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
 #include <QThreadStorage>
-#endif
 #include <stdio.h>
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 // Not available for windows mobile?
@@ -359,7 +357,6 @@ QString QMail::messageServerLockFilePath()
 #include <sys/stat.h>
 #endif
 
-#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
 class QDatabaseInstanceData
 {
 public:
@@ -376,11 +373,20 @@ public:
 };
 
 Q_GLOBAL_STATIC(QThreadStorage<QDatabaseInstanceData *>, databaseDataInstance)
-#endif
+
+void QMail::closeDatabase()
+{
+    QDatabaseInstanceData* instance = databaseDataInstance()->localData();
+
+    if (instance->init) {
+        qMailLog(Messaging) << "closing database";
+        instance->init = false;
+        QSqlDatabase::removeDatabase("qmailstore_sql_connection");
+    } // else nothing todo
+}
 
 QSqlDatabase QMail::createDatabase()
 {
-#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
     if (!databaseDataInstance()->hasLocalData()) {
         databaseDataInstance()->setLocalData(new QDatabaseInstanceData);
     }
@@ -388,13 +394,9 @@ QSqlDatabase QMail::createDatabase()
 
     QSqlDatabase db;
     if (instance->init) {
-#else
-    static bool init = false;
-    QSqlDatabase db;
-    if(init) {
-#endif
         db = QSqlDatabase::database("qmailstore_sql_connection");
     } else {
+        qMailLog(Messaging) << "creating database";
         db = QSqlDatabase::addDatabase("QSQLITE", "qmailstore_sql_connection");
         
 #if defined(Q_OS_SYMBIAN)
@@ -430,11 +432,7 @@ QSqlDatabase QMail::createDatabase()
             if(!tp.mkpath(tempPath()))
                 qCritical() << "Cannot create temp path";
 
-#ifdef SYMBIAN_THREAD_SAFE_MAILSTORE
         instance->init = true;
-#else
-        init = true;
-#endif
     }
 
     return db;
@@ -927,6 +925,14 @@ int QMail::maximumPushConnections()
     return 10;
 }
 
+/*
+  Returns the number of milliseconds that the database can be unused before
+  it will be automatically closed to reduce RAM use.
+*/
+int QMail::databaseAutoCloseTimeout()
+{
+    return 600*1000;
+}
 
 /*!
     \enum QMail::SaslMechanism
