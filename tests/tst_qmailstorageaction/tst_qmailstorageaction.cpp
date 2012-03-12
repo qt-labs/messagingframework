@@ -105,6 +105,9 @@ void tst_QMailStorageAction::initTestCase()
     
     // Instantiate the store to initialise the values of the status flags and create the standard folders
     QMailStore::instance();
+    
+    // Tests rely on clearing all content in the database
+    QMailStore::instance()->clearContent();
 
     // Create the data set we will test our keys upon
     standardFolders << QMailFolderId(QMailFolder::LocalStorageFolderId);
