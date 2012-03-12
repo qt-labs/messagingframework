@@ -53,7 +53,9 @@
 #include <QTextEdit>
 #include <QStackedWidget>
 #include <qmailaccount.h>
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QInputContext>
+#endif
 #include <QStyle>
 #include <QMenu>
 #include <qmailnamespace.h>
@@ -519,7 +521,11 @@ m_composer(composer)
 
 bool BodyTextEdit::isComposing()
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     return (inputContext() && inputContext()->isComposing());
+#else
+    return false;
+#endif
 }
 
 bool BodyTextEdit::isEmpty()
