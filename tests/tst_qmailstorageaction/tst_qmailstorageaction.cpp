@@ -748,6 +748,12 @@ void tst_QMailStorageAction::test_storageaction_rollBackUpdates()
         QVERIFY(m.parentFolderId() == trashId2);
         QVERIFY(m.previousParentFolderId() == inboxId3);
     }
+    // It is necessary to flush the ipc nofications so that the messageserver is
+    // aware of the add and disconnected move, before the async rollback is done.
+    // Otherwise if this test is run twice in a row, while the messageserver is
+    // kept running, then the messageserver will have an out of date metadata
+    // cache item in the mail store.
+    QMailStore::instance()->flushIpcNotifications();
     action.rollBackUpdates(accountId3);
 
     int i = 0;
