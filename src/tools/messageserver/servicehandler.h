@@ -81,6 +81,7 @@ public slots:
     void exportUpdates(quint64, const QMailAccountId &accountId);
     void synchronize(quint64, const QMailAccountId &accountId);
     void onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
+    void discardMessages(quint64 action, QMailMessageIdList messageIds);
     void onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
@@ -264,7 +265,6 @@ private:
     bool dispatchRetrieveAll(quint64, const QByteArray &data);
     bool dispatchExportUpdates(quint64, const QByteArray &data);
     bool dispatchSynchronize(quint64, const QByteArray &data);
-    bool dispatchDiscardMessages(quint64 action, const QByteArray &data);
     bool dispatchOnlineDeleteMessages(quint64 action, const QByteArray &data);
     bool dispatchOnlineCopyMessages(quint64 action, const QByteArray &data);
     bool dispatchCopyToLocal(quint64 action, const QByteArray &data);

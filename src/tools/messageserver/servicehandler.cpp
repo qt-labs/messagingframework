@@ -1944,7 +1944,7 @@ void ServiceHandler::onlineDeleteMessages(quint64 action, const QMailMessageIdLi
 
     if (option == QMailStore::NoRemovalRecord) {
         // Delete these records locally without involving the source
-        enqueueRequest(action, serialize(messageIds), sources, &ServiceHandler::dispatchDiscardMessages, &ServiceHandler::storageActionCompleted, DeleteMessagesRequestType);
+        discardMessages(action, messageIds);
     } else {
         QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
         sources = sourceServiceSet(messageLists.keys().toSet());
@@ -1957,30 +1957,27 @@ void ServiceHandler::onlineDeleteMessages(quint64 action, const QMailMessageIdLi
     }
 }
 
-bool ServiceHandler::dispatchDiscardMessages(quint64 action, const QByteArray &data)
+void ServiceHandler::discardMessages(quint64 action, QMailMessageIdList messageIds)
 {
-    QMailMessageIdList messageIds;
-
-    deserialize(data, messageIds);
-    if (messageIds.isEmpty())
-        return false;
-
     uint progress = 0;
     uint total = messageIds.count();
 
     emit progressChanged(action, progress, total);
 
     // Just delete all these messages
-    if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
+    if (!messageIds.isEmpty() 
+        && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
         qWarning() << "Unable to service request to discard messages";
 
         reportFailure(action, QMailServiceAction::Status::ErrEnqueueFailed, tr("Unable to discard messages"));
-        return false;
+        return;
     }
 
     emit progressChanged(action, total, total);
-    emit activityChanged(action, QMailServiceAction::Successful);
-    return true;
+    emit messagesDeleted(action, messageIds);
+    emit storageActionCompleted(action);
+    QMailStore::instance()->flushIpcNotifications();
+    return;
 }
 
 bool ServiceHandler::dispatchOnlineDeleteMessages(quint64 action, const QByteArray &data)
