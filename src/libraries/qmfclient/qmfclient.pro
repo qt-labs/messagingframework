@@ -14,6 +14,7 @@ win32: {
 }
 
 QT = core sql network
+QT += widgets
 symbian: {
     include(../../../symbianoptions.pri)
 

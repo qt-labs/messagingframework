@@ -3,6 +3,9 @@ TARGET = messagingaccounts
 target.path += $$QMF_INSTALL_ROOT/bin
 CONFIG += qmfclient qmfmessageserver
 
+QT += widgets
+
+
 DEPENDPATH += .
 
 QTMAIL_EXAMPLE=../qtmail

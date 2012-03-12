@@ -2,6 +2,8 @@ TEMPLATE = app
 TARGET = qtmail 
 CONFIG += qmfutil qmfclient qmfmessageserver
 target.path += $$QMF_INSTALL_ROOT/bin
+QT += widgets
+
 
 DEPENDPATH += . 
 

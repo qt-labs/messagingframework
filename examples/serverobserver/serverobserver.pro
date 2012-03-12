@@ -3,6 +3,9 @@ TARGET = serverobserver
 target.path += $$QMF_INSTALL_ROOT/bin
 CONFIG += qmfclient qmfmessageserver
 
+QT += widgets
+
+
 DEPENDPATH += .
 INCLUDEPATH += . ../../src/libraries/qmfclient \
                  ../../src/libraries/qmfclient/support \

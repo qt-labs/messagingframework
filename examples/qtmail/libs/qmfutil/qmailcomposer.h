@@ -45,7 +45,6 @@
 #include <QWidget>
 #include <QList>
 #include <QString>
-#include <QIconSet>
 #include <qmailglobal.h>
 #include <qmailmessage.h>
 #include <QAction>

@@ -2,6 +2,9 @@ TEMPLATE = lib
 TARGET = emailcomposer 
 CONFIG += qmfclient qmfutil plugin
 
+QT += widgets
+
+
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/composers
 
 DEFINES += PLUGIN_INTERNAL

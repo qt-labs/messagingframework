@@ -7,6 +7,8 @@ target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QMFUTIL_INTERNAL
 
+QT += widgets
+
 symbian: {
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.CAPABILITY = ALL -TCB

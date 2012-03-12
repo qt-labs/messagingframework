@@ -5,6 +5,7 @@ CONFIG += qmfclient qmfmessageserver plugin
 target.path = $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
 QT = core network
+QT += widgets
 
 DEPENDPATH += .
 

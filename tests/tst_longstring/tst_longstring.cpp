@@ -75,11 +75,6 @@ private slots:
     void right();
     void mid_data();
     void mid();
-
-    void length();
-    void isEmpty();
-    void toQByteArray();
-    void dataStream();
 };
 
 QTEST_MAIN(tst_LongString)
@@ -914,24 +909,3 @@ void tst_LongString::mid()
     // Ensure that indexOf works correctly on result of mid
     verifyIndexOf( comparator, streamOutput );
 }
-
-void tst_LongString::length()
-{
-    DEPENDS_ON(mid());
-}
-
-void tst_LongString::isEmpty()
-{
-    DEPENDS_ON(mid());
-}
-
-void tst_LongString::toQByteArray()
-{
-    DEPENDS_ON(mid());
-}
-
-void tst_LongString::dataStream()
-{
-    DEPENDS_ON(mid());
-}
-
