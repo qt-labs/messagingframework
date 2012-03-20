@@ -297,7 +297,7 @@ public:
     virtual ~IdleProtocol() {}
 
     virtual void handleIdling() { _client->idling(_folder.id()); }
-    virtual bool open(const ImapConfiguration& config, qint64 bufferSize = 10);
+    virtual bool open(const ImapConfiguration& config, qint64 bufferSize = 10*1024);
     int idleRetryDelay() { return _idleRetryDelay; }
 
 signals:
