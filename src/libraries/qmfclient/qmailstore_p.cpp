@@ -8246,6 +8246,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
                 metaData->setResponseType(QMailMessageMetaData::UnspecifiedResponse);
         }
     }
+    missingReferences->removeDuplicates();
 
     return Success;
 }
