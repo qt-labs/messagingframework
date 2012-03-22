@@ -2297,8 +2297,6 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
       _requestType(requestType),
       _actionCompleted(false)
 {
-    setAction(action);
-
     // Service handler really should be sending the activity,
     // rather than us faking it..
     connect(_server, SIGNAL(retrievalCompleted(quint64)),
@@ -2311,6 +2309,7 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
             this, SLOT(activityCompleted(quint64)));
 
     init();
+    setAction(action);
 }
 
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
@@ -2568,7 +2567,7 @@ void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &action
     if (_isReady)
         _runningActions.clear();
     else
-		_isReady = true;
+        _isReady = true;
 
     Q_ASSERT(_runningActions.isEmpty());
 
