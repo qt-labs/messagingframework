@@ -1976,6 +1976,7 @@ void ServiceHandler::discardMessages(quint64 action, QMailMessageIdList messageI
     emit progressChanged(action, total, total);
     emit messagesDeleted(action, messageIds);
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
@@ -2186,6 +2187,7 @@ void ServiceHandler::addOrUpdateMessages(quint64 action, const QString &filename
             emit messagesUpdated(action, ids);
         }
         emit storageActionCompleted(action);
+        emit activityChanged(action, QMailServiceAction::Successful);
         return;
     }
     file.remove();
@@ -2252,6 +2254,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
 
     emit messagesAdded(action, ids);
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
 }
 
@@ -2311,6 +2314,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
 
     emit messagesUpdated(action, ids);
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
 }
 
@@ -2358,6 +2362,7 @@ void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& me
     emit progressChanged(action, total, total);
     emit messagesDeleted(action, messageIds);
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
@@ -2367,6 +2372,7 @@ void ServiceHandler::rollBackUpdates(quint64 action, const QMailAccountId &mailA
     QMailDisconnected::rollBackUpdates(mailAccountId);
     
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
@@ -2378,6 +2384,7 @@ void ServiceHandler::moveToStandardFolder(quint64 action, const QMailMessageIdLi
     messagesFlagged(ids, action);
 
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;    
 }
@@ -2388,6 +2395,7 @@ void ServiceHandler::moveToFolder(quint64 action, const QMailMessageIdList& ids,
     messagesMoved(ids, action);
     
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
@@ -2398,6 +2406,7 @@ void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& ids,
     messagesFlagged(ids, action);
     
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
@@ -2407,6 +2416,7 @@ void ServiceHandler::restoreToPreviousFolder(quint64 action, const QMailMessageK
     QMailDisconnected::restoreToPreviousFolder(key);
     
     emit storageActionCompleted(action);
+    emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
     return;
 }
