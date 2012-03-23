@@ -302,6 +302,10 @@ private:
         CompletionSignal completion;
         uint unixTimeExpiry;
         bool reported;
+        // Fields for QMailActionInfo
+        uint progressTotal;
+        uint progressCurrent;
+        QMailServiceAction::Status status;
     };
     
     QMap<quint64, ActionData> mActiveActions;

@@ -322,7 +322,7 @@ signals:
     void totalProgressChanged(float progress);
 protected:
     friend class QMailActionObserverPrivate;
-    QMailActionInfo(quint64 action, QMailServerRequestType description);
+    QMailActionInfo(const QMailActionData &data);
 };
 
 class QMailActionObserverPrivate;

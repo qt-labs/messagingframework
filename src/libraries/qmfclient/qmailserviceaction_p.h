@@ -366,7 +366,7 @@ class QMailActionInfoPrivate : public QMailServiceActionPrivate
 {
     Q_OBJECT
 public:
-    QMailActionInfoPrivate(QMailActionId action, QMailServerRequestType description, QMailActionInfo *i);
+    QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i);
 
     quint64 actionId() const;
     QMailServerRequestType requestType() const;

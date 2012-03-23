@@ -1123,10 +1123,14 @@ void ServiceHandler::dispatchRequest()
         data.unixTimeExpiry = QDateTime::currentDateTime().toTime_t() + ExpirySeconds;
         data.reported = false;
         data.description = request->description;
-
+        data.progressTotal = 0;
+        data.progressCurrent = 0;
+        data.status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
 
         mActiveActions.insert(request->action, data);
-        emit actionStarted(qMakePair(request->action, request->description));
+        emit actionStarted(QMailActionData(request->action, request->description, 0, 0, 
+                                           data.status.errorCode, data.status.text, 
+                                           data.status.accountId, data.status.folderId, data.status.messageId));
         emit activityChanged(request->action, QMailServiceAction::InProgress);
 
         if ((this->*request->servicer)(request->action, request->data)) {
@@ -2658,7 +2662,9 @@ void ServiceHandler::listActions()
 
     for(QMap<quint64, ActionData>::iterator i(mActiveActions.begin()) ; i != mActiveActions.end(); ++i)
     {
-        QMailActionData t = qMakePair(i.key(), i->description);
+        QMailActionData t(i.key(), i->description, i->progressTotal, i->progressCurrent,
+                          i->status.errorCode, i->status.text,
+                          i->status.accountId, i->status.folderId, i->status.messageId);
         list.append(t);
     }
 
@@ -2668,6 +2674,10 @@ void ServiceHandler::listActions()
 // concurrent actions
 void ServiceHandler::statusChanged(const QMailServiceAction::Status s, quint64 a)
 {
+    QMap<quint64, ActionData>::iterator it = mActiveActions.find(a);
+    if (it != mActiveActions.end()) {
+        it->status = s;
+    }
     emit statusChanged(a, s);
 }
 
@@ -2688,6 +2698,11 @@ void ServiceHandler::activityChanged(QMailServiceAction::Activity act, quint64 a
 
 void ServiceHandler::progressChanged(uint p, uint t, quint64 a)
 {
+    QMap<quint64, ActionData>::iterator it = mActiveActions.find(a);
+    if (it != mActiveActions.end()) {
+        it->progressCurrent = p;
+        it->progressTotal = t;
+    }
     emit progressChanged(a, p, t);
 }
 
@@ -2990,6 +3005,10 @@ void ServiceHandler::statusChanged(const QMailServiceAction::Status status)
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender()))
         if (quint64 action = serviceAction(service)) {
             updateAction(action);
+            QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
+            if (it != mActiveActions.end()) {
+                it->status = status;
+            }
             reportFailure(action, status);
         }
 }
@@ -2999,6 +3018,11 @@ void ServiceHandler::progressChanged(uint progress, uint total)
     if (QMailMessageService *service = qobject_cast<QMailMessageService*>(sender()))
         if (quint64 action = serviceAction(service)) {
             updateAction(action);
+            QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
+            if (it != mActiveActions.end()) {
+                it->progressCurrent = progress;
+                it->progressTotal = total;
+            }
             emit progressChanged(action, progress, total);
         }
 }

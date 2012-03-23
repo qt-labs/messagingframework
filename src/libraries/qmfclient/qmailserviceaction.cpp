@@ -2292,9 +2292,9 @@ QMailMessageKey QMailSearchAction::temporaryKey()
     \sa messagesCount()
 */
 
-QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerRequestType requestType, QMailActionInfo *i)
+QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i)
     : QMailServiceActionPrivate(this, i),
-      _requestType(requestType),
+      _requestType(data.requestType()),
       _actionCompleted(false)
 {
     // Service handler really should be sending the activity,
@@ -2309,7 +2309,11 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(quint64 action, QMailServerReques
             this, SLOT(activityCompleted(quint64)));
 
     init();
-    setAction(action);
+    _progress = data.progressCurrent();
+    _total = data.progressTotal();
+    _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrorCode(data.errorCode()), 
+                                         data.text(), data.accountId(), data.folderId(), data.messageId());
+    setAction(data.id());
 }
 
 void QMailActionInfoPrivate::activityCompleted(quint64 action)
@@ -2445,8 +2449,8 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 */
 
 /*! \internal */
-QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType description)
-    : QMailServiceAction(new QMailActionInfoPrivate(action, description, this), 0) // NB: No qobject parent!
+QMailActionInfo::QMailActionInfo(const QMailActionData &data)
+    : QMailServiceAction(new QMailActionInfoPrivate(data, this), 0) // NB: No qobject parent!
 {
     connect(impl(this), SIGNAL(statusAccountIdChanged(QMailAccountId)),
             this, SIGNAL(statusAccountIdChanged(QMailAccountId)));
@@ -2462,7 +2466,6 @@ QMailActionInfo::QMailActionInfo(quint64 action, QMailServerRequestType descript
     // Hack to get around _interface not being "ready" in the private class
     connect(this, SIGNAL(progressChanged(uint,uint)), impl(this), SLOT(theProgressChanged(uint,uint)));
     connect(this, SIGNAL(statusChanged(QMailServiceAction::Status)), impl(this), SLOT(theStatusChanged(QMailServiceAction::Status)));
-
 }
 
 /*!
@@ -2602,12 +2605,12 @@ void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
-        QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action.first, action.second));
-        connect(actionInfo.data(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
-                this, SLOT(anActionActivityChanged(QMailServiceAction::Activity)));
-        _runningActions.insert(action.first, actionInfo);
+    QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action));
+    connect(actionInfo.data(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
+            this, SLOT(anActionActivityChanged(QMailServiceAction::Activity)));
+    _runningActions.insert(action.id(), actionInfo);
 
-        return actionInfo;
+    return actionInfo;
 }
 
 void QMailActionObserverPrivate::anActionActivityChanged(QMailServiceAction::Activity activity)

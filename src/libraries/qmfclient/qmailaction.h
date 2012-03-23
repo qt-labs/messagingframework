@@ -43,7 +43,10 @@
 #define QMAILACTIONFWD_H
 #include "qmailglobal.h"
 #include "qmailipc.h"
-#include <QPair>
+#include "qmailid.h"
+#include <QString>
+#include <QList>
+#include <QSharedDataPointer>
 
 enum QMailServerRequestType
 {
@@ -74,14 +77,51 @@ enum QMailServerRequestType
 };
 
 typedef quint64 QMailActionId;
-typedef QPair<QMailActionId, QMailServerRequestType> QMailActionData;
+
+class QMailActionDataPrivate;
+
+class QMF_EXPORT QMailActionData
+{
+public:
+    QMailActionData();
+    QMailActionData(QMailActionId id,
+                    QMailServerRequestType requestType,
+                    uint progressCurrent,
+                    uint progressTotal,
+                    int errorCode,
+                    const QString &text,
+                    const QMailAccountId &accountId,
+                    const QMailFolderId &folderId,
+                    const QMailMessageId &messageId);
+    QMailActionData(const QMailActionData& other);
+    ~QMailActionData();
+
+    QMailActionId id() const;
+    QMailServerRequestType requestType() const;
+    uint progressCurrent() const;
+    uint progressTotal() const;
+    int errorCode() const;
+    QString text() const;
+    QMailAccountId accountId() const;
+    QMailFolderId folderId() const;
+    QMailMessageId messageId() const;
+
+    bool operator==(const QMailActionData& other) const;
+    bool operator!=(const QMailActionData& other) const;
+
+    const QMailActionData& operator=(const QMailActionData& other);
+
+    template <typename Stream> void serialize(Stream &stream) const;
+    template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    QSharedDataPointer<QMailActionDataPrivate> d;
+};
+
 typedef QList<QMailActionData> QMailActionDataList;
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailServerRequestType)
-
-Q_DECLARE_METATYPE(QMailActionData)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionData, QMailActionData)
-
+Q_DECLARE_USER_METATYPE(QMailActionData)
 Q_DECLARE_METATYPE(QMailActionDataList)
 Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
 
