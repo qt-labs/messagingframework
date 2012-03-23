@@ -53,6 +53,11 @@
 #include <QFile>
 #include <QDir>
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QAlignedTimer>
+using namespace QtAlignedTimer;
+#endif
+
 #ifdef QT_QMF_HAVE_ZLIB
 #define QMFALLOWCOMPRESS 1
 #else
@@ -317,7 +322,11 @@ protected:
     QMailFolder _folder;
 
 private:
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    QAlignedTimer _idleTimer; // Send a DONE command every 29 minutes
+#else
     QTimer _idleTimer; // Send a DONE command every 29 minutes
+#endif
     QTimer _idleRecoveryTimer; // Check command hasn't hung
     int _idleRetryDelay; // Try to restablish IDLE state
     enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
@@ -360,7 +369,13 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
             qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
             
             // We are now idling
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+            _idleTimer.setMinimumInterval(idleTimeout - 60*1000);
+            _idleTimer.setMaximumInterval(idleTimeout);
+            _idleTimer.start();
+#else
             _idleTimer.start(idleTimeout);
+#endif
             _idleRecoveryTimer.stop();
 
             handleIdling();

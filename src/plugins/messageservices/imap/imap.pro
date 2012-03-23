@@ -4,7 +4,7 @@ CONFIG += qmfmessageserver qmfclient plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
-QT += core network
+QT += core network alignedtimer
 QT += widgets
 
 DEPENDPATH += .
