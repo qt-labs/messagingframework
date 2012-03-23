@@ -6,8 +6,8 @@ TARGET = qmfmessageserver
 target.path += $$QMF_INSTALL_ROOT/lib
 
 QT = core network
-QT += widgets
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
+
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui widgets
 
 symbian: {
     TARGET.EPOCALLOWDLLDATA = 1

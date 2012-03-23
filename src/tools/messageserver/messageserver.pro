@@ -12,8 +12,8 @@ SERVER_AS_DLL: {
 TARGET = messageserver
 CONFIG += qmfmessageserver qmfclient
 QT = core
-QT += widgets
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui
+
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui widgets
 
 target.path += $$QMF_INSTALL_ROOT/bin
 
