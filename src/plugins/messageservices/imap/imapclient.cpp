@@ -793,8 +793,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
                 imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
                 imapCfg.setCapabilities(_protocol.capabilities());
-                if ((!QMailStore::instance()->updateAccount(&account)) ||
-                    (!QMailStore::instance()->updateAccount(&account, &_config))) {
+                if (!QMailStore::instance()->updateAccount(&account, &_config)) {
                     qWarning() << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
