@@ -60,7 +60,7 @@ static void shutdown(int n)
 
 static void recreateLoggers(int n)
 {
-    qMailLoggersRecreate();
+    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
     qMailLog(Messaging) << "Received signal" << n << ", logs recreated.";
 }
 #endif
