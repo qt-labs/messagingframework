@@ -45,14 +45,23 @@
 #include <qmailnamespace.h>
 #include <qmaillog.h>
 #include <qloggers.h>
+#include <signal.h>
 
 #if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
-#include <signal.h>
 
 static void shutdown(int n)
 {
     qMailLog(Messaging) << "Received signal" << n << ", shutting down.";
     QCoreApplication::exit();
+}
+#endif
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+
+static void recreateLoggers(int n)
+{
+    qMailLoggersRecreate();
+    qMailLog(Messaging) << "Received signal" << n << ", logs recreated.";
 }
 #endif
 
@@ -71,6 +80,10 @@ int main(int argc, char** argv)
 #if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     signal(SIGINT, shutdown);
     signal(SIGTERM, shutdown);
+#endif
+
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    signal(SIGHUP,recreateLoggers);
 #endif
 
     int exitCode = app.exec();
