@@ -2587,7 +2587,7 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
 
     foreach (const QMailAccountId &accountId, accountIds) {
         if (QMailMessageSource *source = accountSource(accountId)) {
-            bool success;
+            bool success(false);
             bool concurrent(sourceService.value(source)->usesConcurrentActions());
             switch (searchType)
             {
