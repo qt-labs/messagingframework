@@ -78,6 +78,11 @@ or optionally remove unwanted tests from the messagingframework.pro.
 qmake -r messagingframework.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR
 \endcode
 
+\bold Note: By default QMF operations on the message store are atomic and durable, so long as the underlying OS supports durable writes, e.g. on Linux based systems so long as fsync makes durable writes. Atomic means all of an operation such as a delete/update/add take effect or none of it does. Durable means once an operation is reported to have succeeded it will survive permanently even in the event of a system crash. Ensuring these properties has a considerable performance cost. To increase performance both durability and atomicity can be disabled using the define QMF_NO_DURABILITY e.g.:
+\code
+qmake -r messagingframework.pro DEFINES+=QMF_NO_DURABILITY
+\endcode
+
 \section1 Running Messaging Framework 
 
 After \c{make install} has run, the following layout should exist in your image directory:

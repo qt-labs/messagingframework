@@ -2638,6 +2638,26 @@ bool QMailStorePrivate::initStore()
             qWarning() << "Unable to reduce page cache size" << query.lastQuery().simplified();
         }
     }
+#if defined(QMF_NO_DURABILITY) || defined(QMF_NO_SYNCHRONOUS_DB)
+#if defined(QMF_NO_SYNCHRONOUS_DB)
+    {
+        // Use sqlite synchronous=OFF does not protect integrity of database does not ensure durability
+        QSqlQuery query( *database() );
+        qWarning() << "Disabling synchronous writes, database may become corrupted!";
+        if (!query.exec(QLatin1String("PRAGMA synchronous=OFF;"))) {
+            qWarning() << "Unable to set synchronous mode to OFF" << query.lastQuery().simplified();
+        }
+    }
+#else
+    {
+        // Use sqlite synchronous=NORMAL protects integrity of database but does not ensure durability
+        QSqlQuery query( *database() );
+        if (!query.exec(QLatin1String("PRAGMA synchronous=NORMAL;"))) {
+            qWarning() << "Unable to set synchronous mode to NORMAL" << query.lastQuery().simplified();
+        }
+    }
+#endif
+#endif
 #endif
 
     if (!QMailContentManagerFactory::init()) {

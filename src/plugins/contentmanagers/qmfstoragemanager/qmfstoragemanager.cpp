@@ -199,6 +199,10 @@ void syncFile(QSharedPointer<QFile> file)
 {
     // Ensure data is flushed to OS before attempting sync
     file->flush();
+#if defined(QMF_NO_DURABILITY) || defined(QMF_NO_SYNCHRONOUS_DB)
+    // Durability is disabled
+    return;
+#endif
 
     //TODO: Is a Symbian version of this code required?
 #if defined(Q_OS_WIN)
@@ -345,11 +349,15 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 {
     if (_useFullSync) {
         // More than one file needs to be synchronized
+#if !defined(QMF_NO_DURABILITY) && !defined(QMF_NO_SYNCHRONOUS_DB)
+
+        // Durability is not disabled
 #if defined(Q_OS_WIN)
         qWarning() << "Unable to call sync on Windows.";
 #else
 #ifndef Q_OS_SYMBIAN
         ::sync();
+#endif
 #endif
 #endif
         _useFullSync = false;
@@ -365,11 +373,15 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 
 QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &identifiers)
 {
+#if !defined(QMF_NO_DURABILITY) && !defined(QMF_NO_SYNCHRONOUS_DB)
+    // Durability is not disabled
+    
     // Can't just sync identifiers, also must sync message parts
 #if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
             qWarning() << "Unable to call sync in ensureDurability.";
 #else
             ::sync();
+#endif
 #endif
     return QMailStore::NoError;
 }
