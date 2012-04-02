@@ -196,7 +196,7 @@ static void syncStatusWithFolder(QMailMessageMetaData& message)
 
     QMailAccount messageAccount(message.parentAccountId());
 
-    for( QMap<QMailFolder::StandardFolder, QMailFolderId>::iterator it(messageAccount.standardFolders().begin())
+    for( QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it(messageAccount.standardFolders().begin())
         ; it != messageAccount.standardFolders().end() ; it++)
     {
         if (message.parentFolderId() == it.value()) {
