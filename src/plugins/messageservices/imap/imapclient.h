@@ -179,6 +179,8 @@ private:
     QList<QMailMessageBufferFlushCallback*> callbacks;
     QVector<QMailMessage*> _bufferedMessages;
     int _pushConnectionsReserved;
+
+    QMap<QMailMessageId,QString> detachedTempFiles;
 };
 
 #endif

@@ -1307,6 +1307,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         mail = new QMailMessage(uid, _config.id());
     }
 
+    detachedTempFiles.insertMulti(mail->id(),fileName);
+
     if (mail->id().isValid()) {
         if (section.isEmpty()) {
             // This is the body of the message, or a part thereof
@@ -1408,6 +1410,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
                 // These updates cannot be effected by storing the data file directly
                 if (!mail->customField("qmf-detached-filename").isEmpty()) {
+                    QFile::remove(mail->customField("qmf-detached-filename"));
                     mail->removeCustomField("qmf-detached-filename");
                 }
             }
@@ -1728,6 +1731,16 @@ void ImapClient::messageBufferFlushed()
 
 void ImapClient::removeAllFromBuffer(QMailMessage *message)
 {
+    if (message) {
+        QMap<QMailMessageId, QString>::const_iterator i = detachedTempFiles.find(message->id());
+        while (i != detachedTempFiles.end() && i.key() == message->id()) {
+            if (!(*i).isEmpty() && QFile::exists(*i)) {
+                QFile::remove(*i);
+            }
+            ++i;
+        }
+        detachedTempFiles.remove(message->id());
+    }
     int i = 0;
     while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
         delete _bufferedMessages.at(i);

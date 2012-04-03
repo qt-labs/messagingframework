@@ -283,6 +283,7 @@ bool transferMessageData(QMailMessage &message, const QMailMessage &source)
 
     if (!message.customField("qmf-detached-filename").isEmpty()) {
         // We have modified the content, so the detached file data is no longer sufficient
+        QFile::remove(message.customField("qmf-detached-filename"));
         message.removeCustomField("qmf-detached-filename");
     }
 
