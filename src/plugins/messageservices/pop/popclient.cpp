@@ -1100,7 +1100,7 @@ void PopClient::createMail()
     } else {
         mail->setStatus(QMailMessage::Incoming, true);
         mail->setStatus(QMailMessage::New, true);
-        mail->setReceivedDate(QMailTimeStamp::currentDateTime());
+        mail->setReceivedDate(mail->date());
     }
     mail->setCustomField( "qmf-detached-filename", detachedFile );
 

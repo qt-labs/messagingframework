@@ -7119,7 +7119,8 @@ void QMailMessageMetaData::setDate(const QMailTimeStamp &timeStamp)
 }
 
 /*!
-    Returns the timestamp placed in the message during reception by the messageserver, if present;
+    Returns the timestamp when the message was recieved by the remote server, if known;
+    otherwise returns the timestamp contained in the origination date header field of the message, if present; 
     otherwise returns an empty timestamp.
 */
 QMailTimeStamp QMailMessageMetaData::receivedDate() const
@@ -7128,7 +7129,7 @@ QMailTimeStamp QMailMessageMetaData::receivedDate() const
 }
 
 /*!
-    Sets the timestamp indicating the time of message reception by the messageserver to \a timeStamp.
+    Sets the timestamp indicating the time of message reception by the remote server to \a timeStamp.
 */
 void QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &timeStamp)
 {
