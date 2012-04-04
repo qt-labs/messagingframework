@@ -3752,21 +3752,21 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
         }
         bindValues << updateData.mNewPreview;
     }
-    if (!updateData.mStatus > 0) {
+    if (updateData.mStatus > 0) {
         if (firstProperty) {
-            sql.append(QString("%1 = (status | (?))").arg(threadPropertyMap().value(QMailThreadKey::Status)));
+            sql.append(QString("status = (status | (?))"));
             firstProperty = false;
         } else {
-            sql.append(QString(", %1 = (status | (?))").arg(threadPropertyMap().value(QMailThreadKey::Status)));
+            sql.append(QString(", status = (status | (?))"));
         }
         bindValues << updateData.mStatus;
     }
-    if (!updateData.mStatus < 0) {
+    if (updateData.mStatus < 0) {
         if (firstProperty) {
-            sql.append(QString("%1 = (~((status|%2)& %2))&(status|%2))").arg(threadPropertyMap().value(QMailThreadKey::Status), updateData.mStatus * (-1) ));
+            sql.append(QString("status = (~((status|%1)& %1))&(status|%1)").arg(updateData.mStatus * (-1)));
             firstProperty = false;
         } else {
-            sql.append(QString(", %1 = (~((status|%2)& %2))&(status|%2))").arg(threadPropertyMap().value(QMailThreadKey::Status), updateData.mStatus * (-1) ));
+            sql.append(QString(", status = (~((status|%1)& %1))&(status|%1)").arg(updateData.mStatus * (-1)));
         }
     }
 
@@ -6601,9 +6601,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                         // TODO: fix other columns as well if necessary
                         QSqlQuery query(simpleQuery("UPDATE mailthreads "
                                                     "SET messagecount = messagecount + (SELECT messagecount FROM mailthreads WHERE id=?), "
-                                                    " unreadcount = unreadcount + (SELECT unreadcount FROM mailthreads WHERE id=?) "
+                                                    " unreadcount = unreadcount + (SELECT unreadcount FROM mailthreads WHERE id=?), "
+                                                    " status = (status | (SELECT status FROM mailthreads WHERE id=?))"
                                                     "WHERE id=(SELECT parentthreadid FROM mailmessages WHERE id=?)",
-                                                    QVariantList() << threadId << threadId << metaData->inResponseTo().toULongLong(),
+                                                    QVariantList() << threadId << threadId << threadId << metaData->inResponseTo().toULongLong(),
                                                     "updateMessage mailthreads update query"));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
@@ -6701,7 +6702,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             // Check NB#294937. Sometimes metaData contains 0 as a parentThreadId
             // and that is really bad for a thread mode.
             if (!metaData->parentThreadId().isValid())
+            {
+                //Dirty hack to fix NB#297007, but at least it is better then nothing
+                QMailMessageMetaData data(metaData->id());
+                if (data.parentThreadId().isValid())
+                    metaData->setParentThreadId(data.parentThreadId());
                 updateProperties &= ~QMailMessageKey::ParentThreadId;
+            }
             extractedValues = messageValues(updateProperties, *metaData);
             {
                 QString sql("UPDATE mailmessages SET %1 WHERE id=?");
@@ -6740,7 +6747,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                     const bool& updatePreview = (metaData->date() >= thread.lastDate()) && (thread.preview() != metaData->preview()) && !metaData->preview().isEmpty();
                     const bool& updateSubject = (metaData->inResponseTo() == QMailMessageId()) && (metaData->date().toUTC() == thread.startedDate().toUTC());
                     const bool& messageUnreadStatusChanged = (status & QMailMessage::Read) != (metaData->status() & QMailMessage::Read);
-                    const bool& threadStatusChanged = (!thread.status() & metaData->status());
+                    const bool& threadStatusChanged = (thread.status() & metaData->status()) != 0;
                     const bool& threadSendersChanged = !thread.senders().contains(metaData->from()) || metaData->date() > thread.lastDate();
 
                     if (updatePreview || updateSubject || messageUnreadStatusChanged || threadStatusChanged || threadSendersChanged) {
