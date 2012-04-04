@@ -373,6 +373,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 
 QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &identifiers)
 {
+    Q_UNUSED(identifiers)
 #if !defined(QMF_NO_DURABILITY) && !defined(QMF_NO_SYNCHRONOUS_DB)
     // Durability is not disabled
     

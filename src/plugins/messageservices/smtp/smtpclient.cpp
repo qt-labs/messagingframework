@@ -895,6 +895,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 
     // Check if we have any pending data still waiting to be sent.
 #ifndef QT_NO_OPENSSL
+    Q_UNUSED(bytesWritten)
     QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
     Q_ASSERT(socket);
     if (socket->encryptedBytesToWrite()
