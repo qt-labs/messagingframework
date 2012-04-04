@@ -174,7 +174,7 @@ void tst_QCop::test_qcopserver()
 
 void tst_QCop::test_qcopclient()
 {
-    QCopClient *client1 = new QCopClient(true, this);
+    new QCopClient(true, this);
 
     QCopLocalSocket * sock = new QCopLocalSocket;
     QCopClient *client = new QCopClient(sock, sock);
