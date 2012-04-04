@@ -103,6 +103,7 @@ PUBLIC_HEADERS += qmailaccount.h \
                   qmailtimestamp.h \
                   qmailthread.h \
                   qmailthreadkey.h \
+                  qmailthreadlistmodel.h \
                   qmailthreadsortkey.h \
                   qprivateimplementation.h \
                   qprivateimplementationdef.h \
@@ -182,6 +183,7 @@ SOURCES += longstream.cpp \
            qmailtimestamp.cpp \
            qmailthread.cpp \
            qmailthreadkey.cpp \
+           qmailthreadlistmodel.cpp \
            qmailthreadsortkey.cpp \
            qprivateimplementation.cpp \
            support/qmailnamespace.cpp \
