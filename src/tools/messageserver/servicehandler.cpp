@@ -2735,8 +2735,14 @@ void ServiceHandler::actionCompleted(bool success, QMailMessageService *service,
                     qWarning() << "Unable to flag messages:" << mSentIds;
                 }
 
-                QMap<QMailAccountId, QMailMessageIdList> groupedMessages(accountMessages(mSentIds));
-
+                // FWOD messages have already been uploaded to the remote server, don't try to upload twice
+                quint64 externalStatus(QMailMessage::TransmitFromExternal | QMailMessage::HasUnresolvedReferences);
+                QMailMessageKey externalKey(QMailMessageKey::status(externalStatus, QMailDataComparator::Includes));
+                QMailMessageKey sentIdsKey(QMailMessageKey::id(mSentIds));
+                QMailMessageIdList sentNonFwodIds = QMailStore::instance()->queryMessages(sentIdsKey & ~externalKey);
+                
+                // Move sent messages to sent folder on remote server
+                QMap<QMailAccountId, QMailMessageIdList> groupedMessages(accountMessages(sentNonFwodIds));
                 if (!groupedMessages.empty()) { // messages are still around
                     enqueueRequest(newLocalActionId(),
                         serialize(groupedMessages, setMask, unsetMask),
