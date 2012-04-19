@@ -233,7 +233,7 @@ namespace {
         quint64 _messageFlag;
     };
     
-    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags)
+    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags, bool setStandardFlags)
     {
         // Set permitted flags
         bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
@@ -244,6 +244,9 @@ namespace {
             qWarning() << "setFolderFlags must be called on folder in store " << folder->id();
             return;
         }
+        
+        if (!setStandardFlags)
+            return;
 
         // Set standard folder flags
         QList<FlagInfo> flagInfoList;
@@ -920,7 +923,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             if (mailboxPath == path) {
                 QMailFolder folder(boxId); 
                 QMailFolder folderOriginal(folder); 
-                setFolderFlags(&account, &folder, flags);
+                setFolderFlags(&account, &folder, flags, _protocol.capabilities().contains("XLIST"));
                 
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -967,7 +970,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 }
             }
             
-            setFolderFlags(&account, &folder, folderFlags); // requires valid folder.id()
+            setFolderFlags(&account, &folder, folderFlags, _protocol.capabilities().contains("XLIST")); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
             
             if (!QMailStore::instance()->updateFolder(&folder)) {
