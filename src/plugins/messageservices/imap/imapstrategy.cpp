@@ -4007,11 +4007,21 @@ QString ImapCopyMessagesStrategy::copiedMessageFetched(ImapStrategyContextBase *
 void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QMailMessage &message, const QMailMessage &source)
 {
     message.setStatus(QMailMessage::New, source.status() & QMailMessage::New);
-    message.setStatus(QMailMessage::Trash, source.status() & QMailMessage::Trash); // shouldn't standard flags be set correctly when retrieving?
     message.setStatus(QMailMessage::Read, source.status() & QMailMessage::Read);
     message.setStatus(QMailMessage::Important, source.status() & QMailMessage::Important);
-
     message.setRestoreFolderId(source.restoreFolderId());
+
+    // Need to set these status fields as ImapClient::messageFetched only updates them for newly retrieved mails
+    message.setStatus(QMailMessage::Incoming, source.status() & QMailMessage::Incoming);
+    message.setStatus(QMailMessage::Outgoing, source.status() & QMailMessage::Outgoing);
+    message.setStatus(QMailMessage::Draft, source.status() & QMailMessage::Draft);
+    message.setStatus(QMailMessage::Sent, source.status() & QMailMessage::Sent);
+    message.setStatus(QMailMessage::Junk, source.status() & QMailMessage::Junk);
+    message.setStatus(QMailMessage::CalendarInvitation, source.hasCalendarInvitation());
+
+    // Need to set content scheme and identifier to prevent file leaks
+    message.setContentScheme(source.contentScheme());
+    message.setContentIdentifier(source.contentIdentifier());
 }
 
 void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)
