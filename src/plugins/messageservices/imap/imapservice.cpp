@@ -52,6 +52,7 @@
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
 #include <QCoreApplication>
+#include <typeinfo>
 
 namespace { 
 
@@ -1228,6 +1229,8 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal)
 {
+    qMailLog(Messaging) << "Setting imap strategy" << typeid(*strategy).name();
+
     disconnect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)));
     if (signal) {
         connect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)), this, signal);
