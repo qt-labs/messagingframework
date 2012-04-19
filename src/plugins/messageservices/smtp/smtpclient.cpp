@@ -275,6 +275,9 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 
 void SmtpClient::transportError(int errorCode, QString msg)
 {
+    if (status == Done)
+        return; //Ignore errors after QUIT is sent
+ 
     operationFailed(errorCode, msg);
 }
 
