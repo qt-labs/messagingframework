@@ -1082,6 +1082,36 @@ void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, cons
     QTimer::singleShot(0, this, SLOT(dispatchRequest()));
 }
 
+namespace {
+const char* requestTypeNames[] =
+{
+    "AcknowledgeNewMessagesRequest",
+    "TransmitMessagesRequest",
+    "RetrieveFolderListRequest",
+    "RetrieveMessageListRequest",
+    "RetrieveNewMessagesRequest",
+    "RetrieveMessagesRequest",
+    "RetrieveMessagePartRequest",
+    "RetrieveMessageRangeRequest",
+    "RetrieveMessagePartRangeRequest",
+    "RetrieveAllRequest",
+    "ExportUpdatesRequest",
+    "SynchronizeRequest",
+    "CopyMessagesRequest",
+    "MoveMessagesRequest",
+    "FlagMessagesRequest",
+    "CreateFolderRequest",
+    "RenameFolderRequest",
+    "DeleteFolderRequest",
+    "CancelTransferRequest",
+    "DeleteMessagesRequest",
+    "SearchMessagesRequest",
+    "CancelSearchRequest",
+    "ListActionsRequest",
+    "ProtocolRequestRequestType"
+};
+}
+
 void ServiceHandler::dispatchRequest()
 {
     QList<Request>::iterator request(mRequests.begin());
@@ -1128,6 +1158,7 @@ void ServiceHandler::dispatchRequest()
         data.status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
 
         mActiveActions.insert(request->action, data);
+        qMailLog(Messaging) << "Running action" << ::requestTypeNames[data.description] << request->action;
         emit actionStarted(QMailActionData(request->action, request->description, 0, 0, 
                                            data.status.errorCode, data.status.text, 
                                            data.status.accountId, data.status.folderId, data.status.messageId));
@@ -2708,6 +2739,7 @@ void ServiceHandler::progressChanged(uint p, uint t, quint64 a)
 
 void ServiceHandler::actionCompleted(bool success, quint64 action)
 {
+   qMailLog(Messaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
    QMailMessageService *service = qobject_cast<QMailMessageService*>(sender());
    Q_ASSERT(service);
 
@@ -2716,6 +2748,7 @@ void ServiceHandler::actionCompleted(bool success, quint64 action)
 
 void ServiceHandler::actionCompleted(bool success, QMailMessageService *service, quint64 action)
 {
+    qMailLog(Messaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
     QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
     if (it != mActiveActions.end()) {
         ActionData &data(it.value());
