@@ -138,7 +138,7 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
     };
 
     // Filling the LogCatsEnabled list
-    settings.beginGroup("Log categories");
+    settings.beginGroup("LogCategories");
     LogCatsMode.clear();
     foreach(const QString& key, settings.allKeys()) {
         LogCatsMode[key] = settings.value(key).toBool();
