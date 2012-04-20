@@ -45,9 +45,6 @@
 #include "qmaillog.h"
 #include <QCoreApplication>
 #include <QDir>
-#include <QDebug>
-#include <QDir>
-#include <QtDebug>
 #include <QMutex>
 #include <QRegExp>
 #include <QThreadStorage>

@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qtmailnamespace.h"
+#include <qmaillog.h>
 #include <QMap>
-#include <QDebug>
 
 typedef QMap<QString,QIcon> IconMap;
 

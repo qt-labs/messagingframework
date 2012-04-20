@@ -2863,7 +2863,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
     }
 
 #ifdef QMAILSTORE_LOG_SQL 
-    qDebug() << "(" << pid << ")" << qPrintable(queryText(query));
+    qMailLog(Messaging) << "(" << pid << ")" << qPrintable(queryText(query));
 #endif
 
     if (!inTransaction) {
@@ -3899,7 +3899,7 @@ bool QMailStorePrivate::upgradeTimeStampToUtc()
 {
     QMailMessageIdList allMessageIds = queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0);
 
-    qDebug() << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
+    qMailLog(Messaging) << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
 
     QMailMessageKey::Properties updateDateProperties = QMailMessageKey::TimeStamp | QMailMessageKey::ReceptionTimeStamp;
     foreach(const QMailMessageId &updateId, allMessageIds)

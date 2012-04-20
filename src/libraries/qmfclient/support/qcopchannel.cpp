@@ -49,7 +49,6 @@
 #include "qregexp.h"
 #include "qcoreapplication.h"
 #include "qeventloop.h"
-#include "qdebug.h"
 #include "qtimer.h"
 #include "qshareddata.h"
 #include "qthreadstorage.h"

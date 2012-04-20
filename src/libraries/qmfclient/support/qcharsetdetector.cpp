@@ -53,7 +53,7 @@
 #include <QString>
 #include <QStringList>
 #include <QTextCodec>
-#include <QDebug>
+#include "qmaillog.h"
 
 QCharsetMatchPrivate::QCharsetMatchPrivate()
     : _confidence(0),
@@ -584,7 +584,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
             clearError();
             text(*it);
             if(hasError()) {
-                // qDebug() << __PRETTY_FUNCTION__
+                // qMailLog(Messaging) << __PRETTY_FUNCTION__
                 //          << "removing match" << (*it).name()
                 //          << "because it cannot encode the complete input"
                 //          << errorString();

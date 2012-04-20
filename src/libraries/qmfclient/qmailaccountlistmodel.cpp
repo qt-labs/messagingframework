@@ -42,7 +42,6 @@
 #include "qmailaccountlistmodel.h"
 #include "qmailstore.h"
 #include "qmailaccount.h"
-#include <QDebug>
 #include <QCache>
 
 static const int fullRefreshCutoff = 10;

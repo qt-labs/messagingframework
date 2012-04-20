@@ -56,7 +56,6 @@
 #include <qmailstore.h>
 #include <qmailtimestamp.h>
 #include <QApplication>
-#include <QDebug>
 #include <QDesktopWidget>
 #include <QFile>
 #include <QGridLayout>

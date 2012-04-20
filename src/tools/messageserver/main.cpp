@@ -41,7 +41,6 @@
 
 #include "messageserver.h"
 #include <QCoreApplication>
-#include <QDebug>
 #include <qmailnamespace.h>
 #include <qmaillog.h>
 #include <qloggers.h>

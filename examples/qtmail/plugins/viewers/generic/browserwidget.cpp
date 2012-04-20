@@ -47,7 +47,6 @@
 #include "qmaillog.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QMenu>

@@ -57,7 +57,7 @@
 #include <qmailnamespace.h>
 
 #include <QCoreApplication>
-#include <QDebug>
+#include <qmaillog.h>
 #include <QDir>
 #include <QTest>
 

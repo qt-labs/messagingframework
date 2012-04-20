@@ -45,7 +45,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qatomic.h>
-#include <QtCore/qdebug.h>
+#include "qmaillog.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvarlengtharray.h>
 

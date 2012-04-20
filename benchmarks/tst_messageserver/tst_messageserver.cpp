@@ -467,7 +467,7 @@ void tst_MessageServer::compareMessages(QMailMessageIdList const& actual, TestMa
 #ifdef LEARN
         if (!exp.at(i).count()) {
             foreach (QByteArray const& line, actual.split('\n'))
-                qDebug() << line.constData();
+                qDebug() << line.constData(); // not compiled by default
         }
 #endif
     }

@@ -44,7 +44,6 @@
 #include <QListView>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QDebug>
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include <QTreeView>

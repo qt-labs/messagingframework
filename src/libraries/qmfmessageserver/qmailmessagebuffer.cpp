@@ -41,10 +41,10 @@
 
 #include "qmailmessagebuffer.h"
 #include "qmailstore.h"
+#include <qmaillog.h>
 #include <QTimer>
 
 #include <QSettings>
-#include <QDebug>
 #include <QFile>
 
 
