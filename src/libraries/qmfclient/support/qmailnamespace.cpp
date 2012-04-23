@@ -851,6 +851,9 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
             if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
                 qWarning() << "Unable to update messages in folder" << folderId << "to set flag" << messageFlag;
             }
+            if (!QMailStore::instance()->updateFolder(&folder)) {
+                qWarning() << "Unable to update folder" << folderId;
+            }
             return true;
         }
     }
