@@ -2605,8 +2605,8 @@ bool QMailStorePrivate::initStore()
             return false;
         }
 
-        if (!queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0).isEmpty()
-                && queryThreads(QMailThreadKey(), QMailThreadSortKey(), 0, 0).isEmpty()) {
+        if ((countMessages(QMailMessageKey()) != 0)
+            && (countThreads(QMailThreadKey()) == 0)) {
             if (!fullThreadTableUpdate())
                 qWarning() << Q_FUNC_INFO << "Full thread's table update is not completed.";
         }
@@ -4766,6 +4766,10 @@ void QMailStorePrivate::unloadDatabase()
     messageCache.clear();
     uidCache.clear();
     threadCache.clear();
+    lastQueryMessageResult.clear();
+    lastQueryThreadResult.clear();
+    requiredTableKeys.clear();
+    expiredTableKeys.clear();
     // Close database
     QMail::closeDatabase();
     databaseUnloadTimer.stop();
