@@ -83,7 +83,8 @@ PopClient::PopClient(QObject* parent)
       partialContent(false),
       dataStream(new LongStream),
       transport(0),
-      testing(false)
+      testing(false),
+      pendingDeletes(false)
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
@@ -123,9 +124,26 @@ void PopClient::createTransport()
     }
 }
 
+void PopClient::deleteTransport()
+{
+    if (transport) {
+        // Need to immediately disconnect these signals or slots may try to use null transport object
+        disconnect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
+        disconnect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
+        disconnect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
+        disconnect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
+
+        // A Qt socket remains in an unusuable state for a short time after closing,
+        // thus it can't be immediately reused
+        transport->deleteLater();
+        transport = 0;
+    }
+}
+
 void PopClient::testConnection()
 {
     testing = true;
+    pendingDeletes = false;
     closeConnection();
 
     PopConfiguration popCfg(config);
@@ -145,6 +163,7 @@ void PopClient::testConnection()
 void PopClient::newConnection()
 {
     testing = false;
+    pendingDeletes = false;
     lastStatusTimer.start();
     if (transport && transport->connected()) {
         if (selected) {
@@ -366,10 +385,7 @@ void PopClient::closeConnection()
             transport->close();
         }
     }
-    // A Qt socket remains in an unusuable state for a short time after closing,
-    // thus it can't be immediately reused
-    transport->deleteLater();
-    transport = 0;
+    deleteTransport();
 }
 
 void PopClient::sendCommand(const char *data, int len)
@@ -415,7 +431,7 @@ QString PopClient::readResponse()
 
 void PopClient::incomingData()
 {
-    while (transport->canReadLine()) {
+    while (transport && transport->canReadLine()) {
         QString response = readResponse();
         processResponse(response);
     }
@@ -614,7 +630,9 @@ void PopClient::processResponse(const QString &response)
     }
     case Exit:
     {
-        transport->close();        //close regardless of response
+        closeConnection(); //close regardless of response
+        retrieveOperationCompleted();
+        waitForInput = true;
         break;
     }
 
@@ -632,7 +650,7 @@ void PopClient::processResponse(const QString &response)
     }
 
     // Are we waiting for further input?
-    if (!waitForInput && transport->inUse()) {
+    if (!waitForInput && transport && transport->inUse()) {
         // Go on to the next action
         nextAction();
     }
@@ -841,6 +859,7 @@ void PopClient::nextAction()
                     QMailStore::instance()->removeMessages(accountKey & uidKey, QMailStore::NoRemovalRecord);
                 }
             } else {
+                pendingDeletes = true;
                 messageUid = uid;
             }
         }
@@ -874,10 +893,13 @@ void PopClient::nextAction()
             setSelectedMails(completionList);
 
             nextStatus = RequestMessage;
+        } else if (pendingDeletes) {
+            nextStatus = Quit;
         } else {
             // We're all done
             retrieveOperationCompleted();
             waitForInput = true;
+            nextStatus = Quit;
         }
         break;
     }
@@ -886,11 +908,11 @@ void PopClient::nextAction()
         emit updateStatus(tr("Logging out"));
         nextStatus = Exit;
         nextCommand = "QUIT";
+        waitForInput = true;
         break;
     }
     case Exit:
     {
-        transport->close();        //close regardless
         waitForInput = true;
         break;
     }
@@ -1205,7 +1227,9 @@ void PopClient::retrieveOperationCompleted()
     // Or it may have been requested by a waiting client
     emit retrievalCompleted();
 
-    deactivateConnection();
+    if (transport) {
+        deactivateConnection();
+    }
 }
 
 void PopClient::deactivateConnection()
@@ -1239,6 +1263,7 @@ void PopClient::operationFailed(int code, const QString &text)
 {
     if (transport && transport->inUse()) {
         transport->close();
+        deleteTransport();
     }
 
     emit errorOccurred(code, text);
@@ -1248,6 +1273,7 @@ void PopClient::operationFailed(QMailServiceAction::Status::ErrorCode code, cons
 {
     if (transport && transport->inUse()) {
         transport->close();
+        deleteTransport();
     }
 
     QString msg;

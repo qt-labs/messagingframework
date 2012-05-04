@@ -75,6 +75,7 @@ public:
     bool synchronizationEnabled(const QMailFolderId &id) const;
 
     void createTransport();
+    void deleteTransport();
     void testConnection();
     void newConnection();
     void closeConnection();
@@ -187,6 +188,7 @@ private:
     QVector<QMailMessage*> _bufferedMessages;
     QVector<QMailMessageBufferFlushCallback*> callbacks;
     bool testing;
+    bool pendingDeletes;
 };
 
 #endif
