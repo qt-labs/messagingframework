@@ -77,7 +77,7 @@ public:
 */
 QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident);
 
-QMF_EXPORT void qmf_registerLoggingFlag(char const* flag);
+QMF_EXPORT void qmf_registerLoggingFlag(char *flag);
 QMF_EXPORT void qmf_resetLoggingFlags();
 QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValue);
 

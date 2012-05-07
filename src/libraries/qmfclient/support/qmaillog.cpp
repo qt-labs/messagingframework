@@ -147,10 +147,10 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
     qmf_resetLoggingFlags();
 };
 
-static QList<const char*> LogFlagsCache;
+static QList<char*> LogFlagsCache;
 
 // Register the flag variable so it can be reset later
-QMF_EXPORT void qmf_registerLoggingFlag(char const* flag)
+QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
 {
     if (!LogFlagsCache.contains(flag))
         LogFlagsCache.append(flag);
@@ -160,6 +160,10 @@ QMF_EXPORT void qmf_registerLoggingFlag(char const* flag)
 QMF_EXPORT void qmf_resetLoggingFlags()
 {
     // force everyone to re-check their logging status
+    foreach (char* c, LogFlagsCache) {
+        *c = 0;
+    }
+
     LogFlagsCache.clear();
 }
 
