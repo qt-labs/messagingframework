@@ -1266,6 +1266,18 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 }
 
 
+/*!
+    \fn QMailRetrievalAction::defaultMinimum()
+
+    Default minimum argument clients and protocol plugins should use when 
+    retrieving messages. Maybe be used by protocol plugins to determine if 
+    either new messages are being retrieved or if more messages are being 
+    retrieved.
+
+    \sa retrieveMessageList()
+*/
+
+
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
     : QMailServiceActionPrivate(this, i)
 {
