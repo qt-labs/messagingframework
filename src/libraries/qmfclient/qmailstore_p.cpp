@@ -2598,7 +2598,7 @@ bool QMailStorePrivate::initStore()
                 || attemptRegisterStatusBit("HighPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
                 || attemptRegisterStatusBit("LowPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
                 || attemptRegisterStatusBit("CalendarInvitation", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false)
-                || attemptRegisterStatusBit("Todo", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false);
+                || attemptRegisterStatusBit("Todo", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Todo), t, false);
 
         if (res) {
             qWarning() << "There was an error registering flags.";
