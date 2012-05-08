@@ -705,7 +705,6 @@ struct PartStorer
             } else {
                 syncFile(file);
             }
-            file->close();
         }
 
         return true;
