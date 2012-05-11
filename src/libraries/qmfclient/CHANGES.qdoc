@@ -238,6 +238,10 @@ Changes since the QMF-1.0 release on 15/05/09:
 55. Added 'void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)' and
           'void QMailMessageServer::retrieveNewMessages(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds)'.
 
+56. Binary compatibility broken.
+    Change 'void qmf_registerLoggingFlag(const char *flag)' to 
+    'void qmf_registerLoggingFlag(char *flag)'. 
+
 *****************************************************************************
 
 Changes since the development preview release on 03/04/09:
