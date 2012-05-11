@@ -1333,7 +1333,9 @@ void ServiceHandler::cancelTransfer(quint64 action)
             QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
         }
 
-        mActiveActions.erase(it);
+        //The ActionData might have already been deleted by actionCompleted, triggered by cancelOperation
+        it = mActiveActions.find(action);
+        if (it != mActiveActions.end()) mActiveActions.erase(it);
 
         // See if there are more actions 
         QTimer::singleShot(0, this, SLOT(dispatchRequest()));
