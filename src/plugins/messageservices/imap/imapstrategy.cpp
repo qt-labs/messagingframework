@@ -4022,6 +4022,9 @@ void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QM
     // Need to set content scheme and identifier to prevent file leaks
     message.setContentScheme(source.contentScheme());
     message.setContentIdentifier(source.contentIdentifier());
+    
+    // Don't emit new message notification for copied (or moved/externalized) message
+    message.setStatus(QMailMessage::NoNotification, true);
 }
 
 void ImapCopyMessagesStrategy::copyNextMessage(ImapStrategyContextBase *context)

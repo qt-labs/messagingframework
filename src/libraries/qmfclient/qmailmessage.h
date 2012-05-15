@@ -573,6 +573,7 @@ public:
     static const quint64 &LowPriority;
     static const quint64 &CalendarInvitation;
     static const quint64 &Todo;
+    static const quint64 &NoNotification;
 
     QMailMessageMetaData();
 #ifndef QTOPIAMAIL_PARSING_ONLY

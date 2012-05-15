@@ -6324,6 +6324,7 @@ static quint64 highPriorityFlag = 0;
 static quint64 lowPriorityFlag = 0;
 static quint64 calendarInvitationFlag = 0;
 static quint64 todoFlag = 0;
+static quint64 noNotificationFlag = 0;
 
 
 /*  QMailMessageMetaData */
@@ -6940,6 +6941,35 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     \sa QMailMessage::fromRfc2822()
 */
 
+/*!
+    \variable QMailMessageMetaData::CalendarInvitation
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "CalendarInvitation" against the result of QMailMessage::status().
+
+    This flag indicates that the message includes a calendar invitation request part.
+*/
+
+/*!
+    \variable QMailMessageMetaData::Todo
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "Todo" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been marked as a todo item.
+*/
+
+/*!
+    \variable QMailMessageMetaData::NoNotification
+
+    The status mask needed for testing the value of the registered status flag named 
+    \c "NoNotification" against the result of QMailMessage::status().
+
+    This flag indicates that a new message notification should not be shown
+    for the message. e.g. an older message retrieved in a folder that has previously
+    been synchronized, or an existing message moved to a folder such as trash, or a 
+    message externalized by saving in a drafts or sent folder.
+*/
 
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
@@ -6971,6 +7001,7 @@ const quint64 &QMailMessageMetaData::HighPriority = highPriorityFlag;
 const quint64 &QMailMessageMetaData::LowPriority = lowPriorityFlag;
 const quint64 &QMailMessageMetaData::CalendarInvitation = calendarInvitationFlag;
 const quint64 &QMailMessageMetaData::Todo = todoFlag;
+const quint64 &QMailMessageMetaData::NoNotification = noNotificationFlag;
 
 /*!
     Constructs an empty message meta data object.
