@@ -282,6 +282,9 @@ bool ImapService::Source::retrieveNewMessages(const QMailAccountId &accountId, c
         return true;
     }
 
+    // Use defaultMinimum so that for a freshly created push enabled account
+    // defaultMinimum messages are retrieved. But this means when new push
+    // emails arrive, flags will be checked, but for only defaultMinimum messages.
     return retrieveMessageLists(accountId, ids, QMailRetrievalAction::defaultMinimum(), QMailMessageSortKey(), false /* not accountCheck, don't detect flag changes and removed messages */);
 }
 
