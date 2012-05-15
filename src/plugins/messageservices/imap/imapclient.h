@@ -99,6 +99,8 @@ public:
     void removeAllFromBuffer(QMailMessage *message);
     int pushConnectionsReserved() { return _pushConnectionsReserved; }
     void setPushConnectionsReserved(int reserved) { _pushConnectionsReserved = reserved; }
+    int idleRetryDelay() const { return _idleRetryDelay; }
+    void setIdleRetryDelay(int delay) { _idleRetryDelay = delay; }
 
 signals:
     void errorOccurred(int, const QString &);
@@ -144,7 +146,7 @@ protected slots:
     void checkCommandResponse(const ImapCommand, const OperationStatus);
     void commandTransition(const ImapCommand, const OperationStatus);
     void transportStatus(const QString& status);
-    void idleOpenRequested(IdleProtocol*);
+    void idleOpenRequested();
     void messageBufferFlushed();
 
 private:
@@ -171,6 +173,8 @@ private:
     bool _qresyncEnabled;
     bool _requestRapidClose;
     bool _rapidClosing;
+    int _idleRetryDelay; // Try to restablish IDLE state
+    enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;
