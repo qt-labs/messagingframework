@@ -1012,6 +1012,17 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setStatus(QMailMessage::Junk, true); 
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
+        
+        // Disable Notification when getting older message
+        QMailFolder folder(properties.id);
+        bool ok1, ok2; // toUint returns 0 on error, which is an invalid IMAP uid
+        int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok1));
+        int serverUid(ImapProtocol::uid(mail.serverUid()).toUInt(&ok2));
+        if (ok1 && ok2 && clientMax && (serverUid < clientMax)) {
+            // older message
+            mail.setStatus(QMailMessage::NoNotification, true); 
+        }
+
     } else {
         // We need to update the message from the existing data
         QMailMessageMetaData existing(mail.serverUid(), _config.id());
