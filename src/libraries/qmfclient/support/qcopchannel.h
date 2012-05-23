@@ -90,7 +90,11 @@ Q_SIGNALS:
     void connectionDown();
 
 protected:
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    void connectNotify(const QMetaMethod &);
+#else
     void connectNotify(const char *);
+#endif
 
 protected Q_SLOTS:
     void connectClientSignals();

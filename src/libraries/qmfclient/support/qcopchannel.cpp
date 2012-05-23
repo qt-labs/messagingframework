@@ -54,6 +54,7 @@
 #include "qthreadstorage.h"
 #include "qthread.h"
 #include "qcoreevent.h"
+#include "qmetaobject.h"
 #include "qmaillog.h"
 
 QCopServerRegexp::QCopServerRegexp(const QString& ch, QCopClient *cl)
@@ -368,9 +369,18 @@ void QCopChannel::disconnectFromServer()
 /* !
     \internal
 */
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+void QCopChannel::connectNotify(const QMetaMethod &signal)
+#else
 void QCopChannel::connectNotify(const char *signal)
+#endif
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    static const QMetaMethod forwardedSignal = QMetaMethod::fromSignal(&QCopChannel::forwarded);
+    if (signal == forwardedSignal)
+#else
     if (QLatin1String(signal) == SIGNAL(forwarded(QString,QByteArray,QString)))
+#endif
         d->useForwardedSignal = true;
     QObject::connectNotify(signal);
 }
