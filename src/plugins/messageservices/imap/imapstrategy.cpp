@@ -3723,7 +3723,10 @@ void ImapRetrieveMessageListStrategy::qresyncFolderListFolderAction(ImapStrategy
                 _error = true;
             }
         }
-        
+    }
+
+    // Always set the highestmodseq for the folder
+    {
         processFlagChanges(properties.flagChanges, properties.id, &_error);
         folder.setCustomField("qmf-highestmodseq", properties.highestModSeq);
         if (!QMailStore::instance()->updateFolder(&folder)) {
