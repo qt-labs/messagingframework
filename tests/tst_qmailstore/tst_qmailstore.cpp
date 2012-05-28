@@ -83,6 +83,7 @@ private slots:
     void removeFolder();
     void removeMessage();
     void remove1000Messages();
+    void removeMessageWithInResponse();
     void message();
     void implementationbase();
 };
@@ -1493,6 +1494,112 @@ void tst_QMailStore::remove1000Messages()
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),largeMessageCount);
     QVERIFY(QMailStore::instance()->purgeMessageRemovalRecords(account.id()));
     QCOMPARE(QMailStore::instance()->messageRemovalRecords(account.id(),folder.id()).count(),0);
+}
+
+void tst_QMailStore::removeMessageWithInResponse()
+{
+    QMailAccount account;
+    account.setName("Account");
+
+    QCOMPARE(QMailStore::instance()->countAccounts(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!account.id().isValid());
+    QVERIFY(QMailStore::instance()->addAccount(&account, 0));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(account.id().isValid());
+    QCOMPARE(QMailStore::instance()->countAccounts(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder folder;
+    folder.setPath("Folder");
+
+    QCOMPARE(QMailStore::instance()->countFolders(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!folder.id().isValid());
+    QVERIFY(QMailStore::instance()->addFolder(&folder));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(folder.id().isValid());
+    QCOMPARE(QMailStore::instance()->countFolders(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailMessage message1;
+    message1.setParentAccountId(account.id());
+    message1.setParentFolderId(folder.id());
+    message1.setMessageType(QMailMessage::Email);
+    message1.setSubject("Message 1");
+    message1.setTo(QMailAddress("alice@example.org"));
+    message1.setFrom(QMailAddress("bob@example.com"));
+    message1.setBody(QMailMessageBody::fromData(QString("Hi"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+    message1.setStatus(QMailMessage::Incoming, true);
+    message1.setStatus(QMailMessage::Read, true);
+
+    // Verify that addition is successful
+    QCOMPARE(QMailStore::instance()->countMessages(), 0);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(!message1.id().isValid());
+    QVERIFY(QMailStore::instance()->addMessage(&message1));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(message1.id().isValid());
+    QCOMPARE(QMailStore::instance()->countMessages(), 1);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    
+    QMailMessage messageResponse;
+    messageResponse.setParentAccountId(account.id());
+    messageResponse.setParentFolderId(folder.id());
+    messageResponse.setInResponseTo(message1.id());
+    messageResponse.setMessageType(QMailMessage::Email);
+    messageResponse.setSubject("Re: Message 1");
+    messageResponse.setTo(QMailAddress("bob@example.com"));
+    messageResponse.setFrom(QMailAddress("alice@example.org"));
+    messageResponse.setBody(QMailMessageBody::fromData(QString("Hello"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+    messageResponse.setStatus(QMailMessage::Incoming, true);
+    messageResponse.setStatus(QMailMessage::Read, true);    
+
+    // Verify that addition is successful
+    QVERIFY(!messageResponse.id().isValid());
+    QVERIFY(QMailStore::instance()->addMessage(&messageResponse));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QVERIFY(messageResponse.id().isValid());
+    QCOMPARE(QMailStore::instance()->countMessages(), 2);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+	// On win32, the message cannot be removed while someone has the body object open!
+	{
+		// Verify that retrieval yields matching result
+		QMailMessage message2(message1.id());
+		QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+		QCOMPARE(message2.id(), message1.id());
+		QCOMPARE(message2.parentFolderId(), message1.parentFolderId());
+		QCOMPARE(message2.messageType(), message1.messageType());
+		QCOMPARE(message2.subject(), message1.subject());
+		QCOMPARE(message2.to(), message1.to());
+		QCOMPARE(message2.from(), message1.from());
+		QCOMPARE(message2.body().data(), message1.body().data());
+		QCOMPARE((message2.status() | QMailMessage::UnloadedData), (message1.status() | QMailMessage::UnloadedData));
+
+		// Verify that retrieval yields matching result
+		QMailMessage messageResponse2(messageResponse.id());
+		QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+		QCOMPARE(messageResponse2.id(), messageResponse.id());
+		QCOMPARE(messageResponse2.inResponseTo(), messageResponse.inResponseTo());
+		QCOMPARE(messageResponse2.inResponseTo(), message1.id());
+		QCOMPARE(messageResponse2.parentFolderId(), messageResponse.parentFolderId());
+        }
+
+    // Verify that removal is successful 
+    QVERIFY(QMailStore::instance()->removeMessage(message1.id()));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QCOMPARE(QMailStore::instance()->countMessages(), 1);
+
+    // Verify that retrieval yields invalid result
+    QMailMessage message3(message1.id());
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
+    QVERIFY(!message3.id().isValid());
+    
+    // Verify that the child message is orphaned correctly
+    QMailMessage messageResponse3(messageResponse.id());
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+    QCOMPARE(messageResponse3.inResponseTo(), QMailMessageId()); // No parent now
 }
 
 void tst_QMailStore::message()
