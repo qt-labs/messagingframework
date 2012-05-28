@@ -8754,7 +8754,7 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
 
 bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailStore::MessageRemovalOption option,
-                                       QMailMessageIdList& deletedMessageIds,
+                                       QMailMessageIdList& outDeletedMessageIds,
                                        QMailThreadIdList& deletedThreadIds,
                                        QStringList& expiredContent,
                                        QMailMessageIdList& updatedMessageIds,
@@ -8762,6 +8762,8 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                        QMailThreadIdList& modifiedThreadIds,
                                        QMailAccountIdList& modifiedAccountIds)
 {
+    QMailMessageIdList deletedMessageIds;
+    
     QString elements("id,mailfile,parentaccountid,parentfolderid,parentthreadid");
     if (option == QMailStore::CreateRemovalRecord)
         elements += ",serveruid";
@@ -8780,10 +8782,16 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
         bool noMessages = true;
         while (query.next()) {
+            QMailMessageId messageId(extractValue<quint64>(query.value(0)));
+ 
+            // Deletion handling logic for this message has already been executed in this transaction
+            if (outDeletedMessageIds.contains(messageId))
+                continue;
+            
             noMessages = false;
             
-            QMailMessageId messageId(extractValue<quint64>(query.value(0)));
             deletedMessageIds.append(messageId);
+            outDeletedMessageIds.append(messageId);
             
             QString contentUri(extractValue<QString>(query.value(1)));
             if (!contentUri.isEmpty())
@@ -8824,7 +8832,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
         while (query.next()) {
             QMailFolderId folderId(extractValue<quint64>(query.value(0)));
-            if (folderId.isValid())
+            if (folderId.isValid()  && !modifiedFolderIds.contains(folderId))
                 modifiedFolderIds.append(folderId);
         }
     }
@@ -8917,7 +8925,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
                 if (!deletedMessageIds.contains(to_update)) {
                     updatedMessageIds.append(to_update);
-                    messageIdList.push_back(QVariant(to_update));
+                    messageIdList.push_back(QVariant(to_update.toULongLong()));
 
                     QMailMessageId to;
 
@@ -8929,7 +8937,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                         toIterator = predecessors.find(to);
                     } while (toIterator != predecessors.end());
 
-                    newResponseIdList.push_back(to);
+                    newResponseIdList.push_back(to.toULongLong());
                 }
             }
 
@@ -9169,23 +9177,24 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
             return true;
     }
 
-    // Create a key to select folders from the accounts to be deleted
-    QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(key));
-    
     // We won't create new message removal records, since there will be no account to link them to
     QMailStore::MessageRemovalOption option(QMailStore::NoRemovalRecord);
 
-    // Delete all the folders contained by the accounts we're deleting
-    if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
-        return false;
-
-    // Also delete any messages belonging to these accounts, that aren't in folders owned by the accounts
+    // Delete any messages belonging to these accounts, more efficient to do this first
+    // before folders and threads are deleted
 
     // Create a key to select messages for the accounts to be deleted
     QMailMessageKey messagesKey(QMailMessageKey::parentAccountId(key));
 
     // Delete all the messages contained by the folders we're deleting
     if (!deleteMessages(messagesKey, option, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
+        return false;
+
+    // Create a key to select folders from the accounts to be deleted
+    QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(key));
+    
+    // Delete all the folders contained by the accounts we're deleting
+    if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;
 
     {
