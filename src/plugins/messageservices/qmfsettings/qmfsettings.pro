@@ -5,7 +5,6 @@ CONFIG += qmfclient qmfmessageserver plugin
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
 QT = core network
-QT += widgets
 
 DEPENDPATH += .
 
@@ -23,7 +22,7 @@ HEADERS += service.h
 SOURCES += service.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-QT += gui
+QT += gui widgets
 
 HEADERS += settings.h
 

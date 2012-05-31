@@ -6,7 +6,6 @@ CONFIG += qmfclient qmfmessageserver plugin
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
 QT = core network
-QT += widgets
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../../libraries/qmfclient \
@@ -29,7 +28,7 @@ SOURCES += smtpauthenticator.cpp \
            smtpservice.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-QT += gui
+QT += gui widgets
 
 HEADERS += \
            smtpsettings.h
