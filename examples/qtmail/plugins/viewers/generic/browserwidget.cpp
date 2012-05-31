@@ -656,11 +656,8 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
         text += '\n';
         text += bodyText;
     }
-#ifdef USE_WEBKIT
-    // TODO
-#else
-    m_renderer->setPlainText(text);
-#endif
+    
+    setPlainText(text);
 }
 
 static QString replaceLast(const QString container, const QString& before, const QString& after)
@@ -1425,8 +1422,10 @@ void BrowserWidget::scrollToAnchor(const QString& anchor)
 void BrowserWidget::setPlainText(const QString& text)
 {
 #ifdef USE_WEBKIT
-    // TODO
-    Q_UNUSED(text);
+    QString html(htmlEscaped(text));
+    html.replace("\n", "<br>");
+    m_webView->setHtml("<html><body>" + html + "</body></html>");
+    m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 #else
     m_renderer->setPlainText(text);
 #endif
