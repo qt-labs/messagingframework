@@ -1372,11 +1372,43 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                                                    uint &bytesLeft,
                                                    bool &foundBody)
 {
-    if (bytesLeft == 0)
+    // Download limit has been exhausted for this message
+    if (bytesLeft == 0) {
         return;
+    }
 
     ImapConfiguration imapCfg(context->config());
     QString preferred(imapCfg.preferredTextSubtype().toLower());
+
+    // Iterate over all parts, looking for the preferred body,
+    // download that first giving preference over all other parts
+    if (!preferred.isEmpty() && !foundBody) {
+        for (uint i = 0; i < partContainer.partCount(); ++i) {
+            const QMailMessagePart part(partContainer.partAt(i));
+            const QMailMessageContentDisposition disposition(part.contentDisposition());
+            const QMailMessageContentType contentType(part.contentType());
+            
+            if ((part.partCount() == 0)
+                && (!part.partialContentAvailable())
+                && (disposition.size() > 0)
+                && (contentType.type().toLower() == "text")
+                && (contentType.subType().toLower() == preferred)) {
+                // There is a preferred text sub-part to retrieve.
+                // The preferred text part has priority over other parts so,
+                // we put it directly into the main completion list.
+                // Text parts may be downloaded partially.
+                if (bytesLeft >= (uint)disposition.size()) {
+                    completionSectionList.append(qMakePair(part.location(), 0u));
+                    bytesLeft -= disposition.size();
+                } else {
+                    completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+                    bytesLeft = 0;
+                }
+                foundBody = true;
+                break;
+            }
+        }
+    }
 
     // Otherwise, consider the subparts individually
     for (uint i = 0; i < partContainer.partCount(); ++i) {
@@ -1396,22 +1428,6 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                    && !imapCfg.downloadAttachments()
                    && attachmentLocations.contains(part.location())) {
             continue;
-        } else if (!preferred.isEmpty()
-                   && (contentType.type().toLower() == "text")
-                   && (contentType.subType().toLower() == preferred)
-                   && !foundBody) {
-            // There is a preferred text sub-part to retrieve.
-            // The preferred text part has priority over other parts so,
-            // we put it directly into the main completion list.
-            // Text parts may be downloaded partially.
-            if (bytesLeft >= (uint)disposition.size()) {
-                completionSectionList.append(qMakePair(part.location(), 0u));
-                bytesLeft -= disposition.size();
-            } else {
-                completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
-                bytesLeft = 0;
-            }
-            foundBody = true;
         } else {
             // This is a regular part. Try to download it completely.
             sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
