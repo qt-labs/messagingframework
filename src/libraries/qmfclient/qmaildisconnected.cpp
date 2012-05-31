@@ -370,7 +370,12 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
     foreach(const QMailMessageId &id, ids) {
         QMailMessageMetaData *msg = new QMailMessageMetaData(id);
         QMailFolderId folderId(QMailAccount(msg->parentAccountId()).standardFolder(standardFolder)); // will be cached
+        QMailFolder folder;
         if (folderId.isValid()) {
+            folder = QMailFolder(folderId);
+        }
+        
+        if (folderId.isValid() && folder.id().isValid()) {
             moveToFolder(msg, folderId);
             messages.append(msg);
         } else {
