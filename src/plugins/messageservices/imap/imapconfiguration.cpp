@@ -105,7 +105,7 @@ int ImapConfiguration::maxMailSize() const
 
 QString ImapConfiguration::preferredTextSubtype() const
 {
-    return value("textSubtype");
+    return value("textSubtype", "html");
 }
 
 bool ImapConfiguration::pushEnabled() const
