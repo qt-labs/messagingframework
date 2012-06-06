@@ -267,7 +267,7 @@ void tst_QMailMessageBody::fromQString_data()
         << source;
 
     // Latin-1 Characters
-    source = QString("Joh\361 D\366e");
+    source = QString::fromLatin1("Joh\361 D\366e");
     QTest::newRow("Latin-1 - base64")
         << source
         << QByteArray("text/plain; charset=ISO-8859-1")

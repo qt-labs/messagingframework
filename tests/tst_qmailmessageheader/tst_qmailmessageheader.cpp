@@ -797,7 +797,7 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << QByteArray("=?ISO-8859-2?Q?hello?=");
     */
 
-    QString latin1Address("Joh\361 D\366e <jdoe@machine.test>");
+    QString latin1Address(QString::fromLatin1("Joh\361 D\366e <jdoe@machine.test>"));
 
     QTest::newRow("ISO-8859-1 with encoding")
         << latin1Address
@@ -809,7 +809,7 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << QByteArray()
         << QByteArray("=?ISO-8859-1?Q?Joh=F1_D=F6e_=3Cjdoe=40machine=2Etest=3E?=");
 
-    latin1Address = QString("\"Joh\361 D\366e\" <jdoe@machine.test>");
+    latin1Address = QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@machine.test>");
 
     QTest::newRow("ISO-8859-1 with quoted encoding")
         << latin1Address
@@ -868,7 +868,7 @@ void tst_QMailMessageHeaderField::encodeParameter_data()
 
     // Note 1 - there's no particular reason why these test strings are addresses
     QString simpleAddress("mary@example.net");
-    QString latin1Address("\"Joh\361 D\366e\" <jdoe@machine.test>");
+    QString latin1Address(QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@machine.test>"));
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
     const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
@@ -1008,7 +1008,7 @@ void tst_QMailMessageHeaderField::encodeContent_data()
         << QByteArray("=?ISO-8859-2?Q?hello?=");
     */
 
-    QString latin1Address("Joh\361 D\366e <jdoe@machine.test>");
+    QString latin1Address(QString::fromLatin1("Joh\361 D\366e <jdoe@machine.test>"));
 
     QTest::newRow("ISO-8859-1 with encoding")
         << latin1Address
@@ -1020,7 +1020,7 @@ void tst_QMailMessageHeaderField::encodeContent_data()
         << QByteArray()
         << QByteArray("=?ISO-8859-1?Q?Joh=F1?= =?ISO-8859-1?Q?_D=F6e?= <jdoe@machine.test>");
 
-    latin1Address = QString("\"Joh\361 D\366e\" <jdoe@machine.test>");
+    latin1Address = QString(QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@machine.test>"));
 
     QTest::newRow("ISO-8859-1 with quoted encoding")
         << latin1Address

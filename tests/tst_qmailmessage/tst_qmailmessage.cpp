@@ -258,7 +258,7 @@ void tst_QMailMessage::toRfc2822_data()
     QTest::addColumn<QByteArray>( "rfc_body_text" );
 
     QString simpleAddress("mary@example.net");
-    QString latin1Address("\"Joh\361 D\366e\" <jdoe@example.net>");
+    QString latin1Address(QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@example.net>"));
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
     const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };

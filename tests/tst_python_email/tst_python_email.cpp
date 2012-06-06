@@ -349,7 +349,7 @@ void tst_python_email::test_get_decoded_payload()
     QCOMPARE( msg.partCount(), 4u );
 
     QCOMPARE( msg.partAt(0).body().data(), QString("This is a 7bit encoded message.\n") );
-    QCOMPARE( msg.partAt(1).body().data(), QString("\241This is a Quoted Printable encoded message!\n") );
+    QCOMPARE( msg.partAt(1).body().data(), QString::fromLatin1("\241This is a Quoted Printable encoded message!\n") );
     QCOMPARE( msg.partAt(2).body().data(), QString("This is a Base64 encoded message.") );
     QCOMPARE( msg.partAt(3).body().data(), QString("This has no Content-Transfer-Encoding: header.\n") );
 }
@@ -599,7 +599,7 @@ void tst_python_email::test_long_nonstring()
 
     QByteArray input;
 
-    QString original = "Die Mieter treten hier ein werden mit einem Foerderband komfortabel den Korridor entlang, an s" "\xfc" "dl" "\xfc" "ndischen Wandgem" "\xe4" "lden vorbei, gegen die rotierenden Klingen bef" "\xf6" "rdert. ";
+    QString original = QString::fromLatin1("Die Mieter treten hier ein werden mit einem Foerderband komfortabel den Korridor entlang, an s" "\xfc" "dl" "\xfc" "ndischen Wandgem" "\xe4" "lden vorbei, gegen die rotierenden Klingen bef" "\xf6" "rdert. ");
     input.append(QMailMessageHeaderField::encodeWord(original, "ISO-8859-1"));
 
     // We don't have a ISO-8859-2 codec...
@@ -733,7 +733,7 @@ void tst_python_email::test_long_8bit_header()
     QByteArray input(QMailMessageHeaderField::encodeWord(original, "ISO-8859-1"));
 
     original = "gr" "\xfc" "nes Licht f" "\xfc" "r Offshore-Windkraftprojekte";
-    input.append(' ').append(QMailMessageHeaderField::encodeWord(original, "ISO-8859-1"));
+    input.append(' ').append(QMailMessageHeaderField::encodeWord(QString::fromLatin1(original), "ISO-8859-1"));
 
     // Note the same as the equivalent python formulation, but again, conforming
     QByteArray output = 
@@ -765,7 +765,7 @@ void tst_python_email::test_long_to_header()
 void tst_python_email::test_long_field_name()
 {
     QString original = 
-"Die Mieter treten hier ein werden mit einem Foerderband komfortabel den Korridor entlang, an s" "\xfc" "dl" "\xf" "cndischen Wandgem" "\xe4" "lden vorbei, gegen die rotierenden Klingen bef" "\xf6" "rdert. ";
+QString::fromLatin1("Die Mieter treten hier ein werden mit einem Foerderband komfortabel den Korridor entlang, an s" "\xfc" "dl" "\xf" "cndischen Wandgem" "\xe4" "lden vorbei, gegen die rotierenden Klingen bef" "\xf6" "rdert. ");
     QByteArray input = QMailMessageHeaderField::encodeContent(original);
 
     // Note the same as the equivalent python formulation, but again, conforming
