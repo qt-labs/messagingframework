@@ -366,6 +366,10 @@
         <step>/usr/tests/qmf/tst_qmailstore remove1000Messages</step>
       </case>
       -->
+      <case name="tst_qmailstore-removeMessageWithInResponse">
+        <description>libqmf-tests:tst_qmailstore:removeMessageWithInResponse</description>
+        <step>/usr/tests/qmf/tst_qmailstore removeMessageWithInResponse</step>
+      </case>
       <environments>
         <scratchbox>true</scratchbox>
         <hardware>true</hardware>
