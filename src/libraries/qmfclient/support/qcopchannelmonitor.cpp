@@ -268,7 +268,7 @@ void QCopClient::handleDetachMonitor(const QString& ch)
     if (it != td->serverMonitorMap.end()) {
         it.value().removeAll(this);
         if (it.value().isEmpty())
-            td->serverMap.erase(it);
+            td->serverMonitorMap.erase(it);
     }
 }
 
