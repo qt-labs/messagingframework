@@ -1126,7 +1126,8 @@ void EmailClient::beginEnqueueMail(QMailMessage& mail)
     QMailAccount account(mail.parentAccountId());
     if ((account.status() & QMailAccount::CanReferenceExternalData) &&
         (account.status() & QMailAccount::CanTransmitViaReference) &&
-        account.standardFolder(QMailFolder::SentFolder).isValid()) {
+        account.standardFolder(QMailFolder::SentFolder).isValid() &&
+        QMailFolder(account.standardFolder(QMailFolder::SentFolder)).id().isValid()) {
         mail.setStatus(QMailMessage::TransmitFromExternal, true);
     }
 
