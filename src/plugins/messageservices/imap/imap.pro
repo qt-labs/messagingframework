@@ -92,14 +92,12 @@ symbian: {
     load(armcc_warnings)
 }
 
-unix {
+packagesExist(zlib) {
     CONFIG += link_pkgconfig
     PKGCONFIG += zlib
     DEFINES += QT_QMF_HAVE_ZLIB
-}
-
-!unix {
-     warning("IMAP COMPRESS capability is currently not supported on non unix platforms")
+} else {
+     warning("IMAP COMPRESS capability requires zlib")
 }
 
 include(../../../../common.pri)
