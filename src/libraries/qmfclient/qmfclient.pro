@@ -237,11 +237,16 @@ unix: {
 	QMAKE_PKGCONFIG_LIBDIR  = $$target.path
 	QMAKE_PKGCONFIG_INCDIR  = $$header_files.path
 	QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-        LIBS += -licui18n -licuuc -licudata
-        PRIVATE_HEADERS += support/qcharsetdetector_p.h \
-                           support/qcharsetdetector.h
-        SOURCES += support/qcharsetdetector.cpp
-        DEFINES += HAVE_LIBICU
+}
+
+packagesExist(icu-uc) {
+    LIBS += -licui18n -licuuc -licudata
+    PRIVATE_HEADERS += support/qcharsetdetector_p.h \
+                       support/qcharsetdetector.h
+    SOURCES += support/qcharsetdetector.cpp
+    DEFINES += HAVE_LIBICU
+} else {
+    warning("icu not available, not doing character set detection")
 }
 
 include(../../../common.pri)
