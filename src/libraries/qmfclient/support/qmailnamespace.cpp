@@ -285,8 +285,11 @@ QString QMail::pluginsPath()
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + '/';
-    //default to "." if no env set
-    return pluginsEnv;
+
+    // default to QMF_INSTALL_ROOT/lib/qmf/plugins, as that's where it will most
+    // likely be. we also search the old fallback (".") via QCoreApplication,
+    // still.
+    return QString::fromUtf8(QMF_INSTALL_ROOT) + "/lib/qmf/plugins/";
 #endif
 }
 

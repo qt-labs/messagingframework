@@ -8,6 +8,8 @@ simulator:macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
 else:target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
+DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
+
 win32: {
     # QLocalSocket is broken on win32 prior to 4.5.2
     lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
