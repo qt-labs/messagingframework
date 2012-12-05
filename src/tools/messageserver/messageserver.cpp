@@ -507,8 +507,8 @@ void MessageServer::handleSigHup()
     char tmp;
     ::read(sighupFd[1], &tmp, sizeof(tmp));
 
-    // This is ~/.config/Nokia/Messageserver.conf
-    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
+    // This is ~/.config/QtProject/Messageserver.conf
+    qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
 
     snHup->setEnabled(true);
 }

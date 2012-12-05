@@ -243,7 +243,7 @@ bool QMailMessageBuffer::isFull() {
 
 void QMailMessageBuffer::readConfig()
 {
-    QSettings settings("Nokia", "QMF");
+    QSettings settings("QtProject", "QMF");
     settings.beginGroup("MessageBuffer");
 
     d->maxPending = settings.value("maxPending", 1000).toInt();

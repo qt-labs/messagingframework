@@ -59,7 +59,7 @@ static void shutdown(int n)
 
 static void recreateLoggers(int n)
 {
-    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
+    qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
     qMailLog(Messaging) << "Received signal" << n << ", logs recreated.";
 }
 #endif
@@ -68,8 +68,8 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
-    // This is ~/.config/Nokia/Messageserver.conf
-    qMailLoggersRecreate("Nokia", "Messageserver", "Msgsrv");
+    // This is ~/.config/QtProject/Messageserver.conf
+    qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
 
     if(QMail::fileLock("messageserver-instance.lock") == -1)
         qFatal("Could not get messageserver lock. Messageserver might already be running!");

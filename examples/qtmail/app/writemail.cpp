@@ -631,7 +631,7 @@ bool WriteMail::largeAttachments()
     static int limit = 0;
     if (limit == 0) {
         const QString key("emailattachlimitkb");
-        QSettings mailconf("Nokia","qtmail");
+        QSettings mailconf("QtProject","qtmail");
 
         mailconf.beginGroup("qtmailglobal");
         if (mailconf.contains(key))

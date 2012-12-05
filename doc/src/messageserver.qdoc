@@ -91,7 +91,7 @@ MessageServer has the following dependencies:
 \section1 Logging
 MessageServer supports runtime-enabled logging. The logging levels in use can be changed by updating the configuration file and sending a HUP signal to the messageserver process.
 
-The config file for logging is located at ~/.config/Nokia/QMF.conf. The logging configuration is in the \c{[Logging]} section. \c{qmaillog.h} defines the categories that can be used.
+The config file for logging is located at ~/.config/QtProject/QMF.conf. The logging configuration is in the \c{[Logging]} section. \c{qmaillog.h} defines the categories that can be used.
 
 An example config file follows:
 

@@ -49,8 +49,8 @@ int main(int argc, char** argv)
 {
     QApplication app(argc,argv);
 
-    // This is ~/.config/Nokia/Qtmail.conf
-    qMailLoggersRecreate("Nokia", "Qtmail", "Qtmail");
+    // This is ~/.config/QtProject/Qtmail.conf
+    qMailLoggersRecreate("QtProject", "Qtmail", "Qtmail");
 
     if(QMail::fileLock("qtmail-instance.lock") == -1)
         qFatal("Qtmail already running!\n");
