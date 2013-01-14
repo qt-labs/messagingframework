@@ -942,10 +942,12 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 //don't let inbox be deleted/renamed
                 folder.setStatus(QMailFolder::DeletionPermitted, false);
                 folder.setStatus(QMailFolder::RenamePermitted, false);
+                folder.setStatus(QMailFolder::InboxFolder, true);
                 folderFlags.append(" \\Inbox");
             } else {
                 folder.setStatus(QMailFolder::DeletionPermitted, true);
                 folder.setStatus(QMailFolder::RenamePermitted, true);
+                folder.setStatus(QMailFolder::InboxFolder, false);
             }
 
             // Only folders beneath the base folder are relevant
@@ -958,8 +960,17 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 if (!QMailStore::instance()->addFolder(&folder)) {
                     qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
                 }
+                else {
+                    //set inbox as standardFolder
+                    if (folder.status() & QMailFolder::InboxFolder) {
+                        account.setStandardFolder(QMailFolder::InboxFolder, folder.id());
+                        if (!QMailStore::instance()->updateAccount(&account)) {
+                            qWarning() << "Unable to update account" << account.id();
+                        }
+                    }
+                }
             }
-            
+
             setFolderFlags(&account, &folder, folderFlags, _protocol.capabilities().contains("XLIST")); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
             
