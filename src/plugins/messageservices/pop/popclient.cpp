@@ -286,7 +286,6 @@ bool PopClient::findInbox()
         childFolder.setDisplayName(tr("Inbox"));
         childFolder.setStatus(QMailFolder::SynchronizationEnabled, true);
         childFolder.setStatus(QMailFolder::Incoming, true);
-        childFolder.setStatus(QMailFolder::InboxFolder, true);
 
         if(!QMailStore::instance()->addFolder(&childFolder))
             qWarning() << "Unable to add child folder to pop account";
