@@ -9,10 +9,10 @@ VERSION = 1.0.0
 
 vendorinfo = \
     "; Localised Vendor name" \
-    "%{\"Nokia\"}" \
+    "%{\"Digia\"}" \
     " " \
     "; Unique Vendor name" \
-    ":\"Nokia\"" \
+    ":\"Digia\"" \
     " "
 
 qmfdeployment.pkg_prerules += vendorinfo
