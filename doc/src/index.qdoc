@@ -22,8 +22,6 @@
 \o
 \list
    \o \l {Messaging}{Introduction}
-   \o \l {Building and Compiling}{Building and Running}
-   \o \l {Testing the Messaging Framework}{Test Results}
    \o \l {Changes Between Messaging Framework Versions}
    \o \l {Messaging Framework Client Library#Examples}{Examples}
 \endlist
