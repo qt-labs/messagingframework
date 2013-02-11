@@ -83,6 +83,5 @@ qmfclient:qtAddLibrary(qmfclient)
 qmfmessageserver:qtAddLibrary(qmfmessageserver)
 qmfutil:qtAddLibrary(qmfutil)
 
-QMAKE_CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
-
+CONFIG += hide_symbols
 
