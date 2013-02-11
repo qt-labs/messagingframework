@@ -51,7 +51,7 @@
 #include <qmaillog.h>
 #include <qmaildisconnected.h>
 #include <limits.h>
-#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WIN)
 #include <unistd.h>
 #endif
 

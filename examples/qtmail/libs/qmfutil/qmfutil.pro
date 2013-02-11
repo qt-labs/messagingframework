@@ -8,19 +8,7 @@ target.path += $$QMF_INSTALL_ROOT/lib
 DEFINES += QMFUTIL_INTERNAL
 
 QT += widgets
-
-symbian: {
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL -TCB
-    MMP_RULES += EXPORTUNFROZEN
-
-    QMFUtil.sources = $${TARGET}.dll
-    QMFUtil.path = /sys/bin
-    DEPLOYMENT += QMFUtil
-}
-
 DEPENDPATH += .
-
 INCLUDEPATH += . ../../../../src/libraries/qmfclient ../../../../src/libraries/qmfclient/support
 
 macx:LIBS += -F../../../../src/libraries/qmfclient/build

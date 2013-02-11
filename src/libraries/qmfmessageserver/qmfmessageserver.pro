@@ -9,17 +9,6 @@ QT = core network
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui widgets
 
-symbian: {
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL -TCB
-    TARGET.UID3 = 0x20034922
-    MMP_RULES += EXPORTUNFROZEN
-
-    QMFServer.sources = $${TARGET}.dll
-    QMFServer.path = /sys/bin
-    DEPLOYMENT += QMFServer
-}
-
 DEFINES += MESSAGESERVER_INTERNAL
 
 DEPENDPATH += .

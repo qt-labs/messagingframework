@@ -54,11 +54,6 @@
 //
 
 #include "qmailstoreimplementation_p.h"
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-#include <sqldatabase.h>
-#include <sqlquery.h>
-#define QSqlQuery SymbianSqlQuery
-#endif
 #include <QSqlDatabase>
 #include <QCache>
 #include <QTimer>
@@ -791,11 +786,7 @@ private:
         void remove(const ID& id);
     };
 
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-    SymbianSqlDatabase *database() const;
-#else
     QSqlDatabase *database() const;
-#endif
     mutable QSqlDatabase *databaseptr;
     mutable QTimer databaseUnloadTimer;
 
@@ -826,18 +817,6 @@ template <typename ValueType>
 ValueType QMailStorePrivate::extractValue(const QVariant &var, const ValueType &defaultValue)
 {
     if (!qVariantCanConvert<ValueType>(var)) {
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-        if (qMetaTypeId<QDateTime>() == qMetaTypeId<ValueType>()) {
-            if (qVariantCanConvert<int>(var)) {
-                int val = qVariantValue<int>(var);
-                if (val == 0) {
-                    return qVariantValue<ValueType>(QVariant(QDateTime()));
-                } else {
-                    return qVariantValue<ValueType>(QVariant(QDateTime::fromTime_t(val)));
-                }
-            }
-        }
-#endif
         qWarning() << "QMailStorePrivate::extractValue - Cannot convert variant to:"
 #ifdef QMAILSTORE_USE_RTTI
                    << typeid(ValueType).name();
@@ -925,9 +904,5 @@ void QMailStorePrivate::IdCache<T, ID>::remove(const ID& id)
 {
     Cache<T, quint64>::remove(id.toULongLong());
 }
-
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-#undef QSqlQuery
-#endif
 
 #endif

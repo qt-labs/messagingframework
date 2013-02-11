@@ -44,7 +44,7 @@
 
 #include <qlogsystem.h>
 #include <qglobal.h>
-#if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
+#if !defined(Q_OS_WIN)
 #include <syslog.h>
 #endif
 
@@ -327,7 +327,7 @@ inline void FileLogger<Prefix>::doLog(const LogLevel /*lvl*/, const char* fmt, v
     };
 }
 
-#if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
+#if !defined(Q_OS_WIN)
 
 /**********************************************************************************************************/
 /************************************ SysLogger implementation ********************************************/
@@ -355,6 +355,6 @@ inline SysLogger<Prefix>::~SysLogger()
     closelog();
 };
 
-#endif // Q_OS_WIN, Q_OS_SYMBIAN
+#endif // Q_OS_WIN
 
 #endif // QLOGGERS_H

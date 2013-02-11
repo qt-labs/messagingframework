@@ -49,7 +49,7 @@
 #define QMF_DECL_IMPORT
 #define QMF_VISIBILITY
 #else
-#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
 #define QMF_DECL_EXPORT Q_DECL_EXPORT
 #define QMF_DECL_IMPORT Q_DECL_IMPORT
 #define QMF_VISIBILITY

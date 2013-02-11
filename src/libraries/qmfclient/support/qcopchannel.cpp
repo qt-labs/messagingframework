@@ -1192,13 +1192,8 @@ void QCopClient::connectSignals()
 {
     connect(device, SIGNAL(readyRead()), this, SLOT(readyRead()));
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
-#ifdef SYMBIAN_USE_IPC_SOCKET
-    if (socket)
-        connect(socket, SIGNAL(stateChanged(SymbianIpcSocket::SymbianIpcSocketState)), this, SLOT(disconnected()));
-#else
     if (socket)
         connect(socket, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)), this, SLOT(disconnected()));
-#endif
 #else
     if (socket) {
         connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));

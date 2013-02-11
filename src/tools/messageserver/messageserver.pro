@@ -1,7 +1,3 @@
-symbian: {
-    include(../../../symbianoptions.pri)
-}
-
 SERVER_AS_DLL: {
     DEFINES += SERVER_AS_DLL
     DEFINES += QMFUTIL_INTERNAL
@@ -56,16 +52,5 @@ TRANSLATIONS += messageserver-ar.ts \
                 messageserver-pt_BR.ts \
                 messageserver-zh_CN.ts \
                 messageserver-zh_TW.ts
-                
-symbian: {
-    TARGET.CAPABILITY = ALL -TCB
-    TARGET.UID3 = 0x20034928
-    TARGET.EPOCHEAPSIZE = 0x20000 0x1000000
-
-    SERVER_AS_DLL: {
-        TARGET.EPOCALLOWDLLDATA = 1
-        MMP_RULES += EXPORTUNFROZEN
-    }
-}                
 
 include(../../../common.pri)

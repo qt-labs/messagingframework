@@ -48,9 +48,7 @@
 #include <QTemporaryFile>
 #include <QDir>
 
-#if defined(Q_OS_SYMBIAN)
-#include <f32file.h>
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
 #include <windows.h>
 #elif defined (Q_OS_MAC)
 #include <sys/statvfs.h>
@@ -203,38 +201,7 @@ bool LongStream::freeSpace( const QString &path, int min)
     if (!path.isEmpty())
         partitionPath = path;
     
-#if defined(Q_OS_SYMBIAN)
-    bool result(false);
-   
-    RFs fsSession;
-    TInt rv;
-    if ((rv = fsSession.Connect()) != KErrNone) {
-        qWarning() << "Unable to connect to FS:" << rv;
-    } else {
-        TParse parse;
-        TPtrC name(path.utf16(), path.length());
-
-        if ((rv = fsSession.Parse(name, parse)) != KErrNone) {
-            qWarning() << "Unable to parse:" << path << rv;
-        } else {
-            TInt drive;
-            if ((rv = fsSession.CharToDrive(parse.Drive()[0], drive)) != KErrNone) {
-                qWarning() << "Unable to convert:" << QString::fromUtf16(parse.Drive().Ptr(), parse.Drive().Length()) << rv;
-            } else {
-                TVolumeInfo info;
-                if ((rv = fsSession.Volume(info, drive)) != KErrNone) {
-                    qWarning() << "Unable to volume:" << drive << rv;
-                } else {
-                    result = (info.iFree > boundary);
-                }
-            }
-        }
-        
-        fsSession.Close();
-    }
-    
-    return result;
-#elif !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN)
     struct statfs stats;
 
     while (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {

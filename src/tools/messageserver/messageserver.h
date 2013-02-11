@@ -73,7 +73,7 @@ public:
 
 signals:
     void messageCountUpdated();
-#if (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))
+#if defined(Q_OS_UNIX)
 public slots:
     void handleSigHup(); // Qt signal handler for UNIX SIGHUP signal.
 #endif

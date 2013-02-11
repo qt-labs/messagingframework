@@ -53,11 +53,7 @@
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 QT_BEGIN_NAMESPACE
 
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-class SymbianSqlDatabase;
-#else
 class QSqlDatabase;
-#endif
 
 QT_END_NAMESPACE
 #endif
@@ -94,11 +90,7 @@ namespace QMail
     QMF_EXPORT bool fileUnlock(int id);
 
     void closeDatabase();
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-    SymbianSqlDatabase createDatabase();
-#else
     QMF_EXPORT QSqlDatabase createDatabase();
-#endif
 #endif
 
     QMF_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);

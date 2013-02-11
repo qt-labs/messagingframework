@@ -43,18 +43,4 @@ TRANSLATIONS += libgenericviewer-ar.ts \
                 libgenericviewer-zh_CN.ts \
                 libgenericviewer-zh_TW.ts
 
-symbian: {
-    load(data_caging_paths)
-
-    TARGET.EPOCALLOWDLLDATA = 1
-    TARGET.CAPABILITY = ALL -TCB
-
-    deploy.path = C:
-    pluginstub.sources = $${TARGET}.dll
-    pluginstub.path = $$QT_PLUGINS_BASE_DIR/qtmail/viewers
-    DEPLOYMENT += pluginstub
-
-    load(armcc_warnings)
-}
-
 include(../../../../../common.pri)

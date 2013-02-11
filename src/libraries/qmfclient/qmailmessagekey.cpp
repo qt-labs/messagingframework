@@ -1115,7 +1115,6 @@ QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMail
 }
 
 //create implementations for QDataStream
-#ifndef Q_OS_SYMBIAN
 /*!
     \fn void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
     Serialize the message key to \a stream.
@@ -1127,7 +1126,6 @@ template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& st
     Deserialize the message key from \a stream.
 */
 template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
-#endif
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey)
 

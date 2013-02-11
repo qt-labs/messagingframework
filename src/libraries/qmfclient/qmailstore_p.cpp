@@ -58,11 +58,6 @@
 #include <malloc.h>
 #endif
 
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-#include "sqlquery.h"
-#define QSqlQuery SymbianSqlQuery
-#endif
-
 #define Q_USE_SQLITE
 
 // When using GCC 4.1.1 on ARM, TR1 functional cannot be included when RTTI
@@ -2439,11 +2434,7 @@ const QString &QMailStorePrivate::defaultContentScheme()
 
 QString QMailStorePrivate::databaseIdentifier() const
 {
-#if defined(SYMBIAN_USE_DATA_CAGED_DATABASE)
-    return "C:/resource/qt/plugins/qtmail";
-#else
     return database()->databaseName();
-#endif
 }
 
 QSqlDatabase *QMailStorePrivate::database() const

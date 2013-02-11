@@ -14,7 +14,7 @@ DEPENDPATH += . 3rdparty
 
 DEFINES += PLUGIN_STATIC_LINK
 
-!symbian:!win32 {
+!win32 {
 	DEFINES += HAVE_VALGRIND
 }
 
@@ -30,10 +30,8 @@ INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmfclient \
 LIBS += -L$$BASE/src/libraries/qmfmessageserver/build \
         -L$$BASE/src/libraries/qmfclient/build
 
-!symbian {
-    QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
-        -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
-}
+QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
+    -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
 
 HEADERS += benchmarkcontext.h \
            qscopedconnection.h \
@@ -55,7 +53,7 @@ SOURCES += benchmarkcontext.cpp \
            $$MESSAGE_SERVER/servicehandler.cpp \
            $$MESSAGE_SERVER/newcountnotifier.cpp
 
-!symbian:!win32 {
+!win32 {
 	HEADERS += testmalloc.h 3rdparty/cycle_p.h
 	SOURCES += testmalloc.cpp
 }

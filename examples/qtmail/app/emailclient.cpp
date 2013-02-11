@@ -162,12 +162,10 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
 }
 
 // This is used regularly:
-#ifndef Q_OS_SYMBIAN
 static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
                                                                                              QMailMessage::Sms |
                                                                                              QMailMessage::Instant |
                                                                                              QMailMessage::System);
-#endif
 
 class AcknowledgmentBox : public QMessageBox
 {
@@ -586,8 +584,6 @@ bool EmailClient::startMessageServer()
 
 #ifdef Q_OS_WIN
 	static const QString binary(QString("/messageserver%1.exe").arg(debugSuffix));
-#elif defined(Q_OS_SYMBIAN)
-    static const QString binary(QString("messageserver%1.exe").arg(debugSuffix));
 #else
 	static const QString binary(QString("/messageserver%1").arg(debugSuffix));
 #endif

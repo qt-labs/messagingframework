@@ -55,17 +55,7 @@
 #include <io.h>
 #define USE_FSYNC_PER_FILE
 #elif defined(Q_OS_UNIX)
-#ifndef Q_OS_SYMBIAN
 #include <unistd.h>
-#endif
-#endif
-#ifdef SYMBIAN_USE_DATA_CAGED_FILES
-#include "symbiandir.h"
-#include "symbianfile.h"
-#include "symbianfileinfo.h"
-#define QFile SymbianFile
-#define QFileInfo SymbianFileInfo
-#define QDir SymbianDir
 #endif
 
 namespace {
@@ -204,10 +194,9 @@ void syncFile(QSharedPointer<QFile> file)
     return;
 #endif
 
-    //TODO: Is a Symbian version of this code required?
 #if defined(Q_OS_WIN)
     ::FlushFileBuffers(reinterpret_cast<HANDLE>(::_get_osfhandle(file->handle())));
-#elif (defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN))
+#elif defined(Q_OS_UNIX)
 #if defined(_POSIX_SYNCHRONIZED_IO) && (_POSIX_SYNCHRONIZED_IO > 0)
     int handle(file->handle());
     if (handle != -1)
@@ -282,14 +271,9 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     }
 
     // Write the message to file (not including sub-part contents)
-#ifdef SYMBIAN_USE_DATA_CAGED_FILES
-    QByteArray bodyData = message->toRfc2822(QMailMessage::StorageFormat);
-    if ((file->write(bodyData) < 0) ||
-#else
     QDataStream out(file.data());
     message->toRfc2822(out, QMailMessage::StorageFormat);
     if ((out.status() != QDataStream::Ok) ||
-#endif
         // Write each part to file
         ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
          !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durability))) {
@@ -355,9 +339,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 #if defined(Q_OS_WIN)
         qWarning() << "Unable to call sync on Windows.";
 #else
-#ifndef Q_OS_SYMBIAN
         ::sync();
-#endif
 #endif
 #endif
         _useFullSync = false;
@@ -378,7 +360,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &
     // Durability is not disabled
     
     // Can't just sync identifiers, also must sync message parts
-#if defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
+#if defined(Q_OS_WIN)
             qWarning() << "Unable to call sync in ensureDurability.";
 #else
             ::sync();
@@ -473,15 +455,7 @@ struct PartLoader
                 // Is the file content in encoded or decoded form?  Since we're delivering
                 // server-side data, the parameter seems reversed...
                 QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
-#ifdef SYMBIAN_USE_DATA_CAGED_FILES
-                QFile partFile(partFilePath);
-                partFile.open(QIODevice::ReadOnly);
-                QByteArray data = partFile.readAll();
-                part.setBody(QMailMessageBody::fromData(data, part.contentType(), part.transferEncoding(), dataState));
-                partFile.close();
-#else
                 part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
-#endif
                 if (!part.hasBody())
                     return false;
             }
@@ -508,15 +482,7 @@ QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMe
         return (pathOnDefault(path) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
-#ifdef SYMBIAN_USE_DATA_CAGED_FILES
-    QFile messageFile(path);
-    messageFile.open(QIODevice::ReadOnly);
-    QByteArray data = messageFile.readAll();
-    QMailMessage result(QMailMessage::fromRfc2822(data));
-    messageFile.close();
-#else
     QMailMessage result(QMailMessage::fromRfc2822File(path));
-#endif
 
     // Load the reference information from the meta data into our content object
     ReferenceLoader refLoader(message);
@@ -685,13 +651,8 @@ struct PartStorer
             }
 
             // Write the part content to file
-#ifdef SYMBIAN_USE_DATA_CAGED_FILES
-            QByteArray bodyData = part.body().data(outputFormat);
-            if (file->write(bodyData) < 0) {
-#else
             QDataStream out(file.data());
             if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
-#endif
                 qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
                 if (!QFile::remove(partFilePath)){

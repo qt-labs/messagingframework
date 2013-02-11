@@ -49,7 +49,7 @@
 #include <QStringList>
 
 #include <sys/types.h>
-#if (!defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN))
+#if !defined(Q_OS_WIN)
 #include <sys/socket.h>
 #endif
 
@@ -91,13 +91,7 @@ namespace
 QMF_EXPORT
 void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {
-#ifndef Q_OS_SYMBIAN
     QSettings settings(organization, application);
-#else
-    Q_UNUSED(organization);
-    Q_UNUSED(application);
-    QSettings settings("c:\\Data\\qmfsettings.ini", QSettings::IniFormat);
-#endif
 
     bool defaultStdError(
 #ifdef QMF_ENABLE_LOGGING
@@ -109,23 +103,16 @@ void qMailLoggersRecreate(const QString& organization, const QString& applicatio
 
     const bool syslogEnabled = settings.value("Syslog/Enabled", false).toBool();
     const bool stderrEnabled = settings.value("StdStreamLog/Enabled", defaultStdError).toBool();
-#ifndef Q_OS_SYMBIAN
     const QString filePath = settings.value("FileLog/Path").toString();
     const bool fileEnabled = settings.value("FileLog/Enabled", false).toBool() && !filePath.isEmpty();
-#else
-    const QString filePath("C:\\Data\\qmf.log");
-    const bool fileEnabled = !filePath.isEmpty();
-#endif
 
     LogSystem& loggers = LogSystem::getInstance();
     loggers.clear();
 
-#ifndef Q_OS_SYMBIAN
     if(syslogEnabled) {
         SysLogger<LvlLogPrefix>* sl = new SysLogger<LvlLogPrefix>(ident, LOG_PID, LOG_LOCAL7);
         addLoggerIfReady(sl);
     };
-#endif
 
     if(fileEnabled) {
         FileLogger<LvlTimePidLogPrefix>* fl = new FileLogger<LvlTimePidLogPrefix>(filePath);

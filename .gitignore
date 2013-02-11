@@ -33,25 +33,6 @@ tst_qmailstore
 tst_qmailstorekeys
 tst_qprivateimplementation
 
-#Symbian specific
-*.mmp
-*.pkg
-bld.inf*
-ABLD.BAT
-*.mk
-*.rss
-*.sis
-*.loc
-*.sisx
-.make.cache
-qmakepluginstubs
-
-#Carbide project files
-*.project
-*.cproject
-*.settings
-plugin_commonU.def
-
 #Visual Studio files
 *.sln
 *.vcproj

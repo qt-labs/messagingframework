@@ -54,10 +54,6 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #endif
-#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
-#include "sqldatabase.h"
-#define QSqlDatabase SymbianSqlDatabase
-#endif
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -70,10 +66,8 @@
 #include <fcntl.h>
 #endif
 
-#ifndef Q_OS_SYMBIAN
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
-#endif
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
@@ -221,19 +215,11 @@ bool QMail::fileUnlock(int id)
 */
 QString QMail::dataPath()
 {
-#ifdef Q_OS_SYMBIAN
-#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
-    return QString("");
-#else
-    return QString("\\");
-#endif
-#else
     static QString dataEnv(qgetenv(QMF_DATA_ENV));
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
     return QDir::homePath() + "/.qmf/";
-#endif
 }
 /*!
     Returns the the time when the Messaging framework store file was las updated.
@@ -279,9 +265,6 @@ QString QMail::tempPath()
 */
 QString QMail::pluginsPath()
 {
-#if defined(Q_OS_SYMBIAN)
-    return QString("/resource/qt/plugins/qtmail");
-#else
     static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
     if(!pluginsEnv.isEmpty())
         return pluginsEnv + '/';
@@ -290,7 +273,6 @@ QString QMail::pluginsPath()
     // likely be. we also search the old fallback (".") via QCoreApplication,
     // still.
     return QString::fromUtf8(QMF_INSTALL_ROOT) + "/lib/qmf/plugins/";
-#endif
 }
 
 /*!
@@ -310,11 +292,7 @@ QString QMail::messageServerPath()
     if(!serverEnv.isEmpty())
         return serverEnv + '/';
 
-#if defined(Q_OS_SYMBIAN)
-    return "";
-#else
     return QCoreApplication::applicationDirPath() + '/';
-#endif
 }
 
 /*!
@@ -399,13 +377,6 @@ QSqlDatabase QMail::createDatabase()
         qMailLog(Messaging) << "opening database";
         db = QSqlDatabase::addDatabase("QSQLITE", "qmailstore_sql_connection");
         
-#if defined(Q_OS_SYMBIAN)
-#ifdef SYMBIAN_USE_DATA_CAGED_DATABASE
-        db.setDatabaseName("qmailstore.db");
-#else
-        db.setDatabaseName(dataPath() + "qmailstore.db");
-#endif
-#else
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
@@ -437,7 +408,6 @@ QSqlDatabase QMail::createDatabase()
 
     return db;
 }
-#endif
 
 /*!
     \internal

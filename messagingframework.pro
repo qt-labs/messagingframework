@@ -30,12 +30,6 @@ SUBDIRS += \
 
 }
 
-symbian {
-    # Add native Symbian compilations to list of projects to compile
-    BLD_INF_RULES.prj_mmpfiles += "src/symbian/qmfdataserver/qmfdataserver.mmp"
-    BLD_INF_RULES.prj_mmpfiles += "src/symbian/qmfipcchannelserver/qmfipcchannelserver.mmp"
-}
-
 defineReplace(targetPath) {
     return($$replace(1, /, $$QMAKE_DIR_SEP))
 }

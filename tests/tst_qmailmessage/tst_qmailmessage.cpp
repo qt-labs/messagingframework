@@ -1274,11 +1274,7 @@ void tst_QMailMessage::multiMultipart()
 
     QMailMessagePart p5;
     type = "text/plain;\n charset=\"us-ascii\"";
-#ifdef Q_OS_SYMBIAN
-    p5.setBody(QMailMessageBody::fromFile("./symbiantestdata/testbody.txt", QMailMessageContentType(type), QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
-#else
     p5.setBody(QMailMessageBody::fromFile("/etc/hosts", QMailMessageContentType(type), QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
-#endif
     QCOMPARE( p5.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=us-ascii").toLower() );
     QCOMPARE( p5.transferEncoding(), QMailMessageBody::SevenBit );
 
@@ -1414,11 +1410,7 @@ void tst_QMailMessage::copyAndAssign()
     QMailMessage m4(m1);
     QCOMPARE( m4.toRfc2822(), m1.toRfc2822() );
 
-#ifdef Q_OS_SYMBIAN
-    m1.setBody(QMailMessageBody::fromFile("./symbiantestdata/testbody.txt", QMailMessageContentType("text/plain;\n charset=\"us-ascii\""), QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
-#else
     m1.setBody(QMailMessageBody::fromFile("/etc/hosts", QMailMessageContentType("text/plain;\n charset=\"us-ascii\""), QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
-#endif
     QVERIFY( m2.toRfc2822() != m1.toRfc2822() );
     QVERIFY( m4.toRfc2822() != m1.toRfc2822() );
 

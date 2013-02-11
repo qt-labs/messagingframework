@@ -46,7 +46,7 @@
 #include <qloggers.h>
 #include <signal.h>
 
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
 
 static void shutdown(int n)
 {
@@ -55,7 +55,7 @@ static void shutdown(int n)
 }
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
 
 static void recreateLoggers(int n)
 {
@@ -76,12 +76,12 @@ int main(int argc, char** argv)
 
     MessageServer server;
 
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
     signal(SIGINT, shutdown);
     signal(SIGTERM, shutdown);
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_UNIX)
     signal(SIGHUP,recreateLoggers);
 #endif
 

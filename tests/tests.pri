@@ -11,11 +11,7 @@ DEPENDPATH += .
 INCLUDEPATH += . $$QMFPATH $$QMFPATH/support
 LIBS += -L$$QMFPATH/build
 macx:LIBS += -F$$QMFPATH/build
-!symbian:QMAKE_LFLAGS += -Wl,-rpath,$$QMFPATH
-
-symbian {
-    TARGET.CAPABILITY = ReadUserData WriteUserData ReadDeviceData WriteDeviceData
-}
+QMAKE_LFLAGS += -Wl,-rpath,$$QMFPATH
 
 include(../common.pri)
 

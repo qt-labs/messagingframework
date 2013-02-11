@@ -284,10 +284,7 @@ void tst_MessageServer::runInCallgrind(QString const& testfunc)
 
 void tst_MessageServer::runInChildProcess(TestFunction fn)
 {
-#if defined(Q_OS_SYMBIAN)
-    // No fork on Symbian
-    (this->*fn)();
-#elif defined(Q_OS_WIN)
+#if defined(Q_OS_WIN)
 	// No advantage to forking?
     (this->*fn)();
 #else
