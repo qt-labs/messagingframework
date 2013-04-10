@@ -44,6 +44,7 @@
 #include <QHash>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QByteArray>
 
 #include <errno.h>
 #include <malloc.h>

@@ -1370,7 +1370,8 @@ void QMailMessageSetModel::setIgnoreMailStoreUpdates(bool ignore)
             resyncState();
 
             // Inform any attached views that we have been reset
-            QAbstractItemModel::reset();
+            QAbstractItemModel::beginResetModel();
+            QAbstractItemModel::endResetModel();
         }
     }
 }

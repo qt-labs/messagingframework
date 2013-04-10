@@ -1714,7 +1714,9 @@ QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFac
 }
 #endif
 
-Q_EXPORT_PLUGIN2(imap,ImapServicePlugin)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+Q_EXPORT_PLUGIN2(imap,ImapServicePlugin);
+#endif
 
 ImapServicePlugin::ImapServicePlugin()
     : QMailMessageServicePlugin()
@@ -1746,6 +1748,4 @@ QMailMessageServiceConfigurator *ImapServicePlugin::createServiceConfigurator()
     return new ImapConfigurator();
 }
 
-
 #include "imapservice.moc"
-

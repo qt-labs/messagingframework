@@ -384,7 +384,8 @@ void AttachmentListModel::setAttachments(const QStringList& attachments)
         }
     }
 
-    reset();
+    beginResetModel();
+    endResetModel();
 }
 
 AttachmentListWidget::AttachmentListWidget(QWidget* parent)
@@ -404,7 +405,11 @@ m_clearLink(new QLabel(this))
     connect(header,SIGNAL(clear()),this,SLOT(clearClicked()));
     m_listView->setHeader(header);
     m_listView->header()->setStretchLastSection(true);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    m_listView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#else
     m_listView->header()->setResizeMode(QHeaderView::ResizeToContents);
+#endif
     m_listView->header()->setDefaultSectionSize(180);
     m_listView->setUniformRowHeights(true);
     m_listView->setRootIsDecorated(false);

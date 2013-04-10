@@ -2,8 +2,7 @@ TEMPLATE = lib
 TARGET = emailcomposer 
 CONFIG += qmfclient qmfutil plugin
 
-QT += widgets
-
+equals(QT_MAJOR_VERSION, 5): QT += widgets
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/composers
 
@@ -42,6 +41,6 @@ TRANSLATIONS += libemailcomposer-ar.ts \
                 libemailcomposer-zh_CN.ts \
                 libemailcomposer-zh_TW.ts
 
-RESOURCES += email.qrc                
+RESOURCES += email.qrc
 
 include(../../../../../common.pri)

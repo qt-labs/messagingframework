@@ -694,7 +694,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
                     if (tokenEncoded)
                         heldWhitespace.append(chars);
                     else
-                        result.append(chars.toAscii());
+                        result.append(chars.toLatin1());
                 }
             }
         }
@@ -5423,7 +5423,7 @@ void QMailMessagePartPrivate::output(QDataStream **out, bool addMimePreamble, bo
             }
 
             if (!_resolution.isEmpty()) {
-                **out << DataString(_resolution.toAscii());
+                **out << DataString(_resolution.toLatin1());
             } else {
                 qWarning() << "QMailMessagePartPrivate::output - unresolved reference part!";
             }
@@ -8638,7 +8638,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
         if (!hReceived.isEmpty()) {
             // From rfc2822 received is formatted: "Received:" name-val-list ";" date-time CRLF
             // As the ";" is mandatory this should never fail unless the email is badly formatted
-            QStringList sl(QString::fromAscii(hReceived.data()).split(";"));
+            QStringList sl(QString::fromLatin1(hReceived.data()).split(";"));
             if (sl.length() == 2) {
                 mail.metaDataImpl()->setDate(QMailTimeStamp(sl.at(1)));
             } else {

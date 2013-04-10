@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_qmail_listmodels
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 
 SOURCES += tst_qmail_listmodels.cpp
 

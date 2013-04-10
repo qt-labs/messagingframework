@@ -4,7 +4,11 @@ CONFIG += qmfmessageserver qmfclient plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
 
-QT = core network alignedtimer
+QT = core network
+
+contains(DEFINES,QT_QMF_USE_ALIGNEDTIMER) {
+    QT += alignedtimer
+}
 
 DEPENDPATH += .
 
@@ -43,7 +47,8 @@ SOURCES += imapclient.cpp \
            serviceactionqueue.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-QT += gui widgets
+    QT += gui
+    equals(QT_MAJOR_VERSION, 5): QT += widgets
 
 QMFUTIL_LIB = ../../../../examples/qtmail/libs/qmfutil
 

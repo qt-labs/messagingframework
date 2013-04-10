@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_locks
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 
 SOURCES += tst_locks.cpp
 

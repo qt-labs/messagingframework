@@ -130,7 +130,7 @@ QString LongStream::detach()
 void LongStream::append(QString str)
 {
     if (ts) {
-        ts->writeRawData(str.toAscii().constData(), str.length());
+        ts->writeRawData(str.toLatin1().constData(), str.length());
 
         len += str.length();
         appendedBytes += str.length();
@@ -162,7 +162,7 @@ QString LongStream::readAll()
             if (len == -1) {
                 break;
             } else {
-                result.append(QString::fromAscii(buffer, len));
+                result.append(QString::fromLatin1(buffer, len));
             }
         }
     }

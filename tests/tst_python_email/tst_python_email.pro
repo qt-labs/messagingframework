@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 TARGET = tst_python_email
 
 DEFINES += SRCDIR=\\\"$$_PRO_FILE_PWD_\\\"

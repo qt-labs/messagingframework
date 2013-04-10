@@ -849,10 +849,10 @@ void QMailMessageThreadedModelPrivate::init() const
 
 QModelIndex QMailMessageThreadedModelPrivate::parentIndex(const QMailMessageThreadedModelItem *item) const
 {
-    if (const QMailMessageThreadedModelItem *parent = item->_parent)
-        if (parent->_parent != 0)
+    if (const QMailMessageThreadedModelItem *parent = item->_parent) {
+        if (parent->_parent)
             return index(parent, 0);
-
+    }
     return QModelIndex();
 }
 

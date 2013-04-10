@@ -510,7 +510,7 @@ void AttachmentOptions::viewAttachment()
         QGridLayout *gl = new QGridLayout(&display);
         GenericViewer *viewer = new GenericViewer(&display);
         gl->addWidget(viewer->widget(), 0, 0);
-        QMailMessage message(QMailMessage::fromRfc2822(_part->body().data().toAscii()));
+        QMailMessage message(QMailMessage::fromRfc2822(_part->body().data().toLatin1()));
         viewer->setMessage(message);
         display.exec();
     } else {
@@ -643,4 +643,3 @@ void AttachmentOptions::forwardAttachment()
 }
 
 #include "attachmentoptions.moc"
-

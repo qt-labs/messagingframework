@@ -3,8 +3,7 @@ TARGET = serverobserver
 target.path += $$QMF_INSTALL_ROOT/bin
 CONFIG += qmfclient qmfmessageserver
 
-QT += widgets
-
+equals(QT_MAJOR_VERSION, 5): QT += widgets
 
 DEPENDPATH += .
 INCLUDEPATH += . ../../src/libraries/qmfclient \
@@ -16,6 +15,8 @@ LIBS += -L../../src/libraries/qmfclient/build \
 
 macx:LIBS += -F../../src/libraries/qmfclient/build \
         -F../../src/libraries/qmfmessageserver/build
+
+LIBS += -lqmfmessageserver -lqmfclient
 
 HEADERS += serverobserver.h
 

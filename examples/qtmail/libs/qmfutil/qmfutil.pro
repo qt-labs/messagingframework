@@ -7,7 +7,8 @@ target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QMFUTIL_INTERNAL
 
-QT += widgets
+equals(QT_MAJOR_VERSION, 5): QT += widgets
+
 DEPENDPATH += .
 INCLUDEPATH += . ../../../../src/libraries/qmfclient ../../../../src/libraries/qmfclient/support
 

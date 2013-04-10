@@ -816,7 +816,7 @@ private:
 template <typename ValueType>
 ValueType QMailStorePrivate::extractValue(const QVariant &var, const ValueType &defaultValue)
 {
-    if (!qVariantCanConvert<ValueType>(var)) {
+    if (!var.canConvert<ValueType>()) {
         qWarning() << "QMailStorePrivate::extractValue - Cannot convert variant to:"
 #ifdef QMAILSTORE_USE_RTTI
                    << typeid(ValueType).name();
@@ -826,7 +826,7 @@ ValueType QMailStorePrivate::extractValue(const QVariant &var, const ValueType &
         return defaultValue;
     }
 
-    return qVariantValue<ValueType>(var);
+    return var.value<ValueType>();
 }
 
 

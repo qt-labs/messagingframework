@@ -1253,7 +1253,8 @@ QString EmailComposerInterface::quotePrefix()
 {
     return "> ";
 }
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+Q_EXPORT_PLUGIN2(emailcomposer, EmailComposerInterface);
+#endif
 
-Q_EXPORT_PLUGIN( EmailComposerInterface)
-
-#include <emailcomposer.moc>
+#include "emailcomposer.moc"

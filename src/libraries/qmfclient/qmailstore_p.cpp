@@ -831,8 +831,8 @@ protected:
     {
         const QVariant& var = arg.valueList.first();
 
-        if (qVariantCanConvert<ClauseKey>(var)) {
-            return ::whereClauseValues(qVariantValue<ClauseKey>(var));
+        if (var.canConvert<ClauseKey>()) {
+            return ::whereClauseValues(var.value<ClauseKey>());
         } else {
             QVariantList values;
 
@@ -2776,11 +2776,11 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
 
             if (key.second == "INTEGER") {
                 int type = 0;
-                if (qVariantCanConvert<QMailMessageId>(arg->valueList.first())) {
+                if (arg->valueList.first().canConvert<QMailMessageId>()) {
                     type = 1;
-                } else if (qVariantCanConvert<QMailFolderId>(arg->valueList.first())) {
+                } else if (arg->valueList.first().canConvert<QMailFolderId>()) {
                     type = 2;
-                } else if (qVariantCanConvert<QMailAccountId>(arg->valueList.first())) {
+                } else if (arg->valueList.first().canConvert<QMailAccountId>()) {
                     type = 3;
                 }
 
@@ -3899,8 +3899,8 @@ bool QMailStorePrivate::upgradeTimeStampToUtc()
         const QMailMessageMetaData m(updateId);
         const MessageValueExtractor<QMailMessageMetaData> extractor(m);
         QVariantList bindValues;
-        bindValues << QDateTime(qVariantValue<QDateTime>(extractor.date())).toUTC();
-        bindValues << QDateTime(qVariantValue<QDateTime>(extractor.receivedDate())).toUTC();
+        bindValues << QDateTime((extractor.date()).value<QDateTime>()).toUTC();
+        bindValues << QDateTime((extractor.receivedDate()).value<QDateTime>()).toUTC();
         bindValues << extractor.id();
         QString sql("UPDATE mailmessages SET %1 WHERE id=?");
 

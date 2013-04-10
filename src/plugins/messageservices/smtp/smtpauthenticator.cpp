@@ -62,8 +62,8 @@ QByteArray SmtpAuthenticator::getAuthentication(const QMailAccountConfiguration:
     SmtpConfiguration smtpCfg(svcCfg);
     if (smtpCfg.smtpAuthentication() != SmtpConfiguration::Auth_NONE) {
         QMailAccountId id(smtpCfg.id());
-        QByteArray username(smtpCfg.smtpUsername().toAscii());
-        QByteArray password(smtpCfg.smtpPassword().toAscii());
+        QByteArray username(smtpCfg.smtpUsername().toLatin1());
+        QByteArray password(smtpCfg.smtpPassword().toLatin1());
 
         if (smtpCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
             result = QByteArray("LOGIN");

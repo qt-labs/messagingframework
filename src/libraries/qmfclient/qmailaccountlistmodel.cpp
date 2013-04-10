@@ -293,9 +293,10 @@ QMailAccountKey QMailAccountListModel::key() const
 
 void QMailAccountListModel::setKey(const QMailAccountKey& key) 
 {
+    beginResetModel();
     d->key = key;
     d->init = false;
-    reset(); 
+    endResetModel();
 }
 
 /*!
@@ -315,9 +316,10 @@ QMailAccountSortKey QMailAccountListModel::sortKey() const
 
 void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey) 
 {
+    beginResetModel();
     d->sortKey = sortKey;
     d->init = false;
-    reset();
+    endResetModel();
 }
 
 /*! \internal */
@@ -553,7 +555,8 @@ void QMailAccountListModel::setSynchronizeEnabled(bool val)
 
 void QMailAccountListModel::fullRefresh()
 {
+    beginResetModel();
     d->init = false;
-    reset();
+    endResetModel();
 }
 

@@ -60,7 +60,7 @@ class SigEntry : public QDialog
     Q_OBJECT
 
 public:
-    SigEntry(QWidget *parent, const char* name, Qt::WFlags fl = 0);
+    SigEntry(QWidget *parent, const char* name, Qt::WindowFlags fl = 0);
 
     void setEntry(QString sig);
     QString entry() const;
@@ -72,7 +72,7 @@ private:
     QTextEdit *input;
 };
 
-SigEntry::SigEntry(QWidget *parent, const char *name, Qt::WFlags fl)
+SigEntry::SigEntry(QWidget *parent, const char *name, Qt::WindowFlags fl)
     : QDialog(parent, fl)
 {
     setObjectName(name);
@@ -197,7 +197,7 @@ void SmtpSettings::sigPressed()
         else
             sigText = signature;
 
-        QPointer<SigEntry> sigEntry(new SigEntry(this, "sigEntry", static_cast<Qt::WFlags>(1)));
+        QPointer<SigEntry> sigEntry(new SigEntry(this, "sigEntry", static_cast<Qt::WindowFlags>(1)));
         sigEntry->setEntry(sigText);
         if (sigEntry->exec() == QDialog::Accepted)
             signature = sigEntry->entry();

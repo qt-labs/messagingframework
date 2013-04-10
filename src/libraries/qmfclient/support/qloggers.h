@@ -335,7 +335,7 @@ inline void FileLogger<Prefix>::doLog(const LogLevel /*lvl*/, const char* fmt, v
 
 template <class Prefix>
 inline SysLogger<Prefix>::SysLogger(const QString& _ident, int _option, int _facility, const LogLevel  _min_lvl)
-    :BaseLogger<SysLogger<Prefix>, Prefix>(*this, _min_lvl), ident(_ident.toAscii())
+    :BaseLogger<SysLogger<Prefix>, Prefix>(*this, _min_lvl), ident(_ident.toLatin1())
 {
     openlog(ident.data(), _option, _facility);
 };

@@ -53,7 +53,7 @@
 #include <QFile>
 #include <QDir>
 
-#if defined(QT_QMF_USE_ALIGNEDTIMER)
+#if defined QT_QMF_USE_ALIGNEDTIMER
 #include <QAlignedTimer>
 using namespace QtAlignedTimer;
 #endif
@@ -324,7 +324,7 @@ protected:
     QMailFolder _folder;
 
 private:
-#if defined(QT_QMF_USE_ALIGNEDTIMER)
+#if defined QT_QMF_USE_ALIGNEDTIMER
     QAlignedTimer _idleTimer; // Send a DONE command every 29 minutes
 #else
     QTimer _idleTimer; // Send a DONE command every 29 minutes
@@ -368,7 +368,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
             qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
             
             // We are now idling
-#if defined(QT_QMF_USE_ALIGNEDTIMER)
+#if defined QT_QMF_USE_ALIGNEDTIMER
             _idleTimer.setMinimumInterval(idleTimeout/1000 - 60);
             _idleTimer.setMaximumInterval(idleTimeout/1000);
             _idleTimer.start();

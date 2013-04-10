@@ -7,7 +7,10 @@ target.path += $$QMF_INSTALL_ROOT/lib
 
 QT = core network
 
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR):QT += gui widgets
+!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+    QT += gui
+    equals(QT_MAJOR_VERSION, 5): QT += widgets
+}
 
 DEFINES += MESSAGESERVER_INTERNAL
 
@@ -17,6 +20,8 @@ INCLUDEPATH += . ../qmfclient ../qmfclient/support
 
 LIBS += -L../qmfclient/build
 macx:LIBS += -F../qmfclient/build
+
+LIBS += -lqmfclient
 
 PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailmessagebuffer.h \

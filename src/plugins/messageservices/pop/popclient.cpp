@@ -409,7 +409,7 @@ void PopClient::sendCommand(const char *data, int len)
 
 void PopClient::sendCommand(const QString& cmd)
 {
-    sendCommand(cmd.toAscii());
+    sendCommand(cmd.toLatin1());
 }
 
 void PopClient::sendCommand(const QByteArray& cmd)
@@ -492,7 +492,7 @@ void PopClient::processResponse(const QString &response)
         } else {
             if ((response.length() > 2) && (response[1] == ' ')) {
                 // This is a continuation containing a challenge string (in Base64)
-                QByteArray challenge = QByteArray::fromBase64(response.mid(2).toAscii());
+                QByteArray challenge = QByteArray::fromBase64(response.mid(2).toLatin1());
                 QByteArray response(PopAuthenticator::getResponse(config.serviceConfiguration("pop3"), challenge));
 
                 if (!response.isEmpty()) {
@@ -529,8 +529,8 @@ void PopClient::processResponse(const QString &response)
                 int number(pattern.cap(1).toInt());
                 QString uid(pattern.cap(2));
 
-                serverUidNumber.insert(uid.toLocal8Bit(), number);
-                serverUid.insert(number, uid.toLocal8Bit());
+                serverUidNumber.insert(uid.toLatin1(), number);
+                serverUid.insert(number, uid.toLatin1());
             }
 
             // More to follow

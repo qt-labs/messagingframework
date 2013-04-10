@@ -57,7 +57,7 @@ void processChars(Processor p, const QString& field, QString::const_iterator ori
     QString::const_iterator begin = origin, it = begin, end = field.end();
 
     do {
-        char c((*it).toAscii());
+        char c((*it).toLatin1());
 
         switch (c) {
         case ')':
@@ -289,7 +289,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
                 qWarning() << "Incorrect fromDispositionDescription parameters:" << parameters;
             QStringList::const_iterator it = parameters.begin(), end = parameters.end();
             for ( ; (it != end) && (it + 1 != end); ++it) {
-                disposition.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
+                disposition.setParameter((*it).toLatin1(), (*(it + 1)).toLatin1());
                 ++it;
             }            
         }
@@ -317,8 +317,8 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
 
     // [0]: type
     // [1]: sub-type
-    type.setType(details.at(0).toAscii());
-    type.setSubType(details.at(1).toAscii());
+    type.setType(details.at(0).toLatin1());
+    type.setSubType(details.at(1).toLatin1());
 
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
@@ -330,7 +330,7 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
     }
     QStringList::const_iterator it = parameters.begin(), end = parameters.end();
     for ( ; (it != end) && ((it + 1) != end); it += 2) {
-        type.setParameter((*it).toAscii(), (*(it + 1)).toAscii());
+        type.setParameter((*it).toLatin1(), (*(it + 1)).toLatin1());
     }
 
     // [3]: content-ID
@@ -435,7 +435,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         }
         for ( ; (it != end) && ((it + 1) != end); it += 2) {
             if ((*it).trimmed().toUpper() == "BOUNDARY") {
-                container->setBoundary((*(it + 1)).toAscii());
+                container->setBoundary((*(it + 1)).toLatin1());
             }
         }
     }

@@ -2915,7 +2915,7 @@ void EmailClient::synchronizeFolder()
 
 void EmailClient::nextMessage()
 {
-    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
@@ -2926,7 +2926,7 @@ void EmailClient::nextMessage()
 
 void EmailClient::previousMessage()
 {
-    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
@@ -2937,7 +2937,7 @@ void EmailClient::previousMessage()
    
 void EmailClient::nextUnreadMessage()
 {
-    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, 0, "+"));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, 0, "+"));
@@ -2946,7 +2946,7 @@ void EmailClient::nextUnreadMessage()
 
 void EmailClient::previousUnreadMessage()
 {
-    QWidget *list(qFindChild<QWidget*>(messageListView(), "messagelistview"));
+    QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, 0, "-"));
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, 0, "-"));
@@ -2957,7 +2957,8 @@ void EmailClient::previousUnreadMessage()
 
 void EmailClient::scrollReaderDown()
 {
-    QWidget *renderer(qFindChild<QWidget*>(readMailWidget(), "renderer"));
+    QWidget *renderer = readMailWidget()->findChild<QWidget*>("renderer");
+
     if (renderer) {
         QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
         QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
@@ -2966,7 +2967,7 @@ void EmailClient::scrollReaderDown()
 
 void EmailClient::scrollReaderUp()
 {
-    QWidget *renderer(qFindChild<QWidget*>(readMailWidget(), "renderer"));
+    QWidget *renderer = readMailWidget()->findChild<QWidget*>("renderer");
     if (renderer) {
         QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
         QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));

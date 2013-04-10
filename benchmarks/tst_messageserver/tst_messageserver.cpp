@@ -209,7 +209,11 @@ void tst_MessageServer::runInCallgrind(QString const& testfunc)
     for (int i = 0; i < mo->methodCount(); ++i) {
         QMetaMethod mm = mo->method(i);
         if (mm.methodType() == QMetaMethod::Slot && mm.access() == QMetaMethod::Private) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+            QByteArray sig = mm.methodSignature();
+#else
             QByteArray sig = mm.signature();
+#endif
             testfunctions << QString::fromLatin1(sig.left(sig.indexOf('(')));
         }
     }

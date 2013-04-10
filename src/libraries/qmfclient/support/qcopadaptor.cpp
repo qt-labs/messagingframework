@@ -38,7 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 #include "qcopadaptor.h"
 #include "qcopchannel.h"
 #include <QtCore/qmap.h>
@@ -48,6 +47,7 @@
 #include "qmaillog.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvarlengtharray.h>
+#include <stdlib.h>
 
 /* ! - documentation comments in this file are diasabled:
     \class QCopAdaptor
@@ -129,7 +129,7 @@ class QCopAdaptorSlotInfo
 public:
     ~QCopAdaptorSlotInfo()
     {
-        qFree(types);
+        free(types);
     }
 
     QObject *receiver;
@@ -190,7 +190,7 @@ QCopAdaptorPrivate::~QCopAdaptorPrivate()
             QMetaObject::disconnect(info->sender, info->destroyIndex,
                                     this, index + 1);
         }
-        qFree(info->types);
+        free(info->types);
         delete info;
         index += 2;
     }
@@ -230,7 +230,7 @@ int *QCopAdaptorPrivate::connectionTypes( const QByteArray& member, int& nargs )
             ++nargs;
     }
 
-    types = (int *) qMalloc((nargs+1)*sizeof(int));
+    types = (int *) malloc((nargs+1)*sizeof(int));
     types[nargs] = 0;
     for (int n = 0; n < nargs; ++n) {
         e = s;
@@ -242,7 +242,7 @@ int *QCopAdaptorPrivate::connectionTypes( const QByteArray& member, int& nargs )
         types[n] = typeFromName(type);
         if (!types[n]) {
             qWarning("QCopAdaptorPrivate::connectionTypes: Cannot marshal arguments of type '%s'", type.constData());
-            qFree(types);
+            free(types);
             return 0;
         }
     }
@@ -454,11 +454,19 @@ void QCopAdaptor::publishAll(QCopAdaptor::PublishType type)
             if (method.methodType() == QMetaMethod::Slot &&
                  method.access() == QMetaMethod::Public &&
                  (type == Slots || type == SignalsAndSlots)) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+                QByteArray name = method.methodSignature();
+#else
                 QByteArray name = method.signature();
+#endif
                 connectRemoteToLocal("3" + name, this, "1" + name);
             } else if (method.methodType() == QMetaMethod::Signal &&
                         (type == Signals || type == SignalsAndSlots)) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+                QByteArray name = method.methodSignature();
+#else
                 QByteArray name = method.signature();
+#endif
                 connectLocalToRemote(this, "2" + name, "3" + name);
             }
         }
@@ -615,7 +623,7 @@ void QCopAdaptor::received(const QString& msg, const QByteArray& data)
         QList<QVariant> args;
         QVariant returnValue;
         QVarLengthArray<void *, 32> a(info->numArgs + 1);
-        if (info->returnType != (int)QVariant::Invalid) {
+        if (info->returnType != (int)QVariant::Invalid && info->returnType != (int)QMetaType::Void) {
             returnValue = QVariant(info->returnType, (const void *)0);
             a[0] = returnValue.data();
         } else {
@@ -817,7 +825,7 @@ void QCopAdaptor::send
                 }
             }
             if (params)
-                qFree(params);
+                free(params);
         }
         // Stream is flushed and closed at this point.
     }

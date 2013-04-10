@@ -29,7 +29,8 @@ SOURCES += popclient.cpp \
            popauthenticator.cpp
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-QT += gui widgets
+    QT += gui
+    equals(QT_MAJOR_VERSION, 5): QT += widgets
 
 HEADERS += \
            popsettings.h

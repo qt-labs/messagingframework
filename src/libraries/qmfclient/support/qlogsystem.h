@@ -120,8 +120,11 @@ public:
     void clear();
 
 protected:
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     static void debugMsgFwd(QtMsgType type, const char *msg);
-
+#else
+    static void debugMsgFwd(QtMsgType type, const QMessageLogContext &ctxt, const QString &msg);
+#endif
 
 private:
     /// Do not allow to create new instance of that class

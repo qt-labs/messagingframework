@@ -53,7 +53,7 @@
 #include <QToolBar>
 #include <qtmailnamespace.h>
 
-AccountSettings::AccountSettings(QWidget *parent, Qt::WFlags flags)
+AccountSettings::AccountSettings(QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
       preExisting(false),
       deleteBatchSize(0),

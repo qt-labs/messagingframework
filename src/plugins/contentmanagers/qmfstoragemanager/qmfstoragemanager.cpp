@@ -745,8 +745,9 @@ void QmfStorageManager::syncLater(QSharedPointer<QFile> file)
 #endif
 }
 
-
-Q_EXPORT_PLUGIN2(QmfStorageManager,QmfStorageManagerPlugin)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+Q_EXPORT_PLUGIN2(QmfStorageManager,QmfStorageManagerPlugin);
+#endif
 
 QmfStorageManagerPlugin::QmfStorageManagerPlugin()
     : QMailContentManagerPlugin()
@@ -762,4 +763,3 @@ QMailContentManager *QmfStorageManagerPlugin::create()
 {
     return new QmfStorageManager(this);
 }
-

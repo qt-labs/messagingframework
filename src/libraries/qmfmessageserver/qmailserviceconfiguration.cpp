@@ -203,7 +203,7 @@ QString QMailServiceConfiguration::decodeValue(const QString &value)
     if (value.isEmpty())
         return QString();
 
-    QByteArray encoded(value.toAscii());
+    QByteArray encoded(value.toLatin1());
     QMailBase64Codec codec(QMailBase64Codec::Text);
     return codec.decode(encoded, "ISO-8859-1");
 }

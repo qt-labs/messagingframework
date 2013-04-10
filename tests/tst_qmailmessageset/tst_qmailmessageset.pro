@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_qmailmessageset
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 
 SOURCES += tst_qmailmessageset.cpp
 

@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_qmailthread
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 
 SOURCES += tst_qmailthread.cpp
 

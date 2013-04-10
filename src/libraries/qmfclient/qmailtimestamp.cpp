@@ -263,12 +263,12 @@ QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) con
 
     if (format == QMailTimeStamp::Rfc2822) {
         result = QString( originalTime.toString( "%1, d %2 yyyy hh:mm:ss %3" ) );
-        result = result.arg( QString::fromAscii( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
-        result = result.arg( QString::fromAscii( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
+        result = result.arg( QString::fromLatin1( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
+        result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
         result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
     } else if (format == QMailTimeStamp::Rfc3501) {
         result = QString( originalTime.toString( "dd-%1-yyyy hh:mm:ss %2" ) );
-        result = result.arg( QString::fromAscii( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
+        result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
         result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
 
         // The day number should be space-padded

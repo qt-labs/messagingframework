@@ -42,6 +42,7 @@
 #include "imaptransport.h"
 #include <qmaillog.h>
 #include <qbuffer.h>
+#include <qdatastream.h>
 
 #ifdef QT_QMF_HAVE_ZLIB
 #include <zlib.h>

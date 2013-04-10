@@ -1,5 +1,5 @@
 TEMPLATE = app
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 TARGET = tst_qmailmessagebody
 
 SOURCES += tst_qmailmessagebody.cpp

@@ -62,12 +62,20 @@ LogSystem& LogSystem::getInstance()
 //LogSystem implementation
 LogSystem::LogSystem()
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     qInstallMsgHandler(debugMsgFwd);
+#else
+    qInstallMessageHandler(debugMsgFwd);
+#endif
 }
 
 LogSystem::~LogSystem()
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     qInstallMsgHandler(NULL);
+#else
+    qInstallMessageHandler(NULL);
+#endif
     clear();
 }
 
@@ -99,7 +107,7 @@ void LogSystem::clear()
     }
     loggers.clear();
 }
-
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 void LogSystem::debugMsgFwd(QtMsgType type, const char *msg)
 {
     switch (type)
@@ -121,6 +129,32 @@ void LogSystem::debugMsgFwd(QtMsgType type, const char *msg)
         break;
     }
 }
+#else
+void LogSystem::debugMsgFwd(QtMsgType type, const QMessageLogContext &ctxt, const QString &msg)
+{
+    Q_UNUSED(ctxt);
+    QByteArray ba = msg.toLatin1();
+
+    switch (type)
+    {
+    case QtDebugMsg:
+        LogSystem::getInstance().log(LlDbg, "%s", ba.data());
+        break;
+    case QtWarningMsg:
+        LogSystem::getInstance().log(LlWarning, "%s", ba.data());
+        break;
+    case QtFatalMsg:
+        LogSystem::getInstance().log(LlCritical, "%s", ba.data());
+        abort();
+    case QtCriticalMsg:
+        LogSystem::getInstance().log(LlError, "%s", ba.data());
+        break;
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+}
+#endif
 
 //Aux classes implementation
 

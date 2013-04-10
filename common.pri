@@ -79,9 +79,4 @@ mac:contains(QT_CONFIG,qt_framework):!plugin {
     QMAKE_BUNDLE_DATA += FRAMEWORK_HEADERS
 }
 
-qmfclient:qtAddLibrary(qmfclient)
-qmfmessageserver:qtAddLibrary(qmfmessageserver)
-qmfutil:qtAddLibrary(qmfutil)
-
 CONFIG += hide_symbols
-

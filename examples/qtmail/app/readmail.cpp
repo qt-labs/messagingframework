@@ -133,7 +133,7 @@ private:
 };
 
 
-ReadMail::ReadMail( QWidget* parent, Qt::WFlags fl )
+ReadMail::ReadMail( QWidget* parent, Qt::WindowFlags fl )
     : QFrame(parent, fl),
       sending(false),
       receiving(false),

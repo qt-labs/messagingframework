@@ -87,8 +87,8 @@ QList<QByteArray> PopAuthenticator::getAuthentication(const QMailAccountConfigur
         // If not handled by the authenticator, fall back to user/pass
         PopConfiguration popCfg(svcCfg);
 
-        result.append(QByteArray("USER ") + popCfg.mailUserName().toAscii());
-        result.append(QByteArray("PASS ") + popCfg.mailPassword().toAscii());
+        result.append(QByteArray("USER ") + popCfg.mailUserName().toLatin1());
+        result.append(QByteArray("PASS ") + popCfg.mailPassword().toLatin1());
     }
 
     return result;

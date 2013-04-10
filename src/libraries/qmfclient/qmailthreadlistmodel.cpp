@@ -307,9 +307,10 @@ QMailThreadKey QMailThreadListModel::key() const
 
 void QMailThreadListModel::setKey(const QMailThreadKey& key)
 {
+    beginResetModel();
     d->key = key;
     d->init = false;
-    reset();
+    endResetModel();
 }
 
 /*!
@@ -329,9 +330,10 @@ QMailThreadSortKey QMailThreadListModel::sortKey() const
 
 void QMailThreadListModel::setSortKey(const QMailThreadSortKey& sortKey)
 {
+    beginResetModel();
     d->sortKey = sortKey;
     d->init = false;
-    reset();
+    endResetModel();
 }
 
 /*! \internal */
@@ -565,8 +567,9 @@ void QMailThreadListModel::setSynchronizeEnabled(bool val)
 
 void QMailThreadListModel::fullRefresh()
 {
+    beginResetModel();
     d->init = false;
-    reset();
+    endResetModel();
     emit modelChanged();
 }
 

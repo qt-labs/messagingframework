@@ -49,7 +49,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 
-EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WFlags fl)
+EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WindowFlags fl)
     : QDialog(parent, fl),
       account(0),
       accountNameInput(new QLineEdit),

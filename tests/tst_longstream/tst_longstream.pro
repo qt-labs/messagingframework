@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_longstream
-CONFIG += qtestlib unittest qmfclient
+CONFIG += qmfclient
 
 SOURCES += tst_longstream.cpp
 

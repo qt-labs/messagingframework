@@ -355,7 +355,9 @@ QMailMessageServiceEditor *SmtpConfigurator::createEditor(QMailMessageServiceFac
 }
 #endif
 
-Q_EXPORT_PLUGIN2(smtp,SmtpServicePlugin)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+Q_EXPORT_PLUGIN2(smtp,SmtpServicePlugin);
+#endif
 
 SmtpServicePlugin::SmtpServicePlugin()
     : QMailMessageServicePlugin()
@@ -386,7 +388,6 @@ QMailMessageServiceConfigurator *SmtpServicePlugin::createServiceConfigurator()
 {
     return new SmtpConfigurator();
 }
-
 
 #include "smtpservice.moc"
 

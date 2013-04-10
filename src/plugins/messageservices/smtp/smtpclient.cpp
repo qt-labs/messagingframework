@@ -86,7 +86,7 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
             QString::number(addressComponent, 36) +
             "-qmf@" +
             domainName +
-            '>').toAscii();
+            '>').toLatin1();
 }
 
 static QByteArray localName()
@@ -319,7 +319,7 @@ void SmtpClient::sendCommand(const char *data, int len)
 
 void SmtpClient::sendCommand(const QString &cmd)
 {
-    sendCommand(cmd.toAscii());
+    sendCommand(cmd.toLatin1());
 }
 
 void SmtpClient::sendCommand(const QByteArray &cmd)
@@ -330,7 +330,7 @@ void SmtpClient::sendCommand(const QByteArray &cmd)
 void SmtpClient::sendCommands(const QStringList &cmds)
 {
     foreach (const QString &cmd, cmds)
-        sendCommand(cmd.toAscii());
+        sendCommand(cmd.toLatin1());
 }
 
 void SmtpClient::incomingData()
@@ -406,9 +406,9 @@ void SmtpClient::nextAction(const QString &response)
                 // Extract the domain name from the greeting
                 int index = response.indexOf(' ', 4);
                 if (index == -1) {
-                    domainName = response.mid(4).trimmed().toAscii();
+                    domainName = response.mid(4).trimmed().toLatin1();
                 } else {
-                    domainName = response.mid(4, index - 4).trimmed().toAscii();
+                    domainName = response.mid(4, index - 4).trimmed().toLatin1();
                 }
             }
 
@@ -536,7 +536,7 @@ void SmtpClient::nextAction(const QString &response)
     {
         if (responseCode == 334) {
             // This is a continuation containing a challenge string (in Base64)
-            QByteArray challenge = QByteArray::fromBase64(response.mid(4).toAscii());
+            QByteArray challenge = QByteArray::fromBase64(response.mid(4).toLatin1());
             QByteArray response(SmtpAuthenticator::getResponse(config.serviceConfiguration("smtp"), challenge));
 
             if (!response.isEmpty()) {
@@ -637,7 +637,7 @@ void SmtpClient::nextAction(const QString &response)
     {
         if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
             // We can replace this entire message by a reference to its external location
-            mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toAscii()));
+            mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toLatin1()));
             status = Chunk;
         } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
             mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);

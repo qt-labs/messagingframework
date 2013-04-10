@@ -449,7 +449,9 @@ QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFact
 }
 #endif
 
-Q_EXPORT_PLUGIN2(pop,PopServicePlugin)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+Q_EXPORT_PLUGIN2(pop,PopServicePlugin);
+#endif
 
 PopServicePlugin::PopServicePlugin()
     : QMailMessageServicePlugin()
@@ -481,6 +483,4 @@ QMailMessageServiceConfigurator *PopServicePlugin::createServiceConfigurator()
     return new PopConfigurator();
 }
 
-
 #include "popservice.moc"
-

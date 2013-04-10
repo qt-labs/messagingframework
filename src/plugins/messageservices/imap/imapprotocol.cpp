@@ -388,7 +388,7 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1) {
-        qWarning() << line.mid(index).toAscii();
+        qWarning() << line.mid(index).toLatin1();
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
@@ -406,7 +406,7 @@ void ImapState::taggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1)
-        qWarning() << line.mid(index).toAscii();
+        qWarning() << line.mid(index).toLatin1();
 
     c->operationCompleted(mCommand, mStatus);
 }
@@ -576,7 +576,7 @@ QString LoginState::transmit(ImapContext *c)
 bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 {
     // The server input is Base64 encoded
-    QByteArray challenge = QByteArray::fromBase64(received.toAscii());
+    QByteArray challenge = QByteArray::fromBase64(received.toLatin1());
     QByteArray response(ImapAuthenticator::getResponse(_config.serviceConfiguration("imap4"), challenge));
 
     if (!response.isEmpty()) {
@@ -1129,7 +1129,7 @@ QString AppendState::transmit(ImapContext *c)
     cmdString += ") \"";
     cmdString += message.date().toString(QMailTimeStamp::Rfc3501);
     cmdString += "\"";
-    cmd = cmdString.toAscii();
+    cmd = cmdString.toLatin1();
 
 
     uint length = 0;
@@ -1597,7 +1597,7 @@ bool SearchMessageState::continuationResponse(ImapContext *c, const QString &)
 bool SearchMessageState::isPrintable(const QString &s) const
 {
     for (int i = 0; i < s.length(); ++i) {
-        const char c = s[i].toAscii();
+        const char c = s[i].toLatin1();
         if (c < 0x20 || c > 0x7e) {
             return false;
         }
@@ -3232,7 +3232,7 @@ void ImapProtocol::errorHandling(int status, QString msg)
 
 void ImapProtocol::sendData(const QString &cmd)
 {
-    QByteArray output(cmd.toAscii());
+    QByteArray output(cmd.toLatin1());
     output.append("\r\n");
     _transport->imapWrite(&output);
 
@@ -3596,7 +3596,7 @@ QString ImapProtocol::quoteString(const QString& input)
 
 QByteArray ImapProtocol::quoteString(const QByteArray& input)
 {
-    return quoteString(QString(input)).toAscii();
+    return quoteString(QString(input)).toLatin1();
 }
 
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)

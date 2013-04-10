@@ -77,7 +77,7 @@ QString messageSizeText(const QMailMessageMetaData& m)
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", QCoreApplication::CodecForTr, size);
 #else
-    return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", QCoreApplication::DefaultCodec, size);
+    return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", size);
 #endif
     else if (size < (1024 * 1024))
         return qApp->translate("QMailMessageModelBase", "%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
@@ -506,8 +506,9 @@ void QMailMessageModelBase::setIgnoreMailStoreUpdates(bool ignore)
 /*! \internal */
 void QMailMessageModelBase::fullRefresh(bool changed) 
 {
+    beginResetModel();
     impl()->reset();
-    reset();
+    endResetModel();
 
     if (changed)
         emit modelChanged();

@@ -59,7 +59,7 @@ namespace {
 
 int pathIdentifier(const QString &filePath, int id)
 {
-    return static_cast<int>(::ftok(filePath.toAscii(), id));
+    return static_cast<int>(::ftok(filePath.toLatin1(), id));
 }
 
 class Semaphore

@@ -375,7 +375,7 @@ void tst_QMailMessage::toRfc2822()
                     foreach (const pair_type &pair, text_parts) {
                         QString tag("<ENCODED_TEXT_%1>");
                         QMailBase64Codec codec(QMailBase64Codec::Text);
-                        body_text.replace(tag.arg(i).toAscii(), codec.encode(pair.second, "UTF-8"));
+                        body_text.replace(tag.arg(i).toLatin1(), codec.encode(pair.second, "UTF-8"));
                         ++i;
                     }
                     rfc_text.append(body_text);
@@ -392,7 +392,7 @@ void tst_QMailMessage::toRfc2822()
                     foreach (const pair_type &pair, text_parts) {
                         QString tag("<ENCODED_TEXT_%1>");
                         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
-                        body_text.replace(tag.arg(i).toAscii(), codec.encode(pair.second, "UTF-8"));
+                        body_text.replace(tag.arg(i).toLatin1(), codec.encode(pair.second, "UTF-8"));
                         ++i;
                     }
                     rfc_text.append(body_text);
@@ -407,7 +407,7 @@ void tst_QMailMessage::toRfc2822()
                     int i = 0;
                     foreach (const pair_type &pair, text_parts) {
                         QString tag("<ENCODED_TEXT_%1>");
-                        body_text.replace(tag.arg(i).toAscii(), pair.second);
+                        body_text.replace(tag.arg(i).toLatin1(), pair.second);
                         ++i;
                     }
                     rfc_text.append(body_text);
