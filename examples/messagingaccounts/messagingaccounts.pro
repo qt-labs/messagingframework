@@ -1,9 +1,16 @@
 TEMPLATE = app
-TARGET = messagingaccounts
 target.path += $$QMF_INSTALL_ROOT/bin
 CONFIG += qmfclient qmfmessageserver
 
-equals(QT_MAJOR_VERSION, 5): QT += widgets
+equals(QT_MAJOR_VERSION, 4){
+    TARGET = messagingaccounts
+    LIBS += -lqmfmessageserver -lqmfclient
+}
+equals(QT_MAJOR_VERSION, 5){
+    TARGET = messagingaccounts5
+    QT += widgets
+    LIBS += -lqmfmessageserver5 -lqmfclient5
+}
 
 DEPENDPATH += .
 
@@ -23,8 +30,6 @@ LIBS += -L../../src/libraries/qmfclient/build \
 
 macx:LIBS += -F../../src/libraries/qmfclient/build \
         -F../../src/libraries/qmfmessageserver/build
-
-LIBS += -lqmfmessageserver -lqmfclient
 
 HEADERS += $$QTMAIL_EXAMPLE/app/accountsettings.h \
            $$QTMAIL_EXAMPLE/app/editaccount.h \

@@ -3,7 +3,8 @@ TARGET = qmfstoragemanager
 CONFIG += qmfclient plugin
 QT = core
 
-target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers
+equals(QT_MAJOR_VERSION, 4): target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers
+equals(QT_MAJOR_VERSION, 5): target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/contentmanagers
 
 DEFINES += PLUGIN_INTERNAL
 

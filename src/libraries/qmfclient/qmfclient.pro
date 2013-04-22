@@ -1,6 +1,7 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-TARGET = qmfclient
+equals(QT_MAJOR_VERSION, 4): TARGET = qmfclient
+equals(QT_MAJOR_VERSION, 5): TARGET = qmfclient5
 INSTALLS += target
 CONFIG += link_pkgconfig
 
@@ -170,7 +171,8 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
-header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
+equals(QT_MAJOR_VERSION, 4): header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
+equals(QT_MAJOR_VERSION, 5): header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient5
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files

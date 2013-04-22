@@ -5,7 +5,16 @@ SERVER_AS_DLL: {
 } else {
     TEMPLATE = app
 }
-TARGET = messageserver
+
+equals(QT_MAJOR_VERSION, 4){
+    TARGET = messageserver
+    LIBS += -lqmfmessageserver -lqmfclient
+}
+equals(QT_MAJOR_VERSION, 5){
+    TARGET = messageserver5
+    LIBS += -lqmfmessageserver5 -lqmfclient5
+}
+
 CONFIG += qmfmessageserver qmfclient
 QT = core
 
@@ -26,8 +35,6 @@ LIBS += -L../../libraries/qmfmessageserver/build \
         -L../../libraries/qmfclient/build
 macx:LIBS += -F../../libraries/qmfmessageserver/build \
         -F../../libraries/qmfclient/build
-
-LIBS += -lqmfmessageserver -lqmfclient
 
 HEADERS += mailmessageclient.h \
            messageserver.h \

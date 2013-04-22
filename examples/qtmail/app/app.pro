@@ -1,9 +1,17 @@
 TEMPLATE = app
-TARGET = qtmail 
+
+equals(QT_MAJOR_VERSION, 4){
+    TARGET = qtmail
+    LIBS += -lqmfmessageserver -lqmfclient -lqmfutil
+}
+equals(QT_MAJOR_VERSION, 5){
+    TARGET = qtmail5
+    QT += widgets
+    LIBS += -lqmfmessageserver5 -lqmfclient5 -lqmfutil5
+}
+
 CONFIG += qmfutil qmfclient qmfmessageserver
 target.path += $$QMF_INSTALL_ROOT/bin
-
-equals(QT_MAJOR_VERSION, 5): QT += widgets
 
 DEPENDPATH += . 
 
@@ -19,8 +27,6 @@ LIBS += -L../../../src/libraries/qmfclient/build \
 macx:LIBS += -F../../../src/libraries/qmfclient/build \
              -F../libs/qmfutil/build \
              -F../../../src/libraries/qmfmessageserver/build
-
-LIBS += -lqmfmessageserver -lqmfclient -lqmfutil
 
 HEADERS += emailclient.h \
            messagelistview.h \

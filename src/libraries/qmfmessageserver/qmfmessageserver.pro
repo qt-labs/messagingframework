@@ -1,8 +1,15 @@
 TEMPLATE = lib 
 CONFIG += warn_on
 CONFIG += qmfclient
-TARGET = qmfmessageserver
 
+equals(QT_MAJOR_VERSION, 4){
+    TARGET = qmfmessageserver
+    LIBS += -lqmfclient
+}
+equals(QT_MAJOR_VERSION, 5){
+    TARGET = qmfmessageserver5
+    LIBS += -lqmfclient5
+}
 target.path += $$QMF_INSTALL_ROOT/lib
 
 QT = core network
@@ -20,8 +27,6 @@ INCLUDEPATH += . ../qmfclient ../qmfclient/support
 
 LIBS += -L../qmfclient/build
 macx:LIBS += -F../qmfclient/build
-
-LIBS += -lqmfclient
 
 PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailmessagebuffer.h \
@@ -43,7 +48,8 @@ SOURCES += qmailauthenticator.cpp \
            qmailtransport.cpp \
            qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
 
-header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
+equals(QT_MAJOR_VERSION, 4): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
+equals(QT_MAJOR_VERSION, 5): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver5
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files

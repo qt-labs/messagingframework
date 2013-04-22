@@ -32,6 +32,7 @@ CONFIG += unittest
 
 # Install test file description
 test_description.files = tests.xml
-test_description.path  = $$QMF_INSTALL_ROOT/tests
+equals(QT_MAJOR_VERSION, 4): test_description.path  = $$QMF_INSTALL_ROOT/tests
+equals(QT_MAJOR_VERSION, 5): test_description.path  = $$QMF_INSTALL_ROOT/tests5
 
 INSTALLS += test_description

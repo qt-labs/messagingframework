@@ -1,12 +1,14 @@
 TEMPLATE = app
 CONFIG += unittest
 CONFIG += qmfmessageserver qmfclient
-
 QT += testlib
-equals(QT_MAJOR_VERSION, 5): QT += widgets
+TARGET = tst_messageserver
 
-TARGET = tst_messageserver 
-target.path += $$QMF_INSTALL_ROOT/tests
+equals(QT_MAJOR_VERSION, 4): target.path += $$QMF_INSTALL_ROOT/tests
+equals(QT_MAJOR_VERSION, 5){
+    target.path += $$QMF_INSTALL_ROOT/tests5
+    QT += widgets
+}
 
 BASE=../../
 include($$BASE/common.pri)
@@ -32,7 +34,8 @@ INCLUDEPATH += . 3rdparty $$BASE/src/libraries/qmfclient \
 LIBS += -L$$BASE/src/libraries/qmfmessageserver/build \
         -L$$BASE/src/libraries/qmfclient/build
 
-LIBS += -lqmfmessageserver -lqmfclient
+equals(QT_MAJOR_VERSION, 4): LIBS += -lqmfmessageserver -lqmfclient
+equals(QT_MAJOR_VERSION, 5): LIBS += -lqmfmessageserver5 -lqmfclient5
 
 QMAKE_LFLAGS += -Wl,-rpath,$$BASE/src/libraries/qmfclient \
     -Wl,-rpath,$$BASE/src/libraries/qmfmessageserver
