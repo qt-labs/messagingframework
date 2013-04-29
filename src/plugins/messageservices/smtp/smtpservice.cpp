@@ -76,15 +76,12 @@ private:
 
 bool SmtpService::Sink::transmitMessages(const QMailMessageIdList &ids)
 {
-    bool messageQueued = false;
     QMailMessageIdList failedMessages;
 
     if (!ids.isEmpty()) {
         foreach (const QMailMessageId id, ids) {
             QMailMessage message(id);
-            if (_service->_client.addMail(message) == QMailServiceAction::Status::ErrNoError) {
-                messageQueued = true;
-            } else {
+            if (!(_service->_client.addMail(message) == QMailServiceAction::Status::ErrNoError)) {
                 failedMessages << id;
             }
         }
@@ -94,16 +91,11 @@ bool SmtpService::Sink::transmitMessages(const QMailMessageIdList &ids)
         emit messagesFailedTransmission(failedMessages, QMailServiceAction::Status::ErrInvalidAddress);
     }
 
-    QMailAccount account(_service->accountId());
-    if (messageQueued || (account.customField("qmf-smtp-capabilities-listed") != "true")) {
-        // At least one message could be queued for sending
-        // or the smtp server capabilities (e.g. forward without download capable) are not known
-        _service->_client.newConnection();
-    } else {
-        // No messages to send, so sending completed successfully
-        QTimer::singleShot(0, this, SLOT(sendCompleted()));
-    }
-    return true;
+    // Open new connection, even if there's no messages queued for transmission, client might
+    // want to test the connection or the smtp server capabilities
+    // (e.g. forward without download capable) are not known
+     _service->_client.newConnection();
+     return true;
 }
 
 void SmtpService::Sink::messageTransmitted(const QMailMessageId &id)

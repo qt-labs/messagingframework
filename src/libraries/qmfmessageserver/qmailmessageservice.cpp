@@ -1261,6 +1261,9 @@ QMailMessageSink::~QMailMessageSink()
 
     Messages for which for which an unsuccessful attempt to transmit has been made should be progressively reported via messagesFailedTransmission().
 
+    If \a ids is an empty list, the sink should still proceed through all the steps necessary when transmitting messages,
+    as this action may be invoked to test the viability of the connection.
+
     Return true if an operation is initiated.
 */
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids)
