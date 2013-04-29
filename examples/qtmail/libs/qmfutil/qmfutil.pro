@@ -1,10 +1,14 @@
 TEMPLATE = lib 
 CONFIG += warn_on
 CONFIG += qmfclient
-equals(QT_MAJOR_VERSION, 4): TARGET = qmfutil
+equals(QT_MAJOR_VERSION, 4) {
+    TARGET = qmfutil
+    LIBS += -lqmfclient
+}
 equals(QT_MAJOR_VERSION, 5){
     TARGET = qmfutil5
     QT += widgets
+    LIBS += -lqmfclient5
 }
 target.path += $$QMF_INSTALL_ROOT/lib
 

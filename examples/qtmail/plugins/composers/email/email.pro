@@ -2,10 +2,14 @@ TEMPLATE = lib
 TARGET = emailcomposer 
 CONFIG += qmfclient qmfutil plugin
 
-equals(QT_MAJOR_VERSION, 4): target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/composers
+equals(QT_MAJOR_VERSION, 4) {
+    target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/composers
+    LIBS += -lqmfclient -lqmfutil
+}
 equals(QT_MAJOR_VERSION, 5) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/composers
     QT += widgets
+    LIBS += -lqmfclient5 -lqmfutil5
 }
 
 DEFINES += PLUGIN_INTERNAL

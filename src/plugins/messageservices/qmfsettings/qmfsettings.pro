@@ -2,8 +2,14 @@ TEMPLATE = lib
 TARGET = qmfsettings
 CONFIG += qmfclient qmfmessageserver plugin
 
-equals(QT_MAJOR_VERSION, 4): target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
-equals(QT_MAJOR_VERSION, 5): target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+equals(QT_MAJOR_VERSION, 4) {
+    target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
+    LIBS += -lqmfclient -lqmfmessageserver
+}
+equals(QT_MAJOR_VERSION, 5) {
+    target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+    LIBS += -lqmfclient5 -lqmfmessageserver5
+}
 
 QT = core network
 
