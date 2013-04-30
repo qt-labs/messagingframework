@@ -1,0 +1,1262 @@
+<testdefinition version="0.1">
+  <suite name="libqmf-tests">
+    <description />
+    <set name="_usr_tests_qmf_tst_qmailmessage">
+      <description>libqmf-tests:tst_qmailmessage</description>
+      <case name="tst_qmailmessage-toRfc2822">
+        <description>libqmf-tests:tst_qmailmessage:toRfc2822</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage toRfc2822</step>
+      </case>
+      <case name="tst_qmailmessage-fromRfc2822">
+        <description>libqmf-tests:tst_qmailmessage:fromRfc2822</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage fromRfc2822</step>
+      </case>
+      <case name="tst_qmailmessage-id">
+        <description>libqmf-tests:tst_qmailmessage:id</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage id</step>
+      </case>
+      <case name="tst_qmailmessage-setId">
+        <description>libqmf-tests:tst_qmailmessage:setId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setId</step>
+      </case>
+      <case name="tst_qmailmessage-parentFolderId">
+        <description>libqmf-tests:tst_qmailmessage:parentFolderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage parentFolderId</step>
+      </case>
+      <case name="tst_qmailmessage-setParentFolderId">
+        <description>libqmf-tests:tst_qmailmessage:setParentFolderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setParentFolderId</step>
+      </case>
+      <case name="tst_qmailmessage-messageType">
+        <description>libqmf-tests:tst_qmailmessage:messageType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage messageType</step>
+      </case>
+      <case name="tst_qmailmessage-setMessageType">
+        <description>libqmf-tests:tst_qmailmessage:setMessageType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setMessageType</step>
+      </case>
+      <case name="tst_qmailmessage-setFrom">
+        <description>libqmf-tests:tst_qmailmessage:setFrom</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setFrom</step>
+      </case>
+      <case name="tst_qmailmessage-from">
+        <description>libqmf-tests:tst_qmailmessage:from</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage from</step>
+      </case>
+      <case name="tst_qmailmessage-subject">
+        <description>libqmf-tests:tst_qmailmessage:subject</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage subject</step>
+      </case>
+      <case name="tst_qmailmessage-setSubject">
+        <description>libqmf-tests:tst_qmailmessage:setSubject</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setSubject</step>
+      </case>
+      <case name="tst_qmailmessage-date">
+        <description>libqmf-tests:tst_qmailmessage:date</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage date</step>
+      </case>
+      <case name="tst_qmailmessage-setDate">
+        <description>libqmf-tests:tst_qmailmessage:setDate</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setDate</step>
+      </case>
+      <case name="tst_qmailmessage-to">
+        <description>libqmf-tests:tst_qmailmessage:to</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage to</step>
+      </case>
+      <case name="tst_qmailmessage-setTo">
+        <description>libqmf-tests:tst_qmailmessage:setTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setTo</step>
+      </case>
+      <case name="tst_qmailmessage-cc">
+        <description>libqmf-tests:tst_qmailmessage:cc</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage cc</step>
+      </case>
+      <case name="tst_qmailmessage-setCc">
+        <description>libqmf-tests:tst_qmailmessage:setCc</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setCc</step>
+      </case>
+      <case name="tst_qmailmessage-bcc">
+        <description>libqmf-tests:tst_qmailmessage:bcc</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage bcc</step>
+      </case>
+      <case name="tst_qmailmessage-setBcc">
+        <description>libqmf-tests:tst_qmailmessage:setBcc</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setBcc</step>
+      </case>
+      <case name="tst_qmailmessage-recipients">
+        <description>libqmf-tests:tst_qmailmessage:recipients</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage recipients</step>
+      </case>
+      <case name="tst_qmailmessage-hasRecipients">
+        <description>libqmf-tests:tst_qmailmessage:hasRecipients</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage hasRecipients</step>
+      </case>
+      <case name="tst_qmailmessage-replyTo">
+        <description>libqmf-tests:tst_qmailmessage:replyTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage replyTo</step>
+      </case>
+      <case name="tst_qmailmessage-setReplyTo">
+        <description>libqmf-tests:tst_qmailmessage:setReplyTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setReplyTo</step>
+      </case>
+      <case name="tst_qmailmessage-inReplyTo">
+        <description>libqmf-tests:tst_qmailmessage:inReplyTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage inReplyTo</step>
+      </case>
+      <case name="tst_qmailmessage-setInReplyTo">
+        <description>libqmf-tests:tst_qmailmessage:setInReplyTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setInReplyTo</step>
+      </case>
+      <case name="tst_qmailmessage-serverUid">
+        <description>libqmf-tests:tst_qmailmessage:serverUid</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage serverUid</step>
+      </case>
+      <case name="tst_qmailmessage-setServerUid">
+        <description>libqmf-tests:tst_qmailmessage:setServerUid</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage setServerUid</step>
+      </case>
+      <case name="tst_qmailmessage-multiMultipart">
+        <description>libqmf-tests:tst_qmailmessage:multiMultipart</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage multiMultipart</step>
+      </case>
+      <case name="tst_qmailmessage-copyAndAssign">
+        <description>libqmf-tests:tst_qmailmessage:copyAndAssign</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessage copyAndAssign</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qprivateimplementation">
+      <description>libqmf-tests:tst_qprivateimplementation</description>
+      <case name="tst_qprivateimplementation-basicTest">
+        <description>libqmf-tests:tst_qprivateimplementation:basicTest</description>
+        <step>/usr/tests/qmf-qt5/tst_qprivateimplementation basicTest</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailmessagepart">
+      <description>libqmf-tests:tst_qmailmessagepart</description>
+      <case name="tst_qmailmessagepart-contentID">
+        <description>libqmf-tests:tst_qmailmessagepart:contentID</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart contentID</step>
+      </case>
+      <case name="tst_qmailmessagepart-setContentID">
+        <description>libqmf-tests:tst_qmailmessagepart:setContentID</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setContentID</step>
+      </case>
+      <case name="tst_qmailmessagepart-contentLocation">
+        <description>libqmf-tests:tst_qmailmessagepart:contentLocation</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart contentLocation</step>
+      </case>
+      <case name="tst_qmailmessagepart-setContentLocation">
+        <description>libqmf-tests:tst_qmailmessagepart:setContentLocation</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setContentLocation</step>
+      </case>
+      <case name="tst_qmailmessagepart-contentDescription">
+        <description>libqmf-tests:tst_qmailmessagepart:contentDescription</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart contentDescription</step>
+      </case>
+      <case name="tst_qmailmessagepart-setContentDescription">
+        <description>libqmf-tests:tst_qmailmessagepart:setContentDescription</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setContentDescription</step>
+      </case>
+      <case name="tst_qmailmessagepart-contentDisposition">
+        <description>libqmf-tests:tst_qmailmessagepart:contentDisposition</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart contentDisposition</step>
+      </case>
+      <case name="tst_qmailmessagepart-setContentDisposition">
+        <description>libqmf-tests:tst_qmailmessagepart:setContentDisposition</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setContentDisposition</step>
+      </case>
+      <case name="tst_qmailmessagepart-contentLanguage">
+        <description>libqmf-tests:tst_qmailmessagepart:contentLanguage</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart contentLanguage</step>
+      </case>
+      <case name="tst_qmailmessagepart-setContentLanguage">
+        <description>libqmf-tests:tst_qmailmessagepart:setContentLanguage</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setContentLanguage</step>
+      </case>
+      <case name="tst_qmailmessagepart-headerField">
+        <description>libqmf-tests:tst_qmailmessagepart:headerField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart headerField</step>
+      </case>
+      <case name="tst_qmailmessagepart-headerFieldText">
+        <description>libqmf-tests:tst_qmailmessagepart:headerFieldText</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart headerFieldText</step>
+      </case>
+      <case name="tst_qmailmessagepart-headerFields">
+        <description>libqmf-tests:tst_qmailmessagepart:headerFields</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart headerFields</step>
+      </case>
+      <case name="tst_qmailmessagepart-headerFieldsText">
+        <description>libqmf-tests:tst_qmailmessagepart:headerFieldsText</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart headerFieldsText</step>
+      </case>
+      <case name="tst_qmailmessagepart-setHeaderField">
+        <description>libqmf-tests:tst_qmailmessagepart:setHeaderField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart setHeaderField</step>
+      </case>
+      <case name="tst_qmailmessagepart-appendHeaderField">
+        <description>libqmf-tests:tst_qmailmessagepart:appendHeaderField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart appendHeaderField</step>
+      </case>
+      <case name="tst_qmailmessagepart-removeHeaderField">
+        <description>libqmf-tests:tst_qmailmessagepart:removeHeaderField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart removeHeaderField</step>
+      </case>
+      <case name="tst_qmailmessagepart-testSerialization">
+        <description>libqmf-tests:tst_qmailmessagepart:testSerialization</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagepart testSerialization</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailmessagebody">
+      <description>libqmf-tests:tst_qmailmessagebody</description>
+      <case name="tst_qmailmessagebody-fromQByteArray">
+        <description>libqmf-tests:tst_qmailmessagebody:fromQByteArray</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagebody fromQByteArray</step>
+      </case>
+      <case name="tst_qmailmessagebody-fromQString">
+        <description>libqmf-tests:tst_qmailmessagebody:fromQString</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagebody fromQString</step>
+      </case>
+      <case name="tst_qmailmessagebody-fromFile">
+        <description>libqmf-tests:tst_qmailmessagebody:fromFile</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagebody fromFile</step>
+      </case>
+      <case name="tst_qmailmessagebody-toFile">
+        <description>libqmf-tests:tst_qmailmessagebody:toFile</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessagebody toFile</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailcodec">
+      <description>libqmf-tests:tst_qmailcodec</description>
+      <case name="tst_qmailcodec-encode">
+        <description>libqmf-tests:tst_qmailcodec:encode</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailcodec encode</step>
+      </case>
+      <case name="tst_qmailcodec-decode">
+        <description>libqmf-tests:tst_qmailcodec:decode</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailcodec decode</step>
+      </case>
+      <case name="tst_qmailcodec-line_lengths">
+        <description>libqmf-tests:tst_qmailcodec:line_lengths</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailcodec line_lengths</step>
+      </case>
+      <case name="tst_qmailcodec-buffer_sizes">
+        <description>libqmf-tests:tst_qmailcodec:buffer_sizes</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailcodec buffer_sizes</step>
+      </case>
+      <case name="tst_qmailcodec-embedded_newlines">
+        <description>libqmf-tests:tst_qmailcodec:embedded_newlines</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailcodec embedded_newlines</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailmessageheader">
+      <description>libqmf-tests:tst_qmailmessageheader</description>
+      <case name="tst_qmailmessageheader-">
+        <description>libqmf-tests:tst_qmailmessageheader:</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailmessageheader </step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qlogsystem">
+      <description>libqmf-tests:tst_qlogsystem</description>
+      <case name="tst_qlogsystem-loggerConstruction">
+        <description>libqmf-tests:tst_qlogsystem:loggerConstruction</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem loggerConstruction</step>
+      </case>
+      <case name="tst_qlogsystem-minLogLvl">
+        <description>libqmf-tests:tst_qlogsystem:minLogLvl</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem minLogLvl</step>
+      </case>
+      <case name="tst_qlogsystem-loggerOutput">
+        <description>libqmf-tests:tst_qlogsystem:loggerOutput</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem loggerOutput</step>
+      </case>
+      <case name="tst_qlogsystem-qDebugOutput">
+        <description>libqmf-tests:tst_qlogsystem:qDebugOutput</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem qDebugOutput</step>
+      </case>
+      <case name="tst_qlogsystem-qWarningOutput">
+        <description>libqmf-tests:tst_qlogsystem:qWarningOutput</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem qWarningOutput</step>
+      </case>
+      <case name="tst_qlogsystem-sysLoggerOutput">
+        <description>libqmf-tests:tst_qlogsystem:sysLoggerOutput</description>
+        <step>/usr/tests/qmf-qt5/tst_qlogsystem sysLoggerOutput</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailstore">
+      <description>libqmf-tests:tst_qmailstore</description>
+      <case name="tst_qmailstore-addAccount">
+        <description>libqmf-tests:tst_qmailstore:addAccount</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore addAccount</step>
+      </case>
+      <case name="tst_qmailstore-addFolder">
+        <description>libqmf-tests:tst_qmailstore:addFolder</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore addFolder</step>
+      </case>
+      <case name="tst_qmailstore-addMessage">
+        <description>libqmf-tests:tst_qmailstore:addMessage</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore addMessage</step>
+      </case>
+      <case name="tst_qmailstore-addMessages">
+        <description>libqmf-tests:tst_qmailstore:addMessages</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore addMessages</step>
+      </case>
+      <case name="tst_qmailstore-addMessages2">
+        <description>libqmf-tests:tst_qmailstore:addMessages2</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore addMessages2</step>
+      </case>
+      <case name="tst_qmailstore-updateAccount">
+        <description>libqmf-tests:tst_qmailstore:updateAccount</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore updateAccount</step>
+      </case>
+      <case name="tst_qmailstore-updateFolder">
+        <description>libqmf-tests:tst_qmailstore:updateFolder</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore updateFolder</step>
+      </case>
+      <case name="tst_qmailstore-updateMessage">
+        <description>libqmf-tests:tst_qmailstore:updateMessage</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore updateMessage</step>
+      </case>
+      <case name="tst_qmailstore-updateMessages">
+        <description>libqmf-tests:tst_qmailstore:updateMessages</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore updateMessages</step>
+      </case>
+      <case name="tst_qmailstore-removeAccount">
+        <description>libqmf-tests:tst_qmailstore:removeAccount</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore removeAccount</step>
+      </case>
+      <case name="tst_qmailstore-removeFolder">
+        <description>libqmf-tests:tst_qmailstore:removeFolder</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore removeFolder</step>
+      </case>
+      <case name="tst_qmailstore-removeMessage">
+        <description>libqmf-tests:tst_qmailstore:removeMessage</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore removeMessage</step>
+      </case>
+      <!-- This is too long test case, usually terminated by timeout.
+      <case name="tst_qmailstore-remove1000Messages">
+        <description>libqmf-tests:tst_qmailstore:remove1000Messages</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore remove1000Messages</step>
+      </case>
+      -->
+      <case name="tst_qmailstore-removeMessageWithInResponse">
+        <description>libqmf-tests:tst_qmailstore:removeMessageWithInResponse</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstore removeMessageWithInResponse</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_longstring">
+      <description>libqmf-tests:tst_longstring</description>
+      <case name="tst_longstring-indexOf">
+        <description>libqmf-tests:tst_longstring:indexOf</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring indexOf</step>
+      </case>
+      <case name="tst_longstring-left">
+        <description>libqmf-tests:tst_longstring:left</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring left</step>
+      </case>
+      <case name="tst_longstring-right">
+        <description>libqmf-tests:tst_longstring:right</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring right</step>
+      </case>
+      <case name="tst_longstring-mid">
+        <description>libqmf-tests:tst_longstring:mid</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring mid</step>
+      </case>
+      <case name="tst_longstring-length">
+        <description>libqmf-tests:tst_longstring:length</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring length</step>
+      </case>
+      <case name="tst_longstring-isEmpty">
+        <description>libqmf-tests:tst_longstring:isEmpty</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring isEmpty</step>
+      </case>
+      <case name="tst_longstring-toQByteArray">
+        <description>libqmf-tests:tst_longstring:toQByteArray</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring toQByteArray</step>
+      </case>
+      <case name="tst_longstring-dataStream">
+        <description>libqmf-tests:tst_longstring:dataStream</description>
+        <step>/usr/tests/qmf-qt5/tst_longstring dataStream</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_python_email">
+      <description>libqmf-tests:tst_python_email</description>
+      <case name="tst_python_email-test_get_all">
+        <description>libqmf-tests:tst_python_email:test_get_all</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_all</step>
+      </case>
+      <case name="tst_python_email-test_get_charsets">
+        <description>libqmf-tests:tst_python_email:test_get_charsets</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_charsets</step>
+      </case>
+      <case name="tst_python_email-test_get_filename">
+        <description>libqmf-tests:tst_python_email:test_get_filename</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_filename</step>
+      </case>
+      <case name="tst_python_email-test_get_filename_with_name_parameter">
+        <description>libqmf-tests:tst_python_email:test_get_filename_with_name_parameter</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_filename_with_name_parameter</step>
+      </case>
+      <case name="tst_python_email-test_get_boundary">
+        <description>libqmf-tests:tst_python_email:test_get_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_boundary</step>
+      </case>
+      <case name="tst_python_email-test_set_boundary">
+        <description>libqmf-tests:tst_python_email:test_set_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_set_boundary</step>
+      </case>
+      <case name="tst_python_email-test_get_decoded_payload">
+        <description>libqmf-tests:tst_python_email:test_get_decoded_payload</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_decoded_payload</step>
+      </case>
+      <case name="tst_python_email-test_decoded_generator">
+        <description>libqmf-tests:tst_python_email:test_decoded_generator</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_decoded_generator</step>
+      </case>
+      <case name="tst_python_email-test_as_string">
+        <description>libqmf-tests:tst_python_email:test_as_string</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_as_string</step>
+      </case>
+      <case name="tst_python_email-test_get_params">
+        <description>libqmf-tests:tst_python_email:test_get_params</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_params</step>
+      </case>
+      <case name="tst_python_email-test_get_param_liberal">
+        <description>libqmf-tests:tst_python_email:test_get_param_liberal</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_param_liberal</step>
+      </case>
+      <case name="tst_python_email-test_get_param">
+        <description>libqmf-tests:tst_python_email:test_get_param</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_param</step>
+      </case>
+      <case name="tst_python_email-test_get_param_funky_continuation_lines">
+        <description>libqmf-tests:tst_python_email:test_get_param_funky_continuation_lines</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_param_funky_continuation_lines</step>
+      </case>
+      <case name="tst_python_email-test_get_param_with_semis_in_quotes">
+        <description>libqmf-tests:tst_python_email:test_get_param_with_semis_in_quotes</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_param_with_semis_in_quotes</step>
+      </case>
+      <case name="tst_python_email-test_has_key">
+        <description>libqmf-tests:tst_python_email:test_has_key</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_has_key</step>
+      </case>
+      <case name="tst_python_email-test_del_param">
+        <description>libqmf-tests:tst_python_email:test_del_param</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_del_param</step>
+      </case>
+      <case name="tst_python_email-test_get_content_type_from_message_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_type_from_message_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_type_from_message_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_type_from_message_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_type_from_message_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_type_from_message_explicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_type_from_message_text_plain_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_type_from_message_text_plain_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_type_from_message_text_plain_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_type_from_message_text_plain_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_type_from_message_text_plain_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_type_from_message_text_plain_explicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_maintype_from_message_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_maintype_from_message_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_maintype_from_message_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_maintype_from_message_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_maintype_from_message_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_maintype_from_message_explicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_maintype_from_message_text_plain_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_maintype_from_message_text_plain_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_maintype_from_message_text_plain_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_maintype_from_message_text_plain_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_maintype_from_message_text_plain_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_maintype_from_message_text_plain_explicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_subtype_from_message_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_subtype_from_message_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_subtype_from_message_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_subtype_from_message_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_subtype_from_message_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_subtype_from_message_explicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_subtype_from_message_text_plain_implicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_subtype_from_message_text_plain_implicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_subtype_from_message_text_plain_implicit</step>
+      </case>
+      <case name="tst_python_email-test_get_content_subtype_from_message_text_plain_explicit">
+        <description>libqmf-tests:tst_python_email:test_get_content_subtype_from_message_text_plain_explicit</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_get_content_subtype_from_message_text_plain_explicit</step>
+      </case>
+      <case name="tst_python_email-test_replace_header">
+        <description>libqmf-tests:tst_python_email:test_replace_header</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_replace_header</step>
+      </case>
+      <case name="tst_python_email-test_broken_base64_payload">
+        <description>libqmf-tests:tst_python_email:test_broken_base64_payload</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_broken_base64_payload</step>
+      </case>
+      <case name="tst_python_email-test_default_cte">
+        <description>libqmf-tests:tst_python_email:test_default_cte</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_default_cte</step>
+      </case>
+      <case name="tst_python_email-test_long_nonstring">
+        <description>libqmf-tests:tst_python_email:test_long_nonstring</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_nonstring</step>
+      </case>
+      <case name="tst_python_email-test_long_header_encode">
+        <description>libqmf-tests:tst_python_email:test_long_header_encode</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_header_encode</step>
+      </case>
+      <case name="tst_python_email-test_no_semis_header_splitter">
+        <description>libqmf-tests:tst_python_email:test_no_semis_header_splitter</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_no_semis_header_splitter</step>
+      </case>
+      <case name="tst_python_email-test_splitting_multiple_long_lines">
+        <description>libqmf-tests:tst_python_email:test_splitting_multiple_long_lines</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_splitting_multiple_long_lines</step>
+      </case>
+      <case name="tst_python_email-test_splitting_first_line_only_is_long">
+        <description>libqmf-tests:tst_python_email:test_splitting_first_line_only_is_long</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_splitting_first_line_only_is_long</step>
+      </case>
+      <case name="tst_python_email-test_long_8bit_header">
+        <description>libqmf-tests:tst_python_email:test_long_8bit_header</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_8bit_header</step>
+      </case>
+      <case name="tst_python_email-test_long_to_header">
+        <description>libqmf-tests:tst_python_email:test_long_to_header</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_to_header</step>
+      </case>
+      <case name="tst_python_email-test_long_field_name">
+        <description>libqmf-tests:tst_python_email:test_long_field_name</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_field_name</step>
+      </case>
+      <case name="tst_python_email-test_string_headerinst_eq">
+        <description>libqmf-tests:tst_python_email:test_string_headerinst_eq</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_string_headerinst_eq</step>
+      </case>
+      <case name="tst_python_email-test_another_long_multiline_header">
+        <description>libqmf-tests:tst_python_email:test_another_long_multiline_header</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_another_long_multiline_header</step>
+      </case>
+      <case name="tst_python_email-test_long_lines_with_different_header">
+        <description>libqmf-tests:tst_python_email:test_long_lines_with_different_header</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_long_lines_with_different_header</step>
+      </case>
+      <case name="tst_python_email-TestMIMEAudio">
+        <description>libqmf-tests:tst_python_email:TestMIMEAudio</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email TestMIMEAudio</step>
+      </case>
+      <case name="tst_python_email-TestMIMEImage">
+        <description>libqmf-tests:tst_python_email:TestMIMEImage</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email TestMIMEImage</step>
+      </case>
+      <case name="tst_python_email-test_hierarchy">
+        <description>libqmf-tests:tst_python_email:test_hierarchy</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_hierarchy</step>
+      </case>
+      <case name="tst_python_email-test_empty_multipart_idempotent">
+        <description>libqmf-tests:tst_python_email:test_empty_multipart_idempotent</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_empty_multipart_idempotent</step>
+      </case>
+      <case name="tst_python_email-test_no_parts_in_a_multipart_with_none_epilogue">
+        <description>libqmf-tests:tst_python_email:test_no_parts_in_a_multipart_with_none_epilogue</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_no_parts_in_a_multipart_with_none_epilogue</step>
+      </case>
+      <case name="tst_python_email-test_no_parts_in_a_multipart_with_empty_epilogue">
+        <description>libqmf-tests:tst_python_email:test_no_parts_in_a_multipart_with_empty_epilogue</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_no_parts_in_a_multipart_with_empty_epilogue</step>
+      </case>
+      <case name="tst_python_email-test_one_part_in_a_multipart">
+        <description>libqmf-tests:tst_python_email:test_one_part_in_a_multipart</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_one_part_in_a_multipart</step>
+      </case>
+      <case name="tst_python_email-test_message_external_body">
+        <description>libqmf-tests:tst_python_email:test_message_external_body</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_message_external_body</step>
+      </case>
+      <case name="tst_python_email-test_double_boundary">
+        <description>libqmf-tests:tst_python_email:test_double_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_double_boundary</step>
+      </case>
+      <case name="tst_python_email-test_nested_inner_contains_outer_boundary">
+        <description>libqmf-tests:tst_python_email:test_nested_inner_contains_outer_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_nested_inner_contains_outer_boundary</step>
+      </case>
+      <case name="tst_python_email-test_nested_with_same_boundary">
+        <description>libqmf-tests:tst_python_email:test_nested_with_same_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_nested_with_same_boundary</step>
+      </case>
+      <case name="tst_python_email-test_boundary_in_non_multipart">
+        <description>libqmf-tests:tst_python_email:test_boundary_in_non_multipart</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_boundary_in_non_multipart</step>
+      </case>
+      <case name="tst_python_email-test_boundary_with_leading_space">
+        <description>libqmf-tests:tst_python_email:test_boundary_with_leading_space</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_boundary_with_leading_space</step>
+      </case>
+      <case name="tst_python_email-test_boundary_without_trailing_newline">
+        <description>libqmf-tests:tst_python_email:test_boundary_without_trailing_newline</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_boundary_without_trailing_newline</step>
+      </case>
+      <case name="tst_python_email-test_parse_missing_minor_type">
+        <description>libqmf-tests:tst_python_email:test_parse_missing_minor_type</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_parse_missing_minor_type</step>
+      </case>
+      <case name="tst_python_email-test_same_boundary_inner_outer">
+        <description>libqmf-tests:tst_python_email:test_same_boundary_inner_outer</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_same_boundary_inner_outer</step>
+      </case>
+      <case name="tst_python_email-test_multipart_no_boundary">
+        <description>libqmf-tests:tst_python_email:test_multipart_no_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_multipart_no_boundary</step>
+      </case>
+      <case name="tst_python_email-test_invalid_content_type">
+        <description>libqmf-tests:tst_python_email:test_invalid_content_type</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_invalid_content_type</step>
+      </case>
+      <case name="tst_python_email-test_no_start_boundary">
+        <description>libqmf-tests:tst_python_email:test_no_start_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_no_start_boundary</step>
+      </case>
+      <case name="tst_python_email-test_no_separating_blank_line">
+        <description>libqmf-tests:tst_python_email:test_no_separating_blank_line</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_no_separating_blank_line</step>
+      </case>
+      <case name="tst_python_email-test_lying_multipart">
+        <description>libqmf-tests:tst_python_email:test_lying_multipart</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_lying_multipart</step>
+      </case>
+      <case name="tst_python_email-test_missing_start_boundary">
+        <description>libqmf-tests:tst_python_email:test_missing_start_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_missing_start_boundary</step>
+      </case>
+      <case name="tst_python_email-test_whitespace_eater_unicode">
+        <description>libqmf-tests:tst_python_email:test_whitespace_eater_unicode</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_whitespace_eater_unicode</step>
+      </case>
+      <case name="tst_python_email-test_whitespace_eater_unicode_2">
+        <description>libqmf-tests:tst_python_email:test_whitespace_eater_unicode_2</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_whitespace_eater_unicode_2</step>
+      </case>
+      <case name="tst_python_email-test_rfc2047_without_whitespace">
+        <description>libqmf-tests:tst_python_email:test_rfc2047_without_whitespace</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2047_without_whitespace</step>
+      </case>
+      <case name="tst_python_email-test_rfc2047_with_whitespace">
+        <description>libqmf-tests:tst_python_email:test_rfc2047_with_whitespace</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2047_with_whitespace</step>
+      </case>
+      <case name="tst_python_email-test_generate">
+        <description>libqmf-tests:tst_python_email:test_generate</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_generate</step>
+      </case>
+      <case name="tst_python_email-test_parse_message_rfc822">
+        <description>libqmf-tests:tst_python_email:test_parse_message_rfc822</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_parse_message_rfc822</step>
+      </case>
+      <case name="tst_python_email-test_dsn">
+        <description>libqmf-tests:tst_python_email:test_dsn</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_dsn</step>
+      </case>
+      <case name="tst_python_email-test_epilogue">
+        <description>libqmf-tests:tst_python_email:test_epilogue</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_epilogue</step>
+      </case>
+      <case name="tst_python_email-test_default_type">
+        <description>libqmf-tests:tst_python_email:test_default_type</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_default_type</step>
+      </case>
+      <case name="tst_python_email-test_default_type_with_explicit_container_type">
+        <description>libqmf-tests:tst_python_email:test_default_type_with_explicit_container_type</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_default_type_with_explicit_container_type</step>
+      </case>
+      <case name="tst_python_email-TestIdempotent">
+        <description>libqmf-tests:tst_python_email:TestIdempotent</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email TestIdempotent</step>
+      </case>
+      <case name="tst_python_email-test_crlf_separation">
+        <description>libqmf-tests:tst_python_email:test_crlf_separation</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_crlf_separation</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_get_param">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_get_param</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_get_param</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_set_param">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_set_param</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_set_param</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_no_language_or_charset">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_no_language_or_charset</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_no_language_or_charset_in_filename">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_filename</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_no_language_or_charset_in_filename</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_partly_encoded">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_partly_encoded</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_partly_encoded</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_no_language_or_charset_in_boundary">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_boundary</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_no_language_or_charset_in_boundary</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_no_language_or_charset_in_charset">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_no_language_or_charset_in_charset</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_no_language_or_charset_in_charset</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_bad_encoding_in_filename">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_bad_encoding_in_filename</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_bad_encoding_in_filename</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_bad_encoding_in_charset">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_bad_encoding_in_charset</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_bad_encoding_in_charset</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_bad_character_in_charset">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_bad_character_in_charset</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_bad_character_in_charset</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_bad_character_in_filename">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_bad_character_in_filename</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_bad_character_in_filename</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_single_tick_in_filename_extended">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_single_tick_in_filename_extended</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_single_tick_in_filename_extended</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_tick_attack_extended">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_tick_attack_extended</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_tick_attack_extended</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_no_extended_values">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_no_extended_values</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_no_extended_values</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_encoded_then_unencoded_segments">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_encoded_then_unencoded_segments</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_encoded_then_unencoded_segments</step>
+      </case>
+      <case name="tst_python_email-test_rfc2231_unencoded_then_encoded_segments">
+        <description>libqmf-tests:tst_python_email:test_rfc2231_unencoded_then_encoded_segments</description>
+        <step>/usr/tests/qmf-qt5/tst_python_email test_rfc2231_unencoded_then_encoded_segments</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailaddress">
+      <description>libqmf-tests:tst_qmailaddress</description>
+      <case name="tst_qmailaddress-constructor1">
+        <description>libqmf-tests:tst_qmailaddress:constructor1</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress constructor1</step>
+      </case>
+      <case name="tst_qmailaddress-constructor2">
+        <description>libqmf-tests:tst_qmailaddress:constructor2</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress constructor2</step>
+      </case>
+      <case name="tst_qmailaddress-name">
+        <description>libqmf-tests:tst_qmailaddress:name</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress name</step>
+      </case>
+      <case name="tst_qmailaddress-address">
+        <description>libqmf-tests:tst_qmailaddress:address</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress address</step>
+      </case>
+      <case name="tst_qmailaddress-isGroup">
+        <description>libqmf-tests:tst_qmailaddress:isGroup</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress isGroup</step>
+      </case>
+      <case name="tst_qmailaddress-groupMembers">
+        <description>libqmf-tests:tst_qmailaddress:groupMembers</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress groupMembers</step>
+      </case>
+      <case name="tst_qmailaddress-notGroup">
+        <description>libqmf-tests:tst_qmailaddress:notGroup</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress notGroup</step>
+      </case>
+      <case name="tst_qmailaddress-toString">
+        <description>libqmf-tests:tst_qmailaddress:toString</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress toString</step>
+      </case>
+      <case name="tst_qmailaddress-isPhoneNumber">
+        <description>libqmf-tests:tst_qmailaddress:isPhoneNumber</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress isPhoneNumber</step>
+      </case>
+      <case name="tst_qmailaddress-isEmailAddress">
+        <description>libqmf-tests:tst_qmailaddress:isEmailAddress</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress isEmailAddress</step>
+      </case>
+      <case name="tst_qmailaddress-toStringList">
+        <description>libqmf-tests:tst_qmailaddress:toStringList</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress toStringList</step>
+      </case>
+      <case name="tst_qmailaddress-fromStringList1">
+        <description>libqmf-tests:tst_qmailaddress:fromStringList1</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress fromStringList1</step>
+      </case>
+      <case name="tst_qmailaddress-fromStringList2">
+        <description>libqmf-tests:tst_qmailaddress:fromStringList2</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress fromStringList2</step>
+      </case>
+      <case name="tst_qmailaddress-removeComments">
+        <description>libqmf-tests:tst_qmailaddress:removeComments</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress removeComments</step>
+      </case>
+      <case name="tst_qmailaddress-removeWhitespace">
+        <description>libqmf-tests:tst_qmailaddress:removeWhitespace</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaddress removeWhitespace</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailstorekeys">
+      <description>libqmf-tests:tst_qmailstorekeys</description>
+      <case name="tst_qmailstorekeys-simpleKeys">
+        <description>libqmf-tests:tst_qmailstorekeys:simpleKeys</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys simpleKeys</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountId">
+        <description>libqmf-tests:tst_qmailstorekeys:accountId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountId</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountName">
+        <description>libqmf-tests:tst_qmailstorekeys:accountName</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountName</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountMessageType">
+        <description>libqmf-tests:tst_qmailstorekeys:accountMessageType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountMessageType</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountFromAddress">
+        <description>libqmf-tests:tst_qmailstorekeys:accountFromAddress</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountFromAddress</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountStatus">
+        <description>libqmf-tests:tst_qmailstorekeys:accountStatus</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountStatus</step>
+      </case>
+      <case name="tst_qmailstorekeys-accountCustomField">
+        <description>libqmf-tests:tst_qmailstorekeys:accountCustomField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys accountCustomField</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderId">
+        <description>libqmf-tests:tst_qmailstorekeys:folderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderId</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderPath">
+        <description>libqmf-tests:tst_qmailstorekeys:folderPath</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderPath</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderParentFolderId">
+        <description>libqmf-tests:tst_qmailstorekeys:folderParentFolderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderParentFolderId</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderParentAccountId">
+        <description>libqmf-tests:tst_qmailstorekeys:folderParentAccountId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderParentAccountId</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderDisplayName">
+        <description>libqmf-tests:tst_qmailstorekeys:folderDisplayName</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderDisplayName</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderStatus">
+        <description>libqmf-tests:tst_qmailstorekeys:folderStatus</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderStatus</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderAncestorFolderIds">
+        <description>libqmf-tests:tst_qmailstorekeys:folderAncestorFolderIds</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderAncestorFolderIds</step>
+      </case>
+      <case name="tst_qmailstorekeys-folderCustomField">
+        <description>libqmf-tests:tst_qmailstorekeys:folderCustomField</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys folderCustomField</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageId">
+        <description>libqmf-tests:tst_qmailstorekeys:messageId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageId</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageType">
+        <description>libqmf-tests:tst_qmailstorekeys:messageType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageType</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageParentFolderId">
+        <description>libqmf-tests:tst_qmailstorekeys:messageParentFolderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageParentFolderId</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageSender">
+        <description>libqmf-tests:tst_qmailstorekeys:messageSender</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageSender</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageRecipients">
+        <description>libqmf-tests:tst_qmailstorekeys:messageRecipients</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageRecipients</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageSubject">
+        <description>libqmf-tests:tst_qmailstorekeys:messageSubject</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageSubject</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageTimeStamp">
+        <description>libqmf-tests:tst_qmailstorekeys:messageTimeStamp</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageTimeStamp</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageReceptionTimeStamp">
+        <description>libqmf-tests:tst_qmailstorekeys:messageReceptionTimeStamp</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageReceptionTimeStamp</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageStatus">
+        <description>libqmf-tests:tst_qmailstorekeys:messageStatus</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageStatus</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageConversation">
+        <description>libqmf-tests:tst_qmailstorekeys:messageConversation</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageConversation</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageServerUid">
+        <description>libqmf-tests:tst_qmailstorekeys:messageServerUid</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageServerUid</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageSize">
+        <description>libqmf-tests:tst_qmailstorekeys:messageSize</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageSize</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageParentAccountId">
+        <description>libqmf-tests:tst_qmailstorekeys:messageParentAccountId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageParentAccountId</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageAncestorFolderIds">
+        <description>libqmf-tests:tst_qmailstorekeys:messageAncestorFolderIds</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageAncestorFolderIds</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageContentType">
+        <description>libqmf-tests:tst_qmailstorekeys:messageContentType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageContentType</step>
+      </case>
+      <case name="tst_qmailstorekeys-messagePreviousParentFolderId">
+        <description>libqmf-tests:tst_qmailstorekeys:messagePreviousParentFolderId</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messagePreviousParentFolderId</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageInResponseTo">
+        <description>libqmf-tests:tst_qmailstorekeys:messageInResponseTo</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageInResponseTo</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageResponseType">
+        <description>libqmf-tests:tst_qmailstorekeys:messageResponseType</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageResponseType</step>
+      </case>
+      <case name="tst_qmailstorekeys-messageCustom">
+        <description>libqmf-tests:tst_qmailstorekeys:messageCustom</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys messageCustom</step>
+      </case>
+      <case name="tst_qmailstorekeys-listModel">
+        <description>libqmf-tests:tst_qmailstorekeys:listModel</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys listModel</step>
+      </case>
+      <case name="tst_qmailstorekeys-threadedModel">
+        <description>libqmf-tests:tst_qmailstorekeys:threadedModel</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailstorekeys threadedModel</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_longstream">
+      <description>libqmf-tests:tst_longstream</description>
+      <case name="tst_longstream-test_new_stream">
+        <description>libqmf-tests:tst_longstream:test_new_stream</description>
+        <step>/usr/tests/qmf-qt5/tst_longstream test_new_stream</step>
+      </case>
+      <case name="tst_longstream-test_status">
+        <description>libqmf-tests:tst_longstream:test_status</description>
+        <step>/usr/tests/qmf-qt5/tst_longstream test_status</step>
+      </case>
+      <case name="tst_longstream-test_errorMessage">
+        <description>libqmf-tests:tst_longstream:test_errorMessage</description>
+        <step>/usr/tests/qmf-qt5/tst_longstream test_errorMessage</step>
+      </case>
+      <case name="tst_longstream-test_temp_files">
+        <description>libqmf-tests:tst_longstream:test_temp_files</description>
+        <step>/usr/tests/qmf-qt5/tst_longstream test_temp_files</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_locks">
+      <description>libqmf-tests:tst_locks</description>
+      <case name="tst_locks-testLock">
+        <description>libqmf-tests:tst_locks:testLock</description>
+        <step>/usr/tests/qmf-qt5/tst_locks testLock</step>
+      </case>
+      <case name="tst_locks-testQMailAccountKey">
+        <description>libqmf-tests:tst_locks:testQMailAccountKey</description>
+        <step>/usr/tests/qmf-qt5/tst_locks testQMailAccountKey</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qcop">
+      <description>libqmf-tests:tst_qcop</description>
+      <case name="tst_qcop-test_qcopchannel">
+        <description>libqmf-tests:tst_qcop:test_qcopchannel</description>
+        <step>/usr/tests/qmf-qt5/tst_qcop test_qcopchannel</step>
+      </case>
+      <case name="tst_qcop-test_qcopserver">
+        <description>libqmf-tests:tst_qcop:test_qcopserver</description>
+        <step>/usr/tests/qmf-qt5/tst_qcop test_qcopserver</step>
+      </case>
+      <case name="tst_qcop-test_qcopclient">
+        <description>libqmf-tests:tst_qcop:test_qcopclient</description>
+        <step>/usr/tests/qmf-qt5/tst_qcop test_qcopclient</step>
+      </case>
+      <case name="tst_qcop-test_qcopadaptor">
+        <description>libqmf-tests:tst_qcop:test_qcopadaptor</description>
+        <step>/usr/tests/qmf-qt5/tst_qcop test_qcopadaptor</step>
+      </case>
+      <case name="tst_qcop-test_secondqcopserver">
+        <description>libqmf-tests:tst_qcop:test_secondqcopserver</description>
+        <step>/usr/tests/qmf-qt5/tst_qcop test_secondqcopserver</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmaillog">
+      <description>libqmf-tests:tst_qmaillog</description>
+      <case name="tst_qmaillog-test_qmaillog">
+        <description>libqmf-tests:tst_qmaillog:test_qmaillog</description>
+        <step>/usr/tests/qmf-qt5/tst_qmaillog test_qmaillog</step>
+      </case>
+      <case name="tst_qmaillog-test_logsystem">
+        <description>libqmf-tests:tst_qmaillog:test_logsystem</description>
+        <step>/usr/tests/qmf-qt5/tst_qmaillog test_logsystem</step>
+      </case>
+      <case name="tst_qmaillog-test_loggers">
+        <description>libqmf-tests:tst_qmaillog:test_loggers</description>
+        <step>/usr/tests/qmf-qt5/tst_qmaillog test_loggers</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmailnamespace">
+      <description>libqmf-tests:tst_qmailnamespace</description>
+      <case name="tst_qmailnamespace-test_qmailnamespace">
+        <description>libqmf-tests:tst_qmailnamespace:test_qmailnamespace</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailnamespace test_qmailnamespace</step>
+      </case>
+      <environments>
+        <scratchbox>true</scratchbox>
+        <hardware>true</hardware>
+      </environments>
+    </set>
+    <set name="_usr_tests_qmf_tst_qmail_listmodels">
+      <description>libqmf-tests:tst_qmail_listmodels</description>
+        <case name="tst_qmail_listmodels-test_qmailaccountlistmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_qmailaccountlistmodel</description>
+          <step>/usr/tests/qmf-qt5/tst_qmail_listmodels test_qmailaccountlistmodel</step>
+        </case>
+        <case name="tst_qmail_listmodels-test_qmailmessagelistmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_qmailmessagelistmodel</description>
+          <step>/usr/tests/qmf-qt5/tst_qmail_listmodels test_qmailmessagelistmodel</step>
+        </case>
+        <case name="tst_qmail_listmodels-test_messagethreadedmodel">
+          <description>libqmf-tests:tst_qmail_listmodels:test_messagethreadedmodel</description>
+          <step>/usr/tests/qmf-qt5/tst_qmail_listmodels test_messagethreadedmodel</step>
+        </case>
+       <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmail_sortkeys">
+        <description>libqmf-tests:tst_qmail_sortkeys</description>
+          <case name="tst_qmail_sortkeys-test_foldersortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_foldersortkey</description>
+            <step>/usr/tests/qmf-qt5/tst_qmail_sortkeys test_foldersortkey</step>
+          </case>
+          <case name="tst_qmail_sortkeys-test_accountsortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_accountsortkey</description>
+            <step>/usr/tests/qmf-qt5/tst_qmail_sortkeys test_accountsortkey</step>
+          </case>
+          <case name="tst_qmail_sortkeys-test_messagesortkey">
+            <description>libqmf-tests:tst_qmail_sortkeys:test_messagesortkey</description>
+            <step>/usr/tests/qmf-qt5/tst_qmail_sortkeys test_messagesortkey</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmaildisconnected">
+        <description>libqmf-tests:tst_qmaildisconnected</description>
+          <case name="tst_qmaildisconnected-test_qmaildisconnected">
+            <description>libqmf-tests:tst_qmaildisconnected:test_qmaildisconnected</description>
+            <step>/usr/tests/qmf-qt5/tst_qmaildisconnected test_qmaildisconnected</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailmessageset">
+        <description>libqmf-tests:tst_qmailmessageset</description>
+          <case name="tst_qmailmessageset-test_foldermessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_foldermessageset</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailmessageset test_foldermessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_accountmessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_accountmessageset</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailmessageset test_accountmessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_filtermessageset">
+            <description>libqmf-tests:tst_qmailmessageset:test_filtermessageset</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailmessageset test_filtermessageset</step>
+          </case>
+          <case name="tst_qmailmessageset-test_messagesetcontainer">
+            <description>libqmf-tests:tst_qmailmessageset:test_messagesetcontainer</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailmessageset test_messagesetcontainer</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailserviceaction">
+        <description>libqmf-tests:tst_qmailserviceaction</description>
+          <case name="tst_qmailserviceaction-test_retrievalaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_retrievalaction</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailserviceaction test_retrievalaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_transmitaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_transmitaction</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailserviceaction test_transmitaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_storageaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_storageaction</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailserviceaction test_storageaction</step>
+          </case>
+          <case name="tst_qmailserviceaction-test_searchaction">
+            <description>libqmf-tests:tst_qmailserviceaction:test_searchaction</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailserviceaction test_searchaction</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_storagemanager">
+        <description>libqmf-tests:tst_storagemanager</description>
+          <case name="tst_storagemanager-test_init">
+            <description>libqmf-tests:tst_storagemanager:test_init</description>
+            <step>/usr/tests/qmf-qt5/tst_storagemanager test_init</step>
+          </case>
+          <case name="tst_storagemanager-test_add">
+            <description>libqmf-tests:tst_storagemanager:test_add</description>
+            <step>/usr/tests/qmf-qt5/tst_storagemanager test_add</step>
+          </case>
+          <case name="tst_storagemanager-test_remove">
+            <description>libqmf-tests:tst_storagemanager:test_remove</description>
+            <step>/usr/tests/qmf-qt5/tst_storagemanager test_remove</step>
+          </case>
+          <case name="tst_storagemanager-test_update">
+            <description>libqmf-tests:tst_storagemanager:test_update</description>
+            <step>/usr/tests/qmf-qt5/tst_storagemanager test_update</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <set name="_usr_tests_qmf_tst_qmailthread">
+        <description>libqmf-tests:tst_qmailthread</description>
+          <case name="tst_qmailthread-test_messageCount">
+            <description>libqmf-tests:tst_qmailthread:test_messageCount</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailthread test_messageCount</step>
+          </case>
+          <case name="tst_qmailthread-test_UnreadCount">
+            <description>libqmf-tests:tst_qmailthread:test_UnreadCount</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailthread test_UnreadCount</step>
+          </case>
+          <case name="tst_qmailthread-test_parentId">
+            <description>libqmf-tests:tst_qmailthread:test_parentId</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailthread test_parentId</step>
+          </case>
+          <case name="tst_qmailthread-test_cloneId">
+            <description>libqmf-tests:tst_qmailthread:test_cloneId</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailthread test_cloneId</step>
+          </case>
+          <case name="tst_qmailthread-test_threadKeys">
+            <description>libqmf-tests:tst_qmailthread:test_threadKeys</description>
+            <step>/usr/tests/qmf-qt5/tst_qmailthread test_threadKeys</step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set>
+      <!--set name="_usr_tests_qmf_">
+        <description>libqmf-tests:</description>
+          <case name="-">
+            <description>libqmf-tests::</description>
+            <step>/usr/tests/qmf-qt5/ </step>
+          </case>
+         <environments>
+            <scratchbox>true</scratchbox>
+            <hardware>true</hardware>
+         </environments>
+      </set-->
+  </suite>
+</testdefinition>
