@@ -1,4 +1,5 @@
-QDOC_BIN = $$targetPath($$[QT_INSTALL_BINS]/qdoc3)
+equals(QT_MAJOR_VERSION, 4): QDOC_BIN = $$targetPath($$[QT_INSTALL_BINS]/qdoc3)
+equals(QT_MAJOR_VERSION, 5): QDOC_BIN = $$targetPath($$[QT_INSTALL_BINS]/qdoc)
 HELPGENERATOR = $$targetPath($$[QT_INSTALL_BINS]/qhelpgenerator)
 
 equals(QMAKE_DIR_SEP, /) {   # unix, mingw+msys
@@ -33,7 +34,8 @@ qch_docs.depends += html_docs
 qch_docs.files = $$QCH_FILE
 
 unix:!macx {
-    qch_docs.path = $$QMF_INSTALL_ROOT/share/doc/qmf/qch
+    equals(QT_MAJOR_VERSION, 4): qch_docs.path = $$QMF_INSTALL_ROOT/share/doc/qmf/qch
+    equals(QT_MAJOR_VERSION, 5): qch_docs.path = $$QMF_INSTALL_ROOT/share/doc/qmf-qt5/qch
     qch_docs.CONFIG += no_check_exist
 }
 
