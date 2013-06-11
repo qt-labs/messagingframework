@@ -48,7 +48,6 @@
 #include <QResizeEvent>
 #include <qtmailnamespace.h>
 
-#define DEFINE_STATUS_MONITOR_INSTANCE
 #include "statusmonitor.h"
 
 class ServiceActionStatusWidget : public QWidget
