@@ -37,8 +37,6 @@ PUBLIC_HEADERS += qmailauthenticator.h \
                   qmailtransport.h \
                   qmailheartbeattimer.h
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
-
 SOURCES += qmailauthenticator.cpp \
            qmailmessagebuffer.cpp \
            qmailmessageclassifier.cpp \
@@ -47,6 +45,13 @@ SOURCES += qmailauthenticator.cpp \
            qmailstoreaccountfilter.cpp \
            qmailtransport.cpp \
            qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
+
+contains(DEFINES,MESSAGESERVER_PLUGINS) {
+    PUBLIC_HEADERS += qmailmessageserverplugin.h
+    SOURCES += qmailmessageserverplugin.cpp
+}
+
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
 equals(QT_MAJOR_VERSION, 4): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
 equals(QT_MAJOR_VERSION, 5): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver5

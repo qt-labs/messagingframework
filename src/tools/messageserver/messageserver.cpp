@@ -51,6 +51,7 @@
 #include <qmailipc.h>
 #include <newcountnotifier.h>
 #include <qcopserver.h>
+#include <qmailmessageserverplugin.h>
 
 extern "C" {
 #ifndef Q_OS_WIN
@@ -58,6 +59,10 @@ extern "C" {
 #endif
 #include <signal.h>
 }
+
+#ifdef MESSAGESERVER_PLUGINS
+#include "messageserverplugins.h"
+#endif
 
 #if defined(Q_OS_UNIX)
 int MessageServer::sighupFd[2];
@@ -252,6 +257,16 @@ MessageServer::MessageServer(QObject *parent)
 
         emit client->actionsListed(QMailActionDataList());
     }
+
+#ifdef MESSAGESERVER_PLUGINS
+    qMailLog(Messaging) << "Initiating messageserver plugins.";
+    QStringList availablePlugins = QMailMessageServerPluginFactory::keys();
+
+    for (int i = 0; i < availablePlugins.size(); i++) {
+        QMailMessageServerPlugin *plugin = QMailMessageServerPluginFactory::createService(availablePlugins.at(i));
+        plugin->exec();
+    }
+#endif
 }
 
 MessageServer::~MessageServer()

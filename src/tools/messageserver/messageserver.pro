@@ -46,6 +46,7 @@ SOURCES += mailmessageclient.cpp \
            prepareaccounts.cpp \
            newcountnotifier.cpp \
            servicehandler.cpp
+
 !SERVER_AS_DLL: {
     SOURCES += main.cpp
 }
