@@ -60,10 +60,6 @@ extern "C" {
 #include <signal.h>
 }
 
-#ifdef MESSAGESERVER_PLUGINS
-#include "messageserverplugins.h"
-#endif
-
 #if defined(Q_OS_UNIX)
 int MessageServer::sighupFd[2];
 #endif
