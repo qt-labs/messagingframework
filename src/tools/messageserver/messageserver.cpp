@@ -61,6 +61,7 @@ extern "C" {
 }
 
 #if defined(Q_OS_UNIX)
+#include <unistd.h>
 int MessageServer::sighupFd[2];
 #endif
 
