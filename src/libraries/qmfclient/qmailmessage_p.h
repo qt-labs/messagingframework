@@ -59,7 +59,7 @@
 
 // These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
 
-class QMailMessageHeaderFieldPrivate : public QPrivateImplementationBase
+class QMF_EXPORT QMailMessageHeaderFieldPrivate : public QPrivateImplementationBase
 {
 public:
     QMailMessageHeaderFieldPrivate();
@@ -127,7 +127,7 @@ private:
 };
 
 
-class QMailMessageBodyPrivate : public QPrivateImplementationBase
+class QMF_EXPORT QMailMessageBodyPrivate : public QPrivateImplementationBase
 {
 public:
     QMailMessageBodyPrivate();
@@ -169,7 +169,7 @@ private:
 };
 
 
-class QMailMessagePartContainerPrivate : public QPrivateImplementationBase
+class QMF_EXPORT QMailMessagePartContainerPrivate : public QPrivateImplementationBase
 {
 public:
     template<typename Derived>
@@ -356,7 +356,7 @@ private:
 };
 
 
-class QMailMessageMetaDataPrivate : public QPrivateImplementationBase
+class QMF_EXPORT QMailMessageMetaDataPrivate : public QPrivateImplementationBase
 {
 public:
     QMailMessageMetaDataPrivate();
