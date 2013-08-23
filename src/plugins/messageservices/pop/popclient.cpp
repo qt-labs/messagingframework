@@ -419,7 +419,7 @@ void PopClient::sendCommand(const QByteArray& cmd)
 
 QString PopClient::readResponse() 
 {
-    QString response = transport->readLine();
+    QString response = QString::fromLatin1(transport->readLine());
 
     if ((response.length() > 1) && (status != MessageDataRetr) && (status != MessageDataTop)) {
         qMailLog(POP) << "RECV:" << qPrintable(response.left(response.length() - 2));

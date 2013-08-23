@@ -3276,7 +3276,7 @@ void ImapProtocol::incomingData()
 {
     int readLines = 0;
     while (_transport->imapCanReadLine()) {
-        processResponse(_transport->imapReadLine());
+        processResponse(QString::fromLatin1(_transport->imapReadLine()));
 
         readLines++;
         if (readLines >= MAX_LINES) {
