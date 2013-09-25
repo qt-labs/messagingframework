@@ -59,7 +59,8 @@ public:
         Name,
         MessageType,
         Status,
-        LastSynchronized
+        LastSynchronized,
+        IconPath
     };
 
     typedef QMailSortKeyArgument<Property> ArgumentType;
@@ -89,6 +90,8 @@ public:
     static QMailAccountSortKey messageType(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailAccountSortKey lastSynchronized(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailAccountSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
+    static QMailAccountSortKey iconPath(Qt::SortOrder order = Qt::AscendingOrder);
+
 
 private:
     QMailAccountSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);

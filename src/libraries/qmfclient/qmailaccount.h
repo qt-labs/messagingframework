@@ -117,6 +117,9 @@ public:
     QMailFolderId standardFolder(QMailFolder::StandardFolder folder) const;
     void setStandardFolder(QMailFolder::StandardFolder folder, const QMailFolderId &folderId);
 
+    QString iconPath() const;
+    void setIconPath(const QString &iconPath);
+
     const QMap<QMailFolder::StandardFolder, QMailFolderId> &standardFolders() const;
 
     quint64 status() const;

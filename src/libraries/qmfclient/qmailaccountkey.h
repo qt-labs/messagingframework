@@ -69,7 +69,8 @@ public:
         FromAddress = (1 << 3),
         Status = (1 << 4),
         Custom = (1 << 5),
-        LastSynchronized = (1 << 6)
+        LastSynchronized = (1 << 6),
+        IconPath = (1 << 7)
     };
 
     typedef QMailAccountId IdType;
@@ -130,6 +131,10 @@ public:
     static QMailAccountKey customField(const QString &name, QMailDataComparator::PresenceComparator cmp = QMailDataComparator::Present);
     static QMailAccountKey customField(const QString &name, const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailAccountKey customField(const QString &name, const QString &value, QMailDataComparator::InclusionComparator cmp);
+
+    static QMailAccountKey iconPath(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailAccountKey iconPath(const QString &value, QMailDataComparator::InclusionComparator cmp);
+    static QMailAccountKey iconPath(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
 private:
     QMailAccountKey(Property p, const QVariant& value, QMailKey::Comparator c);

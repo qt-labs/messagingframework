@@ -51,5 +51,6 @@
         <file alias="maintenancerecord">resources/maintenancerecord.sqlite.sql</file>
         <file alias="obsoletefiles">resources/obsoletefiles.sqlite.sql</file>
         <file alias="mailthreads-101-102">resources/mailthreads-101-102.sqlite.sql</file>
+        <file alias="mailaccounts-107-108">resources/mailaccounts-107-108.sqlite.sql</file>
     </qresource>
 </RCC>

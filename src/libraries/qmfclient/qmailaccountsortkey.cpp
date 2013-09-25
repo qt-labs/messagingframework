@@ -74,6 +74,7 @@
     \value MessageType The type of messages handled by the account.
     \value Status The status value of the account.
     \value LastSynchronized The most recent time that a check for new mail in all folders of the account was completed successfully.
+    \value IconPath The icon path of the account.
 */
 
 /*!
@@ -257,6 +258,15 @@ QMailAccountSortKey QMailAccountSortKey::status(quint64 mask, Qt::SortOrder orde
     return QMailAccountSortKey(Status, order, mask);
 }
 
+/*!
+    Returns a key that sorts accounts by their icon path, according to \a order.
+
+    \sa QMailAccount::iconPath()
+*/
+QMailAccountSortKey QMailAccountSortKey::iconPath(Qt::SortOrder order)
+{
+    return QMailAccountSortKey(IconPath, order);
+}
 
 Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey)
 

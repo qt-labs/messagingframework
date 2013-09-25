@@ -460,6 +460,8 @@ void tst_QMail_SortKeys::test_accountsortkey()
     QCOMPARE(ids.count(), allAccounts.count());
     ids = QMailStore::instance()->queryAccounts(key, QMailAccountSortKey::lastSynchronized());
     QCOMPARE(ids.count(), allAccounts.count());
+    ids = QMailStore::instance()->queryAccounts(key, QMailAccountSortKey::iconPath());
+    QCOMPARE(ids.count(), allAccounts.count());
 }
 
 void tst_QMail_SortKeys::test_messagesortkey()

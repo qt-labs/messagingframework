@@ -92,6 +92,7 @@ public:
     QStringList _sources;
     QStringList _sinks;
     QMap<QMailFolder::StandardFolder, QMailFolderId> _standardFolders;
+    QString _iconPath;
 
     QMap<QString, QString> _customFields;
     bool _customFieldsModified;
@@ -577,6 +578,27 @@ void QMailAccount::setStandardFolder(QMailFolder::StandardFolder folder, const Q
             d->_standardFolders.insert(folder, folderId);
         }
     }
+}
+
+/*!
+  Returns the icon path for this account, if there is one.
+
+  \sa setIconPath()
+*/
+QString QMailAccount::iconPath() const
+{
+    return d->_iconPath;
+}
+
+/*!
+    Sets the icon path \a iconPath  for this account.
+
+    \sa iconPath()
+*/
+
+void QMailAccount::setIconPath(const QString &iconPath)
+{
+    d->_iconPath = iconPath;
 }
 
 /*! 

@@ -93,6 +93,7 @@ using namespace QMailDataComparator;
     \value Status The status value of the account.
     \value Custom The custom fields of the account.
     \value LastSynchronized The most recent time that a check for new mail in all folders of the account was completed successfully.
+    \value IconPath The icon path of the account.
 */
 
 /*!
@@ -506,3 +507,32 @@ QMailAccountKey QMailAccountKey::customField(const QString &name, const QString 
     return QMailAccountKey(Custom, QStringList() << QMailKey::stringValue(name) << QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
+/*!
+    Returns a key matching accounts whose icon path matches \a value, according to \a cmp.
+
+    \sa QMailAccount::iconPath()
+*/
+QMailAccountKey QMailAccountKey::iconPath(const QString &value, QMailDataComparator::EqualityComparator cmp)
+{
+    return QMailAccountKey(IconPath, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching accounts whose icon path matches the substring \a value, according to \a cmp.
+
+    \sa QMailAccount::iconPath()()
+*/
+QMailAccountKey QMailAccountKey::iconPath(const QString &value, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailAccountKey(IconPath, QMailKey::stringValue(value), QMailKey::comparator(cmp));
+}
+
+/*!
+    Returns a key matching accounts whose icon path is a member of \a values, according to \a cmp.
+
+    \sa QMailAccount::iconPath()
+*/
+QMailAccountKey QMailAccountKey::iconPath(const QStringList &values, QMailDataComparator::InclusionComparator cmp)
+{
+    return QMailAccountKey(values, IconPath, QMailKey::comparator(cmp));
+}
