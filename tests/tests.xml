@@ -393,22 +393,6 @@
         <description>libqmf-tests:tst_longstring:mid</description>
         <step>/usr/tests/qmf/tst_longstring mid</step>
       </case>
-      <case name="tst_longstring-length">
-        <description>libqmf-tests:tst_longstring:length</description>
-        <step>/usr/tests/qmf/tst_longstring length</step>
-      </case>
-      <case name="tst_longstring-isEmpty">
-        <description>libqmf-tests:tst_longstring:isEmpty</description>
-        <step>/usr/tests/qmf/tst_longstring isEmpty</step>
-      </case>
-      <case name="tst_longstring-toQByteArray">
-        <description>libqmf-tests:tst_longstring:toQByteArray</description>
-        <step>/usr/tests/qmf/tst_longstring toQByteArray</step>
-      </case>
-      <case name="tst_longstring-dataStream">
-        <description>libqmf-tests:tst_longstring:dataStream</description>
-        <step>/usr/tests/qmf/tst_longstring dataStream</step>
-      </case>
       <environments>
         <scratchbox>true</scratchbox>
         <hardware>true</hardware>
