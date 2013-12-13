@@ -67,9 +67,10 @@ public:
  * \brief Reads settings and creates loggers
  *
  * Reads the settings from QSettings(organization, application), constructs the loggers and adds them
- * to LogSystem::getInstance(). Before doing this, remove all the registered loggers from LogSystem::getInstance()
+ * to LogSystem::getInstance(), if the settings configuration file does not exist, a default with logging disabled is created.
+ * Before doing this, remove all the registered loggers from LogSystem::getInstance().
  *
- * This function could be used during application initialization phase or when the configuration file shoudd be re-read
+ * This function could be used during application initialization phase or when the configuration file shoudd be re-read.
  *
  * \param organization Organization (as per QSettings API)
  * \param application  Application (as per QSettings API)

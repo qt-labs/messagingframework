@@ -44,9 +44,9 @@
 #include "qloggers.h"
 
 #include <QString>
-#include <QSettings>
 #include <QHash>
 #include <QStringList>
+#include <QSettings>
 
 #include <sys/types.h>
 #if !defined(Q_OS_WIN)
@@ -88,10 +88,38 @@ namespace
 }
 
 #if !defined(Q_OS_WIN)
-QMF_EXPORT
-void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
+static void createDefaultLogConfig(QSettings &settings)
+{
+    QStringList groups = settings.childGroups();
+    if (!groups.contains("Syslog")) {
+        settings.beginGroup("Syslog");
+        settings.setValue("Enabled",0);
+        settings.endGroup();
+    }
+    if (!groups.contains("FileLog")) {
+        settings.beginGroup("FileLog");
+        settings.setValue("Path","");
+        settings.setValue("Enabled",0);
+        settings.endGroup();
+    }
+    if (!groups.contains("StdStreamLog")) {
+        settings.beginGroup("StdStreamLog");
+        settings.setValue("Enabled",0);
+        settings.endGroup();
+    }
+    if (!groups.contains("LogCategories")) {
+        settings.beginGroup("LogCategories");
+        settings.setValue("Messaging",1);
+        settings.setValue("IMAP", 1);
+        settings.setValue("SMTP", 1);
+        settings.setValue("POP", 1);
+        settings.endGroup();
+    }
+}
+QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {
     QSettings settings(organization, application);
+    createDefaultLogConfig(settings);
 
     bool defaultStdError(
 #ifdef QMF_ENABLE_LOGGING
