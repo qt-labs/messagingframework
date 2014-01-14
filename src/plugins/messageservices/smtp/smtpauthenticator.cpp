@@ -62,14 +62,14 @@ QByteArray SmtpAuthenticator::getAuthentication(const QMailAccountConfiguration:
     SmtpConfiguration smtpCfg(svcCfg);
     if (smtpCfg.smtpAuthentication() != SmtpConfiguration::Auth_NONE) {
         QMailAccountId id(smtpCfg.id());
-        QByteArray username(smtpCfg.smtpUsername().toLatin1());
-        QByteArray password(smtpCfg.smtpPassword().toLatin1());
+        QByteArray username(smtpCfg.smtpUsername().toUtf8());
+        QByteArray password(smtpCfg.smtpPassword().toUtf8());
 
         if (smtpCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
             result = QByteArray("LOGIN");
             gResponses[id] = (QList<QByteArray>() << username << password);
         } else if (smtpCfg.smtpAuthentication() == SmtpConfiguration::Auth_PLAIN) {
-            result = QByteArray("PLAIN");
+            result = QByteArray("PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
             gResponses[id] = (QList<QByteArray>() << QByteArray(username + '\0' + username + '\0' + password));
         }
     }
