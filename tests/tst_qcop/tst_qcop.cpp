@@ -55,12 +55,13 @@
 #include "qcopchannelmonitor.h"
 
 class TestQCopServer;
-class tst_QCop : public QObject
+class tst_QCop : public QCopAdaptor
 {
     Q_OBJECT
 
 public:
-    tst_QCop(): server(0) {}
+    tst_QCop() : QCopAdaptor(QString::fromLatin1("QMFTestcase")),
+        server(0) {}
     virtual ~tst_QCop() {}
 
 private slots:
