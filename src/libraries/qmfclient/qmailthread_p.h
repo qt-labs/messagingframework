@@ -45,7 +45,7 @@
 #include "qmailthread.h"
 
 
-class QMailThreadPrivate : public QPrivateImplementationBase
+class QMF_EXPORT QMailThreadPrivate : public QPrivateImplementationBase
 {
 public:
     QMailThreadPrivate()
