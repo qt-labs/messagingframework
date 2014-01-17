@@ -101,6 +101,9 @@ packagesExist(zlib) {
     CONFIG += link_pkgconfig
     PKGCONFIG += zlib
     DEFINES += QT_QMF_HAVE_ZLIB
+} macx:exists( "/usr/include/zlib.h") {
+    LIBS += -lz
+    DEFINES += QT_QMF_HAVE_ZLIB
 } else {
      warning("IMAP COMPRESS capability requires zlib")
 }
