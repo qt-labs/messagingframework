@@ -4,11 +4,19 @@ CONFIG += qmfclient
 
 equals(QT_MAJOR_VERSION, 4){
     TARGET = qmfmessageserver
-    LIBS += -lqmfclient
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient
+    } else {
+        LIBS += -lqmfclient
+    }
 }
 equals(QT_MAJOR_VERSION, 5){
     TARGET = qmfmessageserver5
-    LIBS += -lqmfclient5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient5
+    } else {
+        LIBS += -lqmfclient5
+    }
 }
 target.path += $$QMF_INSTALL_ROOT/lib
 

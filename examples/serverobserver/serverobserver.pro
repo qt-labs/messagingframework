@@ -2,12 +2,20 @@ TEMPLATE = app
 
 equals(QT_MAJOR_VERSION, 4){
     TARGET = serverobserver
-    LIBS += -lqmfmessageserver -lqmfclient
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfmessageserver -framework qmfclient
+    } else {
+        LIBS += -lqmfmessageserver -lqmfclient
+    }
 }
 equals(QT_MAJOR_VERSION, 5){
     TARGET = serverobserver5
     QT += widgets
-    LIBS += -lqmfmessageserver5 -lqmfclient5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfmessageserver5 -framework qmfclient5
+    } else {
+        LIBS += -lqmfmessageserver5 -lqmfclient5
+    }
 }
 
 target.path += $$QMF_INSTALL_ROOT/bin

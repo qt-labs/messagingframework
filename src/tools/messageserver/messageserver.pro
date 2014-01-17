@@ -8,11 +8,19 @@ SERVER_AS_DLL: {
 
 equals(QT_MAJOR_VERSION, 4){
     TARGET = messageserver
-    LIBS += -lqmfmessageserver -lqmfclient
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfmessageserver -framework qmfclient
+    } else {
+        LIBS += -lqmfmessageserver -lqmfclient
+    }
 }
 equals(QT_MAJOR_VERSION, 5){
     TARGET = messageserver5
-    LIBS += -lqmfmessageserver5 -lqmfclient5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfmessageserver5 -framework qmfclient5
+    } else {
+        LIBS += -lqmfmessageserver5 -lqmfclient5
+    }
 }
 
 CONFIG += qmfmessageserver qmfclient

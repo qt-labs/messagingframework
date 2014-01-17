@@ -4,11 +4,19 @@ CONFIG += qmfclient qmfmessageserver plugin
 
 equals(QT_MAJOR_VERSION, 4) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/messageservices
-    LIBS += -lqmfclient -lqmfmessageserver
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient -framework qmfmessageserver
+    } else {
+        LIBS += -lqmfclient -lqmfmessageserver
+    }
 }
 equals(QT_MAJOR_VERSION, 5) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
-    LIBS += -lqmfclient5 -lqmfmessageserver5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient5 -framework qmfmessageserver5
+    } else {
+        LIBS += -lqmfclient5 -lqmfmessageserver5
+    }
 }
 
 QT = core network

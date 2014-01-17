@@ -5,11 +5,19 @@ QT = core
 
 equals(QT_MAJOR_VERSION, 4) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers
-    LIBS += -lqmfclient
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient
+    } else {
+        LIBS += -lqmfclient
+    }
 }
 equals(QT_MAJOR_VERSION, 5) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/contentmanagers
-    LIBS += -lqmfclient5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient5
+    } else {
+        LIBS += -lqmfclient5
+    }
 }
 
 DEFINES += PLUGIN_INTERNAL

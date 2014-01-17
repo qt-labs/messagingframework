@@ -4,12 +4,20 @@ CONFIG += qmfclient qmfutil plugin
 
 equals(QT_MAJOR_VERSION, 4) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/viewers
-    LIBS += -lqmfclient -lqmfutil
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient -framework qmfutil
+    } else {
+        LIBS += -lqmfclient -lqmfutil
+    }
 }
 equals(QT_MAJOR_VERSION, 5) {
     target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/viewers
     QT += widgets
-    LIBS += -lqmfclient5 -lqmfutil5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient5 -framework qmfutil5
+    } else {
+        LIBS += -lqmfclient5 -lqmfutil5
+    }
 }
 
 # Use webkit to render mail if available

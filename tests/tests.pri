@@ -7,11 +7,19 @@ macx {
 }
 
 equals(QT_MAJOR_VERSION, 4){
-    LIBS += -lqmfclient
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient
+    } else {
+        LIBS += -lqmfclient
+    }
     target.path += $$QMF_INSTALL_ROOT/tests
 }
 equals(QT_MAJOR_VERSION, 5){
-    LIBS += -lqmfclient5
+    macx:contains(QT_CONFIG, qt_framework) {
+        LIBS += -framework qmfclient5
+    } else {
+        LIBS += -lqmfclient5
+    }
     target.path += $$QMF_INSTALL_ROOT/tests5
 }
 
