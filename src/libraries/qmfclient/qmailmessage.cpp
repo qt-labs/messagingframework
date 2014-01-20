@@ -355,19 +355,16 @@ static QString decodeWord(const QByteArray& encodedWord)
                 if (encoding == "Q")
                 {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
-                    result = codec.decode(encoded, charset);
+                    return codec.decode(encoded, charset);
                 }
                 else if (encoding == "B")
                 {
                     QMailBase64Codec codec(QMailBase64Codec::Binary);
-                    result = codec.decode(encoded, charset);
+                    return codec.decode(encoded, charset);
                 }
             }
         }
     }
-
-    if (result.isEmpty())
-        result = encodedWord;
 
     return result;
 }
@@ -513,25 +510,20 @@ static QString decodeWordSequence(const QByteArray& str)
 
     QString out;
 
-    // Any idea why this isn't matching?
-    //QRegExp encodedWord("\\b=\\?\\S+\\?\\S+\\?\\S*\\?=\\b");
-    QRegExp encodedWord("\"?=\\?\\S+\\?\\S+\\?\\S*\\?=\"?");
-
-    // set minimal=true, to match sequences which do not have whit space in between 2 encoded words; otherwise by default greedy matching is performed
-    // eg. "Sm=?ISO-8859-1?B?9g==?=rg=?ISO-8859-1?B?5Q==?=sbord" will match "=?ISO-8859-1?B?9g==?=rg=?ISO-8859-1?B?5Q==?=" as a single encoded word without minimal=true
-    // with minimal=true, "=?ISO-8859-1?B?9g==?=" will be the first encoded word and "=?ISO-8859-1?B?5Q==?=" the second.
-    // -- assuming there are no nested encodings, will there be?
-    encodedWord.setMinimal(true);
+    // From RFC 2047
+    // encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
+    QRegExp encodedWord("\"?=\\?[^\\s\\?]+\\?[^\\s\\?]+\\?[^\\s\\?]*\\?=\"?");
 
     int pos = 0;
     int lastPos = 0;
+    QString latin1Str(QString::fromLatin1(str.constData(), str.length()));
 
     while (pos != -1) {
-        pos = encodedWord.indexIn(str, pos);
+        pos = encodedWord.indexIn(latin1Str, pos);
         if (pos != -1) {
             int endPos = pos + encodedWord.matchedLength();
 
-            QString preceding(str.mid(lastPos, (pos - lastPos)));
+            QString preceding(QString::fromLatin1(str.mid(lastPos, (pos - lastPos))));
             QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
 
             // If there is only whitespace between two encoded words, it should not be included
@@ -546,8 +538,7 @@ static QString decodeWordSequence(const QByteArray& str)
     }
 
     // Copy anything left
-    out.append(str.mid(lastPos));
-
+    out.append(QString::fromLatin1(str.mid(lastPos)));
     return out;
 }
 

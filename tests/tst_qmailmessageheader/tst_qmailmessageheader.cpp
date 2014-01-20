@@ -790,12 +790,10 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << QByteArray("ISO-8859-1")
         << QByteArray("=?ISO-8859-1?Q?mary=40example=2Enet?=");
 
-    /* Qt Extended seems to be configured without iso-8859-[^1]
     QTest::newRow("ISO-8859-2 encoding")
         << QString("hello")
         << QByteArray("ISO-8859-2")
         << QByteArray("=?ISO-8859-2?Q?hello?=");
-    */
 
     QString latin1Address(QString::fromLatin1("Joh\361 D\366e <jdoe@machine.test>"));
 
@@ -815,6 +813,11 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << latin1Address
         << QByteArray("ISO-8859-1")
         << QByteArray("=?ISO-8859-1?Q?=22Joh=F1_D=F6e=22_=3Cjdoe=40machine=2Etest=3E?=");
+
+    QTest::newRow("ISO-8859-1 with accents")
+        << QString::fromLatin1("(título águia João)")
+        << QByteArray("ISO-8859-1")
+        << QByteArray("=?ISO-8859-1?Q?=28t=C3=ADtulo_=C3=A1guia_Jo=C3=A3o=29?=");
 
     const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
     QString unicodeAddress(chars, 4);
@@ -840,6 +843,16 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << unicodeAddress
         << QByteArray()
         << QByteArray("=?UTF-8?B?2LbZqdql2rQgPGFkZHJlc3NAZXhhbXBsZT7Yttmp2qXatCA8YWRkcmVzc0Bl?= =?UTF-8?B?eGFtcGxlPg==?=");
+
+    QTest::newRow("UTF-8 accents")
+        << QString::fromLatin1("[Test] (título águia João)")
+        << QByteArray("UTF-8")
+        << QByteArray("=?UTF-8?B?W1Rlc3RdICh0w4PCrXR1bG8gw4PCoWd1aWEgSm/Dg8Kjbyk=?=");
+
+    QTest::newRow("UTF8 empty")
+        << QString::fromLatin1("")
+        << QByteArray("UTF-8")
+        << QByteArray("=?UTF-8?B?" "?=");
 }
 
 void tst_QMailMessageHeaderField::encodeWord()

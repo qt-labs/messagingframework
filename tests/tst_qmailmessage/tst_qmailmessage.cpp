@@ -802,6 +802,57 @@ CRLF
                       << QString("This is a message just to say hello.\nSo, ""Hello"".") // plain_text
                       << int( 0 ); // message_part_count
 
+    QTest::newRow("encoded_words_with_quotes") << QByteArray(
+"From:\"=?UTF-8?Q?J=6fhn=20D=6fe?=\" <jdoe@machine.example>" CRLF
+"To:\"=?UTF-8?Q?Mary_S=6dith?=\" <mary@example.net>" CRLF
+"Subject:=?\"UTF-8\"?B?U2F5aW5nIEhlbGxv?= =?ISO-8859-1?Q?_Encoded_?= =?UTF-8?Q?=41=42=43?=" CRLF
+"Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
+"Message-ID: <1234@local.machine.example>" CRLF
+CRLF
+"This is a message just to say hello." CRLF
+"So, ""Hello"".") // rfc_text
+                      << QString("John Doe <jdoe@machine.example>") // from
+                      << QString("John Doe") // from_name
+                      << QString("jdoe@machine.example") // from_email
+                      << QStringList("Mary Smith <mary@example.net>") // to
+                      << QStringList() // cc
+                      << QStringList() // bcc
+                      << QString("Saying Hello Encoded ABC") // subject
+                      << QString() // reply_to
+                      << QString() // in_reply_to
+                      << QString("<1234@local.machine.example>") // message_id
+                      << QDateTime(QDate(1997,11,21), QTime(15,55,6), Qt::UTC).toLocalTime() // datetime
+                      << QString( "Fri, 21 Nov 1997 09:55:06 -0600" ) // date_str
+                      << int(QMailMessage::Email) // type
+                      << QString("This is a message just to say hello.\nSo, ""Hello"".") // plain_text
+                      << int( 0 ); // message_part_count
+
+    QTest::newRow("encoded_words_without_spaces_in_the_subject") << QByteArray(
+"From:\"=?UTF-8?Q?J=6fhn=20D=6fe?=\" <jdoe@machine.example>" CRLF
+"To:\"=?UTF-8?Q?Mary_S=6dith?=\" <mary@example.net>" CRLF
+"Subject:=?\"UTF-8\"?B?U2F5aW5nIEhlbGxv?==?ISO-8859-1?Q?_Encoded_?==?UTF-8?Q?=41=42=43?=" CRLF
+"Date: Fri, 21 Nov 1997 09:55:06 -0600" CRLF
+"Message-ID: <1234@local.machine.example>" CRLF
+CRLF
+"This is a message just to say hello." CRLF
+"So, ""Hello"".") // rfc_text
+                      << QString("John Doe <jdoe@machine.example>") // from
+                      << QString("John Doe") // from_name
+                      << QString("jdoe@machine.example") // from_email
+                      << QStringList("Mary Smith <mary@example.net>") // to
+                      << QStringList() // cc
+                      << QStringList() // bcc
+                      << QString("Saying Hello Encoded ABC") // subject
+                      << QString() // reply_to
+                      << QString() // in_reply_to
+                      << QString("<1234@local.machine.example>") // message_id
+                      << QDateTime(QDate(1997,11,21), QTime(15,55,6), Qt::UTC).toLocalTime() // datetime
+                      << QString( "Fri, 21 Nov 1997 09:55:06 -0600" ) // date_str
+                      << int(QMailMessage::Email) // type
+                      << QString("This is a message just to say hello.\nSo, ""Hello"".") // plain_text
+                      << int( 0 ); // message_part_count
+
+
     QTest::newRow("long_header") << QByteArray(
 "From: John Doe <jdoe@machine.example>" CRLF
 "To: Mary Smith <mary@example.net>" CRLF
