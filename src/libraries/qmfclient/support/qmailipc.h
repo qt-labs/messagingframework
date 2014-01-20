@@ -68,7 +68,7 @@ struct QMetaTypeRegister
         static int registerType() \
         { \
             _QATOMIC_ONCE(); \
-            int id = qMetaTypeId( reinterpret_cast<TYPE *>(0) ); \
+            int id = qMetaTypeId<TYPE>(); \
             if ( id >= static_cast<int>(QMetaType::User) ) \
                 qRegisterMetaTypeStreamOperators< TYPE >( #TYPE ); \
             return 1; \
