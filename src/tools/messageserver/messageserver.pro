@@ -31,6 +31,7 @@ QT = core
     equals(QT_MAJOR_VERSION, 5): QT += widgets
 }
 
+CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
 
 DEPENDPATH += . 
