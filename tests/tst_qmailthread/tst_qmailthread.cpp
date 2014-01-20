@@ -693,7 +693,7 @@ void tst_qmailthread::test_threadKeys()
 
     QDataStream stream1(&array, QIODevice::ReadWrite);
 //    skey1.serialize<QDataStream>(stream);
-    skey1.deserialize<QDataStream>(stream1);
+//    skey1.deserialize<QDataStream>(stream1);
 
     QMailThreadSortKey skey4(skey1);
     QCOMPARE(skey1, skey4);
