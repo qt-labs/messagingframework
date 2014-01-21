@@ -1,8 +1,7 @@
 TEMPLATE = lib
 TARGET = qmfsettings
-CONFIG += plugin
-
-target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+PLUGIN_TYPE = messageservices
+load(qt_plugin)
 
 QT = core network qmfclient qmfmessageserver
 
@@ -20,4 +19,3 @@ FORMS += settings.ui
 SOURCES += settings.cpp storagelocations.cpp
 }
 
-include(../../../../common.pri)

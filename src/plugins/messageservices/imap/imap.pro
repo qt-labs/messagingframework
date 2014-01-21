@@ -1,8 +1,7 @@
 TEMPLATE = lib
 TARGET = imap
-CONFIG += plugin
-
-target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+PLUGIN_TYPE = messageservices
+load(qt_plugin)
 
 QT = core network qmfclient qmfclient-private qmfmessageserver qmfwidgets
 
@@ -61,4 +60,3 @@ packagesExist(zlib) {
      warning("IMAP COMPRESS capability requires zlib")
 }
 
-include(../../../../common.pri)

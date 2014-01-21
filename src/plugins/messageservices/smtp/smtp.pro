@@ -1,8 +1,7 @@
 TEMPLATE = lib 
 TARGET = smtp 
-
-CONFIG += plugin
-target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+PLUGIN_TYPE = messageservices
+load(qt_plugin)
 
 QT = core network qmfclient qmfmessageserver
 
@@ -28,4 +27,3 @@ SOURCES += \
            smtpsettings.cpp
 }
 
-include(../../../../common.pri)

@@ -1,8 +1,7 @@
 TEMPLATE = lib
 TARGET = pop
-CONFIG += plugin
-
-target.path = $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
+PLUGIN_TYPE = messageservices
+load(qt_plugin)
 
 QT = core network qmfclient qmfclient-private qmfmessageserver
 
@@ -28,4 +27,3 @@ SOURCES += \
            popsettings.cpp \
 }
 
-include(../../../../common.pri)

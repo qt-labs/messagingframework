@@ -67,7 +67,6 @@
 #endif
 
 static const char* QMF_DATA_ENV="QMF_DATA";
-static const char* QMF_PLUGINS_ENV="QMF_PLUGINS";
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
@@ -258,21 +257,6 @@ QDateTime QMail::lastDbUpdated()
 QString QMail::tempPath()
 {
     return (dataPath() + "tmp/");
-}
-
-/*!
-    Returns the path to where the Messaging framework will look for its plugin directories
-*/
-QString QMail::pluginsPath()
-{
-    static QString pluginsEnv(qgetenv(QMF_PLUGINS_ENV));
-    if(!pluginsEnv.isEmpty())
-        return pluginsEnv + '/';
-
-    // default to QMF_INSTALL_ROOT/lib/qmf/plugins, as that's where it will most
-    // likely be. we also search the old fallback (".") via QCoreApplication,
-    // still.
-    return QString::fromUtf8(QMF_INSTALL_ROOT) + "/lib/qmf/plugins5/";
 }
 
 /*!

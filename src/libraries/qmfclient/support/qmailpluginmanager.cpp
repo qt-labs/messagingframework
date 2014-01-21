@@ -56,8 +56,6 @@
 
   The list() function returns a list of available plugins in the subdirectory specified in the constructor.
 
-  Plugin subdirectories are searched for from the directory specified by QMail::pluginPath().
-
   In order to load a plugin, call the instance() function with the
   name of the plugin to load.  qobject_cast() may then be used to query
   for the desired interface.
@@ -69,8 +67,6 @@
 
   Creates a QMailPluginManager for plugins located in the plugin subdirectory \a dir with the given
   \a parent.
-
-  The plugins must be installed in the QMail::pluginPath()/\i{dir}  directory.
 */
 
 /*!
@@ -139,9 +135,7 @@ public:
 QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 {
     QStringList libraryPaths;
-    QString mailPluginsPath = QMail::pluginsPath();
     QStringList coreLibraryPaths = QCoreApplication::libraryPaths();
-    libraryPaths.append(mailPluginsPath);
     libraryPaths.append(coreLibraryPaths);
 
     foreach(QString libraryPath, libraryPaths) {
