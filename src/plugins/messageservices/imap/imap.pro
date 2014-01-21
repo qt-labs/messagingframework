@@ -4,7 +4,7 @@ CONFIG += plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
 
-QT = core network qmfclient qmfclient-private qmfmessageserver
+QT = core network qmfclient qmfclient-private qmfmessageserver qmfwidgets
 
 contains(DEFINES,QT_QMF_USE_ALIGNEDTIMER) {
     QT += alignedtimer
@@ -36,34 +36,16 @@ SOURCES += imapclient.cpp \
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
     QT += gui widgets
 
-QMFUTIL_LIB = ../../../../examples/qtmail/libs/qmfutil
-
 #Required to build on windows
 DEFINES += QMFUTIL_INTERNAL
 
-INCLUDEPATH += \
-               $$QMFUTIL_LIB
 HEADERS += \
-           imapsettings.h \
-           $$QMFUTIL_LIB/selectfolder.h \
-           $$QMFUTIL_LIB/emailfoldermodel.h \
-           $$QMFUTIL_LIB/foldermodel.h \
-           $$QMFUTIL_LIB/folderview.h \
-           $$QMFUTIL_LIB/folderdelegate.h \
-           $$QMFUTIL_LIB/emailfolderview.h \
-           $$QMFUTIL_LIB/qtmailnamespace.h
+           imapsettings.h
 
 FORMS += imapsettings.ui
 
 SOURCES += \
-           imapsettings.cpp \
-           $$QMFUTIL_LIB/selectfolder.cpp \
-           $$QMFUTIL_LIB/emailfoldermodel.cpp \
-           $$QMFUTIL_LIB/foldermodel.cpp \
-           $$QMFUTIL_LIB/folderview.cpp \
-           $$QMFUTIL_LIB/folderdelegate.cpp \
-           $$QMFUTIL_LIB/emailfolderview.cpp \
-           $$QMFUTIL_LIB/qtmailnamespace.cpp
+           imapsettings.cpp
 
 RESOURCES += imap.qrc                
 }

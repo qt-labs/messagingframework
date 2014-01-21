@@ -1,23 +1,10 @@
 TEMPLATE = app
 TARGET = qtmail5
-QT += widgets qmfclient qmfclient-private qmfmessageserver # TODO: example linking against private headers is bad
 
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfutil5
-} else {
-    LIBS += -lqmfutil5
-}
+# TODO: example linking against private headers is bad
+QT += widgets qmfclient qmfclient-private qmfmessageserver qmfwidgets
 
 target.path += $$QMF_INSTALL_ROOT/bin
-
-INCLUDEPATH += \
-                 ../libs/qmfutil \
-
-LIBS += \
-        -L../libs/qmfutil/build
-
-macx:LIBS += \
-             -F../libs/qmfutil/build
 
 HEADERS += emailclient.h \
            messagelistview.h \

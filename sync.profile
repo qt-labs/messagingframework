@@ -2,7 +2,8 @@
 # empty because at the moment this doesn't look like a real module
 %modules = (
     "QmfClient" => "$basedir/src/libraries/qmfclient",
-    "QmfMessageServer" => "$basedir/src/libraries/qmfmessageserver"
+    "QmfMessageServer" => "$basedir/src/libraries/qmfmessageserver",
+    "QmfWidgets" => "$basedir/src/libraries/qmfwidgets"
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );

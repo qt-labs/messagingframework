@@ -1,8 +1,9 @@
-TEMPLATE = lib 
-CONFIG += warn_on
-TARGET = qmfutil5
-QT += widgets qmfclient
-target.path += $$QMF_INSTALL_ROOT/lib
+TARGET     = QmfWidgets
+QT         = core qmfclient widgets
+CONFIG    += warn_on
+
+load(qt_module)
+DEFINES -= QT_NO_CAST_TO_ASCII # this is a fight for another day.
 
 DEFINES += QMFUTIL_INTERNAL
 
@@ -41,6 +42,4 @@ TRANSLATIONS += libqmfutil-ar.ts \
                 libqmfutil-zh_TW.ts
 
 RESOURCES += qmfutil.qrc
-
-include(../../../../common.pri)
 
