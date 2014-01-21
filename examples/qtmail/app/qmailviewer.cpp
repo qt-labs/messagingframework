@@ -46,43 +46,10 @@
 #include <QUrl>
 #include <QWidget>
 #include <qmaillog.h>
-#include <qmailpluginmanager.h>
 
-#define PLUGIN_KEY "viewers"
+#include "genericviewer.h"
 
-typedef QMap<QString, QMailViewerInterface*> PluginMap;
-
-// Load all the viewer plugins into a map for quicker reference
-static PluginMap initMap(QMailPluginManager& manager)
-{
-    PluginMap map;
-
-    foreach (const QString &item, manager.list()) {
-        QObject *instance = manager.instance(item);
-        if (QMailViewerInterface* iface = qobject_cast<QMailViewerInterface*>(instance))
-                map.insert(iface->key(), iface);
-    }
-    return map;
-}
-
-// Return a reference to a map containing all loaded plugin objects
-static PluginMap& pluginMap()
-{
-    static QMailPluginManager pluginManager(PLUGIN_KEY);
-    static PluginMap map(initMap(pluginManager));
-
-    return map;
-}
-
-// Return the viewer plugin object matching the specified ID
-static QMailViewerInterface* mapping(const QString& key)
-{
-    PluginMap::ConstIterator it;
-    if ((it = pluginMap().find(key)) != pluginMap().end())
-        return it.value();
-
-    return 0;
-}
+Q_GLOBAL_STATIC(GenericViewer, genericViewerInstance);
 
 /*!
     \class QMailViewerInterface
@@ -351,10 +318,10 @@ QStringList QMailViewerFactory::keys(QMailMessage::ContentType type, Presentatio
 {
     QStringList in;
 
-    foreach (PluginMap::mapped_type plugin, pluginMap())
-        if (plugin->isSupported(type, pres))
-            in << plugin->key();
+    if (genericViewerInstance()->isSupported(type, pres))
+        in << genericViewerInstance()->key();
 
+    qDebug() << in;
     return in;
 }
 
@@ -375,6 +342,6 @@ QString QMailViewerFactory::defaultKey(QMailMessage::ContentType type, Presentat
 QMailViewerInterface *QMailViewerFactory::create(const QString &key, QWidget *parent)
 {
     Q_UNUSED(parent);
-    return mapping(key);
+    return new GenericViewer(parent);
 }
 

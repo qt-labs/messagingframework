@@ -31,5 +31,6 @@
         <file alias="folder">pics/icons/14x14/folder.png</file>
         <file alias="folder-remote">pics/icons/14x14/folder-remote.png</file>
         <file alias="connect_no">pics/connect_no.png</file>
+        <file alias="clear">pics/clear_left.png</file>
     </qresource>
 </RCC>

@@ -12,8 +12,6 @@ HEADERS += emailfoldermodel.h \
            folderdelegate.h \
            foldermodel.h \
            folderview.h \
-           qmailcomposer.h \
-           qmailviewer.h \
            selectfolder.h \
            qtmailnamespace.h
 
@@ -22,8 +20,6 @@ SOURCES += emailfoldermodel.cpp \
            folderdelegate.cpp \
            foldermodel.cpp \
            folderview.cpp \
-           qmailcomposer.cpp \
-           qmailviewer.cpp \
            selectfolder.cpp \
            qtmailnamespace.cpp
 

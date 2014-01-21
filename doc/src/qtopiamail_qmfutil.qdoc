@@ -49,19 +49,6 @@ display lists of messages and accounts with minimal effort, and with minimal res
 \row \o QMailMessageDelegate \o Provides a standard visual representation of a message in a list view.
 \endtable
 
-\section1 Message Composer and Viewer Plugins
-
-The Messaging Client Utility library uses a plugin system to register components that can compose and view messages.
-Although this mechanism can be accessed by applications, it is currently recommended that service requests should be used to support message composing and viewing requirements.
-
-\table
-\header \o Class \o Description
-\row \o QMailComposerFactory \o Creates objects implementing the QMailComposerInterface interface
-\row \o QMailViewerFactory \o Creates objects implementing the QMailViewerInterface interface
-\row \o QMailComposerInterface \o Defines the interface to objects that can compose a mail message
-\row \o QMailViewerInterface \o Defines the interface to objects that can display a mail message
-\endtable
-
 \section1 New Message Arrival Service
 
 The Messaging Client Utility library provides services permitting client applications to handle the event of new message arrival.

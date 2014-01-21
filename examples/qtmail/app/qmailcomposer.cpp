@@ -45,46 +45,12 @@
 #include <QMap>
 #include <QWidget>
 #include <qmaillog.h>
-#include <qmailpluginmanager.h>
 #include <qmailaccount.h>
 #include <qmailmessage.h>
 
-#define PLUGIN_KEY "composers"
+#include "emailcomposer.h"
 
-typedef QMap<QString, QMailComposerInterface*> PluginMap;
-
-// Load all the viewer plugins into a map for quicker reference
-static PluginMap initMap(QMailPluginManager& manager)
-{
-    PluginMap map;
-
-    foreach (const QString &item, manager.list()) {
-        QObject *instance = manager.instance(item);
-        if (QMailComposerInterface* iface = qobject_cast<QMailComposerInterface*>(instance))
-                map.insert(iface->key(), iface);
-    }
-    return map;
-}
-
-// Return a reference to a map containing all loaded plugin objects
-static PluginMap& pluginMap()
-{
-    static QMailPluginManager pluginManager(PLUGIN_KEY);
-    static PluginMap map(initMap(pluginManager));
-
-    return map;
-}
-
-// Return the composer plugin object matching the specified ID
-static QMailComposerInterface* mapping(const QString& key)
-{
-    PluginMap::ConstIterator it;
-    if ((it = pluginMap().find(key)) != pluginMap().end())
-        return it.value();
-
-    qWarning() << "Failed attempt to map composer:" << key;
-    return 0;
-}
+Q_GLOBAL_STATIC(EmailComposerInterface, composerInterface);
 
 /*!
     \class QMailComposerInterface
@@ -150,7 +116,7 @@ QString QMailComposerInterface::key() const
 */
 QList<QMailMessage::MessageType> QMailComposerInterface::messageTypes() const
 {
-    return mapping(key())->messageTypes();
+    return composerInterface()->messageTypes();
 }
 
 /*!
@@ -158,7 +124,7 @@ QList<QMailMessage::MessageType> QMailComposerInterface::messageTypes() const
 */
 QList<QMailMessage::ContentType> QMailComposerInterface::contentTypes() const
 {
-    return mapping(key())->contentTypes();
+    return composerInterface()->contentTypes();
 }
 
 /*!
@@ -166,7 +132,7 @@ QList<QMailMessage::ContentType> QMailComposerInterface::contentTypes() const
 */
 QString QMailComposerInterface::name(QMailMessage::MessageType type) const
 {
-    return mapping(key())->name(type);
+    return composerInterface()->name(type);
 }
 
 /*!
@@ -175,7 +141,7 @@ QString QMailComposerInterface::name(QMailMessage::MessageType type) const
 */
 QString QMailComposerInterface::displayName(QMailMessage::MessageType type) const
 {
-    return mapping(key())->displayName(type);
+    return composerInterface()->displayName(type);
 }
 
 /*!
@@ -183,7 +149,7 @@ QString QMailComposerInterface::displayName(QMailMessage::MessageType type) cons
 */
 QIcon QMailComposerInterface::displayIcon(QMailMessage::MessageType type) const
 {
-    return mapping(key())->displayIcon(type);
+    return composerInterface()->displayIcon(type);
 }
 
 /* !
@@ -338,9 +304,9 @@ QStringList QMailComposerFactory::keys( QMailMessage::MessageType type , QMailMe
 {
     QStringList in;
 
-    foreach (PluginMap::mapped_type plugin, pluginMap())
-        if (plugin->isSupported(type, contentType))
-            in << plugin->key();
+    if (composerInterface()->isSupported(type, contentType)) {
+        in << composerInterface()->key();
+    }
 
     return in;
 }
@@ -361,7 +327,7 @@ QString QMailComposerFactory::defaultKey( QMailMessage::MessageType type )
 */
 QList<QMailMessage::MessageType> QMailComposerFactory::messageTypes( const QString& key )
 {
-    return mapping(key)->messageTypes();
+    return composerInterface()->messageTypes();
 }
 
 /*!
@@ -371,7 +337,7 @@ QList<QMailMessage::MessageType> QMailComposerFactory::messageTypes( const QStri
 */
 QString QMailComposerFactory::name(const QString &key, QMailMessage::MessageType type)
 {
-    return mapping(key)->name(type);
+    return composerInterface()->name(type);
 }
 
 /*!
@@ -381,7 +347,7 @@ QString QMailComposerFactory::name(const QString &key, QMailMessage::MessageType
 */
 QString QMailComposerFactory::displayName(const QString &key, QMailMessage::MessageType type)
 {
-    return mapping(key)->displayName(type);
+    return composerInterface()->displayName(type);
 }
 
 /*!
@@ -391,7 +357,7 @@ QString QMailComposerFactory::displayName(const QString &key, QMailMessage::Mess
 */
 QIcon QMailComposerFactory::displayIcon(const QString &key, QMailMessage::MessageType type)
 {
-    return mapping(key)->displayIcon(type);
+    return composerInterface()->displayIcon(type);
 }
 
 /*!
@@ -401,6 +367,6 @@ QIcon QMailComposerFactory::displayIcon(const QString &key, QMailMessage::Messag
 QMailComposerInterface *QMailComposerFactory::create( const QString& key, QWidget *parent )
 {
     Q_UNUSED(parent);
-    return mapping(key);
+    return new EmailComposerInterface(parent);
 }
 

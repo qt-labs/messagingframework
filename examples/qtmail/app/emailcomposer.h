@@ -63,7 +63,6 @@ QT_END_NAMESPACE
 class EmailComposerInterface : public QMailComposerInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.EmailComposerInterfaceHandlerFactoryInterface")
 
 public:
     EmailComposerInterface( QWidget *parent = 0 );

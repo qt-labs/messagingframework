@@ -62,7 +62,6 @@ QT_END_NAMESPACE
 class GenericViewer : public QMailViewerInterface
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.GenericViewerPluginHandlerFactoryInterface")
 
 public:
     GenericViewer(QWidget* parent = 0);
