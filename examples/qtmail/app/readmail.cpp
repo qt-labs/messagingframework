@@ -68,6 +68,7 @@
 #include <QPalette>
 #include <QApplication>
 #include <QProcess>
+#include <QDesktopServices>
 
 class SaveContactDialog : public QDialog
 {
@@ -208,13 +209,7 @@ void ReadMail::linkClicked(const QUrl &lnk)
         emit sendMessageTo( QMailAddress(str.mid(7)), mail.messageType() );
     } else {
         // Try opening this link via a service
-        QProcess launcher;
-        launcher.start("xdg-open", QStringList() << str);
-        if (!launcher.waitForStarted()) {
-            qWarning() << "Unable to execute URL:" << str;
-        } else if (!launcher.waitForFinished()) {
-            qWarning() << "Unable to wait for execution of URL:" << str;
-        }
+        QDesktopServices::openUrl(str);
     }
 }
 
