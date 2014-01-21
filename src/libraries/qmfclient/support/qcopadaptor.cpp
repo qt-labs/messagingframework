@@ -454,19 +454,11 @@ void QCopAdaptor::publishAll(QCopAdaptor::PublishType type)
             if (method.methodType() == QMetaMethod::Slot &&
                  method.access() == QMetaMethod::Public &&
                  (type == Slots || type == SignalsAndSlots)) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
                 QByteArray name = method.methodSignature();
-#else
-                QByteArray name = method.signature();
-#endif
                 connectRemoteToLocal("3" + name, this, "1" + name);
             } else if (method.methodType() == QMetaMethod::Signal &&
                         (type == Signals || type == SignalsAndSlots)) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
                 QByteArray name = method.methodSignature();
-#else
-                QByteArray name = method.signature();
-#endif
                 connectLocalToRemote(this, "2" + name, "3" + name);
             }
         }

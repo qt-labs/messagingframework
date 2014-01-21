@@ -122,11 +122,7 @@ public:
 
     inline void* detach()
     {
-    #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-        int refcount = ref_count;
-    #else
         int refcount = ref_count.load();
-    #endif
         if (copy_function && self && refcount != 1) {
             void* copy = (*copy_function)(self);
             reinterpret_cast<QPrivateImplementationBase*>(copy)->self = copy;

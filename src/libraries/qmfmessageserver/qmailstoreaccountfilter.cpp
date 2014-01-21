@@ -45,9 +45,6 @@
 #include <QMetaObject>
 #include <QSettings>
 
-
-#define NORMALIZEDSIGNAL(x) (QMetaObject::normalizedSignature(SIGNAL(x)))
-
 QT_BEGIN_NAMESPACE
 
 static uint qHash(const QMetaMethod &m)
@@ -65,13 +62,8 @@ public:
     QMailStoreEvents();
     ~QMailStoreEvents();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     void registerConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter);
     void deregisterConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter);
-#else
-    void registerConnection(const QString &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter); 
-    void deregisterConnection(const QString &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter); 
-#endif
     
 private slots:
     void accountsUpdated(const QMailAccountIdList& ids);
@@ -102,11 +94,7 @@ private:
     QMap<QMailAccountId, QMailFolderIdList> accountFolders(const QMailFolderIdList& ids, const QList<QMailAccountId> &accounts);
     QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdList& ids, const QList<QMailAccountId> &accounts);
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QHash<QMetaMethod, ConnectionType> _connections;
-#else
-    QMap<QString, ConnectionType> _connections;
-#endif
 };
 
 
@@ -118,26 +106,14 @@ QMailStoreEvents::~QMailStoreEvents()
 {
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QMailStoreEvents::registerConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter)
-#else
-void QMailStoreEvents::registerConnection(const QString &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter)
-#endif
 {
     static const bool initialized = initConnections();
     Q_UNUSED(initialized)
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QHash<QMetaMethod, ConnectionType>::iterator it = _connections.find(signal);
-#else
-    QMap<QString, ConnectionType>::iterator it = _connections.find(signal);
-#endif
     if (it == _connections.end()) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
         qWarning() << "QMailStoreEvents::registerConnection - No such signal:" << signal.methodSignature();
-#else
-        qWarning() << "QMailStoreEvents::registerConnection - No such signal:" << signal;
-#endif
     } else {
         ConnectionType &connection(it.value());
 
@@ -150,23 +126,11 @@ void QMailStoreEvents::registerConnection(const QString &signal, const QMailAcco
     }
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QMailStoreEvents::deregisterConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter)
-#else
-void QMailStoreEvents::deregisterConnection(const QString &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter)
-#endif
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QHash<QMetaMethod, ConnectionType>::iterator it = _connections.find(signal);
-#else
-    QMap<QString, ConnectionType>::iterator it = _connections.find(signal);
-#endif
     if (it == _connections.end()) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
         qWarning() << "QMailStoreEvents::deregisterConnection - No such signal:" << signal.methodSignature();
-#else
-        qWarning() << "QMailStoreEvents::deregisterConnection - No such signal:" << signal;
-#endif
     } else {
         ConnectionType &connection(it.value());
 
@@ -179,11 +143,7 @@ void QMailStoreEvents::deregisterConnection(const QString &signal, const QMailAc
     
 void QMailStoreEvents::accountsUpdated(const QMailAccountIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::accountUpdated);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(accountUpdated()));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachAccount(ids, connection, &QMailStoreAccountFilter::accountUpdated);
@@ -191,11 +151,7 @@ void QMailStoreEvents::accountsUpdated(const QMailAccountIdList& ids)
 
 void QMailStoreEvents::accountContentsModified(const QMailAccountIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::accountContentsModified);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(accountContentsModified()));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachAccount(ids, connection, &QMailStoreAccountFilter::accountContentsModified);
@@ -203,11 +159,7 @@ void QMailStoreEvents::accountContentsModified(const QMailAccountIdList& ids)
 
 void QMailStoreEvents::messagesAdded(const QMailMessageIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messagesAdded);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messagesAdded(QMailMessageIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachMessage(ids, connection, &QMailStoreAccountFilter::messagesAdded);
@@ -215,11 +167,7 @@ void QMailStoreEvents::messagesAdded(const QMailMessageIdList& ids)
 
 void QMailStoreEvents::messagesRemoved(const QMailMessageIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messagesRemoved);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messagesRemoved(QMailMessageIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachMessage(ids, connection, &QMailStoreAccountFilter::messagesRemoved);
@@ -227,11 +175,7 @@ void QMailStoreEvents::messagesRemoved(const QMailMessageIdList& ids)
 
 void QMailStoreEvents::messagesUpdated(const QMailMessageIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messagesUpdated);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messagesUpdated(QMailMessageIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachMessage(ids, connection, &QMailStoreAccountFilter::messagesUpdated);
@@ -239,11 +183,7 @@ void QMailStoreEvents::messagesUpdated(const QMailMessageIdList& ids)
 
 void QMailStoreEvents::messageContentsModified(const QMailMessageIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messageContentsModified);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messageContentsModified(QMailMessageIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachMessage(ids, connection, &QMailStoreAccountFilter::messageContentsModified);
@@ -251,11 +191,7 @@ void QMailStoreEvents::messageContentsModified(const QMailMessageIdList& ids)
 
 void QMailStoreEvents::foldersAdded(const QMailFolderIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::foldersAdded);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(foldersAdded(QMailFolderIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachFolder(ids, connection, &QMailStoreAccountFilter::foldersAdded);
@@ -263,11 +199,7 @@ void QMailStoreEvents::foldersAdded(const QMailFolderIdList& ids)
 
 void QMailStoreEvents::foldersRemoved(const QMailFolderIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::foldersRemoved);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(foldersRemoved(QMailFolderIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachFolder(ids, connection, &QMailStoreAccountFilter::foldersRemoved);
@@ -275,11 +207,7 @@ void QMailStoreEvents::foldersRemoved(const QMailFolderIdList& ids)
 
 void QMailStoreEvents::foldersUpdated(const QMailFolderIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::foldersUpdated);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(foldersUpdated(QMailFolderIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachFolder(ids, connection, &QMailStoreAccountFilter::foldersUpdated);
@@ -287,11 +215,7 @@ void QMailStoreEvents::foldersUpdated(const QMailFolderIdList& ids)
 
 void QMailStoreEvents::folderContentsModified(const QMailFolderIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::folderContentsModified);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(folderContentsModified(QMailFolderIdList)));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachFolder(ids, connection, &QMailStoreAccountFilter::folderContentsModified);
@@ -299,11 +223,7 @@ void QMailStoreEvents::folderContentsModified(const QMailFolderIdList& ids)
 
 void QMailStoreEvents::messageRemovalRecordsAdded(const QMailAccountIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messageRemovalRecordsAdded);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messageRemovalRecordsAdded()));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachAccount(ids, connection, &QMailStoreAccountFilter::messageRemovalRecordsAdded);
@@ -311,11 +231,7 @@ void QMailStoreEvents::messageRemovalRecordsAdded(const QMailAccountIdList& ids)
 
 void QMailStoreEvents::messageRemovalRecordsRemoved(const QMailAccountIdList& ids)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::messageRemovalRecordsRemoved);
-#else
-    static const QString signal(NORMALIZEDSIGNAL(messageRemovalRecordsRemoved()));
-#endif
     static const ConnectionType &connection = _connections[signal];
 
     foreachAccount(ids, connection, &QMailStoreAccountFilter::messageRemovalRecordsRemoved);
@@ -323,7 +239,6 @@ void QMailStoreEvents::messageRemovalRecordsRemoved(const QMailAccountIdList& id
 
 bool QMailStoreEvents::initConnections()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     foreach (const QMetaMethod &signal,
              QList<QMetaMethod>() << QMetaMethod::fromSignal(&QMailStoreAccountFilter::accountUpdated)
                            << QMetaMethod::fromSignal(&QMailStoreAccountFilter::accountContentsModified)
@@ -337,21 +252,6 @@ bool QMailStoreEvents::initConnections()
                            << QMetaMethod::fromSignal(&QMailStoreAccountFilter::folderContentsModified)
                            << QMetaMethod::fromSignal(&QMailStoreAccountFilter::messageRemovalRecordsAdded)
                            << QMetaMethod::fromSignal(&QMailStoreAccountFilter::messageRemovalRecordsRemoved)) {
-#else
-    foreach (const QString &signal, 
-             QStringList() << NORMALIZEDSIGNAL(accountUpdated())
-                           << NORMALIZEDSIGNAL(accountContentsModified())
-                           << NORMALIZEDSIGNAL(messagesAdded(QMailMessageIdList))
-                           << NORMALIZEDSIGNAL(messagesRemoved(QMailMessageIdList))
-                           << NORMALIZEDSIGNAL(messagesUpdated(QMailMessageIdList))
-                           << NORMALIZEDSIGNAL(messageContentsModified(QMailMessageIdList))
-                           << NORMALIZEDSIGNAL(foldersAdded(QMailFolderIdList))
-                           << NORMALIZEDSIGNAL(foldersRemoved(QMailFolderIdList))
-                           << NORMALIZEDSIGNAL(foldersUpdated(QMailFolderIdList))
-                           << NORMALIZEDSIGNAL(folderContentsModified(QMailFolderIdList))
-                           << NORMALIZEDSIGNAL(messageRemovalRecordsAdded()) 
-                           << NORMALIZEDSIGNAL(messageRemovalRecordsRemoved())) {
-#endif
         _connections.insert(signal, ConnectionType());
     }
 
@@ -459,20 +359,12 @@ public:
     QMailStoreAccountFilterPrivate(const QMailAccountId &id, QMailStoreAccountFilter *filter);
     ~QMailStoreAccountFilterPrivate();
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     void incrementConnectionCount(const QMetaMethod &signal, int increment);
-#else
-    void incrementConnectionCount(const char *signal, int increment);
-#endif
 
 private:
     QMailAccountId _id;
     QMailStoreAccountFilter *_filter;
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QHash<QMetaMethod, uint> _connectionCount;
-#else
-    QMap<QString, uint> _connectionCount;
-#endif
 
     static QMailStoreEvents _events;
 };
@@ -488,18 +380,13 @@ QMailStoreAccountFilterPrivate::QMailStoreAccountFilterPrivate(const QMailAccoun
 
 QMailStoreAccountFilterPrivate::~QMailStoreAccountFilterPrivate()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QHash<QMetaMethod, uint>::const_iterator it = _connectionCount.begin(), end = _connectionCount.end();
-#else
-    QMap<QString, uint>::const_iterator it = _connectionCount.begin(), end = _connectionCount.end();
-#endif
     for ( ; it != end; ++it) {
         if (it.value() > 0)
             _events.deregisterConnection(it.key(), _id, _filter);
     }
 }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QMailStoreAccountFilterPrivate::incrementConnectionCount(const QMetaMethod &signal, int increment)
 {
     uint &count = _connectionCount[signal];
@@ -511,21 +398,6 @@ void QMailStoreAccountFilterPrivate::incrementConnectionCount(const QMetaMethod 
 
     count += increment;
 }
-#else
-void QMailStoreAccountFilterPrivate::incrementConnectionCount(const char *signal, int increment)
-{
-    const QString sig(signal);
-
-    uint &count = _connectionCount[sig];
-    if (count == 0 && (increment > 0)) {
-        _events.registerConnection(sig, _id, _filter);
-    } else if ((count + increment) == 0) {
-        _events.deregisterConnection(sig, _id, _filter);
-    }
-
-    count += increment;
-}
-#endif
 
 /*!
     \class QMailStoreAccountFilter
@@ -556,21 +428,13 @@ QMailStoreAccountFilter::~QMailStoreAccountFilter()
 }
 
 /* \reimp */
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QMailStoreAccountFilter::connectNotify(const QMetaMethod &signal)
-#else
-void QMailStoreAccountFilter::connectNotify(const char *signal)
-#endif
 {
     d->incrementConnectionCount(signal, 1);
 }
 
 /* \reimp */
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
 void QMailStoreAccountFilter::disconnectNotify(const QMetaMethod &signal)
-#else
-void QMailStoreAccountFilter::disconnectNotify(const char *signal)
-#endif
 {
     d->incrementConnectionCount(signal, -1);
 }

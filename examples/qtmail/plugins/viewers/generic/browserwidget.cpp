@@ -86,29 +86,6 @@ static QString dateString(const QDateTime& dt)
     }
 }
 
-//QString Qt::escape ( const QString & plain ) is deprecated in Qt 5.0
-static QString htmlEscaped(const QString& plain)
-{
-#if QT_VERSION >= 0x050000
-    return plain.toHtmlEscaped();
-#else
-    return Qt::escape(plain);
-#endif
-}
-
-#if (QT_VERSION < QT_VERSION_CHECK(4, 7, 0))
-
-QT_BEGIN_NAMESPACE
-
-static uint qHash(const QUrl &url)
-{
-    return qHash(url.toString());
-}
-
-QT_END_NAMESPACE
-
-#endif
-
 #ifdef USE_WEBKIT
 class ContentReply : public QNetworkReply
 {
@@ -415,10 +392,10 @@ void BrowserWidget::setPartResource(const QMailMessagePart& part)
     QString name(part.displayName());
     if (!name.isEmpty()) {
         // use 'qmf-part' url scheme to ensure inline images without a contentId are rendered
-        names.insert(QUrl("qmf-part:" + htmlEscaped(name)));
+        names.insert(QUrl("qmf-part:" + name.toHtmlEscaped()));
     }
 
-    name = htmlEscaped(part.contentID());
+    name = part.contentID().toHtmlEscaped();
     if (!name.isEmpty()) {
         // We can only resolve URLs using the cid: scheme
         if (name.startsWith("cid:", Qt::CaseInsensitive)) {
@@ -430,10 +407,10 @@ void BrowserWidget::setPartResource(const QMailMessagePart& part)
 #else
     QString name(part.displayName());
     if (!name.isEmpty()) {
-        names.insert(QUrl(htmlEscaped(name)));
+        names.insert(QUrl(name.toHtmlEscaped()));
     }
 
-    name = htmlEscaped(part.contentID());
+    name = part.contentID().toHtmlEscaped();
     if (!name.isEmpty()) {
         // Add the content both with and without the cid: prefix
         names.insert(name);
@@ -446,7 +423,7 @@ void BrowserWidget::setPartResource(const QMailMessagePart& part)
 
     name = part.contentType().name();
     if (!name.isEmpty()) {
-        names.insert(QUrl(htmlEscaped(name)));
+        names.insert(QUrl(name.toHtmlEscaped()));
     }
 #endif
 
@@ -675,7 +652,7 @@ QString BrowserWidget::renderSimplePart(const QMailMessagePart& part)
 {
     QString result;
 
-    QString partId = htmlEscaped(part.displayName());
+    QString partId = part.displayName().toHtmlEscaped();
 
     QMailMessageContentType contentType = part.contentType();
     if ( contentType.type().toLower() == "text") { // No tr
@@ -708,7 +685,7 @@ QString BrowserWidget::renderSimplePart(const QMailMessagePart& part)
 
 QString BrowserWidget::renderAttachment(const QMailMessagePart& part)
 {
-    QString partId = htmlEscaped(part.displayName());
+    QString partId = part.displayName().toHtmlEscaped();
 
     QString attachmentTemplate = 
 "<hr><b>ATTACHMENT_TEXT</b>: <a href=\"attachment;ATTACHMENT_ACTION;ATTACHMENT_LOCATION\">NAME_TEXT</a>DISPOSITION<br>";
@@ -933,7 +910,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 
     headerTemplate = replaceLast(headerTemplate, "HIGHLIGHT_COLOR", palette().color(QPalette::Highlight).name());
     headerTemplate = replaceLast(headerTemplate, "LINK_COLOR", palette().color(QPalette::HighlightedText).name());
-    headerTemplate = replaceLast(headerTemplate, "SUBJECT_TEXT", htmlEscaped(subjectText));
+    headerTemplate = replaceLast(headerTemplate, "SUBJECT_TEXT", subjectText.toHtmlEscaped());
     headerTemplate = replaceLast(headerTemplate, "WINDOW_COLOR", palette().color(QPalette::Window).name());
 
     QString itemTemplate =
@@ -948,7 +925,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 
     QString metadataText;
     foreach (const TextPair item, metadata) {
-        QString element = replaceLast(itemTemplate, "ID_TEXT", htmlEscaped(item.first));
+        QString element = replaceLast(itemTemplate, "ID_TEXT", item.first.toHtmlEscaped());
         element = replaceLast(element, "CONTENT_TEXT", item.second);
         metadataText.append(element);
     }
@@ -1382,7 +1359,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
         }
 
         // Write the unmatched text out in escaped form
-        result.append(htmlEscaped(txt.mid(lastPos, (*matchPos - lastPos))));
+        result.append(txt.mid(lastPos, (*matchPos - lastPos)).toHtmlEscaped());
 
         result.append(replacement);
 
@@ -1403,7 +1380,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
     }
 
     if (lastPos < txt.length()) {
-        result.append(htmlEscaped(txt.mid(lastPos)));
+        result.append(txt.mid(lastPos).toHtmlEscaped());
     }
 
     return result.join("");
@@ -1422,7 +1399,7 @@ void BrowserWidget::scrollToAnchor(const QString& anchor)
 void BrowserWidget::setPlainText(const QString& text)
 {
 #ifdef USE_WEBKIT
-    QString html(htmlEscaped(text));
+    QString html(text.toHtmlEscaped());
     html.replace("\n", "<br>");
     m_webView->setHtml("<html><body>" + html + "</body></html>");
     m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
@@ -1469,28 +1446,28 @@ QString BrowserWidget::listRefMailTo(const QList<QMailAddress>& list)
 
 QString BrowserWidget::refMailTo(const QMailAddress& address)
 {
-    QString name = htmlEscaped(address.toString());
+    QString name = address.toString().toHtmlEscaped();
     if (name == "System")
         return name;
 
     if (address.isPhoneNumber() || address.isEmailAddress())
-        return "<a href=\"mailto:" + htmlEscaped(address.address()) + "\">" + name + "</a>";
+        return "<a href=\"mailto:" + address.address().toHtmlEscaped() + "\">" + name + "</a>";
 
     return name;
 }
 
 QString BrowserWidget::refNumber(const QString& number)
 {
-    return "<a href=\"dial;" + htmlEscaped(number) + "\">" + number + "</a>";
+    return "<a href=\"dial;" + number.toHtmlEscaped() + "\">" + number + "</a>";
 }
 
 QString BrowserWidget::refUrl(const QString& url, const QString& scheme, const QString& leading, const QString& trailing)
 {
     // Assume HTTP if there is no scheme
-    QString escaped(htmlEscaped(url));
+    QString escaped(url.toHtmlEscaped());
     QString target(scheme.isEmpty() ? "http://" + escaped : escaped);
 
-    return htmlEscaped(leading) + "<a href=\"" + target + "\">" + escaped + "</a>" + htmlEscaped(trailing);
+    return leading.toHtmlEscaped() + "<a href=\"" + target + "\">" + escaped + "</a>" + trailing.toHtmlEscaped();
 }
 
 #include "browserwidget.moc"

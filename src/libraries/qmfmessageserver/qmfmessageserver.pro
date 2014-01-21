@@ -1,30 +1,17 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG += qmfclient
-
-equals(QT_MAJOR_VERSION, 4){
-    TARGET = qmfmessageserver
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfclient
-    } else {
-        LIBS += -lqmfclient
-    }
-}
-equals(QT_MAJOR_VERSION, 5){
-    TARGET = qmfmessageserver5
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfclient5
-    } else {
-        LIBS += -lqmfclient5
-    }
+TARGET = qmfmessageserver5
+macx:contains(QT_CONFIG, qt_framework) {
+    LIBS += -framework qmfclient5
+} else {
+    LIBS += -lqmfclient5
 }
 target.path += $$QMF_INSTALL_ROOT/lib
 
 QT = core network
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-    QT += gui
-    equals(QT_MAJOR_VERSION, 5): QT += widgets
+    QT += gui widgets
 }
 
 DEFINES += MESSAGESERVER_INTERNAL
@@ -61,8 +48,7 @@ contains(DEFINES,MESSAGESERVER_PLUGINS) {
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
 
-equals(QT_MAJOR_VERSION, 4): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver
-equals(QT_MAJOR_VERSION, 5): header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver5
+header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver5
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files

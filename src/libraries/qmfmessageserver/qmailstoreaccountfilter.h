@@ -78,13 +78,8 @@ private:
     friend class QMailStoreAccountFilterPrivate;
     friend class QMailStoreEvents;
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     void connectNotify(const QMetaMethod &signal);
     void disconnectNotify(const QMetaMethod &signal);
-#else
-    void connectNotify(const char* signal);
-    void disconnectNotify(const char* signal);
-#endif
 
     QMailStoreAccountFilterPrivate* d;
 };

@@ -91,10 +91,6 @@ QMailMessageServiceEditor *QmfConfigurator::createEditor(QMailMessageServiceFact
 }
 #endif
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-Q_EXPORT_PLUGIN2(qmfsettings,QmfServicePlugin);
-#endif
-
 QmfServicePlugin::QmfServicePlugin()
     : QMailMessageServicePlugin()
 {

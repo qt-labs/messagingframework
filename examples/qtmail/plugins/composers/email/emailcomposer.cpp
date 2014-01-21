@@ -53,9 +53,6 @@
 #include <QTextEdit>
 #include <QStackedWidget>
 #include <qmailaccount.h>
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QInputContext>
-#endif
 #include <QStyle>
 #include <QMenu>
 #include <qmailnamespace.h>
@@ -521,11 +518,8 @@ m_composer(composer)
 
 bool BodyTextEdit::isComposing()
 {
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-    return (inputContext() && inputContext()->isComposing());
-#else
+#warning "always false since Qt 5 port"
     return false;
-#endif
 }
 
 bool BodyTextEdit::isEmpty()
@@ -1253,8 +1247,5 @@ QString EmailComposerInterface::quotePrefix()
 {
     return "> ";
 }
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-Q_EXPORT_PLUGIN2(emailcomposer, EmailComposerInterface);
-#endif
 
 #include "emailcomposer.moc"

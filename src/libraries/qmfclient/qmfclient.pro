@@ -1,20 +1,14 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-equals(QT_MAJOR_VERSION, 4): TARGET = qmfclient
-equals(QT_MAJOR_VERSION, 5): TARGET = qmfclient5
+TARGET = qmfclient5
 INSTALLS += target
 CONFIG += link_pkgconfig
 
-simulator:macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
+macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
 else:target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
 DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
-
-win32: {
-    # QLocalSocket is broken on win32 prior to 4.5.2
-    lessThan(QT_MAJOR_VERSION,5):lessThan(QT_MINOR_VERSION,6):lessThan(QT_PATCH_VERSION,2):DEFINES += QT_NO_QCOP_LOCAL_SOCKET
-}
 
 QT = core sql network
 DEPENDPATH += .
@@ -171,8 +165,7 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
-equals(QT_MAJOR_VERSION, 4): header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient
-equals(QT_MAJOR_VERSION, 5): header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient5
+header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient5
 header_files.files=$$PUBLIC_HEADERS
 
 INSTALLS += header_files

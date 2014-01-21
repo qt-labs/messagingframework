@@ -74,11 +74,7 @@ QString messageSizeText(const QMailMessageMetaData& m)
     const uint size(m.size());
 
     if (size < 1024)
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-    return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", QCoreApplication::CodecForTr, size);
-#else
-    return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", size);
-#endif
+        return qApp->translate("QMailMessageModelBase", "%n byte(s)", "", size);
     else if (size < (1024 * 1024))
         return qApp->translate("QMailMessageModelBase", "%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
     else if (size < (1024 * 1024 * 1024))

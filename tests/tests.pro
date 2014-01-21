@@ -30,12 +30,6 @@ SUBDIRS = \
 CONFIG += unittest
 
 # Install test file description
-equals(QT_MAJOR_VERSION, 4) {
-    test_description.files = tests.xml
-    test_description.path  = $$QMF_INSTALL_ROOT/tests
-}
-equals(QT_MAJOR_VERSION, 5) {
-    test_description.files = qt5/tests.xml
-    test_description.path  = $$QMF_INSTALL_ROOT/tests5
-}
+test_description.files = qt5/tests.xml
+test_description.path  = $$QMF_INSTALL_ROOT/tests5
 INSTALLS += test_description

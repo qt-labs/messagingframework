@@ -53,14 +53,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#define QATOMICINTVALUE(obj) obj
-#define QATOMICINTSTORE(obj,value) obj = value
-#else
-#define QATOMICINTVALUE(obj) obj.load()
-#define QATOMICINTSTORE(obj,value) obj.store(value)
-#endif
-
 /*
     Define this to have testmalloc do more extensive selftests to help verify
     that all allocations are going through our overridden allocator.
@@ -126,7 +118,7 @@ int TestMalloc::peakUsable()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return QATOMICINTVALUE(D->peak_usable);
+        return D->peak_usable.load();
     else
         return -1;
 }
@@ -135,7 +127,7 @@ int TestMalloc::peakTotal()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return QATOMICINTVALUE(D->peak_total);
+        return D->peak_total.load();
     else
         return -1;
 }
@@ -144,7 +136,7 @@ int TestMalloc::nowUsable()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return QATOMICINTVALUE(D->now_usable);
+        return D->now_usable.load();
     else
         return -1;
 }
@@ -153,7 +145,7 @@ int TestMalloc::nowTotal()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return QATOMICINTVALUE(D->now_usable) + QATOMICINTVALUE(D->now_overhead);
+        return D->now_usable.load() + D->now_overhead.load();
     else
         return -1;
 }
@@ -161,15 +153,15 @@ int TestMalloc::nowTotal()
 void TestMalloc::resetPeak()
 {
     if (!D) TestMallocPrivate::init();
-    D->peak_usable.fetchAndStoreOrdered(QATOMICINTVALUE(D->now_usable));
-    D->peak_total.fetchAndStoreOrdered(QATOMICINTVALUE(D->now_usable) + QATOMICINTVALUE(D->now_overhead));
+    D->peak_usable.fetchAndStoreOrdered(D->now_usable.load());
+    D->peak_total.fetchAndStoreOrdered(D->now_usable.load() + D->now_overhead.load());
 }
 
 void TestMalloc::resetNow()
 {
     if (!D) TestMallocPrivate::init();
-    QATOMICINTSTORE(D->now_usable,0);
-    QATOMICINTSTORE(D->now_overhead,0);
+    D->now_usable.store(0);
+    D->now_overhead.store(0);
 }
 
 #ifndef __MALLOC_HOOK_VOLATILE
@@ -187,8 +179,8 @@ void TestMallocPrivate::init()
     */
     struct mallinfo info = mallinfo();
     static TestMallocPrivate testmalloc;
-    QATOMICINTSTORE(testmalloc.now_usable,info.uordblks);
-    QATOMICINTSTORE(testmalloc.now_overhead,0); /* cannot get this figure, but should be close to 0. */
+    testmalloc.now_usable.store(info.uordblks);
+    testmalloc.now_overhead.store(0); /* cannot get this figure, but should be close to 0. */
     TestMalloc::resetPeak();
     testmalloc.selftest();
 
@@ -216,7 +208,7 @@ void TestMallocPrivate::afterMorecore()
 
 void TestMallocPrivate::selftest()
 {
-    int before = QATOMICINTVALUE(this->now_usable);
+    int before = this->now_usable.load();
     int during;
     int after;
     char* array = 0;
@@ -225,10 +217,10 @@ void TestMallocPrivate::selftest()
         ba.resize(512);
         array = new char[512];
 
-        during = QATOMICINTVALUE(this->now_usable);
+        during = this->now_usable.load();
     }
     delete [] array;
-    after = QATOMICINTVALUE(this->now_usable);
+    after = this->now_usable.load();
 
     if (!(during >= before+1024)) {
         qWarning("Heap usage measurement fail: heap before byte array was %d, during was %d (expected at least %d).  Heap usage will not be measured.", before, during, before + 1024);
@@ -249,11 +241,11 @@ void TestMallocPrivate::selftest()
 
 void TestMallocPrivate::updatePeak()
 {
-    if (QATOMICINTVALUE(now_usable) > QATOMICINTVALUE(peak_usable)) {
-        peak_usable.fetchAndStoreOrdered(QATOMICINTVALUE(now_usable));
+    if (now_usable.load() > peak_usable.load()) {
+        peak_usable.fetchAndStoreOrdered(now_usable.load());
     }
-    if (QATOMICINTVALUE(now_usable) + QATOMICINTVALUE(now_overhead) > QATOMICINTVALUE(peak_total)) {
-        peak_total.fetchAndStoreOrdered(QATOMICINTVALUE(now_usable) + QATOMICINTVALUE(now_overhead));
+    if (now_usable.load() + now_overhead.load() > peak_total.load()) {
+        peak_total.fetchAndStoreOrdered(now_usable.load() + now_overhead.load());
     }
 }
 

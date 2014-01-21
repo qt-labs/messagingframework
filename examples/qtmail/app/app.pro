@@ -1,22 +1,11 @@
 TEMPLATE = app
+TARGET = qtmail5
+QT += widgets
 
-equals(QT_MAJOR_VERSION, 4){
-    TARGET = qtmail
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfmessageserver -framework qmfclient -framework qmfutil
-    } else {
-        LIBS += -lqmfmessageserver -lqmfclient -lqmfutil
-    }
-}
-equals(QT_MAJOR_VERSION, 5){
-    TARGET = qtmail5
-    QT += widgets
-
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfmessageserver5 -framework qmfclient5 -framework qmfutil5
-    } else {
-        LIBS += -lqmfmessageserver5 -lqmfclient5 -lqmfutil5
-    }
+macx:contains(QT_CONFIG, qt_framework) {
+    LIBS += -framework qmfmessageserver5 -framework qmfclient5 -framework qmfutil5
+} else {
+    LIBS += -lqmfmessageserver5 -lqmfclient5 -lqmfutil5
 }
 
 CONFIG += qmfutil qmfclient qmfmessageserver

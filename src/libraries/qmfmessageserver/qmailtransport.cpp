@@ -110,7 +110,6 @@ QMailTransport::Socket::Socket(QObject *parent)
     setProtocol(QSsl::AnyProtocol);
 #endif
 
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
     // we are library and if application sets proxy somewhere else
     // nothing is done here
     QNetworkProxy appProxy = QNetworkProxy::applicationProxy();
@@ -121,17 +120,6 @@ QMailTransport::Socket::Socket(QObject *parent)
                     "host=" << QNetworkProxy::applicationProxy().hostName() <<
                     "port=" << QNetworkProxy::applicationProxy().port();
     }
-#else
-    QByteArray env = qgetenv("http_proxy") ;
-    if (env.length()) {
-        QUrl url(env) ;
-        QString host = url.host() ;
-        int port = url.port(8080) ;
-        QNetworkProxy proxy(QNetworkProxy::HttpProxy,host,port) ;
-        setProxy(proxy);
-        qMailLog(Messaging) << "QMailTransport::Socket::Socket SET PROXY host=" << host << " port=" << port ;
-    }
-#endif    
 }
 
 void QMailTransport::Socket::mark()

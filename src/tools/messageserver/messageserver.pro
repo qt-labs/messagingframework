@@ -6,29 +6,18 @@ SERVER_AS_DLL: {
     TEMPLATE = app
 }
 
-equals(QT_MAJOR_VERSION, 4){
-    TARGET = messageserver
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfmessageserver -framework qmfclient
-    } else {
-        LIBS += -lqmfmessageserver -lqmfclient
-    }
-}
-equals(QT_MAJOR_VERSION, 5){
-    TARGET = messageserver5
-    macx:contains(QT_CONFIG, qt_framework) {
-        LIBS += -framework qmfmessageserver5 -framework qmfclient5
-    } else {
-        LIBS += -lqmfmessageserver5 -lqmfclient5
-    }
+TARGET = messageserver5
+macx:contains(QT_CONFIG, qt_framework) {
+    LIBS += -framework qmfmessageserver5 -framework qmfclient5
+} else {
+    LIBS += -lqmfmessageserver5 -lqmfclient5
 }
 
 CONFIG += qmfmessageserver qmfclient
 QT = core
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-    QT += gui
-    equals(QT_MAJOR_VERSION, 5): QT += widgets
+    QT += gui widgets
 }
 
 CONFIG -= app_bundle

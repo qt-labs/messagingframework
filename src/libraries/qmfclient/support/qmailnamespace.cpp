@@ -272,11 +272,7 @@ QString QMail::pluginsPath()
     // default to QMF_INSTALL_ROOT/lib/qmf/plugins, as that's where it will most
     // likely be. we also search the old fallback (".") via QCoreApplication,
     // still.
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return QString::fromUtf8(QMF_INSTALL_ROOT) + "/lib/qmf/plugins5/";
-#else
-    return QString::fromUtf8(QMF_INSTALL_ROOT) + "/lib/qmf/plugins/";
-#endif
 }
 
 /*!
