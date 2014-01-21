@@ -1,94 +1,88 @@
-TEMPLATE = lib 
-CONFIG += warn_on
-TARGET = qmfclient5
-INSTALLS += target
-CONFIG += link_pkgconfig
+TARGET     = QmfClient
+QT         = core sql network
+CONFIG    += warn_on
 
-macx:target.path += $$QMF_INSTALL_ROOT/Library/Frameworks
-else:target.path += $$QMF_INSTALL_ROOT/lib
+load(qt_module)
+DEFINES -= QT_NO_CAST_TO_ASCII # this is a fight for another day.
 
 DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
 DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
 
-QT = core sql network
-DEPENDPATH += .
+#DEPENDPATH += .
 INCLUDEPATH += support
 
-PUBLIC_HEADERS += qmailaccount.h \
-                  qmailaccountconfiguration.h \
-                  qmailaccountkey.h \
-                  qmailaccountlistmodel.h \
-                  qmailaccountsortkey.h \
-                  qmailaction.h \
-                  qmailaddress.h \
-                  qmailcodec.h \
-                  qmailcontentmanager.h \
-                  qmaildatacomparator.h \
-                  qmaildisconnected.h \
-                  qmailfolder.h \
-                  qmailfolderfwd.h \
-                  qmailfolderkey.h \
-                  qmailfoldersortkey.h \
-                  qmailid.h \
-                  qmailkeyargument.h \
-                  qmailmessage.h \
-                  qmailmessagefwd.h \
-                  qmailmessagekey.h \
-                  qmailmessagelistmodel.h \
-                  qmailmessagemodelbase.h \
-                  qmailmessageremovalrecord.h \
-                  qmailmessageserver.h \
-                  qmailmessageset.h \
-                  qmailmessagesortkey.h \
-                  qmailmessagethreadedmodel.h \
-                  qmailserviceaction.h \
-                  qmailsortkeyargument.h \
-                  qmailstore.h \
-                  qmailtimestamp.h \
-                  qmailthread.h \
-                  qmailthreadkey.h \
-                  qmailthreadlistmodel.h \
-                  qmailthreadsortkey.h \
-                  qprivateimplementation.h \
-                  qprivateimplementationdef.h \
-                  support/qmailglobal.h \
-                  support/qmaillog.h \
-                  support/qlogsystem.h \
-                  support/qloggers.h \
-                  support/qmailnamespace.h \
-                  support/qmailpluginmanager.h \
-                  support/qmailipc.h
-
-PRIVATE_HEADERS += bind_p.h \
-                   locks_p.h \
-                   mailkeyimpl_p.h \
-                   mailsortkeyimpl_p.h \
-                   qmailaccountkey_p.h \
-                   qmailaccountsortkey_p.h \
-                   qmailfolderkey_p.h \
-                   qmailfoldersortkey_p.h \
-                   qmailmessage_p.h \
-                   qmailmessagekey_p.h \
-                   qmailmessageset_p.h \
-                   qmailmessagesortkey_p.h \
-                   qmailserviceaction_p.h \
-                   qmailstore_p.h \
-                   qmailstoreimplementation_p.h \
-                   qmailthread_p.h \
-                   qmailthreadkey_p.h \
-                   qmailthreadsortkey_p.h \
-                   longstring_p.h \
-                   longstream_p.h \
-                   support/qcopchannel_p.h \
-                   support/qringbuffer_p.h \
-                   support/qcopadaptor.h \
-                   support/qcopapplicationchannel.h \
-                   support/qcopchannel.h \
-                   support/qcopchannelmonitor.h \
-                   support/qcopserver.h
-
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
-
+HEADERS += \
+    qmailaccount.h \
+    qmailaccountconfiguration.h \
+    qmailaccountkey.h \
+    qmailaccountlistmodel.h \
+    qmailaccountsortkey.h \
+    qmailaction.h \
+    qmailaddress.h \
+    qmailcodec.h \
+    qmailcontentmanager.h \
+    qmaildatacomparator.h \
+    qmaildisconnected.h \
+    qmailfolder.h \
+    qmailfolderfwd.h \
+    qmailfolderkey.h \
+    qmailfoldersortkey.h \
+    qmailid.h \
+    qmailkeyargument.h \
+    qmailmessage.h \
+    qmailmessagefwd.h \
+    qmailmessagekey.h \
+    qmailmessagelistmodel.h \
+    qmailmessagemodelbase.h \
+    qmailmessageremovalrecord.h \
+    qmailmessageserver.h \
+    qmailmessageset.h \
+    qmailmessagesortkey.h \
+    qmailmessagethreadedmodel.h \
+    qmailserviceaction.h \
+    qmailsortkeyargument.h \
+    qmailstore.h \
+    qmailtimestamp.h \
+    qmailthread.h \
+    qmailthreadkey.h \
+    qmailthreadlistmodel.h \
+    qmailthreadsortkey.h \
+    qprivateimplementation.h \
+    qprivateimplementationdef.h \
+    support/qmailglobal.h \
+    support/qmaillog.h \
+    support/qlogsystem.h \
+    support/qloggers.h \
+    support/qmailnamespace.h \
+    support/qmailpluginmanager.h \
+    support/qmailipc.h \
+    bind_p.h \
+    locks_p.h \
+    mailkeyimpl_p.h \
+    mailsortkeyimpl_p.h \
+    qmailaccountkey_p.h \
+    qmailaccountsortkey_p.h \
+    qmailfolderkey_p.h \
+    qmailfoldersortkey_p.h \
+    qmailmessage_p.h \
+    qmailmessagekey_p.h \
+    qmailmessageset_p.h \
+    qmailmessagesortkey_p.h \
+    qmailserviceaction_p.h \
+    qmailstore_p.h \
+    qmailstoreimplementation_p.h \
+    qmailthread_p.h \
+    qmailthreadkey_p.h \
+    qmailthreadsortkey_p.h \
+    longstring_p.h \
+    longstream_p.h \
+    support/qcopchannel_p_p.h \
+    support/qringbuffer_p.h \
+    support/qcopadaptor_p.h \
+    support/qcopapplicationchannel_p.h \
+    support/qcopchannel_p.h \
+    support/qcopchannelmonitor_p.h \
+    support/qcopserver_p.h
 
 SOURCES += longstream.cpp \
            longstring.cpp \
@@ -165,18 +159,6 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_CN.ts \
                 libqtopiamail-zh_TW.ts
 
-header_files.path=$$QMF_INSTALL_ROOT/include/qmfclient5
-header_files.files=$$PUBLIC_HEADERS
-
-INSTALLS += header_files
-
-unix: {
-	CONFIG += create_pc create_prl
-	QMAKE_PKGCONFIG_LIBDIR  = $$target.path
-	QMAKE_PKGCONFIG_INCDIR  = $$header_files.path
-	QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-}
-
 packagesExist(icu-uc) {
     LIBS += -licui18n -licuuc -licudata
     PRIVATE_HEADERS += support/qcharsetdetector_p.h \
@@ -187,4 +169,3 @@ packagesExist(icu-uc) {
     warning("icu not available, not doing character set detection")
 }
 
-include(../../../common.pri)

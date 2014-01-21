@@ -1,33 +1,16 @@
 TEMPLATE = app
 target.path += $$QMF_INSTALL_ROOT/bin
-CONFIG += qmfclient qmfmessageserver
 TARGET = messagingaccounts5
-QT += widgets
-
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfmessageserver5 -framework qmfclient5
-} else {
-    LIBS += -lqmfmessageserver5 -lqmfclient5
-}
-
-DEPENDPATH += .
+QT += widgets qmfclient qmfmessageserver
 
 QTMAIL_EXAMPLE=../qtmail
 
 #Required to build on windows
 DEFINES += QMFUTIL_INTERNAL
 
-INCLUDEPATH += . ../../src/libraries/qmfclient \
-                 ../../src/libraries/qmfclient/support \
-                 ../../src/libraries/qmfmessageserver \
+INCLUDEPATH += \
                  $$QTMAIL_EXAMPLE/app \
                  $$QTMAIL_EXAMPLE/libs/qmfutil
-
-LIBS += -L../../src/libraries/qmfclient/build \
-        -L../../src/libraries/qmfmessageserver/build
-
-macx:LIBS += -F../../src/libraries/qmfclient/build \
-        -F../../src/libraries/qmfmessageserver/build
 
 HEADERS += $$QTMAIL_EXAMPLE/app/accountsettings.h \
            $$QTMAIL_EXAMPLE/app/editaccount.h \

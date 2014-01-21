@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qcopchannel.h"
-#include "qcopserver.h"
 #include "qcopchannel_p.h"
-#include "qcopapplicationchannel.h"
+#include "qcopserver_p.h"
+#include "qcopchannel_p_p.h"
+#include "qcopapplicationchannel_p.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qdatastream.h"

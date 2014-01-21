@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qcopserver.h"
-#include "qcopchannel.h"
+#include "qcopserver_p.h"
 #include "qcopchannel_p.h"
-#include "qcopchannelmonitor.h"
+#include "qcopchannel_p_p.h"
+#include "qcopchannelmonitor_p.h"
 #include <QtCore/qfile.h>
 #include <QtCore/qdir.h>
 

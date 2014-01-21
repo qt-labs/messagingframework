@@ -42,9 +42,9 @@
 #include "qmailstoreimplementation_p.h"
 #include <qmailipc.h>
 #include "qmaillog.h"
-#include <qcopadaptor.h>
-#include <qcopchannel.h>
-#include <qcopserver.h>
+#include <qcopadaptor_p.h>
+#include <qcopchannel_p.h>
+#include <qcopserver_p.h>
 #include <qmailnamespace.h>
 #include <QCoreApplication>
 #include <QFileSystemWatcher>

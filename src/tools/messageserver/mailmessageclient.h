@@ -45,7 +45,7 @@
 #include "qmailmessageserver.h"
 #include <QObject>
 #include <qmailipc.h>
-#include <qcopadaptor.h>
+#include <private/qcopadaptor_p.h>
 
 // The back-end corresponding to the front-end in QMailMessageServer
 class MailMessageClient : public QObject

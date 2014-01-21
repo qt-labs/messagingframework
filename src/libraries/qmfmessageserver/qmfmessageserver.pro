@@ -1,14 +1,8 @@
-TEMPLATE = lib 
-CONFIG += warn_on
-TARGET = qmfmessageserver5
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfclient5
-} else {
-    LIBS += -lqmfclient5
-}
-target.path += $$QMF_INSTALL_ROOT/lib
+TARGET     = QmfMessageServer
+QT         = core network qmfclient qmfclient-private
+CONFIG    += warn_on
 
-QT = core network
+load(qt_module)
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
     QT += gui widgets
@@ -16,21 +10,15 @@ QT = core network
 
 DEFINES += MESSAGESERVER_INTERNAL
 
-DEPENDPATH += .
-
-INCLUDEPATH += . ../qmfclient ../qmfclient/support
-
-LIBS += -L../qmfclient/build
-macx:LIBS += -F../qmfclient/build
-
-PUBLIC_HEADERS += qmailauthenticator.h \
-                  qmailmessagebuffer.h \
-                  qmailmessageclassifier.h \
-                  qmailmessageservice.h \
-                  qmailserviceconfiguration.h \
-                  qmailstoreaccountfilter.h \
-                  qmailtransport.h \
-                  qmailheartbeattimer.h
+HEADERS += \
+    qmailauthenticator.h \
+    qmailmessagebuffer.h \
+    qmailmessageclassifier.h \
+    qmailmessageservice.h \
+    qmailserviceconfiguration.h \
+    qmailstoreaccountfilter.h \
+    qmailtransport.h \
+    qmailheartbeattimer.h
 
 SOURCES += qmailauthenticator.cpp \
            qmailmessagebuffer.cpp \
@@ -42,21 +30,7 @@ SOURCES += qmailauthenticator.cpp \
            qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
 
 contains(DEFINES,MESSAGESERVER_PLUGINS) {
-    PUBLIC_HEADERS += qmailmessageserverplugin.h
+    HEADERS += qmailmessageserverplugin.h
     SOURCES += qmailmessageserverplugin.cpp
 }
 
-HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS
-
-header_files.path=$$QMF_INSTALL_ROOT/include/qmfmessageserver5
-header_files.files=$$PUBLIC_HEADERS
-
-INSTALLS += header_files
-
-unix: {
-	CONFIG += create_pc create_prl
-	QMAKE_PKGCONFIG_LIBDIR  = $$target.path
-	QMAKE_PKGCONFIG_INCDIR  = $$header_files.path
-	QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-}
-include(../../../common.pri)

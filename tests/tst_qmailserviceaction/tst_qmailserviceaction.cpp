@@ -44,7 +44,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <qmailserviceaction.h>
-#include <qmailserviceaction_p.h>
+#include <private/qmailserviceaction_p.h>
 #include <qmailaccount.h>
 
 

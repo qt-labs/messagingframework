@@ -39,64 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QCOPCHANNEL_H
-#define QCOPCHANNEL_H
+#ifndef QCOPAPPLICATIONCHANNEL_H
+#define QCOPAPPLICATIONCHANNEL_H
 
-#include <qobject.h>
+#include "qcopchannel_p.h"
 
-#if !defined(Q_QCOP_EXPORT)
-#if defined(QT_BUILD_QCOP_LIB)
-#define Q_QCOP_EXPORT Q_DECL_EXPORT
-#else
-#define Q_QCOP_EXPORT Q_DECL_IMPORT
-#endif
-#endif
-
-class QCopChannelPrivate;
+class QCopApplicationChannelPrivate;
 class QCopClient;
 
-class Q_QCOP_EXPORT QCopChannel : public QObject
+class Q_QCOP_EXPORT QCopApplicationChannel : public QCopChannel
 {
     Q_OBJECT
 public:
-    explicit QCopChannel(const QString& channel, QObject *parent=0);
-    virtual ~QCopChannel();
+    explicit QCopApplicationChannel(QObject *parent=0);
+    virtual ~QCopApplicationChannel();
 
-    QString channel() const;
-
-    static bool isRegistered(const QString&  channel);
-    static bool send(const QString& channel, const QString& msg);
-    static bool send(const QString& channel, const QString& msg,
-                      const QByteArray &data);
-
-    static bool flush();
-
-    static void sendLocally(const QString& ch, const QString& msg,
-                            const QByteArray &data);
-    static void reregisterAll();
-
-    virtual void receive(const QString& msg, const QByteArray &data);
-
-    bool isConnected() const;
-    void connectRepeatedly();
-    void disconnectFromServer();
+    bool isStartupComplete() const;
 
 Q_SIGNALS:
-    void received(const QString& msg, const QByteArray &data);
-    void forwarded(const QString& msg, const QByteArray &data, const QString& channel);
-    void connected();
-    void connectionFailed();
-    void reconnectionTimeout();
-    void connectionDown();
-
-protected:
-    void connectNotify(const QMetaMethod &);
-
-protected Q_SLOTS:
-    void connectClientSignals();
+    void startupComplete();
 
 private:
-    QCopChannelPrivate* d;
+    QCopApplicationChannelPrivate* d;
 
     friend class QCopClient;
 };

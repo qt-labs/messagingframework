@@ -46,7 +46,7 @@
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
-#include "qmailstoreimplementation_p.h"
+#include <private/qmailstoreimplementation_p.h>
 
 //TESTED_CLASS=QMailStore
 //TESTED_FILES=src/libraries/qtopiamail/qmailstore.cpp

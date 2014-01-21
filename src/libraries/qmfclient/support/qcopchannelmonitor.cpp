@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qcopchannelmonitor.h"
-#include "qcopchannel_p.h"
+#include "qcopchannelmonitor_p.h"
+#include "qcopchannel_p_p.h"
 #include <QtCore/qtimer.h>
 
 /* ! - documentation comments in this file are disabled:

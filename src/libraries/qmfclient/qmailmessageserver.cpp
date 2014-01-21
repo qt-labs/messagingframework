@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include "qmailmessageserver.h"
-#include <qcopadaptor.h>
-#include <qcopchannel.h>
-#include <qcopserver.h>
+#include <qcopadaptor_p.h>
+#include <qcopchannel_p.h>
+#include <qcopserver_p.h>
 
 static bool connectIpc( QObject *sender, const QByteArray& signal,
         QObject *receiver, const QByteArray& member)

@@ -68,7 +68,6 @@
 #include <QStringListModel>
 #include <QFileDialog>
 #include "attachmentlistwidget.h"
-#include <support/qmailnamespace.h>
 #include <QUrl>
 #include <QSyntaxHighlighter>
 #include <QCompleter>

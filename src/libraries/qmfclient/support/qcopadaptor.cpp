@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qcopadaptor.h"
-#include "qcopchannel.h"
+#include "qcopadaptor_p.h"
+#include "qcopchannel_p.h"
 #include <QtCore/qmap.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdatastream.h>

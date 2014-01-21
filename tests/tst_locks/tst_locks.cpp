@@ -42,7 +42,7 @@
 #include <QObject>
 #include <QTest>
 #include <qmailaddress.h>
-#include "locks_p.h"
+#include <private/locks_p.h>
 #include "qmailaccountkey.h"
 #include <ctype.h>
 

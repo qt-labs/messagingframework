@@ -1,22 +1,10 @@
 TEMPLATE = lib 
 CONFIG += warn_on
-CONFIG += qmfclient
 TARGET = qmfutil5
-QT += widgets
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfclient5
-} else {
-    LIBS += -lqmfclient5
-}
+QT += widgets qmfclient
 target.path += $$QMF_INSTALL_ROOT/lib
 
 DEFINES += QMFUTIL_INTERNAL
-
-DEPENDPATH += .
-INCLUDEPATH += . ../../../../src/libraries/qmfclient ../../../../src/libraries/qmfclient/support
-
-macx:LIBS += -F../../../../src/libraries/qmfclient/build
-LIBS += -L../../../../src/libraries/qmfclient/build
 
 HEADERS += emailfoldermodel.h \
            emailfolderview.h \

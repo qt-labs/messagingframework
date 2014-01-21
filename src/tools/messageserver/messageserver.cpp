@@ -50,7 +50,7 @@
 #include <qmaillog.h>
 #include <qmailipc.h>
 #include <newcountnotifier.h>
-#include <qcopserver.h>
+#include <private/qcopserver_p.h>
 #include <qmailmessageserverplugin.h>
 
 extern "C" {

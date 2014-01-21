@@ -7,14 +7,7 @@ SERVER_AS_DLL: {
 }
 
 TARGET = messageserver5
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfmessageserver5 -framework qmfclient5
-} else {
-    LIBS += -lqmfmessageserver5 -lqmfclient5
-}
-
-CONFIG += qmfmessageserver qmfclient
-QT = core
+QT = core qmfclient qmfclient-private qmfmessageserver
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
     QT += gui widgets
@@ -22,17 +15,6 @@ QT = core
 
 CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
-
-DEPENDPATH += . 
-
-INCLUDEPATH += . ../../libraries/qmfclient \
-                 ../../libraries/qmfclient/support \
-                 ../../libraries/qmfmessageserver
-
-LIBS += -L../../libraries/qmfmessageserver/build \
-        -L../../libraries/qmfclient/build
-macx:LIBS += -F../../libraries/qmfmessageserver/build \
-        -F../../libraries/qmfclient/build
 
 HEADERS += mailmessageclient.h \
            messageserver.h \

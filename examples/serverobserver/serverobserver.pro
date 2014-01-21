@@ -1,25 +1,8 @@
 TEMPLATE = app
 TARGET = serverobserver5
-QT += widgets
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfmessageserver5 -framework qmfclient5
-} else {
-    LIBS += -lqmfmessageserver5 -lqmfclient5
-}
+QT += widgets qmfclient qmfmessageserver
 
 target.path += $$QMF_INSTALL_ROOT/bin
-CONFIG += qmfclient qmfmessageserver
-
-DEPENDPATH += .
-INCLUDEPATH += . ../../src/libraries/qmfclient \
-                 ../../src/libraries/qmfclient/support \
-                 ../../src/libraries/qmfmessageserver \
-
-LIBS += -L../../src/libraries/qmfclient/build \
-        -L../../src/libraries/qmfmessageserver/build
-
-macx:LIBS += -F../../src/libraries/qmfclient/build \
-        -F../../src/libraries/qmfmessageserver/build
 
 HEADERS += serverobserver.h
 

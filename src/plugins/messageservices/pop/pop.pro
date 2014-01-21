@@ -1,27 +1,10 @@
 TEMPLATE = lib
 TARGET = pop
-CONFIG += qmfclient qmfmessageserver plugin
+CONFIG += plugin
 
 target.path = $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfmessageserver5 -framework qmfclient5
-} else {
-    LIBS += -lqmfmessageserver5 -lqmfclient5
-}
 
-QT = core network
-
-DEPENDPATH += .
-
-INCLUDEPATH += . ../../../libraries/qmfclient \
-               ../../../libraries/qmfmessageserver \
-               ../../../libraries/qmfclient/support
-
-LIBS += -L../../../libraries/qmfclient/build \
-        -L../../../libraries/qmfmessageserver/build
-macx:LIBS += -F../../../libraries/qmfclient/build \
-        -F../../../libraries/qmfmessageserver/build
-
+QT = core network qmfclient qmfclient-private qmfmessageserver
 
 HEADERS += popclient.h \
            popconfiguration.h \

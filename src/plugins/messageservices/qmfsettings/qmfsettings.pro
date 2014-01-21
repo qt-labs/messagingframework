@@ -1,26 +1,10 @@
 TEMPLATE = lib
 TARGET = qmfsettings
-CONFIG += qmfclient qmfmessageserver plugin
+CONFIG += plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/messageservices
-macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfclient5 -framework qmfmessageserver5
-} else {
-    LIBS += -lqmfclient5 -lqmfmessageserver5
-}
 
-QT = core network
-
-DEPENDPATH += .
-
-INCLUDEPATH += . ../../../libraries/qmfclient \
-               ../../../libraries/qmfmessageserver \
-               ../../../libraries/qmfclient/support
-
-LIBS += -L../../../libraries/qmfclient/build \
-        -L../../../libraries/qmfmessageserver/build
-macx:LIBS += -F../../../libraries/qmfclient/build \
-        -F../../../libraries/qmfmessageserver/build
+QT = core network qmfclient qmfmessageserver
 
 HEADERS += service.h
 

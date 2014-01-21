@@ -1,13 +1,13 @@
 TEMPLATE = lib 
 TARGET = genericviewer 
-CONFIG += qmfclient qmfutil plugin
+CONFIG += plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/viewers
-QT += widgets
+QT += widgets qmfclient
 macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfclient5 -framework qmfutil5
+    LIBS += -framework qmfutil5
 } else {
-    LIBS += -lqmfclient5 -lqmfutil5
+    LIBS += -lqmfutil5
 }
 
 # Use webkit to render mail if available
@@ -18,15 +18,10 @@ contains(QT_CONFIG,webkit){
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libs/qmfutil \
-               ../../../../../src/libraries/qmfclient \
-               ../../../../../src/libraries/qmfclient/support
+INCLUDEPATH += . ../../../libs/qmfutil
 
-LIBS += -L../../../../../src/libraries/qmfclient/build \
-        -L../../../libs/qmfutil/build
-
-LIBS += -F../../../../../src/libraries/qmfclient/build \
-        -F../../../libs/qmfutil/build
+LIBS += -L../../../libs/qmfutil/build
+LIBS += -F../../../libs/qmfutil/build
 
 HEADERS += attachmentoptions.h browserwidget.h genericviewer.h
 

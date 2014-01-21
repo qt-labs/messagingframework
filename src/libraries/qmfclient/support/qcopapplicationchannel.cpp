@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qcopapplicationchannel.h"
-#include "qcopchannel_p.h"
+#include "qcopapplicationchannel_p.h"
+#include "qcopchannel_p_p.h"
 #include <QtCore/qcoreapplication.h>
 
 /* ! - documentation comments in this file are disabled:

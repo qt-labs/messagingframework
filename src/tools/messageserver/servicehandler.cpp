@@ -41,7 +41,7 @@
 
 
 #include "servicehandler.h"
-#include <longstream_p.h>
+#include <private/longstream_p.h>
 #include <QDataStream>
 #include <QIODevice>
 #include <qmailmessageserver.h>

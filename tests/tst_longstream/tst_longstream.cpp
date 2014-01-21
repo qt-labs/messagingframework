@@ -41,7 +41,7 @@
 
 #include <QObject>
 #include <QTest>
-#include "longstream_p.h"
+#include <private/longstream_p.h>
 #include <ctype.h>
 #include <QDir>
 

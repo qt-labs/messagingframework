@@ -43,7 +43,7 @@
 #define IMAPPROTOCOL_H
 
 #include "imapmailboxproperties.h"
-#include <longstream_p.h>
+#include <private/longstream_p.h>
 #include <qobject.h>
 #include <qstring.h>
 #include <qstringlist.h>

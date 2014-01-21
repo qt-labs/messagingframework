@@ -46,7 +46,7 @@
 #include <QObject>
 #include <QSet>
 #include <QSocketNotifier>
-#include <qcopadaptor.h>
+#include <private/qcopadaptor_p.h>
 
 class ServiceHandler;
 class MailMessageClient;

@@ -47,7 +47,7 @@
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
-#include <longstream_p.h>
+#include <private/longstream_p.h>
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 #include <qmailaccount.h>

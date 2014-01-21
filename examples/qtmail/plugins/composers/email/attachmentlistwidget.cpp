@@ -53,7 +53,7 @@
 #include <QPointer>
 #include <QMouseEvent>
 #include <QHeaderView>
-#include <support/qmailnamespace.h>
+#include <qmailnamespace.h>
 
 class AttachmentListWidget;
 

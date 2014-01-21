@@ -46,13 +46,13 @@
 #include <QTimer>
 #include <QThread>
 
-#include "qcopserver.h"
-#include "qcopchannel.h"
-#include "qcopchannel_p.h"
-#include "qcopapplicationchannel.h"
-#include "qcopadaptor.h"
+#include <private/qcopserver_p.h>
+#include <private/qcopchannel_p.h>
+#include <private/qcopchannel_p_p.h>
+#include <private/qcopapplicationchannel_p.h>
+#include <private/qcopadaptor_p.h>
+#include <private/qcopchannelmonitor_p.h>
 #include "qmailid.h"
-#include "qcopchannelmonitor.h"
 
 class TestQCopServer;
 class tst_QCop : public QCopAdaptor

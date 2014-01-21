@@ -51,7 +51,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <qmaillog.h>
-#include <longstring_p.h>
+#include <private/longstring_p.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>

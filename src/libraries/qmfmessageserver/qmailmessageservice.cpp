@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmailmessageservice.h"
-#include <longstream_p.h>
+#include <private/longstream_p.h>
 #include <QAbstractSocket>
 #include <QCoreApplication>
 #include <QList>

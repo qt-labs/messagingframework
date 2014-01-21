@@ -43,7 +43,7 @@
 #include "imapauthenticator.h"
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
-#include <longstream_p.h>
+#include <private/longstream_p.h>
 #include <qmaillog.h>
 #include <qmailmessagebuffer.h>
 #include <qmailfolder.h>

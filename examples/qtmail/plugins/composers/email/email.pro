@@ -1,28 +1,24 @@
 TEMPLATE = lib 
 TARGET = emailcomposer 
-CONFIG += qmfclient qmfutil plugin
+CONFIG += plugin
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins5/composers
-QT += widgets
+QT += widgets qmfclient
 macx:contains(QT_CONFIG, qt_framework) {
-    LIBS += -framework qmfclient5 -framework qmfutil5
+    LIBS += -framework qmfutil5
 } else {
-    LIBS += -lqmfclient5 -lqmfutil5
+    LIBS += -lqmfutil5
 }
 
 DEFINES += PLUGIN_INTERNAL
 
 DEPENDPATH += .
 
-INCLUDEPATH += . ../../../libs/qmfutil \
-               ../../../../../src/libraries/qmfclient \
-               ../../../../../src/libraries/qmfclient/support
+INCLUDEPATH += . ../../../libs/qmfutil
 
-LIBS += -L../../../../../src/libraries/qmfclient/build \
-        -L../../../libs/qmfutil/build
+LIBS += -L../../../libs/qmfutil/build
 
-macx:LIBS += -F../../../../../src/libraries/qmfclient/build \
-        -F../../../libs/qmfutil/build
+macx:LIBS += -F../../../libs/qmfutil/build
 
 
 HEADERS += emailcomposer.h \
