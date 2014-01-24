@@ -202,43 +202,10 @@ bool ReadMail::handleOutgoingMessages(const QMailMessageIdList &list) const
 void ReadMail::linkClicked(const QUrl &lnk)
 {
     QString str = lnk.toString();
-    QRegExp commandPattern("(\\w+);(.+)");
 
-    if (commandPattern.exactMatch(str)) {
-        QString command = commandPattern.cap(1);
-        QString param = commandPattern.cap(2);
-
-        if (command == "attachment") {
-            if (param.startsWith("scrollto;")) {
-                if (QMailViewerInterface* viewer = currentViewer())
-                    viewer->scrollToAnchor(param.mid(9));
-            }
-        } else if (command == "dial") {
-            //dialNumber(param);
-        } else if (command == "message") {
-            emit sendMessageTo(QMailAddress(param), QMailMessage::Sms);
-        } else if (command == "store") {
-            //storeContact(QMailAddress(param), mail.messageType());
-        } else if (command == "contact") {
-            //displayContact(QUniqueId(param));
-        }
-    } else if (str.startsWith("mailto:")) {
+    if (str.startsWith("mailto:")) {
         // strip leading 'mailto:'
         emit sendMessageTo( QMailAddress(str.mid(7)), mail.messageType() );
-    } else if (mail.messageType() == QMailMessage::System && str.startsWith(QLatin1String("qtopiaservice:"))) {
-        // TODO: This relevant anymore?
-        int commandPos  = str.indexOf( QLatin1String( "::" ) ) + 2;
-        int argPos      = str.indexOf( '?' ) + 1;
-        QString service = str.mid( 14, commandPos - 16 );
-        QString command;
-        QStringList args;
-
-        if (argPos > 0) {
-            command = str.mid( commandPos, argPos - commandPos - 1 );
-            args    = str.mid( argPos ).split( ',' );
-        } else {
-            command = str.mid( commandPos );
-        }
     } else {
         // Try opening this link via a service
         QProcess launcher;
