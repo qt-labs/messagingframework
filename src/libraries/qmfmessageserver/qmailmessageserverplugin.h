@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Jolla Ltd.
-** Contact: Valério Valério <valerio.valerio@jollamobile.com>
+** Copyright (C) 2013 Jolla Ltd, author: <valerio.valerio@jollamobile.com>
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Qt Messaging Framework.
 **
