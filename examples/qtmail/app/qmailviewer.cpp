@@ -321,7 +321,6 @@ QStringList QMailViewerFactory::keys(QMailMessage::ContentType type, Presentatio
     if (genericViewerInstance()->isSupported(type, pres))
         in << genericViewerInstance()->key();
 
-    qDebug() << in;
     return in;
 }
 
