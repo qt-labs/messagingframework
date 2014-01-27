@@ -44,7 +44,7 @@
 
 #include <qmailfolder.h>
 #include <qstringlist.h>
-#include <integerregion.h>
+#include "integerregion.h"
 
 typedef uint MessageFlags;
 typedef QPair<QString, MessageFlags> FlagChange;
