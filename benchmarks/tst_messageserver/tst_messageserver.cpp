@@ -284,8 +284,9 @@ void tst_MessageServer::runInCallgrind(QString const& testfunc)
 
 void tst_MessageServer::runInChildProcess(TestFunction fn)
 {
-#if defined(Q_OS_WIN)
-	// No advantage to forking?
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+    // No advantage to forking on Windows?
+    // TODO: And on Mac forking seems to be causing crashes.
     (this->*fn)();
 #else
     if (RUNNING_ON_VALGRIND) {
