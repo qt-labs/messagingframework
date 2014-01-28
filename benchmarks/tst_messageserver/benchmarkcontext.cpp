@@ -41,7 +41,7 @@
 
 #include "benchmarkcontext.h"
 #include "testfsusage.h"
-#if !defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX)
 #include "testmalloc.h"
 #endif
 #ifdef HAVE_VALGRIND
@@ -86,7 +86,7 @@ BenchmarkContext::BenchmarkContext(bool xml)
 
     d->time.start();
 
-#if !defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX)
     TestMalloc::resetNow();
     TestMalloc::resetPeak();
 #endif
@@ -158,7 +158,7 @@ BenchmarkContext::~BenchmarkContext()
 #endif
 
         // Note, kilo means 1000, not 1024 !
-#if !defined(Q_OS_WIN)
+#if defined(Q_OS_LINUX)
         int heapUsageTotal  = TestMalloc::peakTotal()/1000;
         int heapUsageUsable = TestMalloc::peakUsable()/1000;
 #else

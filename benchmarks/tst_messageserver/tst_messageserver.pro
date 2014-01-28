@@ -43,7 +43,7 @@ SOURCES += benchmarkcontext.cpp \
            $$MESSAGE_SERVER/servicehandler.cpp \
            $$MESSAGE_SERVER/newcountnotifier.cpp
 
-!win32 {
+linux {
 	HEADERS += testmalloc.h 3rdparty/cycle_p.h
 	SOURCES += testmalloc.cpp
 }
