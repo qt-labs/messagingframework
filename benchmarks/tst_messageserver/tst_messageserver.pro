@@ -1,6 +1,6 @@
 TEMPLATE = app
 CONFIG += unittest
-QT += testlib widgets qmfclient qmfmessageserver
+QT += testlib widgets qmfclient qmfclient-private qmfmessageserver
 TARGET = tst_messageserver
 target.path += $$QMF_INSTALL_ROOT/tests5
 
