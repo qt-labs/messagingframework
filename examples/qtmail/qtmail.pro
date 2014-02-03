@@ -1,8 +1,7 @@
 TEMPLATE = app
 TARGET = qtmail5
 
-# TODO: example linking against private headers is bad
-QT += widgets qmfclient qmfclient-private qmfmessageserver qmfwidgets
+QT += widgets qmfclient qmfmessageserver qmfwidgets
 
 # Use webkit to render mail if available
 contains(QT_CONFIG,webkit){
