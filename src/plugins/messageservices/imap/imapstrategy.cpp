@@ -1369,8 +1369,8 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                                                    const QList<QMailMessagePartContainer::Location> &attachmentLocations,
                                                    QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                                    QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
-                                                   uint &bytesLeft,
-                                                   bool &foundBody)
+                                                   QMailMessagePartContainer::Location &preferredBody,
+                                                   uint &bytesLeft)
 {
     // Download limit has been exhausted for this message
     if (bytesLeft == 0) {
@@ -1382,7 +1382,7 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
 
     // Iterate over all parts, looking for the preferred body,
     // download that first giving preference over all other parts
-    if (!preferred.isEmpty() && !foundBody) {
+    if (!preferred.isEmpty() && !preferredBody.isValid()) {
         for (uint i = 0; i < partContainer.partCount(); ++i) {
             const QMailMessagePart part(partContainer.partAt(i));
             const QMailMessageContentDisposition disposition(part.contentDisposition());
@@ -1404,7 +1404,7 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                     completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
                     bytesLeft = 0;
                 }
-                foundBody = true;
+                preferredBody = part.location();
                 break;
             }
         }
@@ -1414,12 +1414,11 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
     for (uint i = 0; i < partContainer.partCount(); ++i) {
         const QMailMessagePart part(partContainer.partAt(i));
         const QMailMessageContentDisposition disposition(part.contentDisposition());
-        const QMailMessageContentType contentType(part.contentType());
 
         if (part.partCount() > 0) {
             metaDataAnalysis(context, part, attachmentLocations,
                              sectionList, completionSectionList,
-                             bytesLeft, foundBody);
+                             preferredBody, bytesLeft);
         } else if (part.partialContentAvailable()) {
             continue;
         } else if (disposition.size() <= 0) {
@@ -1429,8 +1428,11 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                    && attachmentLocations.contains(part.location())) {
             continue;
         } else {
-            // This is a regular part. Try to download it completely.
-            sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
+            // This is a regular part. Try to download it completely, if it is not the preferred body
+            // that is already added to the list.
+            if (!(part.location() == preferredBody)) {
+                sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
+            }
         }
     }
 }
@@ -1468,11 +1470,11 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
             uint bytesLeft = _headerLimit;
             int partsToRetrieve = 0;
             const int maxParts = 100;
-            bool foundBody = false;
             QList<QPair<QMailMessagePart::Location, uint> > sectionList;
+            QMailMessagePart::Location preferredBody;
             metaDataAnalysis(context, message, attachmentLocations,
                              sectionList, completionSectionList,
-                             bytesLeft, foundBody);
+                             preferredBody, bytesLeft);
 
             qSort(sectionList.begin(), sectionList.end(), qMailMessageImapStrategyLessThan);
             QList<QPair<QMailMessagePart::Location, uint> >::iterator it = sectionList.begin();

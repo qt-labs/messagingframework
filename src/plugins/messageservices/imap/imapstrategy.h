@@ -338,8 +338,8 @@ protected:
                                   const QList<QMailMessagePartContainer::Location> &attachmentLocations,
                                   QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                   QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
-                                  uint &bytesLeft,
-                                  bool &foundBody);
+                                  QMailMessagePart::Location &preferredBody,
+                                  uint &bytesLeft);
 
     QMailRetrievalAction::RetrievalSpecification _retrievalSpec;
 
