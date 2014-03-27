@@ -140,6 +140,9 @@ public:
     bool isEmpty() const;
     int length() const;
 
+    bool encoded() const;
+    void setEncoded(bool value);
+
     uint indicativeSize() const;
 
     void output(QDataStream& out, bool includeAttachments) const;
@@ -217,7 +220,7 @@ public:
     // Note: this returns a reference:
     QMailMessageBody& body();
     const QMailMessageBody& body() const;
-    void setBody(const QMailMessageBody& body);
+    void setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None);
     void setBodyProperties(const QMailMessageContentType &type, QMailMessageBody::TransferEncoding encoding);
 
     bool hasBody() const;

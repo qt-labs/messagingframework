@@ -3477,6 +3477,16 @@ int QMailMessageBodyPrivate::length() const
     return _bodyData.length();
 }
 
+bool QMailMessageBodyPrivate::encoded() const
+{
+    return _encoded;
+}
+
+void QMailMessageBodyPrivate::setEncoded(bool value)
+{
+    _encoded = value;
+}
+
 uint QMailMessageBodyPrivate::indicativeSize() const
 {
     return (_bodyData.length() / IndicativeSizeUnit);
@@ -3797,6 +3807,18 @@ int QMailMessageBody::length() const
 uint QMailMessageBody::indicativeSize() const
 {
     return impl(this)->indicativeSize();
+}
+
+/*! \internal */
+bool QMailMessageBody::encoded() const
+{
+    return impl(this)->encoded();
+}
+
+/*! \internal */
+void QMailMessageBody::setEncoded(bool value)
+{
+    impl(this)->setEncoded(value);
 }
 
 /*! \internal */
@@ -4132,7 +4154,7 @@ const QMailMessageBody& QMailMessagePartContainerPrivate::body() const
     return const_cast<QMailMessagePartContainerPrivate*>(this)->_body;
 }
 
-void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body)
+void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus)
 {
     // Set the body's properties into our header
     setBodyProperties(body.contentType(), body.transferEncoding());
@@ -4141,6 +4163,12 @@ void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body)
     if (body.contentType().type().toLower() != "multipart") {
         _body = body;
         _hasBody = !_body.isEmpty();
+    }
+
+    if (encodingStatus == QMailMessageBody::Encoded) {
+        _body.setEncoded(true);
+    } else if (encodingStatus == QMailMessageBody::Decoded) {
+        _body.setEncoded(false);
     }
 
     setPreviewDirty(true);
@@ -4715,11 +4743,13 @@ void QMailMessagePartContainer::setBoundary(const QByteArray& text)
 }
 
 /*!
-    Sets the part to contain the body element \a body.
+    Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body regarding encoding.
+    Note: No encoding/decoding operation will be performed in the body element, only the encoding status flag
+    will be set if provided.
 */
-void QMailMessagePartContainer::setBody(const QMailMessageBody& body)
+void QMailMessagePartContainer::setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus)
 {
-    impl(this)->setBody(body);
+    impl(this)->setBody(body, encodingStatus);
 }
 
 /*!

@@ -251,7 +251,15 @@ bool transferPartBodies(QMailMessagePartContainer &destination, const QMailMessa
     }
 
     if (source.hasBody()) {
-        destination.setBody(source.body());
+        // If the content of the source part is not fully available
+        // flag the copy with the same status
+        if (!source.contentAvailable()) {
+            // Incomplete parts are always saved encoded
+            destination.setBody(source.body(), QMailMessageBody::Encoded);
+            destination.setHeaderField("X-qmf-internal-partial-content", "true");
+       } else {
+            destination.setBody(source.body());
+       }
     } else if (source.partCount() > 0) {
         for (uint i = 0; i < source.partCount(); ++i) {
             const QMailMessagePart &sourcePart = source.partAt(i);
