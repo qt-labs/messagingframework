@@ -78,7 +78,5 @@ void tst_QMailnamespace::test_qmailnamespace()
     QVERIFY(types.count() != 0);
     QCOMPARE(extensionsForMimeType("audio/pcmu").count(), 0);
 
-    QMail::usleep(1000);
-
     //QCOMPARE(lastSystemErrorMessage(), QString("Success"));
 }

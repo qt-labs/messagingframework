@@ -523,28 +523,6 @@ QStringList QMail::extensionsForMimeType(const QString& mimeType)
 }
 
 /*!
-    Suspends the current process for \a usecs microseconds.
-*/
-void QMail::usleep(unsigned long usecs)
-{
-#ifdef Q_OS_WIN
-    ::Sleep((usecs + 500) / 1000);
-#else
-    static const int factor(1000 * 1000);
-
-    unsigned long seconds(usecs / factor);
-    usecs = (usecs % factor);
-
-    if (seconds) {
-        ::sleep(seconds);
-    }
-    if (!seconds || usecs) {
-        ::usleep(usecs);
-    }
-#endif
-}
-
-/*!
     Returns the 'base' form of \a subject, using the transformation defined by RFC5256.
     If the original subject contains any variant of the tokens "Re" or "Fwd" recognized by
     RFC5256, then \a replyOrForward will be set to true.

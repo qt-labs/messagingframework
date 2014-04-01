@@ -73,7 +73,6 @@ struct StandardFolderInfo
 namespace QMail
 {
     QMF_EXPORT QString lastSystemErrorMessage();
-    QMF_EXPORT void usleep(unsigned long usecs);
     QMF_EXPORT QString dataPath();
     QMF_EXPORT QDateTime lastDbUpdated();
     QMF_EXPORT QString tempPath();

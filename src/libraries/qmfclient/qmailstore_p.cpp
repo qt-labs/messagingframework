@@ -53,6 +53,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QTextCodec>
+#include <QThread>
 
 #if defined(Q_OS_LINUX)
 #include <malloc.h>
@@ -5236,7 +5237,7 @@ bool QMailStorePrivate::repeatedly(FunctionType func, const QString &description
                     qWarning() << pid << "Failed to" << qPrintable(description) << "- busy, pausing to retry";
 
                     // Pause before we retry
-                    QMail::usleep(delay * 1000);
+                    QThread::usleep(delay * 1000);
                     if (delay < MaxRetryDelay)
                         delay *= 2;
 
