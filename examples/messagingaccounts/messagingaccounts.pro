@@ -6,15 +6,15 @@ QT += widgets qmfclient qmfmessageserver qmfwidgets
 QTMAIL_EXAMPLE=../qtmail
 
 INCLUDEPATH += \
-                 $$QTMAIL_EXAMPLE/app
+                 $$QTMAIL_EXAMPLE
 
-HEADERS += $$QTMAIL_EXAMPLE/app/accountsettings.h \
-           $$QTMAIL_EXAMPLE/app/editaccount.h \
-           $$QTMAIL_EXAMPLE/app/statusbar.h
+HEADERS += $$QTMAIL_EXAMPLE/accountsettings.h \
+           $$QTMAIL_EXAMPLE/editaccount.h \
+           $$QTMAIL_EXAMPLE/statusbar.h
 
-SOURCES += $$QTMAIL_EXAMPLE/app/accountsettings.cpp \
-           $$QTMAIL_EXAMPLE/app/editaccount.cpp \
-           $$QTMAIL_EXAMPLE/app/statusbar.cpp \
+SOURCES += $$QTMAIL_EXAMPLE/accountsettings.cpp \
+           $$QTMAIL_EXAMPLE/editaccount.cpp \
+           $$QTMAIL_EXAMPLE/statusbar.cpp \
            main_messagingaccounts.cpp
 
 RESOURCES += messagingaccounts.qrc
