@@ -66,6 +66,8 @@
 #include <fcntl.h>
 #endif
 
+#include <QLockFile>
+
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
@@ -90,11 +92,22 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
     Returns \a src surrounded by double-quotes, which are added if not already present.
 */
 
-#ifdef Q_OS_WIN
-static QMap<int, HANDLE> lockedFiles;
-#endif
+static QMap<int, QLockFile*> lockedFiles;
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
+// Return where to store lock files
+static QString lockFileDir()
+{
+    QString path(QDir::tempPath());
+    //check unix path
+#ifdef Q_OS_UNIX
+    //Store the file in /var/lock instead system's temporary directory
+    QFileInfo lock(QString::fromLatin1("/var/lock"));
+    if (lock.exists() && lock.isWritable())
+        path = lock.absolutePath();
+#endif
+    return path;
+}
+
 /*!
     Convenience function that attempts to obtain a lock on a file with name \a lockFile.
     It is not necessary to create \a lockFile as this file is created temporarily.
@@ -105,62 +118,18 @@ static QMap<int, HANDLE> lockedFiles;
 */
 int QMail::fileLock(const QString& lockFile)
 {
-    QString path = QDir::tempPath() + '/' + lockFile;
-#ifdef Q_OS_UNIX
-    //Store the file in /var/lock instead system's temporary directory
-    if (QDir("/var/lock").exists() && QFileInfo("/var/lock").isWritable()) {
-        path = QString("/var/lock") + '/' + lockFile;
-    }
-#endif
-
-#ifdef Q_OS_WIN
     static int lockedCount = 0;
 
-	if (!QFile::exists(path)) {
-		QFile file(path);
-		file.open(QIODevice::WriteOnly);
-		file.close();
-	}
-
-    HANDLE handle = ::CreateFile(reinterpret_cast<const wchar_t*>(path.utf16()),
-                                 GENERIC_READ,
-                                 FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                 NULL,
-                                 OPEN_EXISTING,
-                                 FILE_ATTRIBUTE_NORMAL,
-                                 NULL);
-    if (handle == INVALID_HANDLE_VALUE) {
-        qWarning() << "Unable to open file for locking:" << path;
-    } else {
-        if (::LockFile(handle, 0, 0, 1, 0) == FALSE) {
-            qWarning() << "Unable to lock file:" << path;
-        } else {
-            ++lockedCount;
-            lockedFiles.insert(lockedCount, handle);
-            return lockedCount;
-        }
-    }
-
-    return -1;
-#else
-    struct flock fl;
-
-    fl.l_type = F_WRLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0;
-
-    int fdlock = -1;
-    if((fdlock = ::open(path.toLatin1(), O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
-        return -1;
-
-    if (::fcntl(fdlock, F_SETLK, &fl) == -1) {
-        ::close(fdlock);
+    QLockFile *fl = new QLockFile(lockFileDir() + QDir::separator() + lockFile);
+    fl->setStaleLockTime(0); // we are long running
+    if (!fl->tryLock()) {
+        delete fl;
         return -1;
     }
 
-    return fdlock;
-#endif
+    lockedCount++;
+    lockedFiles.insert(lockedCount, fl);
+    return lockedCount;
 }
 
 /*!
@@ -172,33 +141,16 @@ int QMail::fileLock(const QString& lockFile)
 */
 bool QMail::fileUnlock(int id)
 {
-#ifdef Q_OS_WIN
-    QMap<int, HANDLE>::iterator it = lockedFiles.find(id);
-    if (it != lockedFiles.end()) {
-        if (::UnlockFile(it.value(), 0, 0, 1, 0) == FALSE) {
-            qWarning() << "Unable to unlock file:" << lastSystemErrorMessage();
-        } else {
-            if (::CloseHandle(it.value()) == FALSE) {
-                qWarning() << "Unable to close handle:" << lastSystemErrorMessage();
-            }
-
-            lockedFiles.erase(it);
-            return true;
-        }
-    }
-
-    return false;
-#else
-    int result = -1;
-
-    result = ::close(id);
-    if (result == -1)
+    QMap<int, QLockFile*>::iterator it = lockedFiles.find(id);
+    if (it == lockedFiles.end())
         return false;
 
+    QLockFile *fl = it.value();
+    fl->unlock();
+    delete fl;
+    lockedFiles.erase(it);
     return true;
-#endif
 }
-#endif
 
 /*!
     Returns the path to where the Messaging framework will store its data files.
@@ -287,15 +239,7 @@ QString QMail::messageSettingsPath()
 */
 QString QMail::messageServerLockFilePath()
 {
-    static QString path(QDir::tempPath() + QString("/messageserver-instance.lock"));
-    //check unix path
-#ifdef Q_OS_UNIX
-    //Store the file in /var/lock instead system's temporary directory
-    if (QDir("/var/lock").exists() && QFileInfo("/var/lock").isWritable()) {
-        path = "/var/lock/messageserver-instance.lock";
-    }
-#endif
-    return path;
+    return lockFileDir() + QString::fromLatin1("/messageserver-instance.lock");
 }
 
 
