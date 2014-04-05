@@ -89,6 +89,7 @@ HEADERS += \
 
 SOURCES += longstream.cpp \
            longstring.cpp \
+           locks.cpp \
            qmailaccount.cpp \
            qmailaccountconfiguration.cpp \
            qmailaccountkey.cpp \
@@ -137,12 +138,6 @@ SOURCES += longstream.cpp \
            support/qcopchannelmonitor.cpp \
            support/qcopserver.cpp \
            support/qmailpluginmanager.cpp
-
-win32: {
-    SOURCES += locks_win32.cpp
-} else {
-    SOURCES += locks.cpp
-}
 
 RESOURCES += qmf.qrc \
              qmf_icons.qrc \
