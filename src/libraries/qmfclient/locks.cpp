@@ -222,39 +222,3 @@ void ProcessMutex::unlock()
     d->unlock();
 }
 
-
-class ProcessReadLockPrivate : private Semaphore
-{
-public:
-    ProcessReadLockPrivate(int id) : Semaphore(id, false, 0) {}
-
-    void lock() { increment(); }
-    void unlock() { decrement(); }
-
-    void wait() { waitForZero(); }
-};
-
-ProcessReadLock::ProcessReadLock(const QString &path, int id)
-    : d(new ProcessReadLockPrivate(pathIdentifier(path, id)))
-{
-}
-
-ProcessReadLock::~ProcessReadLock()
-{
-    delete d;
-}
-
-void ProcessReadLock::lock()
-{
-    d->lock();
-}
-
-void ProcessReadLock::unlock()
-{
-    d->unlock();
-}
-
-void ProcessReadLock::wait()
-{
-    d->wait();
-}

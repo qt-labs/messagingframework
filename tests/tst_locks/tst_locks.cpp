@@ -61,7 +61,6 @@ private slots:
     virtual void init();
     virtual void cleanup();
 
-    void testLock();
     void testQMailAccountKey();
 
 };
@@ -93,18 +92,6 @@ void tst_locks::init()
 
 void tst_locks::cleanup()
 {
-}
-
-void tst_locks::testLock()
-{
-    ProcessReadLock *prl = new ProcessReadLock("");
-    QVERIFY(prl != NULL);
-    prl->lock();
-    prl->unlock();
-
-
-    
-    delete prl;
 }
 
 void tst_locks::testQMailAccountKey()

@@ -81,24 +81,4 @@ private:
     ProcessMutexPrivate* d;
 };
 
-class ProcessReadLockPrivate;
-
-class QMF_EXPORT ProcessReadLock
-{
-public:
-    ProcessReadLock(const QString &path, int id = 0);
-    ~ProcessReadLock();
-
-    void lock();
-    void unlock();
-
-    void wait();
-
-private:
-    ProcessReadLock(const ProcessReadLock &);
-    const ProcessReadLock& operator=(const ProcessReadLock &);
-
-    ProcessReadLockPrivate* d;
-};
-
 #endif
