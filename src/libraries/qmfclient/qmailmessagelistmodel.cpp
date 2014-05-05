@@ -253,10 +253,8 @@ bool QMailMessageListModelPrivate::processMessagesAdded(const QMailMessageIdList
         return true;
     }
 
-    if (!_initialised) {
-        init();
-    }
-    
+    init();
+
     // Find if and where these messages should be added
     if (!addMessages(ids)) {
         return false;
@@ -325,13 +323,11 @@ bool QMailMessageListModelPrivate::processMessagesUpdated(const QMailMessageIdLi
         return true;
     }
 
+    init();
+
     // Find if and where these messages should be added/removed/updated
     if (!updateMessages(ids)) {
         return false;
-    }
-
-    if (!_initialised) {
-        init();
     }
     
     return true;
@@ -440,9 +436,7 @@ bool QMailMessageListModelPrivate::processMessagesRemoved(const QMailMessageIdLi
         return true;
     }
 
-    if (!_initialised) {
-        init();
-    }
+    init();
     
     // Find if and where these messages should be removed from
     if (!removeMessages(ids)) {
