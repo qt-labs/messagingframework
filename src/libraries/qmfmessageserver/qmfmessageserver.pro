@@ -2,6 +2,9 @@ TARGET     = QmfMessageServer
 QT         = core network qmfclient qmfclient-private
 CONFIG    += warn_on
 
+MODULE_PLUGIN_TYPES = \
+    messageservices
+
 load(qt_module)
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {

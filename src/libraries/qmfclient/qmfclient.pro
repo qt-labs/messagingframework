@@ -2,6 +2,9 @@ TARGET     = QmfClient
 QT         = core sql network
 CONFIG    += warn_on
 
+MODULE_PLUGIN_TYPES = \
+    contentmanagers
+
 load(qt_module)
 DEFINES -= QT_NO_CAST_TO_ASCII # this is a fight for another day.
 
