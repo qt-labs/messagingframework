@@ -57,20 +57,6 @@
 #include <qmailnamespace.h>
 
 #ifndef QT_NO_OPENSSL
-static QString sslCertsPath()
-{
-    static QString certsPath = QMail::sslCertsPath();
-    static bool firstCall = true;
-    if (firstCall) {
-        if (!QFile::exists(certsPath))
-            qWarning() << "Cannot find SSL certificates" << certsPath << __FILE__ << __LINE__;
-        firstCall = false;
-    }
-    return certsPath;
-}
-#endif
-
-#ifndef QT_NO_OPENSSL
 typedef QSslSocket BaseSocketType;
 #else
 typedef QTcpSocket BaseSocketType;
@@ -166,11 +152,6 @@ QMailTransport::QMailTransport(const char* name)
       mInUse(false)
 {
 #ifndef QT_NO_OPENSSL
-    if (QSslSocket::defaultCaCertificates().isEmpty())
-    {
-        QSslSocket::addDefaultCaCertificates(sslCertsPath());
-    }
-
     encryption = Encrypt_NONE;
 #endif
     mSocket = 0;

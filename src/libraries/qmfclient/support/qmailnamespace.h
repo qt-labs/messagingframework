@@ -76,7 +76,6 @@ namespace QMail
     QMF_EXPORT QString dataPath();
     QMF_EXPORT QDateTime lastDbUpdated();
     QMF_EXPORT QString tempPath();
-    QMF_EXPORT QString sslCertsPath();
     QMF_EXPORT QString messageServerPath();
     QMF_EXPORT QString messageSettingsPath();
     QMF_EXPORT QString messageServerLockFilePath();    

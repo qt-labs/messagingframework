@@ -203,14 +203,6 @@ QString QMail::tempPath()
 }
 
 /*!
-    Returns the path to where the Messaging framework will search for SSL certificates.
-*/
-QString QMail::sslCertsPath()
-{
-    return "/etc/ssl/certs/";
-}
-
-/*!
     Returns the path to where the Messaging framework will invoke the messageserver process.
 */
 QString QMail::messageServerPath()

@@ -69,8 +69,6 @@ void tst_QMailnamespace::test_qmailnamespace()
     QVERIFY(id != -1);
     QVERIFY(fileUnlock(id));
 
-    QCOMPARE(sslCertsPath(), QString("/etc/ssl/certs/"));
-
     messageServerPath();
     messageSettingsPath();
 
