@@ -266,7 +266,7 @@ ImapSettings::ImapSettings()
     // This functionality is not currently used:
     mailboxButton->hide();
 
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
     encryptionIncoming->hide();
     lblEncryptionIncoming->hide();
 #endif
@@ -379,7 +379,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         mailPasswInput->setText("");
         mailServerInput->setText("");
         mailPortInput->setText("143");
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         encryptionIncoming->setCurrentIndex(0);
 #endif
         preferHtml->setChecked(true);
@@ -394,7 +394,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
         mailPasswInput->setText(imapConfig.mailPassword());
         mailServerInput->setText(imapConfig.mailServer());
         mailPortInput->setText(QString::number(imapConfig.mailPort()));
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         encryptionIncoming->setCurrentIndex(static_cast<int>(imapConfig.mailEncryption()));
         authentication->setCurrentIndex(imapConfig.mailAuthentication());
 #endif
@@ -456,7 +456,7 @@ bool ImapSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     imapConfig.setMailPassword(mailPasswInput->text());
     imapConfig.setMailServer(mailServerInput->text());
     imapConfig.setMailPort(port == -1 ? 143 : port);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     imapConfig.setMailEncryption(static_cast<QMailTransport::EncryptType>(encryptionIncoming->currentIndex()));
     int index(authentication->currentIndex());
     Q_ASSERT(index >= 0);

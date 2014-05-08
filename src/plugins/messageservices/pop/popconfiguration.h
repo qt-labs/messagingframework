@@ -86,7 +86,7 @@ public:
     void setMailPassword(const QString &str);
     void setMailServer(const QString &str);
     void setMailPort(int i);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void setMailEncryption(int t);
 #endif
 

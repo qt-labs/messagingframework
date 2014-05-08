@@ -51,7 +51,7 @@
 #include <QDir>
 #include <QHostInfo>
 #include <QNetworkInterface>
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
 #include <qmaillog.h>
@@ -263,7 +263,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
         emit updateStatus(tr("Connected"));
     }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if ((smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
         // We have entered TLS mode - restart the SMTP dialog
         QByteArray ehlo("EHLO " + localName());
@@ -471,7 +471,7 @@ void SmtpClient::nextAction(const QString &response)
     }
     case StartTLS:
     {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         SmtpConfiguration smtpCfg(config);
         const bool useTLS(smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS);
 #else
@@ -490,7 +490,7 @@ void SmtpClient::nextAction(const QString &response)
     case TLS:
     {
         if (responseCode == 220) {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
             // Switch into encrypted mode
             transport->switchToEncrypted();
 #endif
@@ -897,7 +897,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     Q_ASSERT(status == Body && temporaryFile);
 
     // Check if we have any pending data still waiting to be sent.
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     Q_UNUSED(bytesWritten)
     QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
     Q_ASSERT(socket);
@@ -943,7 +943,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
         }
     }
     
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
     waitingForBytes += dotstuffed.length();
 #endif
     transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());

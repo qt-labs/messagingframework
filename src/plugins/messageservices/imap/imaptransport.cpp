@@ -289,7 +289,7 @@ void ImapTransport::imapClose()
     _compressor = 0;
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 bool ImapTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
 {
     QMailTransport::ignoreCertificateErrors(errors);

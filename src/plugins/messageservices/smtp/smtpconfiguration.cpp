@@ -72,7 +72,7 @@ int SmtpConfiguration::smtpPort() const
     return value("port", "25").toInt();
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 QString SmtpConfiguration::smtpUsername() const
 {
@@ -122,7 +122,7 @@ void SmtpConfigurationEditor::setSmtpPort(int i)
     setValue("port", QString::number(i));
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void SmtpConfigurationEditor::setSmtpUsername(const QString& str)
 {
@@ -136,7 +136,7 @@ void SmtpConfigurationEditor::setSmtpPassword(const QString& str)
 
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void SmtpConfigurationEditor::setSmtpAuthentication(int t)
 {
@@ -145,7 +145,7 @@ void SmtpConfigurationEditor::setSmtpAuthentication(int t)
 
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void SmtpConfigurationEditor::setSmtpEncryption(int t)
 {

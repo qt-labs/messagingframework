@@ -43,7 +43,7 @@
 #include <QFile>
 #include <QTimer>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QSslSocket>
 #include <QSslError>
 #else
@@ -56,7 +56,7 @@
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 typedef QSslSocket BaseSocketType;
 #else
 typedef QTcpSocket BaseSocketType;
@@ -91,7 +91,7 @@ QMailTransport::Socket::Socket(QObject *parent)
     : BaseSocketType(parent),
       written(0)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     // We'll connect to servers offering any variant of encryption
     setProtocol(QSsl::AnyProtocol);
 #endif
@@ -151,7 +151,7 @@ QMailTransport::QMailTransport(const char* name)
       mConnected(false),
       mInUse(false)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     encryption = Encrypt_NONE;
 #endif
     mSocket = 0;
@@ -197,7 +197,7 @@ void QMailTransport::createSocket(EncryptType encryptType)
 {
     if (mSocket)
     {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         // Note: socket recycling doesn't seem to work in SSL mode...
         if (mSocket->mode() == QSslSocket::UnencryptedMode &&
             (encryptType == Encrypt_NONE || encryptType == Encrypt_TLS))
@@ -211,13 +211,13 @@ void QMailTransport::createSocket(EncryptType encryptType)
             // We need to create a new socket in the correct mode
             delete mStream;
             mSocket->deleteLater();
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         }
 #endif
     }
 
     mSocket = new Socket(this);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     encryption = encryptType;
     connect(mSocket, SIGNAL(encrypted()), this, SLOT(encryptionEstablished()));
     connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(connectionFailed(QList<QSslError>)));
@@ -254,7 +254,7 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     createSocket(encryptionType);
     emit updateStatus(tr("DNS lookup"));
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     qMailLog(Messaging) << "Opening connection - " << url << ':' << port << (encryptionType == Encrypt_SSL ? " SSL" : (encryptionType == Encrypt_TLS ? " TLS" : ""));
     if (mailEncryption() == Encrypt_SSL)
         mSocket->connectToHostEncrypted(url, port);
@@ -266,7 +266,7 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
 #endif
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 /*!
     Switches the socket from unencrypted to encrypted mode.
 */
@@ -376,7 +376,7 @@ void QMailTransport::hostConnectionTimeOut()
     errorHandling(QAbstractSocket::SocketTimeoutError, tr("Connection timed out"));
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 /*! \internal */
 void QMailTransport::encryptionEstablished()
 {
@@ -445,7 +445,7 @@ void QMailTransport::socketError(QAbstractSocket::SocketError status)
 */
 QMailTransport::EncryptType QMailTransport::mailEncryption() const
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     return encryption;
 #else
     return Encrypt_NONE;

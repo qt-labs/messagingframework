@@ -59,7 +59,7 @@
 #include <qmailtransport.h>
 #include <qmaildisconnected.h>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QSslError>
 #endif
 
@@ -304,7 +304,7 @@ public:
     const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
 
     LongStream &buffer() { return mProtocol->_stream; }
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void switchToEncrypted() { mProtocol->_transport->switchToEncrypted(); mProtocol->clearResponse(); }
 #endif
     bool literalResponseCompleted() { return (mProtocol->literalDataRemaining() == 0); }
@@ -527,7 +527,7 @@ QString StartTlsState::transmit(ImapContext *c)
 
 void StartTlsState::taggedResponse(ImapContext *c, const QString &)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     // Switch to encrypted comms mode
     c->switchToEncrypted();
 #else
@@ -3210,7 +3210,7 @@ void ImapProtocol::sendEnable(const QString &extensions)
 
 void ImapProtocol::connected(QMailTransport::EncryptType encryptType)
 {
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if (encryptType == QMailTransport::Encrypt_TLS) {
         emit completed(IMAP_StartTLS, OpOk);
     }

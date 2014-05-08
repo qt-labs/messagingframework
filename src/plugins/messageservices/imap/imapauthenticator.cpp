@@ -56,7 +56,7 @@ QMap<QMailAccountId, QList<QByteArray> > gResponses;
 
 bool ImapAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
-#ifdef QT_NO_OPENSSL
+#ifdef QT_NO_SSL
     Q_UNUSED(svcCfg)
     Q_UNUSED(capabilities)
     return false;

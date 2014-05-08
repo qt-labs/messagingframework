@@ -51,7 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 class QString;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 class QSslSocket;
 class QSslError;
 #endif
@@ -65,7 +65,7 @@ class MESSAGESERVER_EXPORT QMailTransport : public QObject
 public:
     enum EncryptType {
         Encrypt_NONE = 0,
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         Encrypt_SSL = 1,
         Encrypt_TLS = 2
 #endif
@@ -77,7 +77,7 @@ public:
     // Open a connection to the specified server
     void open(const QString& url, int port, EncryptType encryptionType);
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     // If connection is not currently encrypted, switch to encrypted mode
     void switchToEncrypted();
 #endif
@@ -120,12 +120,12 @@ public slots:
 protected slots:
     void connectionEstablished();
     void hostConnectionTimeOut();
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void encryptionEstablished();
     void connectionFailed(const QList<QSslError>& errors);
 #endif
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 protected:
     // Override to modify certificate error handling
     virtual bool ignoreCertificateErrors(const QList<QSslError>& errors);
@@ -140,7 +140,7 @@ private:
 
     Socket *mSocket;
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     EncryptType encryption;
 #endif
     QDataStream *mStream;

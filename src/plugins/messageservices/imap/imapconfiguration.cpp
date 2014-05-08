@@ -231,7 +231,7 @@ void ImapConfigurationEditor::setMailPort(int i)
     setValue("port", QString::number(i));
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void ImapConfigurationEditor::setMailEncryption(int t)
 {

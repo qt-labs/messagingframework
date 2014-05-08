@@ -45,7 +45,7 @@
 #include <qstring.h>
 #include <qmailtransport.h>
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 #include <QSslError>
 #endif
 
@@ -74,7 +74,7 @@ public:
 
     void imapClose();
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 protected:
     virtual bool ignoreCertificateErrors(const QList<QSslError>& errors);
 #endif

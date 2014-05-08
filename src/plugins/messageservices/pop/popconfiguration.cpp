@@ -133,7 +133,7 @@ void PopConfigurationEditor::setMailPort(int i)
     setValue("port", QString::number(i));
 }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
 
 void PopConfigurationEditor::setMailEncryption(int t)
 {

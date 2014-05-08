@@ -349,7 +349,7 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
         emit updateStatus(tr("Connected"));
     }
 
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     if ((popCfg.mailEncryption() != QMailTransport::Encrypt_SSL) && (status == TLS)) {
         // We have entered TLS mode - restart the connection
         capabilities.clear();
@@ -476,7 +476,7 @@ void PopClient::processResponse(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
         } else {
             // Switch into encrypted mode and wait for encrypted connection event
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
             transport->switchToEncrypted();
             waitForInput = true;
 #endif

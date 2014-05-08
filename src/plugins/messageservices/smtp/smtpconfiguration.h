@@ -61,7 +61,7 @@ class PLUGIN_EXPORT SmtpConfiguration : public QMailServiceConfiguration
 public:
     enum AuthType {
         Auth_NONE = QMail::NoMechanism,
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
         Auth_LOGIN = QMail::LoginMechanism,
         Auth_PLAIN = QMail::PlainMechanism,
 #endif
@@ -76,7 +76,7 @@ public:
     QString emailAddress() const;
     QString smtpServer() const;
     int smtpPort() const;
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     QString smtpUsername() const;
     QString smtpPassword() const;
 #endif
@@ -93,14 +93,10 @@ public:
     void setEmailAddress(const QString &str);
     void setSmtpServer(const QString &str);
     void setSmtpPort(int i);
-#ifndef QT_NO_OPENSSL
+#ifndef QT_NO_SSL
     void setSmtpUsername(const QString& username);
     void setSmtpPassword(const QString& password);
-#endif
-#ifndef QT_NO_OPENSSL
     void setSmtpAuthentication(int t);
-#endif
-#ifndef QT_NO_OPENSSL
     void setSmtpEncryption(int t);
 #endif
 };
