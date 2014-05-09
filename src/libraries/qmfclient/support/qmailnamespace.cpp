@@ -590,31 +590,6 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
     return result;
 }
 
-/*!
-    Returns the text describing the last error reported by the underlying platform.
-*/
-QString QMail::lastSystemErrorMessage()
-{
-#ifdef Q_OS_WIN
-    LPVOID buffer;
-
-    ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    ::GetLastError(),
-                    0,
-                    reinterpret_cast<LPTSTR>(&buffer),
-                    0,
-                    NULL);
-
-    QString result(QString::fromUtf16(reinterpret_cast<const ushort*>(buffer)));
-    ::LocalFree(buffer);
-
-    return result;
-#else
-    return QString(::strerror(errno));
-#endif
-}
-
 QMap<QString, QStringList> standardFolderTranslations()
 {
     QMap<QString, QStringList> folderTranslations;

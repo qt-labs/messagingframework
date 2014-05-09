@@ -75,6 +75,4 @@ void tst_QMailnamespace::test_qmailnamespace()
     QStringList types = extensionsForMimeType("audio/mpeg");
     QVERIFY(types.count() != 0);
     QCOMPARE(extensionsForMimeType("audio/pcmu").count(), 0);
-
-    //QCOMPARE(lastSystemErrorMessage(), QString("Success"));
 }
