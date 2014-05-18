@@ -64,7 +64,7 @@ Set the following evironment variables prior to running these files:
 
     PATH=<imagedir/bin>:$PATH
     LD_LIBRARY_PATH=<imagedir/lib>:$LD_LIBRARY_PATH
-    QMF_PLUGINS=<imagedir/lib/qmf/plugins>
+    QT_PLUGIN_PATH=<imagedir/lib/qt5/plugins>
 
 Optionally set QMF_DATA to the location where you want the framework data
 files stored. If this is not set, the default of $HOME/.qmf will be used.
