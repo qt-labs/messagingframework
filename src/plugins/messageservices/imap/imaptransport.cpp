@@ -47,6 +47,8 @@
 #ifdef QT_QMF_HAVE_ZLIB
 #include <zlib.h>
 
+#undef compress // defined in Qt's zconf.h and clashing with ImapTransport::transport()
+
 /* From RFC4978 The IMAP COMPRESS:   
    "When using the zlib library (see [RFC1951]), the functions
    deflateInit2(), deflate(), inflateInit2(), and inflate() suffice to
