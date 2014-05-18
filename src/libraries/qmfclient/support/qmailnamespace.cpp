@@ -103,7 +103,7 @@ static QString lockFileDir()
     //Store the file in /var/lock instead system's temporary directory
     QFileInfo lock(QString::fromLatin1("/var/lock"));
     if (lock.exists() && lock.isWritable())
-        path = lock.absolutePath();
+        path = lock.absoluteFilePath();
 #endif
     return path;
 }
