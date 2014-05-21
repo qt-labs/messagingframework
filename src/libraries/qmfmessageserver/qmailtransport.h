@@ -99,7 +99,9 @@ public:
 
     // Read line-oriented data from the transport (must have an open connection)
     bool canReadLine() const;
+    bool bytesAvailable() const;
     QByteArray readLine(qint64 maxSize = 0);
+    QByteArray readAll();
 
     // Assists with counting bytes written to the device
     void mark();

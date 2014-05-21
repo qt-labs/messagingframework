@@ -128,7 +128,9 @@ public:
 
     bool consume(QIODevice *in);
     bool canReadLine() const;
+    bool bytesAvailable() const;
     QByteArray readLine();
+    QByteArray readAll();
 
 private:
     int _chunkSize;
@@ -185,6 +187,11 @@ bool Rfc1951Decompressor::canReadLine() const
     return _output.contains('\n');
 }
 
+bool Rfc1951Decompressor::bytesAvailable() const
+{
+    return !_output.isEmpty();
+}
+
 QByteArray Rfc1951Decompressor::readLine()
 {
     int eolPos = _output.indexOf('\n');
@@ -194,6 +201,13 @@ QByteArray Rfc1951Decompressor::readLine()
     
     QByteArray result = _output.left(eolPos + 1);
     _output = _output.mid(eolPos + 1);
+    return result;
+}
+
+QByteArray Rfc1951Decompressor::readAll()
+{
+    QByteArray result =  _output;
+    _output.clear();
     return result;
 }
 #else
@@ -214,7 +228,9 @@ public:
 
     bool consume(QIODevice *) { return true; }
     bool canReadLine() const { return true; }
+    bool bytesAvailable() const { return true; }
     QByteArray readLine() { return QByteArray(); }
+    QByteArray readAll() { return QByteArray(); }
 };
 #endif
 
@@ -244,12 +260,30 @@ bool ImapTransport::imapCanReadLine()
     }
 }
 
+bool ImapTransport::imapBytesAvailable()
+{
+    if (!compress()) {
+        return bytesAvailable();
+    } else {
+        return _decompressor->bytesAvailable();
+    }
+}
+
 QByteArray ImapTransport::imapReadLine()
 {
     if (!compress()) {
         return readLine();
     } else {
         return _decompressor->readLine();
+    }
+}
+
+QByteArray ImapTransport::imapReadAll()
+{
+    if (!compress()) {
+        return readAll();
+    } else {
+        return _decompressor->readAll();
     }
 }
 

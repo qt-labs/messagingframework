@@ -314,6 +314,7 @@ private:
     bool _receivedCapabilities;
 
     static const int MAX_LINES = 30;
+    QByteArray _lineBuffer;
 };
 
 #endif

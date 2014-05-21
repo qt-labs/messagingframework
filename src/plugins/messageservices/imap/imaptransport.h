@@ -63,7 +63,9 @@ public:
 
     // Read line-oriented data from the transport (must have an open connection)
     bool imapCanReadLine();
+    bool imapBytesAvailable();
     QByteArray imapReadLine();
+    QByteArray imapReadAll();
 
     // Write data to the transport (must have an open connection)
     bool imapWrite(QByteArray *in);

@@ -349,11 +349,27 @@ bool QMailTransport::canReadLine() const
 }
 
 /*!
+    Returns true if the transport is readable and there are bytes available to read; otherwise returns false.
+*/
+bool QMailTransport::bytesAvailable() const
+{
+    return mSocket->isReadable() && mSocket->bytesAvailable();
+}
+
+/*!
     Reads a line from the device, but no more than \a maxSize characters, and returns the result as a QByteArray.
 */
 QByteArray QMailTransport::readLine(qint64 maxSize)
 {
     return mSocket->readLine(maxSize);
+}
+
+/*!
+    Reads all the data available in the device, and returns the result as a QByteArray.
+*/
+QByteArray QMailTransport::readAll()
+{
+    return mSocket->readAll();
 }
 
 /*! \internal */

@@ -79,6 +79,7 @@ public:
     QMailServiceAction::Status::ErrorCode addMail(const QMailMessage& mail);
 
 signals:
+    void connectionError(QMailServiceAction::Status::ErrorCode status, const QString &msg);
     void errorOccurred(int, const QString &);
     void errorOccurred(const QMailServiceAction::Status &, const QString &);
     void updateStatus(const QString &);
@@ -104,6 +105,7 @@ private:
     void sendCommand(const QByteArray &cmd);
     void sendCommands(const QStringList &cmds);
     void incomingData();
+    void processResponse(const QString &response);
     void nextAction(const QString &response);
     void messageProcessed(const QMailMessageId &id);
 
@@ -130,6 +132,7 @@ private:
     int outstandingResponses;
     QStringList::Iterator it;
     QMailTransport *transport;
+    QByteArray lineBuffer;
 
     // SendMap maps id -> (units) to be sent
     typedef QMap<QMailMessageId, uint> SendMap;

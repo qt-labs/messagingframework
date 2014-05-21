@@ -335,34 +335,48 @@ void SmtpClient::sendCommands(const QStringList &cmds)
 
 void SmtpClient::incomingData()
 {
+    if (!lineBuffer.isEmpty() && transport->canReadLine()) {
+        processResponse(QString::fromLatin1(lineBuffer + transport->readLine()));
+        lineBuffer.clear();
+    }
+
     while (transport->canReadLine()) {
-        QString response = transport->readLine();
-        qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
+        processResponse(QString::fromLatin1(transport->readLine()));
+    }
 
-        delete authTimeout;
-        authTimeout = 0;
+    if (transport->bytesAvailable()) {
+        // If there is an incomplete line, read it from the socket buffer to ensure we get readyRead signal next time
+        lineBuffer.append(transport->readAll());
+    }
+}
 
-        if (notUsingAuth) {
-            if (response.startsWith("530")) {
-                operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
-                return;
-            } else {
-                notUsingAuth = false;
-            }
-        }
+void SmtpClient::processResponse(const QString &response)
+{
+    qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
 
-        if (outstandingResponses > 0) {
-            --outstandingResponses;
-        }
+    delete authTimeout;
+    authTimeout = 0;
 
-        if (outstandingResponses > 0) {
-            // For pipelined commands, just ensure that they did not fail
-            if (!response.isEmpty() && (response[0] != QChar('2'))) {
-                operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
-            }
+    if (notUsingAuth) {
+        if (response.startsWith("530")) {
+            operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
+            return;
         } else {
-            nextAction(response);
+            notUsingAuth = false;
         }
+    }
+
+    if (outstandingResponses > 0) {
+        --outstandingResponses;
+    }
+
+    if (outstandingResponses > 0) {
+        // For pipelined commands, just ensure that they did not fail
+        if (!response.isEmpty() && (response[0] != QChar('2'))) {
+            operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
+        }
+    } else {
+        nextAction(response);
     }
 }
 
