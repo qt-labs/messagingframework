@@ -2627,12 +2627,14 @@ bool QMailStorePrivate::initStore()
     }
 
 #if defined(Q_USE_SQLITE)
-    QSqlQuery query( *database() );
-    query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
-    if (query.next() && query.value(0).toString().toLower() != "wal") {
-        qWarning() << "res" << query.value(0).toString().toLower();
-        qWarning() << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
-        qWarning() << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
+    {
+        QSqlQuery query( *database() );
+        query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
+        if (query.next() && query.value(0).toString().toLower() != "wal") {
+            qWarning() << "res" << query.value(0).toString().toLower();
+            qWarning() << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
+            qWarning() << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
+        }
     }
     {
         // Reduce page cache from 2MB (2000 pages) to 1MB
