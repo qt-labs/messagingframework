@@ -6,6 +6,7 @@ MODULE_PLUGIN_TYPES = \
     messageservices
 
 load(qt_module)
+CONFIG -= create_cmake
 
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
     QT += gui widgets

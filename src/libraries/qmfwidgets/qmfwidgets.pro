@@ -3,6 +3,8 @@ QT         = core qmfclient widgets
 CONFIG    += warn_on
 
 load(qt_module)
+CONFIG -= create_cmake
+
 DEFINES -= QT_NO_CAST_TO_ASCII # this is a fight for another day.
 
 DEFINES += QMFUTIL_INTERNAL
