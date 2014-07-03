@@ -67,14 +67,14 @@ public:
     static void singleShot(int interval, QObject *receiver, const char *member);
     static void singleShot(int minimum, int maximum, QObject *receiver, const char *member);
 
-public slots:
+public Q_SLOTS:
     void start(int interval);
     void start(int minimum, int maximum);
 
     void start();
     void stop();
 
-signals:
+Q_SIGNALS:
     void timeout();
 
 private:

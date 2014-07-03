@@ -78,10 +78,10 @@ public:
 
     void removeCallback(QMailMessageBufferFlushCallback *callback);
 
-signals:
+Q_SIGNALS:
     void flushed();
 
-private slots:
+private Q_SLOTS:
     void messageTimeout();
     void readConfig();
 

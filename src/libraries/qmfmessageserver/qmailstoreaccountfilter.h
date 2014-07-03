@@ -57,7 +57,7 @@ public:
     QMailStoreAccountFilter(const QMailAccountId &id);
     ~QMailStoreAccountFilter();
 
-signals:
+Q_SIGNALS:
     void accountUpdated();
     void accountContentsModified();
 

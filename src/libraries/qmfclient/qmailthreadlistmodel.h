@@ -88,10 +88,10 @@ public:
     bool synchronizeEnabled() const;
     void setSynchronizeEnabled(bool val);
 
-signals:
+Q_SIGNALS:
    void modelChanged();
 
-private slots:
+private Q_SLOTS:
     void threadsAdded(const QMailThreadIdList& ids);
     void threadsUpdated(const QMailThreadIdList& ids);
     void threadsRemoved(const QMailThreadIdList& ids);

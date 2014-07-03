@@ -71,13 +71,13 @@ public:
 
     virtual void setModel(QAbstractItemModel *model);
 
-signals:
+Q_SIGNALS:
     void selected(QMailMessageSet *);
     void activated(QMailMessageSet *);
     void selectionUpdated();
     void backPressed();
 
-protected slots:
+protected Q_SLOTS:
     virtual void itemSelected(const QModelIndex &index);
     virtual void itemActivated(const QModelIndex &index);
     virtual void itemExpanded(const QModelIndex &index);

@@ -149,7 +149,7 @@ public:
 
     static QMailMessageKey contentKey(const QMailFolderId &id, bool descendants);
 
-protected slots:
+protected Q_SLOTS:
     virtual void foldersAdded(const QMailFolderIdList &ids);
     virtual void foldersRemoved(const QMailFolderIdList &ids);
     virtual void foldersUpdated(const QMailFolderIdList &ids);
@@ -186,7 +186,7 @@ public:
 
     static QMailMessageKey contentKey(const QMailAccountId &id, bool descendants);
 
-protected slots:
+protected Q_SLOTS:
     virtual void foldersAdded(const QMailFolderIdList &ids);
     virtual void foldersRemoved(const QMailFolderIdList &ids);
     virtual void foldersUpdated(const QMailFolderIdList &ids);
@@ -223,7 +223,7 @@ public:
     virtual bool updatesMinimized() const;
     virtual void setUpdatesMinimized(bool set);
 
-protected slots:
+protected Q_SLOTS:
     virtual void messagesAdded(const QMailMessageIdList &ids);
     virtual void messagesRemoved(const QMailMessageIdList &ids);
     virtual void messagesUpdated(const QMailMessageIdList &ids);
@@ -282,7 +282,7 @@ public:
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
 
-signals:
+Q_SIGNALS:
     void accountsAdded(const QMailAccountIdList &ids);
     void accountsUpdated(const QMailAccountIdList &ids);
     void accountsRemoved(const QMailAccountIdList &ids);
@@ -297,7 +297,7 @@ signals:
     void messagesRemoved(const QMailMessageIdList &ids);
     void messagesUpdated(const QMailMessageIdList &ids);
 
-protected slots:
+protected Q_SLOTS:
     void mailStoreAccountsAdded(const QMailAccountIdList &ids);
     void mailStoreAccountsUpdated(const QMailAccountIdList &ids);
     void mailStoreAccountsRemoved(const QMailAccountIdList &ids);

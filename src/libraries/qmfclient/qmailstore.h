@@ -207,7 +207,7 @@ public:
     friend QMailStore* QMailStoreInstance();
 #endif
 
-signals:
+Q_SIGNALS:
     void errorOccurred(QMailStore::ErrorCode code);
 
     void accountsAdded(const QMailAccountIdList& ids);

@@ -105,7 +105,7 @@ public:
     void mark();
     qint64 bytesSinceMark() const;
 
-signals:
+Q_SIGNALS:
     void connected(QMailTransport::EncryptType encryptType);
     void readyRead();
     void bytesWritten(qint64 transmitted);
@@ -113,11 +113,11 @@ signals:
     void errorOccurred(int status, QString);
     void updateStatus(const QString &);
 
-public slots:
+public Q_SLOTS:
     void errorHandling(int errorCode, QString msg);
     void socketError(QAbstractSocket::SocketError error);
 
-protected slots:
+protected Q_SLOTS:
     void connectionEstablished();
     void hostConnectionTimeOut();
 #ifndef QT_NO_SSL

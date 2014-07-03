@@ -123,7 +123,7 @@ public:
 
     virtual QMailStore::MessageRemovalOption messageRemovalOption() const;
 
-public slots:
+public Q_SLOTS:
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
     virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action);
 
@@ -188,7 +188,7 @@ public slots:
     virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
     virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action);
 
-signals:
+Q_SIGNALS:
     void newMessagesAvailable();
     void newMessagesAvailable(quint64 action);
 
@@ -214,7 +214,7 @@ signals:
     void protocolResponse(const QString &response, const QVariant &data);
     void protocolResponse(const QString &response, const QVariant &data, quint64 action);
 
-protected slots:
+protected Q_SLOTS:
     void deleteMessages();
     void copyMessages();
     void moveMessages();
@@ -244,11 +244,11 @@ class MESSAGESERVER_EXPORT QMailMessageSink : public QObject
 public:
     ~QMailMessageSink();
 
-public slots:
+public Q_SLOTS:
     virtual bool transmitMessages(const QMailMessageIdList &ids);
     virtual bool transmitMessages(const QMailMessageIdList &ids, quint64 action);
 
-signals:
+Q_SIGNALS:
     void messagesTransmitted(const QMailMessageIdList &ids);
     void messagesTransmitted(const QMailMessageIdList &ids, quint64 action);
     void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
@@ -294,13 +294,13 @@ public:
     static int reservePushConnections(int connections);
     static void releasePushConnections(int connections);
 
-public slots:
+public Q_SLOTS:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action);
     bool cancelOperation() { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user")); }
     bool cancelOperation(quint64 action) { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"), action); }
 
-signals:
+Q_SIGNALS:
     void availabilityChanged(bool available);
 
     void connectivityChanged(QMailServiceAction::Connectivity connectivity);

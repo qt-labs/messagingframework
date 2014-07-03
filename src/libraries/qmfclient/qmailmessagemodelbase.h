@@ -134,10 +134,10 @@ public:
     void emitBeginRemoveRows(const QModelIndex &idx, int start, int end);
     void emitEndRemoveRows();
 
-signals:
+Q_SIGNALS:
     void modelChanged();
 
-protected slots:
+protected Q_SLOTS:
     void messagesAdded(const QMailMessageIdList& ids); 
     void messagesUpdated(const QMailMessageIdList& ids);
     void messagesRemoved(const QMailMessageIdList& ids);

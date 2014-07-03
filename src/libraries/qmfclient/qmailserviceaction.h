@@ -139,10 +139,10 @@ public:
 
     bool isRunning() const;
 
-public slots:
+public Q_SLOTS:
     virtual void cancelOperation();
 
-signals:
+Q_SIGNALS:
     void connectivityChanged(QMailServiceAction::Connectivity c);
     void activityChanged(QMailServiceAction::Activity a);
     void statusChanged(const QMailServiceAction::Status &s);
@@ -177,7 +177,7 @@ public:
     QMailRetrievalAction(QObject *parent = 0);
     ~QMailRetrievalAction();
 
-public slots:
+public Q_SLOTS:
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
@@ -212,11 +212,11 @@ public:
     QMailTransmitAction(QObject *parent = 0);
     ~QMailTransmitAction();
 
-signals:
+Q_SIGNALS:
     void messagesTransmitted(const QMailMessageIdList &ids);
     void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
 
-public slots:
+public Q_SLOTS:
     void transmitMessages(const QMailAccountId &accountId);
     void transmitMessage(const QMailMessageId &messageId);
 };
@@ -237,7 +237,7 @@ public:
     QMailMessageIdList messagesAdded() const;
     QMailMessageIdList messagesUpdated() const;
 
-public slots:
+public Q_SLOTS:
     void onlineDeleteMessages(const QMailMessageIdList &ids);
     void discardMessages(const QMailMessageIdList &ids);
 
@@ -284,12 +284,12 @@ public:
     uint messagesCount() const;
     static QMailMessageKey temporaryKey();
 
-signals:
+Q_SIGNALS:
     void messageIdsMatched(const QMailMessageIdList &ids);
     void remainingMessagesCount(uint);
     void messagesCount(uint);
 
-public slots:
+public Q_SLOTS:
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void countMessages(const QMailMessageKey &filter, const QString& bodyText);
@@ -313,7 +313,7 @@ public:
     QMailFolderId statusFolderId() const;
     QMailMessageId statusMessageId() const;
 
-signals:
+Q_SIGNALS:
     void statusErrorCodeChanged(QMailActionInfo::StatusErrorCode newError);
     void statusTextChanged(const QString &newText);
     void statusAccountIdChanged(const QMailAccountId &newAccountId);
@@ -338,7 +338,7 @@ public:
 
     QList< QSharedPointer<QMailActionInfo> > actions() const;
     void listActionsRequest();
-signals:
+Q_SIGNALS:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions);
 };
 
@@ -354,10 +354,10 @@ public:
     QMailProtocolAction(QObject *parent = 0);
     ~QMailProtocolAction();
 
-signals:
+Q_SIGNALS:
     void protocolResponse(const QString &response, const QVariant &data);
 
-public slots:
+public Q_SLOTS:
     void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
 };
 
