@@ -46,6 +46,37 @@
 
 namespace {
 
+static bool needsQuotes(const QString& src)
+{
+    QRegExp specials = QRegExp("[<>\\[\\]:;@\\\\,.]");
+
+    QString characters(src);
+
+    // Remove any quoted-pair characters, since they don't require quoting
+    int index = 0;
+    while ((index = characters.indexOf('\\', index)) != -1)
+        characters.remove(index, 2);
+
+    if ( specials.indexIn( characters ) != -1 )
+        return true;
+
+    // '(' and ')' also need quoting, if they don't conform to nested comments
+    const QChar* it = characters.constData();
+    const QChar* const end = it + characters.length();
+
+    int commentDepth = 0;
+    for (; it != end; ++it)
+        if (*it == '(') {
+            ++commentDepth;
+        }
+        else if (*it == ')') {
+            if (--commentDepth < 0)
+                return true;
+        }
+
+    return (commentDepth != 0);
+}
+
 struct CharacterProcessor
 {
     virtual ~CharacterProcessor();
@@ -458,6 +489,94 @@ static QString removeWhitespace(const QString& input)
     return remover._result;
 }
 
+struct QuoteDisplayName : public CharacterProcessor
+{
+    QuoteDisplayName();
+
+    virtual void process(QChar, bool, bool, int);
+    virtual void finished();
+
+    QString _result;
+
+private:
+    void processPending();
+
+    bool _commentProcessing;
+    bool _quotedProcessing;
+    QString _processedWord;
+
+};
+
+QuoteDisplayName::QuoteDisplayName()
+    : _commentProcessing(false),
+      _quotedProcessing(false),
+      _processedWord(QString())
+{
+}
+
+void QuoteDisplayName::processPending()
+{
+    // flush any already processed chars
+    if (!_processedWord.isEmpty()) {
+        _result.append(needsQuotes(_processedWord) ? QMail::quoteString(_processedWord) : _processedWord);
+        _processedWord.clear();
+    }
+}
+
+void QuoteDisplayName::process(QChar character, bool quoted, bool escaped, int commentDepth)
+{
+    Q_UNUSED(escaped);
+
+    // Start processing a comment
+    if (commentDepth > 0) {
+        if (!_commentProcessing) {
+            _commentProcessing = true;
+        }
+         _processedWord.append(character);
+    } else if (commentDepth == 0) {
+        // Flush the comment it does not need quoting
+        if (_commentProcessing) {
+            _commentProcessing = false;
+            _result.append(_processedWord);
+            _processedWord.clear();
+        }
+        // Start processing a quote
+        if (quoted) {
+            if (!_quotedProcessing) {
+                _quotedProcessing = true;
+            }
+            _processedWord.append(character);
+        } else if (!quoted && _quotedProcessing) {
+            // Finish processing a quote
+            _quotedProcessing = false;
+            processPending();
+             _processedWord.append(character);
+        } else {
+            _processedWord.append(character);
+        }
+    }
+}
+
+void QuoteDisplayName::finished()
+{
+    // check if our processed word is a comment or not
+    if (!_processedWord.isEmpty()) {
+        QString tempWord = _processedWord.trimmed();
+        if (!tempWord.isEmpty() && tempWord.at(0) == '(' && tempWord.at(tempWord.length() -1) == ')') {
+            _result.append(_processedWord);
+        } else {
+            processPending();
+        }
+    }
+}
+
+static QString quoteIfNecessary(const QString& input)
+{
+    QuoteDisplayName quoteDisplayName;
+    quoteDisplayName.processCharacters(input);
+    return quoteDisplayName._result;
+}
+
 QPair<int, int> findDelimiters(const QString& text)
 {
     int first = -1;
@@ -531,8 +650,9 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
                 address = input.mid(delimiters.first + 1, (delimiters.second - delimiters.first - 1)).trimmed();
         }
 
-        if ( name.isEmpty() ) 
+        if (name.isEmpty()) {
             name = address;
+        }
     } 
 }
 
@@ -721,37 +841,6 @@ QString QMailAddressPrivate::minimalPhoneNumber() const
     return minimal.toLower();
 }
 
-static bool needsQuotes(const QString& src)
-{
-    QRegExp specials = QRegExp("[<>\\[\\]:;@\\\\,.]");
-
-    QString characters(src);
-
-    // Remove any quoted-pair characters, since they don't require quoting
-    int index = 0;
-    while ((index = characters.indexOf('\\', index)) != -1)
-        characters.remove(index, 2);
-
-    if ( specials.indexIn( characters ) != -1 )
-        return true;
-
-    // '(' and ')' also need quoting, if they don't conform to nested comments
-    const QChar* it = characters.constData();
-    const QChar* const end = it + characters.length();
-
-    int commentDepth = 0;
-    for (; it != end; ++it)
-        if (*it == '(') {
-            ++commentDepth;
-        }
-        else if (*it == ')') {
-            if (--commentDepth < 0)
-                return true;
-        }
-
-    return (commentDepth != 0);
-}
-
 QString QMailAddressPrivate::toString(bool forceDelimited) const
 {
     QString result;
@@ -763,9 +852,9 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
         result.append( _name ).append( ": " ).append( _address ).append( ';' );
     } else {
         // If there are any 'special' characters in the name it needs to be quoted
-        if ( !_name.isEmpty() )
-            result = ( needsQuotes( _name ) ? QMail::quoteString( _name ) : _name );
-
+        if ( !_name.isEmpty() ) {
+            result = ::quoteIfNecessary(_name);
+        }
         if ( !_address.isEmpty() ) {
             if ( !forceDelimited && result.isEmpty() ) {
                 result = _address;

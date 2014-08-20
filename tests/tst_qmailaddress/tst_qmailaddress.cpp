@@ -303,14 +303,71 @@ void tst_QMailAddress::constructor1_data()
         << "wizard@oz.test"
         << "\"O. Wizard\" <wizard@oz.test>";
 
-    /* Honestly, I don't know what to do about this...
-    QTest::newRow("'\\' needs quoting") 
-        << true
-        << "\"Wizard\\Oz\" <wizard@oz.test>"
-        << "Wizard\\Oz"
-        << "wizard@oz.test"
-        << "\"Wizard\\Oz\" <wizard@oz.test>";
+    QTest::newRow("Quoted with trailing comment")
+            << true
+            << "\"Wizard+\" (wizard@oz.test) <wizard@oz.test>"
+            << "\"Wizard+\" (wizard@oz.test)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (wizard@oz.test) <wizard@oz.test>";
+
+    QTest::newRow("Quoted with 2 trailing comment")
+            << true
+            << "\"Wizard+\" (wizard@oz.test) (comment) <wizard@oz.test>"
+            << "\"Wizard+\" (wizard@oz.test) (comment)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (wizard@oz.test) (comment) <wizard@oz.test>";
+
+    QTest::newRow("2 comments with quote in the middle")
+            << true
+            << "(wizard@oz.test) \"Wizard+\" (comment) <wizard@oz.test>"
+            << "(wizard@oz.test) \"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << "(wizard@oz.test) \"Wizard+\" (comment) <wizard@oz.test>";
+
+    QTest::newRow("2 comments with name in the middle")
+            << true
+            << "(wizard@oz.test) WizardOz (comment) <wizard@oz.test>"
+            << "(wizard@oz.test) WizardOz (comment)"
+            << "wizard@oz.test"
+            << "(wizard@oz.test) WizardOz (comment) <wizard@oz.test>";
+
+    QTest::newRow("Word with quoted char in the middle")
+            << true
+            << "Wiz\"a\"rd+ <wizard@oz.test>"
+            << "Wiz\"a\"rd+"
+            << "wizard@oz.test"
+            << "Wiz\"a\"rd+ <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with quoted char in the middle")
+            << true
+            << "\"Wiz\"a\"rd+\" <wizard@oz.test>"
+            << "Wiz\"a\"rd+"
+            << "wizard@oz.test"
+            << "\"Wiz\"a\"rd+\" <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with comment with a quote")
+            << true
+            << "\"Wizard+\" (comment\"quoted\") <wizard@oz.test>"
+            << "\"Wizard+\" (comment\"quoted\")"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (comment\"quoted\") <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with empty space")
+            << true
+            << " \"Wizard+\" (comment) <wizard@oz.test>"
+            << "\"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (comment) <wizard@oz.test>";
+
+    /*Honestly, I don't know what to do about this..
+        QTest::newRow("'\\' needs quoting")
+            << true
+            << "\"Wizard\\Oz\" <wizard@oz.test>"
+            << "Wizard\\Oz"
+            << "wizard@oz.test"
+            << "\"Wizard\\Oz\" <wizard@oz.test>";
     */
+
 }
 
 void tst_QMailAddress::constructor1()
@@ -510,8 +567,72 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"O. Wizard\" <wizard@oz.test>";
 
-    /* Honestly, I don't know what to do about this...
-    QTest::newRow("'\\' needs quoting") 
+    QTest::newRow("Quoted with trailing comment")
+            << "\"Wizard+\" (wizard@oz.test)"
+            << "wizard@oz.test"
+            << true
+            << "\"Wizard+\" (wizard@oz.test)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (wizard@oz.test) <wizard@oz.test>";
+
+    QTest::newRow("Quoted with 2 trailing comment")
+            << "\"Wizard+\" (wizard@oz.test) (comment)"
+            << "wizard@oz.test"
+            << true
+            << "\"Wizard+\" (wizard@oz.test) (comment)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (wizard@oz.test) (comment) <wizard@oz.test>";
+
+    QTest::newRow("2 comments with quote in the middle")
+            << "(wizard@oz.test) \"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << true
+            << "(wizard@oz.test) \"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << "(wizard@oz.test) \"Wizard+\" (comment) <wizard@oz.test>";
+
+    QTest::newRow("2 comments with name in the middle")
+            << "(wizard@oz.test) WizardOz (comment)"
+            << "wizard@oz.test"
+            << true
+            << "(wizard@oz.test) WizardOz (comment)"
+            << "wizard@oz.test"
+            << "(wizard@oz.test) WizardOz (comment) <wizard@oz.test>";
+
+    QTest::newRow("Word with quoted char in the middle")
+            << "Wiz\"a\"rd+"
+            << "wizard@oz.test"
+            << true
+            << "Wiz\"a\"rd+"
+            << "wizard@oz.test"
+            << "Wiz\"a\"rd+ <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with quoted char in the middle")
+            << "\"Wiz\"a\"rd+\""
+            << "wizard@oz.test"
+            << true
+            << "Wiz\"a\"rd+"
+            << "wizard@oz.test"
+            << "\"Wiz\"a\"rd+\" <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with comment with a quote")
+            << "\"Wizard+\" (comment\"quoted\")"
+            << "wizard@oz.test"
+            << true
+            << "\"Wizard+\" (comment\"quoted\")"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (comment\"quoted\") <wizard@oz.test>";
+
+    QTest::newRow("Quoted word with empty space")
+            << " \"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << true
+            << "\"Wizard+\" (comment)"
+            << "wizard@oz.test"
+            << "\"Wizard+\" (comment) <wizard@oz.test>";
+
+    /* Honestly, I don't know what to do about this..
+    QTest::newRow("'\\' needs quoting")
         << "Wizard\\Oz"
         << "wizard@oz.test"
         << true
