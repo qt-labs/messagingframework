@@ -55,8 +55,8 @@ NewCountNotifier::~NewCountNotifier()
 
 bool NewCountNotifier::notify()
 {
-    //uncomment the next line to ensure a response is returned, this will cause the QMailMessage::New flag to be unset for all messages
-    //emit response(true);
+    // Emitting response(true) will cause the QMailMessage::New flag to be unset for all messages
+    emit response(false);
     return true;
 }
 
