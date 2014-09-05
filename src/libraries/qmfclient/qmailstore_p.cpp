@@ -7096,6 +7096,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
 
         // perhaps, we need to update unreadcount column or status column in mailthreads table
         QVariantList bindMessagesIds;
+        QVariantList bindMessagesIdsBatch;
             foreach (const QMailMessageId& id, *updatedMessageIds)
             {
                 const QMailThreadId &threadId = QMailMessageMetaData(id).parentThreadId();
@@ -7107,18 +7108,27 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
             foreach (const QMailThreadId& threadId, *modifiedThreadIds)
             {
                 if (threadId.isValid()) {
-                    QString sql("SELECT status FROM mailmessages WHERE id IN %1 and parentthreadid = %2");
 
-                    QSqlQuery query(simpleQuery(sql.arg(expandValueList(bindMessagesIds)).arg(threadId.toULongLong()),
-                                                bindMessagesIds,
-                                                "status mailmessages query"));
-                    if (query.lastError().type() != QSqlError::NoError)
-                        return DatabaseFailure;
                     QList<quint64> oldStatusList;
 
-                    while (query.next())
-                        oldStatusList.append(query.value(0).toULongLong());
+                    while (!bindMessagesIds.isEmpty()) {
+                        bindMessagesIdsBatch.clear();
+                        bindMessagesIdsBatch = bindMessagesIds.mid(0,500);
+                        if (bindMessagesIds.count() > 500) {
+                            bindMessagesIds = bindMessagesIds.mid(500);
+                        } else {
+                            bindMessagesIds.clear();
+                        }
+                        QString sql("SELECT status FROM mailmessages WHERE id IN %1 and parentthreadid = %2");
+                        QSqlQuery query(simpleQuery(sql.arg(expandValueList(bindMessagesIdsBatch)).arg(threadId.toULongLong()),
+                                                    bindMessagesIdsBatch,
+                                                    "status mailmessages query"));
+                        if (query.lastError().type() != QSqlError::NoError)
+                            return DatabaseFailure;
 
+                        while (query.next())
+                            oldStatusList.append(query.value(0).toULongLong());
+                    }
                     qlonglong unreadCount = 0;
                     foreach (const quint64& oldStatus, oldStatusList)
                     {
