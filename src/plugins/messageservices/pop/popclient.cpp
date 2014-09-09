@@ -418,7 +418,7 @@ void PopClient::sendCommand(const QByteArray& cmd)
 
 void PopClient::incomingData()
 {
-    if (!lineBuffer.isEmpty() && transport->canReadLine()) {
+    if (!lineBuffer.isEmpty() && (transport && transport->canReadLine())) {
         processResponse(QString::fromLatin1(lineBuffer + transport->readLine()));
         lineBuffer.clear();
     }
@@ -427,7 +427,7 @@ void PopClient::incomingData()
         processResponse(QString::fromLatin1(transport->readLine()));
     }
 
-    if (transport->bytesAvailable()) {
+    if (transport && transport->bytesAvailable()) {
         // If there is an incomplete line, read it from the socket buffer to ensure we get readyRead signal next time
         lineBuffer.append(transport->readAll());
     }
