@@ -294,7 +294,7 @@ protected:
 class ImapFetchSelectedMessagesStrategy : public ImapMessageListStrategy
 {
 public:
-    ImapFetchSelectedMessagesStrategy() {}
+    ImapFetchSelectedMessagesStrategy() : _listSize(0), _totalRetrievalSize(0) {}
     virtual ~ImapFetchSelectedMessagesStrategy() {}
     
     virtual void setOperation(ImapStrategyContextBase *context,
