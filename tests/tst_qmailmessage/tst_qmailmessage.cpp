@@ -677,7 +677,7 @@ CRLF
 "Message-ID:              <testabcd.1234@silly.test>" CRLF
 CRLF
 "Testing.") // rfc_text
-                      << QString("Pete(A \\\\wonderful \\) chap) <pete(his account)@silly.test(his host)>") // from
+                      << QString("\"Pete(A \\wonderful ) chap)\" <pete(his account)@silly.test(his host)>") // from
                       << QString("Pete(A \\\\wonderful \\) chap)") // from_name
                       << QString("pete(his account)@silly.test(his host)") // from_email
                       << QStringList(QString(
