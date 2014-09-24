@@ -451,6 +451,13 @@ static QString messagePropertyName(QMailMessageKey::Property property)
     return QString();
 }
 
+static bool caseInsensitiveProperty(QMailMessageKey::Property property)
+{
+    return ((property == QMailMessageKey::Sender) ||
+            (property == QMailMessageKey::Recipients) ||
+            (property == QMailMessageKey::Subject));
+}
+
 typedef QMap<QMailAccountKey::Property, QString> AccountPropertyMap;
 
 // Properties of the mailaccounts table
@@ -481,6 +488,12 @@ static QString accountPropertyName(QMailAccountKey::Property property)
         qWarning() << "Unknown account property:" << property;
 
     return QString();
+}
+
+static bool caseInsensitiveProperty(QMailAccountKey::Property property)
+{
+    return ((property == QMailAccountKey::Name) ||
+            (property == QMailAccountKey::FromAddress));
 }
 
 typedef QMap<QMailFolderKey::Property, QString> FolderPropertyMap;
@@ -518,6 +531,12 @@ static QString folderPropertyName(QMailFolderKey::Property property)
     return QString();
 }
 
+static bool caseInsensitiveProperty(QMailFolderKey::Property property)
+{
+    return ((property == QMailFolderKey::Path) ||
+            (property == QMailFolderKey::DisplayName));
+}
+
 typedef QMap<QMailThreadKey::Property, QString> ThreadPropertyMap;
 
 // Properties of the mailthreads table
@@ -551,6 +570,12 @@ static QString threadPropertyName(QMailThreadKey::Property property)
    qWarning() << "Unknown thread property:" << property;
 
     return QString();
+}
+
+static bool caseInsensitiveProperty(QMailThreadKey::Property property)
+{
+    return ((property == QMailThreadKey::Subject) ||
+            (property == QMailThreadKey::Senders));
 }
 
 
@@ -629,6 +654,11 @@ QMailMessageKey::Property matchingProperty<QMailMessageSortKey::Property, QMailM
     return map.value(source);
 }
 
+static bool caseInsensitiveProperty(QMailMessageSortKey::Property property)
+{
+    return caseInsensitiveProperty(matchingProperty<QMailMessageSortKey::Property, QMailMessageKey::Property>(property));
+}
+
 static QMap<QMailFolderSortKey::Property, QMailFolderKey::Property> folderSortMapInit()
 {
     QMap<QMailFolderSortKey::Property, QMailFolderKey::Property> map;
@@ -652,6 +682,11 @@ QMailFolderKey::Property matchingProperty<QMailFolderSortKey::Property, QMailFol
 {
     static QMap<QMailFolderSortKey::Property, QMailFolderKey::Property> map(folderSortMapInit());
     return map.value(source);
+}
+
+static bool caseInsensitiveProperty(QMailFolderSortKey::Property property)
+{
+    return caseInsensitiveProperty(matchingProperty<QMailFolderSortKey::Property, QMailFolderKey::Property>(property));
 }
 
 static QMap<QMailThreadSortKey::Property, QMailThreadKey::Property> threadSortMapInit()
@@ -681,6 +716,11 @@ QMailThreadKey::Property matchingProperty<QMailThreadSortKey::Property, QMailThr
     return map.value(source);
 }
 
+static bool caseInsensitiveProperty(QMailThreadSortKey::Property property)
+{
+    return caseInsensitiveProperty(matchingProperty<QMailThreadSortKey::Property, QMailThreadKey::Property>(property));
+}
+
 
 static QMap<QMailAccountSortKey::Property, QMailAccountKey::Property> accountSortMapInit()
 {
@@ -702,6 +742,11 @@ QMailAccountKey::Property matchingProperty<QMailAccountSortKey::Property, QMailA
 {
     static QMap<QMailAccountSortKey::Property, QMailAccountKey::Property> map(accountSortMapInit());
     return map.value(source);
+}
+
+static bool caseInsensitiveProperty(QMailAccountSortKey::Property property)
+{
+    return caseInsensitiveProperty(matchingProperty<QMailAccountSortKey::Property, QMailAccountKey::Property>(property));
 }
 
 template<>
@@ -1661,7 +1706,8 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
         if (arg.mask) {
             field = QString("(%1 & %2)").arg(field).arg(QString::number(arg.mask));
         }
-        sortColumns.append(field + ' ' + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+        bool noCase(caseInsensitiveProperty(arg.property));
+        sortColumns.append(field + (noCase ? " COLLATE NOCASE " : " ") + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
     }
 
     return QString(" ORDER BY ") + sortColumns.join(",");
@@ -1779,7 +1825,7 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
 
         bool bitwise((a.property == QMailAccountKey::Status) || (a.property == QMailAccountKey::MessageType));
         bool patternMatching(a.property == QMailAccountKey::FromAddress);
-        bool noCase((a.property == QMailAccountKey::Name) || (a.property == QMailAccountKey::FromAddress));
+        bool noCase(caseInsensitiveProperty(a.property));
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
         
@@ -1845,7 +1891,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &, const QMailMes
         bool bitwise((a.property == QMailMessageKey::Type) || (a.property == QMailMessageKey::Status));
         bool patternMatching((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) ||
                              (a.property == QMailMessageKey::ContentScheme) || (a.property == QMailMessageKey::ContentIdentifier));
-        bool noCase((a.property == QMailMessageKey::Sender) || (a.property == QMailMessageKey::Recipients) || (a.property == QMailMessageKey::Subject));
+        bool noCase(caseInsensitiveProperty(a.property));
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
         
@@ -2010,7 +2056,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &, const QMailFolde
         }
 
         bool bitwise(a.property == QMailFolderKey::Status);
-        bool noCase((a.property == QMailFolderKey::Path) || (a.property == QMailFolderKey::DisplayName));
+        bool noCase(caseInsensitiveProperty(a.property));
 
         QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise, noCase);
         
@@ -2117,7 +2163,9 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
             columnName = fieldName(a.property, alias);
         }
 
-        QString expression = columnExpression(columnName, a.op, a.valueList);
+        bool noCase(caseInsensitiveProperty(a.property));
+
+        QString expression = columnExpression(columnName, a.op, a.valueList, false, false, noCase);
 
         switch (a.property)
         {
