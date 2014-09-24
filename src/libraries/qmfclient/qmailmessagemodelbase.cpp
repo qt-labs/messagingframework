@@ -387,6 +387,36 @@ void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey)
     fullRefresh(true);
 }
 
+/*!
+    Returns the the limit set on the model, i.e the max number of messages that the model can hold.
+*/
+uint QMailMessageModelBase::limit() const
+{
+   return impl()->limit();
+}
+
+/*!
+    Sets the max number of messages that model can hold, by default this value is zero, that means,
+    all messages matching the model sort key.
+*/
+void QMailMessageModelBase::setLimit(uint limit)
+{
+    impl()->setLimit(limit);
+    fullRefresh(true);
+}
+
+/*!
+    Returns the total count of messages available in the database for the QMailMessageKey
+    used to populate the contents of this model. If no limit is set the return value is the same
+    as rowCount(), i.e the current number of messages in the model.
+
+    \sa rowCount()
+ */
+int QMailMessageModelBase::totalCount() const
+{
+    return impl()->totalCount();
+}
+
 /*! 
     \fn QModelIndex QMailMessageModelBase::generateIndex(int row, int column, void *ptr)
     \internal 

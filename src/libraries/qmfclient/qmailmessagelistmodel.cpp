@@ -52,6 +52,10 @@ public:
     QMailMessageSortKey sortKey() const;
     void setSortKey(const QMailMessageSortKey& sortKey);
 
+    uint limit() const;
+    void setLimit(uint limit);
+    int totalCount() const;
+
     bool isEmpty() const;
 
     int rowCount(const QModelIndex& idx) const;
@@ -93,6 +97,7 @@ private:
     mutable QSet<QMailMessageId> _checkedIds;
     mutable bool _initialised;
     mutable bool _needSynchronize;
+    uint _limit;
 };
 
 
@@ -106,7 +111,8 @@ QMailMessageListModelPrivate::QMailMessageListModelPrivate(QMailMessageListModel
     _sortKey(sortKey),
     _ignoreUpdates(ignoreUpdates),
     _initialised(false),
-    _needSynchronize(true)
+    _needSynchronize(true),
+    _limit(0)
 {
 }
 
@@ -132,6 +138,26 @@ QMailMessageSortKey QMailMessageListModelPrivate::sortKey() const
 void QMailMessageListModelPrivate::setSortKey(const QMailMessageSortKey& sortKey) 
 {
     _sortKey = sortKey;
+}
+
+uint QMailMessageListModelPrivate::limit() const
+{
+   return _limit;
+}
+
+void QMailMessageListModelPrivate::setLimit(uint limit)
+{
+    _limit = limit;
+}
+
+int QMailMessageListModelPrivate::totalCount() const
+{
+    if (_limit) {
+       return QMailStore::instance()->countMessages(_key);
+    } else {
+        init();
+        return _idList.count();
+    }
 }
 
 bool QMailMessageListModelPrivate::isEmpty() const
@@ -263,7 +289,7 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
     // when this event was recorded and when we're processing the signal.
     
     QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
-    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
+    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
 
     QList<int> insertIndices;
     QMap<QMailMessageId, int> newPositions;
@@ -294,6 +320,10 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
 
     qSort(insertIndices);
     foreach (int index, insertIndices) {
+        // Stop processing messages if we reached the limit
+        if (_limit && _idList.count() >= _limit) {
+            break;
+        }
         _model.emitBeginInsertRows(QModelIndex(), index, index);
         insertItemAt(index, QModelIndex(), indexId[index]);
         _model.emitEndInsertRows();
@@ -333,7 +363,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
 
     // Find the updated positions for our messages
     QMailMessageKey idKey(QMailMessageKey::id((_idList.toSet() + ids.toSet()).toList()));
-    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey));
+    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
     QMap<QMailMessageId, int> newPositions;
 
     int index = 0;
@@ -402,6 +432,10 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
 
     qSort(insertIndices);
     foreach (int index, insertIndices) {
+        // Stop processing messages if we reached the limit
+        if (_limit && _idList.count() >= _limit) {
+            break;
+        }
         _model.emitBeginInsertRows(QModelIndex(), index, index);
         insertItemAt(index, QModelIndex(), indexId[index]);
         _model.emitEndInsertRows();
@@ -499,7 +533,7 @@ void QMailMessageListModelPrivate::init() const
         _checkedIds.clear();
 
         int index = 0;
-        _idList = QMailStore::instance()->queryMessages(_key, _sortKey);
+        _idList = QMailStore::instance()->queryMessages(_key, _sortKey, _limit);
         foreach (const QMailMessageId &id, _idList) {
             _itemIndex.insert(id, index);
             ++index;
