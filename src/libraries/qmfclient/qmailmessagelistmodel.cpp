@@ -82,6 +82,7 @@ private:
     int indexOf(const QMailMessageId& id) const;
 
     bool addMessages(const QMailMessageIdList &ids);
+    bool appendMessages(const QMailMessageIdList &ids, const QMailMessageIdList &newIds);
     bool updateMessages(const QMailMessageIdList &ids);
     bool removeMessages(const QMailMessageIdList &ids);
 
@@ -148,6 +149,16 @@ uint QMailMessageListModelPrivate::limit() const
 void QMailMessageListModelPrivate::setLimit(uint limit)
 {
     _limit = limit;
+
+    QMailMessageIdList ids;
+    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key, _sortKey, _limit));
+
+    foreach (const QMailMessageId &id, newIds) {
+        if (!_idList.contains(id)) {
+            ids.append(id);
+        }
+    }
+    appendMessages(ids, newIds);
 }
 
 int QMailMessageListModelPrivate::totalCount() const
@@ -260,6 +271,10 @@ bool QMailMessageListModelPrivate::setIgnoreMailStoreUpdates(bool ignore)
 
 bool QMailMessageListModelPrivate::processMessagesAdded(const QMailMessageIdList &ids)
 {
+    if (ids.empty()) {
+        return true;
+    }
+
     if (_ignoreUpdates) {
         // Defer until resynchronised
         _needSynchronize = true;
@@ -287,10 +302,15 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
     // Note - we must only consider messages in the set given by (those we currently know +
     // those we have now been informed of) because the database content may have changed between
     // when this event was recorded and when we're processing the signal.
-    
-    QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
-    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
 
+    QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
+    const QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
+
+    return appendMessages(ids, newIds);
+}
+
+bool QMailMessageListModelPrivate::appendMessages(const QMailMessageIdList &ids, const QMailMessageIdList &newIds)
+{
     QList<int> insertIndices;
     QMap<QMailMessageId, int> newPositions;
 
