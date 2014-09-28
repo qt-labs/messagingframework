@@ -55,20 +55,19 @@
 
 #include "qprivateimplementation.h"
 
-template <typename T>
-void QPrivateImplementationPointer<T>::increment(T*& p)
+template<typename T>
+QPrivateImplementationPointer<T>::QPrivateImplementationPointer(const QPrivateImplementationPointer<T> &o)
+    : d(o.d)
 {
-    if (p) p->ref();
+    if (d)
+        d->ref();
 }
 
-template <typename T>
-void QPrivateImplementationPointer<T>::decrement(T*& p)
+template<typename T>
+QPrivateImplementationPointer<T>::~QPrivateImplementationPointer()
 {
-    if (p) {
-        if (p->deref())  {
-            p = reinterpret_cast<T*>(~0);
-        }
-    }
+    if (d)
+        d->deref();
 }
 
 template<typename ImplementationType>
@@ -80,13 +79,6 @@ QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(Impl
 template<typename ImplementationType>
 QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(const QPrivatelyImplemented& other)
     : d(other.d)
-{
-}
-
-template<typename ImplementationType>
-template<typename A1>
-QMF_EXPORT QPrivatelyImplemented<ImplementationType>::QPrivatelyImplemented(ImplementationType* p, A1 a1)
-    : d(p, a1)
 {
 }
 

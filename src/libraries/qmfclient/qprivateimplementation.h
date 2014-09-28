@@ -105,6 +105,11 @@ public:
     {
     }
 
+    inline int count() const
+    {
+        return ref_count.load();
+    }
+
     inline void ref()
     {
         ref_count.ref();
@@ -120,16 +125,11 @@ public:
         }
     }
 
-    inline void* detach()
+    inline void* clone()
     {
-        int refcount = ref_count.load();
-        if (copy_function && self && refcount != 1) {
-            void* copy = (*copy_function)(self);
-            reinterpret_cast<QPrivateImplementationBase*>(copy)->self = copy;
-            return copy;
-        } else {
-            return 0;
-        }
+        void* copy = (*copy_function)(self);
+        reinterpret_cast<QPrivateImplementationBase*>(copy)->self = copy;
+        return copy;
     }
 
 private:
@@ -142,13 +142,13 @@ private:
     template<class T>
     static inline void typed_delete(void *p)
     {
-        delete static_cast<T*>(p);
+        delete reinterpret_cast<T*>(p);
     }
 
     template<class T>
     static inline void* typed_copy_construct(const void *p)
     {
-        return new T(*static_cast<const T*>(p));
+        return new T(*reinterpret_cast<const T*>(p));
     }
 
     // using the assignment operator would lead to corruption in the ref-counting
@@ -158,95 +158,96 @@ private:
 template <class T> class QPrivateImplementationPointer
 {
 public:
-    inline T &operator*() { return *detach(); }
+    typedef T Type;
+    typedef T *pointer;
+
+    inline void detach() { if (d && d->count() != 1) detach_helper(); }
+    inline T &operator*() { detach(); return *d; }
     inline const T &operator*() const { return *d; }
-
-    inline T *operator->() { return detach(); }
+    inline T *operator->() { detach(); return d; }
     inline const T *operator->() const { return d; }
-
-    inline operator T *() { return detach(); }
+    inline operator T *() { detach(); return d; }
     inline operator const T *() const { return d; }
-
-    inline T *data() { return detach(); }
+    inline T *data() { detach(); return d; }
     inline const T *data() const { return d; }
-
     inline const T *constData() const { return d; }
 
     inline bool operator==(const QPrivateImplementationPointer<T> &other) const { return d == other.d; }
     inline bool operator!=(const QPrivateImplementationPointer<T> &other) const { return d != other.d; }
 
-    inline QPrivateImplementationPointer()
-        : d(0)
-    {
-    }
+    inline QPrivateImplementationPointer() { d = 0; }
+    ~QPrivateImplementationPointer();
 
-    inline explicit QPrivateImplementationPointer(T *p)
-        : d(p)
-    {
-        increment(d);
-    }
-
-    template<typename U>
-    inline explicit QPrivateImplementationPointer(U *p)
-        : d(static_cast<T*>(p))
-    {
-        increment(d);
-    }
-
-    inline QPrivateImplementationPointer(const QPrivateImplementationPointer<T> &o)
-        : d(o.d)
-    {
-        increment(d);
-    }
-
-    inline ~QPrivateImplementationPointer()
-    {
-        decrement(d);
-    }
-
-    inline QPrivateImplementationPointer<T> &operator=(T *p)
-    {
-        assign_helper(p);
+    explicit QPrivateImplementationPointer(T *data);
+    QPrivateImplementationPointer(const QPrivateImplementationPointer<T> &o);
+    inline QPrivateImplementationPointer<T> & operator=(const QPrivateImplementationPointer<T> &o) {
+        if (o.d != d) {
+            if (o.d)
+                o.d->ref();
+            T *old = d;
+            d = o.d;
+            if (old)
+                old->deref();
+        }
         return *this;
     }
-
-    inline QPrivateImplementationPointer<T> &operator=(const QPrivateImplementationPointer<T> &o)
-    {
-        assign_helper(o.d);
+    inline QPrivateImplementationPointer &operator=(T *o) {
+        if (o != d) {
+            if (o)
+                o->ref();
+            T *old = d;
+            d = o;
+            if (old)
+                old->deref();
+        }
         return *this;
     }
 
     inline bool operator!() const { return !d; }
 
+    inline void swap(QPrivateImplementationPointer &other)
+    { qSwap(d, other.d); }
+
+protected:
+    T *clone();
+
 private:
-    void increment(T*& p);
+    void detach_helper();
 
-    void decrement(T*& p);
-
-    inline T* assign_helper(T *p)
-    {
-        if (p != d) {
-            increment(p);
-            decrement(d);
-            d = p;
-        }
-        return d;
-    }
-
-    inline T* detach()
-    {
-        if (!d) return 0;
-
-        if (T* detached = static_cast<T*>(d->detach())) {
-            return assign_helper(detached);
-        } else {
-            return d;
-        }
-    }
-
-public:
     T *d;
 };
+
+namespace std {
+    template <class T>
+    Q_INLINE_TEMPLATE void swap(QPrivateImplementationPointer<T> &p1, QPrivateImplementationPointer<T> &p2)
+    { p1.swap(p2); }
+}
+
+template <class T>
+Q_INLINE_TEMPLATE QPrivateImplementationPointer<T>::QPrivateImplementationPointer(T *adata) : d(adata)
+{ if (d) d->ref(); }
+
+template <class T>
+Q_INLINE_TEMPLATE T *QPrivateImplementationPointer<T>::clone()
+{
+    return reinterpret_cast<T *>(d->clone());
+}
+
+template <class T>
+Q_OUTOFLINE_TEMPLATE void QPrivateImplementationPointer<T>::detach_helper()
+{
+    T *x = clone();
+    x->ref();
+    d->deref();
+    d = x;
+}
+
+template <class T>
+Q_INLINE_TEMPLATE void qSwap(QPrivateImplementationPointer<T> &p1, QPrivateImplementationPointer<T> &p2)
+{ p1.swap(p2); }
+
+template<typename T> Q_DECLARE_TYPEINFO_BODY(QPrivateImplementationPointer<T>, Q_MOVABLE_TYPE);
+
 
 template<typename ImplementationType>
 class QMF_EXPORT QPrivatelyImplemented
@@ -254,9 +255,6 @@ class QMF_EXPORT QPrivatelyImplemented
 public:
     QPrivatelyImplemented(ImplementationType* p);
     QPrivatelyImplemented(const QPrivatelyImplemented& other);
-
-    template<typename A1>
-    QMF_EXPORT QPrivatelyImplemented(ImplementationType* p, A1 a1);
 
     virtual ~QPrivatelyImplemented();
 
