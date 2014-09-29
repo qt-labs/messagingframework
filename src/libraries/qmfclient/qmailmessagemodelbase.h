@@ -124,6 +124,8 @@ public:
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
 
+    void fullRefresh(bool modelChanged);
+
     virtual QModelIndex generateIndex(int row, int column, void *ptr) = 0;
 
     void emitDataChanged(const QModelIndex &idx, const QModelIndex &jdx);
@@ -144,8 +146,6 @@ protected Q_SLOTS:
 
 protected:
     virtual QVariant data(const QMailMessageMetaData &metaData, int role) const;
-
-    void fullRefresh(bool modelChanged);
 
     virtual QMailMessageModelImplementation *impl() = 0;
     virtual const QMailMessageModelImplementation *impl() const = 0;

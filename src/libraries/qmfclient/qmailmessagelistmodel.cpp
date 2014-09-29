@@ -82,7 +82,7 @@ private:
     int indexOf(const QMailMessageId& id) const;
 
     bool addMessages(const QMailMessageIdList &ids);
-    bool appendMessages(const QMailMessageIdList &ids, const QMailMessageIdList &newIds);
+    bool appendMessages(const QMailMessageIdList &idsToAppend, const QMailMessageIdList &newIdsList);
     bool updateMessages(const QMailMessageIdList &ids);
     bool removeMessages(const QMailMessageIdList &ids);
 
@@ -148,17 +148,30 @@ uint QMailMessageListModelPrivate::limit() const
 
 void QMailMessageListModelPrivate::setLimit(uint limit)
 {
-    _limit = limit;
+    if (_limit != limit) {
+        if (limit == 0) {
+            // Do full refresh
+            _limit = limit;
+            _model.fullRefresh(false);
+            return;
+        } else if (_limit > limit) {
+            // Limit decreased, remove messages in excess
+            _limit = limit;
+            QMailMessageIdList idsToRemove = _idList.mid(limit);
+            removeMessages(idsToRemove);
+        } else {
+            _limit = limit;
+            QMailMessageIdList idsToAppend;
+            QMailMessageIdList newIdsList(QMailStore::instance()->queryMessages(_key, _sortKey, _limit));
 
-    QMailMessageIdList ids;
-    QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key, _sortKey, _limit));
-
-    foreach (const QMailMessageId &id, newIds) {
-        if (!_idList.contains(id)) {
-            ids.append(id);
+            foreach (const QMailMessageId &id, newIdsList) {
+                if (!_idList.contains(id)) {
+                    idsToAppend.append(id);
+                }
+            }
+            appendMessages(idsToAppend, newIdsList);
         }
     }
-    appendMessages(ids, newIds);
 }
 
 int QMailMessageListModelPrivate::totalCount() const
@@ -304,24 +317,24 @@ bool QMailMessageListModelPrivate::addMessages(const QMailMessageIdList &ids)
     // when this event was recorded and when we're processing the signal.
 
     QMailMessageKey idKey(QMailMessageKey::id(_idList + ids));
-    const QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
+    const QMailMessageIdList newIdsList(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
 
-    return appendMessages(ids, newIds);
+    return appendMessages(ids, newIdsList);
 }
 
-bool QMailMessageListModelPrivate::appendMessages(const QMailMessageIdList &ids, const QMailMessageIdList &newIds)
+bool QMailMessageListModelPrivate::appendMessages(const QMailMessageIdList &idsToAppend, const QMailMessageIdList &newIdsList)
 {
     QList<int> insertIndices;
     QMap<QMailMessageId, int> newPositions;
 
     int index = 0;
-    foreach (const QMailMessageId &id, newIds) {
+    foreach (const QMailMessageId &id, newIdsList) {
         newPositions.insert(id, index);
         ++index;
     }
 
     QMap<int, QMailMessageId> indexId;
-    foreach (const QMailMessageId &id, ids) {
+    foreach (const QMailMessageId &id, idsToAppend) {
         int newIndex = -1;
         QMap<QMailMessageId, int>::const_iterator it = newPositions.find(id);
         if (it != newPositions.end()) {
