@@ -46,7 +46,7 @@
 #include "qmailserviceaction_p.h"
 #endif
 
-#include "qprivateimplementationdef.h"
+#include "qprivateimplementationdef_p.h"
 
 template class QPrivateImplementationPointer<QMailMessageHeaderFieldPrivate>;
 template class QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>;

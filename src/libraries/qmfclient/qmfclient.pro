@@ -53,7 +53,7 @@ HEADERS += \
     qmailthreadlistmodel.h \
     qmailthreadsortkey.h \
     qprivateimplementation.h \
-    qprivateimplementationdef.h \
+    qprivateimplementationdef_p.h \
     support/qmailglobal.h \
     support/qmaillog.h \
     support/qlogsystem.h \
