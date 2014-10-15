@@ -906,6 +906,7 @@ namespace findBody
         QMailMessagePartContainer *alternateParent;
         QList<QMailMessagePart::Location> htmlImageLoc;
         QList<const QMailMessagePart *> htmlImageParts;
+        QList<QMailMessagePart::Location> htmlExtraPartsLoc;
         QByteArray contentType;
         QByteArray contentSubtype;
     };
@@ -1011,9 +1012,13 @@ namespace findBody
         for (int i = (int)container.partCount() - 1; i >= 0; i--) {
             if (i != bodyPart) {
                 const QMailMessagePart &part = container.partAt(i);
-                if (imageContentType == part.contentType().type().toLower())
+                if (imageContentType == part.contentType().type().toLower()) {
                     ctx.htmlImageLoc << part.location();
                     ctx.htmlImageParts << &part;
+                } else if (!part.contentID().isEmpty()) {
+                    // Adding extra inline part
+                    ctx.htmlExtraPartsLoc << part.location();
+                }
             }
         }
 
@@ -5088,7 +5093,10 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocat
 }
 
 /*!
-  Returns the locations of the attachments in a container, dealing with a range of different message structures and exceptions.
+  Returns the locations of the inline images in a HTML body container, only parts with content type "image" will be returned.
+  Note that sometimes inline images content type is not defined or is other than "image".
+
+  \sa findInlinePartLocations()
  */
 QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlineImageLocations() const
 {
@@ -5096,6 +5104,20 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlineImageLoca
     ctx.contentSubtype = htmlContentSubtype;
     if (findBody::inPartContainer(*this, ctx)) {
         return ctx.htmlImageLoc;
+    } else {
+        return QList<QMailMessagePart::Location>();
+    }
+}
+
+/*!
+  Returns the locations of the inline parts in a HTML body container, only parts with a content id reference will be returned.
+ */
+QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlinePartLocations() const
+{
+    findBody::Context ctx;
+    ctx.contentSubtype = htmlContentSubtype;
+    if (findBody::inPartContainer(*this, ctx)) {
+        return ctx.htmlImageLoc << ctx.htmlExtraPartsLoc;
     } else {
         return QList<QMailMessagePart::Location>();
     }

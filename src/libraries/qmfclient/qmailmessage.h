@@ -378,6 +378,7 @@ public:
     QMailMessagePartContainer* findHtmlContainer() const;
     QList<QMailMessagePartContainer::Location> findAttachmentLocations() const;
     QList<QMailMessagePartContainer::Location> findInlineImageLocations() const;
+    QList<QMailMessagePartContainer::Location> findInlinePartLocations() const;
     bool hasPlainTextBody() const;
     bool hasHtmlBody() const;
     bool hasAttachments() const;
