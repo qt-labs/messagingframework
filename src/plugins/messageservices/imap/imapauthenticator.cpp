@@ -40,12 +40,6 @@
 #include <qmailtransport.h>
 #include <qmailnamespace.h>
 
-namespace {
-
-QMap<QMailAccountId, QList<QByteArray> > gResponses;
-
-}
-
 bool ImapAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
 #ifdef QT_NO_SSL
@@ -79,9 +73,7 @@ QByteArray ImapAuthenticator::getAuthentication(const QMailAccountConfiguration:
     // If not handled by the authenticator, fall back to login
     ImapConfiguration imapCfg(svcCfg);
     if (imapCfg.mailAuthentication() == QMail::PlainMechanism) {
-        QByteArray username(imapCfg.mailUserName().toLatin1());
-        QByteArray password(imapCfg.mailPassword().toLatin1());
-        return QByteArray("AUTHENTICATE PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
+        return QByteArray("AUTHENTICATE PLAIN");
     }
 
     return QByteArray("LOGIN") + ' ' + ImapProtocol::quoteString(imapCfg.mailUserName().toLatin1())
@@ -90,6 +82,20 @@ QByteArray ImapAuthenticator::getAuthentication(const QMailAccountConfiguration:
 
 QByteArray ImapAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
 {
-    return QMailAuthenticator::getResponse(svcCfg, challenge);
+    const QByteArray response(QMailAuthenticator::getResponse(svcCfg, challenge));
+    if (!response.isEmpty())
+        return response;
+
+    ImapConfiguration imapCfg(svcCfg);
+    const QByteArray username(imapCfg.mailUserName().toLatin1());
+    const QByteArray password(imapCfg.mailPassword().toLatin1());
+    if (imapCfg.mailAuthentication() == QMail::PlainMechanism
+        && !username.isEmpty() && !password.isEmpty()) {
+        return QByteArray(username + '\0' + username + '\0' + password);
+    } else {
+        qWarning() << "Unable to get response for account" << svcCfg.id()
+                   << "with auth type" << imapCfg.mailAuthentication();
+        return QByteArray();
+    }
 }
 
