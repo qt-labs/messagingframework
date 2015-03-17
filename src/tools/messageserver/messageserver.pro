@@ -9,6 +9,10 @@ SERVER_AS_DLL: {
 TARGET = messageserver5
 QT = core qmfclient qmfclient-private qmfmessageserver
 
+contains(DEFINES, USE_HTML_PARSER) {
+    QT += gui
+}
+
 !contains(DEFINES,QMF_NO_WIDGETS) {
     QT += gui widgets
 }

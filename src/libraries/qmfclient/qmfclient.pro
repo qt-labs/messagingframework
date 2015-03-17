@@ -16,6 +16,11 @@ DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
 #DEPENDPATH += .
 INCLUDEPATH += support
 
+contains(DEFINES, USE_HTML_PARSER) {
+    QT += gui
+}
+
+
 HEADERS += \
     qmailaccount.h \
     qmailaccountconfiguration.h \

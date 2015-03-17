@@ -54,6 +54,9 @@
 #include <qtextcodec.h>
 #include <QTextCodec>
 #include <QtDebug>
+#ifdef USE_HTML_PARSER
+#include <QTextDocument>
+#endif
 
 #include <stdlib.h>
 #include <limits.h>
@@ -8591,12 +8594,50 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
     return; // Normal Priority
 }
 
+static QString htmlToPlainText(const QString &html)
+{
+#ifdef USE_HTML_PARSER
+    QTextDocument doc;
+    doc.setHtml(html);
+    return doc.toPlainText();
+#else
+    QString plainText = html;
+    plainText.remove(QRegExp(QLatin1String("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>"), Qt::CaseInsensitive));
+    plainText.remove(QRegExp(QLatin1String("<(.)[^>]*>")));
+    plainText.replace(QLatin1String("&quot;"), QLatin1String("\""), Qt::CaseInsensitive);
+    plainText.replace(QLatin1String("&nbsp;"), QLatin1String(" "), Qt::CaseInsensitive);
+    plainText.replace(QLatin1String("&amp;"), QLatin1String("&"), Qt::CaseInsensitive);
+    plainText.replace(QLatin1String("&lt;"), QLatin1String("<"), Qt::CaseInsensitive);
+    plainText.replace(QLatin1String("&gt;"), QLatin1String(">"), Qt::CaseInsensitive);
+
+    // now replace stuff like "&#1084;"
+    int pos = 0;
+    while (true) {
+        pos = plainText.indexOf(QLatin1String("&#"), pos);
+        if (pos < 0)
+            break;
+        int semicolon = plainText.indexOf(';', pos+2);
+        if (semicolon < 0) {
+            ++pos;
+            continue;
+        }
+        int code = (plainText.mid(pos+2, semicolon-pos-2)).toInt();
+        if (code == 0) {
+            ++pos;
+            continue;
+        }
+        plainText.replace(pos, semicolon-pos+1, QChar(code));
+    }
+
+    return plainText.simplified();
+#endif
+}
+
 /*! \internal */
 void QMailMessage::refreshPreview()
 {
     const int maxPreviewLength = 280;
     // TODO: don't load entire body into memory
-    // TODO: parse html correctly, e.g. closing brackets in quotes in tags
     QMailMessagePartContainer *htmlPart= findHtmlContainer();
     QMailMessagePartContainer *plainTextPart= findPlainTextContainer();
 
@@ -8604,40 +8645,13 @@ void QMailMessage::refreshPreview()
         plainTextPart=0;
 
     if ( plainTextPart && plainTextPart->hasBody()) {
-        QString plaintext(plainTextPart->body().data());
-        plaintext.remove(QRegExp(QLatin1String("\\[(image|cid):[^\\]]*\\]"), Qt::CaseInsensitive));
-        metaDataImpl()->setPreview(plaintext.left(maxPreviewLength));
+        QString plainText = plainTextPart->body().data();
+        metaDataImpl()->setPreview(plainText.left(maxPreviewLength));
     } else if (htmlPart && ( multipartType() == MultipartRelated || htmlPart->hasBody())) {
         QString markup = htmlPart->body().data();
-        markup.remove(QRegExp(QLatin1String("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>"), Qt::CaseInsensitive));
-        markup.remove(QRegExp(QLatin1String("<(.)[^>]*>")));
-        markup.replace(QLatin1String("&quot;"), QLatin1String("\""), Qt::CaseInsensitive);
-        markup.replace(QLatin1String("&nbsp;"), QLatin1String(" "), Qt::CaseInsensitive);
-        markup.replace(QLatin1String("&amp;"), QLatin1String("&"), Qt::CaseInsensitive);
-        markup.replace(QLatin1String("&lt;"), QLatin1String("<"), Qt::CaseInsensitive);
-        markup.replace(QLatin1String("&gt;"), QLatin1String(">"), Qt::CaseInsensitive);
-
-        // now replace stuff like "&#1084;"
-        for (int pos = 0; ; ) {
-            pos = markup.indexOf(QLatin1String("&#"), pos);
-            if (pos < 0)
-                break;
-            int semicolon = markup.indexOf(';', pos+2);
-            if (semicolon < 0) {
-                ++pos;
-                continue;
-            }
-            int code = (markup.mid(pos+2, semicolon-pos-2)).toInt();
-            if (code == 0) {
-                ++pos;
-                continue;
-            }
-            markup.replace(pos, semicolon-pos+1, QChar(code));
-        }
-
-        metaDataImpl()->setPreview(markup.simplified().left(maxPreviewLength));
+        metaDataImpl()->setPreview(htmlToPlainText(markup).left(maxPreviewLength));
     }
-    
+
     partContainerImpl()->setPreviewDirty(false);
 }
 

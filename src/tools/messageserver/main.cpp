@@ -37,6 +37,10 @@
 #include <qmaillog.h>
 #include <qloggers.h>
 #include <signal.h>
+#include <stdlib.h>
+#ifdef USE_HTML_PARSER
+#include <QtGui>
+#endif
 
 #if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
 
@@ -58,7 +62,13 @@ static void recreateLoggers(int n)
 
 int main(int argc, char** argv)
 {
+#ifdef USE_HTML_PARSER
+    // Need for html parsing by <QTextdocument> in qmailmessage.cpp, but don't need real UI
+    setenv("QT_QPA_PLATFORM", "minimal", 1);
+    QGuiApplication app(argc, argv);
+#else
     QCoreApplication app(argc, argv);
+#endif
 
     // This is ~/.config/QtProject/Messageserver.conf
     qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
