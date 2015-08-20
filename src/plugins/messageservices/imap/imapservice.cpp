@@ -50,20 +50,6 @@ namespace {
 
 const QString serviceKey("imap4");
 
-QMailFolderId mailboxId(const QMailAccountId &accountId, const QString &path)
-{
-    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::path(path));
-    if (folderIds.count() == 1)
-        return folderIds.first();
-
-    return QMailFolderId();
-}
-
-QMailFolderIdList statusFolders(const QMailAccountId &accountId, quint64 mask)
-{
-    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId) & QMailFolderKey::status(mask));
-}
-
 QString connectionSettings(ImapConfiguration &config)
 {
     QStringList result;
