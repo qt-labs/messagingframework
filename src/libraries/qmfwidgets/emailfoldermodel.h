@@ -114,7 +114,7 @@ public:
 
     static QMailMessageKey contentKey();
 
-protected slots:
+protected Q_SLOTS:
     virtual void accountsAdded(const QMailAccountIdList &ids);
     virtual void accountsUpdated(const QMailAccountIdList &ids);
     virtual void accountsRemoved(const QMailAccountIdList &ids);

@@ -69,7 +69,7 @@ public:
     using QMailMessageSetModel::data;
     virtual QVariant data(QMailMessageSet *item, int role, int column) const;
 
-protected slots:
+protected Q_SLOTS:
     void processUpdatedItems();
 
 protected:

@@ -81,7 +81,7 @@ public:
     bool synchronizeEnabled() const;
     void setSynchronizeEnabled(bool val);
 
-private slots:
+private Q_SLOTS:
     void accountsAdded(const QMailAccountIdList& ids);
     void accountsUpdated(const QMailAccountIdList& ids);
     void accountsRemoved(const QMailAccountIdList& ids);

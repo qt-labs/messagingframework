@@ -69,7 +69,7 @@ public:
 
     QMailMessageSet* selectedItem() const;
 
-protected slots:
+protected Q_SLOTS:
     void selected(QMailMessageSet *item);
 
 private:

@@ -161,7 +161,7 @@ public:
         template <typename Stream> void serialize(Stream &stream) const
         {
             stream << count();
-            foreach (const QVariant& var, *this)
+            Q_FOREACH (const QVariant& var, *this)
                 stream << var;
         }
 
@@ -202,7 +202,7 @@ public:
         : property(p),
           op(c)
     {
-        foreach (typename ListType::const_reference v, l)
+        Q_FOREACH (typename ListType::const_reference v, l)
             valueList.append(v);
     }
     
