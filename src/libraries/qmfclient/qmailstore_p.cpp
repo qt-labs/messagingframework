@@ -1698,8 +1698,11 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
         if (arg.mask) {
             field = QString("(%1 & %2)").arg(field).arg(QString::number(arg.mask));
         }
-        bool noCase(caseInsensitiveProperty(arg.property));
-        sortColumns.append(field + (noCase ? " COLLATE NOCASE " : " ") + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+        if (caseInsensitiveProperty(arg.property)) {
+            sortColumns.append("ltrim(" + field + ",'\\\"') COLLATE NOCASE " + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+        } else {
+            sortColumns.append(field + " " + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+        }
     }
 
     return QString(" ORDER BY ") + sortColumns.join(",");
