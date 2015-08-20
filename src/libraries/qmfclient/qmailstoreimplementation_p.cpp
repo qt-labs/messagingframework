@@ -757,7 +757,7 @@ QString QMailStoreImplementationBase::messagePropertyUpdatedSig()
 
 QString QMailStoreImplementationBase::messageStatusUpdatedSig()
 {
-    static QString s("messagePropertyUpdated(QList<quint64>,quint64,bool)");
+    static QString s("messageStatusUpdated(QList<quint64>,quint64,bool)");
     return s;
 }
 

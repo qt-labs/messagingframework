@@ -9527,13 +9527,6 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDat
         }
 
         QMailStoreImplementation::emitIpcNotification(signal, data);
-
-        if (signal == &QMailStore::messageDataAdded) {
-            q_ptr->messagesAdded(ids);
-        } else if (signal == &QMailStore::messageDataUpdated) {
-            q_ptr->messagesUpdated(ids);
-        } else
-            Q_ASSERT (false);
     }
 
 }
@@ -9643,7 +9636,6 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
     }
 
     QMailStoreImplementation::emitIpcNotification(ids, properties, data);
-    q_ptr->messagesUpdated(ids);
 }
 
 void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set)
@@ -9661,6 +9653,5 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint
     }
 
     QMailStoreImplementation::emitIpcNotification(ids, status, set);
-    q_ptr->messagesUpdated(ids);
 }
 
