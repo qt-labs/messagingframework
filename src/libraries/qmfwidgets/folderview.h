@@ -83,7 +83,7 @@ protected Q_SLOTS:
     virtual void itemExpanded(const QModelIndex &index);
     virtual void itemCollapsed(const QModelIndex &index);
     virtual void currentChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex);
-    virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
+    virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>());
     virtual void modelReset();
 
 protected:

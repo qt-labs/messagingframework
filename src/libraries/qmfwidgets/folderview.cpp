@@ -214,8 +214,10 @@ void FolderView::currentChanged(const QModelIndex &currentIndex, const QModelInd
     Q_UNUSED(previousIndex)
 }
 
-void FolderView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+void FolderView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles)
 {
+    Q_UNUSED(roles)
+
     if(topLeft == currentIndex() || bottomRight == currentIndex())
         emit selectionUpdated();
     QTreeView::dataChanged(topLeft,bottomRight);
