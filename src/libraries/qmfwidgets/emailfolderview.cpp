@@ -96,19 +96,6 @@ void EmailFolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewI
         painter->restore();
 }
 
-void EmailFolderDelegate::drawDecoration(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QVariant &decoration) const
-{
-    if (_unsynchronized) {
-        painter->save();
-        painter->setOpacity(0.5);
-    }
-
-    FolderDelegate::drawDecoration(painter, option, rect, decoration);
-
-    if (_unsynchronized)
-        painter->restore();
-}
-
 void EmailFolderDelegate::init(const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     FolderDelegate::init(option, index);

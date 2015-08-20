@@ -99,24 +99,6 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
     }
 }
 
-void FolderDelegate::drawDecoration(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QVariant &decoration) const
-{
-    if (!rect.isValid())
-        return;
-
-    // If we have an icon, we ignore the pixmap
-    if (decoration.type() == QVariant::Icon) {
-        QIcon icon = qvariant_cast<QIcon>(decoration);
-
-        QIcon::Mode mode(QIcon::Normal);
-        if (!(option.state & QStyle::State_Enabled))
-            mode = QIcon::Disabled;
-
-        QIcon::State state(option.state & QStyle::State_Open ? QIcon::On : QIcon::Off);
-        icon.paint(painter, rect, option.decorationAlignment, mode, state);
-    }
-}
-
 QSize FolderDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     // Ensure that we use the full width for our item

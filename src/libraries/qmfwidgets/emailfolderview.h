@@ -74,7 +74,6 @@ public:
     EmailFolderDelegate(EmailFolderView *parent = 0);
 
     virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;
-    virtual void drawDecoration(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QVariant &decoration) const;
 
 private:
     virtual void init(const QStyleOptionViewItem &option, const QModelIndex &index);
