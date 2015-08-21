@@ -1,3 +1,10 @@
+
+requires(!wince)
+requires(!winrt)
+requires(!ios)
+requires(!qnx)
+requires(!android)
+
 load(qt_parts)
 
 !unix {
