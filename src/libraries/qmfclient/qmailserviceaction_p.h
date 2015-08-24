@@ -53,6 +53,8 @@
 #ifndef QMAILSERVICEACTION_P_H
 #define QMAILSERVICEACTION_P_H
 
+#include <QSharedPointer>
+
 #include "qmailserviceaction.h"
 #include "qmailmessageserver.h"
 
