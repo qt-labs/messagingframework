@@ -43,7 +43,11 @@
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
 
+QT_BEGIN_NAMESPACE
+
 class QTemporaryFile;
+
+QT_END_NAMESPACE
 
 struct RawEmail
 {

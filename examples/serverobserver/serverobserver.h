@@ -42,10 +42,15 @@
 
 #include <qmailserviceaction.h>
 
+QT_BEGIN_NAMESPACE
+
 class QLabel;
 class QProgressBar;
 class QPushButton;
 class QLayout;
+
+QT_END_NAMESPACE
+
 class RowWidget;
 
 class ServerObserver : public QMainWindow

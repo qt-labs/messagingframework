@@ -39,6 +39,12 @@
 
 #include <QPointer>
 
+QT_BEGIN_NAMESPACE
+
+class QNetworkConfigurationManager;
+
+QT_END_NAMESPACE
+
 class SmtpService : public QMailMessageService
 {
     Q_OBJECT
@@ -80,9 +86,8 @@ private:
     Sink *_sink;
     QMailTransmitAction *_capabilityFetchAction;
     QTimer *_capabilityFetchTimeout;
-    class QNetworkConfigurationManager *_networkManager;
+    QNetworkConfigurationManager *_networkManager;
 };
-
 
 class SmtpServicePlugin : public QMailMessageServicePlugin
 {

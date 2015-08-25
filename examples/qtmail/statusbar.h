@@ -36,8 +36,13 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
+
 class QProgressBar;
 class QLabel;
+
+QT_END_NAMESPACE
+
 class ArrowButton;
 
 class StatusBar : public QWidget

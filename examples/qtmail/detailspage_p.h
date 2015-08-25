@@ -50,12 +50,17 @@
 #include <qstringlist.h>
 #include <qmailmessage.h>
 
+QT_BEGIN_NAMESPACE
+
 class QLineEdit;
 class QHBoxLayout;
 class QComboBox;
 class QToolButton;
 class QLabel;
 class QCheckBox;
+
+QT_END_NAMESPACE
+
 class QMailAccount;
 class QMailAccountId;
 

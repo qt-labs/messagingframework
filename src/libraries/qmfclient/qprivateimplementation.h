@@ -238,8 +238,11 @@ template <class T>
 Q_INLINE_TEMPLATE void qSwap(QPrivateImplementationPointer<T> &p1, QPrivateImplementationPointer<T> &p2)
 { p1.swap(p2); }
 
+QT_BEGIN_NAMESPACE
+
 template<typename T> Q_DECLARE_TYPEINFO_BODY(QPrivateImplementationPointer<T>, Q_MOVABLE_TYPE);
 
+QT_END_NAMESPACE
 
 template<typename ImplementationType>
 class QMF_EXPORT QPrivatelyImplemented
