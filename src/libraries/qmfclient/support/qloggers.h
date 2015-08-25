@@ -330,7 +330,7 @@ inline SysLogger<Prefix>::SysLogger(const QString& _ident, int _option, int _fac
     :BaseLogger<SysLogger<Prefix>, Prefix>(*this, _min_lvl), ident(_ident.toLatin1())
 {
     openlog(ident.data(), _option, _facility);
-};
+}
 
 template <class Prefix>
 inline void SysLogger<Prefix>::doLog(const LogLevel _lvl, const char* _fmt, va_list _args)
@@ -339,13 +339,13 @@ inline void SysLogger<Prefix>::doLog(const LogLevel _lvl, const char* _fmt, va_l
     Q_ASSERT((_lvl >= LlDbg) && (_lvl <= LlCritical));
 
     vsyslog(priorities[_lvl], _fmt, _args);
-};
+}
 
 template <class Prefix>
 inline SysLogger<Prefix>::~SysLogger()
 {
     closelog();
-};
+}
 
 #endif // Q_OS_WIN
 

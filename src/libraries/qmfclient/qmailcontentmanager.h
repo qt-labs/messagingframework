@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 #define QMailContentManagerPluginInterface_iid "com.nokia.QMailContentManagerPluginInterface"
 Q_DECLARE_INTERFACE(QMailContentManagerPluginInterface, QMailContentManagerPluginInterface_iid)
 
-QT_END_NAMESPACE;
+QT_END_NAMESPACE
 
 
 class QMF_EXPORT QMailContentManagerPlugin : public QObject, public QMailContentManagerPluginInterface
