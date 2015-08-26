@@ -769,9 +769,12 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             QMailAccount account(_config.id());
             ImapConfiguration imapCfg(_config);
             bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
-                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive) && 
+                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
+#if !defined(QT_NO_SSL)
                                     // No FWOD support for IMAPS
-                                    (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL));
+                                    && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL)
+#endif
+                                   );
 
             if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
                 (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences) ||
