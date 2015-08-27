@@ -64,7 +64,7 @@ QT_END_NAMESPACE
 class QMailAccount;
 class QMailAccountId;
 
-class PLUGIN_EXPORT DetailsPage : public QWidget
+class DetailsPage : public QWidget
 {
     Q_OBJECT
 

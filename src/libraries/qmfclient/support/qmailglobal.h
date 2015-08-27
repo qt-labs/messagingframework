@@ -74,14 +74,6 @@
 #define MESSAGESERVER_EXPORT QMF_DECL_IMPORT
 #endif
 
-#ifdef PLUGIN_INTERNAL
-#define PLUGIN_EXPORT QMF_DECL_EXPORT
-#elif defined(PLUGIN_STATIC_LINK)
-#define PLUGIN_EXPORT
-#else
-#define PLUGIN_EXPORT QMF_DECL_IMPORT
-#endif
-
 #ifndef ENFORCE
 #ifdef QT_NO_DEBUG
 #define ENFORCE(expr) expr

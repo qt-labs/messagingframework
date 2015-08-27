@@ -47,7 +47,7 @@
 
 #include <qmailserviceconfiguration.h>
 
-class PLUGIN_EXPORT ImapConfiguration : public QMailServiceConfiguration
+class ImapConfiguration : public QMailServiceConfiguration
 {
 public:
     explicit ImapConfiguration(const QMailAccountConfiguration &config);
@@ -87,7 +87,7 @@ public:
     void setSearchLimit(int limit);
 };
 
-class PLUGIN_EXPORT ImapConfigurationEditor : public ImapConfiguration
+class ImapConfigurationEditor : public ImapConfiguration
 {
 public:
     explicit ImapConfigurationEditor(QMailAccountConfiguration *config);

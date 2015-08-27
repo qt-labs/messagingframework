@@ -47,7 +47,7 @@
 
 #include <qmailserviceconfiguration.h>
 
-class PLUGIN_EXPORT PopConfiguration : public QMailServiceConfiguration
+class PopConfiguration : public QMailServiceConfiguration
 {
 public:
     explicit PopConfiguration(const QMailAccountConfiguration &config);
@@ -69,7 +69,7 @@ public:
     bool intervalCheckRoamingEnabled() const;
 };
 
-class PLUGIN_EXPORT PopConfigurationEditor : public PopConfiguration
+class PopConfigurationEditor : public PopConfiguration
 {
 public:
     explicit PopConfigurationEditor(QMailAccountConfiguration *config);
