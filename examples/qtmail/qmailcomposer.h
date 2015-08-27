@@ -49,7 +49,7 @@ class QMenu;
 
 QT_END_NAMESPACE
 
-class QMFUTIL_EXPORT QMailComposerInterface : public QWidget
+class QMailComposerInterface : public QWidget
 {
     Q_OBJECT
 
@@ -95,7 +95,7 @@ signals:
     void statusChanged(const QString& status);
 };
 
-class QMFUTIL_EXPORT QMailComposerFactory
+class QMailComposerFactory
 {
 public:
     // Yield the key for each interface supporting the supplied type

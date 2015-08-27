@@ -51,7 +51,7 @@ QT_END_NAMESPACE
 
 class QMailViewerInterface;
 
-class QMFUTIL_EXPORT QMailViewerFactory
+class QMailViewerFactory
 {
 public:
     enum PresentationType
@@ -74,7 +74,7 @@ public:
 };
 
 // The interface for objects able to view mail messages
-class QMFUTIL_EXPORT QMailViewerInterface : public QObject
+class QMailViewerInterface : public QObject
 {
     Q_OBJECT
 
