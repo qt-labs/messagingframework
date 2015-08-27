@@ -509,7 +509,7 @@ m_composer(composer)
 
 bool BodyTextEdit::isComposing()
 {
-#warning "always false since Qt 5 port"
+    // ### FIXME always false since Qt 5 port
     return false;
 }
 
