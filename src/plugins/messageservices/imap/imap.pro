@@ -35,9 +35,6 @@ SOURCES += imapclient.cpp \
 !contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
     QT += gui widgets
 
-#Required to build on windows
-DEFINES += QMFUTIL_INTERNAL
-
 HEADERS += \
            imapsettings.h
 
