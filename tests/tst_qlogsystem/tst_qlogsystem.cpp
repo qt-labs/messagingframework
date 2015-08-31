@@ -282,6 +282,7 @@ void tst_QLogSystem::qWarningOutput()
 
 void tst_QLogSystem::sysLoggerOutput()
 {
+#if defined(Q_OS_UNIX)
     QString expected = "[Debug] Test: '12' 'string' '12.25'\n";
 
     SysLogger<LvlLogPrefix>* sysLogger = new SysLogger<LvlLogPrefix>("QMail logger test", LOG_PID, LOG_LOCAL7);
@@ -296,4 +297,5 @@ void tst_QLogSystem::sysLoggerOutput()
     LogSystem::getInstance().clear();
 
     QWARN (qPrintable(tr("Now You should see the string") + expected + tr("at syslog output LOG_LOCAL7, LOG_INFO")));
+#endif // defined(Q_OS_UNIX)
 }
