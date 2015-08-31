@@ -1,6 +1,6 @@
 QT -= gui
 QT += testlib
-CONFIG += unittest
+CONFIG += testcase
 
 QT += qmfclient qmfclient-private
 target.path += $$QMF_INSTALL_ROOT/tests5

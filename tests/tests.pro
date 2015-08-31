@@ -17,15 +17,21 @@ SUBDIRS = \
       tst_qmailstorageaction \
       tst_qmail_sortkeys \
       tst_qmail_listmodels \
-      tst_qmaillog \
-      tst_qcop \
       tst_storagemanager \
       tst_qmaildisconnected \
       tst_qmailnamespace \
-      tst_qlogsystem \
       tst_locks \
-      tst_qmailthread \
+      tst_qmailthread
 
+# these tests fail to build/pass on windows.
+# longer term, we should remove this stuff entirely in favour of Qt's
+# categorised logging.
+!win32 {
+    SUBDIRS += \
+        tst_qmaillog \
+        tst_qcop \
+        tst_qlogsystem
+}
 
 CONFIG += unittest
 
