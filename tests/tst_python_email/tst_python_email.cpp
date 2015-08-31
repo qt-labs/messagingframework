@@ -68,7 +68,6 @@ public:
     tst_python_email();
     virtual ~tst_python_email();
 
-    QString path(const QString& filename);
     QMailMessage fromFile(const QString& filename);
     QByteArray fileData(const QString& filename);
 
@@ -181,20 +180,14 @@ tst_python_email::~tst_python_email()
 {
 }
 
-QString tst_python_email::path(const QString& filename)
-{
-    // SRCDIR is defined in the .pro file as the directory where the .pro is located
-    return QCoreApplication::applicationDirPath() + QString("/testdata/") + filename;
-}
-
 QMailMessage tst_python_email::fromFile(const QString& filename)
 {
-    return QMailMessage::fromRfc2822File(path(filename));
+    return QMailMessage::fromRfc2822File(QFINDTESTDATA("testdata/" + filename));
 }
 
 QByteArray tst_python_email::fileData(const QString& filename)
 {
-    LongString ls(path(filename));
+    LongString ls(QFINDTESTDATA(filename));
     QByteArray ba(ls.toQByteArray());
     return QByteArray(ba.constData(), ba.length());
 }
@@ -352,7 +345,7 @@ void tst_python_email::test_as_string()
 {
     QMailMessage msg = fromFile("msg_01.txt");
     // Note: our standard version differs slightly from python's, due to a header folding policy variation
-    QCOMPARE( msg.toRfc2822(), fileData("msg_01a.txt") );
+    QCOMPARE( msg.toRfc2822(), fileData("testdata/msg_01a.txt") );
 }
 
 void tst_python_email::test_get_params()
@@ -837,34 +830,35 @@ void tst_python_email::test_long_lines_with_different_header()
 
 void tst_python_email::TestMIMEAudio()
 {
-    const QString filename("audiotest.au");
+    const QString filePath("testdata/audiotest.au");
+    const QString fileName("audiotest.au");
 
     // A sprinkling of the tests from this python class...
-    QString p(path(filename));
+    QString p(QFINDTESTDATA(filePath));
     QString mimeString = QMail::mimeTypeFromFileName(p);
     QCOMPARE(mimeString, QString("audio/basic") );
 
     QMailMessageContentType type(mimeString.toLatin1());
     QMailMessageBody body = QMailMessageBody::fromFile(p, type, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding);
-    QCOMPARE( body.data(QMailMessageBody::Decoded), fileData(filename) );
+    QCOMPARE( body.data(QMailMessageBody::Decoded), fileData(filePath) );
 
     QByteArray encoded = body.data(QMailMessageBody::Encoded);
     QMailMessageBody copy = QMailMessageBody::fromData(encoded, type, QMailMessageBody::Base64, QMailMessageBody::AlreadyEncoded);
-    QCOMPARE( copy.data(QMailMessageBody::Decoded), fileData(filename) );
+    QCOMPARE( copy.data(QMailMessageBody::Decoded), fileData(filePath) );
 
     QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
-    disposition.setFilename(filename.toLatin1());
+    disposition.setFilename(fileName.toLatin1());
     QCOMPARE( disposition.type(), QMailMessageContentDisposition::Attachment );
-    QCOMPARE( disposition.filename(), filename.toLatin1() );
+    QCOMPARE( disposition.filename(), fileName.toLatin1() );
     QCOMPARE( disposition.toString(), QByteArray("Content-Disposition: attachment; filename=audiotest.au") );
 }
 
 void tst_python_email::TestMIMEImage()
 {
-    const QString filename("PyBanner048.gif");
+    const QString filename("testdata/PyBanner048.gif");
 
     // A sprinkling of the tests from this python class...
-    QString p(path(filename));
+    QString p(QFINDTESTDATA(filename));
     QString mimeString = QMail::mimeTypeFromFileName(p);
     QCOMPARE(mimeString, QString("image/gif") );
 
@@ -895,7 +889,7 @@ void tst_python_email::TestMIMEText()
 
 void tst_python_email::test_hierarchy()
 {
-    QString p(path("PyBanner048.gif"));
+    QString p(QFINDTESTDATA("testdata/PyBanner048.gif"));
 
     QByteArray input = 
 "Hi there," CRLF
