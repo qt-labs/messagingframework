@@ -137,11 +137,16 @@ void tst_LongStream::test_errorMessage()
 
 void tst_LongStream::test_temp_files()
 {
-    LongStream ls;
+    // Create a LongStream. We do it in a block since it holds a file handle. We
+    // need this file handle to be closed so that we can get rid of it on
+    // Windows (as Windows doesn't allow the removal of closed files).
+    {
+        LongStream ls;
+    }
 
-    ls.cleanupTempFiles();
+    LongStream::cleanupTempFiles();
 
-    QDir dir (ls.tempDir(), "longstream.*");
+    QDir dir (LongStream::tempDir(), "longstream.*");
     QCOMPARE(dir.exists(), true);
-    QCOMPARE(dir.entryList().isEmpty(), true);
+    QVERIFY2(dir.entryList().isEmpty(), qPrintable(dir.entryList().join(" ")));
 }
