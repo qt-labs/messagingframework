@@ -37,47 +37,47 @@
 
 typedef QMap<QString,QIcon> IconMap;
 
-static QIcon loadIcon(const QString& themeIdentifier, const QString& resourceFallback)
+static QIcon loadIcon(const char *themeIdentifier, const char *resourceFallback)
 {
 #if ((QT_VERSION < QT_VERSION_CHECK(4, 6, 0)) || !defined(Q_OS_LINUX))
     Q_UNUSED(themeIdentifier);
-    return QIcon(resourceFallback);
+    return QIcon(QLatin1String(resourceFallback));
 #else
-    return QIcon::fromTheme(themeIdentifier,QIcon(resourceFallback));
+    return QIcon::fromTheme(QLatin1String(themeIdentifier), QIcon(QLatin1String(resourceFallback)));
 #endif
 }
 
 static IconMap init()
 {
     IconMap m;
-    m.insert("clear",loadIcon("edit-clear",":icon/erase"));
-    m.insert("attachment",loadIcon("mail-attachment",":icon/attach"));
-    m.insert("add",loadIcon("list-add",":icon/add"));
-    m.insert("remove",loadIcon("list-remove",":icon/erase"));
-    m.insert("reset", loadIcon("document-revert", ":icon/reset"));
-    m.insert("close",loadIcon("window-close",":icon/close"));
-    m.insert("uparrow",loadIcon("up",":icon/up"));
-    m.insert("downarrow",loadIcon("down",":icon/down"));
-    m.insert("sendandreceive",loadIcon("mail-send-receive",":icon/sync"));
-    m.insert("cancel",loadIcon("process-stop",":icon/cancel"));
-    m.insert("settings",loadIcon("package_settings",":icon/settings"));
-    m.insert("compose",loadIcon("mail-message-new",":icon/new"));
-    m.insert("search",loadIcon("search",":icon/find"));
-    m.insert("reply",loadIcon("mail-reply-sender",":icon/reply"));
-    m.insert("replyall",loadIcon("mail-reply-all",":icon/replyall"));
-    m.insert("forward",loadIcon("mail-forward",":icon/forward"));
-    m.insert("deletemail",loadIcon("edit-delete-mail",":icon/trash"));
-    m.insert("folder",loadIcon("folder",":icon/folder"));
-    m.insert("folderremote",loadIcon("folder-remote",":icon/folder-remote"));
-    m.insert("inboxfolder",loadIcon("inboxfolder",":icon/inbox"));
-    m.insert("trashfolder",loadIcon("emptytrash",":icon/trash"));
-    m.insert("junkfolder",loadIcon("mail-mark-junk",":icon/folder"));
-    m.insert("sentfolder",loadIcon("mail-send",":icon/sent"));
-    m.insert("accountfolder",loadIcon("accountfolder",":icon/account"));
-    m.insert("outboxfolder",loadIcon("outboxfolder",":icon/outbox"));
-    m.insert("draftfolder",loadIcon("emblem-draft",":icon/drafts"));
-    m.insert("workoffline",loadIcon("network-offline",":icon/connect_no"));
-    m.insert("quit",loadIcon("exit",":icon/quit"));
+    m.insert(QLatin1String("clear"), loadIcon("edit-clear",":icon/erase"));
+    m.insert(QLatin1String("attachment"), loadIcon("mail-attachment",":icon/attach"));
+    m.insert(QLatin1String("add"), loadIcon("list-add",":icon/add"));
+    m.insert(QLatin1String("remove"), loadIcon("list-remove",":icon/erase"));
+    m.insert(QLatin1String("reset"),  loadIcon("document-revert", ":icon/reset"));
+    m.insert(QLatin1String("close"), loadIcon("window-close",":icon/close"));
+    m.insert(QLatin1String("uparrow"), loadIcon("up",":icon/up"));
+    m.insert(QLatin1String("downarrow"), loadIcon("down",":icon/down"));
+    m.insert(QLatin1String("sendandreceive"), loadIcon("mail-send-receive",":icon/sync"));
+    m.insert(QLatin1String("cancel"), loadIcon("process-stop",":icon/cancel"));
+    m.insert(QLatin1String("settings"), loadIcon("package_settings",":icon/settings"));
+    m.insert(QLatin1String("compose"), loadIcon("mail-message-new",":icon/new"));
+    m.insert(QLatin1String("search"), loadIcon("search",":icon/find"));
+    m.insert(QLatin1String("reply"), loadIcon("mail-reply-sender",":icon/reply"));
+    m.insert(QLatin1String("replyall"), loadIcon("mail-reply-all",":icon/replyall"));
+    m.insert(QLatin1String("forward"), loadIcon("mail-forward",":icon/forward"));
+    m.insert(QLatin1String("deletemail"), loadIcon("edit-delete-mail",":icon/trash"));
+    m.insert(QLatin1String("folder"), loadIcon("folder",":icon/folder"));
+    m.insert(QLatin1String("folderremote"), loadIcon("folder-remote",":icon/folder-remote"));
+    m.insert(QLatin1String("inboxfolder"), loadIcon("inboxfolder",":icon/inbox"));
+    m.insert(QLatin1String("trashfolder"), loadIcon("emptytrash",":icon/trash"));
+    m.insert(QLatin1String("junkfolder"), loadIcon("mail-mark-junk",":icon/folder"));
+    m.insert(QLatin1String("sentfolder"), loadIcon("mail-send",":icon/sent"));
+    m.insert(QLatin1String("accountfolder"), loadIcon("accountfolder",":icon/account"));
+    m.insert(QLatin1String("outboxfolder"), loadIcon("outboxfolder",":icon/outbox"));
+    m.insert(QLatin1String("draftfolder"), loadIcon("emblem-draft",":icon/drafts"));
+    m.insert(QLatin1String("workoffline"), loadIcon("network-offline",":icon/connect_no"));
+    m.insert(QLatin1String("quit"), loadIcon("exit",":icon/quit"));
     return m;
 }
 

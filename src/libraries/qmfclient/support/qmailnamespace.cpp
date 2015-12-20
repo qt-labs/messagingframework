@@ -262,7 +262,7 @@ void QMail::closeDatabase()
     if (instance->init) {
         qMailLog(Messaging) << "closing database";
         instance->init = false;
-        QSqlDatabase::removeDatabase("qmailstore_sql_connection");
+        QSqlDatabase::removeDatabase(QLatin1String("qmailstore_sql_connection"));
     } // else nothing todo
 }
 
@@ -275,10 +275,10 @@ QSqlDatabase QMail::createDatabase()
 
     QSqlDatabase db;
     if (instance->init) {
-        db = QSqlDatabase::database("qmailstore_sql_connection");
+        db = QSqlDatabase::database(QLatin1String("qmailstore_sql_connection"));
     } else {
         qMailLog(Messaging) << "opening database";
-        db = QSqlDatabase::addDatabase("QSQLITE", "qmailstore_sql_connection");
+        db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), QLatin1String("qmailstore_sql_connection"));
         
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
@@ -365,7 +365,7 @@ static void loadExtensions()
         return;
     }
 
-    QFile file(":/qmf/mime.types");
+    QFile file(QLatin1String(":/qmf/mime.types"));
     if ( file.open(QIODevice::ReadOnly) ) {
         char line[1024];
 
@@ -466,11 +466,11 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
         repeat = false;
 
         // Remove any subj-trailer
-        QRegExp subjTrailer("(?:"
+        QRegExp subjTrailer(QLatin1String("(?:"
                                 "[ \\t]+"               // WSP
                             "|"
                                 "(\\([Ff][Ww][Dd]\\))"    // "(fwd)"
-                            ")$");
+                            ")$"));
         while ((pos = subjTrailer.indexIn(result)) != -1) {
             if (!subjTrailer.cap(1).isEmpty()) {
                 *replyOrForward = true;
@@ -483,14 +483,14 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
             modified = false;
 
             // Remove any subj-leader
-            QRegExp subjLeader("^(?:"
+            QRegExp subjLeader(QLatin1String("^(?:"
                                     "[ \\t]+"       // WSP
                                "|"
                                     "(?:\\[[^\\[\\]]*\\][ \\t]*)*"        // ( '[' 'blobchar'* ']' WSP* )*
                                     "([Rr][Ee]|[Ff][Ww][Dd]?)[ \\t]*"   // ( "Re" | "Fw" | "Fwd") WSP*
                                     "(?:\\[[^\\[\\]]*\\][ \\t]*)?"        // optional: ( '[' 'blobchar'* ']' WSP* )
                                     ":"                                 // ':'
-                               ")");
+                               ")"));
             while ((pos = subjLeader.indexIn(result)) == 0) {
                 if (!subjLeader.cap(1).isEmpty()) {
                     *replyOrForward = true;
@@ -500,7 +500,7 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
             }
 
             // Remove subj-blob, if there would be a remainder
-            QRegExp subjBlob("^(\\[[^\\[\\]]*\\][ \\t]*)");             // '[' 'blobchar'* ']' WSP*
+            QRegExp subjBlob(QLatin1String("^(\\[[^\\[\\]]*\\][ \\t]*)"));  // '[' 'blobchar'* ']' WSP*
             if ((subjBlob.indexIn(result) == 0) && (subjBlob.cap(0).length() < result.length())) {
                 result = result.mid(subjBlob.cap(0).length());
                 modified = true;
@@ -508,8 +508,8 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
         } while (modified);
 
         // Remove subj-fwd-hdr and subj-fwd-trl if both are present
-        QRegExp subjFwdHdr("^\\[[Ff][Ww][Dd]:");
-        QRegExp subjFwdTrl("\\]$");
+        QRegExp subjFwdHdr(QLatin1String("^\\[[Ff][Ww][Dd]:"));
+        QRegExp subjFwdTrl(QLatin1String("\\]$"));
         if ((subjFwdHdr.indexIn(result) == 0) && (subjFwdTrl.indexIn(result) != -1)) {
             *replyOrForward = true;
             result = result.mid(subjFwdHdr.cap(0).length(), result.length() - (subjFwdHdr.cap(0).length() + subjFwdTrl.cap(0).length()));
@@ -523,7 +523,7 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
 static QString normaliseIdentifier(const QString& str)
 {
     // Don't permit space, tab or quote marks
-    static const QChar skip[] = { QChar(' '), QChar('\t'), QChar('"') };
+    static const QChar skip[] = { QLatin1Char(' '), QLatin1Char('\t'), QLatin1Char('"') };
 
     QString result;
     result.reserve(str.length());
@@ -548,14 +548,14 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
     QStringList result;
     QString str(aStr.left(1000)); // Handle long strings quickly
 
-    QRegExp identifierPattern("("
+    QRegExp identifierPattern(QLatin1String("("
                                 "(?:[ \\t]*)"           // Optional leading whitespace
                                 "[^ \\t\\<\\>@]+"       // Leading part
                                 "(?:[ \\t]*)"           // Optional whitespace allowed before '@'?
                                 "@"
                                 "(?:[ \\t]*)"           // Optional whitespace allowed after '@'?
                                 "[^ \\t\\<\\>]+"        // Trailing part
-                              ")");
+                              ")"));
 
     // Extracts message identifiers from \a str, matching the definition used in RFC 5256
     int index = str.indexOf('<');
@@ -582,11 +582,11 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
     return result;
 }
 
-QMap<QString, QStringList> standardFolderTranslations()
+QMap<QByteArray, QStringList> standardFolderTranslations()
 {
-    QMap<QString, QStringList> folderTranslations;
+    QMap<QByteArray, QStringList> folderTranslations;
 
-    QFile file(":/qmf/translations.conf");
+    QFile file(QLatin1String(":/qmf/translations.conf"));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qWarning() << "Unable to read " << "translations";
         return folderTranslations;
@@ -596,28 +596,28 @@ QMap<QString, QStringList> standardFolderTranslations()
     in.setCodec("UTF-8");
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QStringList list = line.split("=", QString::SkipEmptyParts);
+        QStringList list = line.split(QLatin1Char('='), QString::SkipEmptyParts);
         QString folderName = list.at(0);
         QString transList = list.at(1);
 
-        if (folderName == "inbox") {
-            QStringList inboxList = transList.split(",", QString::SkipEmptyParts);
+        if (folderName == QLatin1String("inbox")) {
+            QStringList inboxList = transList.split(QLatin1Char(','), QString::SkipEmptyParts);
             folderTranslations.insert("inbox", inboxList);
         }
-        else if (folderName == "drafts") {
-            QStringList draftsList = transList.split(",", QString::SkipEmptyParts);
+        else if (folderName == QLatin1String("drafts")) {
+            QStringList draftsList = transList.split(QLatin1Char(','), QString::SkipEmptyParts);
             folderTranslations.insert("drafts", draftsList);
         }
-        else if(folderName == "trash") {
-            QStringList trashList = transList.split(",", QString::SkipEmptyParts);
+        else if (folderName == QLatin1String("trash")) {
+            QStringList trashList = transList.split(QLatin1Char(','), QString::SkipEmptyParts);
             folderTranslations.insert("trash", trashList);
         }
-        else if (folderName == "sent") {
-            QStringList sentList = transList.split(",", QString::SkipEmptyParts);
+        else if (folderName == QLatin1String("sent")) {
+            QStringList sentList = transList.split(QLatin1Char(','), QString::SkipEmptyParts);
             folderTranslations.insert("sent", sentList);
         }
-        else if (folderName == "spam") {
-            QStringList spamList = transList.split(",", QString::SkipEmptyParts);
+        else if (folderName == QLatin1String("spam")) {
+            QStringList spamList = transList.split(QLatin1Char(','), QString::SkipEmptyParts);
             folderTranslations.insert("spam", spamList);
         }
     }
@@ -628,14 +628,14 @@ QList<StandardFolderInfo> standardFolders()
 {
     QList<StandardFolderInfo> standardFoldersList;
 
-    QMap<QString,QStringList> folderTranslations = standardFolderTranslations();
+    QMap<QByteArray,QStringList> folderTranslations = standardFolderTranslations();
 
     if (!folderTranslations.empty()) {
-        standardFoldersList << StandardFolderInfo("\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming, folderTranslations.value("inbox"))
-                            << StandardFolderInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft, folderTranslations.value("drafts"))
-                            << StandardFolderInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash, folderTranslations.value("trash"))
-                            << StandardFolderInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent, folderTranslations.value("sent"))
-                            << StandardFolderInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk, folderTranslations.value("spam"));
+        standardFoldersList << StandardFolderInfo(QLatin1String("\\Inbox"), QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming, folderTranslations.value("inbox"))
+                            << StandardFolderInfo(QLatin1String("\\Drafts"), QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft, folderTranslations.value("drafts"))
+                            << StandardFolderInfo(QLatin1String("\\Trash"), QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash, folderTranslations.value("trash"))
+                            << StandardFolderInfo(QLatin1String("\\Sent"), QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent, folderTranslations.value("sent"))
+                            << StandardFolderInfo(QLatin1String("\\Spam"), QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk, folderTranslations.value("spam"));
     }
     return standardFoldersList;
 }

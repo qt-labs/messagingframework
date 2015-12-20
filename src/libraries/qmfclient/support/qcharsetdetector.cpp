@@ -201,7 +201,7 @@ void QCharsetDetectorPrivate::clearError()
 
 QString QCharsetDetectorPrivate::errorString() const
 {
-    return QString(u_errorName(_status));
+    return QString(QLatin1String(u_errorName(_status)));
 }
 
 QCharsetDetector::QCharsetDetector()
@@ -372,7 +372,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         && (d->_declaredEncoding.startsWith(QLatin1String("ISO-8859-"))
             || d->_declaredEncoding.startsWith(QLatin1String("windows-12"))
             || d->_declaredEncoding.startsWith(QLatin1String("KOI8"))))
-            qCharsetMatchList << QCharsetMatch(d->_declaredEncoding, "", 10);
+            qCharsetMatchList << QCharsetMatch(d->_declaredEncoding, QString(), 10);
     // Similar as for declaredEncoding, when declaredLocale is used
     // and it is a locale where the legacy encoding is a single byte
     // encoding, it should at least be tried, therefore add the legacy
@@ -386,14 +386,14 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     if(!d->_declaredLocale.isEmpty()) {
         QString language = d->_declaredLocale.left(2);
         if(language ==  QLatin1String("ru")) {
-            qCharsetMatchList << QCharsetMatch("KOI8-R", language, 10);
-            qCharsetMatchList << QCharsetMatch("windows-1251", language, 10);
-            qCharsetMatchList << QCharsetMatch("ISO-8859-5", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("KOI8-R"), language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("windows-1251"), language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-5"), language, 10);
         }
         else if(language == QLatin1String("tr"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-9", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-9"), language, 10);
         else if(language == QLatin1String("el"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-7", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-7"), language, 10);
         else if(language == QLatin1String("en")
                 || language == QLatin1String("da")
                 || language == QLatin1String("de")
@@ -407,18 +407,18 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
                 || language == QLatin1String("nb")
                 || language == QLatin1String("pt")
                 || language == QLatin1String("sv"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-1", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
         else if(language == QLatin1String("cs")
                 || language == QLatin1String("hu")
                 || language == QLatin1String("pl")
                 || language == QLatin1String("ro"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-1", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
         else if(language == QLatin1String("ar")
                 || language == QLatin1String("fa")
                 || language == QLatin1String("ur"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-6", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-6"), language, 10);
         else if(language == QLatin1String("he"))
-            qCharsetMatchList << QCharsetMatch("ISO-8859-8", language, 10);
+            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-8"), language, 10);
     }
     // iterate over the detected matches and do some fine tuning:
     bool sortNeeded = false;
@@ -436,7 +436,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         if((*it).name() == QLatin1String("ISO-2022-JP")) {
             // non-Japanese text in ISO-2022-JP encoding is possible
             // but very unlikely:
-            (*it).setLanguage("ja");
+            (*it).setLanguage(QLatin1String("ja"));
         }
         if((*it).name() == QLatin1String("UTF-8")
            && (*it).confidence() >= 80 && (*it).confidence() < 99) {
@@ -494,7 +494,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
             // encoding.  Use a slightly lower value than for the
             // declared encoding. Setting the declared encoding
             // is more precise and should have somewhat higher priority
-            if(d->_declaredLocale.startsWith("ru")) {
+            if (d->_declaredLocale.startsWith(QLatin1String("ru"))) {
                 // Treat the Russian setDeclaredLocale("ru") case a
                 // bit different than the single byte encodings for
                 // other languages: Only increase the weight of
@@ -537,16 +537,16 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
                    && windows1251Confidence > 10 && windows1251Confidence < 30)
                     (*it).setConfidence(21 + windows1251Confidence);
             }
-            else if((d->_declaredLocale.contains("TW")
-                || d->_declaredLocale.contains("HK")
-                || d->_declaredLocale.contains("MO"))
+            else if ((d->_declaredLocale.contains(QLatin1String("TW"))
+                || d->_declaredLocale.contains(QLatin1String("HK"))
+                || d->_declaredLocale.contains(QLatin1String("MO")))
                && (*it).name() == QLatin1String("Big5")) {
                  // Traditional Chinese, Big5 more likely
                 (*it).setConfidence(39);
             }
-            else if((d->_declaredLocale.contains("CN")
-                     || d->_declaredLocale.contains("SG")
-                     || d->_declaredLocale == "zh")
+            else if ((d->_declaredLocale.contains(QLatin1String("CN"))
+                     || d->_declaredLocale.contains(QLatin1String("SG"))
+                     || d->_declaredLocale == QLatin1String("zh"))
                     && (*it).name() == QLatin1String("GB18030")) {
                 // Simplified Chinese, GB18030/GB2312 more likely.
                 // Simplified Chinese is also assumed if only “zh”
@@ -688,39 +688,39 @@ QStringList QCharsetDetector::getAllDetectableCharsets()
     // Charsets detectable by libicu 4.4.2:
     QStringList allDetectableCharsetsICU;
     allDetectableCharsetsICU
-    << "UTF-8"
-    << "UTF-16BE"
-    << "UTF-16LE"
-    << "UTF-32BE"
-    << "UTF-32LE"
-    << "ISO-8859-1"
-    << "ISO-8859-2"
-    << "ISO-8859-5"
-    << "ISO-8859-6"
-    << "ISO-8859-7"
-    << "ISO-8859-8-I"
-    << "ISO-8859-8"
-    << "ISO-8859-9"
-    << "KOI8-R"
-    << "Shift_JIS"
-    << "GB18030"
-    << "EUC-JP"
-    << "EUC-KR"
-    << "Big5"
-    << "ISO-2022-JP"
-    << "ISO-2022-KR"
-    << "ISO-2022-CN"
-    << "IBM424_rtl"
-    << "IBM424_ltr"
-    << "IBM420_rtl"
-    << "IBM420_ltr"
-    << "windows-1250"
-    << "windows-1251"
-    << "windows-1252"
-    << "windows-1253"
-    << "windows-1255"
-    << "windows-1256"
-    << "windows-1254";
+    << QLatin1String("UTF-8")
+    << QLatin1String("UTF-16BE")
+    << QLatin1String("UTF-16LE")
+    << QLatin1String("UTF-32BE")
+    << QLatin1String("UTF-32LE")
+    << QLatin1String("ISO-8859-1")
+    << QLatin1String("ISO-8859-2")
+    << QLatin1String("ISO-8859-5")
+    << QLatin1String("ISO-8859-6")
+    << QLatin1String("ISO-8859-7")
+    << QLatin1String("ISO-8859-8-I")
+    << QLatin1String("ISO-8859-8")
+    << QLatin1String("ISO-8859-9")
+    << QLatin1String("KOI8-R")
+    << QLatin1String("Shift_JIS")
+    << QLatin1String("GB18030")
+    << QLatin1String("EUC-JP")
+    << QLatin1String("EUC-KR")
+    << QLatin1String("Big5")
+    << QLatin1String("ISO-2022-JP")
+    << QLatin1String("ISO-2022-KR")
+    << QLatin1String("ISO-2022-CN")
+    << QLatin1String("IBM424_rtl")
+    << QLatin1String("IBM424_ltr")
+    << QLatin1String("IBM420_rtl")
+    << QLatin1String("IBM420_ltr")
+    << QLatin1String("windows-1250")
+    << QLatin1String("windows-1251")
+    << QLatin1String("windows-1252")
+    << QLatin1String("windows-1253")
+    << QLatin1String("windows-1255")
+    << QLatin1String("windows-1256")
+    << QLatin1String("windows-1254");
 
     // The charsets detectable by libicu can be determined by
     // ucsdet_getAllDetectableCharsets() and the documentation for

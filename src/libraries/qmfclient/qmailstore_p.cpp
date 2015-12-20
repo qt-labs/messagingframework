@@ -400,31 +400,31 @@ static QMailStorePrivate::MessagePropertyMap messagePropertyMap()
 {
     QMailStorePrivate::MessagePropertyMap map; 
 
-    map.insert(QMailMessageKey::Id,"id");
-    map.insert(QMailMessageKey::Type,"type");
-    map.insert(QMailMessageKey::ParentFolderId,"parentfolderid");
-    map.insert(QMailMessageKey::Sender,"sender");
-    map.insert(QMailMessageKey::Recipients,"recipients");
-    map.insert(QMailMessageKey::Subject,"subject");
-    map.insert(QMailMessageKey::TimeStamp,"stamp");
-    map.insert(QMailMessageKey::ReceptionTimeStamp,"receivedstamp");
-    map.insert(QMailMessageKey::Status,"status");
-    map.insert(QMailMessageKey::ParentAccountId,"parentaccountid");
-    map.insert(QMailMessageKey::ServerUid,"serveruid");
-    map.insert(QMailMessageKey::Size,"size");
-    map.insert(QMailMessageKey::ContentType,"contenttype");
-    map.insert(QMailMessageKey::PreviousParentFolderId,"previousparentfolderid");
-    map.insert(QMailMessageKey::ContentScheme,"mailfile");
-    map.insert(QMailMessageKey::ContentIdentifier,"mailfile");
-    map.insert(QMailMessageKey::InResponseTo,"responseid");
-    map.insert(QMailMessageKey::ResponseType,"responsetype");
-    map.insert(QMailMessageKey::Conversation,"parentthreadid");
-    map.insert(QMailMessageKey::CopyServerUid, "copyserveruid");
-    map.insert(QMailMessageKey::RestoreFolderId, "restorefolderid");
-    map.insert(QMailMessageKey::ListId, "listid");
-    map.insert(QMailMessageKey::RfcId, "rfcid");
-    map.insert(QMailMessageKey::Preview, "preview");
-    map.insert(QMailMessageKey::ParentThreadId, "parentthreadid");
+    map.insert(QMailMessageKey::Id, QLatin1String("id"));
+    map.insert(QMailMessageKey::Type, QLatin1String("type"));
+    map.insert(QMailMessageKey::ParentFolderId, QLatin1String("parentfolderid"));
+    map.insert(QMailMessageKey::Sender, QLatin1String("sender"));
+    map.insert(QMailMessageKey::Recipients, QLatin1String("recipients"));
+    map.insert(QMailMessageKey::Subject, QLatin1String("subject"));
+    map.insert(QMailMessageKey::TimeStamp, QLatin1String("stamp"));
+    map.insert(QMailMessageKey::ReceptionTimeStamp, QLatin1String("receivedstamp"));
+    map.insert(QMailMessageKey::Status, QLatin1String("status"));
+    map.insert(QMailMessageKey::ParentAccountId, QLatin1String("parentaccountid"));
+    map.insert(QMailMessageKey::ServerUid, QLatin1String("serveruid"));
+    map.insert(QMailMessageKey::Size, QLatin1String("size"));
+    map.insert(QMailMessageKey::ContentType, QLatin1String("contenttype"));
+    map.insert(QMailMessageKey::PreviousParentFolderId, QLatin1String("previousparentfolderid"));
+    map.insert(QMailMessageKey::ContentScheme, QLatin1String("mailfile"));
+    map.insert(QMailMessageKey::ContentIdentifier, QLatin1String("mailfile"));
+    map.insert(QMailMessageKey::InResponseTo, QLatin1String("responseid"));
+    map.insert(QMailMessageKey::ResponseType, QLatin1String("responsetype"));
+    map.insert(QMailMessageKey::Conversation, QLatin1String("parentthreadid"));
+    map.insert(QMailMessageKey::CopyServerUid, QLatin1String("copyserveruid"));
+    map.insert(QMailMessageKey::RestoreFolderId, QLatin1String("restorefolderid"));
+    map.insert(QMailMessageKey::ListId, QLatin1String("listid"));
+    map.insert(QMailMessageKey::RfcId, QLatin1String("rfcid"));
+    map.insert(QMailMessageKey::Preview, QLatin1String("preview"));
+    map.insert(QMailMessageKey::ParentThreadId, QLatin1String("parentthreadid"));
     return map;
 }
 
@@ -457,13 +457,13 @@ static AccountPropertyMap accountPropertyMap()
 {
     AccountPropertyMap map; 
 
-    map.insert(QMailAccountKey::Id,"id");
-    map.insert(QMailAccountKey::Name,"name");
-    map.insert(QMailAccountKey::MessageType,"type");
-    map.insert(QMailAccountKey::FromAddress,"emailaddress");
-    map.insert(QMailAccountKey::Status,"status");
-    map.insert(QMailAccountKey::LastSynchronized, "lastsynchronized");
-    map.insert(QMailAccountKey::IconPath,"iconpath");
+    map.insert(QMailAccountKey::Id, QLatin1String("id"));
+    map.insert(QMailAccountKey::Name, QLatin1String("name"));
+    map.insert(QMailAccountKey::MessageType, QLatin1String("type"));
+    map.insert(QMailAccountKey::FromAddress, QLatin1String("emailaddress"));
+    map.insert(QMailAccountKey::Status, QLatin1String("status"));
+    map.insert(QMailAccountKey::LastSynchronized, QLatin1String("lastsynchronized"));
+    map.insert(QMailAccountKey::IconPath, QLatin1String("iconpath"));
 
     return map;
 }
@@ -495,15 +495,15 @@ static FolderPropertyMap folderPropertyMap()
 {
     FolderPropertyMap map; 
 
-    map.insert(QMailFolderKey::Id,"id");
-    map.insert(QMailFolderKey::Path,"name");
-    map.insert(QMailFolderKey::ParentFolderId,"parentid");
-    map.insert(QMailFolderKey::ParentAccountId,"parentaccountid");
-    map.insert(QMailFolderKey::DisplayName,"displayname");
-    map.insert(QMailFolderKey::Status,"status");
-    map.insert(QMailFolderKey::ServerCount,"servercount");
-    map.insert(QMailFolderKey::ServerUnreadCount,"serverunreadcount");
-    map.insert(QMailFolderKey::ServerUndiscoveredCount,"serverundiscoveredcount");
+    map.insert(QMailFolderKey::Id, QLatin1String("id"));
+    map.insert(QMailFolderKey::Path, QLatin1String("name"));
+    map.insert(QMailFolderKey::ParentFolderId, QLatin1String("parentid"));
+    map.insert(QMailFolderKey::ParentAccountId, QLatin1String("parentaccountid"));
+    map.insert(QMailFolderKey::DisplayName, QLatin1String("displayname"));
+    map.insert(QMailFolderKey::Status, QLatin1String("status"));
+    map.insert(QMailFolderKey::ServerCount, QLatin1String("servercount"));
+    map.insert(QMailFolderKey::ServerUnreadCount, QLatin1String("serverunreadcount"));
+    map.insert(QMailFolderKey::ServerUndiscoveredCount, QLatin1String("serverundiscoveredcount"));
 
     return map;
 }
@@ -536,18 +536,18 @@ static ThreadPropertyMap threadPropertyMap()
 {
     ThreadPropertyMap map;
 
-    map.insert(QMailThreadKey::Id,"id");
-    map.insert(QMailThreadKey::MessageCount, "messagecount");
-    map.insert(QMailThreadKey::UnreadCount, "unreadcount");
-    map.insert(QMailThreadKey::ServerUid, "serveruid");
-    map.insert(QMailThreadKey::Includes, "id");
-    map.insert(QMailThreadKey::ParentAccountId, "parentaccountid");
-    map.insert(QMailThreadKey::Subject, "subject");
-    map.insert(QMailThreadKey::Senders, "senders");
-    map.insert(QMailThreadKey::LastDate, "lastDate");
-    map.insert(QMailThreadKey::StartedDate, "startedDate");
-    map.insert(QMailThreadKey::Status, "status");
-    map.insert(QMailThreadKey::Preview, "preview");
+    map.insert(QMailThreadKey::Id, QLatin1String("id"));
+    map.insert(QMailThreadKey::MessageCount, QLatin1String("messagecount"));
+    map.insert(QMailThreadKey::UnreadCount, QLatin1String("unreadcount"));
+    map.insert(QMailThreadKey::ServerUid, QLatin1String("serveruid"));
+    map.insert(QMailThreadKey::Includes, QLatin1String("id"));
+    map.insert(QMailThreadKey::ParentAccountId, QLatin1String("parentaccountid"));
+    map.insert(QMailThreadKey::Subject, QLatin1String("subject"));
+    map.insert(QMailThreadKey::Senders, QLatin1String("senders"));
+    map.insert(QMailThreadKey::LastDate, QLatin1String("lastDate"));
+    map.insert(QMailThreadKey::StartedDate, QLatin1String("startedDate"));
+    map.insert(QMailThreadKey::Status, QLatin1String("status"));
+    map.insert(QMailThreadKey::Preview, QLatin1String("preview"));
     return map;
 }
 
@@ -1699,13 +1699,14 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
             field = QString("(%1 & %2)").arg(field).arg(QString::number(arg.mask));
         }
         if (caseInsensitiveProperty(arg.property)) {
-            sortColumns.append("ltrim(" + field + ",'\\\"') COLLATE NOCASE " + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+            sortColumns.append(QLatin1String("ltrim(") + field + QLatin1String(",'\\\"') COLLATE NOCASE ") +
+                               QLatin1String(arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
         } else {
-            sortColumns.append(field + " " + (arg.order == Qt::AscendingOrder ? "ASC" : "DESC"));
+            sortColumns.append(field + QLatin1String(arg.order == Qt::AscendingOrder ? " ASC" : " DESC"));
         }
     }
 
-    return QString(" ORDER BY ") + sortColumns.join(",");
+    return QLatin1String(" ORDER BY ") + sortColumns.join(QLatin1Char(','));
 }
 
 
@@ -2257,7 +2258,7 @@ QString buildWhereClause(const KeyType &key,
         // subkeys
         s.flush();
         if (whereClause.isEmpty())
-            op = ' ';
+            op = QLatin1Char(' ');
 
         foreach (typename KeyListType::const_reference subkey, subKeys) {
             QString nestedWhere(store.buildWhereClause(QMailStorePrivate::Key(subkey, alias), true));
@@ -2271,10 +2272,10 @@ QString buildWhereClause(const KeyType &key,
     // Finalise the where clause
     if (!whereClause.isEmpty()) {
         if (negated) {
-            whereClause = " NOT (" + whereClause + ")";
+            whereClause = QLatin1String(" NOT (") + whereClause + QLatin1Char(')');
         }
         if (!nested) {
-            whereClause.prepend(firstClause ? " WHERE " : " AND ");
+            whereClause.prepend(QLatin1String(firstClause ? " WHERE " : " AND "));
         }
     }
 
@@ -2581,70 +2582,70 @@ bool QMailStorePrivate::initStore()
         }
         /*static_*/Q_ASSERT(Success == 0);
 
-        bool res = attemptRegisterStatusBit("SynchronizationEnabled", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
-                || attemptRegisterStatusBit("Synchronized", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::Synchronized), t, false)
-                || attemptRegisterStatusBit("AppendSignature", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::AppendSignature), t, false)
-                || attemptRegisterStatusBit("UserEditable", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UserEditable), t, false)
-                || attemptRegisterStatusBit("UserRemovable", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UserRemovable), t, false)
-                || attemptRegisterStatusBit("PreferredSender", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::PreferredSender), t, false)
-                || attemptRegisterStatusBit("MessageSource", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::MessageSource), t, false)
-                || attemptRegisterStatusBit("CanRetrieve", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanRetrieve), t, false)
-                || attemptRegisterStatusBit("MessageSink", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::MessageSink), t, false)
-                || attemptRegisterStatusBit("CanTransmit", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmit), t, false)
-                || attemptRegisterStatusBit("Enabled", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::Enabled), t, false)
-                || attemptRegisterStatusBit("CanReferenceExternalData", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanReferenceExternalData), t, false)
-                || attemptRegisterStatusBit("CanTransmitViaReference", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmitViaReference), t, false)
-                || attemptRegisterStatusBit("CanCreateFolders", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanCreateFolders), t, false)
-                || attemptRegisterStatusBit("UseSmartReply", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
-                || attemptRegisterStatusBit("CanSearchOnServer", "accountstatus", 63, true, const_cast<quint64 *>(&QMailAccount::CanSearchOnServer), t, false)
-                || attemptRegisterStatusBit("SynchronizationEnabled", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
-                || attemptRegisterStatusBit("Synchronized", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Synchronized), t, false)
-                || attemptRegisterStatusBit("PartialContent", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::PartialContent), t, false)
-                || attemptRegisterStatusBit("Removed", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Removed), t, false)
-                || attemptRegisterStatusBit("Incoming", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Incoming), t, false)
-                || attemptRegisterStatusBit("Outgoing", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Outgoing), t, false)
-                || attemptRegisterStatusBit("Sent", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Sent), t, false)
-                || attemptRegisterStatusBit("Trash", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Trash), t, false)
-                || attemptRegisterStatusBit("Drafts", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
-                || attemptRegisterStatusBit("Junk", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
-                || attemptRegisterStatusBit("ChildCreationPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
-                || attemptRegisterStatusBit("RenamePermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::RenamePermitted), t, false)
-                || attemptRegisterStatusBit("DeletionPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::DeletionPermitted), t, false)
-                || attemptRegisterStatusBit("NonMail", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::NonMail), t, false)
-                || attemptRegisterStatusBit("MessagesPermitted", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::MessagesPermitted), t, false)
-                || attemptRegisterStatusBit("ReadOnly", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::ReadOnly), t, false)
-                || attemptRegisterStatusBit("Favourite", "folderstatus", 63, true, const_cast<quint64 *>(&QMailFolder::Favourite), t, false)
-                || attemptRegisterStatusBit("Incoming", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Incoming), t, false)
-                || attemptRegisterStatusBit("Outgoing", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Outgoing), t, false)
-                || attemptRegisterStatusBit("Sent", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Sent), t, false)
-                || attemptRegisterStatusBit("Replied", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Replied), t, false)
-                || attemptRegisterStatusBit("RepliedAll", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::RepliedAll), t, false)
-                || attemptRegisterStatusBit("Forwarded", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Forwarded), t, false)
-                || attemptRegisterStatusBit("ContentAvailable", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ContentAvailable), t, false)
-                || attemptRegisterStatusBit("Read", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Read), t, false)
-                || attemptRegisterStatusBit("Removed", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Removed), t, false)
-                || attemptRegisterStatusBit("ReadElsewhere", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ReadElsewhere), t, false)
-                || attemptRegisterStatusBit("UnloadedData", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::UnloadedData), t, false)
-                || attemptRegisterStatusBit("New", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::New), t, false)
-                || attemptRegisterStatusBit("ReadReplyRequested", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
-                || attemptRegisterStatusBit("Trash", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
-                || attemptRegisterStatusBit("PartialContentAvailable", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
-                || attemptRegisterStatusBit("HasAttachments", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasAttachments), t, false)
-                || attemptRegisterStatusBit("HasReferences", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasReferences), t, false)
-                || attemptRegisterStatusBit("HasUnresolvedReferences", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HasUnresolvedReferences), t, false)
-                || attemptRegisterStatusBit("Draft", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Draft), t, false)
-                || attemptRegisterStatusBit("Outbox", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Outbox), t, false)
-                || attemptRegisterStatusBit("Junk", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Junk), t, false)
-                || attemptRegisterStatusBit("TransmitFromExternal", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::TransmitFromExternal), t, false)
-                || attemptRegisterStatusBit("LocalOnly", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::LocalOnly), t, false)
-                || attemptRegisterStatusBit("TemporaryFlag", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Temporary), t, false)
-                || attemptRegisterStatusBit("ImportantElsewhere", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::ImportantElsewhere), t, false)
-                || attemptRegisterStatusBit("Important", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Important), t, false)
-                || attemptRegisterStatusBit("HighPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
-                || attemptRegisterStatusBit("LowPriority", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
-                || attemptRegisterStatusBit("CalendarInvitation", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false)
-                || attemptRegisterStatusBit("Todo", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::Todo), t, false)
-                || attemptRegisterStatusBit("NoNotification", "messagestatus", 63, true, const_cast<quint64 *>(&QMailMessage::NoNotification), t, false);
+        bool res = attemptRegisterStatusBit("SynchronizationEnabled", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::Synchronized), t, false)
+                || attemptRegisterStatusBit("AppendSignature", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::AppendSignature), t, false)
+                || attemptRegisterStatusBit("UserEditable", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::UserEditable), t, false)
+                || attemptRegisterStatusBit("UserRemovable", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::UserRemovable), t, false)
+                || attemptRegisterStatusBit("PreferredSender", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::PreferredSender), t, false)
+                || attemptRegisterStatusBit("MessageSource", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::MessageSource), t, false)
+                || attemptRegisterStatusBit("CanRetrieve", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanRetrieve), t, false)
+                || attemptRegisterStatusBit("MessageSink", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::MessageSink), t, false)
+                || attemptRegisterStatusBit("CanTransmit", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmit), t, false)
+                || attemptRegisterStatusBit("Enabled", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::Enabled), t, false)
+                || attemptRegisterStatusBit("CanReferenceExternalData", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanReferenceExternalData), t, false)
+                || attemptRegisterStatusBit("CanTransmitViaReference", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanTransmitViaReference), t, false)
+                || attemptRegisterStatusBit("CanCreateFolders", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanCreateFolders), t, false)
+                || attemptRegisterStatusBit("UseSmartReply", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
+                || attemptRegisterStatusBit("CanSearchOnServer", QLatin1String("accountstatus"), 63, true, const_cast<quint64 *>(&QMailAccount::CanSearchOnServer), t, false)
+                || attemptRegisterStatusBit("SynchronizationEnabled", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
+                || attemptRegisterStatusBit("Synchronized", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Synchronized), t, false)
+                || attemptRegisterStatusBit("PartialContent", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::PartialContent), t, false)
+                || attemptRegisterStatusBit("Removed", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Removed), t, false)
+                || attemptRegisterStatusBit("Incoming", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Sent), t, false)
+                || attemptRegisterStatusBit("Trash", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Trash), t, false)
+                || attemptRegisterStatusBit("Drafts", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
+                || attemptRegisterStatusBit("Junk", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
+                || attemptRegisterStatusBit("ChildCreationPermitted", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
+                || attemptRegisterStatusBit("RenamePermitted", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::RenamePermitted), t, false)
+                || attemptRegisterStatusBit("DeletionPermitted", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::DeletionPermitted), t, false)
+                || attemptRegisterStatusBit("NonMail", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::NonMail), t, false)
+                || attemptRegisterStatusBit("MessagesPermitted", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::MessagesPermitted), t, false)
+                || attemptRegisterStatusBit("ReadOnly", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::ReadOnly), t, false)
+                || attemptRegisterStatusBit("Favourite", QLatin1String("folderstatus"), 63, true, const_cast<quint64 *>(&QMailFolder::Favourite), t, false)
+                || attemptRegisterStatusBit("Incoming", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Incoming), t, false)
+                || attemptRegisterStatusBit("Outgoing", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Outgoing), t, false)
+                || attemptRegisterStatusBit("Sent", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Sent), t, false)
+                || attemptRegisterStatusBit("Replied", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Replied), t, false)
+                || attemptRegisterStatusBit("RepliedAll", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::RepliedAll), t, false)
+                || attemptRegisterStatusBit("Forwarded", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Forwarded), t, false)
+                || attemptRegisterStatusBit("ContentAvailable", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::ContentAvailable), t, false)
+                || attemptRegisterStatusBit("Read", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Read), t, false)
+                || attemptRegisterStatusBit("Removed", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Removed), t, false)
+                || attemptRegisterStatusBit("ReadElsewhere", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::ReadElsewhere), t, false)
+                || attemptRegisterStatusBit("UnloadedData", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::UnloadedData), t, false)
+                || attemptRegisterStatusBit("New", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::New), t, false)
+                || attemptRegisterStatusBit("ReadReplyRequested", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
+                || attemptRegisterStatusBit("Trash", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
+                || attemptRegisterStatusBit("PartialContentAvailable", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
+                || attemptRegisterStatusBit("HasAttachments", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::HasAttachments), t, false)
+                || attemptRegisterStatusBit("HasReferences", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::HasReferences), t, false)
+                || attemptRegisterStatusBit("HasUnresolvedReferences", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::HasUnresolvedReferences), t, false)
+                || attemptRegisterStatusBit("Draft", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Draft), t, false)
+                || attemptRegisterStatusBit("Outbox", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Outbox), t, false)
+                || attemptRegisterStatusBit("Junk", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Junk), t, false)
+                || attemptRegisterStatusBit("TransmitFromExternal", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::TransmitFromExternal), t, false)
+                || attemptRegisterStatusBit("LocalOnly", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::LocalOnly), t, false)
+                || attemptRegisterStatusBit("TemporaryFlag", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Temporary), t, false)
+                || attemptRegisterStatusBit("ImportantElsewhere", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::ImportantElsewhere), t, false)
+                || attemptRegisterStatusBit("Important", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Important), t, false)
+                || attemptRegisterStatusBit("HighPriority", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::HighPriority), t, false)
+                || attemptRegisterStatusBit("LowPriority", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::LowPriority), t, false)
+                || attemptRegisterStatusBit("CalendarInvitation", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false)
+                || attemptRegisterStatusBit("Todo", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::Todo), t, false)
+                || attemptRegisterStatusBit("NoNotification", QLatin1String("messagestatus"), 63, true, const_cast<quint64 *>(&QMailMessage::NoNotification), t, false);
 
         if (res) {
             qWarning() << "There was an error registering flags.";
@@ -2735,7 +2736,7 @@ void QMailStorePrivate::clearContent()
     // Drop all data
     foreach (const QString &table, database()->tables()) {
         if (table != "versioninfo" && table != "mailstatusflags") {
-            QString sql("DELETE FROM %1");
+            QString sql(QLatin1String("DELETE FROM %1"));
             QSqlQuery query(*database());
             if (!query.exec(sql.arg(table))) {
                 qWarning() << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
@@ -2764,7 +2765,7 @@ bool QMailStorePrivate::transaction(void)
     destroyTemporaryTables();
 
     if (!database()->transaction()) {
-        setQueryError(database()->lastError(), "Failed to initiate transaction");
+        setQueryError(database()->lastError(), QLatin1String("Failed to initiate transaction"));
         return false;
     }
 
@@ -2820,7 +2821,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
             {
                 QSqlQuery createQuery(*database());
                 if (!createQuery.exec(QString("CREATE TEMP TABLE %1 ( id %2 PRIMARY KEY )").arg(tableName).arg(key.second))) { 
-                    setQueryError(createQuery.lastError(), "Failed to create temporary table", queryText(createQuery));
+                    setQueryError(createQuery.lastError(), QLatin1String("Failed to create temporary table"), queryText(createQuery));
                     qWarning() << "Unable to prepare query:" << sql;
                     return QSqlQuery();
                 }
@@ -2869,7 +2870,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) { 
-                        setQueryError(insertQuery.lastError(), "Failed to populate integer temporary table", queryText(insertQuery));
+                        setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate integer temporary table"), queryText(insertQuery));
                         qWarning() << "Unable to prepare query:" << sql;
                         return QSqlQuery();
                     }
@@ -2884,7 +2885,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     insertQuery.prepare(QString("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) { 
-                        setQueryError(insertQuery.lastError(), "Failed to populate varchar temporary table", queryText(insertQuery));
+                        setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate varchar temporary table"), queryText(insertQuery));
                         qWarning() << "Unable to prepare query:" << sql;
                         return QSqlQuery();
                     }
@@ -2896,7 +2897,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
     QSqlQuery query(*database());
     query.setForwardOnly(true);
     if (!query.prepare(sql)) {
-        setQueryError(query.lastError(), "Failed to prepare query", queryText(query));
+        setQueryError(query.lastError(), QLatin1String("Failed to prepare query"), queryText(query));
     }
 
     return query;
@@ -2906,7 +2907,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
 {
     bool success = (batch ? query.execBatch() : query.exec());
     if (!success) {
-        setQueryError(query.lastError(), "Failed to execute query", queryText(query));
+        setQueryError(query.lastError(), QLatin1String("Failed to execute query"), queryText(query));
         return false;
     }
 
@@ -2931,7 +2932,7 @@ bool QMailStorePrivate::commit(void)
     }
     
     if (!database()->commit()) {
-        setQueryError(database()->lastError(), "Failed to commit transaction");
+        setQueryError(database()->lastError(), QLatin1String("Failed to commit transaction"));
         return false;
     } else {
         inTransaction = false;
@@ -2954,7 +2955,7 @@ void QMailStorePrivate::rollback(void)
     inTransaction = false;
 
     if (!database()->rollback()) {
-        setQueryError(database()->lastError(), "Failed to rollback transaction");
+        setQueryError(database()->lastError(), QLatin1String("Failed to rollback transaction"));
     }
 }
 
@@ -3027,7 +3028,7 @@ QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessage
 {
     Q_ASSERT(id.isValid());
     QMap<QString, QString> fields;
-    AttemptResult res(customFields(id.toULongLong(), &fields, "mailmessagecustom"));
+    AttemptResult res(customFields(id.toULongLong(), &fields, QLatin1String("mailmessagecustom")));
     if (res != Success)
         qWarning() << "Could not query custom fields for message id: " << id.toULongLong();
 
@@ -3039,14 +3040,14 @@ bool QMailStorePrivate::idValueExists(quint64 id, const QString& table)
     QSqlQuery query(*database());
     QString sql = "SELECT id FROM " + table + " WHERE id=?";
     if(!query.prepare(sql)) {
-        setQueryError(query.lastError(), "Failed to prepare idExists query", queryText(query));
+        setQueryError(query.lastError(), QLatin1String("Failed to prepare idExists query"), queryText(query));
         return false;
     }
 
     query.addBindValue(id);
 
     if(!query.exec()) {
-        setQueryError(query.lastError(), "Failed to execute idExists query", queryText(query));
+        setQueryError(query.lastError(), QLatin1String("Failed to execute idExists query"), queryText(query));
         return false;
     }
 
@@ -3073,13 +3074,13 @@ bool QMailStorePrivate::messageExists(const QString &serveruid, const QMailAccou
     QSqlQuery query(*database());
     QString sql = "SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?";
     if(!query.prepare(sql)) {
-        setQueryError(query.lastError(), "Failed to prepare messageExists query");
+        setQueryError(query.lastError(), QLatin1String("Failed to prepare messageExists query"));
     }
     query.addBindValue(serveruid);
     query.addBindValue(id.toULongLong());
 
     if(!query.exec()) {
-        setQueryError(query.lastError(), "Failed to execute messageExists");
+        setQueryError(query.lastError(), QLatin1String("Failed to execute messageExists"));
     }
 
     return query.first();
@@ -3360,9 +3361,9 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
         // See if we need to create any temporary tables to use in this query
         foreach (const QMailMessageKey::ArgumentType &a, messageKey.arguments()) {
             if (a.property == QMailMessageKey::Id && a.valueList.count() >= IdLookupThreshold) {
-                createTemporaryTable(a, "INTEGER");
+                createTemporaryTable(a, QLatin1String("INTEGER"));
             } else if (a.property == QMailMessageKey::ServerUid && a.valueList.count() >= IdLookupThreshold) {
-                createTemporaryTable(a, "VARCHAR");
+                createTemporaryTable(a, QLatin1String("VARCHAR"));
             }
         }
 
@@ -3714,7 +3715,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
 {
     // delete threads if necessary
     if (!threadsToDelete.isEmpty()) {
-        QString sql("DELETE FROM mailthreads WHERE id IN %1");
+        QString sql(QLatin1String("DELETE FROM mailthreads WHERE id IN %1"));
         QVariantList bindValues;
         foreach (const QMailThreadId& threadId, threadsToDelete) {
             bindValues << threadId.toULongLong();
@@ -3736,7 +3737,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateThreadsValues(const QM
         return Success;
 
     QVariantList bindValues;
-    QString sql("UPDATE mailthreads SET ");
+    QString sql(QLatin1String("UPDATE mailthreads SET "));
     bool firstProperty = true;
 
     if (updateData.mMessagesCount != 0) {
@@ -3881,7 +3882,7 @@ bool QMailStorePrivate::ensureVersionInfo()
 
 qint64 QMailStorePrivate::tableVersion(const QString &name) const
 {
-    QString sql("SELECT COALESCE(MAX(versionNum), 0) FROM versioninfo WHERE tableName=?");
+    QString sql(QLatin1String("SELECT COALESCE(MAX(versionNum), 0) FROM versioninfo WHERE tableName=?"));
 
     QSqlQuery query(*database());
     query.prepare(sql);
@@ -3895,7 +3896,7 @@ qint64 QMailStorePrivate::tableVersion(const QString &name) const
 
 bool QMailStorePrivate::setTableVersion(const QString &name, qint64 version)
 {
-    QString sql("DELETE FROM versioninfo WHERE tableName=?");
+    QString sql(QLatin1String("DELETE FROM versioninfo WHERE tableName=?"));
 
     // Delete any existing entry for this table
     QSqlQuery query(*database());
@@ -3960,7 +3961,7 @@ bool QMailStorePrivate::upgradeTimeStampToUtc()
         bindValues << QDateTime((extractor.date()).value<QDateTime>()).toUTC();
         bindValues << QDateTime((extractor.receivedDate()).value<QDateTime>()).toUTC();
         bindValues << extractor.id();
-        QString sql("UPDATE mailmessages SET %1 WHERE id=?");
+        QString sql(QLatin1String("UPDATE mailmessages SET %1 WHERE id=?"));
 
         QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateDateProperties, true)),
                                     bindValues,
@@ -3990,42 +3991,42 @@ bool QMailStorePrivate::fullThreadTableUpdate()
 {
     //Clear mailthreads table.
     {
-        QSqlQuery query(simpleQuery("DELETE FROM mailthreads",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailthreads"),
                                     "fullThreadTableUpdate clear mailthreads table query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
     //Clear mailthread ids and responseid for all messages
     {
-        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid = 0 , responseid = 0",
+        QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessages SET parentthreadid = 0 , responseid = 0"),
                                     "fullThreadTableUpdate clear mailmessages parentthreadid query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
     //Clear missingancestors table
     {
-        QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingancestors"),
                                     "fullThreadTableUpdate clear missingancestors table query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
     //Clear missingmessages table
     {
-        QSqlQuery query(simpleQuery("DELETE FROM missingmessages",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingmessages"),
                                     "fullThreadTableUpdate clear missingmessages table query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
     //Clear mailsubjects table
     {
-        QSqlQuery query(simpleQuery("DELETE FROM mailsubjects",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailsubjects"),
                                     "fullThreadTableUpdate clear mailsubjects table query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
     //Clear mailthreadsubjects table
     {
-        QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailthreadsubjects"),
                                     "fullThreadTableUpdate clear mailthreadsubjects table query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -4033,7 +4034,7 @@ bool QMailStorePrivate::fullThreadTableUpdate()
     //Get all messages
     QMailMessageMetaDataList messagesList;
     {
-        QSqlQuery query(simpleQuery("SELECT id,sender,subject,stamp,status,parentaccountid,preview FROM mailmessages ORDER BY stamp",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT id,sender,subject,stamp,status,parentaccountid,preview FROM mailmessages ORDER BY stamp"),
                                     "fullThreadTableUpdate select all messages query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -4107,16 +4108,16 @@ bool QMailStorePrivate::fullThreadTableUpdate()
 
                 // Add a new thread for this message
                 QMap<QString, QVariant> values;
-                values.insert("messagecount", 1);
-                values.insert("unreadcount", ((metaData->status() & QMailMessage::Read) ? 0 : 1));
-                values.insert("serveruid", "");
-                values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
-                values.insert("subject", metaData->subject());
-                values.insert("preview", metaData->preview());
-                values.insert("senders", metaData->from().toString());
-                values.insert("lastdate", metaData->date().toUTC());
-                values.insert("starteddate", metaData->date().toUTC());
-                values.insert("status", metaData->status());
+                values.insert(QLatin1String("messagecount"), 1);
+                values.insert(QLatin1String("unreadcount"), ((metaData->status() & QMailMessage::Read) ? 0 : 1));
+                values.insert(QLatin1String("serveruid"), "");
+                values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
+                values.insert(QLatin1String("subject"), metaData->subject());
+                values.insert(QLatin1String("preview"), metaData->preview());
+                values.insert(QLatin1String("senders"), metaData->from().toString());
+                values.insert(QLatin1String("lastdate"), metaData->date().toUTC());
+                values.insert(QLatin1String("starteddate"), metaData->date().toUTC());
+                values.insert(QLatin1String("status"), metaData->status());
                 const QString &columns = QStringList(values.keys()).join(",");
                 QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
                                             values.values(),
@@ -4165,7 +4166,7 @@ bool QMailStorePrivate::fullThreadTableUpdate()
                     levels.append(QVariant(--level));
                 }
 
-                QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
+                QString sql(QLatin1String("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)"));
                 QSqlQuery query(batchQuery(sql.arg(QString::number(metaData->id().toULongLong())),
                                            QVariantList() << QVariant(refs) << QVariant(levels),
                                            "fullThreadTableUpdate missingmessages insert query"));
@@ -4256,7 +4257,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
 
     {
         // TODO: Perhaps we should search only for existing folders?
-        QSqlQuery query(simpleQuery("SELECT id FROM mailfolders", 
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailfolders"),
                                     "folder ids query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -4268,7 +4269,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
     foreach (const FolderInfo &folder, folderList) {
         if (folderIds.contains(folder.id()))
             continue;
-        QSqlQuery query(simpleQuery("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?,?)",
+        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolders (id,name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?,?)"),
                                     QVariantList() << folder.id()
                                                    << folder.name()
                                                    << quint64(0)
@@ -4288,7 +4289,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
 
 bool QMailStorePrivate::purgeMissingAncestors()
 {
-    QString sql("DELETE FROM missingancestors WHERE state=1");
+    QString sql(QLatin1String("DELETE FROM missingancestors WHERE state=1"));
 
     QSqlQuery query(*database());
     query.prepare(sql);
@@ -4304,7 +4305,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
     QStringList identifiers;
 
     {
-        QString sql("SELECT mailfile FROM obsoletefiles");
+        QString sql(QLatin1String("SELECT mailfile FROM obsoletefiles"));
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
@@ -4348,7 +4349,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
 
 
 
-         QString sql("DELETE FROM obsoletefiles");
+         QString sql(QLatin1String("DELETE FROM obsoletefiles"));
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
@@ -4366,7 +4367,7 @@ bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint seconds
     QDateTime lastPerformed(QDateTime::fromTime_t(0));
 
     {
-        QString sql("SELECT performed FROM maintenancerecord WHERE task=?");
+        QString sql(QLatin1String("SELECT performed FROM maintenancerecord WHERE task=?"));
 
         QSqlQuery query(*database());
         query.prepare(sql);
@@ -5323,7 +5324,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::addCustomFields(quint64 id, 
         }
 
         // Batch insert the custom fields
-        QString sql("INSERT INTO %1 (id,name,value) VALUES (%2,?,?)");
+        QString sql(QLatin1String("INSERT INTO %1 (id,name,value) VALUES (%2,?,?)"));
         QSqlQuery query(batchQuery(sql.arg(tableName).arg(QString::number(id)),
                                    QVariantList() << QVariant(customFields)
                                                   << QVariant(customValues),
@@ -5341,7 +5342,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     {
         // Find the existing fields
-        QString sql("SELECT name,value FROM %1 WHERE id=?");
+        QString sql(QLatin1String("SELECT name,value FROM %1 WHERE id=?"));
         QSqlQuery query(simpleQuery(sql.arg(tableName),
                                     QVariantList() << id,
                                     QString("%1 update custom select query").arg(tableName)));
@@ -5380,7 +5381,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     if (!obsoleteFields.isEmpty()) {
         // Remove the obsolete fields
-        QString sql("DELETE FROM %1 WHERE id=? AND name IN %2 COLLATE NOCASE");
+        QString sql(QLatin1String("DELETE FROM %1 WHERE id=? AND name IN %2 COLLATE NOCASE"));
         QSqlQuery query(simpleQuery(sql.arg(tableName).arg(expandValueList(obsoleteFields)),
                                     QVariantList() << id << obsoleteFields,
                                     QString("%1 update custom delete query").arg(tableName)));
@@ -5390,7 +5391,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     if (!modifiedFields.isEmpty()) {
         // Batch update the modified fields
-        QString sql("UPDATE %1 SET value=? WHERE id=%2 AND name=? COLLATE NOCASE");
+        QString sql(QLatin1String("UPDATE %1 SET value=? WHERE id=%2 AND name=? COLLATE NOCASE"));
         QSqlQuery query(batchQuery(sql.arg(tableName).arg(QString::number(id)),
                                    QVariantList() << QVariant(modifiedValues)
                                                   << QVariant(modifiedFields),
@@ -5401,7 +5402,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
     if (!addedFields.isEmpty()) {
         // Batch insert the added fields
-        QString sql("INSERT INTO %1 (id,name,value) VALUES (%2,?,?)");
+        QString sql(QLatin1String("INSERT INTO %1 (id,name,value) VALUES (%2,?,?)"));
         QSqlQuery query(batchQuery(sql.arg(tableName).arg(QString::number(id)),
                                    QVariantList() << QVariant(addedFields)
                                                   << QVariant(addedValues),
@@ -5415,7 +5416,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::updateCustomFields(quint64 i
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::customFields(quint64 id, QMap<QString, QString> *fields, const QString &tableName)
 {
-    QString sql("SELECT name,value FROM %1 WHERE id=?");
+    QString sql(QLatin1String("SELECT name,value FROM %1 WHERE id=?"));
     QSqlQuery query(simpleQuery(sql.arg(tableName),
                                 QVariantList() << id,
                                 QString("%1 custom field query").arg(tableName)));
@@ -5474,7 +5475,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
             }
 
             // Batch insert the folders
-            QString sql("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
+            QString sql(QLatin1String("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)"));
             QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
                                        QVariantList() << QVariant(types)
                                        << QVariant(folderIds),
@@ -5505,7 +5506,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddAccount(QMailAccou
             }
 
             // Batch insert the custom fields
-            QString sql("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)");
+            QString sql(QLatin1String("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)"));
             QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())).arg(service),
                                        QVariantList() << QVariant(configFields)
                                                       << QVariant(configValues),
@@ -5542,7 +5543,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
 
     {
         {
-            QSqlQuery query(simpleQuery("INSERT INTO mailfolders (name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?)",
+            QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolders (name,parentid,parentaccountid,displayname,status,servercount,serverunreadcount,serverundiscoveredcount) VALUES (?,?,?,?,?,?,?,?)"),
                                         QVariantList() << folder->path()
                                                        << folder->parentFolderId().toULongLong()
                                                        << folder->parentAccountId().toULongLong()
@@ -5582,7 +5583,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddFolder(QMailFolder
 
         {
             // Our direct parent is also an ancestor
-            QSqlQuery query(simpleQuery("INSERT INTO mailfolderlinks VALUES (?,?)",
+            QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolderlinks VALUES (?,?)"),
                                         QVariantList() << folder->parentFolderId().toULongLong() 
                                                        << folder->id().toULongLong(),
                                         "mailfolderlinks insert parent"));
@@ -5786,7 +5787,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     // Attach this message to a thread
     if (!metaData->parentThreadId().isValid() && metaData->inResponseTo().isValid()) {
-        QString sql("SELECT parentthreadid FROM mailmessages WHERE id=%1");
+        QString sql(QLatin1String("SELECT parentthreadid FROM mailmessages WHERE id=%1"));
         QSqlQuery query(simpleQuery(sql.arg(metaData->inResponseTo().toULongLong()), "addMessage threadid select query"));
 
         if (query.lastError().type() != QSqlError::NoError)
@@ -5871,18 +5872,18 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
         // Add a new thread for this message
 
         QMap<QString, QVariant> values;
-        values.insert("messagecount", (metaData->status() & QMailMessage::Trash ||
+        values.insert(QLatin1String("messagecount"), (metaData->status() & QMailMessage::Trash ||
                                        metaData->status() & QMailMessage::Draft) ? 0 : 1);
-        values.insert("unreadcount", (metaData->status() & QMailMessage::Read ||
+        values.insert(QLatin1String("unreadcount"), (metaData->status() & QMailMessage::Read ||
                                       metaData->status() & QMailMessage::Trash || metaData->status() & QMailMessage::Draft) ? 0 : 1);
-        values.insert("serveruid", "");
-        values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
-        values.insert("subject", metaData->subject());
-        values.insert("preview", metaData->preview());
-        values.insert("senders", metaData->from().toString());
-        values.insert("lastdate", metaData->date().toUTC());
-        values.insert("starteddate", metaData->date().toUTC());
-        values.insert("status", metaData->status());
+        values.insert(QLatin1String("serveruid"), "");
+        values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
+        values.insert(QLatin1String("subject"), metaData->subject());
+        values.insert(QLatin1String("preview"), metaData->preview());
+        values.insert(QLatin1String("senders"), metaData->from().toString());
+        values.insert(QLatin1String("lastdate"), metaData->date().toUTC());
+        values.insert(QLatin1String("starteddate"), metaData->date().toUTC());
+        values.insert(QLatin1String("status"), metaData->status());
         const QString &columns = QStringList(values.keys()).join(",");
         QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
                                     values.values(),
@@ -5910,28 +5911,28 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     QMap<QString, QVariant> values;
 
-    values.insert("type", static_cast<int>(metaData->messageType()));
-    values.insert("parentfolderid", metaData->parentFolderId().toULongLong());
-    values.insert("sender", fromText);
-    values.insert("recipients", recipients.join(","));
-    values.insert("subject", metaData->subject());
-    values.insert("stamp", QMailTimeStamp(metaData->date()).toUTC());
-    values.insert("status", static_cast<int>(metaData->status()));
-    values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
-    values.insert("mailfile", ::contentUri(*metaData));
-    values.insert("serveruid", metaData->serverUid());
-    values.insert("size", metaData->size());
-    values.insert("contenttype", static_cast<int>(metaData->content()));
-    values.insert("responseid", metaData->inResponseTo().toULongLong());
-    values.insert("responsetype", metaData->responseType());
-    values.insert("receivedstamp", QMailTimeStamp(metaData->receivedDate()).toUTC());
-    values.insert("previousparentfolderid", metaData->previousParentFolderId().toULongLong());
-    values.insert("copyserveruid", metaData->copyServerUid());
-    values.insert("restorefolderid", metaData->restoreFolderId().toULongLong());
-    values.insert("listid", metaData->listId());
-    values.insert("rfcID", metaData->rfcId());
-    values.insert("preview", metaData->preview());
-    values.insert("parentthreadid", metaData->parentThreadId().toULongLong());
+    values.insert(QLatin1String("type"), static_cast<int>(metaData->messageType()));
+    values.insert(QLatin1String("parentfolderid"), metaData->parentFolderId().toULongLong());
+    values.insert(QLatin1String("sender"), fromText);
+    values.insert(QLatin1String("recipients"), recipients.join(","));
+    values.insert(QLatin1String("subject"), metaData->subject());
+    values.insert(QLatin1String("stamp"), QMailTimeStamp(metaData->date()).toUTC());
+    values.insert(QLatin1String("status"), static_cast<int>(metaData->status()));
+    values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
+    values.insert(QLatin1String("mailfile"), ::contentUri(*metaData));
+    values.insert(QLatin1String("serveruid"), metaData->serverUid());
+    values.insert(QLatin1String("size"), metaData->size());
+    values.insert(QLatin1String("contenttype"), static_cast<int>(metaData->content()));
+    values.insert(QLatin1String("responseid"), metaData->inResponseTo().toULongLong());
+    values.insert(QLatin1String("responsetype"), metaData->responseType());
+    values.insert(QLatin1String("receivedstamp"), QMailTimeStamp(metaData->receivedDate()).toUTC());
+    values.insert(QLatin1String("previousparentfolderid"), metaData->previousParentFolderId().toULongLong());
+    values.insert(QLatin1String("copyserveruid"), metaData->copyServerUid());
+    values.insert(QLatin1String("restorefolderid"), metaData->restoreFolderId().toULongLong());
+    values.insert(QLatin1String("listid"), metaData->listId());
+    values.insert(QLatin1String("rfcID"), metaData->rfcId());
+    values.insert(QLatin1String("preview"), metaData->preview());
+    values.insert(QLatin1String("parentthreadid"), metaData->parentThreadId().toULongLong());
 
     Q_ASSERT(metaData->parentThreadId().toULongLong() != 0);
 
@@ -5964,7 +5965,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
 
     // Does this message have any identifier?
     if (!identifier.isEmpty()) {
-        QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
+        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)"),
                                     QVariantList() << insertId << identifier,
                                     "addMessage mailmessageidentifiers query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -5996,7 +5997,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
             levels.append(QVariant(--level));
         }
 
-        QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
+        QString sql(QLatin1String("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)"));
         QSqlQuery query(batchQuery(sql.arg(QString::number(insertId)),
                                    QVariantList() << QVariant(refs) << QVariant(levels),
                                    "addMessage missingmessages insert query"));
@@ -6127,7 +6128,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
 
         {
             // Find the existing folders
-            QSqlQuery query(simpleQuery("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?", 
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
                                         QVariantList() << id.toULongLong(),
                                         "updateAccount mailaccountfolders select query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -6165,7 +6166,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
 
         if (!obsoleteTypes.isEmpty()) {
             // Remove the obsolete folders
-            QString sql("DELETE FROM mailaccountfolders WHERE id=? AND foldertype IN %2");
+            QString sql(QLatin1String("DELETE FROM mailaccountfolders WHERE id=? AND foldertype IN %2"));
             QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteTypes)),
                                         QVariantList() << id.toULongLong() << obsoleteTypes,
                                         "updateAccount mailaccountfolders delete query"));
@@ -6175,7 +6176,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
 
         if (!modifiedTypes.isEmpty()) {
             // Batch update the modified folders
-            QString sql("UPDATE mailaccountfolders SET folderid=? WHERE id=%2 AND foldertype=?");
+            QString sql(QLatin1String("UPDATE mailaccountfolders SET folderid=? WHERE id=%2 AND foldertype=?"));
             QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
                                        QVariantList() << QVariant(modifiedFolderIds)
                                                       << QVariant(modifiedTypes),
@@ -6186,7 +6187,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
 
         if (!addedTypes.isEmpty()) {
             // Batch insert the added folders
-            QString sql("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)");
+            QString sql(QLatin1String("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)"));
             QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
                                           QVariantList() << QVariant(addedTypes) << QVariant(addedFolders),
                                           "updateAccount mailaccountfolders insert query"));
@@ -6219,7 +6220,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
         QMap<QPair<QString, QString>, QString> existing;
 
         {
-            QSqlQuery query(simpleQuery("SELECT service,name,value FROM mailaccountconfig WHERE id=?",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT service,name,value FROM mailaccountconfig WHERE id=?"),
                                         QVariantList() << id.toULongLong(),
                                         "updateAccount mailaccountconfig select query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -6264,7 +6265,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
                 const QString &service = it.key();
                 const QVariantList &fields = it.value();
                 
-                QString sql("DELETE FROM mailaccountconfig WHERE id=? AND service='%1' AND name IN %2");
+                QString sql(QLatin1String("DELETE FROM mailaccountconfig WHERE id=? AND service='%1' AND name IN %2"));
                 QSqlQuery query(simpleQuery(sql.arg(service).arg(expandValueList(fields)),
                                             QVariantList() << id.toULongLong() << fields,
                                             "updateAccount mailaccountconfig delete query"));
@@ -6281,7 +6282,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
                 const QVariantList &fields = it.value();
                 const QVariantList &values = vit.value();
                 
-                QString sql("UPDATE mailaccountconfig SET value=? WHERE id=%1 AND service='%2' AND name=?");
+                QString sql(QLatin1String("UPDATE mailaccountconfig SET value=? WHERE id=%1 AND service='%2' AND name=?"));
                 QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())).arg(service),
                                            QVariantList() << QVariant(values) << QVariant(fields),
                                            "updateAccount mailaccountconfig update query"));
@@ -6298,7 +6299,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateAccount(QMailAc
                 const QVariantList &fields = it.value();
                 const QVariantList &values = vit.value();
                 
-                QString sql("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)");
+                QString sql(QLatin1String("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)"));
                 QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())).arg(service),
                                            QVariantList() << QVariant(fields) << QVariant(values),
                                            "updateAccount mailaccountconfig insert query"));
@@ -6374,7 +6375,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
 
     {
         //find the current parent folder
-        QSqlQuery query(simpleQuery("SELECT parentid, parentaccountid FROM mailfolders WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT parentid, parentaccountid FROM mailfolders WHERE id=?"),
                                     QVariantList() << folder->id().toULongLong(),
                                     "mailfolder parent query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -6387,7 +6388,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
     }
 
     {
-        QSqlQuery query(simpleQuery("UPDATE mailfolders SET name=?,parentid=?,parentaccountid=?,displayname=?,status=?,servercount=?,serverunreadcount=?,serverundiscoveredcount=? WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailfolders SET name=?,parentid=?,parentaccountid=?,displayname=?,status=?,servercount=?,serverunreadcount=?,serverundiscoveredcount=? WHERE id=?"),
                                     QVariantList() << folder->path()
                                                    << folder->parentFolderId().toULongLong()
                                                    << folder->parentAccountId().toULongLong()
@@ -6422,7 +6423,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
 
         {
             //remove existing links to this folder
-            QSqlQuery query(simpleQuery("DELETE FROM mailfolderlinks WHERE descendantid = ?",
+            QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailfolderlinks WHERE descendantid = ?"),
                                         QVariantList() << folder->id().toULongLong(),
                                         "mailfolderlinks delete in update"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -6441,7 +6442,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
         }
 
         {
-            QSqlQuery query(simpleQuery("INSERT INTO mailfolderlinks VALUES (?,?)",
+            QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolderlinks VALUES (?,?)"),
                                         QVariantList() << folder->parentFolderId().toULongLong()
                                                        << folder->id().toULongLong(),
                                         "mailfolderlinks insert parent"));
@@ -6503,7 +6504,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
     if (metaData->dataModified() || updateContent) {
         // Find the existing properties
         {
-            QSqlQuery query(simpleQuery("SELECT parentaccountid,parentfolderid,responseid,mailfile,status FROM mailmessages WHERE id=?",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT parentaccountid,parentfolderid,responseid,mailfile,status FROM mailmessages WHERE id=?"),
                                         QVariantList() << updateId,
                                         "updateMessage existing properties query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -6635,9 +6636,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
             if (metaData->inResponseTo().isValid()) {
                 {
-                    QSqlQuery query(simpleQuery("SELECT parentthreadid FROM mailmessages WHERE id=?",
+                    QSqlQuery query(simpleQuery(QLatin1String("SELECT parentthreadid FROM mailmessages WHERE id=?"),
                                                 QVariantList() << updateId,
-                                                "updateMessage mailmessages query"));
+                                                QLatin1String("updateMessage mailmessages query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
 
@@ -6647,9 +6648,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
                 if (threadId && metaData->parentThreadId().toULongLong() != threadId) {
                     {
-                        QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?",
+                        QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessages SET parentthreadid=(SELECT parentthreadid FROM mailmessages WHERE id=?) WHERE parentthreadid=?"),
                                                     QVariantList() << metaData->inResponseTo().toULongLong() << threadId,
-                                                    "updateMessage mailmessages update query"));
+                                                    QLatin1String("updateMessage mailmessages update query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     }
@@ -6661,14 +6662,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                                                     " status = (status | (SELECT status FROM mailthreads WHERE id=?))"
                                                     "WHERE id=(SELECT parentthreadid FROM mailmessages WHERE id=?)",
                                                     QVariantList() << threadId << threadId << threadId << metaData->inResponseTo().toULongLong(),
-                                                    "updateMessage mailthreads update query"));
+                                                    QLatin1String("updateMessage mailthreads update query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     }
                     {
-                        QSqlQuery query(simpleQuery("DELETE FROM mailthreads WHERE id=?",
+                        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailthreads WHERE id=?"),
                                                     QVariantList() << threadId,
-                                                    "updateMessage mailthreads delete query"));
+                                                    QLatin1String("updateMessage mailthreads delete query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     }
@@ -6684,9 +6685,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
 
                     // Find all descendants of this message
                     while (!parentIds.isEmpty()) {
-                        QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
-                                                    Key("responseid", QMailMessageKey::id(parentIds)),
-                                                    "updateMessage mailmessages responseid query"));
+                        QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailmessages"),
+                                                    Key(QLatin1String("responseid"), QMailMessageKey::id(parentIds)),
+                                                    QLatin1String("updateMessage mailmessages responseid query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
 
@@ -6702,20 +6703,20 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 {
                     // Add a new thread for this message
                     QMap<QString, QVariant> values;
-                    values.insert("messagecount", 1);
-                    values.insert("unreadcount", metaData->status() & QMailMessage::Read ? 0 : 1);
-                    values.insert("serveruid", "");
-                    values.insert("parentaccountid", metaData->parentAccountId().toULongLong());
-                    values.insert("subject", metaData->subject());
-                    values.insert("preview", metaData->preview());
-                    values.insert("senders", metaData->from().toString());
-                    values.insert("lastdate", metaData->date().toUTC());
-                    values.insert("starteddate", metaData->date().toUTC());
-                    values.insert("status", metaData->status());
-                    const QString &columns = QStringList(values.keys()).join(",");
+                    values.insert(QLatin1String("messagecount"), 1);
+                    values.insert(QLatin1String("unreadcount"), metaData->status() & QMailMessage::Read ? 0 : 1);
+                    values.insert(QLatin1String("serveruid"), "");
+                    values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
+                    values.insert(QLatin1String("subject"), metaData->subject());
+                    values.insert(QLatin1String("preview"), metaData->preview());
+                    values.insert(QLatin1String("senders"), metaData->from().toString());
+                    values.insert(QLatin1String("lastdate"), metaData->date().toUTC());
+                    values.insert(QLatin1String("starteddate"), metaData->date().toUTC());
+                    values.insert(QLatin1String("status"), metaData->status());
+                    const QString &columns = QStringList(values.keys()).join(QLatin1Char(','));
                     QSqlQuery query(simpleQuery(QString("INSERT INTO mailthreads (%1) VALUES %2").arg(columns).arg(expandValueList(values.count())),
                                                 values.values(),
-                                                "addMessage mailthreads insert query"));
+                                                QLatin1String("addMessage mailthreads insert query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
 
@@ -6725,10 +6726,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 {
                     Q_ASSERT(threadId);
                     // Migrate descendants to the new thread
-                    QSqlQuery query(simpleQuery("UPDATE mailmessages SET parentthreadid=?",
+                    QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessages SET parentthreadid=?"),
                                                 QVariantList() << threadId,
-                                                Key("id", QMailMessageKey::id(descendantIds)),
-                                                "updateMessage mailmessages descendants update query"));
+                                                Key(QLatin1String("id"), QMailMessageKey::id(descendantIds)),
+                                                QLatin1String("updateMessage mailmessages descendants update query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
@@ -6737,17 +6738,17 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             // Remove any missing message/ancestor references associated with this message
 
             {
-                QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
+                QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingmessages WHERE id=?"),
                                             QVariantList() << updateId,
-                                            "updateMessage missingmessages delete query"));
+                                            QLatin1String("updateMessage missingmessages delete query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
             }
 
             {
-                QSqlQuery query(simpleQuery("DELETE FROM missingancestors WHERE messageid=?",
+                QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingancestors WHERE messageid=?"),
                                             QVariantList() << updateId,
-                                            "updateMessage missingancestors delete query"));
+                                            QLatin1String("updateMessage missingancestors delete query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
             }
@@ -6767,11 +6768,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             }
             extractedValues = messageValues(updateProperties, *metaData);
             {
-                QString sql("UPDATE mailmessages SET %1 WHERE id=?");
+                QString sql(QLatin1String("UPDATE mailmessages SET %1 WHERE id=?"));
 
                 QSqlQuery query(simpleQuery(sql.arg(expandProperties(updateProperties, true)),
                                             extractedValues + (QVariantList() << updateId),
-                                            "updateMessage mailmessages update"));
+                                            QLatin1String("updateMessage mailmessages update")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
             }
@@ -6857,9 +6858,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
             QString existingIdentifier;
 
             {
-                QSqlQuery query(simpleQuery("SELECT identifier FROM mailmessageidentifiers WHERE id=?",
+                QSqlQuery query(simpleQuery(QLatin1String("SELECT identifier FROM mailmessageidentifiers WHERE id=?"),
                                             QVariantList() << updateId,
-                                            "updateMessage existing identifier query"));
+                                            QLatin1String("updateMessage existing identifier query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
 
@@ -6875,25 +6876,25 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                     updatedIdentifier = true;
 
                     if (!existingIdentifier.isEmpty()) {
-                        QSqlQuery query(simpleQuery("UPDATE mailmessageidentifiers SET identifier=? WHERE id=?",
+                        QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessageidentifiers SET identifier=? WHERE id=?"),
                                                     QVariantList() << messageIdentifier << updateId,
-                                                    "updateMessage mailmessageidentifiers update query"));
+                                                    QLatin1String("updateMessage mailmessageidentifiers update query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     } else {
                         // Add the new value
-                        QSqlQuery query(simpleQuery("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)",
+                        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailmessageidentifiers (id,identifier) VALUES (?,?)"),
                                                     QVariantList() << updateId << messageIdentifier,
-                                                    "updateMessage mailmessageidentifiers insert query"));
+                                                    QLatin1String("updateMessage mailmessageidentifiers insert query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     }
                 } else {
                     if (!existingIdentifier.isEmpty()) {
                         // Remove any existing value
-                        QSqlQuery query(simpleQuery("DELETE FROM mailmessageidentifiers WHERE id=?",
+                        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailmessageidentifiers WHERE id=?"),
                                                     QVariantList() << updateId,
-                                                    "updateMessage mailmessageidentifiers delete query"));
+                                                    QLatin1String("updateMessage mailmessageidentifiers delete query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
                     }
@@ -6912,18 +6913,18 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessage(QMailMe
                 }
 
                 {
-                    QSqlQuery query(simpleQuery("DELETE FROM missingmessages WHERE id=?",
+                    QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingmessages WHERE id=?"),
                                                 QVariantList() << updateId,
-                                                "addMessage missingmessages delete query"));
+                                                QLatin1String("addMessage missingmessages delete query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
 
                 {
-                    QString sql("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)");
+                    QString sql(QLatin1String("INSERT INTO missingmessages (id,identifier,level) VALUES (%1,?,?)"));
                     QSqlQuery query(batchQuery(sql.arg(QString::number(updateId)),
                                                QVariantList() << QVariant(refs) << QVariant(levels),
-                                               "addMessage missingmessages insert query"));
+                                               QLatin1String("addMessage missingmessages insert query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
@@ -7040,9 +7041,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
 
             {
                 // Remove the obsolete fields
-                QSqlQuery query(simpleQuery("DELETE FROM mailmessagecustom",
+                QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailmessagecustom"),
                                             Key(modifiedMessageKey),
-                                            "updateMessagesMetaData mailmessagecustom delete query"));
+                                            QLatin1String("updateMessagesMetaData mailmessagecustom delete query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
             }
@@ -7050,11 +7051,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
             if (!addedFields.isEmpty()) {
                 foreach (const QMailMessageId &id, *updatedMessageIds) {
                     // Batch insert the added fields
-                    QString sql("INSERT INTO mailmessagecustom (id,name,value) VALUES (%1,?,?)");
+                    QString sql(QLatin1String("INSERT INTO mailmessagecustom (id,name,value) VALUES (%1,?,?)"));
                     QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
                                                QVariantList() << QVariant(addedFields)
                                                               << QVariant(addedValues),
-                                               "updateMessagesMetaData mailmessagecustom insert query"));
+                                               QLatin1String("updateMessagesMetaData mailmessagecustom insert query")));
                     if (query.lastError().type() != QSqlError::NoError)
                         return DatabaseFailure;
                 }
@@ -7065,7 +7066,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
 
         if (properties != 0) {
             {
-                QString sql("SELECT parentthreadid FROM mailmessages WHERE id IN %1");
+                QString sql(QLatin1String("SELECT parentthreadid FROM mailmessages WHERE id IN %1"));
                 QVariantList bindValues;
                 foreach (const QMailMessageId &messageId, *updatedMessageIds)
                 {
@@ -7074,7 +7075,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
 
                 QSqlQuery query(simpleQuery(sql.arg(expandValueList(bindValues)),
                                             bindValues,
-                                            "updateMessagesMetaData mailmessages query"));
+                                            QLatin1String("updateMessagesMetaData mailmessages query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
 
@@ -7083,11 +7084,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesMetaDat
             }
             {
             extractedValues = messageValues(properties, data);
-            QString sql("UPDATE mailmessages SET %1");
+            QString sql(QLatin1String("UPDATE mailmessages SET %1"));
             QSqlQuery query(simpleQuery(sql.arg(expandProperties(properties, true)),
                                         extractedValues,
                                         Key(modifiedMessageKey),
-                                        "updateMessagesMetaData mailmessages query"));
+                                        QLatin1String("updateMessagesMetaData mailmessages query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         }
@@ -7162,10 +7163,10 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
                         } else {
                             bindMessagesIds.clear();
                         }
-                        QString sql("SELECT status FROM mailmessages WHERE id IN %1 and parentthreadid = %2");
+                        QString sql(QLatin1String("SELECT status FROM mailmessages WHERE id IN %1 and parentthreadid = %2"));
                         QSqlQuery query(simpleQuery(sql.arg(expandValueList(bindMessagesIdsBatch)).arg(threadId.toULongLong()),
                                                     bindMessagesIdsBatch,
-                                                    "status mailmessages query"));
+                                                    QLatin1String("status mailmessages query")));
                         if (query.lastError().type() != QSqlError::NoError)
                             return DatabaseFailure;
 
@@ -7202,7 +7203,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateMessagesStatus(
             sql = QString("UPDATE mailmessages SET status=(~((status|%1)& %1))&(status|%1)").arg(status);
         }
         QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(*updatedMessageIds)),
-                                        "updateMessagesMetaData status query"));
+                                        QLatin1String("updateMessagesMetaData status query")));
         if (query.lastError().type() != QSqlError::NoError) {
             return DatabaseFailure;
         }
@@ -7241,7 +7242,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
     QMailMessageIdList removalIds;
 
     {
-        QString sql("SELECT id FROM deletedmessages WHERE parentaccountid=?");
+        QString sql(QLatin1String("SELECT id FROM deletedmessages WHERE parentaccountid=?"));
 
         QVariantList bindValues;
         bindValues << accountId.toULongLong();
@@ -7259,7 +7260,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
 
         QSqlQuery query(simpleQuery(sql, 
                                     bindValues,
-                                    "purgeMessageRemovalRecord info query"));
+                                    QLatin1String("purgeMessageRemovalRecord info query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -7269,9 +7270,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
 
     // anything to remove?
     if (!removalIds.isEmpty()) {
-        QSqlQuery query(simpleQuery("DELETE FROM deletedmessages",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM deletedmessages"),
                                     Key(QMailMessageKey::id(removalIds)),
-                                    "purgeMessageRemovalRecord delete query"));
+                                    QLatin1String("purgeMessageRemovalRecord delete query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
     }
@@ -7286,7 +7287,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptPurgeMessageRemovalRe
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptEnsureDurability(Transaction &t, bool commitOnSuccess)
 {
-    QSqlQuery query(simpleQuery("PRAGMA wal_checkpoint(FULL)", "ensure durability query"));
+    QSqlQuery query(simpleQuery(QLatin1String("PRAGMA wal_checkpoint(FULL)"), "ensure durability query"));
     if (query.lastError().type() != QSqlError::NoError) {
         qWarning() << "Could not ensure durability of mail store";
         return DatabaseFailure;
@@ -7303,9 +7304,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptEnsureDurability(Tran
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountAccounts(const QMailAccountKey &key, int *result, 
                                                                          ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailaccounts",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM mailaccounts"),
                                 Key(key),
-                                "countAccounts mailaccounts query"));
+                                QLatin1String("countAccounts mailaccounts query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7318,9 +7319,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountAccounts(const Q
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountFolders(const QMailFolderKey &key, int *result, 
                                                                         ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailfolders",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM mailfolders"),
                                 Key(key),
-                                "countFolders mailfolders query"));
+                                QLatin1String("countFolders mailfolders query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7334,9 +7335,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountThreads(const QM
                                                                          int *result,
                                                                          ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailthreads",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM mailthreads"),
                                 Key(key),
-                                "countThreads count query"));
+                                QLatin1String("countThreads count query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7350,9 +7351,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptCountMessages(const Q
                                                                          int *result, 
                                                                          ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailmessages",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM mailmessages"),
                                 Key(key),
-                                "countMessages mailmessages query"));
+                                QLatin1String("countMessages mailmessages query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7366,9 +7367,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptSizeOfMessages(const 
                                                                           int *result, 
                                                                           ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT SUM(size) FROM mailmessages",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT SUM(size) FROM mailmessages"),
                                 Key(key),
-                                "sizeOfMessages mailmessages query"));
+                                QLatin1String("sizeOfMessages mailmessages query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7382,11 +7383,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryAccounts(const Q
                                                                          QMailAccountIdList *ids, 
                                                                          ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT id FROM mailaccounts",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailaccounts"),
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "queryAccounts mailaccounts query"));
+                                QLatin1String("queryAccounts mailaccounts query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7400,11 +7401,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryThreads(const QM
                                                                         QMailThreadIdList *ids,
                                                                         ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT id FROM mailthreads",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailthreads"),
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "querythreads mailthreads query"));
+                                QLatin1String("querythreads mailthreads query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7421,11 +7422,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryFolders(const QM
                                                                         QMailFolderIdList *ids, 
                                                                         ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT id FROM mailfolders",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailfolders"),
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "queryFolders mailfolders query"));
+                                QLatin1String("queryFolders mailfolders query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7439,11 +7440,11 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptQueryMessages(const Q
                                                                          QMailMessageIdList *ids, 
                                                                          ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT id FROM mailmessages",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailmessages"),
                                 QVariantList(),
                                 QList<Key>() << Key(key) << Key(sortKey),
                                 qMakePair(limit, offset),
-                                "queryMessages mailmessages query"));
+                                QLatin1String("queryMessages mailmessages query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7461,9 +7462,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccount(const QMailAc
                                                                    ReadLock &)
 {
     {
-        QSqlQuery query(simpleQuery("SELECT * FROM mailaccounts WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailaccounts WHERE id=?"),
                                     QVariantList() << id.toULongLong(),
-                                    "account mailaccounts query"));
+                                    QLatin1String("account mailaccounts query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -7475,9 +7476,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccount(const QMailAc
     if (result->id().isValid()) {
         {
             // Find any standard folders configured for this account
-            QSqlQuery query(simpleQuery("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
                                         QVariantList() << id.toULongLong(),
-                                        "account mailaccountfolders query"));
+                                        QLatin1String("account mailaccountfolders query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
 
@@ -7496,9 +7497,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccount(const QMailAc
 
         {
             // Find the type of the account
-            QSqlQuery query(simpleQuery("SELECT service,value FROM mailaccountconfig WHERE id=? AND name='servicetype'",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT service,value FROM mailaccountconfig WHERE id=? AND name='servicetype'"),
                                         QVariantList() << id.toULongLong(),
-                                        "account mailaccountconfig query"));
+                                        QLatin1String("account mailaccountconfig query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
 
@@ -7528,9 +7529,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
                                                                                 ReadLock &)
 {
     // Find any configuration fields for this account
-    QSqlQuery query(simpleQuery("SELECT service,name,value FROM mailaccountconfig WHERE id=? ORDER BY service",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT service,name,value FROM mailaccountconfig WHERE id=? ORDER BY service"),
                                 QVariantList() << id.toULongLong(),
-                                "accountConfiguration mailaccountconfig query"));
+                                QLatin1String("accountConfiguration mailaccountconfig query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7555,9 +7556,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
 
     if (service.isEmpty()) {
         // No services - is this an error?
-        QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM mailaccounts WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM mailaccounts WHERE id=?"),
                                     QVariantList() << id.toULongLong(),
-                                    "accountConfiguration mailaccounts query"));
+                                    QLatin1String("accountConfiguration mailaccounts query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -7575,9 +7576,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAccountConfiguration(
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptThread(const QMailThreadId &id, QMailThread *result, ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT * FROM mailthreads WHERE id=?",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailthreads WHERE id=?"),
                                 QVariantList() << id.toULongLong(),
-                                "folder mailfolders query"));
+                                QLatin1String("folder mailfolders query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7595,9 +7596,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptThreads(const QMailTh
 {
     Q_UNUSED (option);
 
-    QSqlQuery query(simpleQuery("SELECT * FROM mailthreads t0",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailthreads t0"),
                                 Key(key, "t0"),
-                                "attemptThreads query"));
+                                QLatin1String("attemptThreads query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7612,9 +7613,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolder(const QMailFol
                                                                   ReadLock &)
 {
     {
-        QSqlQuery query(simpleQuery("SELECT * FROM mailfolders WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailfolders WHERE id=?"),
                                     QVariantList() << id.toULongLong(),
-                                    "folder mailfolders query"));
+                                    QLatin1String("folder mailfolders query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -7652,9 +7653,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessage(const QMailMe
     if (attemptResult != Success)
         return attemptResult;
 
-    QSqlQuery query(simpleQuery("SELECT * FROM mailmessages WHERE id=?",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailmessages WHERE id=?"),
                                 QVariantList() << id.toULongLong(),
-                                "message mailmessages id query"));
+                                QLatin1String("message mailmessages id query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7697,9 +7698,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
     if (attemptResult != Success)
         return attemptResult;
 
-    QSqlQuery query(simpleQuery("SELECT * FROM mailmessages WHERE id=?",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailmessages WHERE id=?"),
                                 QVariantList() << id.toULongLong(),
-                                "message mailmessages id query"));
+                                QLatin1String("message mailmessages id query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7735,13 +7736,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
 {
     if (properties == QMailMessageKey::Custom) {
         // We're only selecting custom fields
-        QString sql("SELECT %1 name, value FROM mailmessagecustom WHERE id IN ( SELECT t0.id FROM mailmessages t0");
+        QString sql(QLatin1String("SELECT %1 name, value FROM mailmessagecustom WHERE id IN ( SELECT t0.id FROM mailmessages t0"));
         sql += buildWhereClause(Key(key, "t0")) + " )";
 
         QVariantList whereValues(::whereClauseValues(key));
         QSqlQuery query(simpleQuery(sql.arg(option == QMailStore::ReturnDistinct ? "DISTINCT " : ""),
                                     whereValues,
-                                    "messagesMetaData combined query"));
+                                    QLatin1String("messagesMetaData combined query")));
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
 
@@ -7776,7 +7777,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
             qWarning() << "Warning: Distinct-ness is not supported with custom fields!";
         }
 
-        QString sql("SELECT %1 %2 FROM mailmessages t0");
+        QString sql(QLatin1String("SELECT %1 %2 FROM mailmessages t0"));
         sql = sql.arg(option == QMailStore::ReturnDistinct ? "DISTINCT " : "");
 
         QMailMessageKey::Properties props(properties);
@@ -7804,7 +7805,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
             for ( ; it != end; ++it) {
                 // Add the custom fields to the record
                 QMap<QString, QString> fields;
-                AttemptResult attemptResult = customFields((*it).id().toULongLong(), &fields, "mailmessagecustom");
+                AttemptResult attemptResult = customFields((*it).id().toULongLong(), &fields, QLatin1String("mailmessagecustom"));
                 if (attemptResult != Success)
                     return attemptResult;
 
@@ -7828,15 +7829,15 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageRemovalRecords
     QVariantList values;
     values << accountId.toULongLong();
 
-    QString sql("SELECT * FROM deletedmessages WHERE parentaccountid=?");
+    QString sql(QLatin1String("SELECT * FROM deletedmessages WHERE parentaccountid=?"));
     if (folderId.isValid()) {
-        sql += " AND parentfolderid=?";
+        sql += QLatin1String(" AND parentfolderid=?");
         values << folderId.toULongLong();
     }
 
     QSqlQuery query(simpleQuery(sql,
                                 values,
-                                "messageRemovalRecords deletedmessages query"));
+                                QLatin1String("messageRemovalRecords deletedmessages query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7850,9 +7851,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageFolderIds(cons
                                                                             QMailFolderIdList *result, 
                                                                             ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT DISTINCT t0.parentfolderid FROM mailmessages t0",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT DISTINCT t0.parentfolderid FROM mailmessages t0"),
                                 Key(key, "t0"),
-                                "messageFolderIds folder select query"));
+                                QLatin1String("messageFolderIds folder select query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7866,9 +7867,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAccountIds(cons
                                                                             QMailAccountIdList *result, 
                                                                             ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT DISTINCT parentaccountid FROM mailfolders t0",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT DISTINCT parentaccountid FROM mailfolders t0"),
                                 Key(key, "t0"),
-                                "folderAccountIds account select query"));
+                                QLatin1String("folderAccountIds account select query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -7886,8 +7887,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptFolderAncestorIds(con
                                                                              QMailFolderIdList *result, 
                                                                              ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT DISTINCT id FROM mailfolderlinks",
-                                Key("descendantid", QMailFolderKey::id(ids)),
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT DISTINCT id FROM mailfolderlinks"),
+                                Key(QLatin1String("descendantid"), QMailFolderKey::id(ids)),
                                 "folderAncestorIds id select query"));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
@@ -8046,7 +8047,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptStatusBit(const QStri
                                                                      int *result,
                                                                      ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?"),
                                 QVariantList() << name << context,
                                 "mailstatusflags select"));
     if (query.lastError().type() != QSqlError::NoError) {
@@ -8067,7 +8068,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
                                                                              Transaction &t, bool commitOnSuccess)
 {
     if (check) {
-        QSqlQuery query(simpleQuery("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT COALESCE(statusbit,0) FROM mailstatusflags WHERE name=? AND context=?"),
                                     QVariantList() << name << context,
                                     "attemptRegisterStatusBit select"));
         if (query.lastError().type() != QSqlError::NoError) {
@@ -8096,7 +8097,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
 
     {
         // Find the highest 
-        QSqlQuery query(simpleQuery("SELECT MAX(statusbit) FROM mailstatusflags WHERE context=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT MAX(statusbit) FROM mailstatusflags WHERE context=?"),
                                     QVariantList() << context,
                                     "mailstatusflags register select"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8109,7 +8110,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptRegisterStatusBit(con
     if (highest == maximum) {
         return Failure;
     } else {
-        QSqlQuery query(simpleQuery("INSERT INTO mailstatusflags (name,context,statusbit) VALUES (?,?,?)",
+        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailstatusflags (name,context,statusbit) VALUES (?,?,?)"),
                                     QVariantList() << name << context << (highest + 1),
                                     "mailstatusflags register insert"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8129,7 +8130,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageId(const QStri
                                                                      quint64 *result, 
                                                                      ReadLock &)
 {
-    QSqlQuery query(simpleQuery("SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?",
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?"),
                                 QVariantList() << uid << accountId.toULongLong(),
                                 "message mailmessages uid/parentaccountid query"));
     if (query.lastError().type() != QSqlError::NoError)
@@ -8205,7 +8206,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::messagePredecessor(QMailMess
         }
 
         {
-            QString sql("SELECT id,identifier FROM mailmessageidentifiers WHERE identifier IN %1 AND id IN (SELECT id FROM mailmessages WHERE parentaccountid = %2)");
+            QString sql(QLatin1String("SELECT id,identifier FROM mailmessageidentifiers WHERE identifier IN %1 AND id IN (SELECT id FROM mailmessages WHERE parentaccountid = %2)"));
             QSqlQuery query(simpleQuery(sql.arg(expandValueList(refs)).arg(metaData->parentAccountId().toULongLong()),
                                         refs,
                                         "messagePredecessor mailmessageidentifiers select query"));
@@ -8352,7 +8353,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::identifyAncestors(const QMai
         {
             QMailMessageMetaData predecessorMsg(predecessorId);
             // Find the predecessor message for every message in the same thread as the predecessor
-            QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages WHERE parentthreadid = ? AND parentaccountid = ?",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT id,responseid FROM mailmessages WHERE parentthreadid = ? AND parentaccountid = ?"),
                                         QVariantList() << predecessorMsg.parentThreadId().toULongLong() << predecessorMsg.parentAccountId().toULongLong(),
                                         "identifyAncestors mailmessages query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -8428,7 +8429,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Update these descendant messages to have the new message as their predecessor
-            QSqlQuery query(simpleQuery("UPDATE mailmessages SET responseid=?",
+            QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessages SET responseid=?"),
                                         QVariantList() << message.id().toULongLong(),
                                         Key(QMailMessageKey::id(*updatedMessageIds)),
                                         "resolveMissingMessages mailmessages update query"));
@@ -8449,7 +8450,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
         {
             // Find the threads that the descendants currently belong to
-            QString sql("SELECT DISTINCT parentthreadid FROM mailmessages WHERE id IN %1 AND parentthreadid != ?");
+            QString sql(QLatin1String("SELECT DISTINCT parentthreadid FROM mailmessages WHERE id IN %1 AND parentthreadid != ?"));
             QVariantList bindValues;
             foreach (const QMailMessageId& id, *updatedMessageIds) {
                 bindValues << id.toULongLong();
@@ -8491,7 +8492,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
             {
             // Delete the obsolete threads
-            QString sql("DELETE FROM mailthreads WHERE id IN %1");
+            QString sql(QLatin1String("DELETE FROM mailthreads WHERE id IN %1"));
             QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteThreadIds)),
                                         obsoleteThreadIds,
                                         "resolveMissingMessages mailthreads delete query"));
@@ -8544,7 +8545,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
         if (!ids.isEmpty()) {
             {
                 // Update these descendant messages to have the new message as their predecessor
-                QSqlQuery query(simpleQuery("UPDATE mailmessages SET responseid=?",
+                QSqlQuery query(simpleQuery(QLatin1String("UPDATE mailmessages SET responseid=?"),
                                             QVariantList() << message.id().toULongLong(),
                                             Key(QMailMessageKey::id(ids)),
                                             "resolveMissingMessages mailmessages update root query"));
@@ -8554,8 +8555,8 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::resolveMissingMessages(const
 
             {
                 // Remove the missing ancestor records
-                QSqlQuery query(simpleQuery("UPDATE missingancestors SET state=1",
-                                            Key("messageid", QMailMessageKey::id(ids)),
+                QSqlQuery query(simpleQuery(QLatin1String("UPDATE missingancestors SET state=1"),
+                                            Key(QLatin1String("messageid"), QMailMessageKey::id(ids)),
                                             "resolveMissingMessages missingancestors delete query"));
                 if (query.lastError().type() != QSqlError::NoError)
                     return DatabaseFailure;
@@ -8573,7 +8574,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     int subjectId = 0;
 
     {
-        QSqlQuery query(simpleQuery("SELECT id FROM mailsubjects WHERE basesubject=?",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT id FROM mailsubjects WHERE basesubject=?"),
                                     QVariantList() << baseSubject,
                                     "registerSubject mailsubjects query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8584,7 +8585,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     }
     
     if (subjectId == 0) {
-        QSqlQuery query(simpleQuery("INSERT INTO mailsubjects (basesubject) VALUES (?)",
+        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailsubjects (basesubject) VALUES (?)"),
                                     QVariantList() << baseSubject,
                                     "registerSubject mailsubjects insert query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8609,7 +8610,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
     }
     
     if (count == 0) {
-        QSqlQuery query(simpleQuery("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT parentthreadid,? FROM mailmessages WHERE id=?",
+        QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT parentthreadid,? FROM mailmessages WHERE id=?"),
                                     QVariantList() << subjectId << messageId,
                                     "registerSubject mailthreadsubjects insert query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8621,7 +8622,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
 
         {
             // We need to record that this message's ancestor is currently missing
-            QSqlQuery query(simpleQuery("SELECT COUNT(*) FROM missingancestors WHERE messageid=?",
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT COUNT(*) FROM missingancestors WHERE messageid=?"),
                                         QVariantList() << messageId,
                                         "registerSubject missingancestors query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -8633,13 +8634,13 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::registerSubject(const QStrin
 
         if (count == 0) {
             quint64 state(predecessorId.isValid() ? 1 : 0);
-            QSqlQuery query(simpleQuery("INSERT INTO missingancestors (messageid,subjectid,state) VALUES(?,?,?)",
+            QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO missingancestors (messageid,subjectid,state) VALUES(?,?,?)"),
                                         QVariantList() << messageId << subjectId << state,
                                         "registerSubject missingancestors insert query"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
         } else {
-            QSqlQuery query(simpleQuery("UPDATE missingancestors SET subjectid=? WHERE messageid=?",
+            QSqlQuery query(simpleQuery(QLatin1String("UPDATE missingancestors SET subjectid=? WHERE messageid=?"),
                                         QVariantList() << subjectId << messageId,
                                         "registerSubject missingancestors update query"));
             if (query.lastError().type() != QSqlError::NoError)
@@ -8680,7 +8681,7 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
 
     if(folder.parentFolderId().isValid())
     {
-        if(!idExists(folder.parentFolderId(),"mailfolders"))
+        if (!idExists(folder.parentFolderId(), QLatin1String("mailfolders")))
         {
             qWarning() << "Parent folder does not exist!";
             return false;
@@ -8689,7 +8690,7 @@ bool QMailStorePrivate::checkPreconditions(const QMailFolder& folder, bool updat
 
     if(folder.parentAccountId().isValid())
     {
-        if(!idExists(folder.parentAccountId(),"mailaccounts"))
+        if (!idExists(folder.parentAccountId(), QLatin1String("mailaccounts")))
         {
             qWarning() << "Parent account does not exist!";
             return false;
@@ -8885,8 +8886,8 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     if (!modifiedFolderIds.isEmpty()) {
         // Any ancestor folders of the directly modified folders are indirectly modified
-        QSqlQuery query(simpleQuery("SELECT DISTINCT id FROM mailfolderlinks",
-                                    Key("descendantid", QMailFolderKey::id(modifiedFolderIds)),
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT DISTINCT id FROM mailfolderlinks"),
+                                    Key(QLatin1String("descendantid"), QMailFolderKey::id(modifiedFolderIds)),
                                     "deleteMessages mailfolderlinks ancestor query"));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -8906,43 +8907,43 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                                    QVariantList() << QVariant(removalAccountIds)
                                                   << QVariant(removalServerUids)
                                                   << QVariant(removalFolderIds),
-                                   "deleteMessages insert removal records query"));
+                                   QLatin1String("deleteMessages insert removal records query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Delete any custom fields associated with these messages
-        QSqlQuery query(simpleQuery("DELETE FROM mailmessagecustom",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailmessagecustom"),
                                     Key(QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages delete mailmessagecustom query"));
+                                    QLatin1String("deleteMessages delete mailmessagecustom query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Delete any identifiers associated with these messages
-        QSqlQuery query(simpleQuery("DELETE FROM mailmessageidentifiers",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailmessageidentifiers"),
                                     Key(QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages delete mailmessageidentifiers query"));
+                                    QLatin1String("deleteMessages delete mailmessageidentifiers query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Delete any missing message identifiers associated with these messages
-        QSqlQuery query(simpleQuery("DELETE FROM missingmessages",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingmessages"),
                                     Key(QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages delete missingmessages query"));
+                                    QLatin1String("deleteMessages delete missingmessages query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Delete any missing ancestor records for these messages
-        QSqlQuery query(simpleQuery("DELETE FROM missingancestors",
-                                    Key("messageid", QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages missing ancestors delete query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM missingancestors"),
+                                    Key(QLatin1String("messageid"), QMailMessageKey::id(deletedMessageIds)),
+                                    QLatin1String("deleteMessages missing ancestors delete query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -8952,9 +8953,9 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
         {
             // Find any messages that need to updated
-            QSqlQuery query(simpleQuery("SELECT id, responseid FROM mailmessages",
-                                        Key("responseid", QMailMessageKey::id(deletedMessageIds)),
-                                        "deleteMessages mailmessages updated query"));
+            QSqlQuery query(simpleQuery(QLatin1String("SELECT id, responseid FROM mailmessages"),
+                                        Key(QLatin1String("responseid"), QMailMessageKey::id(deletedMessageIds)),
+                                        QLatin1String("deleteMessages mailmessages updated query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
 
@@ -8969,9 +8970,9 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
         QMap<QMailMessageId, QMailMessageId> predecessors;
 
         // Find the predecessors for any messages we're removing
-        QSqlQuery query(simpleQuery("SELECT id,responseid FROM mailmessages",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT id,responseid FROM mailmessages"),
                                     Key(QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages mailmessages predecessor query"));
+                                    QLatin1String("deleteMessages mailmessages predecessor query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
@@ -9008,7 +9009,7 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
                 // Link any descendants of the messages to the deleted messages' predecessor
                 QSqlQuery query(batchQuery("UPDATE mailmessages SET responseid=? WHERE id=?",
                                            QVariantList() << QVariant(newResponseIdList) << QVariant(messageIdList),
-                                           "deleteMessages mailmessages update query"));
+                                           QLatin1String("deleteMessages mailmessages update query")));
                 if (query.lastError().type() != QSqlError::NoError)
                     return false;
             }
@@ -9017,9 +9018,9 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
 
     {
         // Perform the message deletion
-        QSqlQuery query(simpleQuery("DELETE FROM mailmessages",
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailmessages"),
                                     Key(QMailMessageKey::id(deletedMessageIds)),
-                                    "deleteMessages mailmessages delete query"));
+                                    QLatin1String("deleteMessages mailmessages delete query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9027,15 +9028,15 @@ bool QMailStorePrivate::deleteMessages(const QMailMessageKey& key,
     {
         // Remove any subjects that are unreferenced after this deletion
         {
-            QSqlQuery query(simpleQuery("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT parentthreadid FROM mailmessages)",
-                                        "deleteMessages mailthreadsubjects delete query"));
+            QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailthreadsubjects WHERE threadid NOT IN (SELECT parentthreadid FROM mailmessages)"),
+                                        QLatin1String("deleteMessages mailthreadsubjects delete query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
         }
 
         {
-            QSqlQuery query(simpleQuery("DELETE FROM mailsubjects WHERE id NOT IN (SELECT subjectid FROM mailthreadsubjects)",
-                                        "deleteMessages mailthreadsubjects delete query"));
+            QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailsubjects WHERE id NOT IN (SELECT subjectid FROM mailthreadsubjects)"),
+                                        QLatin1String("deleteMessages mailthreadsubjects delete query")));
             if (query.lastError().type() != QSqlError::NoError)
                 return false;
         }
@@ -9059,9 +9060,9 @@ bool QMailStorePrivate::deleteThreads(const QMailThreadKey& key,
 
     {
         // Get the identifiers for all the threads we're deleting
-        QSqlQuery query(simpleQuery("SELECT t0.id FROM mailthreads t0",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT t0.id FROM mailthreads t0"),
                                     Key(key, "t0"),
-                                    "deleteThreads info query"));
+                                    QLatin1String("deleteThreads info query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
@@ -9085,9 +9086,9 @@ bool QMailStorePrivate::deleteThreads(const QMailThreadKey& key,
 
     {
         // Perform the thread deletion
-        QString sql("DELETE FROM mailthreads");
+        QString sql(QLatin1String("DELETE FROM mailthreads"));
         QSqlQuery query(simpleQuery(sql, Key(QMailThreadKey::id(threadsToDelete)),
-                                    "deleteThreads delete mailthreads query"));
+                                    QLatin1String("deleteThreads delete mailthreads query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9120,7 +9121,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
 {
     {
         // Get the identifiers for all the folders we're deleting
-        QSqlQuery query(simpleQuery("SELECT t0.id FROM mailfolders t0",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT t0.id FROM mailfolders t0"),
                                     Key(key, "t0"),
                                     "deleteFolders info query"));
         if (query.lastError().type() != QSqlError::NoError)
@@ -9155,7 +9156,7 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
         // Delete where target folders are ancestors
         QSqlQuery query(simpleQuery(statement.arg("id"),
                                     whereValues,
-                                    "deleteFolders mailfolderlinks ancestor query"));
+                                    QLatin1String("deleteFolders mailfolderlinks ancestor query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9164,25 +9165,25 @@ bool QMailStorePrivate::deleteFolders(const QMailFolderKey& key,
         // Delete where target folders are descendants
         QSqlQuery query(simpleQuery(statement.arg("descendantid"),
                                     whereValues,
-                                    "deleteFolders mailfolderlinks descendant query"));
+                                    QLatin1String("deleteFolders mailfolderlinks descendant query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Delete any custom fields associated with these folders
-        QString sql("DELETE FROM mailfoldercustom");
+        QString sql(QLatin1String("DELETE FROM mailfoldercustom"));
         QSqlQuery query(simpleQuery(sql, Key(QMailFolderKey::id(deletedFolderIds)),
-                                    "deleteFolders delete mailfoldercustom query"));
+                                    QLatin1String("deleteFolders delete mailfoldercustom query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Perform the folder deletion
-        QString sql("DELETE FROM mailfolders");
+        QString sql(QLatin1String("DELETE FROM mailfolders"));
         QSqlQuery query(simpleQuery(sql, Key(QMailFolderKey::id(deletedFolderIds)),
-                                    "deleteFolders delete mailfolders query"));
+                                    QLatin1String("deleteFolders delete mailfolders query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9220,9 +9221,9 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 {
     {
         // Get the identifiers for all the accounts we're deleting
-        QSqlQuery query(simpleQuery("SELECT t0.id FROM mailaccounts t0",
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT t0.id FROM mailaccounts t0"),
                                     Key(key, "t0"),
-                                    "deleteAccounts info query"));
+                                    QLatin1String("deleteAccounts info query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
@@ -9260,18 +9261,18 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Delete the removal records related to these accounts
-        QSqlQuery query(simpleQuery("DELETE FROM deletedmessages",
-                                    Key("parentaccountid", QMailAccountKey::id(deletedAccountIds)),
-                                    "deleteAccounts removal record delete query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM deletedmessages"),
+                                    Key(QLatin1String("parentaccountid"), QMailAccountKey::id(deletedAccountIds)),
+                                    QLatin1String("deleteAccounts removal record delete query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Remove any standard folders associated with these accounts
-        QSqlQuery query(simpleQuery("DELETE FROM mailaccountfolders",
-                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
-                                    "deleteAccounts delete mailaccountfolders query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountfolders"),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    QLatin1String("deleteAccounts delete mailaccountfolders query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9284,27 +9285,27 @@ bool QMailStorePrivate::deleteAccounts(const QMailAccountKey& key,
 
     {
         // Remove any custom fields associated with these accounts
-        QSqlQuery query(simpleQuery("DELETE FROM mailaccountcustom",
-                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
-                                    "deleteAccounts delete mailaccountcustom query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountcustom"),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    QLatin1String("deleteAccounts delete mailaccountcustom query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Remove any configuration fields associated with these accounts
-        QSqlQuery query(simpleQuery("DELETE FROM mailaccountconfig",
-                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
-                                    "deleteAccounts delete mailaccountconfig query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountconfig"),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    QLatin1String("deleteAccounts delete mailaccountconfig query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
     {
         // Perform the account deletion
-        QSqlQuery query(simpleQuery("DELETE FROM mailaccounts",
-                                    Key("id", QMailAccountKey::id(deletedAccountIds)),
-                                    "deleteAccounts delete mailaccounts query"));
+        QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccounts"),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    QLatin1String("deleteAccounts delete mailaccounts query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
@@ -9357,7 +9358,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::findPotentialPredecessorsByS
                                                 << metaData->parentAccountId().toULongLong()
                                                 << metaData->date().toLocalTime()
                                                 << baseSubject,
-                                "messagePredecessor mailmessages select query"));
+                                QLatin1String("messagePredecessor mailmessages select query")));
     if (query.lastError().type() != QSqlError::NoError)
         return DatabaseFailure;
 
@@ -9369,9 +9370,9 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::findPotentialPredecessorsByS
 
 bool QMailStorePrivate::obsoleteContent(const QString& identifier)
 {
-    QSqlQuery query(simpleQuery("INSERT INTO obsoletefiles (mailfile) VALUES (?)",
+    QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO obsoletefiles (mailfile) VALUES (?)"),
                                 QVariantList() << QVariant(identifier),
-                                "obsoleteContent files insert query"));
+                                QLatin1String("obsoleteContent files insert query")));
     if (query.lastError().type() != QSqlError::NoError) {
         qWarning() << "Unable to record obsolete content:" << identifier;
         return false;
