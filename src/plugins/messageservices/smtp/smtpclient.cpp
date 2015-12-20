@@ -87,9 +87,20 @@ static QByteArray localName()
     if (!result.isEmpty())
         return result;
     QList<QHostAddress> addresses(QNetworkInterface::allAddresses());
-    if (!addresses.isEmpty())
-        return "[" + addresses.first().toString().toLatin1() + "]";
-    return "localhost.localdomain";
+    if (addresses.isEmpty())
+        return "localhost.localdomain";
+    QHostAddress addr;
+    // try to find a non-loopback address
+    foreach (const QHostAddress &a, addresses) {
+        if (!a.isLoopback() && !a.isNull()) {
+            addr = a;
+            break;
+        }
+    }
+    if (addr.isNull())
+        addr = addresses.first();
+
+    return "[" + addr.toString().toLatin1() + "]";
 }
 
 SmtpClient::SmtpClient(QObject* parent)
