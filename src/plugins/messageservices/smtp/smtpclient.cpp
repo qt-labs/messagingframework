@@ -603,9 +603,9 @@ void SmtpClient::nextAction(const QString &response)
         if (capabilities.contains("PIPELINING")) {
             // We can send all our non-message commands together
             QStringList commands;
-            commands.append("MAIL FROM: " + mailItr->from);
+            commands.append("MAIL FROM:" + mailItr->from);
             for (it = mailItr->to.begin(); it != mailItr->to.end(); ++it) {
-                commands.append("RCPT TO: <" + *it + ">");
+                commands.append("RCPT TO:<" + *it + ">");
             }
             sendCommands(commands);
 
@@ -621,7 +621,7 @@ void SmtpClient::nextAction(const QString &response)
     }
     case From:  
     {
-        sendCommand("MAIL FROM: " + mailItr->from);
+        sendCommand("MAIL FROM:" + mailItr->from);
         status = Recv;
 
         emit updateStatus(tr( "Sending: %1").arg(mailItr->mail.subject().simplified()) );
@@ -634,7 +634,7 @@ void SmtpClient::nextAction(const QString &response)
             if (it == mailItr->to.end()) {
                 operationFailed(QMailServiceAction::Status::ErrInvalidAddress, "no recipients");
             } else {
-                sendCommand("RCPT TO: <" + *it + ">");
+                sendCommand("RCPT TO:<" + *it + ">");
                 status = MRcv;
             }
         } else  {
@@ -647,7 +647,7 @@ void SmtpClient::nextAction(const QString &response)
         if ((responseCode == 250) || (responseCode == 251)) {
             it++;
             if ( it != mailItr->to.end() ) {
-                sendCommand("RCPT TO: <" + *it + ">");
+                sendCommand("RCPT TO:<" + *it + ">");
             } else {
                 status = PrepareData;
                 nextAction(QString());
