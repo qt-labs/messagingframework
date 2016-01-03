@@ -1039,6 +1039,9 @@ namespace findBody
         case QMailMessagePart::MultipartNone:
             return inMultipartNone(part, ctx);
 
+        case QMailMessagePart::MultipartMixed:
+            return inMultipartMixed(part, ctx);
+
         case QMailMessagePart::MultipartAlternative:
             return inMultipartAlternative(part, ctx);
 
@@ -1142,8 +1145,13 @@ namespace findAttachments
             if (found) {
                 found->clear();
             }
-            if (container.multipartType() == QMailMessagePart::MultipartMixed)
+
+            if (container.multipartType() == QMailMessagePart::MultipartMixed) {
                 inMultipartMixed(container, found, hasAttachments);
+            }
+            if (container.multipartType() == QMailMessagePart::MultipartSigned) {
+                inMultipartSigned(container, found, hasAttachments);
+            }
 
             // In any case, the default strategy wins, even if there are no attachments
             return true;
@@ -1196,6 +1204,24 @@ namespace findAttachments
                 // We only want to know if there are attachments, not to really
                 // get them, and we've already found one, so we break the loop
                 if (!found && hasAttachments && *hasAttachments) {
+                    break;
+                }
+            }
+        }
+
+        void inMultipartSigned(const QMailMessagePartContainer &container,
+                               Locations* found,
+                               bool* hasAttachments) const
+        {
+            for (uint i = 0; i < container.partCount(); i++) {
+                const QMailMessagePart &part = container.partAt(i);
+                switch (part.multipartType()) {
+                case QMailMessagePart::MultipartNone:
+                    inMultipartNone(part, found, hasAttachments);
+                    break;
+                default:
+                    // Default to handling as MultipartMixed
+                    inMultipartMixed(part, found, hasAttachments);
                     break;
                 }
             }
