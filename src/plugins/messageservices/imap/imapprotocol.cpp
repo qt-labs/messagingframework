@@ -312,7 +312,7 @@ public:
 
     virtual QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
     virtual QString sendCommandLiteral(const QString &cmd, uint length) { return mProtocol->sendCommandLiteral(cmd, length); }
-    virtual void sendData(const QString &data) { mProtocol->sendData(data); }
+    virtual void sendData(const QString &data, bool maskDebug = false) { mProtocol->sendData(data, maskDebug); }
     virtual void sendDataLiteral(const QString &data, uint length) { mProtocol->sendDataLiteral(data, length); }
 
     ImapProtocol *protocol() { return mProtocol; }
@@ -595,7 +595,7 @@ bool LoginState::continuationResponse(ImapContext *c, const QString &received)
     QByteArray response(ImapAuthenticator::getResponse(_config.serviceConfiguration("imap4"), challenge));
 
     if (!response.isEmpty()) {
-        c->sendData(response.toBase64());
+        c->sendData(response.toBase64(), true);
     }
 
     return false;
@@ -3373,18 +3373,26 @@ void ImapProtocol::errorHandling(int status, QString msg)
         emit connectionError(status, msg);
 }
 
-void ImapProtocol::sendData(const QString &cmd)
+void ImapProtocol::sendData(const QString &cmd, bool maskDebug)
 {
     QByteArray output(cmd.toLatin1());
     output.append("\r\n");
     _transport->imapWrite(&output);
 
-    QString logCmd(cmd);
-    QRegExp loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s");
-    if (loginExp.indexIn(cmd) != -1) {
-        logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
-    }
-    qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);
+    if (maskDebug) {
+        qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << "SEND: <login hidden>";
+    } else {
+        QString logCmd(cmd);
+        QRegExp authExp("^[^\\s]+\\sAUTHENTICATE\\s[^\\s]+\\s");
+        if (authExp.indexIn(cmd) != -1) {
+            logCmd = cmd.left(authExp.matchedLength()) + "<password hidden>";
+        } else {
+            QRegExp loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s");
+            if (loginExp.indexIn(cmd) != -1) {
+                logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
+            }
+        }
+        qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);}
 }
 
 void ImapProtocol::sendDataLiteral(const QString &cmd, uint length)

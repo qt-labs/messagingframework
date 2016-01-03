@@ -275,7 +275,7 @@ private:
     void processResponse(QString line);
     void nextAction(const QString &line);
 
-    void sendData(const QString &cmd);
+    void sendData(const QString &cmd, bool maskDebug = false);
     void sendDataLiteral(const QString &cmd, uint length);
 
     QString newCommandId();
