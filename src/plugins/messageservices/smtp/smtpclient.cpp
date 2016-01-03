@@ -304,7 +304,7 @@ void SmtpClient::readyRead()
     incomingData();
 }
 
-void SmtpClient::sendCommand(const char *data, int len)
+void SmtpClient::sendCommand(const char *data, int len, bool maskDebug)
 {
     if (len == -1)
         len = ::strlen(data);
@@ -315,19 +315,27 @@ void SmtpClient::sendCommand(const char *data, int len)
 
     ++outstandingResponses;
 
-    if (len) {
+    if (maskDebug) {
+        qMailLog(SMTP) << "SEND: <login hidden>";
+    } else {
+        QString logCmd = QString::fromLatin1(data);
+        QRegExp loginExp("^AUTH\\s[^\\s]+\\s");
+        if (loginExp.indexIn(data) != -1) {
+            logCmd = logCmd.left(loginExp.matchedLength()) + "<login hidden>";
+        }
+
         qMailLog(SMTP) << "SEND:" << data;
     }
 }
 
-void SmtpClient::sendCommand(const QString &cmd)
+void SmtpClient::sendCommand(const QString &cmd, bool maskDebug)
 {
-    sendCommand(cmd.toLatin1());
+    sendCommand(cmd.toLatin1(), maskDebug);
 }
 
-void SmtpClient::sendCommand(const QByteArray &cmd)
+void SmtpClient::sendCommand(const QByteArray &cmd, bool maskDebug)
 {
-    sendCommand(cmd.data(), cmd.length());
+    sendCommand(cmd.data(), cmd.length(), maskDebug);
 }
 
 void SmtpClient::sendCommands(const QStringList &cmds)
@@ -557,8 +565,8 @@ void SmtpClient::nextAction(const QString &response)
             QByteArray response(SmtpAuthenticator::getResponse(config.serviceConfiguration("smtp"), challenge));
 
             if (!response.isEmpty()) {
-                // Send the response as Base64 encoded
-                sendCommand(response.toBase64());
+                // Send the response as Base64 encoded, mask the debug output
+                sendCommand(response.toBase64(), true);
                 bufferedResponse.clear();
                 return;
             } else {
