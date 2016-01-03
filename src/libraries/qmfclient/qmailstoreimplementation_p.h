@@ -52,6 +52,11 @@
 #include <QString>
 #include <QTimer>
 
+QT_BEGIN_NAMESPACE
+
+class QFileSystemWatcher;
+
+QT_END_NAMESPACE
 
 class QMF_EXPORT QMailStoreImplementationBase : public QObject
 {
