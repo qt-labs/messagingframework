@@ -427,7 +427,12 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         }
         for ( ; (it != end) && ((it + 1) != end); it += 2) {
             if ((*it).trimmed().toUpper() == "BOUNDARY") {
-                container->setBoundary((*(it + 1)).toLatin1());
+                const QString boundary((*(it + 1)));
+                if (boundary.toUpper() == "NIL") {
+                    container->setBoundary(QByteArray());
+                } else {
+                    container->setBoundary(boundary.toLatin1());
+                }
             }
         }
     }

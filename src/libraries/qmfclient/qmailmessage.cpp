@@ -3942,8 +3942,13 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
     const QList<QMailMessagePart>* partList = &_messageParts; 
 
     foreach (uint index, location.d->_indices) {
-        part = &(partList->at(index - 1));
-        partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
+        if (index >= 0 && index <= partList->size()) {
+            part = &(partList->at(index - 1));
+            partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
+        } else {
+            qMailLog(Messaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
+            Q_ASSERT(false);
+        }
     }
 
     Q_ASSERT(part);
@@ -3956,8 +3961,13 @@ QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePar
     QList<QMailMessagePart>* partList = &_messageParts; 
 
     foreach (uint index, location.d->_indices) {
-        part = &((*partList)[index - 1]);
-        partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
+        if (index >= 0 && index <= partList->size()) {
+            part = &((*partList)[index - 1]);
+            partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
+        } else {
+            qMailLog(Messaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
+            Q_ASSERT(false);
+        }
     }
 
     return *part;
