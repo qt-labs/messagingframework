@@ -34,6 +34,7 @@
 #include "imapclient.h"
 #include "imapauthenticator.h"
 #include "imapconfiguration.h"
+#include "imapfoldernamecoding.h"
 #include "imapstrategy.h"
 #include <private/longstream_p.h>
 #include <qmaillog.h>
@@ -94,132 +95,12 @@ public:
 
 namespace {
 
-    QString decodeModifiedBase64(QString in)
-    {
-        //remove  & -
-        in.remove(0,1);
-        in.remove(in.length()-1,1);
-
-        if(in.isEmpty())
-            return "&";
-
-        QByteArray buf(in.length(),static_cast<char>(0));
-        QByteArray out(in.length() * 3 / 4 + 2,static_cast<char>(0));
-
-        //chars to numeric
-        QByteArray latinChars = in.toLatin1();
-        for (int x = 0; x < in.length(); x++) {
-            int c = latinChars[x];
-            if ( c >= 'A' && c <= 'Z')
-                buf[x] = c - 'A';
-            if ( c >= 'a' && c <= 'z')
-                buf[x] = c - 'a' + 26;
-            if ( c >= '0' && c <= '9')
-                buf[x] = c - '0' + 52;
-            if ( c == '+')
-                buf[x] = 62;
-            if ( c == ',')
-                buf[x] = 63;
-        }
-
-        int i = 0; //in buffer index
-        int j = i; //out buffer index
-
-        unsigned char z;
-        QString result;
-
-        while(i+1 < buf.size())
-        {
-            out[j] = buf[i] & (0x3F); //mask out top 2 bits
-            out[j] = out[j] << 2;
-            z = buf[i+1] >> 4;
-            out[j] = (out[j] | z);      //first byte retrieved
-
-            i++;
-            j++;
-
-            if(i+1 >= buf.size())
-                break;
-
-            out[j] = buf[i] & (0x0F);   //mask out top 4 bits
-            out[j] = out[j] << 4;
-            z = buf[i+1] >> 2;
-            z &= 0x0F;
-            out[j] = (out[j] | z);      //second byte retrieved
-
-            i++;
-            j++;
-
-            if(i+1 >= buf.size())
-                break;
-
-            out[j] = buf[i] & 0x03;   //mask out top 6 bits
-            out[j] = out[j] <<  6;
-            z = buf[i+1];
-            out[j] = out[j] | z;  //third byte retrieved
-
-            i+=2; //next byte
-            j++;
-        }
-
-        //go through the buffer and extract 16 bit unicode network byte order
-        for(int z = 0; z < out.count(); z+=2) {
-            unsigned short outcode = 0x0000;
-            outcode = out[z];
-            outcode <<= 8;
-            outcode &= 0xFF00;
-
-            unsigned short b = 0x0000;
-            b = out[z+1];
-            b &= 0x00FF;
-            outcode = outcode | b;
-            if(outcode)
-                result += QChar(outcode);
-        }
-
-        return result;
-    }
-
-    QString decodeModUTF7(QString in)
-    {
-        QRegExp reg("&[^&-]*-");
-
-        int startIndex = 0;
-        int endIndex = 0;
-
-        startIndex = in.indexOf(reg,endIndex);
-        while (startIndex != -1) {
-            endIndex = startIndex;
-            while(endIndex < in.length() && in[endIndex] != '-')
-                endIndex++;
-            endIndex++;
-
-            //extract the base64 string from the input string
-            QString mbase64 = in.mid(startIndex,(endIndex - startIndex));
-            QString unicodeString = decodeModifiedBase64(mbase64);
-
-            //remove encoding
-            in.remove(startIndex,(endIndex-startIndex));
-            in.insert(startIndex,unicodeString);
-
-            endIndex = startIndex + unicodeString.length();
-            startIndex = in.indexOf(reg,endIndex);
-        }
-
-        return in;
-    }
-
-    QString decodeFolderName(const QString &name)
-    {
-        return decodeModUTF7(name);
-    }
-    
     struct FlagInfo
     {
-        FlagInfo(QString flagName, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
-            :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
+        FlagInfo(QStringList flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
+            :_flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
         
-        QString _flagName;
+        QStringList _flagNames;
         quint64 _flag;
         QMailFolder::StandardFolder _standardFolder;
         quint64 _messageFlag;
@@ -242,19 +123,25 @@ namespace {
 
         // Set standard folder flags
         QList<FlagInfo> flagInfoList;
-        flagInfoList << FlagInfo("\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
-            << FlagInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
-            << FlagInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
-            << FlagInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
-            << FlagInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
+        flagInfoList << FlagInfo(QStringList() << "\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
+            << FlagInfo(QStringList() << "\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
+            << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
+            << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
+            << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
         
         for (int i = 0; i < flagInfoList.count(); ++i) {
-            QString flagName(flagInfoList[i]._flagName);
+            QStringList flagNames(flagInfoList[i]._flagNames);
             quint64 flag(flagInfoList[i]._flag);
             QMailFolder::StandardFolder standardFolder(flagInfoList[i]._standardFolder);
             quint64 messageFlag(flagInfoList[i]._messageFlag);
-            bool isFlagged(flags.contains(flagName, Qt::CaseInsensitive));
 
+            bool isFlagged = false;
+            foreach(const QString &flagName, flagNames) {
+                if (flags.contains(flagName, Qt::CaseInsensitive)) {
+                    isFlagged = true;
+                    break;
+                }
+            }
             folder->setStatus(flag, isFlagged);
             if (isFlagged) {
                 QMailFolderId oldFolderId = account->standardFolder(standardFolder);
@@ -268,20 +155,20 @@ namespace {
                     // So call exportUpdates before retrieveFolderList
                     QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
                     if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
-                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagName;
+                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flags" << flagNames;
                     }
                     if (!QMailStore::instance()->updateFolder(&oldFolder)) {
-                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flag" << flagName;
+                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flags" << flagNames;
                     }
                 }
                 if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
                     account->setStandardFolder(standardFolder, folder->id());                
                     if (!QMailStore::instance()->updateAccount(account)) {
-                        qWarning() << "Unable to update account" << account->id() << "to set flag" << flagName;
+                        qWarning() << "Unable to update account" << account->id() << "to set flags" << flagNames;
                     }
                     QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
                     if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flag" << flagName;
+                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flags" << flagNames;
                     }
                 }
             }
@@ -536,12 +423,14 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(downloadSize(QString, int)) );
     connect(&_protocol, SIGNAL(urlAuthorized(QString)),
             this, SLOT(urlAuthorized(QString)) );
-    connect(&_protocol, SIGNAL(folderCreated(QString)),
-            this, SLOT(folderCreated(QString)));
-    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder)),
-            this, SLOT(folderDeleted(QMailFolder)));
-    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString)),
-            this, SLOT(folderRenamed(QMailFolder, QString)));
+    connect(&_protocol, SIGNAL(folderCreated(QString, bool)),
+            this, SLOT(folderCreated(QString, bool)));
+    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder, bool)),
+            this, SLOT(folderDeleted(QMailFolder, bool)));
+    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
+            this, SLOT(folderRenamed(QMailFolder, QString, bool)));
+    connect(&_protocol, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)),
+            this, SLOT(folderMoved(QMailFolder, QString, QMailFolderId, bool)));
     connect(&_protocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)) );
     connect(&_protocol, SIGNAL(connectionError(int,QString)),
@@ -897,7 +786,10 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
-        
+
+        if (it->isEmpty())
+            continue; // Skip empty folder names
+
         if (!mailboxPath.isEmpty())
             mailboxPath.append(_protocol.delimiter());
         mailboxPath.append(*it);
@@ -907,7 +799,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             // This element already exists
             if (mailboxPath == path) {
                 QMailFolder folder(boxId); 
-                QMailFolder folderOriginal(folder); 
+                QMailFolder folderOriginal(folder);
                 setFolderFlags(&account, &folder, flags, _protocol.capabilities().contains("XLIST"));
                 
                 if (folder.status() != folderOriginal.status()) {
@@ -1073,20 +965,28 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 }
 
 
-void ImapClient::folderCreated(const QString &folder)
+void ImapClient::folderCreated(const QString &folder, bool success)
 {
-    mailboxListed(QString(), folder);
-    _strategyContext->folderCreated(folder);
+    if (success) {
+        mailboxListed(QString(), folder);
+    }
+    _strategyContext->folderCreated(folder, success);
 }
 
-void ImapClient::folderDeleted(const QMailFolder &folder)
+void ImapClient::folderDeleted(const QMailFolder &folder, bool success)
 {
-    _strategyContext->folderDeleted(folder);
+    _strategyContext->folderDeleted(folder, success);
 }
 
-void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath)
+void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath, bool success)
 {
-    _strategyContext->folderRenamed(folder, newPath);
+    _strategyContext->folderRenamed(folder, newPath, success);
+}
+
+void ImapClient::folderMoved(const QMailFolder &folder, const QString &newPath,
+                             const QMailFolderId &newParentId, bool success)
+{
+    _strategyContext->folderMoved(folder, newPath, newParentId, success);
 }
 
 static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
@@ -1571,7 +1471,7 @@ QMailFolderId ImapClient::mailboxId(const QString &path) const
     QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_config.id()) & QMailFolderKey::path(path));
     if (folderIds.count() == 1)
         return folderIds.first();
-    
+
     return QMailFolderId();
 }
 

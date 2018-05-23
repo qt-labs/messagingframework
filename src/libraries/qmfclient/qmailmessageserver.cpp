@@ -92,6 +92,7 @@ signals:
     void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineMoveFolder(quint64, const QMailFolderId &folderId, const QMailFolderId &newParentId);
 
     void cancelTransfer(quint64);
 
@@ -180,6 +181,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(onlineRenameFolder(quint64, QMailFolderId, QString)));
     connectIpc(this, SIGNAL(onlineDeleteFolder(quint64, QMailFolderId)),
                adaptor, MESSAGE(onlineDeleteFolder(quint64, QMailFolderId)));
+    connectIpc(this, SIGNAL(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)),
+               adaptor, MESSAGE(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)));
     connectIpc(this, SIGNAL(deleteMessages(quint64, QMailMessageIdList)),
                adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList)));
     connectIpc(this, SIGNAL(rollBackUpdates(quint64, QMailAccountId)),
@@ -236,6 +239,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                parent, SIGNAL(folderRenamed(quint64, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(folderDeleted(quint64, QMailFolderId)),
                parent, SIGNAL(folderDeleted(quint64, QMailFolderId)));
+    connectIpc(adaptor, MESSAGE(folderMoved(quint64, QMailFolderId)),
+               parent, SIGNAL(folderMoved(quint64, QMailFolderId)));
     connectIpc(adaptor, MESSAGE(storageActionCompleted(quint64)),
                parent, SIGNAL(storageActionCompleted(quint64)));
     connectIpc(adaptor, MESSAGE(retrievalCompleted(quint64)),
@@ -447,6 +452,15 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     identified by \a action.
 
     \sa onlineDeleteFolder()
+*/
+
+/*!
+    \fn void QMailMessageServer::folderMoved(quint64 action, const QMailFolderId& folderId);
+
+    Emitted when the folder identified by \a folderId has been moved, in response to the request
+    identified by \a action.
+
+    \sa onlineMoveFolder()
 */
 
 /*!
@@ -935,7 +949,7 @@ void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name,
     This function requires the device to be online, it may initiate communication 
     with external servers.
 
-    \sa onlineCreateFolder()
+    \sa onlineCreateFolder(), onlineMoveFolder()
 */
 void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
 {
@@ -951,11 +965,28 @@ void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId 
     This function requires the device to be online, it may initiate communication 
     with external servers.
 
-    \sa onlineCreateFolder(), onlineRenameFolder()
+    \sa onlineCreateFolder(), onlineRenameFolder(), onlineMoveFolder()
 */
 void QMailMessageServer::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
 {
     emit d->onlineDeleteFolder(action, folderId);
+}
+
+/*!
+    Requests that the MessageServer move the folder identified by \a folderId.
+    If \a parentId is a valid folder identifier the new folder will be a child of the parent;
+    otherwise the folder will be have no parent and will be created at the highest level.
+
+    The request has the identifier \a action.
+
+    This function requires the device to be online, it may initiate communication
+    with external servers.
+
+    \sa onlineCreateFolder(), onlineRenameFolder()
+*/
+void QMailMessageServer::onlineMoveFolder(quint64 action, const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    emit d->onlineMoveFolder(action, folderId, newParentId);
 }
 
 /*!

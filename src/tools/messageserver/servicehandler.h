@@ -91,6 +91,7 @@ public slots:
     void onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64 action, const QMailFolderId &folderId);
+    void onlineMoveFolder(quint64 action, const QMailFolderId &folderId, const QMailFolderId &newParentId);
     void cancelTransfer(quint64 action);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
@@ -126,6 +127,7 @@ signals:
     void folderCreated(quint64 action, const QMailFolderId&);
     void folderRenamed(quint64 action, const QMailFolderId&);
     void folderDeleted(quint64 action, const QMailFolderId&); 
+    void folderMoved(quint64 action, const QMailFolderId&);
 
     void storageActionCompleted(quint64 action);
 
@@ -265,6 +267,7 @@ private:
     bool dispatchOnlineCreateFolder(quint64 action, const QByteArray &data);
     bool dispatchOnlineDeleteFolder(quint64 action, const QByteArray &data);
     bool dispatchOnlineRenameFolder(quint64 action, const QByteArray &data);
+    bool dispatchOnlineMoveFolder(quint64 action, const QByteArray &data);
     bool dispatchSearchMessages(quint64 action, const QByteArray &data);
     bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
 

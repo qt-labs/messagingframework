@@ -128,9 +128,10 @@ public slots:
     void messageCreated(const QMailMessageId &, const QString &);
     void downloadSize(const QString &uid, int);
     void urlAuthorized(const QString &url);
-    void folderDeleted(const QMailFolder &folder);
-    void folderCreated(const QString &folder);
-    void folderRenamed(const QMailFolder &folder, const QString &newName);
+    void folderDeleted(const QMailFolder &folder, bool success);
+    void folderCreated(const QString &folder, bool success);
+    void folderRenamed(const QMailFolder &folder, const QString &newName, bool success);
+    void folderMoved(const QMailFolder &folder, const QString &newName, const QMailFolderId &newParentId, bool success);
 
 protected slots:
     void connectionInactive();

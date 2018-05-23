@@ -65,7 +65,8 @@ enum QMailServerRequestType
     SearchMessagesRequestType,
     CancelSearchRequestType,
     ListActionsRequestType,
-    ProtocolRequestRequestType
+    ProtocolRequestRequestType,
+    MoveFolderRequestType
 };
 
 typedef quint64 QMailActionId;

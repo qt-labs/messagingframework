@@ -141,9 +141,10 @@ public:
     virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void downloadSize(ImapStrategyContextBase *context, const QString &uid, int length);
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
-    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
-    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
-    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName);
+    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success);
+    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success);
+    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName, bool success);
+    virtual void folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName, const QMailFolderId &newParentId, bool success);
     virtual void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder);
 
     void clearError() { _error = false; }
@@ -169,7 +170,7 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void createFolder(const QMailFolderId &folder, const QString &name, bool matchFoldersRequired);
-    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
+    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success);
 protected:
     virtual void handleCreate(ImapStrategyContextBase *context);
     virtual void handleLogin(ImapStrategyContextBase *context);
@@ -191,7 +192,7 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void deleteFolder(const QMailFolderId &folderId);
-    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
+    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success);
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleDelete(ImapStrategyContextBase *context);
@@ -209,12 +210,31 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void renameFolder(const QMailFolderId &folderId, const QString &newName);
-    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &name);
+    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder,
+                               const QString &name, bool success);
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleRename(ImapStrategyContextBase *context);
     virtual void process(ImapStrategyContextBase *context);
     QList<QPair<QMailFolderId, QString> > _folderNewNames;
+    int _inProgress;
+};
+
+class ImapMoveFolderStrategy : public ImapStrategy
+{
+public:
+    ImapMoveFolderStrategy() : _inProgress(0) { }
+    virtual ~ImapMoveFolderStrategy() {}
+
+    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    virtual void moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
+    virtual void folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder,
+                             const QString &newPath, const QMailFolderId &newParentId, bool success);
+protected:
+    virtual void handleLogin(ImapStrategyContextBase *context);
+    virtual void handleMove(ImapStrategyContextBase *context);
+    virtual void process(ImapStrategyContextBase *context);
+    QList<QPair<QMailFolderId, QMailFolderId> > _folderNewParents;
     int _inProgress;
 };
 
@@ -267,6 +287,7 @@ protected:
     virtual void handleCreate(ImapStrategyContextBase *context);
     virtual void handleDelete(ImapStrategyContextBase *context);
     virtual void handleRename(ImapStrategyContextBase *context);
+    virtual void handleMove(ImapStrategyContextBase *context);
     virtual void handleClose(ImapStrategyContextBase *context);
 
     virtual void messageListFolderAction(ImapStrategyContextBase *context);
@@ -836,6 +857,7 @@ public:
     ImapCreateFolderStrategy createFolderStrategy;
     ImapDeleteFolderStrategy deleteFolderStrategy;
     ImapRenameFolderStrategy renameFolderStrategy;
+    ImapMoveFolderStrategy moveFolderStrategy;
     ImapSearchMessageStrategy searchMessageStrategy;
 
     void newConnection() { _strategy->clearError(); _strategy->newConnection(this); }
@@ -852,9 +874,12 @@ public:
     void messageCreated(const QMailMessageId &id, const QString &uid) { _strategy->messageCreated(this, id, uid); }
     void downloadSize(const QString &uid, int length) { _strategy->downloadSize(this, uid, length); }
     void urlAuthorized(const QString &url) { _strategy->urlAuthorized(this, url); }
-    void folderCreated(const QString &folder) { _strategy->folderCreated(this, folder); }
-    void folderDeleted(const QMailFolder &folder) { _strategy->folderDeleted(this, folder); }
-    void folderRenamed(const QMailFolder &folder, const QString &name) { _strategy->folderRenamed(this, folder, name); }
+    void folderCreated(const QString &folder, bool success) { _strategy->folderCreated(this, folder, success); }
+    void folderDeleted(const QMailFolder &folder, bool success) { _strategy->folderDeleted(this, folder, success); }
+    void folderRenamed(const QMailFolder &folder, const QString &name, bool success) { _strategy->folderRenamed(this, folder, name, success); }
+    void folderMoved(const QMailFolder &folder, const QString &name, const QMailFolderId &newParentId, bool success) {
+        _strategy->folderMoved(this, folder, name, newParentId, success);
+    }
     QString baseFolder() { return _strategy->baseFolder(); }
 
     ImapStrategy *strategy() const { return _strategy; }
