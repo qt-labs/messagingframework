@@ -2561,6 +2561,41 @@ bool ServiceHandler::dispatchOnlineDeleteFolder(quint64 action, const QByteArray
     }
 }
 
+void ServiceHandler::onlineMoveFolder(quint64 action, const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    if(folderId.isValid()) {
+        QSet<QMailAccountId> accounts = folderAccount(folderId);
+        QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
+        enqueueRequest(action, serialize(folderId, newParentId), sources, &ServiceHandler::dispatchOnlineMoveFolder, &ServiceHandler::storageActionCompleted, MoveFolderRequestType);
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to move invalid folder"));
+    }
+}
+
+bool ServiceHandler::dispatchOnlineMoveFolder(quint64 action, const QByteArray &data)
+{
+    QMailFolderId folderId;
+    QMailFolderId newParentId;
+
+    deserialize(data, folderId, newParentId);
+
+    if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
+        bool success(sourceService.value(source)->usesConcurrentActions()
+            ? source->moveFolder(folderId, newParentId, action)
+            : source->moveFolder(folderId, newParentId));
+        if (success) {
+            return true;
+        } else {
+            qWarning() << "Unable to service request to move folder id:" << folderId;
+            return false;
+        }
+
+    } else {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to locate source for account"), QMailFolder(folderId).parentAccountId());
+        return false;
+    }
+}
+
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     searchMessages(action, filter, bodyText, spec, 0, sort, NoLimit);

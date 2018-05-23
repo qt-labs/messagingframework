@@ -270,6 +270,7 @@ public:
     void onlineRenameFolder(const QMailFolderId &id, const QString &name);
     void onlineDeleteFolder(const QMailFolderId &id);
     void onlineDeleteFolderHelper(const QMailFolderId &id);
+    void onlineMoveFolder(const QMailFolderId &id, const QMailFolderId &newParentId);
 
 protected:
     virtual void init();
