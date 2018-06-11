@@ -6422,6 +6422,19 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
             modifiedAccountIds->append(folder->parentAccountId());
 
         {
+            //remove existing links from folder's ancestors to folder's descendants
+            QSqlQuery query(simpleQuery("DELETE FROM mailfolderlinks WHERE "
+                                        "descendantid IN (SELECT descendantid FROM mailfolderlinks WHERE id=?) AND "
+                                        "id IN (SELECT id FROM mailfolderlinks WHERE descendantid=?)",
+                                        QVariantList() << folder->id().toULongLong()
+                                                       << folder->id().toULongLong(),
+                                        "mailfolderlinks delete ancestors->descendants in update"));
+            if (query.lastError().type() != QSqlError::NoError)
+                return DatabaseFailure;
+
+        }
+
+        {
             //remove existing links to this folder
             QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailfolderlinks WHERE descendantid = ?"),
                                         QVariantList() << folder->id().toULongLong(),
@@ -6448,6 +6461,42 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptUpdateFolder(QMailFol
                                         "mailfolderlinks insert parent"));
             if (query.lastError().type() != QSqlError::NoError)
                 return DatabaseFailure;
+        }
+        {
+            // Add links ancestors->descendants
+            // CROSS JOIN is not supported by QSqlQuery, so need to add new ancestors->descendants combinations manually
+            QList<quint64> ancestors;
+            QSqlQuery queryAncestors(simpleQuery("SELECT id FROM mailfolderlinks WHERE descendantid = ?",
+                                                 QVariantList() << folder->id().toULongLong(),
+                                                 "mailfolderlinks query list of ancestors"));
+            while (queryAncestors.next())
+                ancestors.append(extractValue<quint64>(queryAncestors.value(0)));
+
+            if (!ancestors.isEmpty()) {
+                QList<quint64> descendants;
+                QSqlQuery queryDescendants(simpleQuery("SELECT descendantid FROM mailfolderlinks WHERE id = ?",
+                                                       QVariantList() << folder->id().toULongLong(),
+                                                       "mailfolderlinks query list of descendants"));
+                while (queryDescendants.next())
+                    descendants.append(extractValue<quint64>(queryDescendants.value(0)));
+
+                if (!descendants.isEmpty()) {
+                    QVariantList ancestorRows;
+                    QVariantList descendantRows;
+                    foreach (quint64 anc, ancestors) {
+                        foreach (quint64 desc, descendants) {
+                            ancestorRows.append(anc);
+                            descendantRows.append(desc);
+                        }
+                    }
+                    QSqlQuery query(batchQuery(QString("INSERT INTO mailfolderlinks VALUES (?,?)"),
+                                               QVariantList() << QVariant(ancestorRows)
+                                                              << QVariant(descendantRows),
+                                               "mailfolderlinks insert ancestors-descendants"));
+                    if (query.lastError().type() != QSqlError::NoError)
+                        return DatabaseFailure;
+                }
+            }
         }
     }
         

@@ -852,6 +852,88 @@ void tst_QMailStore::updateFolder()
     QCOMPARE(folder6.customFields(), folder5.customFields());
     QCOMPARE(folder6.customField("answer"), QString("Fido"));
     QVERIFY(folder6.customField("temporary").isNull());
+
+    // -------- Test QMailFolder::setParentId --------------
+    // Step 1: Setup the following hierarchy
+    // f0->f1->f2->f3->f4
+    // f5->f6
+    QMailFolder f0 = QMailFolder("f0", QMailFolderId());
+    QVERIFY(QMailStore::instance()->addFolder(&f0));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f1 = QMailFolder("f1", f0.id());
+    QVERIFY(QMailStore::instance()->addFolder(&f1));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f2 = QMailFolder("f2", f1.id());
+    QVERIFY(QMailStore::instance()->addFolder(&f2));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f3 = QMailFolder("f3", f2.id());
+    QVERIFY(QMailStore::instance()->addFolder(&f3));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f4 = QMailFolder("f4", f3.id());
+    QVERIFY(QMailStore::instance()->addFolder(&f4));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f5 = QMailFolder("f5", QMailFolderId());
+    QVERIFY(QMailStore::instance()->addFolder(&f5));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    QMailFolder f6 = QMailFolder("f6", f5.id());
+    QVERIFY(QMailStore::instance()->addFolder(&f6));
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
+
+    //Step 2: Move f2 to f6. New folder hierarchy shall be the following
+    // f0->f1
+    // f5->f6->f2->f3->f4
+    f2.setParentFolderId(f6.id());
+    QMailStore::instance()->updateFolder(&f2);
+
+    //Verify ancestors->descendants connections
+    QMailFolderKey key;
+    QMailFolderIdList folderIds;
+
+    key = QMailFolderKey::ancestorFolderIds(f5.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 4);
+    QVERIFY(folderIds.contains(f6.id()) &&
+            folderIds.contains(f2.id()) &&
+            folderIds.contains(f3.id()) &&
+            folderIds.contains(f4.id()));
+
+    key = QMailFolderKey::ancestorFolderIds(f6.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 3);
+    QVERIFY(folderIds.contains(f2.id()) &&
+            folderIds.contains(f3.id()) &&
+            folderIds.contains(f4.id()));
+
+    key = QMailFolderKey::ancestorFolderIds(f2.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 2);
+    QVERIFY(folderIds.contains(f3.id()) &&
+            folderIds.contains(f4.id()));
+
+    key = QMailFolderKey::ancestorFolderIds(f3.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 1);
+    QVERIFY(folderIds.contains(f4.id()));
+
+    key = QMailFolderKey::ancestorFolderIds(f4.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 0);
+
+    key = QMailFolderKey::ancestorFolderIds(f0.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 1);
+    QVERIFY(folderIds.contains(f1.id()));
+
+    key = QMailFolderKey::ancestorFolderIds(f1.id(), QMailDataComparator::Includes);
+    folderIds = QMailStore::instance()->queryFolders(key);
+    QCOMPARE(folderIds.count(), 0);
+    // -------- End Test QMailFolder::setParentId --------------
 }
 
 void tst_QMailStore::updateMessage()
