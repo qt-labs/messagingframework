@@ -213,6 +213,7 @@ public:
 
     static QString quoteString(const QString& input);
     static QByteArray quoteString(const QByteArray& input);
+    static QString unescapeFolderPath(const QString &path);
 
 signals:
     void mailboxListed(const QString &flags, const QString &name);

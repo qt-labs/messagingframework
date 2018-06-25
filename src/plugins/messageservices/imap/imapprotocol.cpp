@@ -974,7 +974,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
         if (isXList && flags.indexOf("Inbox", 0, Qt::CaseInsensitive) != -1) {
             path = "INBOX";
         }
-        emit mailboxListed(flags, path);
+        emit mailboxListed(flags, ImapProtocol::unescapeFolderPath(path));
     }
 }
 
@@ -3584,6 +3584,25 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
         }
     }
 
+    return result;
+}
+
+// Remove escape characters when receiving from IMAP
+QString ImapProtocol::unescapeFolderPath(const QString &path)
+{
+    QString result(path);
+    QString::iterator it = result.begin();
+    while (it != result.end()) {
+        if ((*it) == '\\') {
+            int pos = (it - result.begin());
+            result.remove(pos, 1);
+            it = result.begin() + pos;
+            if (it == result.end()) {
+                break;
+            }
+        }
+        ++it;
+    }
     return result;
 }
 
