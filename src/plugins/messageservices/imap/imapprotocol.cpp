@@ -3582,11 +3582,11 @@ QString ImapProtocol::quoteString(const QString& input)
     // We need to quote this string because it is not an atom
     QString result(input);
 
-    QString::iterator begin = result.begin(), it = begin;
+    QString::iterator it = result.begin();
     while (it != result.end()) {
         // We need to escape any characters specially treated in quotes
         if ((*it) == '\\' || (*it) == '"') {
-            int pos = (it - begin);
+            int pos = (it - result.begin());
             result.insert(pos, '\\');
             it = result.begin() + (pos + 1);
         }
