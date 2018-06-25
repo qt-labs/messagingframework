@@ -97,10 +97,10 @@ namespace {
     
     struct FlagInfo
     {
-        FlagInfo(QString flagName, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
-            :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
+        FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
+            :_flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
         
-        QString _flagName;
+        QStringList _flagNames;
         quint64 _flag;
         QMailFolder::StandardFolder _standardFolder;
         quint64 _messageFlag;
@@ -123,18 +123,25 @@ namespace {
 
         // Set standard folder flags
         QList<FlagInfo> flagInfoList;
-        flagInfoList << FlagInfo("\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
-            << FlagInfo("\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
-            << FlagInfo("\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
-            << FlagInfo("\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
-            << FlagInfo("\\Spam", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
+        flagInfoList << FlagInfo(QStringList() << "\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
+            << FlagInfo(QStringList() << "\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
+            << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
+            << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
+            << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
         
         for (int i = 0; i < flagInfoList.count(); ++i) {
-            QString flagName(flagInfoList[i]._flagName);
+            QStringList flagNames(flagInfoList[i]._flagNames);
             quint64 flag(flagInfoList[i]._flag);
             QMailFolder::StandardFolder standardFolder(flagInfoList[i]._standardFolder);
             quint64 messageFlag(flagInfoList[i]._messageFlag);
-            bool isFlagged(flags.contains(flagName, Qt::CaseInsensitive));
+            bool isFlagged = false;
+
+            foreach (const QString &flagName, flagNames) {
+                if (flags.contains(flagName, Qt::CaseInsensitive)) {
+                    isFlagged = true;
+                    break;
+                }
+            }
 
             folder->setStatus(flag, isFlagged);
             if (isFlagged) {
@@ -149,20 +156,20 @@ namespace {
                     // So call exportUpdates before retrieveFolderList
                     QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
                     if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
-                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagName;
+                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
                     }
                     if (!QMailStore::instance()->updateFolder(&oldFolder)) {
-                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flag" << flagName;
+                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
                     }
                 }
                 if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
                     account->setStandardFolder(standardFolder, folder->id());                
                     if (!QMailStore::instance()->updateAccount(account)) {
-                        qWarning() << "Unable to update account" << account->id() << "to set flag" << flagName;
+                        qWarning() << "Unable to update account" << account->id() << "to set flag" << flagNames;
                     }
                     QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
                     if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flag" << flagName;
+                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
                     }
                 }
             }
