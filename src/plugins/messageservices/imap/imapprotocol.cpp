@@ -50,6 +50,7 @@
 #include <qmailnamespace.h>
 #include <qmailtransport.h>
 #include <qmaildisconnected.h>
+#include <qmailcodec.h>
 
 #ifndef QT_NO_SSL
 #include <QSslError>
@@ -714,7 +715,7 @@ QString CreateState::makePath(ImapContext *c, const QMailFolderId &parent, const
             qWarning() << "Cannot create a child folder, without a delimiter";
 
     }
-    return (path + name);
+    return (path + QMailCodec::encodeModifiedUtf7(name));
 }
 
 class DeleteState : public ImapState
@@ -833,10 +834,11 @@ void RenameState::taggedResponse(ImapContext *c, const QString &line)
 QString RenameState::buildNewPath(ImapContext *c , const QMailFolder &folder, QString &newName)
 {
     QString path;
+    QString encodedNewName = QMailCodec::encodeModifiedUtf7(newName);
     if(c->protocol()->flatHierarchy() || folder.path().count(c->protocol()->delimiter()) == 0)
-        path = newName;
+        path = encodedNewName;
     else
-        path = folder.path().section(c->protocol()->delimiter(), 0, -2) + c->protocol()->delimiter() + newName;
+        path = folder.path().section(c->protocol()->delimiter(), 0, -2) + c->protocol()->delimiter() + encodedNewName;
     return path;
 }
 

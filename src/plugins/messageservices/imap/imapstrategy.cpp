@@ -43,6 +43,7 @@
 #include <qmailmessage.h>
 #include <qmailnamespace.h>
 #include <qmaildisconnected.h>
+#include <qmailcodec.h>
 #include <limits.h>
 #include <QDir>
 
@@ -854,7 +855,7 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
 
     QMailFolder newFolder = folder;
     newFolder.setPath(newPath);
-    newFolder.setDisplayName(name);
+    newFolder.setDisplayName(QMailCodec::decodeModifiedUtf7(name));
 
     if(!QMailStore::instance()->updateFolder(&newFolder))
         qWarning() << "Unable to locally rename folder";

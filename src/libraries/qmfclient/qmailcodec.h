@@ -70,6 +70,8 @@ public:
     static void copy(QDataStream& out, QDataStream& in);
     static void copy(QTextStream& out, QTextStream& in);
     static QString autoDetectEncoding(const QByteArray& text);
+    static QString encodeModifiedUtf7(const QString &text);
+    static QString decodeModifiedUtf7(const QString &text);
 
 protected:
     // Helper functions to convert stream chunks

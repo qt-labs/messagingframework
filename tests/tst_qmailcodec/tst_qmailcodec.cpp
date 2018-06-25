@@ -66,6 +66,7 @@ private slots:
     void buffer_sizes();
     void embedded_newlines_data();
     void embedded_newlines();
+    void encodeDecodeModifiedUtf7();
 };
 
 QTEST_MAIN(tst_QMailCodec)
@@ -674,5 +675,38 @@ void tst_QMailCodec::embedded_newlines()
     }
     Base64MaxLineLength = originalBase64MaxLineLength;
     QuotedPrintableMaxLineLength = originalQuotedPrintableMaxLineLength;
+}
+
+void tst_QMailCodec::encodeDecodeModifiedUtf7()
+{
+    // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
+    const QChar arabicChars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4, 0x06a5, 0x0669, 0x0636};
+    QStringList arabicEncoded = QStringList()
+            << QString::fromLatin1("&BjY-")
+            << QString::fromLatin1("&BjYGaQ-")
+            << QString::fromLatin1("&BjYGaQal-")
+            << QString::fromLatin1("&BjYGaQalBrQ-")
+            << QString::fromLatin1("&BjYGaQalBrQGpQ-")
+            << QString::fromLatin1("&BjYGaQalBrQGpQZp-")
+            << QString::fromLatin1("&BjYGaQalBrQGpQZpBjY-");
+    int i;
+    for (i = 0; i < arabicEncoded.length(); i++) {
+       QCOMPARE(QMailCodec::encodeModifiedUtf7(QString(arabicChars, i+1)), arabicEncoded[i]);
+       QCOMPARE(QMailCodec::decodeModifiedUtf7(arabicEncoded[i]), QString(arabicChars, i+1));
+    }
+
+    // Test '&' symbols
+    QCOMPARE(QMailCodec::decodeModifiedUtf7(QString::fromLatin1("&-")), QString::fromLatin1("&"));
+    QCOMPARE(QMailCodec::encodeModifiedUtf7(QString::fromLatin1("&")), QString::fromLatin1("&-"));
+
+    // Test mixed arabic, '&' and Latin1
+    QString testString = QString::fromLatin1("abc") + QChar(0x0636) + QString::fromLatin1("& && &&&");
+    QString testEncodedString = QString::fromLatin1("abc&BjY-&- &-&- &-&-&-");
+    QCOMPARE(QMailCodec::decodeModifiedUtf7(testEncodedString), testString);
+    QCOMPARE(QMailCodec::encodeModifiedUtf7(testString), testEncodedString);
+
+    //Test empty string
+    QCOMPARE(QMailCodec::decodeModifiedUtf7(QString()), QString());
+    QCOMPARE(QMailCodec::encodeModifiedUtf7(QString()), QString());
 }
 
