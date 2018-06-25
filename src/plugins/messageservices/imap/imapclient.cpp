@@ -897,7 +897,10 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
-        
+
+        if (it->isEmpty())
+            continue; // Skip empty folder names
+
         if (!mailboxPath.isEmpty())
             mailboxPath.append(_protocol.delimiter());
         mailboxPath.append(*it);
