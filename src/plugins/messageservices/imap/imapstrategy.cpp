@@ -835,19 +835,19 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
             name = newPath;
         } else {
             name = newPath.section(delimiter, -1, -1);
-
-            QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
-            QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
-
-            while(!affectedFolders.isEmpty()) {
-                QMailFolder childFolder(affectedFolders.takeFirst());
-                QString path = childFolder.path();
-                path.replace(0, folder.path().length(), newPath);
-                childFolder.setPath(path);
-                if(!QMailStore::instance()->updateFolder(&childFolder))
-                    qWarning() << "Unable to locally change path of a subfolder";
-            }
         }
+        QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
+        QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
+
+        while (!affectedFolders.isEmpty()) {
+            QMailFolder childFolder(affectedFolders.takeFirst());
+            QString path = childFolder.path();
+            path.replace(0, folder.path().length(), newPath);
+            childFolder.setPath(path);
+            if (!QMailStore::instance()->updateFolder(&childFolder))
+                qWarning() << "Unable to locally change path of a subfolder";
+        }
+
     } else {
         name = newPath;
     }
