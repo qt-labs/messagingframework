@@ -155,7 +155,28 @@ static bool parseFlags(const QString& field, MessageFlags& flags)
     return true;
 }
 
-static QString token( QString str, QChar c1, QChar c2, int *index )
+static int indexOfWithEscape(const QString &str, QChar c, int from, const QString &ignoreEscape)
+{
+    int index = from;
+    int pos = str.indexOf(c, index, Qt::CaseInsensitive);
+    if (ignoreEscape.isEmpty()) {
+        return pos;
+    }
+    const int ignoreLength = ignoreEscape.length();
+    while (pos + 1 >= ignoreLength) {
+        if (str.mid(pos - ignoreLength + 1, ignoreLength) == ignoreEscape) {
+            index = pos + 1;
+            pos = str.indexOf(c, index, Qt::CaseInsensitive);
+            continue;
+        } else {
+            break;
+        }
+    }
+
+    return pos;
+}
+
+static QString token( QString str, QChar c1, QChar c2, int *index, const QString &ignoreEscape = QString())
 {
     int start, stop;
 
@@ -163,13 +184,13 @@ static QString token( QString str, QChar c1, QChar c2, int *index )
     // caller considers the sequence to be atomic.
     if (c1 == QMailMessage::CarriageReturn)
         c1 = QMailMessage::LineFeed;
-    start = str.indexOf( c1, *index, Qt::CaseInsensitive );
+    start = indexOfWithEscape(str, c1, *index, ignoreEscape);
     if (start == -1)
         return QString();
 
     if (c2 == QMailMessage::CarriageReturn)
         c2 = QMailMessage::LineFeed;
-    stop = str.indexOf( c2, ++start, Qt::CaseInsensitive );
+    stop = indexOfWithEscape(str, c2, ++start, ignoreEscape);
     if (stop == -1)
         return QString();
 
@@ -943,9 +964,9 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     index--;    //to point back to previous ' ' so we can find it with next search
     path = token(str, ' ', '\n', &index).trimmed();
     pos = 0;
-    if (!token(path, '"', '"', &pos).isNull()) {
+    if (!token(path, '"', '"', &pos, "\\\"").isNull()) {
         pos = 0;
-        path = token(path, '"', '"', &pos);
+        path = token(path, '"', '"', &pos, "\\\"");
     }
 
     if (!path.isEmpty()) {
