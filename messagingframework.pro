@@ -4,6 +4,8 @@ requires(!winrt)
 requires(!ios)
 requires(!qnx)
 requires(!android)
+requires(!integrity)
+requires(!vxworks)
 requires(qtHaveModule(widgets))
 
 load(qt_parts)
