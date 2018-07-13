@@ -46,17 +46,9 @@ SOURCES += \
 RESOURCES += imap.qrc                
 }
 
-!contains(QT_CONFIG, system-zlib) {
-    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtZlib
-    DEFINES += QT_QMF_HAVE_ZLIB
-} else:packagesExist(zlib) {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += zlib
-    DEFINES += QT_QMF_HAVE_ZLIB
-} else:macx:exists("/usr/include/zlib.h") {
-    LIBS += -lz
-    DEFINES += QT_QMF_HAVE_ZLIB
+qtConfig(system-zlib) {
+    QMAKE_USE_PRIVATE += zlib
 } else {
-    warning("IMAP COMPRESS capability requires zlib")
+    QT_PRIVATE += zlib-private
 }
 
