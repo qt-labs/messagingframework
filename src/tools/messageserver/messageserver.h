@@ -56,7 +56,7 @@ class MessageServer : public QObject
     Q_OBJECT
 
 public:
-    MessageServer(QObject *parent = 0);
+    MessageServer(QObject *parent = Q_NULLPTR);
     ~MessageServer();
 
 #if defined(Q_OS_UNIX)

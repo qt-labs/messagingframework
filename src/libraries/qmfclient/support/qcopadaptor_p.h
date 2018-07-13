@@ -85,7 +85,7 @@ class Q_QCOP_EXPORT QCopAdaptor : public QObject
     friend class QCopAdaptorEnvelope;
     friend class QCopAdaptorChannel;
 public:
-    explicit QCopAdaptor(const QString& channel, QObject *parent = 0);
+    explicit QCopAdaptor(const QString& channel, QObject *parent = Q_NULLPTR);
     ~QCopAdaptor();
 
     QString channel() const;

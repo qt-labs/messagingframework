@@ -43,7 +43,7 @@ class MESSAGESERVER_EXPORT QMailHeartbeatTimer : public QObject
 {
     Q_OBJECT
 public:
-    explicit QMailHeartbeatTimer(QObject *parent = 0);
+    explicit QMailHeartbeatTimer(QObject *parent = Q_NULLPTR);
     ~QMailHeartbeatTimer();
 
     bool isActive() const;

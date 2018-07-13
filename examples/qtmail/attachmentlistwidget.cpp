@@ -147,7 +147,7 @@ class AttachmentListDelegate : public QItemDelegate
 {
     Q_OBJECT
 public:
-    AttachmentListDelegate(AttachmentListWidget* parent = 0);
+    AttachmentListDelegate(AttachmentListWidget* parent = Q_NULLPTR);
     void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     bool isOverRemoveLink(const QRect& parentRect, const QPoint& pos) const;
 
@@ -208,7 +208,7 @@ class AttachmentListView : public QTreeView
     Q_OBJECT
 
 public:
-    AttachmentListView(QWidget* parent = 0);
+    AttachmentListView(QWidget* parent = Q_NULLPTR);
 
 signals:
     void removeAttachmentAtIndex(int index);

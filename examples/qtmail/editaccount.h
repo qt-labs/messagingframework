@@ -54,7 +54,7 @@ class EditAccount : public QDialog
     Q_OBJECT
 
 public:
-    EditAccount(QWidget* parent = 0, const char* name = 0, Qt::WindowFlags fl = 0);
+    EditAccount(QWidget* parent = Q_NULLPTR, const char* name = Q_NULLPTR, Qt::WindowFlags fl = 0);
 
     void setAccount(QMailAccount *in, QMailAccountConfiguration* config);
 

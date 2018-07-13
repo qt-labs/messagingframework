@@ -64,7 +64,7 @@ class SearchButton : public QPushButton
 {
     Q_OBJECT
 public:
-    SearchButton(QWidget* parent = 0);
+    SearchButton(QWidget* parent = Q_NULLPTR);
 
 signals:
     void startSearch();
@@ -124,7 +124,7 @@ class BodySearchWidget : public QWidget
     Q_OBJECT
 
 public:
-    BodySearchWidget(QWidget* parent = 0);
+    BodySearchWidget(QWidget* parent = Q_NULLPTR);
 
     QString term() const;
 
@@ -174,7 +174,7 @@ class FolderSelectorWidget : public QWidget
     Q_OBJECT
 
 public:
-    FolderSelectorWidget(QWidget* parent = 0);
+    FolderSelectorWidget(QWidget* parent = Q_NULLPTR);
     QMailMessageKey searchKey() const;
     QMailSearchAction::SearchSpecification searchSpecification() const;
 
@@ -379,7 +379,7 @@ public:
     }
 
 public:
-    SearchTermWidget(QWidget* parent = 0);
+    SearchTermWidget(QWidget* parent = Q_NULLPTR);
     void reset();
     QMailMessageKey searchKey() const;
 
@@ -709,7 +709,7 @@ class SearchTermsComposer : public QWidget
     Q_OBJECT
 
 public:
-    SearchTermsComposer(QWidget* parent = 0);
+    SearchTermsComposer(QWidget* parent = Q_NULLPTR);
     QMailMessageKey searchKey() const;
 
 public slots:

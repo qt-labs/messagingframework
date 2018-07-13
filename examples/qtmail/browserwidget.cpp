@@ -141,7 +141,7 @@ public:
     void clear();
 
 protected:
-    QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData = 0);
+    QNetworkReply *createRequest(Operation op, const QNetworkRequest &req, QIODevice *outgoingData = Q_NULLPTR);
 
 private:
     QMap<QUrl, QPair<QByteArray, QString> > m_data;

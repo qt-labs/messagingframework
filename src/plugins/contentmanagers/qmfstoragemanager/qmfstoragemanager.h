@@ -54,7 +54,7 @@ class QmfStorageManager : public QObject, public QMailContentManager
     Q_OBJECT
 
 public:
-    QmfStorageManager(QObject *parent = 0);
+    QmfStorageManager(QObject *parent = Q_NULLPTR);
     ~QmfStorageManager();
 
     QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);

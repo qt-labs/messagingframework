@@ -92,7 +92,7 @@ class TestQCopServer: public QCopServer
 {
     Q_OBJECT
 public:
-    TestQCopServer(QObject *parent = 0):QCopServer(parent) {}
+    TestQCopServer(QObject *parent = Q_NULLPTR):QCopServer(parent) {}
     qint64 activateApp(const QString &app) { return activateApplication(app); }
     void appExited(qint64 pid) { applicationExited(pid); }
 };

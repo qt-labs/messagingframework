@@ -44,7 +44,7 @@ class QMF_EXPORT QMailMessageListModel : public QMailMessageModelBase
     Q_OBJECT 
 
 public:
-    QMailMessageListModel(QObject* parent = 0);
+    QMailMessageListModel(QObject* parent = Q_NULLPTR);
     virtual ~QMailMessageListModel();
 
     QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;

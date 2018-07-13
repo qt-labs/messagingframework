@@ -70,7 +70,7 @@ public:
     static QString defaultKey(QMailMessage::ContentType type = QMailMessage::UnknownContent, PresentationType pres = AnyPresentation);
 
     // Use the interface identified by the supplied ID to create a viewer
-    static QMailViewerInterface *create(const QString &key, QWidget *parent = 0);
+    static QMailViewerInterface *create(const QString &key, QWidget *parent = Q_NULLPTR);
 };
 
 // The interface for objects able to view mail messages
@@ -79,7 +79,7 @@ class QMailViewerInterface : public QObject
     Q_OBJECT
 
 public:
-    QMailViewerInterface( QWidget* parent = 0 );
+    QMailViewerInterface( QWidget* parent = Q_NULLPTR );
     virtual ~QMailViewerInterface();
 
     virtual QWidget* widget() const = 0;

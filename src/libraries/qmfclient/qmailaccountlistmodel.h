@@ -54,7 +54,7 @@ public:
     };
 
 public:
-    QMailAccountListModel(QObject* parent = 0);
+    QMailAccountListModel(QObject* parent = Q_NULLPTR);
     virtual ~QMailAccountListModel();
 
     int rowCount(const QModelIndex& index = QModelIndex()) const;

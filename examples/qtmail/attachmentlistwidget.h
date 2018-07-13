@@ -55,7 +55,7 @@ class AttachmentListWidget : public QWidget
     Q_OBJECT
 
 public:
-    AttachmentListWidget(QWidget* parent = 0);
+    AttachmentListWidget(QWidget* parent = Q_NULLPTR);
     QStringList attachments() const;
     QString attachmentAt(int index) const;
     int count() const;

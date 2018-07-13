@@ -54,7 +54,7 @@ class QMailComposerInterface : public QWidget
     Q_OBJECT
 
 public:
-    QMailComposerInterface( QWidget *parent = 0 );
+    QMailComposerInterface( QWidget *parent = Q_NULLPTR );
 
     virtual QString key() const = 0;
     virtual QList<QMailMessage::MessageType> messageTypes() const = 0;
@@ -113,7 +113,7 @@ public:
     static QIcon displayIcon(const QString &key, QMailMessage::MessageType type);
 
     // Use the interface identified by the supplied key to create a composer
-    static QMailComposerInterface *create( const QString& key, QWidget *parent = 0 );
+    static QMailComposerInterface *create( const QString& key, QWidget *parent = Q_NULLPTR );
 };
 
 #endif

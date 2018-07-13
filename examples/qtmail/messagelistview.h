@@ -63,7 +63,7 @@ class MessageListView : public QWidget
     Q_OBJECT
 
 public:
-    MessageListView(QWidget* parent = 0);
+    MessageListView(QWidget* parent = Q_NULLPTR);
     virtual ~MessageListView();
 
     QMailMessageKey key() const;

@@ -43,7 +43,7 @@ class Q_QCOP_EXPORT QCopApplicationChannel : public QCopChannel
 {
     Q_OBJECT
 public:
-    explicit QCopApplicationChannel(QObject *parent=0);
+    explicit QCopApplicationChannel(QObject *parent = Q_NULLPTR);
     virtual ~QCopApplicationChannel();
 
     bool isStartupComplete() const;

@@ -40,7 +40,7 @@
 class QMailMessageThreadedModelItem
 {
 public:
-    explicit QMailMessageThreadedModelItem(const QMailMessageId& id, QMailMessageThreadedModelItem *parent = 0) : _id(id), _parent(parent) {}
+    explicit QMailMessageThreadedModelItem(const QMailMessageId& id, QMailMessageThreadedModelItem *parent = Q_NULLPTR) : _id(id), _parent(parent) {}
     ~QMailMessageThreadedModelItem() {}
 
     int rowInParent() const { return _parent->_children.indexOf(*this); }

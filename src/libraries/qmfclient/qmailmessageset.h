@@ -244,7 +244,7 @@ public:
         SubclassUserRole
     };
 
-    QMailMessageSetModel(QObject *parent = 0);
+    QMailMessageSetModel(QObject *parent = Q_NULLPTR);
     virtual ~QMailMessageSetModel();
 
 

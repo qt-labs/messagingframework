@@ -53,7 +53,7 @@ public:
         FolderIdRole
     };
 
-    FolderModel(QObject *parent = 0);
+    FolderModel(QObject *parent = Q_NULLPTR);
     ~FolderModel();
 
     static QString excessIndicator();

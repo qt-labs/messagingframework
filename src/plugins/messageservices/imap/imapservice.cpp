@@ -169,9 +169,9 @@ public slots:
 private:
     bool doDelete(const QMailMessageIdList & ids);
 
-    virtual bool setStrategy(ImapStrategy *strategy, const char *signal = 0);
+    virtual bool setStrategy(ImapStrategy *strategy, const char *signal = Q_NULLPTR);
 
-    virtual void appendStrategy(ImapStrategy *strategy, const char *signal = 0);
+    virtual void appendStrategy(ImapStrategy *strategy, const char *signal = Q_NULLPTR);
     virtual bool initiateStrategy();
     void queueDisconnectedOperations(const QMailAccountId &accountId);
 

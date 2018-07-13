@@ -63,7 +63,7 @@ class EmailFolderDelegate : public FolderDelegate
     Q_OBJECT
 
 public:
-    EmailFolderDelegate(EmailFolderView *parent = 0);
+    EmailFolderDelegate(EmailFolderView *parent = Q_NULLPTR);
 
     virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;
 

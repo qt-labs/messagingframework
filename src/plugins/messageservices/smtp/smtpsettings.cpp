@@ -94,7 +94,7 @@ void SigEntry::closeEvent(QCloseEvent *)
 class PortValidator : public QValidator
 {
 public:
-    PortValidator(QWidget *parent = 0, const char *name = 0);
+    PortValidator(QWidget *parent = Q_NULLPTR, const char *name = Q_NULLPTR);
 
     QValidator::State validate(QString &str, int &) const;
 };

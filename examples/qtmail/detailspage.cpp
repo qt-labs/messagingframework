@@ -59,7 +59,7 @@ class FromAddressComboBox : public QComboBox
 {
     Q_OBJECT
 public:
-    FromAddressComboBox(QWidget *parent = 0);
+    FromAddressComboBox(QWidget *parent = Q_NULLPTR);
     ~FromAddressComboBox();
 
 signals:

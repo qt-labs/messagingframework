@@ -47,7 +47,7 @@ class ServiceActionStatusWidget : public QWidget
     Q_OBJECT
 
 public:
-    ServiceActionStatusWidget(QMailServiceAction* service, const QString& description, QWidget* parent = 0);
+    ServiceActionStatusWidget(QMailServiceAction* service, const QString& description, QWidget* parent = Q_NULLPTR);
     QSize sizeHint() const;
 
 private slots:

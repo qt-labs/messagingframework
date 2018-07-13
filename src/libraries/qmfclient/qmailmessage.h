@@ -394,7 +394,7 @@ protected:
     template<typename Subclass>
     QMailMessagePartContainer(Subclass* p);
 
-    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = 0);
+    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
 
 private:
     friend class QMailMessagePartContainerPrivate;
@@ -787,7 +787,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 protected:
-    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = 0);
+    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
 
 private:
     friend class QMailStore;

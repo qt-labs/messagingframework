@@ -213,8 +213,8 @@ class QCopLoopbackDevice : public QIODevice
 {
     Q_OBJECT
 public:
-    QCopLoopbackDevice(QObject *parent = 0);
-    explicit QCopLoopbackDevice(QCopLoopbackDevice *otherEnd, QObject *parent = 0);
+    QCopLoopbackDevice(QObject *parent = Q_NULLPTR);
+    explicit QCopLoopbackDevice(QCopLoopbackDevice *otherEnd, QObject *parent = Q_NULLPTR);
 
     bool open(OpenMode mode);
     void close();

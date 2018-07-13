@@ -166,7 +166,7 @@ public:
         Auto
     };
 
-    QMailRetrievalAction(QObject *parent = 0);
+    QMailRetrievalAction(QObject *parent = Q_NULLPTR);
     ~QMailRetrievalAction();
 
 public Q_SLOTS:
@@ -201,7 +201,7 @@ class QMF_EXPORT QMailTransmitAction : public QMailServiceAction
 public:
     typedef QMailTransmitActionPrivate ImplementationType;
 
-    QMailTransmitAction(QObject *parent = 0);
+    QMailTransmitAction(QObject *parent = Q_NULLPTR);
     ~QMailTransmitAction();
 
 Q_SIGNALS:
@@ -223,7 +223,7 @@ class QMF_EXPORT QMailStorageAction : public QMailServiceAction
 public:
     typedef QMailStorageActionPrivate ImplementationType;
 
-    QMailStorageAction(QObject *parent = 0);
+    QMailStorageAction(QObject *parent = Q_NULLPTR);
     ~QMailStorageAction();
 
     QMailMessageIdList messagesAdded() const;
@@ -268,7 +268,7 @@ public:
         Remote
     };
 
-    QMailSearchAction(QObject *parent = 0);
+    QMailSearchAction(QObject *parent = Q_NULLPTR);
     ~QMailSearchAction();
 
     QMailMessageIdList matchingMessageIds() const;
@@ -325,7 +325,7 @@ class QMF_EXPORT QMailActionObserver : public QMailServiceAction
 public:   
     typedef QMailActionObserverPrivate ImplementationType;
 
-    QMailActionObserver(QObject *parent = 0);
+    QMailActionObserver(QObject *parent = Q_NULLPTR);
     virtual ~QMailActionObserver();
 
     QList< QSharedPointer<QMailActionInfo> > actions() const;
@@ -343,7 +343,7 @@ class QMF_EXPORT QMailProtocolAction : public QMailServiceAction
 public:
     typedef QMailProtocolActionPrivate ImplementationType;
 
-    QMailProtocolAction(QObject *parent = 0);
+    QMailProtocolAction(QObject *parent = Q_NULLPTR);
     ~QMailProtocolAction();
 
 Q_SIGNALS:

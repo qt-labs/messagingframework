@@ -57,7 +57,7 @@ class ReadMail : public QFrame
     Q_OBJECT
 
 public:
-    ReadMail( QWidget* parent = 0, Qt::WindowFlags fl = 0 );
+    ReadMail( QWidget* parent = Q_NULLPTR, Qt::WindowFlags fl = 0 );
 
     void displayMessage(const QMailMessageId& message, QMailViewerFactory::PresentationType, bool nextAvailable, bool previousAvailable);
     QMailMessageId displayedMessage() const;

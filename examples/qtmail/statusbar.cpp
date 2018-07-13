@@ -44,7 +44,7 @@ class ArrowButton : public QToolButton
     Q_OBJECT
 
 public:
-    ArrowButton(QWidget* parent = 0);
+    ArrowButton(QWidget* parent = Q_NULLPTR);
     void reset();
     bool upState() const;
 

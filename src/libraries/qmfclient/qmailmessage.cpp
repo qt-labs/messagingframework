@@ -1597,7 +1597,7 @@ QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray&
     parse(text, structured);
 }
 
-static bool validExtension(const QByteArray& trailer, int* number = 0, bool* encoded = 0)
+static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
 {
     // Extensions according to RFC 2231:
     QRegExp extensionFormat("(?:\\*(\\d+))?(\\*?)");
@@ -1614,7 +1614,7 @@ static bool validExtension(const QByteArray& trailer, int* number = 0, bool* enc
         return false;
 }
 
-static bool matchingParameter(const QByteArray& name, const QByteArray& other, bool* encoded = 0)
+static bool matchingParameter(const QByteArray& name, const QByteArray& other, bool* encoded = Q_NULLPTR)
 {
     QByteArray match(name.trimmed());
 
@@ -1930,7 +1930,7 @@ static QByteArray protectedParameter(const QByteArray& value)
         return value;
 }
 
-static bool extendedParameter(const QByteArray& name, QByteArray* truncated = 0, int* number = 0, bool* encoded = 0)
+static bool extendedParameter(const QByteArray& name, QByteArray* truncated = 0, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
 {
     QByteArray param(name.trimmed());
 

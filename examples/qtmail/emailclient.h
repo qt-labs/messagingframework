@@ -79,7 +79,7 @@ class MessageUiBase : public QMainWindow
     Q_OBJECT
 
 public:
-    MessageUiBase(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    MessageUiBase(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = 0);
     virtual ~MessageUiBase() {}
 
 signals:
@@ -148,7 +148,7 @@ class EmailClient : public MessageUiBase
     Q_OBJECT
 
 public:
-    EmailClient(QWidget *parent = 0, Qt::WindowFlags f = 0);
+    EmailClient(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = 0);
     ~EmailClient();
 
     bool cleanExit(bool force);
@@ -476,7 +476,7 @@ signals:
 class NotificationTray : public QSystemTrayIcon {
     Q_OBJECT
 public:
-    NotificationTray(QObject *parent = 0);
+    NotificationTray(QObject *parent = Q_NULLPTR);
 
 private slots:
     void messagesAdded(const QMailMessageIdList &ids);

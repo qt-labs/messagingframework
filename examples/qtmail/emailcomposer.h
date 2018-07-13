@@ -57,7 +57,7 @@ class EmailComposerInterface : public QMailComposerInterface
     Q_OBJECT
 
 public:
-    EmailComposerInterface( QWidget *parent = 0 );
+    EmailComposerInterface( QWidget *parent = Q_NULLPTR );
     virtual ~EmailComposerInterface();
 
     bool isEmpty() const;

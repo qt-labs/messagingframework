@@ -51,7 +51,7 @@ class Q_QCOP_EXPORT QCopChannelMonitor : public QObject
 {
     Q_OBJECT
 public:
-    explicit QCopChannelMonitor(const QString& channel, QObject *parent=0);
+    explicit QCopChannelMonitor(const QString& channel, QObject *parent = Q_NULLPTR);
     virtual ~QCopChannelMonitor();
 
     QString channel() const;

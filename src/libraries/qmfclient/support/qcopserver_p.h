@@ -51,7 +51,7 @@ class Q_QCOP_EXPORT QCopServer : public QObject
 {
     Q_OBJECT
 public:
-    QCopServer(QObject *parent = 0);
+    QCopServer(QObject *parent = Q_NULLPTR);
     ~QCopServer();
 
 signals:
