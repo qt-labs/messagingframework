@@ -198,7 +198,7 @@ public:
         */
         virtual void doLog(const LogLevel lvl, const char* fmt, va_list args);
         /// Closes file if this object is it's owner.
-        ~FileLogger();
+        virtual ~FileLogger();
 private:
         Q_DISABLE_COPY(FileLogger)
         QString name;
@@ -240,7 +240,7 @@ public:
         */
         virtual void doLog(const LogLevel lvl, const char* fmt, va_list args);
         /// Disconnects from the syslog
-        ~SysLogger();
+        virtual ~SysLogger();
 private:
         Q_DISABLE_COPY(SysLogger)
         /// Ident string for syslog
