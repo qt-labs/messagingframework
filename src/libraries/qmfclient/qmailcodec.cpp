@@ -214,7 +214,10 @@ void QMailCodec::decode(QDataStream& out, QDataStream& in)
     while (!in.atEnd())
     {
         int length = in.readRawData(buffer, MaxCharacters);
-
+        if (length > 0 && in.status() == QDataStream::ReadPastEnd) {
+            // work around QTBUG-69474
+            in.resetStatus();
+        }
         decodeChunk(out, buffer, length, in.atEnd());
     }
     delete [] buffer;
