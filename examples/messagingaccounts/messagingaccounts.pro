@@ -1,5 +1,5 @@
 TEMPLATE = app
-target.path += $$QMF_INSTALL_ROOT/bin
+target.path += $$[QT_INSTALL_EXAMPLES]/qmf/messagingaccounts
 TARGET = messagingaccounts5
 QT += widgets qmfclient qmfmessageserver qmfwidgets
 
@@ -20,3 +20,4 @@ SOURCES += $$QTMAIL_EXAMPLE/accountsettings.cpp \
 RESOURCES += messagingaccounts.qrc
 
 include(../../common.pri)
+CONFIG += install_ok

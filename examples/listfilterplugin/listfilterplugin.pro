@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = listfilterplugin
-CONFIG += qmfclient plugin
+CONFIG += qmfclient plugin install_ok
 QT = core
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers

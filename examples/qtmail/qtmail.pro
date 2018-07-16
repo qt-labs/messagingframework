@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = qtmail5
-
+target.path += $$[QT_INSTALL_EXAMPLES]/qmf/qtmail
 QT += widgets qmfclient qmfmessageserver qmfwidgets
 
 # Use webkit to render mail if available
@@ -8,8 +8,6 @@ contains(QT_CONFIG,webkit){
     QT += network webkitwidgets
     DEFINES += USE_WEBKIT
 }
-
-target.path += $$QMF_INSTALL_ROOT/bin
 
 HEADERS += emailclient.h \
            messagelistview.h \
@@ -57,3 +55,4 @@ FORMS += searchviewbasephone.ui
 RESOURCES += qtmail.qrc
 
 include(../../common.pri)
+CONFIG += install_ok
