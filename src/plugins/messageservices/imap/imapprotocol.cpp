@@ -656,8 +656,9 @@ public:
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
     virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual QString error(const QString &line);
 signals:
-    void folderCreated(const QString &name);
+    void folderCreated(const QString &name, bool success);
 
 private:
     QString makePath(ImapContext *c, const QMailFolderId &parent, const QString &name);
@@ -685,6 +686,13 @@ QString CreateState::transmit(ImapContext *c)
         return QString();
     }
 
+    if (name.contains(c->protocol()->delimiter())) {
+        qWarning() << "Unsupported: folder name contains IMAP delimiter" << name << c->protocol()->delimiter();
+        emit folderCreated(makePath(c, parent, name), false);
+        c->operationCompleted(command(), OpFailed);
+        return QString();
+    }
+
     QString path = makePath(c, parent, name);
 
     QString cmd("CREATE " + ImapProtocol::quoteString(path));
@@ -699,10 +707,15 @@ void CreateState::leave(ImapContext *)
 
 void CreateState::taggedResponse(ImapContext *c, const QString &line)
 {
-    if (status() == OpOk) {
-        emit folderCreated(makePath(c, _mailboxes.first().first, _mailboxes.first().second));
-    }
+    emit folderCreated(makePath(c, _mailboxes.first().first, _mailboxes.first().second), status() == OpOk);
     ImapState::taggedResponse(c, line);
+}
+
+QString CreateState::error(const QString &line)
+{
+    qWarning() << "CreateState::error:" << line;
+    emit folderCreated(_mailboxes.first().second, false);
+    return ImapState::error(line);
 }
 
 QString CreateState::makePath(ImapContext *c, const QMailFolderId &parent, const QString &name)
@@ -733,8 +746,9 @@ public:
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
     virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual QString error(const QString &line);
 signals:
-    void folderDeleted(const QMailFolder &name);
+    void folderDeleted(const QMailFolder &name, bool success);
 
 private:
     QList<QMailFolder> _mailboxList;
@@ -765,10 +779,15 @@ void DeleteState::leave(ImapContext *)
 
 void DeleteState::taggedResponse(ImapContext *c, const QString &line)
 {
-    if (status() == OpOk) {
-        emit folderDeleted(_mailboxList.first());
-    }
+    emit folderDeleted(_mailboxList.first(), status() == OpOk);
     ImapState::taggedResponse(c, line);
+}
+
+QString DeleteState::error(const QString &line)
+{
+    qWarning() << "DeleteState::error:" << line;
+    emit folderDeleted(_mailboxList.first(), false);
+    return ImapState::error(line);
 }
 
 class RenameState : public ImapState
@@ -785,8 +804,9 @@ public:
     virtual QString transmit(ImapContext *c);
     virtual void leave(ImapContext *c);
     virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual QString error(const QString &line);
 signals:
-    void folderRenamed(const QMailFolder &folder, const QString &newPath);
+    void folderRenamed(const QMailFolder &folder, const QString &newPath, bool success);
 
 private:
     QString buildNewPath(ImapContext *c , const QMailFolder &folder, QString &newName);
@@ -813,6 +833,14 @@ QString RenameState::transmit(ImapContext *c)
 
     QString from = _mailboxNames.last().first.path();
     QString to =  buildNewPath(c, _mailboxNames.last().first, _mailboxNames.last().second);
+    if (_mailboxNames.last().second.contains(c->protocol()->delimiter())) {
+        qWarning() << "Unsupported: new name contains IMAP delimiter" << _mailboxNames.last().second
+                   << c->protocol()->delimiter();
+        emit folderRenamed(from, to, false);
+        c->operationCompleted(command(), OpFailed);
+        return QString();
+    }
+
     QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg( ImapProtocol::quoteString(to)));
     return c->sendCommand(cmd);
 }
@@ -825,11 +853,16 @@ void RenameState::leave(ImapContext *)
 
 void RenameState::taggedResponse(ImapContext *c, const QString &line)
 {
-    if (status() == OpOk) {
-        QString path = buildNewPath(c, _mailboxNames.first().first, _mailboxNames.first().second);
-        emit folderRenamed(_mailboxNames.first().first, path);
-    }
+    QString path = buildNewPath(c, _mailboxNames.first().first, _mailboxNames.first().second);
+    emit folderRenamed(_mailboxNames.first().first, path, status() == OpOk);
     ImapState::taggedResponse(c, line);
+}
+
+QString RenameState::error(const QString &line)
+{
+    qWarning() << "RenameState::error:" << line;
+    emit folderRenamed(_mailboxNames.first().first, _mailboxNames.first().second, false);
+    return ImapState::error(line);
 }
 
 QString RenameState::buildNewPath(ImapContext *c , const QMailFolder &folder, QString &newName)
@@ -2867,12 +2900,12 @@ ImapProtocol::ImapProtocol()
             this, SIGNAL(messageStored(QString)));
     connect(&_fsm->uidCopyState, SIGNAL(messageCopied(QString, QString)), 
             this, SIGNAL(messageCopied(QString, QString)));
-    connect(&_fsm->createState, SIGNAL(folderCreated(QString)),
-            this, SIGNAL(folderCreated(QString)));
-    connect(&_fsm->deleteState, SIGNAL(folderDeleted(QMailFolder)),
-            this, SIGNAL(folderDeleted(QMailFolder)));
-    connect(&_fsm->renameState, SIGNAL(folderRenamed(QMailFolder, QString)),
-            this, SIGNAL(folderRenamed(QMailFolder, QString)));
+    connect(&_fsm->createState, SIGNAL(folderCreated(QString, bool)),
+            this, SIGNAL(folderCreated(QString, bool)));
+    connect(&_fsm->deleteState, SIGNAL(folderDeleted(QMailFolder, bool)),
+            this, SIGNAL(folderDeleted(QMailFolder, bool)));
+    connect(&_fsm->renameState, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
+            this, SIGNAL(folderRenamed(QMailFolder, QString, bool)));
 }
 
 ImapProtocol::~ImapProtocol()

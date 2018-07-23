@@ -636,23 +636,26 @@ void ImapStrategy::urlAuthorized(ImapStrategyContextBase *context, const QString
     Q_UNUSED(url)
 }
 
-void ImapStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
+void ImapStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success)
 {
     Q_UNUSED(context)
     Q_UNUSED(folder)
+    Q_UNUSED(success)
 }
 
-void ImapStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
+void ImapStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success)
 {
     Q_UNUSED(context)
     Q_UNUSED(folder)
+    Q_UNUSED(success)
 }
 
-void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
+void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath, bool success)
 {
     Q_UNUSED(context)
     Q_UNUSED(folder)
     Q_UNUSED(newPath)
+    Q_UNUSED(success)
 }
 
 void ImapStrategy::selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder)
@@ -699,14 +702,22 @@ void ImapCreateFolderStrategy::process(ImapStrategyContextBase *context)
 {
     while(_folders.count() > 0) {
         QPair<QMailFolderId, QString> folder = _folders.takeFirst();
-        context->protocol().sendCreate(folder.first, folder.second);
         _inProgress++;
+        context->protocol().sendCreate(folder.first, folder.second);
     }
 }
 
-void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder)
+void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success)
 {
-    if (--_inProgress == 0) {
+    if (_inProgress > 0) {
+        _inProgress--;
+    }
+    if (!success) {
+        _inProgress = 0; // in case of error, subsequent responses may not be received
+        qWarning() << "IMAP folder creation failed";
+        return; // don't call context->operationCompleted in case of error
+    }
+    if (_inProgress == 0) {
         if (_matchFoldersRequired) {
             QMailAccountId accountId = context->config().id();
             QMail::detectStandardFolders(accountId);
@@ -769,16 +780,24 @@ void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapS
     }
 
     //now the parent is safe to delete
-    context->protocol().sendDelete(QMailFolder(folderId));
     _inProgress++;
+    context->protocol().sendDelete(QMailFolder(folderId));
 }
 
-void ImapDeleteFolderStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder)
+void ImapDeleteFolderStrategy::folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success)
 {
-    if(!QMailStore::instance()->removeFolder(folder.id()))
+    if (_inProgress > 0) {
+        _inProgress--;
+    }
+    if (!success) {
+        _inProgress = 0; // in case of error, subsequent responses may not be received
+        qWarning() << "IMAP folder deletion failed";
+        return; // don't call context->operationCompleted in case of error
+    }
+    if (!QMailStore::instance()->removeFolder(folder.id()))
         qWarning() << "Unable to remove folder id: " << folder.id();
 
-    if(--_inProgress == 0)
+    if (_inProgress == 0)
        context->operationCompleted();
 }
 
@@ -820,15 +839,23 @@ void ImapRenameFolderStrategy::process(ImapStrategyContextBase *context)
 {
     while(_folderNewNames.count() > 0) {
         const QPair<QMailFolderId, QString> &folderId_name =  _folderNewNames.takeFirst();
-        context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
         _inProgress++;
+        context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
     }
 }
 
-void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newPath)
+void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder,
+                                             const QString &newPath, bool success)
 {
     QString name;
-
+    if (_inProgress > 0) {
+        _inProgress--;
+    }
+    if (!success) {
+        _inProgress = 0; // in case of error, subsequent responses may not be received
+        qWarning() << "IMAP folder rename failed";
+        return; // don't call context->operationCompleted in case of error
+    }
     if(!context->protocol().delimiter().isNull()) {
         //only update if we're dealing with a hierarchical system
         QChar delimiter = context->protocol().delimiter();
@@ -859,7 +886,7 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
 
     if(!QMailStore::instance()->updateFolder(&newFolder))
         qWarning() << "Unable to locally rename folder";
-    if(--_inProgress == 0)
+    if (_inProgress == 0)
         context->operationCompleted();
 }
 

@@ -424,12 +424,12 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(downloadSize(QString, int)) );
     connect(&_protocol, SIGNAL(urlAuthorized(QString)),
             this, SLOT(urlAuthorized(QString)) );
-    connect(&_protocol, SIGNAL(folderCreated(QString)),
-            this, SLOT(folderCreated(QString)));
-    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder)),
-            this, SLOT(folderDeleted(QMailFolder)));
-    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString)),
-            this, SLOT(folderRenamed(QMailFolder, QString)));
+    connect(&_protocol, SIGNAL(folderCreated(QString, bool)),
+            this, SLOT(folderCreated(QString, bool)));
+    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder, bool)),
+            this, SLOT(folderDeleted(QMailFolder, bool)));
+    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
+            this, SLOT(folderRenamed(QMailFolder, QString, bool)));
     connect(&_protocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)) );
     connect(&_protocol, SIGNAL(connectionError(int,QString)),
@@ -964,20 +964,22 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 }
 
 
-void ImapClient::folderCreated(const QString &folder)
+void ImapClient::folderCreated(const QString &folder, bool success)
 {
-    mailboxListed(QString(), folder);
-    _strategyContext->folderCreated(folder);
+    if (success) {
+        mailboxListed(QString(), folder);
+    }
+    _strategyContext->folderCreated(folder, success);
 }
 
-void ImapClient::folderDeleted(const QMailFolder &folder)
+void ImapClient::folderDeleted(const QMailFolder &folder, bool success)
 {
-    _strategyContext->folderDeleted(folder);
+    _strategyContext->folderDeleted(folder, success);
 }
 
-void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath)
+void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath, bool success)
 {
-    _strategyContext->folderRenamed(folder, newPath);
+    _strategyContext->folderRenamed(folder, newPath, success);
 }
 
 static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)

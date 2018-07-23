@@ -226,9 +226,9 @@ signals:
     void messageCreated(const QMailMessageId& id, const QString& uid);
     void urlAuthorized(const QString& url);
 
-    void folderCreated(const QString &folder);
-    void folderDeleted(const QMailFolder &name);
-    void folderRenamed(const QMailFolder &folder, const QString &newPath);
+    void folderCreated(const QString &folder, bool success);
+    void folderDeleted(const QMailFolder &name, bool success);
+    void folderRenamed(const QMailFolder &folder, const QString &newPath, bool success);
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);

@@ -141,9 +141,9 @@ public:
     virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &uid);
     virtual void downloadSize(ImapStrategyContextBase *context, const QString &uid, int length);
     virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
-    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
-    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
-    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName);
+    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success);
+    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success);
+    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &newName, bool success);
     virtual void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder);
 
     void clearError() { _error = false; }
@@ -169,7 +169,7 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void createFolder(const QMailFolderId &folder, const QString &name, bool matchFoldersRequired);
-    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder);
+    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success);
 protected:
     virtual void handleCreate(ImapStrategyContextBase *context);
     virtual void handleLogin(ImapStrategyContextBase *context);
@@ -191,7 +191,7 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void deleteFolder(const QMailFolderId &folderId);
-    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder);
+    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success);
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleDelete(ImapStrategyContextBase *context);
@@ -209,7 +209,8 @@ public:
 
     virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
     virtual void renameFolder(const QMailFolderId &folderId, const QString &newName);
-    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder, const QString &name);
+    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder,
+                               const QString &name, bool success);
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleRename(ImapStrategyContextBase *context);
@@ -852,9 +853,11 @@ public:
     void messageCreated(const QMailMessageId &id, const QString &uid) { _strategy->messageCreated(this, id, uid); }
     void downloadSize(const QString &uid, int length) { _strategy->downloadSize(this, uid, length); }
     void urlAuthorized(const QString &url) { _strategy->urlAuthorized(this, url); }
-    void folderCreated(const QString &folder) { _strategy->folderCreated(this, folder); }
-    void folderDeleted(const QMailFolder &folder) { _strategy->folderDeleted(this, folder); }
-    void folderRenamed(const QMailFolder &folder, const QString &name) { _strategy->folderRenamed(this, folder, name); }
+    void folderCreated(const QString &folder, bool success) { _strategy->folderCreated(this, folder, success); }
+    void folderDeleted(const QMailFolder &folder, bool success) { _strategy->folderDeleted(this, folder, success); }
+    void folderRenamed(const QMailFolder &folder, const QString &name, bool success) {
+        _strategy->folderRenamed(this, folder, name, success);
+    }
     QString baseFolder() { return _strategy->baseFolder(); }
 
     ImapStrategy *strategy() const { return _strategy; }
