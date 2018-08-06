@@ -430,6 +430,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(folderDeleted(QMailFolder, bool)));
     connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
             this, SLOT(folderRenamed(QMailFolder, QString, bool)));
+    connect(&_protocol, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)),
+            this, SLOT(folderMoved(QMailFolder, QString, QMailFolderId, bool)));
     connect(&_protocol, SIGNAL(updateStatus(QString)),
             this, SLOT(transportStatus(QString)) );
     connect(&_protocol, SIGNAL(connectionError(int,QString)),
@@ -980,6 +982,12 @@ void ImapClient::folderDeleted(const QMailFolder &folder, bool success)
 void ImapClient::folderRenamed(const QMailFolder &folder, const QString &newPath, bool success)
 {
     _strategyContext->folderRenamed(folder, newPath, success);
+}
+
+void ImapClient::folderMoved(const QMailFolder &folder, const QString &newPath,
+                             const QMailFolderId &newParentId, bool success)
+{
+    _strategyContext->folderMoved(folder, newPath, newParentId, success);
 }
 
 static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)

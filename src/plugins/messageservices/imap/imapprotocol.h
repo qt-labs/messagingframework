@@ -83,7 +83,8 @@ enum ImapCommand
     IMAP_QResync,
     IMAP_FetchFlags,
     IMAP_Noop,
-    IMAP_Compress
+    IMAP_Compress,
+    IMAP_Move
 };
 
 enum MessageFlag
@@ -186,6 +187,7 @@ public:
     void sendCreate(const QMailFolderId &parentFolderId, const QString &name);
     void sendDelete(const QMailFolder &mailbox);
     void sendRename(const QMailFolder &mailbox, const QString &newname);
+    void sendMove(const QMailFolder &mailbox, const QMailFolderId &newParentId);
 
     /*  Valid in Selected state only */
     void sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count);
@@ -229,6 +231,7 @@ signals:
     void folderCreated(const QString &folder, bool success);
     void folderDeleted(const QMailFolder &name, bool success);
     void folderRenamed(const QMailFolder &folder, const QString &newPath, bool success);
+    void folderMoved(const QMailFolder &folder, const QString &newPath, const QMailFolderId &newParentId, bool success);
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);

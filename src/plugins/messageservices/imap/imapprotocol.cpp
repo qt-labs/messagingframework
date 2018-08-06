@@ -876,6 +876,88 @@ QString RenameState::buildNewPath(ImapContext *c , const QMailFolder &folder, QS
     return path;
 }
 
+class MoveState : public ImapState
+{
+    Q_OBJECT
+
+public:
+    MoveState() : ImapState(IMAP_Move, "Move") {}
+
+    void setNewMailboxParent(const QMailFolder &mailbox, const QMailFolderId &newParentId);
+
+    virtual bool permitsPipelining() const { return true; }
+    virtual void init();
+    virtual QString transmit(ImapContext *c);
+    virtual void leave(ImapContext *c);
+    virtual void taggedResponse(ImapContext *c, const QString &line);
+    virtual QString error(const QString &line);
+signals:
+    void folderMoved(const QMailFolder &folder, const QString &newPath,
+                     const QMailFolderId &newParentId, bool success);
+
+private:
+    QString buildNewPath(ImapContext *c, const QMailFolder &folder, const QMailFolderId &newParentId);
+    QList<QPair<QMailFolder, QMailFolderId> > _mailboxParents;
+};
+
+void MoveState::setNewMailboxParent(const QMailFolder &mailbox, const QMailFolderId &newParentId)
+{
+    _mailboxParents.append(qMakePair(mailbox, newParentId));
+}
+
+void MoveState::init()
+{
+    _mailboxParents.clear();
+    ImapState::init();
+}
+
+QString MoveState::transmit(ImapContext *c)
+{
+    if (c->protocol()->delimiterUnknown()) {
+        // We are waiting on delim to move
+        return QString();
+    }
+
+    QString from = _mailboxParents.last().first.path();
+    QString to =  buildNewPath(c, _mailboxParents.last().first, _mailboxParents.last().second);
+    QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg( ImapProtocol::quoteString(to)));
+    return c->sendCommand(cmd);
+}
+
+void MoveState::leave(ImapContext *)
+{
+    ImapState::init();
+    _mailboxParents.removeFirst();
+}
+
+void MoveState::taggedResponse(ImapContext *c, const QString &line)
+{
+    QString path = buildNewPath(c, _mailboxParents.first().first, _mailboxParents.first().second);
+    emit folderMoved(_mailboxParents.first().first, path, _mailboxParents.first().second, status() == OpOk);
+    ImapState::taggedResponse(c, line);
+}
+
+QString MoveState::error(const QString &line)
+{
+    qWarning() << "MoveState::error:" << line;
+    emit folderMoved(_mailboxParents.first().first, QString(), _mailboxParents.first().second, false);
+    return ImapState::error(line);
+}
+
+QString MoveState::buildNewPath(ImapContext *c, const QMailFolder &folder, const QMailFolderId &newParentId)
+{
+    QString path;
+    if (c->protocol()->flatHierarchy() || c->protocol()->delimiter() == 0) {
+        path = folder.path();
+    } else if (newParentId.isValid()) {
+        QMailFolder parentFolder(newParentId);
+        path = parentFolder.path() + c->protocol()->delimiter() + folder.path().section(c->protocol()->delimiter(), -1);
+    } else {
+        path = folder.path().section(c->protocol()->delimiter(), -1);
+    }
+    return path;
+}
+
 class ListState : public ImapState
 {
     Q_OBJECT
@@ -2754,6 +2836,7 @@ public:
     EnableState enableState;
     NoopState noopState;
     RenameState renameState;
+    MoveState moveState;
     SearchMessageState searchMessageState;
     SearchState searchState;
     UidSearchState uidSearchState;
@@ -2906,6 +2989,8 @@ ImapProtocol::ImapProtocol()
             this, SIGNAL(folderDeleted(QMailFolder, bool)));
     connect(&_fsm->renameState, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
             this, SIGNAL(folderRenamed(QMailFolder, QString, bool)));
+    connect(&_fsm->moveState, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)),
+            this, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)));
 }
 
 ImapProtocol::~ImapProtocol()
@@ -3190,6 +3275,15 @@ void ImapProtocol::sendRename(const QMailFolder &mailbox, const QString &newName
     }
     _fsm->renameState.setNewMailboxName(mailbox, newName);
     _fsm->setState(&_fsm->renameState);
+}
+
+void ImapProtocol::sendMove(const QMailFolder &mailbox, const QMailFolderId &newParentId)
+{
+    if (delimiterUnknown()) {
+        sendDiscoverDelimiter();
+    }
+    _fsm->moveState.setNewMailboxParent(mailbox, newParentId);
+    _fsm->setState(&_fsm->moveState);
 }
 
 void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count)

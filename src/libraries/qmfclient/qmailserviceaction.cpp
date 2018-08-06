@@ -1681,6 +1681,12 @@ void QMailStorageActionPrivate::onlineDeleteFolder(const QMailFolderId &folderId
     onlineDeleteFolderHelper(folderId);
 }
 
+void QMailStorageActionPrivate::onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    _server->onlineMoveFolder(newAction(), folderId, newParentId);
+    emitChanges();
+}
+
 void QMailStorageActionPrivate::init()
 {
     QMailServiceActionPrivate::init();
@@ -1998,7 +2004,7 @@ void QMailStorageAction::onlineCreateFolder(const QString &name, const QMailAcco
 
     This function requires the device to be online, it may initiate communication with external servers.
     
-    \sa onlineCreateFolder()
+    \sa onlineCreateFolder(), onlineMoveFolder()
 */
 void QMailStorageAction::onlineRenameFolder(const QMailFolderId &folderId, const QString &name)
 {
@@ -2011,13 +2017,26 @@ void QMailStorageAction::onlineRenameFolder(const QMailFolderId &folderId, const
 
     This function requires the device to be online, it may initiate communication with external servers.
 
-    \sa onlineCreateFolder(), onlineRenameFolder()
+    \sa onlineCreateFolder(), onlineRenameFolder(), onlineMoveFolder()
 */
 void QMailStorageAction::onlineDeleteFolder(const QMailFolderId &folderId)
 {
     impl(this)->onlineDeleteFolder(folderId);
 }
 
+/*!
+    Requests that the message server move the folder identified by \a folderId.
+    If \a newParentId is a valid folder identifier the folder will be a child of the parent;
+    otherwise the folder will be have no parent and will be moved to the highest level.
+
+    This function requires the device to be online, it may initiate communication with external servers.
+
+    \sa onlineCreateFolder(), onlineRenameFolder()
+*/
+void QMailStorageAction::onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    impl(this)->onlineMoveFolder(folderId, newParentId);
+}
 
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     : QMailServiceActionPrivate(this, i)

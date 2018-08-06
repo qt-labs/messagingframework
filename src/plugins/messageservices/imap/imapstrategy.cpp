@@ -658,6 +658,16 @@ void ImapStrategy::folderRenamed(ImapStrategyContextBase *context, const QMailFo
     Q_UNUSED(success)
 }
 
+void ImapStrategy::folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder,
+                               const QString &newPath, const QMailFolderId &newParentId, bool success)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(folder)
+    Q_UNUSED(newPath)
+    Q_UNUSED(newParentId)
+    Q_UNUSED(success)
+}
+
 void ImapStrategy::selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder)
 {
     context->protocol().sendSelect(folder);
@@ -888,6 +898,93 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
         qWarning() << "Unable to locally rename folder";
     if (_inProgress == 0)
         context->operationCompleted();
+}
+
+/* A strategy to move a folder */
+void ImapMoveFolderStrategy::transition(ImapStrategyContextBase* context, const ImapCommand cmd, const OperationStatus op)
+{
+    if (op != OpOk)
+        qWarning() << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
+
+    switch (cmd)
+    {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
+    case IMAP_Move:
+        handleMove(context);
+        break;
+    default:
+        qWarning() << "Unhandled IMAP response:" << cmd;
+    }
+}
+
+void ImapMoveFolderStrategy::moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    _folderNewParents.append(qMakePair(folderId, newParentId));
+}
+
+void ImapMoveFolderStrategy::handleLogin(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapMoveFolderStrategy::handleMove(ImapStrategyContextBase *context)
+{
+    process(context);
+}
+
+void ImapMoveFolderStrategy::process(ImapStrategyContextBase *context)
+{
+    while (_folderNewParents.count() > 0) {
+        const QPair<QMailFolderId, QMailFolderId> &folderId_parent = _folderNewParents.takeFirst();
+        _inProgress++;
+        context->protocol().sendMove(QMailFolder(folderId_parent.first), folderId_parent.second);
+    }
+}
+
+void ImapMoveFolderStrategy::folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder,
+                                         const QString &newPath, const QMailFolderId &newParentId, bool success)
+{
+    if (_inProgress > 0) {
+        _inProgress--;
+    }
+    if (!success) {
+        _inProgress = 0; // in case of error, subsequent responses may not be received
+        return;
+    }
+    QString name;
+    if (!context->protocol().delimiter().isNull()) {
+        //only update if we're dealing with a hierarchical system
+        QChar delimiter = context->protocol().delimiter();
+        if (folder.path().count(delimiter) == 0) {
+            name = newPath;
+        } else {
+            name = newPath.section(delimiter, -1, -1);
+        }
+        QMailFolderKey affectedFolderKey(QMailFolderKey::ancestorFolderIds(folder.id()));
+        QMailFolderIdList affectedFolders = QMailStore::instance()->queryFolders(affectedFolderKey);
+
+        while (!affectedFolders.isEmpty()) {
+            QMailFolder childFolder(affectedFolders.takeFirst());
+            QString path = childFolder.path();
+            path.replace(0, folder.path().length(), newPath);
+            childFolder.setPath(path);
+            if (!QMailStore::instance()->updateFolder(&childFolder))
+                qWarning() << "Unable to locally change path of a subfolder";
+        }
+    } else {
+        name = newPath;
+    }
+
+    QMailFolder newFolder = folder;
+    newFolder.setPath(newPath);
+    newFolder.setParentFolderId(newParentId);
+
+    if (!QMailStore::instance()->updateFolder(&newFolder))
+        qWarning() << "Unable to locally move folder";
+    if (_inProgress == 0)
+         context->operationCompleted();
 }
 
 /* A strategy to traverse a list of messages, preparing each one for transmission
@@ -1162,7 +1259,13 @@ void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapC
             handleRename(context);
             break;
         }
-        
+
+        case IMAP_Move:
+        {
+            handleMove(context);
+            break;
+        }
+
         case IMAP_Close:
         {
             handleClose(context);
@@ -1205,6 +1308,11 @@ void ImapMessageListStrategy::handleDelete(ImapStrategyContextBase *context)
 }
 
 void ImapMessageListStrategy::handleRename(ImapStrategyContextBase *context)
+{
+    messageListMessageAction(context);
+}
+
+void ImapMessageListStrategy::handleMove(ImapStrategyContextBase *context)
 {
     messageListMessageAction(context);
 }

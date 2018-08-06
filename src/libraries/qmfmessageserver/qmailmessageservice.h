@@ -164,6 +164,8 @@ public Q_SLOTS:
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name, quint64 action);
     virtual bool deleteFolder(const QMailFolderId &folderId);
     virtual bool deleteFolder(const QMailFolderId &folderId, quint64 action);
+    virtual bool moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
+    virtual bool moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId, quint64 action);
 
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort);
     virtual bool searchMessages(const QMailMessageKey &filter, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action);

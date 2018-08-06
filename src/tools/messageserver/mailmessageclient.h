@@ -99,6 +99,7 @@ signals:
     void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineMoveFolder(quint64, const QMailFolderId &folderId, const QMailFolderId &newParentId);
 
     void cancelTransfer(quint64);
 
@@ -135,7 +136,8 @@ signals:
     void folderCreated(quint64, const QMailFolderId&);
     void folderRenamed(quint64, const QMailFolderId&);
     void folderDeleted(quint64, const QMailFolderId&);
-    
+    void folderMoved(quint64, const QMailFolderId&);
+
     void storageActionCompleted(quint64);
 
     void matchingMessageIds(quint64, const QMailMessageIdList&);

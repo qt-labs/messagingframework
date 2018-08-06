@@ -863,6 +863,25 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
     return false;
 }
 
+/*!
+    Invoked by the message server to move a folder.
+
+    Moves the folder identified by \a folderId to a folder identified by \a newParentId.
+    The name of the folder should not change.
+
+    Return true if an operation is initiated.
+
+    \sa deleteFolder(), createFolder(), renameFolder()
+*/
+bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    Q_UNUSED(folderId)
+    Q_UNUSED(newParentId)
+
+    notImplemented();
+    return false;
+}
+
 
 
 /*!
@@ -1909,6 +1928,23 @@ bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QStri
 bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId, quint64 action)
 {
     Q_UNUSED(folderId)
+    Q_UNUSED(action)
+
+    notImplemented(action);
+    return false;
+}
+
+/*!
+    \overload moveFolder()
+
+    Concurrent version of moveFolder().
+
+    The request has the identifier \a action.
+*/
+bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId, quint64 action)
+{
+    Q_UNUSED(folderId)
+    Q_UNUSED(newParentId)
     Q_UNUSED(action)
 
     notImplemented(action);

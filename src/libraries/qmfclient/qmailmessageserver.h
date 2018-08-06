@@ -89,6 +89,7 @@ Q_SIGNALS:
     void folderCreated(quint64, const QMailFolderId&);
     void folderRenamed(quint64, const QMailFolderId&);
     void folderDeleted(quint64, const QMailFolderId&);
+    void folderMoved(quint64, const QMailFolderId&);
 
     void storageActionCompleted(quint64);
 
@@ -140,6 +141,7 @@ public Q_SLOTS:
     void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
+    void onlineMoveFolder(quint64, const QMailFolderId &folderId, const QMailFolderId &newParentId);
 
     void deleteMessages(quint64, const QMailMessageIdList &ids);
     void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);

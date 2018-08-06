@@ -145,6 +145,7 @@ public slots:
     virtual bool createStandardFolders(const QMailAccountId &accountId);
     virtual bool deleteFolder(const QMailFolderId &folderId);
     virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
+    virtual bool moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
 
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
     virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort);
@@ -1085,6 +1086,32 @@ bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QStr
     appendStrategy(&_service->_client->strategyContext()->renameFolderStrategy);
     if(!_unavailable)
         return initiateStrategy();
+    return true;
+}
+
+bool ImapService::Source::moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
+{
+    Q_ASSERT(!_unavailable);
+    if (!_service)
+        return false;
+
+    if (!_service->_client) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
+        return false;
+    }
+
+    if (!folderId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot move an invalid folder"));
+        return false;
+    }
+
+    _service->_client->strategyContext()->moveFolderStrategy.moveFolder(folderId, newParentId);
+
+    appendStrategy(&_service->_client->strategyContext()->moveFolderStrategy);
+
+    if (!_unavailable)
+        return initiateStrategy();
+
     return true;
 }
 

@@ -244,6 +244,7 @@ public Q_SLOTS:
     void onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(const QMailFolderId &folderId);
+    void onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
 
     void deleteMessages(const QMailMessageIdList &ids);
     void rollBackUpdates(const QMailAccountId &mailAccountId);
