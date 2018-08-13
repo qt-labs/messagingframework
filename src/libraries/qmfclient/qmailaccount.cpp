@@ -60,6 +60,7 @@ static quint64 canTransmitViaReferenceFlag = 0;
 static quint64 canCreateFoldersFlag = 0;
 static quint64 useSmartReplyFlag = 0;
 static quint64 canSearchOnServerFlag = 0;
+static quint64 hasPersistentConnectionFlag = 0;
 
 class QMailAccountPrivate : public QSharedData
 {
@@ -344,6 +345,15 @@ public:
     \sa QMailSearchAction::searchMessages()
 */
 
+/*!
+    \variable QMailAccount::HasPersistentConnection
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "HasPersistentConnection" against the result of QMailAccount::status().
+
+    This flag indicates that an account has a persistent connection to the server(always online).
+*/
+
 const quint64 &QMailAccount::SynchronizationEnabled = synchronizationEnabledFlag;
 const quint64 &QMailAccount::Synchronized = synchronizedFlag;
 const quint64 &QMailAccount::AppendSignature = appendSignatureFlag;
@@ -360,6 +370,7 @@ const quint64 &QMailAccount::CanTransmitViaReference = canTransmitViaReferenceFl
 const quint64 &QMailAccount::CanCreateFolders = canCreateFoldersFlag;
 const quint64 &QMailAccount::UseSmartReply = useSmartReplyFlag;
 const quint64 &QMailAccount::CanSearchOnServer = canSearchOnServerFlag;
+const quint64 &QMailAccount::HasPersistentConnection = hasPersistentConnectionFlag;
 
 /*!
     Creates an uninitialised account object.

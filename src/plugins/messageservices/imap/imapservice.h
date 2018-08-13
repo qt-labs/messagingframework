@@ -36,6 +36,13 @@
 
 #include "imapclient.h"
 #include <qmailmessageservice.h>
+#include <QNetworkSession>
+
+QT_BEGIN_NAMESPACE
+
+class QNetworkConfigurationManager;
+
+QT_END_NAMESPACE
 
 class ImapService : public QMailMessageService
 {
@@ -70,16 +77,32 @@ protected slots:
     void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
     void updateStatus(const QString& text);
+    // Only used for IMAP IDLE, network session for other request types are managed by the caller.
+    void createIdleSession();
+    void destroyIdleSession();
+    void openIdleSession();
+    void closeIdleSession();
+
+private slots:
+    void onOnlineStateChanged(bool isOnline);
+    void onSessionOpened();
+    void onSessionStateChanged(QNetworkSession::State status);
+    void onSessionError(QNetworkSession::SessionError error);
+    void onSessionConnectionTimeout();
 
 private:
     class Source;
     friend class Source;
+
+    bool accountPushEnabled();
+    void setPersistentConnectionStatus(bool status);
 
     QMailAccountId _accountId;
     ImapClient *_client;
     Source *_source;
     QTimer *_restartPushEmailTimer;
     bool _establishingPushEmail;
+    bool _idling;
     int _pushRetry;
     bool _accountWasEnabled;
     bool _accountWasPushEnabled;
@@ -88,6 +111,9 @@ private:
     enum { ThirtySeconds = 30 };
     static QMap<QMailAccountId, int> _initiatePushDelay; // Limit battery consumption
     QTimer *_initiatePushEmailTimer;
+    QNetworkConfigurationManager    *_networkConfigManager;    // Qt network configuration manager
+    QNetworkSession                 *_networkSession;          // Qt network session
+    QTimer                          *_networkSessionTimer;
 };
 
 class ImapServicePlugin : public QMailMessageServicePlugin

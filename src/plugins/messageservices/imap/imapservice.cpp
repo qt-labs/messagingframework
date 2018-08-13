@@ -45,6 +45,7 @@
 #include <qmaildisconnected.h>
 #include <QCoreApplication>
 #include <typeinfo>
+#include <QNetworkConfigurationManager>
 
 namespace { 
 
@@ -1447,9 +1448,14 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _client(0),
       _source(new Source(this)),
       _restartPushEmailTimer(new QTimer(this)),
+      _establishingPushEmail(false),
+      _idling(false),
       _accountWasEnabled(false),
       _accountWasPushEnabled(false),
-      _initiatePushEmailTimer(new QTimer(this))
+      _initiatePushEmailTimer(new QTimer(this)),
+      _networkConfigManager(0),
+      _networkSession(0),
+      _networkSessionTimer(new QTimer(this))
 {
     QMailAccount account(accountId);
     if (!(account.status() & QMailAccount::CanSearchOnServer)) {
@@ -1514,12 +1520,13 @@ void ImapService::disable()
 {
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
+    _restartPushEmailTimer->stop();
+    _initiatePushEmailTimer->stop();
+    setPersistentConnectionStatus(false);
     _accountWasEnabled = false;
     _accountWasPushEnabled = imapCfg.pushEnabled();
     _previousPushFolders = imapCfg.pushFolders();
     _previousConnectionSettings = connectionSettings(imapCfg);
-    _restartPushEmailTimer->stop();
-    _initiatePushEmailTimer->stop();
     _source->setIntervalTimer(0);
     _source->setPushIntervalTimer(0);
     _source->retrievalTerminated();
@@ -1574,6 +1581,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
 ImapService::~ImapService()
 {
     disable();
+    destroyIdleSession();
     delete _source;
 }
 
@@ -1617,19 +1625,30 @@ bool ImapService::cancelOperation(QMailServiceAction::Status::ErrorCode code, co
 
 void ImapService::restartPushEmail()
 {
+    qMailLog(Messaging) << "Attempting to restart push email for account" << _accountId
+                        << QMailAccount(_accountId).name();
     cancelOperation(QMailServiceAction::Status::ErrInternalStateReset, tr("Initiating push email"));
     initiatePushEmail();
 }
     
 void ImapService::initiatePushEmail()
 {
-    qMailLog(Messaging) << "Attempting to establish push email for account" << _accountId 
-                        << QMailAccount(_accountId).name();
     _restartPushEmailTimer->stop();
     _initiatePushEmailTimer->stop();
+    setPersistentConnectionStatus(false);
+
+    if (!_networkSession || _networkSession->state() != QNetworkSession::Connected) {
+        createIdleSession();
+        return;
+    }
+
+    qMailLog(Messaging) << "Attempting to establish push email for account" << _accountId
+                        << QMailAccount(_accountId).name();
     QMailFolderIdList ids(_client->configurationIdleFolderIds());
     if (ids.count()) {
         _establishingPushEmail = true;
+        setPersistentConnectionStatus(true);
+
         foreach(QMailFolderId id, ids) {
             // Check for flag changes and new mail
             _source->queueFlagsChangedCheck(id);
@@ -1675,6 +1694,214 @@ void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, cons
 void ImapService::updateStatus(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _accountId);
+}
+
+void ImapService::createIdleSession()
+{
+    if (!_networkConfigManager) {
+        _networkConfigManager = new QNetworkConfigurationManager(this);
+        connect(_networkConfigManager, SIGNAL(onlineStateChanged(bool)),
+                    SLOT(onOnlineStateChanged(bool)));
+        // Fail after 10 sec if no network reply is received
+        _networkSessionTimer->setSingleShot(true);
+        _networkSessionTimer->setInterval(10000);
+        connect(_networkSessionTimer,SIGNAL(timeout()),
+                this,SLOT(onSessionConnectionTimeout()));
+    }
+    openIdleSession();
+}
+
+void ImapService::destroyIdleSession()
+{
+    qMailLog(Messaging) << "IDLE Session: Destroying IDLE network session";
+
+    if (_networkSession) {
+       closeIdleSession();
+    }
+
+    delete _networkConfigManager;
+    _networkConfigManager = 0;
+}
+
+void ImapService::openIdleSession()
+{
+    closeIdleSession();
+    if (_networkConfigManager) {
+        qMailLog(Messaging) << "IDLE Session: Opening...";
+        QNetworkConfiguration netConfig = _networkConfigManager->defaultConfiguration();
+
+        if (!netConfig.isValid()) {
+            qMailLog(Messaging) << "IDLE Session: default configuration is not valid, looking for another...";
+            foreach (const QNetworkConfiguration & cfg, _networkConfigManager->allConfigurations()) {
+                if (cfg.isValid()) {
+                    netConfig = cfg;
+                    break;
+                }
+            }
+            if (!netConfig.isValid()) {
+                qWarning() << "IDLE Session:: no valid configuration found";
+                return;
+            }
+        }
+
+        _networkSession = new QNetworkSession(netConfig);
+
+        connect(_networkSession, SIGNAL(error(QNetworkSession::SessionError)),
+                SLOT(onSessionError(QNetworkSession::SessionError)));
+        connect(_networkSession, SIGNAL(opened()), this, SLOT(onSessionOpened()));
+
+        _networkSession->open();
+        // This timer will cancel the IDLE session if no network
+        // connection can be established in a given amount of time.
+        _networkSessionTimer->start();
+    } else {
+        qMailLog(Messaging) << "IDLE session error: Invalid network configuration manager";
+        createIdleSession();
+    }
+}
+
+void ImapService::closeIdleSession()
+{
+    if (_networkSession) {
+        qMailLog(Messaging) << "IDLE Session: Closing...";
+        _networkSession->disconnect();
+        _networkSession->close();
+        delete _networkSession;
+        _networkSession = 0;
+    }
+    _networkSessionTimer->stop();
+    _networkSessionTimer->disconnect();
+}
+
+void ImapService::onOnlineStateChanged(bool isOnline)
+{
+    qMailLog(Messaging) << "IDLE Session: Network state changed: " << isOnline;
+    if (accountPushEnabled() && isOnline
+        && (!_networkSession
+            || _networkSession->state() != QNetworkSession::Connected)) {
+        openIdleSession();
+    } else if (!isOnline) {
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        closeIdleSession();
+    }
+}
+
+void ImapService::onSessionOpened()
+{
+    if (!_networkSession || sender() != _networkSession) return;
+
+    // stop timer
+    _networkSessionTimer->stop();
+    _networkSessionTimer->disconnect();
+
+    qMailLog(Messaging) << "IDLE session opened, state" << _networkSession->state();
+    connect(_networkSession, SIGNAL(stateChanged(QNetworkSession::State)), this,
+            SLOT(onSessionStateChanged(QNetworkSession::State)));
+
+    if (accountPushEnabled() && !_idling) {
+        restartPushEmail();
+    }
+}
+
+void ImapService::onSessionStateChanged(QNetworkSession::State status)
+{
+    switch (status) {
+    case QNetworkSession::Invalid:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Invalid";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    case QNetworkSession::NotAvailable:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::NotAvailable";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    case QNetworkSession::Connecting:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Connecting";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    case QNetworkSession::Connected:
+        qMailLog(Messaging) << "IDLE session connected: QNetworkSession::Connected";
+        break;
+    case QNetworkSession::Closing:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Closing";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    case QNetworkSession::Disconnected:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Disconnected";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    case QNetworkSession::Roaming:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Roaming";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    default:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession:: Unknown status change";
+        onSessionError(QNetworkSession::InvalidConfigurationError);
+        break;
+    }
+}
+
+void ImapService::onSessionError(QNetworkSession::SessionError error)
+{
+    switch (error) {
+    case QNetworkSession::UnknownSessionError:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::UnknownSessionError";
+        break;
+    case QNetworkSession::SessionAbortedError:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::SessionAbortedError";
+        break;
+    case QNetworkSession::RoamingError:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::RoamingError";
+        break;
+    case QNetworkSession::OperationNotSupportedError:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::OperationNotSupportedError";
+        break;
+    case QNetworkSession::InvalidConfigurationError:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession::InvalidConfigurationError";
+        break;
+    default:
+        qMailLog(Messaging) << "IDLE session error: QNetworkSession:: Invalid error code";
+        break;
+    }
+
+    setPersistentConnectionStatus(false);
+    if (_client) {
+        emit _client->sessionError();
+    }
+    closeIdleSession();
+}
+
+void ImapService::onSessionConnectionTimeout()
+{
+    if (_networkSession) {
+        if (!_networkSession->isOpen()) {
+            qWarning() << "IDLE session error: No network reply received after 10 seconds";
+            onSessionError(_networkSession->error());
+        }
+    }
+}
+
+bool ImapService::accountPushEnabled()
+{
+    QMailAccountConfiguration accountCfg(_accountId);
+    ImapConfiguration imapCfg(accountCfg);
+    return imapCfg.pushEnabled();
+}
+
+void ImapService::setPersistentConnectionStatus(bool status)
+{
+    QMailAccount account(_accountId);
+    if (static_cast<bool>(account.status() & QMailAccount::HasPersistentConnection) != status) {
+        account.setStatus(QMailAccount::HasPersistentConnection, status);
+        if (!status) {
+            account.setLastSynchronized(QMailTimeStamp::currentDateTime());
+        }
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to update account" << account.id() << "to HasPersistentConnection" << status;
+        } else {
+            qMailLog(Messaging) << "HasPersistentConnection for" << account.id() << "changed to" << status;
+        }
+    }
+    _idling = status;
 }
 
 class ImapConfigurator : public QMailMessageServiceConfigurator

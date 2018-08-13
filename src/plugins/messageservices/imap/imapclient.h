@@ -114,6 +114,7 @@ signals:
     void allMessagesReceived();
     void idleNewMailNotification(QMailFolderId);
     void idleFlagsChangedNotification(QMailFolderId);
+    void sessionError();
 
 public slots:
     void transportError(int, const QString &msg);

@@ -2619,6 +2619,8 @@ bool QMailStorePrivate::initStore()
                                             63, true, const_cast<quint64 *>(&QMailAccount::UseSmartReply), t, false)
                 || attemptRegisterStatusBit(QLatin1String("CanSearchOnServer"), QLatin1String("accountstatus"),
                                             63, true, const_cast<quint64 *>(&QMailAccount::CanSearchOnServer), t, false)
+                || attemptRegisterStatusBit(QLatin1String("HasPersistentConnection"), QLatin1String("accountstatus"),
+                                            63, true, const_cast<quint64 *>(&QMailAccount::HasPersistentConnection), t, false)
                 || attemptRegisterStatusBit(QLatin1String("SynchronizationEnabled"), QLatin1String("folderstatus"),
                                             63, true, const_cast<quint64 *>(&QMailFolder::SynchronizationEnabled), t, false)
                 || attemptRegisterStatusBit(QLatin1String("Synchronized"), QLatin1String("folderstatus"),

@@ -76,6 +76,7 @@ public:
     static const quint64 &CanCreateFolders;
     static const quint64 &UseSmartReply;
     static const quint64 &CanSearchOnServer;
+    static const quint64 &HasPersistentConnection;
 
     QMailAccount();
     explicit QMailAccount(const QMailAccountId& id);

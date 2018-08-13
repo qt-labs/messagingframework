@@ -225,6 +225,8 @@ IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder)
             this, SLOT(idleTransportError()) );
     connect(this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)),
             this, SLOT(idleTransportError()) );
+    connect(_client, SIGNAL(sessionError()),
+            this, SLOT(idleTransportError()) );
 
     _idleTimer.setSingleShot(true);
     connect(&_idleTimer, SIGNAL(timeout()),
@@ -1460,6 +1462,17 @@ void ImapClient::setAccount(const QMailAccountId &id)
             qWarning() << "Unable to update account" << account.id() << "CanCreateFolders" << true;
         } else {
             qMailLog(Messaging) << "CanCreateFolders for " << account.id() << "changed to" << true;
+        }
+    }
+
+    // At this point account can't have a persistent connection to the server, if for some reason the status is wrong(crash/abort) we will
+    // reset correct status here.
+    if (account.status() & QMailAccount::HasPersistentConnection) {
+        account.setStatus(QMailAccount::HasPersistentConnection, false);
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to disable HasPersistentConnection for account" << account.id();
+        } else {
+            qMailLog(Messaging) << "Disable HasPersistentConnection for account" << account.id();
         }
     }
 }
