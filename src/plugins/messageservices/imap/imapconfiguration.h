@@ -85,6 +85,8 @@ public:
 
     int searchLimit() const;
     void setSearchLimit(int limit);
+
+    bool acceptUntrustedCertificates() const;
 };
 
 class ImapConfigurationEditor : public ImapConfiguration
@@ -99,6 +101,7 @@ public:
 #ifndef QT_NO_SSL
     void setMailEncryption(int t);
     void setMailAuthentication(int t);
+    void setAcceptUntrustedCertificates(bool v);
 #endif
 
     void setDeleteMail(bool b);

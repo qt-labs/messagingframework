@@ -99,6 +99,8 @@ public:
             ErrInvalidData,
             ErrTimeout,
             ErrInternalStateReset,
+            ErrNoSslSupport,
+            ErrUntrustedCertificates,
             ErrorCodeMaximum = ErrInternalStateReset
         };
 

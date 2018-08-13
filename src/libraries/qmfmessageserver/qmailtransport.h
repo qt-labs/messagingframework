@@ -35,6 +35,7 @@
 #define QMAILTRANSPORT_H
 
 #include <qmailglobal.h>
+#include <qmailserviceaction.h>
 
 #include <QObject>
 #include <QAbstractSocket>
@@ -70,6 +71,9 @@ public:
 
     // Open a connection to the specified server
     void open(const QString& url, int port, EncryptType encryptionType);
+
+    void setAcceptUntrustedCertificates(bool accept);
+    bool acceptUntrustedCertificates() const;
 
 #ifndef QT_NO_SSL
     // If connection is not currently encrypted, switch to encrypted mode
@@ -108,6 +112,9 @@ Q_SIGNALS:
 
     void errorOccurred(int status, QString);
     void updateStatus(const QString &);
+#ifndef QT_NO_SSL
+    void sslErrorOccured(QMailServiceAction::Status::ErrorCode, QString);
+#endif
 
 public Q_SLOTS:
     void errorHandling(int errorCode, QString msg);
@@ -124,7 +131,7 @@ protected Q_SLOTS:
 #ifndef QT_NO_SSL
 protected:
     // Override to modify certificate error handling
-    virtual bool ignoreCertificateErrors(const QList<QSslError>& errors);
+    virtual QMailServiceAction::Status::ErrorCode classifyCertificateErrors(const QList<QSslError>& errors);
 #endif
 
 private:
@@ -144,6 +151,7 @@ private:
     QTimer connectToHostTimeOut;
     bool mConnected;
     bool mInUse;
+    bool mAcceptUntrustedCertificates;
 };
 
 #endif

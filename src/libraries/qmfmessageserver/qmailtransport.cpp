@@ -141,7 +141,8 @@ qint64 QMailTransport::Socket::bytesSinceMark() const
 QMailTransport::QMailTransport(const char* name)
     : mName(name),
       mConnected(false),
-      mInUse(false)
+      mInUse(false),
+      mAcceptUntrustedCertificates(false)
 {
 #ifndef QT_NO_SSL
     encryption = Encrypt_NONE;
@@ -238,7 +239,7 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
         qWarning() << "Failed to open connection - already open!";
         return;
     }
-    
+
     mInUse = true;
 
     const int threeMin = 3 * 60 * 1000;
@@ -256,6 +257,16 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     qMailLog(Messaging) << "Opening connection - " << url << ':' << port;
     mSocket->connectToHost(url, port);
 #endif
+}
+
+void QMailTransport::setAcceptUntrustedCertificates(bool accept)
+{
+    mAcceptUntrustedCertificates = accept;
+}
+
+bool QMailTransport::acceptUntrustedCertificates() const
+{
+    return mAcceptUntrustedCertificates;
 }
 
 #ifndef QT_NO_SSL
@@ -400,30 +411,51 @@ void QMailTransport::encryptionEstablished()
 /*! \internal */
 void QMailTransport::connectionFailed(const QList<QSslError>& errors)
 {
-    if (ignoreCertificateErrors(errors))
+    QMailServiceAction::Status::ErrorCode errorCode = classifyCertificateErrors(errors);
+
+    if (errorCode == QMailServiceAction::Status::ErrNoError) {
+        qWarning() << "Accepting untrusted certificates";
         mSocket->ignoreSslErrors();
-    else
-        errorHandling(QAbstractSocket::UnknownSocketError, QString());
+    } else {
+        connectToHostTimeOut.stop();
+        mConnected = false;
+        mInUse = false;
+        mSocket->abort();
+
+        emit updateStatus(tr("Error occurred"));
+        emit sslErrorOccured(errorCode, tr("Socket error"));
+    }
 }
 
 /*! \internal */
-bool QMailTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
+QMailServiceAction::Status::ErrorCode QMailTransport::classifyCertificateErrors(const QList<QSslError>& errors)
 {
-    bool failed = false;
-
+    QMailServiceAction::Status::ErrorCode rv(QMailServiceAction::Status::ErrNoError);
     QString text;
-    foreach (const QSslError& error, errors)
-    {
+
+    for (const QSslError& error : errors) {
         text += (text.isEmpty() ? QLatin1String("'") : QLatin1String(", '"));
         text += error.errorString();
         text += QLatin1String("'");
 
-        if (error.error() == QSslError::NoSslSupport)
-            failed = true;
+        if (error.error() == QSslError::NoSslSupport) {
+            rv = QMailServiceAction::Status::ErrNoSslSupport;
+        } else if (error.error() == QSslError::CertificateBlacklisted) {
+            // Refuse the connection on more serious errors
+            if (rv == QMailServiceAction::Status::ErrNoError) {
+                rv = QMailServiceAction::Status::ErrUntrustedCertificates;
+            }
+        } else {
+            // Only classify remainder as an error if untrusted certificates are not accepted
+            if (!mAcceptUntrustedCertificates && rv == QMailServiceAction::Status::ErrNoError) {
+                rv = QMailServiceAction::Status::ErrUntrustedCertificates;
+            }
+        }
     }
 
+    bool failed(rv != QMailServiceAction::Status::ErrNoError);
     qWarning() << "Encrypted connect" << (failed ? "failed:" : "warnings:") << text;
-    return !failed;
+    return rv;
 }
 #endif
 

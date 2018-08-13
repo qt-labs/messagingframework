@@ -113,6 +113,10 @@ void PopClient::createTransport()
         connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
         connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
         connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
+#ifndef QT_NO_SSL
+        connect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
+                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+#endif
     }
 }
 
@@ -124,6 +128,10 @@ void PopClient::deleteTransport()
         disconnect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
         disconnect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
         disconnect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
+#ifndef QT_NO_SSL
+        disconnect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
+                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+#endif
 
         // A Qt socket remains in an unusuable state for a short time after closing,
         // thus it can't be immediately reused
@@ -149,6 +157,7 @@ void PopClient::testConnection()
 
     status = Init;
     capabilities.clear();
+    transport->setAcceptUntrustedCertificates(popCfg.acceptUntrustedCertificates());
     transport->open(popCfg.mailServer(), popCfg.mailPort(), static_cast<QMailTransport::EncryptType>(popCfg.mailEncryption()));
 }
 
@@ -198,6 +207,7 @@ void PopClient::newConnection()
 
         status = Init;
         capabilities.clear();
+        transport->setAcceptUntrustedCertificates(popCfg.acceptUntrustedCertificates());
         transport->open(popCfg.mailServer(), popCfg.mailPort(), static_cast<QMailTransport::EncryptType>(popCfg.mailEncryption()));
     }
 }

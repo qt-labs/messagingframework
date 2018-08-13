@@ -64,6 +64,11 @@ int SmtpConfiguration::smtpPort() const
     return value("port", "25").toInt();
 }
 
+bool SmtpConfiguration::acceptUntrustedCertificates() const
+{
+    return (value("acceptUntrustedCertificates", "0").toInt() != 0);
+}
+
 #ifndef QT_NO_SSL
 
 QString SmtpConfiguration::smtpUsername() const
@@ -120,6 +125,11 @@ void SmtpConfigurationEditor::setSmtpPort(int i)
 }
 
 #ifndef QT_NO_SSL
+
+void SmtpConfigurationEditor::setAcceptUntrustedCertificates(bool v)
+{
+    setValue("acceptUntrustedCertificates", QString::number(v ? 1 : 0));
+}
 
 void SmtpConfigurationEditor::setSmtpUsername(const QString& str)
 {

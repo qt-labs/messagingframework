@@ -317,21 +317,6 @@ void ImapTransport::imapClose()
     _compressor = 0;
 }
 
-#ifndef QT_NO_SSL
-bool ImapTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
-{
-    QMailTransport::ignoreCertificateErrors(errors);
-
-    // Because we can't ask the user (due to string freeze), let's default
-    // to ignoring these errors...
-    foreach (const QSslError& error, errors)
-        if (error.error() == QSslError::NoSslSupport)
-            return false;
-
-    return true;
-}
-#endif
-
 void ImapTransport::test()
 {
 #if 0

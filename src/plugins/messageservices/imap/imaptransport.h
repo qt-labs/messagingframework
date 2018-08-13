@@ -68,11 +68,6 @@ public:
 
     void imapClose();
 
-#ifndef QT_NO_SSL
-protected:
-    virtual bool ignoreCertificateErrors(const QList<QSslError>& errors);
-#endif
-
 private:
     void test();
 

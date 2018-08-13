@@ -99,6 +99,10 @@ bool PopConfiguration::intervalCheckRoamingEnabled() const
     return (value("intervalCheckRoamingEnabled", "0").toInt() != 0);
 }
 
+bool PopConfiguration::acceptUntrustedCertificates() const
+{
+    return (value("acceptUntrustedCertificates", "0").toInt() != 0);
+}
 
 PopConfigurationEditor::PopConfigurationEditor(QMailAccountConfiguration *config)
     : PopConfiguration(*config)
@@ -130,6 +134,11 @@ void PopConfigurationEditor::setMailPort(int i)
 void PopConfigurationEditor::setMailEncryption(int t)
 {
     setValue("encryption", QString::number(t));
+}
+
+void PopConfigurationEditor::setAcceptUntrustedCertificates(bool v)
+{
+    setValue("acceptUntrustedCertificates", QString::number(v ? 1 : 0));
 }
 
 #endif
