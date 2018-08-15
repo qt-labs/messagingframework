@@ -54,7 +54,7 @@ class PluginMap : public QMap<QString, QMailMessageServicePlugin*>
 public:
     PluginMap()
         : QMap<QString, QMailMessageServicePlugin*>(),
-          _manager(PLUGIN_KEY)
+          _manager(QString::fromLatin1(PLUGIN_KEY))
     {
         foreach (const QString &item, _manager.list()) {
             QObject *instance(_manager.instance(item));
@@ -248,7 +248,7 @@ QMailMessageServicePlugin::~QMailMessageServicePlugin()
 */
 QStringList QMailMessageServicePlugin::keys() const
 {
-    return QStringList() << "QMailMessageServicePluginInterface";
+    return QStringList() << QLatin1String("QMailMessageServicePluginInterface");
 }
 
 
@@ -319,7 +319,7 @@ bool appendErrorText(QString* message, int code, const ErrorMap& map)
                 if (message->isEmpty()) {
                     *message = extra;
                 } else {
-                    message->append("\n[").append(extra).append(']');
+                    message->append(QLatin1String("\n[")).append(extra).append(QChar::fromLatin1(']'));
                 }
             }
             return true;
@@ -1123,7 +1123,7 @@ void QMailMessageSource::copyMessages()
     bool successful(true);
 
     unsigned int size = QMailStore::instance()->sizeOfMessages(QMailMessageKey::id(d->_ids));
-    if (!LongStream::freeSpace("", size + 1024*10)) {
+    if (!LongStream::freeSpace(QString(), size + 1024*10)) {
         qMailLog(Messaging) << "Insufficient space to copy messages to folder:" << d->_destinationId << "bytes required:" << size;
         emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFileSystemFull, tr("Insufficient space to copy messages to folder"), QMailAccountId(), d->_destinationId, QMailMessageId()));
         successful = false;

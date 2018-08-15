@@ -40,7 +40,7 @@ namespace {
 
 static bool needsQuotes(const QString& src)
 {
-    QRegExp specials = QRegExp("[<>\\[\\]:;@\\\\,.]");
+    QRegExp specials(QLatin1String("[<>\\[\\]:;@\\\\,.]"));
 
     QString characters(src);
 
@@ -301,7 +301,7 @@ void AddressListGenerator::complete(TokenType type, bool hardSeparator)
             // We need to know what type of token this is
 
             // Test whether the token is a suffix
-            QRegExp suffixPattern("\\s*/TYPE=.*");
+            QRegExp suffixPattern(QLatin1String("\\s*/TYPE=.*"));
             if (suffixPattern.exactMatch(_partial)) {
                 type = Suffix;
             } 
@@ -611,7 +611,7 @@ QPair<int, int> findDelimiters(const QString& text)
 void parseMailbox(QString& input, QString& name, QString& address, QString& suffix)
 {
     // See if there is a trailing suffix
-    int pos = input.indexOf("/TYPE=");
+    int pos = input.indexOf(QLatin1String("/TYPE="));
     if (pos != -1)
     {
         suffix = input.mid(pos + 6);
@@ -710,7 +710,7 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
         // See whether this address is a group
         if (containsGroupSpecifier(input))
         {
-            QRegExp groupFormat("(.*):(.*);");
+            QRegExp groupFormat(QLatin1String("(.*):(.*);"));
             if (groupFormat.indexIn(input) != -1)
             {
                 _name = groupFormat.cap(1).trimmed();
@@ -748,7 +748,7 @@ void QMailAddressPrivate::setComponents(const QString& nameText, const QString& 
     _name = nameText.trimmed();
     _address = addressText.trimmed();
 
-    int charIndex = _address.indexOf( "/TYPE=" );
+    int charIndex = _address.indexOf(QLatin1String("/TYPE="));
     if ( charIndex != -1 ) {
         _suffix = _address.mid( charIndex + 6 );
         _address = _address.left( charIndex ).trimmed();
@@ -820,14 +820,14 @@ bool QMailAddressPrivate::isEmailAddress() const
 
 QString QMailAddressPrivate::minimalPhoneNumber() const
 {
-    QRegExp nondiallingChars("[^\\d,xpwXPW\\+\\*#]");
+    QRegExp nondiallingChars(QLatin1String("[^\\d,xpwXPW\\+\\*#]"));
 
     // Remove any characters which don't affect dialing
     QString minimal(_address);
     minimal.remove(nondiallingChars);
 
     // Convert any 'p' or 'x' to comma
-    minimal.replace(QRegExp("[xpXP]"), ",");
+    minimal.replace(QRegExp(QLatin1String("[xpXP]")), QLatin1String(","));
 
     // Ensure any permitted alphabetical chars are lower-case
     return minimal.toLower();
@@ -841,7 +841,7 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
         return _name;
 
     if ( _group ) {
-        result.append( _name ).append( ": " ).append( _address ).append( ';' );
+        result.append( _name ).append( QLatin1String(": ") ).append( _address ).append( ';' );
     } else {
         // If there are any 'special' characters in the name it needs to be quoted
         if ( !_name.isEmpty() ) {
@@ -858,7 +858,7 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
         }
 
         if ( !_suffix.isEmpty() )
-            result.append( " /TYPE=" ).append( _suffix );
+            result.append( QLatin1String(" /TYPE=") ).append( _suffix );
     }
 
     return result;
@@ -1096,22 +1096,20 @@ QString QMailAddress::removeWhitespace(const QString& input)
 /*! \internal */
 QString QMailAddress::phoneNumberPattern()
 {
-    static const QString pattern("\"?"                              // zero-or-one:'"'
-                                 "("                                // start capture
-                                 "(?:\\+ ?)?"                       // zero-or-one:('+', zero-or-one:space)
-                                 "(?:\\(\\d+\\)[ -]?)?"             // zero-or-one:'(', one-or-more:digits, ')', zero-or-one:separator 
-                                 "(?:\\d{1,14})"                    // one:(one-to-fourteen):digits
-                                 "(?:[ -]?[\\d#\\*]{1,10}){0,4}"    // zero-to-four:(zero-or-one:separator), one-to-ten:(digits | '#' | '*')
-                                 "(?:"                              // zero-or-one:
-                                     "[ -]?"                            // zero-or-one:separator,
-                                     "\\(?"                             // zero-or-one:'('
-                                     "[,xpwXPW]\\d{1,4}"                // one:extension, one-to-four:digits
-                                     "\\)?"                             // zero-or-one:')'
-                                 ")?"                               // end of optional group
-                                 ")"                                // end capture
-                                 "\"?");                            // zero-or-one:'"'
-
-    return pattern;
+    return QStringLiteral("\"?"                              // zero-or-one:'"'
+                          "("                                // start capture
+                          "(?:\\+ ?)?"                       // zero-or-one:('+', zero-or-one:space)
+                          "(?:\\(\\d+\\)[ -]?)?"             // zero-or-one:'(', one-or-more:digits, ')', zero-or-one:separator
+                          "(?:\\d{1,14})"                    // one:(one-to-fourteen):digits
+                          "(?:[ -]?[\\d#\\*]{1,10}){0,4}"    // zero-to-four:(zero-or-one:separator), one-to-ten:(digits | '#' | '*')
+                          "(?:"                              // zero-or-one:
+                              "[ -]?"                            // zero-or-one:separator,
+                              "\\(?"                             // zero-or-one:'('
+                              "[,xpwXPW]\\d{1,4}"                // one:extension, one-to-four:digits
+                              "\\)?"                             // zero-or-one:')'
+                          ")?"                               // end of optional group
+                          ")"                                // end capture
+                          "\"?");                            // zero-or-one:'"'
 }
 
 /*! \internal */
@@ -1121,29 +1119,27 @@ QString QMailAddress::emailAddressPattern()
     // modified to accept uppercase characters as well as lower-case
     // Also - RFC 1034 seems to prohibit domain name elements beginning
     // with digits, but they exist in practice...
-    static const QString pattern("[A-Za-z\\d!#$%&'*+/=?^_`{|}~-]+"      // one-or-more: legal chars (some punctuation permissible)
-                                 "(?:"                                  // zero-or-more: 
-                                     "\\."                                  // '.',
-                                     "[A-Za-z\\d!#$%&'*+/=?^_`{|}~-]+"      // one-or-more: legal chars
-                                 ")*"                                   // end of optional group
-                                 "@"                                    // '@'
-                                 "(?:"                                  // either:
-                                     "localhost"                            // 'localhost'
-                                 "|"                                    // or:
-                                     "(?:"                                  // one-or-more: 
-                                         "[A-Za-z\\d]"                          // one: legal char, 
-                                         "(?:"                                  // zero-or-one:
-                                             "[A-Za-z\\d-]*[A-Za-z\\d]"             // (zero-or-more: (legal char or '-'), one: legal char)
-                                         ")?"                                   // end of optional group
-                                         "\\."                                  // '.'
-                                     ")+"                                   // end of mandatory group
-                                     "[A-Za-z\\d]"                          // one: legal char
-                                     "(?:"                                  // zero-or-one:
-                                         "[A-Za-z\\d-]*[A-Za-z\\d]"             // (zero-or-more: (legal char or '-'), one: legal char)
-                                     ")?"                                   // end of optional group
-                                 ")");                                  // end of alternation
-
-    return pattern;
+    return QStringLiteral("[A-Za-z\\d!#$%&'*+/=?^_`{|}~-]+"      // one-or-more: legal chars (some punctuation permissible)
+                          "(?:"                                  // zero-or-more:
+                              "\\."                                  // '.',
+                              "[A-Za-z\\d!#$%&'*+/=?^_`{|}~-]+"      // one-or-more: legal chars
+                          ")*"                                   // end of optional group
+                          "@"                                    // '@'
+                          "(?:"                                  // either:
+                              "localhost"                            // 'localhost'
+                          "|"                                    // or:
+                              "(?:"                                  // one-or-more:
+                                  "[A-Za-z\\d]"                          // one: legal char,
+                                  "(?:"                                  // zero-or-one:
+                                      "[A-Za-z\\d-]*[A-Za-z\\d]"             // (zero-or-more: (legal char or '-'), one: legal char)
+                                  ")?"                                   // end of optional group
+                                  "\\."                                  // '.'
+                              ")+"                                   // end of mandatory group
+                              "[A-Za-z\\d]"                          // one: legal char
+                              "(?:"                                  // zero-or-one:
+                                  "[A-Za-z\\d-]*[A-Za-z\\d]"             // (zero-or-more: (legal char or '-'), one: legal char)
+                              ")?"                                   // end of optional group
+                          ")");                                  // end of alternation
 }
 
 /*! 

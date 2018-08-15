@@ -85,14 +85,14 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
             foreach (const Segment& segment, segmentList) {
                 IDListType idSegment = ids.mid(segment.first, (segment.second - segment.first));
 
-                QCopAdaptor a("QPE/qmf");
+                QCopAdaptor a(QLatin1String("QPE/qmf"));
                 QCopAdaptorEnvelope e = a.send(sig.toLatin1());
 				e << pid;
                 e << idSegment; 
             }
         } else {
 
-            QCopAdaptor a("QPE/qmf");
+            QCopAdaptor a(QLatin1String("QPE/qmf"));
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
             e << pid;
             e << ids;
@@ -105,7 +105,7 @@ void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailSt
 void emitIpcUpdates(const QMailMessageMetaDataList& data, const QString& sig)
 {
     if (!sig.isEmpty()) {
-            static QCopAdaptor a("QPE/qmf"); // do not want to recreate heavy objects
+            static QCopAdaptor a(QLatin1String("QPE/qmf")); // do not want to recreate heavy objects
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
             e << pid;
             e << data;
@@ -118,7 +118,7 @@ void emitIpcUpdates(const QMailMessageIdList& ids,  const QMailMessageKey::Prope
                     const QMailMessageMetaData& data, const QString& sig)
 {
     if (!sig.isEmpty()) {
-            QCopAdaptor a("QPE/qmf"); // to do: not want to recreate heavy objects
+            QCopAdaptor a(QLatin1String("QPE/qmf")); // to do: not want to recreate heavy objects
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
             e << pid;
             e << ids;
@@ -132,7 +132,7 @@ void emitIpcUpdates(const QMailMessageIdList& ids,  const QMailMessageKey::Prope
 void emitIpcUpdates(const QMailMessageIdList& ids,  quint64 status, bool set, const QString& sig)
 {
     if (!sig.isEmpty()) {
-            QCopAdaptor a("QPE/qmf"); // to do: not want to recreate heavy objects
+            QCopAdaptor a(QLatin1String("QPE/qmf")); // to do: not want to recreate heavy objects
             QCopAdaptorEnvelope e = a.send(sig.toLatin1());
             e << pid;
             e << ids;
@@ -202,7 +202,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 {
     Q_ASSERT(q);
 
-    ipcChannel = new QCopChannel("QPE/qmf", this);
+    ipcChannel = new QCopChannel(QLatin1String("QPE/qmf"), this);
     ENFORCE (connect (ipcChannel, SIGNAL(connected()), q, SIGNAL(ipcConnectionEstablished())));
     ENFORCE (connect (ipcChannel, SIGNAL(connectionFailed()), this, SLOT(ipcConnectionFailed())));
 
@@ -275,7 +275,7 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     flushNotifications();
 
     // Tell the recipients to process the notifications synchronously
-    QCopAdaptor a("QPE/qmf");
+    QCopAdaptor a(QLatin1String("QPE/qmf"));
     QCopAdaptorEnvelope e = a.send("forceIpcFlush");
     e << pid;
 
@@ -691,147 +691,123 @@ void QMailStoreImplementationBase::reconnectIpc()
 
 QString QMailStoreImplementationBase::accountAddedSig()
 {
-    static QString s("accountAdded(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("accountAdded(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::accountRemovedSig()
 {
-    static QString s("accountRemoved(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("accountRemoved(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::accountUpdatedSig()
 {
-    static QString s("accountUpdated(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("accountUpdated(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::accountContentsModifiedSig()
 {
-    static QString s("accountContentsModified(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("accountContentsModified(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageAddedSig()
 {
-    static QString s("messageAdded(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageAdded(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageRemovedSig()
 {
-    static QString s("messageRemoved(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageRemoved(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageUpdatedSig()
 {
-    static QString s("messageUpdated(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageUpdated(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageContentsModifiedSig()
 {
-    static QString s("messageContentsModified(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageContentsModified(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageMetaDataAddedSig()
 {
-    static QString s("messageDataAdded(QMailMessageMetaDataList)");
-    return s;
+    return QStringLiteral("messageDataAdded(QMailMessageMetaDataList)");
 }
 
 QString QMailStoreImplementationBase::messageMetaDataUpdatedSig()
 {
-    static QString s("messageDataUpdated(QMailMessageMetaDataList)");
-    return s;
+    return QStringLiteral("messageDataUpdated(QMailMessageMetaDataList)");
 }
 
 QString QMailStoreImplementationBase::messagePropertyUpdatedSig()
 {
-    static QString s("messagePropertyUpdated(QList<quint64>,QFlags,QMailMessageMetaData)");
-    return s;
+    return QStringLiteral("messagePropertyUpdated(QList<quint64>,QFlags,QMailMessageMetaData)");
 }
 
 QString QMailStoreImplementationBase::messageStatusUpdatedSig()
 {
-    static QString s("messageStatusUpdated(QList<quint64>,quint64,bool)");
-    return s;
+    return QStringLiteral("messageStatusUpdated(QList<quint64>,quint64,bool)");
 }
 
 QString QMailStoreImplementationBase::folderAddedSig()
 {
-    static QString s("folderAdded(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("folderAdded(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::folderRemovedSig()
 {
-    static QString s("folderRemoved(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("folderRemoved(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::folderUpdatedSig()
 {
-    static QString s("folderUpdated(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("folderUpdated(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::folderContentsModifiedSig()
 {
-    static QString s("folderContentsModified(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("folderContentsModified(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::threadAddedSig()
 {
-    static QString s("threadAdded(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("threadAdded(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::threadRemovedSig()
 {
-    static QString s("threadRemoved(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("threadRemoved(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::threadUpdatedSig()
 {
-    static QString s("threadUpdated(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("threadUpdated(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::threadContentsModifiedSig()
 {
-    static QString s("threadContentsModified(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("threadContentsModified(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsAddedSig()
 {
-    static QString s("messageRemovalRecordsAdded(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageRemovalRecordsAdded(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()
 {
-    static QString s("messageRemovalRecordsRemoved(uint,QList<quint64>)");
-    return s;
+    return QStringLiteral("messageRemovalRecordsRemoved(uint,QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::retrievalInProgressSig()
 {
 	// TODO: why no PID in theses messages?
-    static QString s("retrievalInProgress(QList<quint64>)");
-    return s;
+    return QStringLiteral("retrievalInProgress(QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::transmissionInProgressSig()
 {
-    static QString s("transmissionInProgress(QList<quint64>)");
-    return s;
+    return QStringLiteral("transmissionInProgress(QList<quint64>)");
 }
 
 QMailStoreImplementationBase::AccountUpdateSignalMap QMailStoreImplementationBase::initAccountUpdateSignals()
@@ -936,7 +912,7 @@ void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByt
     if (pid == origin) // don't notify ourselves
         return;
 
-    if (message == "forceIpcFlush") {
+    if (message == QLatin1String("forceIpcFlush")) {
         // We have been told to flush any pending ipc notifications
         queueTimer.stop();
         while (emitIpcNotification()) {}

@@ -365,12 +365,12 @@ static QMap<QMailFolder::StandardFolder, QIcon> iconMapInit()
 {
     QMap<QMailFolder::StandardFolder, QIcon> map;
 
-    map[QMailFolder::InboxFolder] = Qtmail::icon("inboxfolder");
-    map[QMailFolder::OutboxFolder] = Qtmail::icon("outboxfolder");
-    map[QMailFolder::DraftsFolder] = Qtmail::icon("draftfolder");
-    map[QMailFolder::SentFolder] = Qtmail::icon("sentfolder");
-    map[QMailFolder::JunkFolder] = Qtmail::icon("junkfolder");
-    map[QMailFolder::TrashFolder] = Qtmail::icon("trashfolder");
+    map[QMailFolder::InboxFolder] = Qtmail::icon(QLatin1String("inboxfolder"));
+    map[QMailFolder::OutboxFolder] = Qtmail::icon(QLatin1String("outboxfolder"));
+    map[QMailFolder::DraftsFolder] = Qtmail::icon(QLatin1String("draftfolder"));
+    map[QMailFolder::SentFolder] = Qtmail::icon(QLatin1String("sentfolder"));
+    map[QMailFolder::JunkFolder] = Qtmail::icon(QLatin1String("junkfolder"));
+    map[QMailFolder::TrashFolder] = Qtmail::icon(QLatin1String("trashfolder"));
 
     return map;
 }
@@ -383,7 +383,7 @@ static QIcon folderIcon(QMailFolder::StandardFolder type)
     if (it != iconMap.end())
         return it.value();
 
-    return Qtmail::icon("folder");
+    return Qtmail::icon(QLatin1String("folder"));
 }
 
 QIcon EmailFolderModel::standardFolderIcon(EmailStandardFolderMessageSet *item) const
@@ -404,7 +404,7 @@ QIcon EmailFolderModel::emailFolderIcon(EmailFolderMessageSet *item) const
         return folderIcon(QMailFolder::JunkFolder);
     }
 
-    return Qtmail::icon("folder");
+    return Qtmail::icon(QLatin1String("folder"));
 }
 
 FolderModel::StatusText EmailFolderModel::standardFolderStatusText(EmailStandardFolderMessageSet *item) const

@@ -52,7 +52,7 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
 
             bool multipleRecipients(toAddressList.count() > 1);
             if (multipleRecipients)
-                text += ", ...";
+                text += QLatin1String(", ...");
 
             return text;
         } else  {
@@ -209,17 +209,17 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
 /*! \internal */
 QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int role) const
 {
-    static QString outgoingIcon(":icon/sendmail");
-    static QString incomingIcon(":icon/getmail");
+    static QString outgoingIcon(QLatin1String(":icon/sendmail"));
+    static QString incomingIcon(QLatin1String(":icon/getmail"));
 
-    static QString readIcon(":icon/flag_normal");
-    static QString unreadIcon(":icon/flag_unread");
-    static QString toGetIcon(":icon/flag_toget");
-    static QString toSendIcon(":icon/flag_tosend");
-    static QString unfinishedIcon(":icon/flag_unfinished");
-    static QString removedIcon(":icon/flag_removed");
+    static QString readIcon(QLatin1String(":icon/flag_normal"));
+    static QString unreadIcon(QLatin1String(":icon/flag_unread"));
+    static QString toGetIcon(QLatin1String(":icon/flag_toget"));
+    static QString removedIcon(QLatin1String(":icon/flag_removed"));
 
     /* No longer used...
+    static QString toSendIcon(":icon/flag_tosend");
+    static QString unfinishedIcon(":icon/flag_unfinished");
     static QString noPresenceIcon(":icon/presence-none");
     static QString offlineIcon(":icon/presence-offline");
     static QString awayIcon(":icon/presence-away");
@@ -259,9 +259,9 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
             }
 
             QDateTime messageTime(message.date().toLocalTime());
-            QString date(messageTime.date().toString("dd MMM"));
-            QString time(messageTime.time().toString("h:mm"));
-            QString sublabel(QString("%1 %2 %3").arg(action).arg(date).arg(time));
+            QString date(messageTime.date().toString(QLatin1String("dd MMM")));
+            QString time(messageTime.time().toString(QLatin1String("h:mm")));
+            QString sublabel(QString::fromLatin1("%1 %2 %3").arg(action).arg(date).arg(time));
             return sublabel;
         }
 

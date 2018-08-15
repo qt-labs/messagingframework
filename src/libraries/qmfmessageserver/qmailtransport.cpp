@@ -219,7 +219,7 @@ void QMailTransport::createSocket(EncryptType encryptType)
 
     const int bufferLimit = 101*1024; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
-    mSocket->setObjectName(QString(mName) + "-socket");
+    mSocket->setObjectName(QString(mName) + QLatin1String("-socket"));
     connect(mSocket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
     connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
     connect(mSocket, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
@@ -403,7 +403,7 @@ void QMailTransport::connectionFailed(const QList<QSslError>& errors)
     if (ignoreCertificateErrors(errors))
         mSocket->ignoreSslErrors();
     else
-        errorHandling(QAbstractSocket::UnknownSocketError, "");
+        errorHandling(QAbstractSocket::UnknownSocketError, QString());
 }
 
 /*! \internal */
@@ -414,9 +414,9 @@ bool QMailTransport::ignoreCertificateErrors(const QList<QSslError>& errors)
     QString text;
     foreach (const QSslError& error, errors)
     {
-        text += (text.isEmpty() ? "'" : ", '");
+        text += (text.isEmpty() ? QLatin1String("'") : QLatin1String(", '"));
         text += error.errorString();
-        text += "'";
+        text += QLatin1String("'");
 
         if (error.error() == QSslError::NoSslSupport)
             failed = true;

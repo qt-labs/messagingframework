@@ -174,7 +174,7 @@ QMailAddressList QMailThread::senders() const
 void QMailThread::setSenders(const QMailAddressList &value)
 {
     d->senders.clear();
-    d->senders = QMailAddress::toStringList(value).join(",");
+    d->senders = QMailAddress::toStringList(value).join(QLatin1String(","));
 }
 
 void QMailThread::addSender(const QMailAddress &value)

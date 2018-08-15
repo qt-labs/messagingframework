@@ -119,7 +119,7 @@ private:
 
 QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
     : QObject(parent),
-      adaptor(new QCopAdaptor("QPE/QMailMessageServer", this))
+      adaptor(new QCopAdaptor(QLatin1String("QPE/QMailMessageServer"), this))
 {
     // Forward signals to the message server
     connectIpc(adaptor, MESSAGE(newCountChanged(QMailMessageCountMap)),

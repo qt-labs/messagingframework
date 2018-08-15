@@ -83,28 +83,28 @@ namespace
 static void createDefaultLogConfig(QSettings &settings)
 {
     QStringList groups = settings.childGroups();
-    if (!groups.contains("Syslog")) {
-        settings.beginGroup("Syslog");
-        settings.setValue("Enabled",0);
+    if (!groups.contains(QLatin1String("Syslog"))) {
+        settings.beginGroup(QLatin1String("Syslog"));
+        settings.setValue(QLatin1String("Enabled"), 0);
         settings.endGroup();
     }
-    if (!groups.contains("FileLog")) {
-        settings.beginGroup("FileLog");
-        settings.setValue("Path","");
-        settings.setValue("Enabled",0);
+    if (!groups.contains(QLatin1String("FileLog"))) {
+        settings.beginGroup(QLatin1String("FileLog"));
+        settings.setValue(QLatin1String("Path"), QString());
+        settings.setValue(QLatin1String("Enabled"), 0);
         settings.endGroup();
     }
-    if (!groups.contains("StdStreamLog")) {
-        settings.beginGroup("StdStreamLog");
-        settings.setValue("Enabled",0);
+    if (!groups.contains(QLatin1String("StdStreamLog"))) {
+        settings.beginGroup(QLatin1String("StdStreamLog"));
+        settings.setValue(QLatin1String("Enabled"), 0);
         settings.endGroup();
     }
-    if (!groups.contains("LogCategories")) {
-        settings.beginGroup("LogCategories");
-        settings.setValue("Messaging",1);
-        settings.setValue("IMAP", 1);
-        settings.setValue("SMTP", 1);
-        settings.setValue("POP", 1);
+    if (!groups.contains(QLatin1String("LogCategories"))) {
+        settings.beginGroup(QLatin1String("LogCategories"));
+        settings.setValue(QLatin1String("Messaging"), 1);
+        settings.setValue(QLatin1String("IMAP"), 1);
+        settings.setValue(QLatin1String("SMTP"), 1);
+        settings.setValue(QLatin1String("POP"), 1);
         settings.endGroup();
     }
 }
@@ -121,10 +121,10 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
 #endif
      );
 
-    const bool syslogEnabled = settings.value("Syslog/Enabled", false).toBool();
-    const bool stderrEnabled = settings.value("StdStreamLog/Enabled", defaultStdError).toBool();
-    const QString filePath = settings.value("FileLog/Path").toString();
-    const bool fileEnabled = settings.value("FileLog/Enabled", false).toBool() && !filePath.isEmpty();
+    const bool syslogEnabled = settings.value(QLatin1String("Syslog/Enabled"), false).toBool();
+    const bool stderrEnabled = settings.value(QLatin1String("StdStreamLog/Enabled"), defaultStdError).toBool();
+    const QString filePath = settings.value(QLatin1String("FileLog/Path")).toString();
+    const bool fileEnabled = settings.value(QLatin1String("FileLog/Enabled"), false).toBool() && !filePath.isEmpty();
 
     LogSystem& loggers = LogSystem::getInstance();
     loggers.clear();
@@ -145,7 +145,7 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
     };
 
     // Filling the LogCatsEnabled list
-    settings.beginGroup("LogCategories");
+    settings.beginGroup(QLatin1String("LogCategories"));
     LogCatsMode.clear();
     foreach(const QString& key, settings.allKeys()) {
         LogCatsMode[key] = settings.value(key).toBool();

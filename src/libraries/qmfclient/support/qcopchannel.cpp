@@ -52,7 +52,7 @@
 QCopServerRegexp::QCopServerRegexp(const QString& ch, QCopClient *cl)
     : channel(ch), client(cl)
 {
-    if (ch.endsWith(QChar('*')) && ch.count(QChar('*')) == 1) {
+    if (ch.endsWith(QChar::fromLatin1('*')) && ch.count(QChar::fromLatin1('*')) == 1) {
         prefixMatch = ch.length() - 1;
     } else {
         prefixMatch = 0;
@@ -86,7 +86,7 @@ QCopServerRegexpList::~QCopServerRegexpList()
 // Determine if a channel name contains wildcard characters.
 static inline bool containsWildcards(const QString& channel)
 {
-    return channel.contains(QChar('*'));
+    return channel.contains(QChar::fromLatin1('*'));
 }
 
 #ifndef QT_NO_THREAD
@@ -1096,7 +1096,7 @@ void QCopClient::disconnectFromServer()
 QString QCopThreadData::socketPath()
 {
     //return (Qtopia::inline tempDir() + "qcop-server").toUtf8();
-    return "qcop-server-0";
+    return QString::fromLatin1("qcop-server-0");
 }
 
 #else

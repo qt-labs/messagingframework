@@ -268,7 +268,7 @@ inline void BaseLogger<Host, Prefix>::log(const LogLevel _lvl, const char* _fmt,
 
         if(!pref.isEmpty())
         {
-            QString out = pref + QString(_fmt);
+            QString out = pref + QString::fromLatin1(_fmt);
             host.doLog(_lvl, qPrintable(out), args);
         }else
             host.doLog(_lvl, _fmt, args);
@@ -295,7 +295,7 @@ inline FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flus
 
 template <class Prefix>
 inline FileLogger<Prefix>::FileLogger(FILE* _f, const unsigned _flush_period, const LogLevel _min_lvl, bool _owner)
-    : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(""), f(_f), should_close(_owner), flush_period(_flush_period)
+    : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(), f(_f), should_close(_owner), flush_period(_flush_period)
 {
 }
 

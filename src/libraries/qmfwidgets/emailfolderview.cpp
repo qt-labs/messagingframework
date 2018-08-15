@@ -98,11 +98,11 @@ void EmailFolderDelegate::init(const QStyleOptionViewItem &option, const QModelI
         _statusText.remove(FolderModel::excessIndicator());
 
         // Don't show an empty unread count
-        if (_statusText.startsWith("0/"))
+        if (_statusText.startsWith(QLatin1String("0/")))
             _statusText.remove(0, 2);
 
         // Don't show a zero count
-        if (_statusText == "0")
+        if (_statusText == QLatin1String("0"))
             _statusText.clear();
     }
 

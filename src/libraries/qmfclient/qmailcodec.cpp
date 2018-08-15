@@ -390,13 +390,13 @@ QByteArray QMailCodec::decode(const QByteArray& input)
 QString QMailCodec::autoDetectEncoding(const QByteArray& text)
 {
 #ifdef HAVE_LIBICU
-    if (text.isEmpty()) return "";
+    if (text.isEmpty()) return QString();
     QCharsetDetector charsetDetector;
     charsetDetector.setText(text);
     QString result(charsetDetector.detect().name());
     return result;
 #else
-    return QString("");
+    return QString();
 #endif
 }
 
@@ -513,7 +513,7 @@ QMailBase64Codec::QMailBase64Codec(ContentType content, int maximumLineLength)
 /*! \reimp */
 QString QMailBase64Codec::name() const
 {
-    return "QMailBase64Codec";
+    return QLatin1String("QMailBase64Codec");
 }
 
 /*! \internal */
@@ -837,7 +837,7 @@ QMailQuotedPrintableCodec::QMailQuotedPrintableCodec(ContentType content, Confor
 /*! \reimp */
 QString QMailQuotedPrintableCodec::name() const
 {
-    return "QMailQuotedPrintableCodec";
+    return QLatin1String("QMailQuotedPrintableCodec");
 }
 
 /*! \internal */
@@ -1050,7 +1050,7 @@ static void writeStream(QDataStream& out, const char* it, int length)
 /*! \reimp */
 QString QMailPassThroughCodec::name() const
 {
-    return "QMailPassThroughCodec";
+    return QLatin1String("QMailPassThroughCodec");
 }
 
 /*! \internal */
@@ -1103,7 +1103,7 @@ QMailLineEndingCodec::QMailLineEndingCodec()
 /*! \reimp */
 QString QMailLineEndingCodec::name() const
 {
-    return "QMailLineEndingCodec";
+    return QLatin1String("QMailLineEndingCodec");
 }
 
 /*! \internal */
@@ -1195,9 +1195,9 @@ void QMailLineEndingCodec::decodeChunk(QDataStream& out, const char* it, int len
 static QString encodeModifiedBase64(const QString &in)
 {
     // Modified Base64 chars pattern
-    const QString encodingSchema = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
+    const QString encodingSchema = QStringLiteral("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,");
 
-    QString result = "&";
+    QString result = QLatin1String("&");
     QList<ushort> buf;
     unsigned short tmp;
     int i;
@@ -1244,7 +1244,7 @@ static QString encodeModifiedBase64(const QString &in)
         i++;
     }
 
-    result += '-';
+    result += QChar::fromLatin1('-');
 
     return result;
 }
@@ -1257,7 +1257,7 @@ static QString decodeModifiedBase64(QString in)
     in.remove(in.length()-1,1);
 
     if (in.isEmpty())
-        return "&";
+        return QLatin1String("&");
 
     QByteArray buf(in.length(),static_cast<char>(0));
     QByteArray out(in.length() * 3 / 4 + 2,static_cast<char>(0));
@@ -1384,7 +1384,7 @@ QString QMailCodec::encodeModifiedUtf7(const QString &text)
 QString QMailCodec::decodeModifiedUtf7(const QString &text)
 {
     QString in = text;
-    QRegExp reg("&[^&-]*-");
+    QRegExp reg(QLatin1String("&[^&-]*-"));
 
     int startIndex = 0;
     int endIndex = 0;

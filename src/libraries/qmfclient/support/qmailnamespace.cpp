@@ -149,7 +149,8 @@ bool QMail::fileUnlock(int id)
 */
 QString QMail::dataPath()
 {
-    static QString dataEnv(qgetenv(QMF_DATA_ENV));
+    // encoding as best guess, likely just ascii
+    static QString dataEnv(QString::fromUtf8(qgetenv(QMF_DATA_ENV)));
     if(!dataEnv.isEmpty())
         return dataEnv + '/';
     //default to ~/.qmf if not env set
@@ -199,7 +200,7 @@ QString QMail::tempPath()
 */
 QString QMail::messageServerPath()
 {
-    static QString serverEnv(qgetenv(QMF_SERVER_ENV));
+    static QString serverEnv(QString::fromUtf8(qgetenv(QMF_SERVER_ENV)));
     if(!serverEnv.isEmpty())
         return serverEnv + '/';
 
@@ -211,7 +212,7 @@ QString QMail::messageServerPath()
 */
 QString QMail::messageSettingsPath()
 {
-    static QString settingsEnv(qgetenv(QMF_SETTINGS_ENV));
+    static QString settingsEnv(QString::fromUtf8(qgetenv(QMF_SETTINGS_ENV)));
     if(!settingsEnv.isEmpty())
         return settingsEnv + '/';
     return QCoreApplication::applicationDirPath() + '/';

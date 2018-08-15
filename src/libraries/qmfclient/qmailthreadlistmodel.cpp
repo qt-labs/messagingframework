@@ -271,7 +271,7 @@ QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
         foreach (const QMailAddress& address, thread.senders()) {
             senders << address.name();
         }
-        return senders.join(", ");
+        return senders.join(QLatin1String(", "));
     }
     case ThreadLastDateRole:
         return thread.lastDate().toLocalTime();

@@ -114,7 +114,7 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
     Q_UNUSED(capabilities)
 
     QMailServiceConfiguration configuration(svcCfg);
-    if (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))
+    if (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))
         return "CRAM-MD5";
 
     // Unknown service type and/or authentication type
@@ -133,13 +133,15 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
 QByteArray QMailAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
 {
     QMailServiceConfiguration configuration(svcCfg);
-    if (!configuration.value("smtpusername").isEmpty() 
-        && (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism))) {
+    if (!configuration.value(QLatin1String("smtpusername")).isEmpty()
+        && (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, configuration.value("smtpusername").toUtf8(), QByteArray::fromBase64(configuration.value("smtppassword").toUtf8()));
-    } else if (configuration.value("authentication") == QString::number(QMail::CramMd5Mechanism)) {
+        return cramMd5Response(challenge, configuration.value(QLatin1String("smtpusername")).toUtf8(),
+                               QByteArray::fromBase64(configuration.value(QLatin1String("smtppassword")).toUtf8()));
+    } else if (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism)) {
         // IMAP/POP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, configuration.value("username").toUtf8(), QByteArray::fromBase64(configuration.value("password").toUtf8()));
+        return cramMd5Response(challenge, configuration.value(QLatin1String("username")).toUtf8(),
+                               QByteArray::fromBase64(configuration.value(QLatin1String("password")).toUtf8()));
     }
 
     // Unknown service type and/or authentication type

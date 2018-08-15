@@ -249,7 +249,7 @@ QString LongStream::tempDir()
 
 void LongStream::cleanupTempFiles()
 {
-    QDir dir( LongStream::tempDir(), "longstream.*" );
+    QDir dir(LongStream::tempDir(), QLatin1String("longstream.*"));
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
         QFile file( LongStream::tempDir() + list.at(i) );

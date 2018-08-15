@@ -56,7 +56,7 @@ QCopServerPrivate::QCopServerPrivate()
         socket->connectToServer(path);
         if (!socket->waitForConnected()) {
             delete socket;
-            QFile::remove(QDir::tempPath() + QChar('/') + path);
+            QFile::remove(QDir::tempPath() + QChar::fromLatin1('/') + path);
             ok = listen(path);
         } else {
             delete socket;

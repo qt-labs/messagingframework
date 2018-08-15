@@ -458,7 +458,7 @@ QString QMailFolderMessageSet::displayName() const
         }
     }
     if (i->_name.isNull()) {
-        i->_name = "";
+        i->_name = QLatin1String("");
     }
 
     return i->_name;
@@ -696,7 +696,7 @@ QString QMailAccountMessageSet::displayName() const
         }
     }
     if (i->_name.isNull()) {
-        i->_name = "";
+        i->_name = QLatin1String("");
     }
 
     return i->_name;

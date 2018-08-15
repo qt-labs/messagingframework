@@ -121,7 +121,7 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
 
     int tokenCount = tokens.count();
     if ( tokenCount > 0 ) {
-        static const QString Days("sunmontuewedthufrisat");
+        static const QString Days(QLatin1String("sunmontuewedthufrisat"));
         if (Days.indexOf(tokens[0].left(3).toLower()) != -1) {
             tokens.removeAt(0);
             tokenCount -= 1;
@@ -133,7 +133,7 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
         }
     }
     if ( tokenCount > 1 ) {
-        static const QString Months("janfebmaraprmayjunjulaugsepoctnovdec");
+        static const QString Months(QLatin1String("janfebmaraprmayjunjulaugsepoctnovdec"));
         int value = Months.indexOf( tokens[1].left( 3 ).toLower() );
         if ( value != -1 )
             month = (value + 3) / 3;
@@ -165,11 +165,11 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
 
         QTime parsedTime;
         if ( timeStr.length() == 8 ) { 
-            parsedTime = QTime::fromString( timeStr, "hh:mm:ss" );
+            parsedTime = QTime::fromString(timeStr, QLatin1String("hh:mm:ss"));
         }
         else if ( timeStr.length() == 5 ) { 
             // Is this legal?  Either way, it seems desirable for robustness...
-            parsedTime = QTime::fromString( timeStr, "hh:mm" );
+            parsedTime = QTime::fromString(timeStr, QLatin1String("hh:mm"));
         }
         if ( parsedTime.isValid() )
             timeComponent = parsedTime;
@@ -254,22 +254,22 @@ QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) con
     int mOffset = ( abs(utcOffset) - abs(hOffset * 3600) ) / 60;
 
     if (format == QMailTimeStamp::Rfc2822) {
-        result = QString( originalTime.toString( "%1, d %2 yyyy hh:mm:ss %3" ) );
+        result = QString(originalTime.toString(QLatin1String("%1, d %2 yyyy hh:mm:ss %3")));
         result = result.arg( QString::fromLatin1( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
         result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
         result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
     } else if (format == QMailTimeStamp::Rfc3501) {
-        result = QString( originalTime.toString( "dd-%1-yyyy hh:mm:ss %2" ) );
+        result = QString(originalTime.toString(QLatin1String("dd-%1-yyyy hh:mm:ss %2")));
         result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
         result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
 
         // The day number should be space-padded
-        if (result[0] == '0') {
-            result[0] = ' ';
+        if (result[0] == QChar::fromLatin1('0')) {
+            result[0] = QChar::fromLatin1(' ');
         }
     } else if (format == QMailTimeStamp::Rfc3339) {
-        result = QString( originalTime.toString( "yyyy-MM-ddThh:mm:ss%1" ) );
-        result = result.arg( utcOffset == 0 ? QString("Z") : QString().sprintf( "%+.2d:%.2d", hOffset, mOffset ) );
+        result = QString(originalTime.toString(QLatin1String("yyyy-MM-ddThh:mm:ss%1")));
+        result = result.arg(utcOffset == 0 ? QLatin1String("Z") : QString().sprintf("%+.2d:%.2d", hOffset, mOffset));
     }
 
     return result;

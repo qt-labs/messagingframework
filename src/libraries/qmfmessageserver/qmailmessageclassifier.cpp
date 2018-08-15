@@ -59,21 +59,21 @@
 */
 QMailMessageClassifier::QMailMessageClassifier()
 {
-    QSettings settings("QtProject", "messageserver");
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("messageserver"));
 
-    settings.beginGroup("global");
+    settings.beginGroup(QLatin1String("global"));
 
-    int count = settings.beginReadArray("voicemail");
+    int count = settings.beginReadArray(QLatin1String("voicemail"));
     for (int i = 0; i < count; ++i) {
         settings.setArrayIndex(i);
-        voiceMailAddresses.append(settings.value("address").toString());
+        voiceMailAddresses.append(settings.value(QLatin1String("address")).toString());
     }
     settings.endArray();
 
-    count = settings.beginReadArray("videomail");
+    count = settings.beginReadArray(QLatin1String("videomail"));
     for (int i = 0; i < count; ++i) {
         settings.setArrayIndex(i);
-        videoMailAddresses.append(settings.value("address").toString());
+        videoMailAddresses.append(settings.value(QLatin1String("address")).toString());
     }
     settings.endArray();
 
@@ -87,8 +87,8 @@ QMailMessageClassifier::~QMailMessageClassifier()
 
 static QMailMessage::ContentType fromContentType(const QMailMessageContentType& contentType)
 {
-    QString type(contentType.type().toLower());
-    QString subtype(contentType.subType().toLower());
+    QByteArray type(contentType.type().toLower());
+    QByteArray subtype(contentType.subType().toLower());
 
     QMailMessage::ContentType content = QMailMessage::UnknownContent;
 

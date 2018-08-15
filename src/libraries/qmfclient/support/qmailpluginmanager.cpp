@@ -98,17 +98,17 @@ namespace {
 QStringList pluginFilePatterns()
 {
 #ifdef LOAD_DEBUG_VERSION
-    QString debugSuffix("d");
+    QString debugSuffix(QLatin1String("d"));
 #else
     QString debugSuffix;
 #endif
 
 #if defined(Q_OS_WIN)
-	return QStringList() << QString("*%1.dll").arg(debugSuffix) << QString("*%1.DLL").arg(debugSuffix);
+    return QStringList() << QString::fromLatin1("*%1.dll").arg(debugSuffix) << QString::fromLatin1("*%1.DLL").arg(debugSuffix);
 #elif defined(Q_OS_MAC)
-	return QStringList() << "*.dylib";
+    return QStringList() << QLatin1String("*.dylib");
 #else
-	return QStringList() << QString("*%1.so*").arg(debugSuffix);
+    return QStringList() << QString::fromLatin1("*%1.so*").arg(debugSuffix);
 #endif
 }
 

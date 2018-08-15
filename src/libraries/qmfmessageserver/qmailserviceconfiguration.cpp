@@ -118,7 +118,7 @@ QMailAccountId QMailServiceConfiguration::id() const
 */
 int QMailServiceConfiguration::version() const
 {
-    return value("version", "0").toInt();
+    return value(QLatin1String("version"), QLatin1String("0")).toInt();
 }
 
 /*!
@@ -126,7 +126,7 @@ int QMailServiceConfiguration::version() const
 */
 void QMailServiceConfiguration::setVersion(int version)
 {
-    setValue("version", QString::number(version));
+    setValue(QLatin1String("version"), QString::number(version));
 }
 
 /*!
@@ -134,15 +134,15 @@ void QMailServiceConfiguration::setVersion(int version)
 */
 QMailServiceConfiguration::ServiceType QMailServiceConfiguration::type() const
 {
-    QString svcType(value("servicetype"));
+    QString svcType(value(QLatin1String("servicetype")));
 
-    if (svcType == "source") {
+    if (svcType == QLatin1String("source")) {
         return Source;
-    } else if (svcType == "sink") {
+    } else if (svcType == QLatin1String("sink")) {
         return Sink;
-    } else if (svcType == "source-sink") {
+    } else if (svcType == QLatin1String("source-sink")) {
         return SourceAndSink;
-    } else if (svcType == "storage") {
+    } else if (svcType == QLatin1String("storage")) {
         return Storage;
     }
         
@@ -154,7 +154,12 @@ QMailServiceConfiguration::ServiceType QMailServiceConfiguration::type() const
 */
 void QMailServiceConfiguration::setType(ServiceType type)
 {
-    setValue("servicetype", (type == Source ?  "source" : (type == Sink ? "sink" : (type == SourceAndSink ? "source-sink" : (type == Storage ? "storage" : "unknown")))));
+    setValue(QLatin1String("servicetype"),
+             (type == Source ? QLatin1String("source")
+                             : (type == Sink ? QLatin1String("sink")
+                                             : (type == SourceAndSink ? QLatin1String("source-sink")
+                                                                      : (type == Storage ? QLatin1String("storage")
+                                                                                         : QLatin1String("unknown"))))));
 }
 
 /*!
@@ -183,7 +188,7 @@ QString QMailServiceConfiguration::encodeValue(const QString &value)
 {
     // TODO: Shouldn't this be UTF-8?
     QMailBase64Codec codec(QMailBase64Codec::Text);
-    QByteArray encoded(codec.encode(value, "ISO-8859-1"));
+    QByteArray encoded(codec.encode(value, QLatin1String("ISO-8859-1")));
     return QString::fromLatin1(encoded.constData(), encoded.length());
 }
 
@@ -197,7 +202,7 @@ QString QMailServiceConfiguration::decodeValue(const QString &value)
 
     QByteArray encoded(value.toLatin1());
     QMailBase64Codec codec(QMailBase64Codec::Text);
-    return codec.decode(encoded, "ISO-8859-1");
+    return codec.decode(encoded, QLatin1String("ISO-8859-1"));
 }
 
 /*!

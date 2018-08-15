@@ -683,7 +683,7 @@ QStringList QCharsetDetector::getAllDetectableCharsets()
 
     QStringList availableCodecsQt;
     foreach(const QByteArray &ba, QTextCodec::availableCodecs())
-        availableCodecsQt << QString(ba);
+        availableCodecsQt << QString::fromLatin1(ba);
 
     // Charsets detectable by libicu 4.4.2:
     QStringList allDetectableCharsetsICU;

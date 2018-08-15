@@ -235,13 +235,13 @@ bool QMailMessageBuffer::isFull() {
 
 void QMailMessageBuffer::readConfig()
 {
-    QSettings settings("QtProject", "QMF");
-    settings.beginGroup("MessageBuffer");
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("QMF"));
+    settings.beginGroup(QLatin1String("MessageBuffer"));
 
-    d->maxPending = settings.value("maxPending", 1000).toInt();
-    d->idleTimeout = settings.value("idleTimeout", 1000).toInt();
-    d->maxTimeout = settings.value("maxTimeout", 8000).toInt();
-    d->timeoutScale = settings.value("timeoutScale", 2.0f).value<qreal>();
+    d->maxPending = settings.value(QLatin1String("maxPending"), 1000).toInt();
+    d->idleTimeout = settings.value(QLatin1String("idleTimeout"), 1000).toInt();
+    d->maxTimeout = settings.value(QLatin1String("maxTimeout"), 8000).toInt();
+    d->timeoutScale = settings.value(QLatin1String("timeoutScale"), 2.0f).value<qreal>();
 
     d->messageTimer.setInterval(d->idleTimeout);
 }

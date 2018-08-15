@@ -127,11 +127,11 @@ const QString& NoLogPrefix::operator()(const LogLevel& lvl)
 
 LvlLogPrefix::LvlLogPrefix()
 {
-    levels_str[LlDbg]  	   =  QString("[Debug] ");
-    levels_str[LlInfo] 	   =  QString("[Info] ");
-    levels_str[LlWarning]  =  QString("[Warning] ");
-    levels_str[LlError]    =  QString("[Error] ");
-    levels_str[LlCritical] =  QString("[Critical] ");
+    levels_str[LlDbg]      =  QLatin1String("[Debug] ");
+    levels_str[LlInfo]     =  QLatin1String("[Info] ");
+    levels_str[LlWarning]  =  QLatin1String("[Warning] ");
+    levels_str[LlError]    =  QLatin1String("[Error] ");
+    levels_str[LlCritical] =  QLatin1String("[Critical] ");
 }
 
 const QString& LvlLogPrefix::operator()(const LogLevel&  lvl)
@@ -142,14 +142,14 @@ const QString& LvlLogPrefix::operator()(const LogLevel&  lvl)
 
 const QString& LvlTimeLogPrefix::operator()(const LogLevel& lvl)
 {
-    out = QDateTime::currentDateTime().toString ("MMM dd hh:mm:ss ") + LvlLogPrefix::operator()(lvl);
+    out = QDateTime::currentDateTime().toString(QLatin1String("MMM dd hh:mm:ss ")) + LvlLogPrefix::operator()(lvl);
     return out;
 }
 
 LvlTimePidLogPrefix::LvlTimePidLogPrefix()
 {
 #ifndef Q_OS_WIN
-    stPid = QString("[%1] ").arg(getpid());
+    stPid = QString::fromLatin1("[%1] ").arg(getpid());
 #else
     stPid = QString("[%1] ").arg(qApp->applicationPid());
 #endif

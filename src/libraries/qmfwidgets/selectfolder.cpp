@@ -69,11 +69,11 @@ SelectFolderDialog::SelectFolderDialog(FolderModel *model, QWidget *parent)
 
     buttonsLayout->addStretch();
 
-    m_okButton = new QPushButton("Ok",this);
+    m_okButton = new QPushButton(QLatin1String("Ok"), this);
     buttonsLayout->addWidget(m_okButton);
     connect(m_okButton,SIGNAL(clicked(bool)),this,SLOT(accept()));
 
-    QPushButton* cancelButton = new QPushButton("Cancel",this);
+    QPushButton* cancelButton = new QPushButton(QLatin1String("Cancel"), this);
     buttonsLayout->addWidget(cancelButton);
     connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(reject()));
 

@@ -72,7 +72,7 @@ QVariant FolderModel::data(QMailMessageSet *item, int role, int column) const
 
 QString FolderModel::excessIndicator()
 {
-    return "*";
+    return QLatin1String("*");
 }
 
 void FolderModel::appended(QMailMessageSet *item)
@@ -101,11 +101,11 @@ void FolderModel::removed(QMailMessageSet *item)
 QIcon FolderModel::itemIcon(QMailMessageSet *item) const
 {
     if (qobject_cast<QMailFolderMessageSet*>(item)) {
-        return Qtmail::icon("folder");
+        return Qtmail::icon(QLatin1String("folder"));
     } else if (qobject_cast<QMailAccountMessageSet*>(item)) {
-        return Qtmail::icon("accountfolder");
+        return Qtmail::icon(QLatin1String("accountfolder"));
     } else if (qobject_cast<QMailFilterMessageSet*>(item)) {
-        return Qtmail::icon("search");
+        return Qtmail::icon(QLatin1String("search"));
     }
 
     return QIcon();
@@ -148,15 +148,15 @@ QString FolderModel::formatCounts(int total, int unread, bool excessTotal, bool 
 
     if (total || excessTotal || excessUnread) {
         if (unread || excessUnread) {
-            QString unreadIndicator(excessUnread ? FolderModel::excessIndicator() : "");
-            QString totalIndicator(excessTotal ? FolderModel::excessIndicator() : "");
+            QString unreadIndicator(excessUnread ? FolderModel::excessIndicator() : QLatin1String(""));
+            QString totalIndicator(excessTotal ? FolderModel::excessIndicator() : QLatin1String(""));
 
             if (QApplication::isRightToLeft())
-                countStr.append(QString("%1%2/%3%4").arg(total).arg(totalIndicator).arg(unread).arg(unreadIndicator));
+                countStr.append(QString::fromLatin1("%1%2/%3%4").arg(total).arg(totalIndicator).arg(unread).arg(unreadIndicator));
             else
-                countStr.append(QString("%1%2/%3%4").arg(unread).arg(unreadIndicator).arg(total).arg(totalIndicator));
+                countStr.append(QString::fromLatin1("%1%2/%3%4").arg(unread).arg(unreadIndicator).arg(total).arg(totalIndicator));
         } else {
-            countStr.append(QString("%1%2").arg(total).arg(excessTotal ? FolderModel::excessIndicator() : ""));
+            countStr.append(QString::fromLatin1("%1%2").arg(total).arg(excessTotal ? FolderModel::excessIndicator() : QLatin1String("")));
         }
     }
 

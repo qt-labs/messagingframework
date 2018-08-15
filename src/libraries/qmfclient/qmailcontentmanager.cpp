@@ -73,7 +73,7 @@ QString & defaultIndexer()
 
 ContentPluginMap &contentPlugins()
 {
-    static QMailPluginManager manager(PLUGIN_KEY);
+    static QMailPluginManager manager(QLatin1String(PLUGIN_KEY));
     static ContentPluginMap map(init(manager));
     return map;
 }
@@ -144,8 +144,8 @@ QString QMailContentManagerFactory::defaultScheme()
     if (list.isEmpty())
         return QString();
 
-    if (list.contains("qmfstoragemanager"))
-        return "qmfstoragemanager";
+    if (list.contains(QLatin1String("qmfstoragemanager")))
+        return QLatin1String("qmfstoragemanager");
     else 
         return list.first();
 }
@@ -244,7 +244,7 @@ QMailContentManagerPlugin::~QMailContentManagerPlugin()
 */
 QStringList QMailContentManagerPlugin::keys() const
 {
-    return QStringList() << "QMailContentManagerPluginInterface";
+    return QStringList() << QLatin1String("QMailContentManagerPluginInterface");
 }
 
 
