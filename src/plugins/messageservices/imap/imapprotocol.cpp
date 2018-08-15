@@ -305,6 +305,7 @@ class ImapContext
 {
 public:
     ImapContext(ImapProtocol *protocol) { mProtocol = protocol; }
+    virtual ~ImapContext() {}
 
     void continuation(ImapCommand c, const QString &s) { mProtocol->continuation(c, s); }
     void operationCompleted(ImapCommand c, OperationStatus s) { mProtocol->operationCompleted(c, s); }
