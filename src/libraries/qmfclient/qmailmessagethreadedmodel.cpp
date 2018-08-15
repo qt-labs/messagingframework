@@ -389,7 +389,7 @@ bool QMailMessageThreadedModelPrivate::appendMessages(const QMailMessageIdList &
     if (validIndices.isEmpty())
         return true;
 
-    qSort(validIndices);
+    std::sort(validIndices.begin(), validIndices.end());
 
     QMailMessageIdList additionIds;
     foreach (int index, validIndices) {

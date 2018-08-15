@@ -145,7 +145,7 @@ int QMailThreadListModelPrivate::indexOf(const QMailThreadId& id) const
 template<typename Comparator>
 QMailThreadIdList::iterator QMailThreadListModelPrivate::lowerBound(const QMailThreadId& id, Comparator& cmp) const
 {
-    return qLowerBound(idList.begin(), idList.end(), id, cmp);
+    return std::lower_bound(idList.begin(), idList.end(), id, cmp);
 }
 
 

@@ -1193,7 +1193,7 @@ void ImapMessageListStrategy::resetMessageListTraversal()
     _folderItr = _selectionMap.begin();
     if (_folderItr != _selectionMap.end()) {
         FolderSelections &folder(*_folderItr);
-        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+        std::sort(folder.begin(), folder.end(), messageSelectorLessThan);
 
         _selectionItr = folder.begin();
     }
@@ -1224,7 +1224,7 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
             break;
 
         FolderSelections &folder(*_folderItr);
-        qSort(folder.begin(), folder.end(), messageSelectorLessThan);
+        std::sort(folder.begin(), folder.end(), messageSelectorLessThan);
 
         _selectionItr = folder.begin();
         selectionEnd = folder.end();
@@ -1477,7 +1477,7 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
                              sectionList, completionSectionList,
                              preferredBody, bytesLeft);
 
-            qSort(sectionList.begin(), sectionList.end(), qMailMessageImapStrategyLessThan);
+            std::sort(sectionList.begin(), sectionList.end(), qMailMessageImapStrategyLessThan);
             QList<QPair<QMailMessagePart::Location, uint> >::iterator it = sectionList.begin();
             while (it != sectionList.end() && (bytesLeft > 0) && (partsToRetrieve < maxParts)) {
                 const QMailMessagePart &part = message.partAt(it->first);

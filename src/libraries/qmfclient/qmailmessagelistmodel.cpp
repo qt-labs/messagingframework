@@ -350,7 +350,7 @@ bool QMailMessageListModelPrivate::appendMessages(const QMailMessageIdList &idsT
         }
     }
 
-    qSort(insertIndices);
+    std::sort(insertIndices.begin(), insertIndices.end());
     foreach (int index, insertIndices) {
         // Since the list is ordered, if index is bigger than the limit
         // we stop inserting
@@ -460,7 +460,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
     }
 
     // Sort the lists to yield ascending order
-    qSort(removeIndices);
+    std::sort(removeIndices.begin(), removeIndices.end());
     for (int i = removeIndices.count(); i > 0; --i) {
         int index = removeIndices[i - 1];
         _model.emitBeginRemoveRows(QModelIndex(), index, index);
@@ -468,7 +468,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
         _model.emitEndRemoveRows();
     }
 
-    qSort(insertIndices);
+    std::sort(insertIndices.begin(), insertIndices.end());
     foreach (int index, insertIndices) {
         // Since the list is ordered, if index is bigger than the limit
         // we stop inserting
@@ -486,7 +486,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
         removeMessages(idsToRemove);
     }
 
-    qSort(updateIndices);
+    std::sort(updateIndices.begin(), updateIndices.end());
     foreach (int index, updateIndices) {
         _model.emitDataChanged(_model.index(index, 0, QModelIndex()), _model.index(index, _model.columnCount() - 1, QModelIndex()));
     }
@@ -528,7 +528,7 @@ bool QMailMessageListModelPrivate::removeMessages(const QMailMessageIdList &ids)
     }
     
     // Sort the indices to yield ascending order (they must be deleted in descending order!)
-    qSort(removeIndices);
+    std::sort(removeIndices.begin(), removeIndices.end());
 
     for (int i = removeIndices.count(); i > 0; --i) {
         int index = removeIndices.at(i - 1);

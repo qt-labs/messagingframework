@@ -147,7 +147,7 @@ int QMailAccountListModelPrivate::indexOf(const QMailAccountId& id) const
 template<typename Comparator>
 QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMailAccountId& id, Comparator& cmp) const
 {
-    return qLowerBound(idList.begin(), idList.end(), id, cmp);
+    return std::lower_bound(idList.begin(), idList.end(), id, cmp);
 }
 
 

@@ -244,7 +244,7 @@ void SelectComposerWidget::refresh()
             if (_sendTypes.contains(type))
                 options.append(qMakePair(key, type));
 
-    qSort(options.begin(), options.end(), compareOptionsByType);
+    std::sort(options.begin(), options.end(), compareOptionsByType);
 
     foreach (const OptionType &option, options)
         (void)new SelectListWidgetItem(option.first, option.second, m_listWidget);
