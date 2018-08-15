@@ -196,14 +196,6 @@ void tst_StorageManager::cleanupTestCase()
     QMailStore::instance()->removeMessages(QMailMessageKey::customField("present"));
 }
 
-//namespace tst_QmfStorageManager_namespace
-//{
-//    bool test_migrate(const QMailAccountId &accountId)
-//    {
-//        return migrateAccountToVersion101(accountId);
-//    }
-//}
-
 void tst_StorageManager::test_init()
 {
     QMailContentManager *mgr = QMailContentManagerFactory::create(QMailContentManagerFactory::defaultScheme());

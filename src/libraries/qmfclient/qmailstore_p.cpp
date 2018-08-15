@@ -8800,7 +8800,6 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
         QMailThread thread(threadId);
         uint messagesCount = 0;
         uint unreadCount = 0;
-        uint firstUnread = 0;
         uint firstMessageIndex = 0;
         uint lastMessageIndex = 0;
         uint index = 0;
@@ -8823,7 +8822,6 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
                 if (messagesCount == 0) firstMessageIndex = index;
                 messagesCount++;
                 if ((data.status() & QMailMessage::Read) == 0) {
-                    if (unreadCount == 0) firstUnread = messagesCount - 1;
                     ++unreadCount;
                 }
             }

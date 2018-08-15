@@ -131,52 +131,6 @@ bool pathOnDefault(const QString &path)
     return path.startsWith(defaultPath());
 }
 
-bool migrateAccountToVersion101(const QMailAccountId &accountId)
-{
-    foreach (const QMailMessageId &id, QMailStore::instance()->queryMessages(QMailMessageKey::parentAccountId(accountId))) {
-        const QMailMessage message(id);
-
-        if (message.multipartType() != QMailMessage::MultipartNone) {
-            // Any part files for this message need to be moved to the new location
-            QString fileName(message.contentIdentifier());
-
-            QFileInfo fi(fileName);
-            QDir path(fi.dir());
-            path.setNameFilters(QStringList() << (fi.fileName() + "-[0-9]*"));
-
-            QStringList entries(path.entryList());
-            if (!entries.isEmpty()) {
-                // Does the part directory exist?
-                QString partDirectory(QmfStorageManager::messagePartDirectory(fileName));
-                if (!QDir(partDirectory).exists()) {
-                    if (!QDir::root().mkpath(partDirectory)) {
-                        qMailLog(Messaging) << "Unable to create directory for message part content:" << partDirectory;
-                        return false;
-                    }
-                }
-
-                foreach (const QString &entry, entries) {
-                    QFile existing(path.filePath(entry));
-
-                    // We need to move this file to the subdirectory
-                    QString newName(partDirectory + '/');
-                    int index = entry.lastIndexOf('-');
-                    if (index != -1) {
-                        newName.append(entry.mid(index + 1));
-                    }
-
-                    if (!existing.rename(newName)) {
-                        qMailLog(Messaging) << "Unable to move part file to new name:" << newName;
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 void syncFile(QSharedPointer<QFile> file)
 {
     // Ensure data is flushed to OS before attempting sync
