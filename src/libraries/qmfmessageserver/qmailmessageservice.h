@@ -331,7 +331,7 @@ private:
     const QMailMessageService &operator=(const QMailMessageService &other);
 };
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 #include <QWidget>
 class MESSAGESERVER_EXPORT QMailMessageServiceEditor : public QWidget
 {
@@ -357,7 +357,7 @@ public:
 
     virtual QStringList serviceConstraints(QMailMessageServiceFactory::ServiceType type) const;
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) = 0;
 #endif
 };

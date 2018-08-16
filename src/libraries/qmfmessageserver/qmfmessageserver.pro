@@ -14,7 +14,7 @@ contains(DEFINES,MESSAGESERVER_PLUGINS) {
 load(qt_module)
 CONFIG -= create_cmake
 
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+!contains(DEFINES,QMF_NO_WIDGETS) {
     QT += gui widgets
 }
 

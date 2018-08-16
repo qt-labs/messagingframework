@@ -6,7 +6,10 @@ requires(!qnx)
 requires(!android)
 requires(!integrity)
 requires(!vxworks)
-requires(qtHaveModule(widgets))
+
+!contains(DEFINES,QMF_NO_WIDGETS) {
+    requires(qtHaveModule(widgets))
+}
 
 load(qt_parts)
 

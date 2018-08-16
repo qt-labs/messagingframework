@@ -1,5 +1,9 @@
 TEMPLATE = subdirs
-SUBDIRS = qmfclient qmfmessageserver qmfwidgets
+SUBDIRS = qmfclient qmfmessageserver
 
 qmfmessageserver.depends = qmfclient
-qmfwidgets.depends = qmfclient
+
+!contains(DEFINES,QMF_NO_WIDGETS) {
+    SUBDIRS += qmfwidgets
+    qmfwidgets.depends = qmfclient
+}

@@ -29,12 +29,14 @@ Note: If there are build errors referring to valgrind (tst_messageserver),
 please ensure that valgrind development headers are installed, or optionally
 remove unwanted tests from the messagingframework.pro.
 
-Note: By default the QMF libraries, messageserver and protocol plugins depend
-on the QtGui library. This is so that protocol plugins (e.g. IMAP/SMTP/POP)
-can provide GUI account editors. To remove this dependency use the define
-QMF_NO_MESSAGE_SERVICE_EDITOR e.g:
+Note: By default the QmfWidgets module will be built, which depends on QtWidgets.
+To remove this dependency use the define QMF_NO_WIDGETS, e.g.
 
-    qmake -r messagingframework.pro DEFINES+=QMF_NO_MESSAGE_SERVICE_EDITOR
+    qmake -r messagingframework.pro DEFINES+=QMF_NO_WIDGETS
+
+In addition there is support for protocol plugins (e.g. IMAP/SMTP/POP)
+to provide GUI account editors, which are by default and will be disabled
+with above QMF_NO_WIDGETS.
 
 Note: By default QMF operations on the message store are atomic and durable, so
 long as the underlying OS supports durable writes, e.g. on Linux based systems

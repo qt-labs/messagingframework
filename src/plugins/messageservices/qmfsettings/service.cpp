@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "service.h"
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 #include "settings.h"
 #endif
 #include <QtPlugin>
@@ -50,7 +50,7 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
 #endif
 };
@@ -73,7 +73,7 @@ QString QmfConfigurator::displayName() const
     return QCoreApplication::instance()->translate("QMailMessageService", "Mailfile");
 }
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 QMailMessageServiceEditor *QmfConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Storage)

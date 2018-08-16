@@ -33,7 +33,7 @@
 
 #include "popservice.h"
 #include "popconfiguration.h"
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 #include "popsettings.h"
 #endif
 #include <QTimer>
@@ -408,7 +408,7 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
 #endif
 };
@@ -431,7 +431,7 @@ QString PopConfigurator::displayName() const
     return QCoreApplication::instance()->translate("QMailMessageService", "POP");
 }
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Source)

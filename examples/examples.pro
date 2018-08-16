@@ -1,2 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = qtmail messagingaccounts serverobserver
+
+!contains(DEFINES,QMF_NO_WIDGETS) {
+    SUBDIRS = qtmail messagingaccounts serverobserver
+}

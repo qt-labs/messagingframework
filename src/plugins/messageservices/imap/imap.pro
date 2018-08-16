@@ -3,7 +3,7 @@ TARGET = imap
 PLUGIN_TYPE = messageservices
 load(qt_plugin)
 
-QT = core network qmfclient qmfclient-private qmfmessageserver qmfwidgets
+QT = core network qmfclient qmfclient-private qmfmessageserver
 
 contains(DEFINES,QT_QMF_USE_ALIGNEDTIMER) {
     QT += alignedtimer
@@ -32,18 +32,18 @@ SOURCES += imapclient.cpp \
            imaptransport.cpp \
            serviceactionqueue.cpp
 
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
-    QT += gui widgets
+!contains(DEFINES,QMF_NO_WIDGETS) {
+    QT += qmfwidgets
 
-HEADERS += \
+    HEADERS += \
            imapsettings.h
 
-FORMS += imapsettings.ui
+    FORMS += imapsettings.ui
 
-SOURCES += \
+    SOURCES += \
            imapsettings.cpp
 
-RESOURCES += imap.qrc                
+    RESOURCES += imap.qrc
 }
 
 qtConfig(system-zlib) {

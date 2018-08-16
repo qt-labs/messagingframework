@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "imapservice.h"
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 #include "imapsettings.h"
 #endif
 #include "imapconfiguration.h"
@@ -1686,7 +1686,7 @@ public:
     virtual QString service() const;
     virtual QString displayName() const;
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
     virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
 #endif
 };
@@ -1709,7 +1709,7 @@ QString ImapConfigurator::displayName() const
     return QCoreApplication::instance()->translate("QMailMessageService", "IMAP");
 }
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
 {
     if (type == QMailMessageServiceFactory::Source)

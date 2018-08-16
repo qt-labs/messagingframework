@@ -9,7 +9,7 @@ HEADERS += service.h
 
 SOURCES += service.cpp
 
-!contains(DEFINES,QMF_NO_MESSAGE_SERVICE_EDITOR) {
+!contains(DEFINES,QMF_NO_WIDGETS) {
     QT += gui widgets
 
 HEADERS += settings.h

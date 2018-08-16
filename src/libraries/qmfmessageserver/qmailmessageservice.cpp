@@ -1533,7 +1533,7 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
     }
 }
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 /*!
     \class QMailMessageServiceEditor
     \ingroup libmessageserver
@@ -1610,7 +1610,7 @@ QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServ
     return QStringList();
 }
 
-#ifndef QMF_NO_MESSAGE_SERVICE_EDITOR
+#ifndef QMF_NO_WIDGETS
 /*!
     \fn QMailMessageServiceEditor *QMailMessageServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type);
 
