@@ -160,7 +160,7 @@ TRANSLATIONS += libqtopiamail-ar.ts \
                 libqtopiamail-zh_TW.ts
 
 packagesExist(icu-uc) {
-    LIBS += -licui18n -licuuc -licudata
+    LIBS_PRIVATE += -licui18n -licuuc -licudata
     PRIVATE_HEADERS += support/qcharsetdetector_p.h \
                        support/qcharsetdetector.h
     SOURCES += support/qcharsetdetector.cpp
