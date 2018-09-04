@@ -5,6 +5,12 @@ CONFIG    += warn_on
 MODULE_PLUGIN_TYPES = \
     messageservices
 
+contains(DEFINES,MESSAGESERVER_PLUGINS) {
+    MODULE_PLUGIN_TYPES += messageserverplugins
+    HEADERS += qmailmessageserverplugin.h
+    SOURCES += qmailmessageserverplugin.cpp
+}
+
 load(qt_module)
 CONFIG -= create_cmake
 
@@ -32,9 +38,4 @@ SOURCES += qmailauthenticator.cpp \
            qmailstoreaccountfilter.cpp \
            qmailtransport.cpp \
            qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
-
-contains(DEFINES,MESSAGESERVER_PLUGINS) {
-    HEADERS += qmailmessageserverplugin.h
-    SOURCES += qmailmessageserverplugin.cpp
-}
 
