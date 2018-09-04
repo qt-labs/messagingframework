@@ -5989,7 +5989,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptAddMessage(QMailMessa
     values.insert(QLatin1String("recipients"), recipients.join(QLatin1String(",")));
     values.insert(QLatin1String("subject"), metaData->subject());
     values.insert(QLatin1String("stamp"), QMailTimeStamp(metaData->date()).toUTC());
-    values.insert(QLatin1String("status"), static_cast<int>(metaData->status()));
+    values.insert(QLatin1String("status"), metaData->status());
     values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
     values.insert(QLatin1String("mailfile"), ::contentUri(*metaData));
     values.insert(QLatin1String("serveruid"), metaData->serverUid());

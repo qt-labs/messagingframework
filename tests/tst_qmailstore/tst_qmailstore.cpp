@@ -368,6 +368,8 @@ void tst_QMailStore::addMessage()
     message1.setBody(QMailMessageBody::fromData(QString("Hi"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
     message1.setStatus(QMailMessage::Incoming, true);
     message1.setStatus(QMailMessage::Read, true);
+    // Add a fictitious large flag value to check that quint64 is preserved.
+    message1.setStatus(quint64(1) << 62, true);
     message1.setCustomField("question", "What is your dog's name?");
     message1.setCustomField("answer", "Fido");
 
