@@ -402,7 +402,7 @@ struct PartLoader
                 // server-side data, the parameter seems reversed...
                 QMailMessageBody::EncodingStatus dataState(part.contentAvailable() ? QMailMessageBody::AlreadyEncoded : QMailMessageBody::RequiresEncoding);
                 part.setBody(QMailMessageBody::fromFile(partFilePath, part.contentType(), part.transferEncoding(), dataState));
-                if (!part.hasBody())
+                if (!part.hasBody() && QFile(partFilePath).size())
                     return false;
             }
         }
