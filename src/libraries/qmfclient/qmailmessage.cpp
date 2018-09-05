@@ -4774,6 +4774,39 @@ void QMailMessagePartContainer::setBoundary(const QByteArray& text)
 }
 
 /*!
+    Returns the Content-Description header field for the part, if present;
+    otherwise returns an empty string.
+*/
+QString QMailMessagePartContainer::contentDescription() const
+{
+    return headerFieldText(QLatin1String("Content-Description"));
+}
+
+/*!
+    Sets the Content-Description header field for the part to contain \a description.
+*/
+void QMailMessagePartContainer::setContentDescription(const QString &description)
+{
+    setHeaderField("Content-Description", description);
+}
+
+/*!
+    Returns the Content-Disposition header field for the part.
+*/
+QMailMessageContentDisposition QMailMessagePartContainer::contentDisposition() const
+{
+    return QMailMessageContentDisposition(headerField("Content-Disposition"));
+}
+
+/*!
+    Sets the Content-Disposition header field for the part to contain \a disposition.
+*/
+void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentDisposition &disposition)
+{
+    setHeaderField("Content-Disposition", disposition.toString(false, false));
+}
+
+/*!
     Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body regarding encoding.
     Note: No encoding/decoding operation will be performed in the body element, only the encoding status flag
     will be set if provided.
@@ -5996,39 +6029,6 @@ QString QMailMessagePart::contentLocation() const
 void QMailMessagePart::setContentLocation(const QString &location)
 {
     setHeaderField("Content-Location", location);
-}
-
-/*!
-    Returns the Content-Description header field for the part, if present; 
-    otherwise returns an empty string.
-*/
-QString QMailMessagePart::contentDescription() const
-{
-    return headerFieldText(QLatin1String("Content-Description"));
-}
-
-/*!
-    Sets the Content-Description header field for the part to contain \a description.
-*/
-void QMailMessagePart::setContentDescription(const QString &description)
-{
-    setHeaderField("Content-Description", description);
-}
-
-/*!
-    Returns the Content-Disposition header field for the part.
-*/
-QMailMessageContentDisposition QMailMessagePart::contentDisposition() const
-{
-    return QMailMessageContentDisposition(headerField("Content-Disposition"));
-}
-
-/*!
-    Sets the Content-Disposition header field for the part to contain \a disposition.
-*/
-void QMailMessagePart::setContentDisposition(const QMailMessageContentDisposition &disposition)
-{
-    setHeaderField("Content-Disposition", disposition.toString(false, false));
 }
 
 /*!
