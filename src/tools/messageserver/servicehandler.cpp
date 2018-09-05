@@ -366,7 +366,7 @@ struct TextPartSearcher
 
     bool operator()(const QMailMessagePart &part)
     {
-        if (part.contentType().type().toLower() == "text") {
+        if (part.contentType().matches("text")) {
             if (part.body().data().contains(text, Qt::CaseInsensitive)) {
                 return false;
             }
@@ -381,7 +381,7 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 {
     // Search only messages or message parts that are of type 'text/*'
     if (message.hasBody()) {
-        if (message.contentType().type().toLower() == "text") {
+        if (message.contentType().matches("text")) {
             if (message.body().data().contains(text, Qt::CaseInsensitive))
                 return true;
         }

@@ -364,10 +364,10 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     int next = 7;
 
     const QMailMessageContentType &type(part->contentType());
-    if (type.type().toUpper() == "TEXT") {
+    if (type.matches("text")) {
         // The following field is the part's line count
         ++next;
-    } else if ((type.type().toUpper() == "MESSAGE") && (type.subType().toUpper() == "RFC822")) {
+    } else if (type.matches("message", "rfc822")) {
         // For parts of type 'message/rfc822', there are three extra fields here...
         next += 3;
     }

@@ -146,6 +146,8 @@ public:
     QByteArray charset() const;
     void setCharset(const QByteArray& charset);
 
+    bool matches(const QByteArray& primary, const QByteArray& sub = QByteArray()) const;
+
 private:
     // Don't allow the Id to be changed
     void setId(const QByteArray& text);
