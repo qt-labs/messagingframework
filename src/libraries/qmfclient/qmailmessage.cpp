@@ -1149,6 +1149,9 @@ namespace findAttachments
             if (container.multipartType() == QMailMessagePart::MultipartMixed) {
                 inMultipartMixed(container, found, hasAttachments);
             }
+            if (container.multipartType() == QMailMessagePart::MultipartAlternative) {
+                inMultipartMixed(container, found, hasAttachments);
+            }
             if (container.multipartType() == QMailMessagePart::MultipartSigned) {
                 inMultipartSigned(container, found, hasAttachments);
             }
@@ -1166,6 +1169,9 @@ namespace findAttachments
             bool isText = (contentType.type().toLower() == "text") &&
                 ((contentType.subType().toLower() == "plain") || (contentType.subType().toLower() == "html"));
 
+            bool isCalendar = (contentType.type().toLower() == "text") &&
+                (contentType.subType().toLower() == "calendar");
+
             bool isInLine = (!part.contentDisposition().isNull()) &&
                 (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
 
@@ -1177,7 +1183,7 @@ namespace findAttachments
 
             // Attached messages are considered as attachments even if content disposition
             // is inline instead of attachment, but only if they aren't text/plain nor text/html
-            if (isRFC822 || isAttachment || (isInLine && !isText)) {
+            if (isRFC822 || isAttachment || (isInLine && !isText && !isCalendar)) {
                 if (found) {
                     *found << part.location();
                 }
@@ -1196,6 +1202,10 @@ namespace findAttachments
                 switch (part.multipartType()) {
                 case QMailMessagePart::MultipartNone:
                     inMultipartNone(part, found, hasAttachments);
+                    break;
+                case QMailMessagePart::MultipartMixed:
+                case QMailMessagePart::MultipartAlternative:
+                    inMultipartMixed(part, found, hasAttachments);
                     break;
                 default:
                     break;
