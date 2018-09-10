@@ -868,6 +868,10 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
         }
 
         bool escape = requiresEscape(input, _conformance, _encodeLineCharsRemaining);
+        // Escape last space on a line,
+        // see Rule#3 of http://www.ietf.org/rfc/rfc2045.txt page 19.
+        if (input == Space && it != end && (*it == CarriageReturn || *it == LineFeed))
+            escape = true;
         int charsRequired = (escape ? 3 : 1);
 
         // If we can't fit this character on the line, insert a line break

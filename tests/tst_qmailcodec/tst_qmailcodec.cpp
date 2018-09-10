@@ -355,6 +355,15 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("The  =20=\r\n quick=\r\n\t\t  brow=\r\nn\t   =20=\r\n \tfox")
         << QByteArray("The__=20=\r\n_quick=\r\n=09=09=\r\n__brown=\r\n=09__=20=\r\n__=09fox");
 
+    QTest::newRow("middle line trailing spaces")
+        << 8
+        << 8
+        << "  \nPlop"
+        << "UTF-8"
+        << QByteArray("ICAKUGxv\r\ncA==")
+        << QByteArray(" =20\r\nPlop")
+        << QByteArray("_=20\r\nPlop");
+
     // Restore normality
     QTest::newRow("restore default line length") 
         << Base64MaxLineLength
