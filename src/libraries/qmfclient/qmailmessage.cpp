@@ -3950,8 +3950,8 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
     const QMailMessagePart* part = 0; 
     const QList<QMailMessagePart>* partList = &_messageParts; 
 
-    foreach (uint index, location.d->_indices) {
-        if (index >= 0 && index <= partList->size()) {
+    foreach (int index, location.d->_indices) {
+        if (index > 0 && index <= partList->size()) {
             part = &(partList->at(index - 1));
             partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
         } else {
@@ -3969,8 +3969,8 @@ QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePar
     QMailMessagePart* part = 0; 
     QList<QMailMessagePart>* partList = &_messageParts; 
 
-    foreach (uint index, location.d->_indices) {
-        if (index >= 0 && index <= partList->size()) {
+    foreach (int index, location.d->_indices) {
+        if (index > 0 && index <= partList->size()) {
             part = &((*partList)[index - 1]);
             partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
         } else {

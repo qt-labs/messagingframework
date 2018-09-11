@@ -31,8 +31,6 @@
 **
 ****************************************************************************/
 
-// Needed to give friend access to the function defined by Q_GLOBAL_STATIC
-#define QMAILSTOREINSTANCE_DEFINED_HERE
 #include "qmailstore.h"
 #include "qmailstore_p.h"
 #include <QThreadStorage>

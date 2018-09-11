@@ -3038,7 +3038,10 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
     QString s;
     QTextStream ts(&s);
 
-    lastQueryError = error.number();
+    bool ok = false;
+    lastQueryError = error.nativeErrorCode().toInt(&ok);
+    if (!ok)
+        lastQueryError = QSqlError::UnknownError;
 
     ts << qPrintable(description) << "; error:\"" << error.text() << '"';
     if (!statement.isEmpty())

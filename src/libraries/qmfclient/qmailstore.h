@@ -53,10 +53,6 @@
 class QMailStore;
 class QMailStoreImplementation;
 
-#ifdef QMAILSTOREINSTANCE_DEFINED_HERE
-static QMailStore* QMailStoreInstance();
-#endif
-
 class QMF_EXPORT QMailStore : public QObject
 {
     Q_OBJECT
@@ -195,9 +191,6 @@ public:
     void reconnectIpc();
 
     static QMailStore* instance();
-#ifdef QMAILSTOREINSTANCE_DEFINED_HERE
-    friend QMailStore* QMailStoreInstance();
-#endif
 
 Q_SIGNALS:
     void errorOccurred(QMailStore::ErrorCode code);
