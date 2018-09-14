@@ -505,6 +505,17 @@ void tst_QMailMessageBody::fromFile_data()
         << QByteArray()
         << string_source
         << ( QStringList() << "text" << "plain" << "UTF-8" );
+
+    QTest::newRow("unknown charset")
+        << QString::fromLatin1(encode(string_source.toUtf8(), QMailMessageBody::Base64))
+        << QByteArray()
+        << QByteArray("text/plain; charset=this-is-not-a-valid-charset")
+        << QMailMessageBody::Base64
+        << QMailMessageBody::AlreadyEncoded
+        << encode(string_source.toUtf8(), QMailMessageBody::Base64)
+        << QByteArray()
+        << string_source
+        << ( QStringList() << "text" << "plain" << "this-is-not-a-valid-charset" );
 }
 
 void tst_QMailMessageBody::fromFile()

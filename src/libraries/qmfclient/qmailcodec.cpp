@@ -160,32 +160,32 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charse
 */
 void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& icharset)
 {
-    if (QTextCodec* codec = codecForName(icharset.toLatin1()))
+    QByteArray decoded;
     {
-        QByteArray decoded;
+        QDataStream decodedStream(&decoded, QIODevice::WriteOnly);
+
+        char* buffer = new char[MaxCharacters];
+        while (!in.atEnd())
         {
-            QDataStream decodedStream(&decoded, QIODevice::WriteOnly);
-            
-            char* buffer = new char[MaxCharacters];
-            while (!in.atEnd())
-            {
-                int length = in.readRawData(buffer, MaxCharacters);
+            int length = in.readRawData(buffer, MaxCharacters);
 
-                // Allow for decoded data to be twice the size without reallocation
-                decoded.reserve(decoded.size() + (MaxCharacters * 2));
+            // Allow for decoded data to be twice the size without reallocation
+            decoded.reserve(decoded.size() + (MaxCharacters * 2));
 
-                decodeChunk(decodedStream, buffer, length, in.atEnd());
-            }
-            delete [] buffer;
+            decodeChunk(decodedStream, buffer, length, in.atEnd());
         }
-
-        // This is an unfortunately-necessary copy operation; we should investigate
-        // using QTextCodec::makeDecoder, and adding a factory method to 
-        // QMailMessagePartContainer that returns a readable QIODevice*
-        QString unicode = codec->toUnicode(decoded);
-        out << unicode;
-        out.flush();
+        delete [] buffer;
     }
+    QTextCodec* codec = codecForName(icharset.toLatin1());
+    if (!codec)
+        codec = QTextCodec::codecForUtfText(decoded, codecForName("UTF-8"));
+
+    // This is an unfortunately-necessary copy operation; we should investigate
+    // using QTextCodec::makeDecoder, and adding a factory method to
+    // QMailMessagePartContainer that returns a readable QIODevice*
+    QString unicode = codec->toUnicode(decoded);
+    out << unicode;
+    out.flush();
 }
 
 /*!
