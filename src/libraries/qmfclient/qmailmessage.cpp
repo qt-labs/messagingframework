@@ -1163,8 +1163,7 @@ namespace findAttachments
             bool isText = (contentType.matches("text", "plain")
                            || contentType.matches("text", "html"));
 
-            bool isCalendar = (contentType.type().toLower() == "text") &&
-                (contentType.subType().toLower() == "calendar");
+            bool isCalendar = contentType.matches("text", "calendar");
 
             bool isInLine = (!part.contentDisposition().isNull()) &&
                 (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);

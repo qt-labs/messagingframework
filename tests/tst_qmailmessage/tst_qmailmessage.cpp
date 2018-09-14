@@ -126,6 +126,9 @@ private slots:
 
     void multiMultipart();
 
+    void attachments();
+    void recursiveAttachments();
+
     void copyAndAssign();
 
     void unterminatedDoubleQuote();
@@ -1432,6 +1435,109 @@ void tst_QMailMessage::multiMultipart()
             QCOMPARE( p2.body().data(), lp2.body().data());
         }
     }
+}
+
+void tst_QMailMessage::attachments()
+{
+    QByteArray data;
+    QByteArray type;
+
+    QMailMessagePart p1;
+    type = "text/plain; charset=UTF-8";
+    data = "P1: This is a plain text part.";
+    p1.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::EightBit,
+                                          QMailMessageBody::RequiresEncoding));
+
+    QMailMessagePart p2;
+    type = "text/calendar; charset=UTF-8";
+    data = "BEGIN:VCALENDAR\nEND:VCALENDAR";
+    p2.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::EightBit,
+                                          QMailMessageBody::RequiresEncoding));
+
+    QMailMessagePart p3;
+    type = "application/octet-stream; name=\"attach.pdf\"";
+    data = "abcdef";
+    p3.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::Base64,
+                                          QMailMessageBody::AlreadyEncoded));
+    p3.setContentDisposition(QMailMessageContentDisposition::Attachment);
+
+    QMailMessage m;
+    m.setTo(QMailAddress("someone@example.net"));
+    m.setFrom(QMailAddress("someone@example.net"));
+    m.setSubject("multipart/mixed with attachment");
+
+    m.setMultipartType(QMailMessagePartContainer::MultipartMixed);
+    m.appendPart(p1);
+    m.appendPart(p2);
+    m.appendPart(p3);
+    QCOMPARE(m.contentType().toString().toLower(),
+             QByteArray("Content-Type: multipart/mixed").toLower());
+    QCOMPARE(m.transferEncoding(), QMailMessageBody::NoEncoding);
+    QCOMPARE(m.partCount(), uint(3));
+    for (uint i = 0; i < m.partCount(); ++i)
+        QCOMPARE( m.partAt(i).partNumber(), int(i) );
+
+    QList<QMailMessagePart::Location> indices = m.findAttachmentLocations();
+    QCOMPARE(indices.size(), 1);
+    QCOMPARE(indices.at(0).toString(false), QStringLiteral("3"));
+}
+
+void tst_QMailMessage::recursiveAttachments()
+{
+    QByteArray data;
+    QByteArray type;
+
+    QMailMessagePart p1;
+    type = "text/plain; charset=UTF-8";
+    data = "P1: This is a plain text part.";
+    p1.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::EightBit,
+                                          QMailMessageBody::RequiresEncoding));
+
+    QMailMessagePart p3;
+    type = "text/html; charset=UTF-8";
+    data = "<html></html>";
+    p3.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::EightBit,
+                                          QMailMessageBody::RequiresEncoding));
+
+    QMailMessagePart p4;
+    type = "application/octet-stream; name=\"attach.pdf\"";
+    data = "abcdef";
+    p4.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type),
+                                          QMailMessageBody::Base64,
+                                          QMailMessageBody::AlreadyEncoded));
+    p4.setContentDisposition(QMailMessageContentDisposition::Attachment);
+
+    QMailMessagePart p2;
+    p2.setMultipartType(QMailMessagePartContainer::MultipartMixed);
+    p2.appendPart(p3);
+    p2.appendPart(p4);
+
+    QMailMessage m;
+    m.setTo(QMailAddress("someone@example.net"));
+    m.setFrom(QMailAddress("someone@example.net"));
+    m.setSubject("multipart/alternative with attachment in mixed");
+
+    m.setMultipartType(QMailMessagePartContainer::MultipartAlternative);
+    m.appendPart(p1);
+    m.appendPart(p2);
+    QCOMPARE(m.contentType().toString().toLower(),
+             QByteArray("Content-Type: multipart/alternative").toLower());
+    QCOMPARE(m.transferEncoding(), QMailMessageBody::NoEncoding);
+    QCOMPARE(m.partCount(), uint(2));
+    for (uint i = 0; i < m.partCount(); ++i)
+        QCOMPARE( m.partAt(i).partNumber(), int(i) );
+    QCOMPARE(m.partAt(1).partCount(), uint(2));
+    for (uint i = 0; i < m.partAt(1).partCount(); ++i)
+        QCOMPARE( m.partAt(1).partAt(i).partNumber(), int(i) );
+
+    QList<QMailMessagePart::Location> indices = m.findAttachmentLocations();
+    QCOMPARE(indices.size(), 1);
+    QCOMPARE(indices.at(0).toString(false), QStringLiteral("2.2"));
 }
 
 void tst_QMailMessage::copyAndAssign()
