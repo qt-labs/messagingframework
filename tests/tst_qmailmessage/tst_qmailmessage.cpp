@@ -111,6 +111,7 @@ private slots:
     void inReplyTo();
     void setInReplyTo();
 
+    void setSingleHeaderField();
 /*
     void status();
     void setStatus();
@@ -208,6 +209,24 @@ static void testAddressHeader(const QString& name, void (QMailMessage::*setter)(
     QCOMPARE(m.contentModified(), true);
 }
 
+static void testSingleHeader(const QByteArray &name)
+{
+    // Test that header name cannot exist in multiple entries.
+    QMailMessage m;
+    QByteArray a1("some text");
+    QByteArray a2("some updated text");
+
+    QVERIFY(m.headerFields(name).isEmpty());
+    m.setHeaderField(name, a1);
+    QCOMPARE(m.headerFields(name).size(), 1);
+    QCOMPARE(m.headerFields(name).at(0).id(), name);
+    QCOMPARE(m.headerFields(name).at(0).content(), a1);
+
+    m.appendHeaderField(name, a2);
+    QCOMPARE(m.headerFields(name).size(), 1);
+    QCOMPARE(m.headerFields(name).at(0).id(), name);
+    QCOMPARE(m.headerFields(name).at(0).content(), a2);
+}
 
 tst_QMailMessage::tst_QMailMessage()
 {
@@ -1020,6 +1039,7 @@ void tst_QMailMessage::from()
 void tst_QMailMessage::setFrom()
 {
     testAddressHeader("From", &QMailMessage::setFrom, &QMailMessage::from);
+    testSingleHeader("FrOM");
 }
 
 void tst_QMailMessage::subject()
@@ -1030,6 +1050,7 @@ void tst_QMailMessage::subject()
 void tst_QMailMessage::setSubject()
 {
     testHeader("Subject", &QMailMessage::setSubject, &QMailMessage::subject);
+    testSingleHeader(" SuBject:");
 }
 
 void tst_QMailMessage::date()
@@ -1062,6 +1083,8 @@ void tst_QMailMessage::setDate()
     QCOMPARE(m.headerFieldsText("Date"), QStringList(value2));
     QCOMPARE(m.dataModified(), true);
     QCOMPARE(m.contentModified(), true);
+
+    testSingleHeader("Date");
 }
 
 void tst_QMailMessage::to()
@@ -1165,6 +1188,7 @@ void tst_QMailMessage::cc()
 void tst_QMailMessage::setCc()
 {
     // Tested by: setTo
+    testSingleHeader("Cc");
 }
 
 void tst_QMailMessage::bcc()
@@ -1175,6 +1199,7 @@ void tst_QMailMessage::bcc()
 void tst_QMailMessage::setBcc()
 {
     // Tested by: setTo
+    testSingleHeader("Bcc");
 }
 
 void tst_QMailMessage::replyTo()
@@ -1249,6 +1274,7 @@ void tst_QMailMessage::hasRecipients()
 void tst_QMailMessage::setReplyTo()
 {
     testAddressHeader("Reply-To", &QMailMessage::setReplyTo, &QMailMessage::replyTo);
+    testSingleHeader("Reply-To");
 }
 
 void tst_QMailMessage::inReplyTo()
@@ -1259,6 +1285,7 @@ void tst_QMailMessage::inReplyTo()
 void tst_QMailMessage::setInReplyTo()
 {
     testHeader("In-Reply-To", &QMailMessage::setInReplyTo, &QMailMessage::inReplyTo, true);
+    testSingleHeader("In-Reply-To");
 }
 
 void tst_QMailMessage::serverUid()
@@ -1269,6 +1296,15 @@ void tst_QMailMessage::serverUid()
 void tst_QMailMessage::setServerUid()
 {
     testHeader(QString(), &QMailMessage::setServerUid, &QMailMessage::serverUid);
+}
+
+void tst_QMailMessage::setSingleHeaderField()
+{
+    // Other single fields are tested in setField methods.
+    testSingleHeader("Sender");
+    testSingleHeader("To");
+    testSingleHeader("Message-ID");
+    testSingleHeader("References");
 }
 
 void tst_QMailMessage::multiMultipart()

@@ -46,6 +46,7 @@
 #include "qmailstore.h"
 #endif
 
+#include <QtGlobal>
 #include <qcryptographichash.h>
 #include <qdir.h>
 #include <qfile.h>
@@ -2853,6 +2854,19 @@ void QMailMessageContentDisposition::setSize(int size)
 
 
 /* QMailMessageHeader*/
+// According to RFC2822-3.6, these header fields should be present at most once.
+Q_GLOBAL_STATIC_WITH_ARGS(QList<QByteArray>, singleHeaders,
+                          (QList<QByteArray>() << "date:"
+                           << "from:"
+                           << "sender:"
+                           << "reply-to:"
+                           << "to:"
+                           << "cc:"
+                           << "bcc:"
+                           << "message-id:"
+                           << "in-reply-to:"
+                           << "references:"
+                           << "subject:"));
 
 QMailMessageHeaderPrivate::QMailMessageHeaderPrivate()
     : QPrivateImplementationBase(this)
@@ -3019,8 +3033,14 @@ void QMailMessageHeaderPrivate::update(const QByteArray &id, const QByteArray &c
 
 void QMailMessageHeaderPrivate::append(const QByteArray &id, const QByteArray &content)
 {
-    QPair<QByteArray, QByteArray> parts = fieldParts(id, content);
-    _headerFields.append( parts.first + parts.second );
+    if (singleHeaders->contains(fieldId(id).toLower())) {
+        // Ensure that specific fields (see RFC2822, 3.6) cannot be present
+        // more that once.
+        update(id, content);
+    } else {
+        QPair<QByteArray, QByteArray> parts = fieldParts(id, content);
+        _headerFields.append( parts.first + parts.second );
+    }
 }
 
 void QMailMessageHeaderPrivate::remove(const QByteArray &id)
@@ -4990,7 +5010,8 @@ void QMailMessagePartContainer::setHeaderField( const QMailMessageHeaderField& f
 
 /*!
     Appends a new header field with id \a id and value \a value to the existing
-    list of header fields.  Any existing header fields with the same id are not modified.
+    list of header fields. If the \a id should be present only once according
+    to RFC2822 and is already existing, it will be updated instead of appended.
     If \a value is of the form "<id>:<content>", then only the part after the 
     semi-colon is processed.
 
@@ -5020,8 +5041,9 @@ void QMailMessagePartContainer::appendHeaderField( const QString& id, const QStr
 }
 
 /*!
-    Appends a new header field with the properties of \a field.  Any existing header 
-    fields with the same id are not modified.
+    Appends a new header field with the properties of \a field. If the \a id
+    should be present only once according to RFC2822 and is already existing,
+    it will be updated instead of appended.
 */
 void QMailMessagePartContainer::appendHeaderField( const QMailMessageHeaderField& field )
 {
