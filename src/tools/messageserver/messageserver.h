@@ -61,6 +61,8 @@ public:
 
 #if defined(Q_OS_UNIX)
     static void hupSignalHandler(int unused); // Unix SIGHUP signal handler
+    static void termSignalHandler(int unused);
+    static void intSignalHandler(int unused);
 #endif
 
 signals:
@@ -68,6 +70,8 @@ signals:
 #if defined(Q_OS_UNIX)
 public slots:
     void handleSigHup(); // Qt signal handler for UNIX SIGHUP signal.
+    void handleSigTerm();
+    void handleSigInt();
 #endif
     
 private slots:
@@ -105,6 +109,10 @@ private:
 #if defined(Q_OS_UNIX)
     static int sighupFd[2];
     QSocketNotifier *snHup;
+    static int sigtermFd[2];
+    QSocketNotifier *snTerm;
+    static int sigintFd[2];
+    QSocketNotifier *snInt;
 #endif
 
 };

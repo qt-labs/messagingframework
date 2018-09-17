@@ -39,6 +39,7 @@
 #include <qmailstore.h>
 #include <QDataStream>
 #include <QTimer>
+#include <QCoreApplication>
 #include <qmaillog.h>
 #include <qmailipc.h>
 #include <newcountnotifier.h>
@@ -55,6 +56,8 @@ extern "C" {
 #if defined(Q_OS_UNIX)
 #include <unistd.h>
 int MessageServer::sighupFd[2];
+int MessageServer::sigtermFd[2];
+int MessageServer::sigintFd[2];
 #endif
 
 MessageServer::MessageServer(QObject *parent)
@@ -69,22 +72,41 @@ MessageServer::MessageServer(QObject *parent)
     new QCopServer(this);
 
 #if defined(Q_OS_UNIX)
-    // SIGHUP handler. We use the trick described here: http://doc.trolltech.com/4.7-snapshot/unix-signals.html
+    // Unix signal handlers. We use the trick described here: http://doc.qt.io/qt-5/unix-signals.html
     // Looks shocking but the trick has certain reasons stated in Steven's book: http://cr.yp.to/docs/selfpipe.html
     // Use a socket and notifier because signal handlers can't call Qt code
 
     if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sighupFd))
         qFatal("Couldn't create HUP socketpair");
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigtermFd))
+        qFatal("Couldn't create TERM socketpair");
+    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, sigintFd))
+        qFatal("Couldn't create TERM socketpair");
+
     snHup = new QSocketNotifier(sighupFd[1], QSocketNotifier::Read, this);
     connect(snHup, SIGNAL(activated(int)), this, SLOT(handleSigHup()));
+    snTerm = new QSocketNotifier(sigtermFd[1], QSocketNotifier::Read, this);
+    connect(snTerm, SIGNAL(activated(int)), this, SLOT(handleSigTerm()));
+    snInt = new QSocketNotifier(sigintFd[1], QSocketNotifier::Read, this);
+    connect(snInt, SIGNAL(activated(int)), this, SLOT(handleSigInt()));
 
-    struct sigaction hup;
-    hup.sa_handler = MessageServer::hupSignalHandler;
-    sigemptyset(&hup.sa_mask);
-    hup.sa_flags = 0;
-    hup.sa_flags |= SA_RESTART;
-    if (sigaction(SIGHUP, &hup, 0) > 0)
+    struct sigaction action;
+    action.sa_handler = MessageServer::hupSignalHandler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    action.sa_flags |= SA_RESTART;
+
+    if (sigaction(SIGHUP, &action, 0) > 0)
         qFatal("Couldn't register HUP handler");
+
+    action.sa_handler = MessageServer::termSignalHandler;
+    if (sigaction(SIGTERM, &action, 0) > 0)
+        qFatal("Couldn't register TERM handler");
+
+    action.sa_handler = MessageServer::intSignalHandler;
+    if (sigaction(SIGINT, &action, 0) > 0)
+        qFatal("Couldn't register INT handler");
+
 #endif // defined(Q_OS_UNIX)
 
     QMailMessageCountMap::iterator it = messageCounts.begin(), end = messageCounts.end();
@@ -519,6 +541,42 @@ void MessageServer::handleSigHup()
     qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
 
     snHup->setEnabled(true);
+}
+
+void MessageServer::termSignalHandler(int)
+{
+    char a = 1;
+    ::write(sigtermFd[0], &a, sizeof(a));
+}
+
+void MessageServer::handleSigTerm()
+{
+    snTerm->setEnabled(false);
+    char tmp;
+    ::read(sigtermFd[1], &tmp, sizeof(tmp));
+
+    qMailLog(Messaging) << "Received SIGTERM, shutting down.";
+    QCoreApplication::exit();
+
+    snTerm->setEnabled(true);
+}
+
+void MessageServer::intSignalHandler(int)
+{
+    char a = 1;
+    ::write(sigintFd[0], &a, sizeof(a));
+}
+
+void MessageServer::handleSigInt()
+{
+    snInt->setEnabled(false);
+    char tmp;
+    ::read(sigintFd[1], &tmp, sizeof(tmp));
+
+    qMailLog(Messaging) << "Received SIGINT, shutting down.";
+    QCoreApplication::exit();
+
+    snInt->setEnabled(true);
 }
 
 #endif // defined(Q_OS_UNIX)

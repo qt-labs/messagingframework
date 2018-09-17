@@ -36,28 +36,9 @@
 #include <qmailnamespace.h>
 #include <qmaillog.h>
 #include <qloggers.h>
-#include <signal.h>
-#include <stdlib.h>
+
 #ifdef USE_HTML_PARSER
 #include <QtGui>
-#endif
-
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
-
-static void shutdown(int n)
-{
-    qMailLog(Messaging) << "Received signal" << n << ", shutting down.";
-    QCoreApplication::exit();
-}
-#endif
-
-#if defined(Q_OS_UNIX)
-
-static void recreateLoggers(int n)
-{
-    qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
-    qMailLog(Messaging) << "Received signal" << n << ", logs recreated.";
-}
 #endif
 
 int main(int argc, char** argv)
@@ -77,15 +58,6 @@ int main(int argc, char** argv)
         qFatal("Could not get messageserver lock. Messageserver might already be running!");
 
     MessageServer server;
-
-#if !defined(NO_SHUTDOWN_SIGNAL_HANDLING) && defined(Q_OS_UNIX)
-    signal(SIGINT, shutdown);
-    signal(SIGTERM, shutdown);
-#endif
-
-#if defined(Q_OS_UNIX)
-    signal(SIGHUP,recreateLoggers);
-#endif
 
     int exitCode = app.exec();
 
