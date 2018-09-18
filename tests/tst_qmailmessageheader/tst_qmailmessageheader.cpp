@@ -1322,6 +1322,14 @@ void tst_QMailMessageContentType::setType()
     QCOMPARE( type2.type(), QByteArray() );
     QCOMPARE( type2.subType(), QByteArray() );
     QCOMPARE( type2.toString(), QByteArray("Content-Type:; charset=us-ascii") );
+
+    // Illegal arguments to setType()
+    QMailMessageContentType type3("image/jpeg");
+    // Set the type and charset
+    type3.setType("text/plain; charset=UTF-8");
+    QCOMPARE( type3.type(), QByteArray("image") );
+    QCOMPARE( type3.subType(), QByteArray("jpeg") );
+    QVERIFY( type3.charset().isEmpty() );
 }
 
 void tst_QMailMessageContentType::subType() 

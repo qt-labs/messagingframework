@@ -2569,13 +2569,13 @@ QByteArray QMailMessageContentType::type() const
 */
 void QMailMessageContentType::setType(const QByteArray& type)
 {
-    if (type.isEmpty())
-    {
+    if (type.isEmpty()) {
         // Note - if there is a sub-type, setting type to null will destroy it
         setContent(type);
-    }
-    else
-    {
+    } else if (type.contains(';') || type.contains('/')) {
+        qWarning() << Q_FUNC_INFO << "wrong usage of setType(), consider using setSubType() or setParameter()" << type;
+
+    } else {
         QByteArray content(type);
 
         QByteArray secondaryType(subType());
