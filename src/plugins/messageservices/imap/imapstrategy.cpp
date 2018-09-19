@@ -38,6 +38,7 @@
 #include <qobject.h>
 #include <qmaillog.h>
 #include <qmailaccount.h>
+#include <qmailcrypto.h>
 #include <qmailstore.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
@@ -120,7 +121,12 @@ bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &
     }
 
     // Messages are the same - fall back to lexicographic comparison of the location
-    return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
+    // but ensure headers are seen first.
+    if (!(lhs._properties._location == rhs._properties._location))
+        return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
+    else
+        return lhs._properties._minimum == SectionProperties::HeadersOnly
+            && rhs._properties._minimum != SectionProperties::HeadersOnly ? true : false;
 }
 
 bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
@@ -1423,10 +1429,12 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
         // Determine the start position.
         // Find where we should continue (start) fetching from
         const QMailMessage message(_messageUids.first(), context->config().id());
-        bool valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
-        if (!valid) {
-            qMailLog(IMAP) << "Could not complete part: invalid location or invalid uid";
-            return selectNextMessageSequence(context, maximum, folderActionPermitted);
+        if (selector._properties._minimum != SectionProperties::HeadersOnly) {
+            bool valid = findFetchContinuationStart(message, _msgSection, &_sectionStart);
+            if (!valid) {
+                qMailLog(IMAP) << "Could not complete part: invalid location or invalid uid";
+                return selectNextMessageSequence(context, maximum, folderActionPermitted);
+            }
         }
         // Determine the end position.
         if (selector._properties._minimum == SectionProperties::All) {
@@ -1437,6 +1445,8 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
                 _sectionStart = 0;
                 _sectionEnd = SectionProperties::All;
             }
+        } else if (selector._properties._minimum == SectionProperties::HeadersOnly) {
+            _sectionEnd = SectionProperties::HeadersOnly;
         } else {
             _sectionEnd = (selector._properties._minimum - 1);
             if (_sectionEnd < 0) {
@@ -1445,11 +1455,12 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
             }
         }
 
-        if (_sectionEnd == SectionProperties::All) {
+        if (_sectionEnd == SectionProperties::All
+            || _sectionEnd == SectionProperties::HeadersOnly) {
             _sectionStart = 0;
         }
         // Try to avoid sending bad IMAP commands even when the server gives bogus values
-        if (_sectionEnd != SectionProperties::All
+        if (_sectionEnd >= 0
             && _sectionStart >= _sectionEnd) {
             qMailLog(IMAP) << "Invalid message section range"
                            << "account:" << message.parentAccountId()
@@ -1521,7 +1532,7 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                                                    const QMailMessagePartContainer &partContainer,
                                                    const QList<QMailMessagePartContainer::Location> &attachmentLocations,
                                                    QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
-                                                   QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
+                                                   QList<QPair<QMailMessagePart::Location, int> > &completionSectionList,
                                                    QMailMessagePartContainer::Location &preferredBody,
                                                    uint &bytesLeft)
 {
@@ -1550,10 +1561,10 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
                 // we put it directly into the main completion list.
                 // Text parts may be downloaded partially.
                 if (bytesLeft >= (uint)disposition.size()) {
-                    completionSectionList.append(qMakePair(part.location(), 0u));
+                    completionSectionList.append(qMakePair(part.location(), 0));
                     bytesLeft -= disposition.size();
                 } else {
-                    completionSectionList.append(qMakePair(part.location(), static_cast<unsigned>(bytesLeft)));
+                    completionSectionList.append(qMakePair(part.location(), int(bytesLeft)));
                     bytesLeft = 0;
                 }
                 preferredBody = part.location();
@@ -1599,7 +1610,7 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
         ImapStrategyContextBase *context,
         const QMailMessage &message,
         QMailMessageIdList &completionList,
-        QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList)
+        QList<QPair<QMailMessagePart::Location, int> > &completionSectionList)
 {
     ImapConfiguration imapCfg(context->config());
     const QList<QMailMessagePartContainer::Location> &attachmentLocations = message.findAttachmentLocations();
@@ -1616,8 +1627,7 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
             // portion of it.
             QMailMessagePart::Location location;
             location.setContainingMessageId(message.id());
-            completionSectionList.append(qMakePair(location,
-                                                   static_cast<unsigned>(_headerLimit)));
+            completionSectionList.append(qMakePair(location, int(_headerLimit)));
         } else {
             uint bytesLeft = _headerLimit;
             int partsToRetrieve = 0;
@@ -1633,16 +1643,30 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
             while (it != sectionList.end() && (bytesLeft > 0) && (partsToRetrieve < maxParts)) {
                 const QMailMessagePart &part = message.partAt(it->first);
                 if (it->second <= (uint)bytesLeft) {
-                    completionSectionList.append(qMakePair(it->first, (uint)0));
+                    completionSectionList.append(qMakePair(it->first, 0));
                     bytesLeft -= it->second;
                     ++partsToRetrieve;
                 } else if (part.contentType().matches("text")) {
                     // Text parts can be downloaded partially.
-                    completionSectionList.append(qMakePair(it->first, (uint)bytesLeft));
+                    completionSectionList.append(qMakePair(it->first, int(bytesLeft)));
                     bytesLeft = 0;
                     ++partsToRetrieve;
                 }
                 ++it;
+            }
+
+            // Add headers retrieval if undecoded data are required.
+            if (message.status() & QMailMessage::HasSignature) {
+                const QMailMessagePartContainer *signedContainer =
+                    QMailCryptographicServiceFactory::findSignedContainer(&message);
+                if (signedContainer) {
+                    const QMailMessagePart &part = signedContainer->partAt(0);
+                    completionSectionList.append(qMakePair(part.location(),
+                                                           SectionProperties::HeadersOnly));
+                    if (part.multipartType() != QMailMessagePartContainer::MultipartNone)
+                        completionSectionList.append(qMakePair(part.location(),
+                                                               SectionProperties::All));
+                }
             }
         }
     }
@@ -1725,23 +1749,25 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
         uint serverUid(stripFolderPrefix(message.serverUid()).toUInt());
         _selectionMap[QMailDisconnected::sourceFolderId(message)].append(MessageSelector(serverUid, message.id(), SectionProperties(location, minimum)));
 
-        uint size = 0;
-        uint bytes = minimum;
+        if (minimum == SectionProperties::All || minimum >= 0) {
+            uint size = 0;
+            uint bytes = minimum;
 
-        if (minimum > 0) {
-            size = 1;
-        } else if (location.isValid() && message.contains(location)) {
-            // Find the size of this part
-            const QMailMessagePart &part(message.partAt(location));
-            size = part.indicativeSize();
-            bytes = part.contentDisposition().size();
+            if (minimum > 0) {
+                size = 1;
+            } else if (location.isValid() && message.contains(location)) {
+                // Find the size of this part
+                const QMailMessagePart &part(message.partAt(location));
+                size = part.indicativeSize();
+                bytes = part.contentDisposition().size();
+            }
+            // Required to show progress when downloading attachments
+            if (size < 1)
+                size = bytes/1024;
+
+            _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+            _totalRetrievalSize += size;
         }
-        // Required to show progress when downloading attachments
-        if (size < 1)
-            size = bytes/1024;
-
-        _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
-        _totalRetrievalSize += size;
     }
 }
 
@@ -1803,7 +1829,9 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
             msgSectionStr = _msgSection.toString(false);
         }
 
-        if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
+        if (_msgSection.isValid() && _sectionEnd == SectionProperties::HeadersOnly) {
+            context->protocol().sendUidFetchSectionHeader(numericUidSequence(_messageUids), msgSectionStr);
+        } else if (_msgSection.isValid() || (_sectionEnd != SectionProperties::All)) {
             context->protocol().sendUidFetchSection(numericUidSequence(_messageUids), msgSectionStr, _sectionStart, _sectionEnd);
         } else {
             context->protocol().sendUidFetch(ContentFetchFlags, numericUidSequence(_messageUids));
@@ -2404,7 +2432,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
 
                     selectedMailsAppend(_completionList);
 
-                    QList<QPair<QMailMessagePart::Location, uint> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
+                    QList<QPair<QMailMessagePart::Location, int> >::const_iterator it = _completionSectionList.begin(), end = _completionSectionList.end();
                     for ( ; it != end; ++it) {
                         if (it->second != 0) {
                             selectedSectionsAppend(it->first, it->second);

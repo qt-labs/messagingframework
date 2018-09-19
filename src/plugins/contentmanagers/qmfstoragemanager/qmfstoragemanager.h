@@ -73,6 +73,7 @@ public:
     static QString messageFilePath(const QString &fileName, const QMailAccountId &accountId);
     static QString messagePartDirectory(const QString &fileName);
     static QString messagePartFilePath(const QMailMessagePart &part, const QString &fileName);
+    static QString messagePartUndecodedFilePath(const QMailMessagePart &part, const QString &fileName);
 
     virtual ManagerRole role() const { return StorageRole; }
 protected slots:

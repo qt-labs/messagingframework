@@ -320,7 +320,7 @@ public:
 
     // Parts management interface:
     MultipartType multipartType() const;
-    void setMultipartType(MultipartType type);
+    void setMultipartType(MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters = QList<QMailMessageHeaderField::ParameterType>());
 
     uint partCount() const;
 
@@ -483,6 +483,14 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
+    QByteArray toRfc2822() const;
+
+    // Undecoded data handling:
+    bool hasUndecodedData() const;
+    const QByteArray undecodedData() const;
+    void setUndecodedData(const QByteArray &data);
+    void appendUndecodedData(const QByteArray &data);
+
 private:
     friend class QMailMessagePrivate;
     friend class QMailMessagePartContainerPrivate;
@@ -558,6 +566,7 @@ public:
     static const quint64 &PartialContentAvailable;
     static const quint64 &HasAttachments;
     static const quint64 &HasReferences;
+    static const quint64 &HasSignature;
     static const quint64 &HasUnresolvedReferences;
     static const quint64 &Draft;
     static const quint64 &Outbox;
@@ -712,6 +721,7 @@ public:
 
     static QMailMessage fromRfc2822(const QByteArray &ba);
     static QMailMessage fromRfc2822File(const QString& fileName);
+    static QMailMessage fromSkeletonRfc2822File(const QString& fileName);
 
     QMailMessage();
 #ifndef QTOPIAMAIL_PARSING_ONLY
@@ -807,6 +817,7 @@ private:
     void updateMetaData(const QByteArray& id, const QString& value);
 
     static QMailMessage fromRfc2822(LongString& ls);
+    bool extractUndecodedData(const LongString& ls);
     void refreshPreview();
 
 public:

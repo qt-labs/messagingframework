@@ -337,7 +337,7 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
     _service->_client->strategyContext()->selectedStrategy.setOperation(
             _service->_client->strategyContext(), spec);
     QMailMessageIdList completionList;
-    QList<QPair<QMailMessagePart::Location, uint> > completionSectionList;
+    QList<QPair<QMailMessagePart::Location, int> > completionSectionList;
     foreach (const QMailMessageId &id, messageIds) {
         QMailMessage message(id);
         _service->_client->strategyContext()->selectedStrategy.prepareCompletionList(
@@ -345,7 +345,7 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
                 completionList, completionSectionList);
     }
     _service->_client->strategyContext()->selectedStrategy.selectedMailsAppend(completionList);
-    typedef QPair<QMailMessagePart::Location, uint > SectionDescription;
+    typedef QPair<QMailMessagePart::Location, int > SectionDescription;
     foreach (const SectionDescription &section, completionSectionList) {
         _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(section.first, section.second);
     }

@@ -1,0 +1,135 @@
+Date: Thu, 2 Feb 2017 01:39:18 +0100
+Subject: Debian Installer Stretch RC 2 release
+Message-ID: <20170202003918.GR2786@mraw.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="vvRocJ6whMXXNc9q"
+Content-Disposition: inline
+Organization: Debian
+User-Agent: Mutt/1.5.23 (2014-03-12)
+List-Archive: https://lists.debian.org/msgid-search/20170202003918.GR2786@mraw.org
+Resent-Date: Thu, 2 Feb 2017 00:39:36 +0000
+MIME-Version: 1.0
+
+--vvRocJ6whMXXNc9q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+The Debian Installer team[1] is pleased to announce the second release
+candidate of the installer for Debian 9 "Stretch".
+
+
+Important change in this release of the installer
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+ * A major update of os-prober was included in this release. This
+   component is responsible for finding other operating systems so
+   that entries can be added to the bootloader's menu. This update
+   should fix serious bugs, some of which leading to file system
+   corruption, but might also trigger some regressions. As usual,
+   running "reportbug os-prober" from the installed system lets you
+   report any issues.
+
+
+Improvements in this release
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D
+
+ * debian-installer:
+    - Bump Linux kernel version from 4.8.0-2 to 4.9.0-1.
+    - Adjust *.so files handling (#851790).
+ * os-prober:
+    - Improve logging of mounting and setting partitions to ro/rw.
+    - Use a read-only device-mapper entry when appropriate.
+    - Skip partition when FS type is LVM2_member (#853277).
+    - Make os-prober-udeb depend on grub-mount-udeb, and make
+      os-prober depend on grub-common, so that grub-mount is
+      consistently available (#776275).
+    - Fix detection of /usr partition as a GNU/Linux root partition
+      when /lib* directories are moved to /usr completely (#698733).
+    - Make the yaboot parser more tolerant (#674561).
+    - Call dmraid only once.
+    - Add os-release support (#794409).
+    - Work harder to avoid trying to mount extended partitions
+      (#784709).
+    - Drop " (loader)" suffixes on Microsoft operating systems
+      (#787418).
+    - For more improvements, see: #698598, #694668, #803155, #801631,
+      #851983.
+
+
+Hardware support changes
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+ * debian-installer:
+    - Drop armel/versatile flavour since kernel support was removed.
+    - mips*: install all NIC modules in the netbood initrd.
+ * flash-kernel:
+    - Add machine db entry for Pine64+.
+ * linux:
+    - udeb: Add switch (DSA) drivers to nic-modules (#845075).
+
+
+Localization status
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+ * 75 languages are supported in this release.
+ * Full translation for 12 of them.
+
+
+Known bugs in this release
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+
+ * There seems to be no known major bug as of yet.
+
+See the errata[2] for details and a full list of known issues.
+
+
+Feedback for this release
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+We need your help to find bugs and further improve the installer,
+so please try it. Installer CDs, other media and everything else you
+will need are available at our web site[3].
+
+
+Thanks
+=3D=3D=3D=3D=3D=3D
+
+The Debian Installer team thanks everybody who has contributed to this
+release.
+
+
+ 1. http://wiki.debian.org/DebianInstaller/Team
+ 2. http://www.debian.org/devel/debian-installer/errata
+ 3. http://www.debian.org/devel/debian-installer
+
+--=20
+Cyril Brulebois
+on behalf of the Debian Installer Team
+
+--vvRocJ6whMXXNc9q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJYkn+2AAoJEP+RSvDCs1UgPaoP/R1XJxj88WU7IpK2u9QL51EV
+hz6jvduLXAPtOJxxfCKrjdZmtda3nKrQJ8QVuDFGFjdQA9IQz/MMQ00/3yLCNNqj
+hAYkYn4Wtx77XLYWpWNGgKd6Ym1vNJyF6yKsIeY/60YI4gfbOhKC+GwIZAXXOaPK
+kIf2cJGNnN69wjh7cIx8JpkU00wYoHjHRmRVLWPMt0npvOsCaN0IDe3BJQyIN+CQ
+6hu8PfpaHZIXJTapQUEqkjWEIdTmgsna0XRR41viWhv+ZXHsz8K9p03F/nbT6JsO
+xitV6ouaPT76bHB+7xZWdV1Z2HXGAqALtFY8qPEkE+AWIQsro5aeJGABsLxMLCSp
+R5j80bVyTi+OLZ8jXJ25k+MKsr+xPDZZoz1aBxTw6BUcu47CnpABzPj4n0H6h7HX
+fKiofAAkM6t+FbPuMm/qTTbrTArZFF6/UeAqRGVBo78AnmBaQkEh5vP45lwBgcFS
+zy7LW362vFPkrZ0gUys+mtEUArgotFL6ecW492tAfE4r1mVg9LfCK/BuPmGmXbcH
+OyyiVfeYW9MzbbORJBs+yQ+iz6ouhhNA9L8p7eqH7i2LbjlED0A6cGOKEhRjzRew
+uNJeIrjUg/VtsdBZh+i/WlTDQB160/MEDwvUltY6tapCpLY6M1nWdQnLbYDNOnhF
+dsx8ZHidRBGlQacy5rwa
+=nvWo
+-----END PGP SIGNATURE-----
+
+--vvRocJ6whMXXNc9q--

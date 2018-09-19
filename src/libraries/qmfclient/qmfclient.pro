@@ -3,7 +3,8 @@ QT         = core sql network
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
-    contentmanagers
+    contentmanagers \
+    crypto
 
 load(qt_module)
 CONFIG -= create_cmake
@@ -31,6 +32,8 @@ HEADERS += \
     qmailaddress.h \
     qmailcodec.h \
     qmailcontentmanager.h \
+    qmailcrypto.h \
+    qmailcryptofwd.h \
     qmaildatacomparator.h \
     qmaildisconnected.h \
     qmailfolder.h \
@@ -106,6 +109,7 @@ SOURCES += longstream.cpp \
            qmailaddress.cpp \
            qmailcodec.cpp \
            qmailcontentmanager.cpp \
+           qmailcrypto.cpp \
            qmaildatacomparator.cpp \
            qmaildisconnected.cpp \
            qmailfolder.cpp \

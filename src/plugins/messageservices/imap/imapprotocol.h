@@ -108,8 +108,9 @@ enum FetchDataItem
     F_Uid           = (1 << 3),
     F_Flags         = (1 << 4),
     F_BodyStructure = (1 << 5),
-    F_BodySection   = (1 << 6),
-    F_Date          = (1 << 7)
+    F_SectionHeader = (1 << 6),
+    F_BodySection   = (1 << 7),
+    F_Date          = (1 << 8)
 };
 
 typedef uint FetchItemFlags;
@@ -196,6 +197,7 @@ public:
     void sendFetchFlags(const QString &range, const QString &prefix = QString());
     void sendUidFetch(FetchItemFlags items, const QString &uidList);
     void sendUidFetchSection(const QString &uid, const QString &section, int start, int end);
+    void sendUidFetchSectionHeader(const QString &uid, const QString &section);
     void sendUidStore(MessageFlags flags, bool set, const QString &range);
     void sendUidCopy(const QString &range, const QMailFolder &destination);
     void sendExpunge();
@@ -221,6 +223,7 @@ signals:
     void mailboxListed(const QString &flags, const QString &name);
     void messageFetched(QMailMessage& mail, const QString &detachedFilename, bool structureOnly);
     void dataFetched(const QString &uid, const QString &section, const QString &fileName, int size);
+    void partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int size);
     void downloadSize(const QString &uid, int);
     void nonexistentUid(const QString& uid);
     void messageStored(const QString& uid);
@@ -271,6 +274,7 @@ private:
 
     void createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure);
     void createPart(const QString &uid, const QString &section, const QString &file, int size);
+    void createPartHeader(const QString &uid, const QString &section, const QString &file, int size);
 
     void processResponse(QString line);
     void nextAction(const QString &line);

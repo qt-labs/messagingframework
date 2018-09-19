@@ -45,7 +45,8 @@
 
 struct SectionProperties {
     enum MinimumType {
-        All = -1
+        All = -1,
+        HeadersOnly = -2
     };
 
     SectionProperties(const QMailMessagePart::Location &location = QMailMessagePart::Location(),
@@ -271,7 +272,6 @@ public:
     virtual void clearSelection();
     virtual void selectedMailsAppend(const QMailMessageIdList &ids);
     virtual void selectedSectionsAppend(const QMailMessagePart::Location &location);
-    
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
 
@@ -327,7 +327,7 @@ public:
                                   ImapStrategyContextBase *context,
                                   const QMailMessage &message,
                                   QMailMessageIdList &completionList,
-                                  QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList);
+                                  QList<QPair<QMailMessagePart::Location, int> > &completionSectionList);
 
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
@@ -350,7 +350,7 @@ protected:
                                   const QMailMessagePartContainer &partContainer,
                                   const QList<QMailMessagePartContainer::Location> &attachmentLocations,
                                   QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
-                                  QList<QPair<QMailMessagePart::Location, uint> > &completionSectionList,
+                                  QList<QPair<QMailMessagePart::Location, int> > &completionSectionList,
                                   QMailMessagePart::Location &preferredBody,
                                   uint &bytesLeft);
 
@@ -481,7 +481,7 @@ protected:
     QStringList _newUids;
     QList<QPair<QMailFolderId, QStringList> > _retrieveUids;
     QMailMessageIdList _completionList;
-    QList<QPair<QMailMessagePart::Location, uint> > _completionSectionList;
+    QList<QPair<QMailMessagePart::Location, int> > _completionSectionList;
     int _outstandingPreviews;
 
 private:

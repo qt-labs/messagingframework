@@ -2713,6 +2713,8 @@ bool QMailStorePrivate::initStore()
                                             63, true, const_cast<quint64 *>(&QMailMessage::CalendarInvitation), t, false)
                 || attemptRegisterStatusBit(QLatin1String("Todo"), QLatin1String("messagestatus"),
                                             63, true, const_cast<quint64 *>(&QMailMessage::Todo), t, false)
+                || attemptRegisterStatusBit(QLatin1String("HasSignature"), QLatin1String("messagestatus"),
+                                            63, true, const_cast<quint64 *>(&QMailMessage::HasSignature), t, false)
                 || attemptRegisterStatusBit(QLatin1String("NoNotification"), QLatin1String("messagestatus"),
                                             63, true, const_cast<quint64 *>(&QMailMessage::NoNotification), t, false);
 

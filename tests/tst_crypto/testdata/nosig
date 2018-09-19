@@ -1,0 +1,11 @@
+Received: from [127.0.0.1]
+To: <test2@free.fr>
+From: <test@free.fr>
+Subject: Test signature
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Date: Fri, 27 Jan 2017 15:36:23 +0000
+Message-ID: <uibjfc.okg3d7.rv1pky-qmf@smtp1-g21.free.fr>
+MIME-Version: 1.0
+
+SGVsbG8gc2lnbmF0dXJlICEg

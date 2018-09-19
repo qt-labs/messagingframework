@@ -1,0 +1,30 @@
+Received: from [127.0.0.1]
+To: <test2@free.fr>
+From: <test@free.fr>
+Subject: Testing signing
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="_d69d3a43-654c-46a3-ae21-a1fd4e0036a1_"
+Date: Mon, 30 Jan 2017 13:58:56 +0000
+Message-ID: <s0bsge.oklivc.rusfpt-qmf@smtp6-g21.free.fr>
+MIME-Version: 1.0
+
+--_d69d3a43-654c-46a3-ae21-a1fd4e0036a1_
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
+
+SSdtIHN1cmUgdGhlIHRleHQgaXMgcHJpc3RpbmUuIA==
+--_d69d3a43-654c-46a3-ae21-a1fd4e0036a1_
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEARECAAYFAliPRr0ACgkQstd9FoOveezW6wCfSgpQHIlAJUreDwwrLvZ8xeV+
+354AoOfjU17Fn6x1XRvdJzSMF35PYUo6
+=msRa
+-----END PGP SIGNATURE-----
+
+--_d69d3a43-654c-46a3-ae21-a1fd4e0036a1_--

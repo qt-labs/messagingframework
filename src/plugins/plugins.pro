@@ -6,3 +6,8 @@ SUBDIRS = \
     messageservices/qmfsettings \
     contentmanagers/qmfstoragemanager
 
+exists(/usr/bin/gpgme-config) {
+    SUBDIRS += crypto/gpgme
+    SUBDIRS += crypto/smime
+}
+

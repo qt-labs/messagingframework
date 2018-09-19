@@ -42,6 +42,7 @@
 #include <qmailnamespace.h>
 #include <qmaildisconnected.h>
 #include <qmailcodec.h>
+#include <qmailcrypto.h>
 #include <limits.h>
 #include <QFile>
 #include <QDir>
@@ -412,6 +413,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(messageFetched(QMailMessage&, const QString &, bool)) );
     connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
             this, SLOT(dataFetched(QString, QString, QString, int)) );
+    connect(&_protocol, SIGNAL(partHeaderFetched(QString, QString, QString, int)),
+            this, SLOT(partHeaderFetched(QString, QString, QString, int)) );
     connect(&_protocol, SIGNAL(nonexistentUid(QString)),
             this, SLOT(nonexistentUid(QString)) );
     connect(&_protocol, SIGNAL(messageStored(QString)),
@@ -899,6 +902,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setStatus(QMailMessage::Junk, true); 
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
+        mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicServiceFactory::findSignedContainer(&mail) != 0));
         
         // Disable Notification when getting older message
         QMailFolder folder(properties.id);
@@ -1263,6 +1267,18 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
             QMailMessagePart &part = mail->partAt(partLocation);
 
+            // Headers for part with undecoded data should have been
+            // received already.
+            if (part.hasUndecodedData()) {
+                QFile file(fileName);
+                if (!file.open(QIODevice::ReadOnly)) {
+                    qWarning() << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
+                    operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to read fetched data"));
+                    return;
+                }
+                part.appendUndecodedData(file.readAll());
+            }
+
             int existingSize = 0;
             if (part.hasBody()) {
                 existingSize = part.body().length();
@@ -1280,7 +1296,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 } else {
                     // The appended content file is now named 'fileName'
                 }
-            } 
+            }
 
             if (part.multipartType() == QMailMessage::MultipartNone) {
                 // The body data is for this part only
@@ -1294,6 +1310,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                     // We only have a portion of the part data
                     part.setHeaderField("X-qmf-internal-partial-content", "true");
                 }
+
             } else {
                 // Find the part bodies in the retrieved data
                 QFile file(fileName);
@@ -1337,6 +1354,64 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
     } else {
         qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
+    }
+}
+
+void ImapClient::partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int size)
+{
+    static const QString tempDir = QMail::tempPath();
+
+    QMailMessage *mail;
+    bool inBuffer = false;
+
+    foreach (QMailMessage *msg, _bufferedMessages) {
+        if (msg->serverUid() == uid) {
+            mail = msg;
+            inBuffer = true;
+            break;
+        }
+    }
+    if (!inBuffer) {
+        mail = new QMailMessage(uid, _config.id());
+    }
+
+    detachedTempFiles.insertMulti(mail->id(),fileName);
+
+    if (mail->id().isValid() && !section.isEmpty()) {
+        // This is data for a sub-part of the message
+        QMailMessagePart::Location partLocation(section);
+        if (!partLocation.isValid(false)) {
+            qWarning() << "Unable to locate part for invalid section:" << section;
+            return;
+        } else if (!mail->contains(partLocation)) {
+            qWarning() << "Unable to update invalid part for section:" << section;
+            return;
+        }
+
+        QMailMessagePart &part = mail->partAt(partLocation);
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            qWarning() << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
+            operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to read fetched data"));
+            return;
+        }
+        // We start the undecoded part by saving the header.
+        // The rest will be appended at later arrival.
+        part.setUndecodedData(file.readAll());
+
+        if (inBuffer) {
+            return;
+        }
+
+        _bufferedMessages.append(mail);
+        _strategyContext->dataFetched(*mail, uid, section);
+        QMailMessageBufferFlushCallback *callback = new DataFlushedWrapper(_strategyContext, uid, section);
+        callbacks << callback;
+        QMailMessageBuffer::instance()->setCallback(mail, callback);
+    } else {
+        qWarning() << "Unable to handle partHeaderFetched - uid:" << uid << "section:" << section;
+        operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle partHeaderFetched without context"));
     }
 }
 

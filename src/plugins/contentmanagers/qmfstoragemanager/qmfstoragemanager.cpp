@@ -379,6 +379,17 @@ struct ReferenceLoader
     }
 };
 
+static bool loadPartUndecoded(QMailMessagePart &part, const QString &fileName)
+{
+    QString partFilePath = QmfStorageManager::messagePartUndecodedFilePath(part, fileName);
+    QFile file(partFilePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    part.setUndecodedData(file.readAll());
+    return true;
+}
+
 struct PartLoader
 {
     QString fileName;
@@ -407,6 +418,9 @@ struct PartLoader
             }
         }
 
+        // Load undecoded data if any.
+        loadPartUndecoded(part, fileName);
+
         return true;
     }
 };
@@ -428,7 +442,7 @@ QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMe
         return (pathOnDefault(path) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
-    QMailMessage result(QMailMessage::fromRfc2822File(path));
+    QMailMessage result(QMailMessage::fromSkeletonRfc2822File(path));
 
     // Load the reference information from the meta data into our content object
     ReferenceLoader refLoader(message);
@@ -539,9 +553,46 @@ QString QmfStorageManager::messagePartFilePath(const QMailMessagePart &part, con
     return messagePartDirectory(fileName) + '/' + part.location().toString(false); 
 }
 
+QString QmfStorageManager::messagePartUndecodedFilePath(const QMailMessagePart &part, const QString &fileName)
+{
+    return messagePartDirectory(fileName) + '/' + part.location().toString(false) + "-raw";
+}
+
 QString QmfStorageManager::messagePartDirectory(const QString &fileName)
 {
     return fileName + "-parts";
+}
+
+static bool storePartUndecoded(const QMailMessagePart &part, const QString &fileName, QList< QSharedPointer<QFile> > *openParts)
+{
+    // We save the undecoded data contained in part, so they can be reused
+    // later for signature checking for instance.
+    QString partFilePath(QmfStorageManager::messagePartUndecodedFilePath(part, fileName));
+
+    // We need to write the content to a new file
+    QSharedPointer<QFile> file(new QFile(partFilePath));
+    if (!file->open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to open new message part content file:" << partFilePath;
+        return false;
+    }
+
+    // Write the part content to file
+    QByteArray undecodedData = part.undecodedData();
+    if (file->write(undecodedData) != undecodedData.length()) {
+        qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+        file->close();
+        if (!QFile::remove(partFilePath)){
+            qWarning()  << "Unable to remove temporary message part content file:" << partFilePath;
+        }
+        return false;
+    }
+
+    if (openParts) {
+        openParts->append(file);
+    } else {
+        syncFile(file);
+    }
+    return true;
 }
 
 struct PartStorer
@@ -613,6 +664,8 @@ struct PartStorer
                 syncFile(file);
             }
         }
+        if (!part.undecodedData().isEmpty() && !storePartUndecoded(part, fileName, openParts))
+            return false;
 
         return true;
     }
@@ -637,6 +690,7 @@ bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &f
         qMailLog(Messaging) << "Unable to store parts for message:" << fileName;
         return false;
     }
+
     if (durability == QMailContentManager::NoDurability)
       return true; // Don't sync parts, they should be sync'd later
     foreach(QSharedPointer<QFile> part, openParts) {

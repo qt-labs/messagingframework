@@ -194,7 +194,7 @@ public:
 
     void removeHeaderField(const QByteArray &id);
 
-    void setMultipartType(QMailMessagePartContainer::MultipartType type);
+    void setMultipartType(QMailMessagePartContainer::MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters);
     void appendPart(const QMailMessagePart &part);
     void prependPart(const QMailMessagePart &part);
     void removePartAt(uint pos);
@@ -272,6 +272,10 @@ public:
     bool contentAvailable() const;
     bool partialContentAvailable() const;
 
+    const QByteArray undecodedData() const;
+    void setUndecodedData(const QByteArray &data);
+    void appendUndecodedData(const QByteArray &data);
+
     template <typename F>
     void output(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
 
@@ -290,6 +294,7 @@ private:
     QMailMessageId _referenceId;
     QMailMessagePart::Location _referenceLocation;
     QString _resolution;
+    QByteArray _undecodedData;
 };
 
 template <typename T>

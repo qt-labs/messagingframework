@@ -344,6 +344,7 @@ public:
 
     void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
     void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
+    void createPartHeader(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPartHeader(uid, section, file, size); }
 
 private:
     ImapProtocol *mProtocol;
@@ -2258,6 +2259,9 @@ void UidFetchState::setSection(const QString &uid, const QString &section, int s
     mParameters.last().mEnd = end;
 
     QString element(uid + ' ' + (section.isEmpty() ? "TEXT" : section));
+    if (flags & F_SectionHeader) {
+        element.append(".MIME");
+    }
     if (end > 0) {
         element.append(QString("<%1>").arg(QString::number(start)));
     }
@@ -2287,6 +2291,14 @@ QString UidFetchState::transmit(ImapContext *c)
         flagStr += " RFC822.HEADER";
     if (params.mDataItems & F_Rfc822)
         flagStr += " BODY.PEEK[]";
+    if (params.mDataItems & F_SectionHeader) {
+        flagStr += " BODY.PEEK[";
+        if (params.mSection.isEmpty()) {
+            flagStr += "HEADER]";
+        } else {
+            flagStr += params.mSection + ".MIME]";
+        }
+    }
     if (params.mDataItems & F_BodySection) {
         flagStr += " BODY.PEEK[";
         if (params.mSection.isEmpty()) {
@@ -2361,13 +2373,18 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
                     fp.mNewMsgStructure = extractStructure(str);
                 }
 
-                if (fp.mDataItems & F_BodySection) {
+                if ((fp.mDataItems & F_BodySection)
+                    || (fp.mDataItems & F_SectionHeader)) {
                     if (fp.mDetachedFile.isEmpty()) {
                         // The buffer has not been detached to a file yet
                         fp.mDetachedSize = c->buffer().length();
                         fp.mDetachedFile = c->buffer().detach();
                     }
-                    c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
+                    if (fp.mDataItems & F_SectionHeader) {
+                        c->createPartHeader(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
+                    } else {
+                        c->createPart(fp.mNewMsgUid, fp.mSection, fp.mDetachedFile, fp.mDetachedSize);
+                    }
                 } else {
                     if (fp.mNewMsgSize == 0) {
                         fp.mNewMsgSize = fp.mDetachedSize;
@@ -3323,6 +3340,12 @@ void ImapProtocol::sendUidFetchSection(const QString &uid, const QString &sectio
     _fsm->setState(&_fsm->uidFetchState);
 }
 
+void ImapProtocol::sendUidFetchSectionHeader(const QString &uid, const QString &section)
+{
+    _fsm->uidFetchState.setSection(uid, section, 0, -1, (F_Uid | F_SectionHeader));
+    _fsm->setState(&_fsm->uidFetchState);
+}
+
 void ImapProtocol::sendUidStore(MessageFlags flags, bool set, const QString &range)
 {
     _fsm->uidStoreState.setParameters(flags, set, range);
@@ -3781,7 +3804,7 @@ QByteArray ImapProtocol::quoteString(const QByteArray& input)
 
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
 {
-    QMailMessage mail = QMailMessage::fromRfc2822File( detachedFile );
+    QMailMessage mail = QMailMessage::fromSkeletonRfc2822File( detachedFile );
     if ( !structure.isEmpty() ) {
         bool wellFormed = setMessageContentFromStructure( structure, &mail );
 
@@ -3826,7 +3849,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
 
     emit messageFetched(mail, detachedFile, !structure.isEmpty());
 
-    // Workaround for message buffer file being deleted 
+    // Workaround for message buffer file being deleted
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
         qWarning() << "Unable to find message buffer file";
@@ -3838,7 +3861,19 @@ void ImapProtocol::createPart(const QString &uid, const QString &section, const 
 {
     emit dataFetched(uid, section, detachedFile, size);
 
-    // Workaround for message part buffer file being deleted 
+    // Workaround for message part buffer file being deleted
+    QFileInfo newFile(_fsm->buffer().fileName());
+    if (!newFile.exists()) {
+        qWarning() << "Unable to find message part buffer file";
+        _fsm->buffer().detach();
+    }
+}
+
+void ImapProtocol::createPartHeader(const QString &uid, const QString &section, const QString &detachedFile, int size)
+{
+    emit partHeaderFetched(uid, section, detachedFile, size);
+
+    // Workaround for message part buffer file being deleted
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
         qWarning() << "Unable to find message part buffer file";

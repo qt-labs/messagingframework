@@ -1,0 +1,26 @@
+Received: from [127.0.0.1]
+To: <test2@free.fr>
+From: <test@free.fr>
+Subject: Test signature
+Content-Type: multipart/signed; charset=utf-8; micalg=pgp-md5;
+ protocol=application/pgp-signature;
+ boundary="[)}<testingtestingtesting)}<]"
+Date: Fri, 27 Jan 2017 15:36:23 +0000
+Message-ID: <uibjfc.okg3d7.rv1pky-qmf@smtp1-g21.free.fr>
+MIME-Version: 1.0
+
+This is a multipart message in Mime 1.0 format
+
+--[)}<testingtestingtesting)}<]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+
+SGVsbG8gc2lnbmF0dXJlICEg
+
+--[)}<testingtestingtesting)}<]
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
+Content-Description: OpenPGP digital signature
+
+0133d5663d1abd6878852b31506a2526
+--[)}<testingtestingtesting)}<]--

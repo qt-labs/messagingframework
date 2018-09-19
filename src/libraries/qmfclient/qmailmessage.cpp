@@ -37,6 +37,7 @@
 #include "qmaillog.h"
 #include "qmailnamespace.h"
 #include "qmailtimestamp.h"
+#include "qmailcrypto.h"
 #include "longstring_p.h"
 
 #ifndef QTOPIAMAIL_PARSING_ONLY
@@ -4150,7 +4151,7 @@ static QMailMessageContentType updateContentType(const QByteArray& existing, QMa
     return type;
 }
 
-void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContainer::MultipartType type)
+void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContainer::MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters)
 {
     // TODO: Is there any value in keeping _multipartType and _boundary externally from
     // Content-type header field?
@@ -4164,11 +4165,14 @@ void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContaine
             removeHeaderField("Content-Type");
         } else  {
             QMailMessageContentType contentType = updateContentType(headerField("Content-Type"), _multipartType, _boundary);
+            foreach (const QMailMessageHeaderField::ParameterType& param, parameters)
+                contentType.setParameter(param.first, param.second);
             updateHeaderField("Content-Type", contentType.toString(false, false));
 
             if (_hasBody) {
                 _body = QMailMessageBody();
                 _hasBody = false;
+                removeHeaderField("Content-Transfer-Encoding");
             }
         }
     }
@@ -4230,6 +4234,8 @@ void QMailMessagePartContainerPrivate::setBodyProperties(const QMailMessageConte
     QByteArray encodingName(nameForEncoding(encoding));
     if (!encodingName.isEmpty()) {
         updateHeaderField("Content-Transfer-Encoding", encodingName);
+    } else {
+        removeHeaderField("Content-Transfer-Encoding");
     }
 
     setDirty();
@@ -4770,9 +4776,9 @@ QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartTyp
 /*!
     Sets the multipart state of the message to \a type.
 */
-void QMailMessagePartContainer::setMultipartType(QMailMessagePartContainer::MultipartType type)
+void QMailMessagePartContainer::setMultipartType(QMailMessagePartContainer::MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters)
 {
-    impl(this)->setMultipartType(type);
+    impl(this)->setMultipartType(type, parameters);
 }
 
 /*!
@@ -5512,10 +5518,35 @@ bool QMailMessagePartPrivate::partialContentAvailable() const
     return ((_multipartType != QMailMessage::MultipartNone) || !_body.isEmpty());
 }
 
+const QByteArray QMailMessagePartPrivate::undecodedData() const
+{
+    return _undecodedData;
+}
+
+void QMailMessagePartPrivate::setUndecodedData(const QByteArray &data)
+{
+    _undecodedData = data;
+    setDirty();
+}
+
+void QMailMessagePartPrivate::appendUndecodedData(const QByteArray &data)
+{
+    _undecodedData.append(data);
+    setDirty();
+}
+
 template <typename F>
 void QMailMessagePartPrivate::output(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const
 {
     static const DataString newLine('\n');
+
+    // Ensure that pristine data are used when writing the mail
+    // because some header ordering, case... may have been altered
+    // while parsing the mail.
+    if (includeAttachments && excludeInternalFields && !_undecodedData.isEmpty()) {
+        **out << DataString(_undecodedData);
+        return;
+    }
 
     _header.output( **out, QList<QByteArray>(), excludeInternalFields );
     **out << DataString('\n');
@@ -6066,6 +6097,26 @@ void QMailMessagePart::setContentLanguage(const QString &language)
     setHeaderField("Content-Language", language);
 }
 
+bool QMailMessagePart::hasUndecodedData() const
+{
+    return !impl(this)->undecodedData().isEmpty();
+}
+
+const QByteArray QMailMessagePart::undecodedData() const
+{
+    return impl(this)->undecodedData();
+}
+
+void QMailMessagePart::setUndecodedData(const QByteArray &data)
+{
+    impl(this)->setUndecodedData(data);
+}
+
+void QMailMessagePart::appendUndecodedData(const QByteArray &data)
+{
+    impl(this)->appendUndecodedData(data);
+}
+
 /*!
     Returns the number of the part, if it has been set; otherwise returns -1.
 */
@@ -6332,6 +6383,15 @@ void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool ex
     return impl(this)->output<DummyChunkProcessor>(&ds, false, includeAttachments, excludeInternalFields, 0);
 }
 
+QByteArray QMailMessagePart::toRfc2822() const
+{
+    QByteArray result;
+    QDataStream out(&result, QIODevice::WriteOnly);
+    output(out, true, true);
+
+    return result;
+}
+
 /*! 
     \fn QMailMessagePart::serialize(Stream&) const
     \internal 
@@ -6386,6 +6446,7 @@ static quint64 trashFlag = 0;
 static quint64 partialContentAvailableFlag = 0;
 static quint64 hasAttachmentsFlag = 0;
 static quint64 hasReferencesFlag = 0;
+static quint64 hasSignatureFlag = 0;
 static quint64 hasUnresolvedReferencesFlag = 0;
 static quint64 draftFlag = 0;
 static quint64 outboxFlag = 0;
@@ -7063,6 +7124,7 @@ const quint64 &QMailMessageMetaData::Trash = trashFlag;
 const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAvailableFlag;
 const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
 const quint64 &QMailMessageMetaData::HasReferences = hasReferencesFlag;
+const quint64 &QMailMessageMetaData::HasSignature = hasSignatureFlag;
 const quint64 &QMailMessageMetaData::HasUnresolvedReferences = hasUnresolvedReferencesFlag;
 const quint64 &QMailMessageMetaData::Draft = draftFlag;
 const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
@@ -8029,13 +8091,28 @@ QMailMessage::QMailMessage(const QString& uid, const QMailAccountId& accountId)
 QMailMessage QMailMessage::fromRfc2822(const QByteArray &byteArray)
 {
     LongString ls(byteArray);
-    return fromRfc2822(ls);
+    QMailMessage mail = fromRfc2822(ls);
+    mail.extractUndecodedData(ls);
+    return mail;
 }
 
 /*!
     Constructs a mail message from the RFC 2822 data contained in the file \a fileName.
 */
 QMailMessage QMailMessage::fromRfc2822File(const QString& fileName)
+{
+    LongString ls(fileName);
+    QMailMessage mail = fromRfc2822(ls);
+    mail.extractUndecodedData(ls);
+    return mail;
+}
+
+/*!
+    Constructs a mail message from the RFC 2822 data contained in the file \a fileName
+    TODO, modify the load method not to populate the bodies, just load the structure
+    and the meta-data.
+*/
+QMailMessage QMailMessage::fromSkeletonRfc2822File(const QString& fileName)
 {
     LongString ls(fileName);
     return fromRfc2822(ls);
@@ -8739,7 +8816,49 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     if (mail.hasAttachments()) {
         mail.setStatus( QMailMessage::HasAttachments, true );
     }
+
     return mail;
+}
+
+bool QMailMessage::extractUndecodedData(const LongString &ls)
+{
+    QMailMessagePartContainer *signedContainer =
+        QMailCryptographicServiceFactory::findSignedContainer(this);
+    if (signedContainer) {
+        const QByteArray CRLFterminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
+        const QByteArray LFterminator(2, QMailMessage::LineFeed);
+        const QByteArray CRterminator(2, QMailMessage::CarriageReturn);
+
+        int CRLFindex = ls.indexOf(CRLFterminator);
+        int LFindex = ls.indexOf(LFterminator);
+        int CRindex = ls.indexOf(CRterminator);
+
+        int pos = CRLFindex;
+        if (pos == -1 || (LFindex > -1 && LFindex < pos))
+            pos = LFindex;
+        if (pos == -1 || (CRindex > -1 && CRindex < pos))
+            pos = CRindex;
+        if (pos == -1) {
+            qWarning() << "extractUndecodedData: unable to find line terminator.";
+            return false;
+        }
+
+        setStatus(QMailMessage::HasSignature, true);
+        /* Retrieve the raw data of the signed body. */
+        QByteArray boundary = QByteArray(2, '-') + signedContainer->boundary();
+        int body_start = ls.indexOf(boundary, pos) + boundary.length();
+        // Add one or two bytes depending if the the boundary is followed
+        // by CR, LF or CRLF.
+        body_start += (ls.mid(body_start, 2).toQByteArray().startsWith("\r\n")) ? 2 : 1;
+        int body_stop = ls.indexOf(boundary, body_start);
+        int len = body_stop - body_start;
+        // Same as above, remove one or two bytes, depending if they are
+        // CR, LF or CRLF.
+        len -= (ls.mid(body_stop - 2, 2).toQByteArray().startsWith("\r\n")) ? 2 : 1;
+        QByteArray raw = QByteArray(ls.mid(body_start, len).toQByteArray().data(), len); /* Do a copy here because data from LongString are volatile. */
+        signedContainer->partAt(0).setUndecodedData(raw);
+    }
+    return true;
 }
 
 /*! 
