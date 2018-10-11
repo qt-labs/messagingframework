@@ -210,6 +210,37 @@ void PopClient::setAccount(const QMailAccountId &id)
     }
 
     config = QMailAccountConfiguration(id);
+    QMailAccount account(id);
+    if (account.status() & QMailAccount::CanCreateFolders) {
+        account.setStatus(QMailAccount::CanCreateFolders, false);
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to update account" << account.id() << "to CanCreateFolders" << false;
+        } else {
+            qMailLog(POP) << "CanCreateFolders for " << account.id() << "changed to" << false;
+        }
+    }
+    // Update non-local folders which have 'RenamePermitted=true'/'DeletionPermitted=true'/'ChildCreationPermitted=true'/'MessagesPermitted=false'
+    QMailFolderKey popKey = QMailFolderKey::parentAccountId(id);
+    popKey &= QMailFolderKey::id(QMailFolder::LocalStorageFolderId, QMailDataComparator::NotEqual);
+    popKey &= QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), QMailDataComparator::Includes);
+    popKey &= QMailFolderKey::status(QMailFolder::DeletionPermitted, QMailDataComparator::Includes)
+            | QMailFolderKey::status(QMailFolder::RenamePermitted, QMailDataComparator::Includes)
+            | QMailFolderKey::status(QMailFolder::ChildCreationPermitted, QMailDataComparator::Includes)
+            | QMailFolderKey::status(QMailFolder::MessagesPermitted, QMailDataComparator::Excludes);
+
+    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(popKey);
+    foreach (const QMailFolderId &folderId, folderIds) {
+        QMailFolder folder = QMailFolder(folderId);
+        folder.setStatus(QMailFolder::DeletionPermitted, false);
+        folder.setStatus(QMailFolder::RenamePermitted, false);
+        folder.setStatus(QMailFolder::ChildCreationPermitted, false);
+        folder.setStatus(QMailFolder::MessagesPermitted, true);
+        if (!QMailStore::instance()->updateFolder(&folder)) {
+            qWarning() << "Unable to update flags for POP folder" << folder.id() << folder.path();
+        } else {
+            qMailLog(POP) <<  "Flags for POP folder" << folder.id() << folder.path() << "updated";
+        }
+    }
 }
 
 QMailAccountId PopClient::accountId() const
@@ -277,6 +308,7 @@ bool PopClient::findInbox()
         childFolder.setDisplayName(tr("Inbox"));
         childFolder.setStatus(QMailFolder::SynchronizationEnabled, true);
         childFolder.setStatus(QMailFolder::Incoming, true);
+        childFolder.setStatus(QMailFolder::MessagesPermitted, true);
 
         if(!QMailStore::instance()->addFolder(&childFolder))
             qWarning() << "Unable to add child folder to pop account";

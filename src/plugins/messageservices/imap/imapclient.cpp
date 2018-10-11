@@ -1453,6 +1453,15 @@ void ImapClient::setAccount(const QMailAccountId &id)
     }
 
     _config = QMailAccountConfiguration(id);
+    QMailAccount account(id);
+    if (!(account.status() & QMailAccount::CanCreateFolders)) {
+        account.setStatus(QMailAccount::CanCreateFolders, true);
+        if (!QMailStore::instance()->updateAccount(&account)) {
+            qWarning() << "Unable to update account" << account.id() << "CanCreateFolders" << true;
+        } else {
+            qMailLog(Messaging) << "CanCreateFolders for " << account.id() << "changed to" << true;
+        }
+    }
 }
 
 QMailAccountId ImapClient::account() const
