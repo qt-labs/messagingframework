@@ -323,7 +323,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
     micalg = "pgp-";
     micalg += QByteArray(gpgme_hash_algo_name(res->signatures->hash_algo)).toLower();
 
-    result = data.releaseData();
+    result = sig.releaseData();
 
     return QMailCryptoFwd::SignatureValid;
 }

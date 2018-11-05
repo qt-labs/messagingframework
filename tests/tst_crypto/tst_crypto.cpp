@@ -73,10 +73,12 @@ private slots:
     void sign();
     void storage_data();
     void storage();
+    void signVerify();
 
 private:
     void importKey(const QString &path, gpgme_protocol_t protocol, QString *storing);
-    QString m_pKey, m_smimeKey;
+    void deleteKey(const QString &fingerprint, gpgme_protocol_t protocol);
+    QString m_pgpKey, m_smimeKey;
 };
 
 tst_Crypto::tst_Crypto()
@@ -164,6 +166,42 @@ void tst_Crypto::importKey(const QString &path, gpgme_protocol_t protocol,
     gpgme_release(ctx);
 }
 
+void tst_Crypto::deleteKey(const QString &fingerprint, gpgme_protocol_t protocol)
+{
+    gpgme_error_t err;
+    gpgme_ctx_t ctx;
+    gpgme_key_t key;
+
+    if (fingerprint.isEmpty())
+        return;
+
+    err = gpgme_new(&ctx);
+    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
+        qWarning() << "cannot create context" << gpgme_strerror(err);
+        return;
+    }
+    err = gpgme_set_protocol(ctx, protocol);
+    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
+        qWarning() << QStringLiteral("cannot use %1 engine.").arg(gpgme_get_protocol_name(protocol));
+        gpgme_release(ctx);
+        return;
+    }
+
+    err = gpgme_get_key(ctx, fingerprint.toLocal8Bit().data(), &key, 1);
+    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
+        qWarning() << "cannot retrieve key" << fingerprint;
+        gpgme_release(ctx);
+        return;
+    }
+    err = gpgme_op_delete(ctx, key, 1);
+    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
+        qWarning() << "cannot delete key" << gpgme_strerror(err);
+    }
+    gpgme_key_unref(key);
+
+    gpgme_release(ctx);
+}
+
 static QString passphrase(const QString &info)
 {
     Q_UNUSED(info);
@@ -173,8 +211,7 @@ static QString passphrase(const QString &info)
 
 void tst_Crypto::initTestCase()
 {
-    importKey(QStringLiteral("%1/testdata/caliste.asc").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_OpenPGP, &m_pKey);
-    importKey(QStringLiteral("%1/testdata/secret.asc").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_OpenPGP, 0);
+    importKey(QStringLiteral("%1/testdata/key.asc").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_OpenPGP, &m_pgpKey); // no pass
     importKey(QStringLiteral("%1/testdata/QMFtest.pem").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_CMS, &m_smimeKey); // pass for it is QMFtest2018
     QFile::copy(QStringLiteral("%1/testdata/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key").arg(QCoreApplication::applicationDirPath()),
                 QDir::homePath() + QDir::separator() + ".gnupg/private-keys-v1.d/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key");
@@ -189,34 +226,7 @@ void tst_Crypto::initTestCase()
 
 void tst_Crypto::cleanupTestCase()
 {
-    gpgme_error_t err;
-    gpgme_ctx_t ctx;
-    gpgme_key_t key;
-
-    if (m_pKey.isEmpty())
-        return;
-
-    err = gpgme_new(&ctx);
-    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "cannot create context" << gpgme_strerror(err);
-        return;
-    }
-
-    err = gpgme_get_key(ctx, m_pKey.toLocal8Bit().data(), &key, 1);
-    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "cannot retrieve key" << m_pKey;
-        gpgme_release(ctx);
-        return;
-    }
-
-    err = gpgme_op_delete(ctx, key, 1);
-    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "cannot delete key" << gpgme_strerror(err);
-    }
-
-    gpgme_key_unref(key);
-    gpgme_release(ctx);
-
+    deleteKey(m_pgpKey, GPGME_PROTOCOL_OpenPGP);
     QMailStore::instance()->removeAccounts(QMailAccountKey::customField("verified"));
 }
 
@@ -344,7 +354,7 @@ void tst_Crypto::sign_data()
     QTest::newRow("sign multipart/none mail with OpenPGP")
         << QStringLiteral("testdata/nosig")
         << QStringLiteral("libgpgme.so")
-        << m_pKey
+        << m_pgpKey
         << QMailCryptoFwd::SignatureValid
         << QStringLiteral("testdata/aftersig");
 
@@ -391,6 +401,30 @@ void tst_Crypto::sign()
     // To be activated later when the passphrase callback will be working
     // with gnupg >= 2.1
     // QCOMPARE(QMailCryptographicServiceFactory::verifySignature(msg), expectedStatus);
+}
+
+void tst_Crypto::signVerify()
+{
+    // Create a message.
+    QMailMessage message;
+    message.setMessageType(QMailMessage::Email);
+    QMailMessageContentType type("text/plain; charset=UTF-8");
+    message.setBody(QMailMessageBody::fromData("test", type, QMailMessageBody::Base64));
+
+    // Sign it with the PGP key (no password).
+    QMailCryptoFwd::SignatureResult r = QMailCryptographicServiceFactory::sign(message, "libgpgme.so", QStringList() << m_pgpKey);
+    QCOMPARE(r, QMailCryptoFwd::SignatureValid);
+    QCOMPARE(message.partCount(), uint(2));
+    QCOMPARE(message.contentType().type(), QByteArray("multipart"));
+    QCOMPARE(message.contentType().subType(), QByteArray("signed"));
+
+    // And verify it.
+    QMailCryptoFwd::VerificationResult v = QMailCryptographicServiceFactory::verifySignature(message);
+    QCOMPARE(v.summary, QMailCryptoFwd::SignatureValid);
+    QCOMPARE(v.engine, QStringLiteral("libgpgme.so"));
+    QCOMPARE(v.keyResults.length(), 1);
+    QCOMPARE(v.keyResults[0].key, m_pgpKey);
+    QCOMPARE(v.keyResults[0].status, QMailCryptoFwd::SignatureValid);
 }
 
 void tst_Crypto::storage_data()
