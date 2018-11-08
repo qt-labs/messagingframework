@@ -222,7 +222,7 @@ void PopClient::setAccount(const QMailAccountId &id)
     // Update non-local folders which have 'RenamePermitted=true'/'DeletionPermitted=true'/'ChildCreationPermitted=true'/'MessagesPermitted=false'
     QMailFolderKey popKey = QMailFolderKey::parentAccountId(id);
     popKey &= QMailFolderKey::id(QMailFolder::LocalStorageFolderId, QMailDataComparator::NotEqual);
-    popKey &= QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), QMailDataComparator::Includes);
+    popKey &= QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), QMailDataComparator::Excludes);
     popKey &= QMailFolderKey::status(QMailFolder::DeletionPermitted, QMailDataComparator::Includes)
             | QMailFolderKey::status(QMailFolder::RenamePermitted, QMailDataComparator::Includes)
             | QMailFolderKey::status(QMailFolder::ChildCreationPermitted, QMailDataComparator::Includes)
