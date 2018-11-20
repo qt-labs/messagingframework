@@ -243,12 +243,17 @@ class QDatabaseInstanceData
 {
 public:
     QDatabaseInstanceData()
+        : init(false)
     {
-    init = false;
     }
 
     ~QDatabaseInstanceData()
     {
+    }
+
+    QString dbConnectionName()
+    {
+        return QString::asprintf("qmailstore_sql_connection_%p", this);
     }
 
     bool init;
@@ -263,7 +268,7 @@ void QMail::closeDatabase()
     if (instance->init) {
         qMailLog(Messaging) << "closing database";
         instance->init = false;
-        QSqlDatabase::removeDatabase(QLatin1String("qmailstore_sql_connection"));
+        QSqlDatabase::removeDatabase(instance->dbConnectionName());
     } // else nothing todo
 }
 
@@ -276,10 +281,10 @@ QSqlDatabase QMail::createDatabase()
 
     QSqlDatabase db;
     if (instance->init) {
-        db = QSqlDatabase::database(QLatin1String("qmailstore_sql_connection"));
+        db = QSqlDatabase::database(instance->dbConnectionName());
     } else {
         qMailLog(Messaging) << "opening database";
-        db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), QLatin1String("qmailstore_sql_connection"));
+        db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), instance->dbConnectionName());
         
         QDir dbDir(dataPath() + "database");
         if (!dbDir.exists()) {
