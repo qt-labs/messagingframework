@@ -86,6 +86,7 @@ private slots:
     void appendHeaderField();
     void removeHeaderField();
 
+    void testToRfc2822();
     void testSerialization();
 };
 
@@ -338,6 +339,55 @@ void tst_QMailMessagePart::removeHeaderField()
     QCOMPARE(m.headerField("Resent-From"), QMailMessageHeaderField());
     QCOMPARE(m.headerFieldsText("Resent-From"), QStringList());
     QCOMPARE(m.headerFields("Resent-From"), QList<QMailMessageHeaderField>());
+}
+
+void tst_QMailMessagePart::testToRfc2822()
+{
+    QMailMessagePart body = QMailMessagePart::fromData
+        (QStringLiteral("Some body text"),
+         QMailMessageContentDisposition(),
+         QMailMessageContentType("text/plain"),
+         QMailMessageBody::QuotedPrintable);
+    QMailMessagePart disposition = QMailMessagePart::fromData
+        (QByteArray(),
+         QMailMessageContentDisposition(),
+         QMailMessageContentType("message/disposition-notification"),
+         QMailMessageBody::NoEncoding);
+    disposition.setHeaderField("Original-Recipient", "foo@example.org");
+    disposition.setHeaderField("Original-Message-ID", "123456789");
+
+    QMailMessagePart alt = QMailMessagePart::fromData
+        (QByteArray(),
+         QMailMessageContentDisposition(),
+         QMailMessageContentType(),
+         QMailMessageBodyFwd::NoEncoding);
+    alt.setMultipartType(QMailMessagePartContainer::MultipartAlternative);
+    alt.appendPart(body);
+    alt.appendPart(disposition);
+
+    const QByteArray expected(
+"Content-Type: multipart/alternative; boundary=\"[}<}]\"" CRLF
+"Content-Disposition:" CRLF
+CRLF
+CRLF
+"--[}<}]" CRLF
+"Content-Type: text/plain" CRLF
+"Content-Transfer-Encoding: quoted-printable" CRLF
+"Content-Disposition:" CRLF
+CRLF
+"Some body text" CRLF
+"--[}<}]" CRLF
+"Content-Type: message/disposition-notification" CRLF
+"Content-Disposition:" CRLF
+"Original-Recipient: foo@example.org" CRLF
+"Original-Message-ID: 123456789" CRLF
+CRLF
+CRLF
+"--[}<}]--" CRLF
+);
+
+    const QByteArray serialized = alt.toRfc2822();
+    QCOMPARE( serialized, expected );
 }
 
 void tst_QMailMessagePart::testSerialization()

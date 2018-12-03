@@ -216,6 +216,7 @@ public:
 
     QByteArray boundary() const;
     void setBoundary(const QByteArray& text);
+    void generateBoundary();
 
     // Note: this returns a reference:
     QMailMessageBody& body();

@@ -4223,6 +4223,20 @@ void QMailMessagePartContainerPrivate::setBoundary(const QByteArray& text)
     }
 }
 
+static QByteArray boundaryString(const QByteArray &hash);
+void QMailMessagePartContainerPrivate::generateBoundary()
+{
+    if (_multipartType != QMailMessagePartContainer::MultipartNone
+        && _boundary.isEmpty()) {
+        // Include a hash of the header data in the boundary
+        QCryptographicHash hash(QCryptographicHash::Md5);
+        foreach (const QByteArray *field, _header.fieldList())
+            hash.addData(*field);
+
+        setBoundary(boundaryString(hash.result()));
+    }
+}
+
 QMailMessageBody& QMailMessagePartContainerPrivate::body()
 {
     return _body;
@@ -6413,6 +6427,9 @@ void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool ex
 
 QByteArray QMailMessagePart::toRfc2822() const
 {
+    // Generate boundaries for this part, as in QMailMessage::toRfc2822().
+    const_cast<QMailMessagePartPrivate*>(impl(this))->generateBoundary();
+
     QByteArray result;
     QDataStream out(&result, QIODevice::WriteOnly);
     output(out, true, true);
@@ -7967,14 +7984,7 @@ void QMailMessagePrivate::toRfc2822(QDataStream **out, QMailMessage::EncodingFor
     bool includeBcc = (format != QMailMessage::TransmissionFormat);
     bool excludeInternalFields = (format == QMailMessage::TransmissionFormat);
 
-    if (_messageParts.count() && boundary().isEmpty()) {
-        // Include a hash of the header data in the boundary
-        QCryptographicHash hash(QCryptographicHash::Md5);
-        foreach (const QByteArray* field, _header.fieldList())
-            hash.addData(*field);
-
-        const_cast<QMailMessagePrivate*>(this)->setBoundary(boundaryString(hash.result()));
-    }
+    const_cast<QMailMessagePrivate*>(this)->generateBoundary();
 
     outputHeaders(**out, addTimeStamp, addContentHeaders, includeBcc, excludeInternalFields);
     **out << DataString('\n');
