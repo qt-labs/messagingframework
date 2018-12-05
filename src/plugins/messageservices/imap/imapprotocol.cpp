@@ -3804,8 +3804,9 @@ QByteArray ImapProtocol::quoteString(const QByteArray& input)
 
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
 {
-    QMailMessage mail = QMailMessage::fromSkeletonRfc2822File( detachedFile );
+    QMailMessage mail;
     if ( !structure.isEmpty() ) {
+        mail = QMailMessage::fromSkeletonRfc2822File( detachedFile );
         bool wellFormed = setMessageContentFromStructure( structure, &mail );
 
         if (wellFormed && (mail.multipartType() != QMailMessage::MultipartNone)) {
@@ -3817,6 +3818,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
         mail.setStatus( QMailMessage::New, true );
     } else {
         // No structure - we're fetching the body of a message we already know about
+        mail = QMailMessage::fromRfc2822File( detachedFile );
         mail.setStatus( QMailMessage::ContentAvailable, true );
     }
 
