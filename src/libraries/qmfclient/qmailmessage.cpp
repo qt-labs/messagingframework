@@ -5823,6 +5823,10 @@ bool QMailMessagePartContainer::Location::operator==(const QMailMessagePartConta
     return toString(true) == other.toString(true);
 }
 
+bool QMailMessagePartContainer::Location::operator!=(const QMailMessagePartContainer::Location &other) const
+{
+  return !(*this == other);
+}
 
 /*! 
     Returns true if the location object contains the location of a valid message part.

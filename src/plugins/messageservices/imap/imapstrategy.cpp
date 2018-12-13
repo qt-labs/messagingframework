@@ -1531,6 +1531,7 @@ void ImapFetchSelectedMessagesStrategy::clearSelection()
 void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase *context,
                                                    const QMailMessagePartContainer &partContainer,
                                                    const QList<QMailMessagePartContainer::Location> &attachmentLocations,
+                                                   const QMailMessagePartContainer::Location &signedPartLocation,
                                                    QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                                    QList<QPair<QMailMessagePart::Location, int> > &completionSectionList,
                                                    QMailMessagePartContainer::Location &preferredBody,
@@ -1578,8 +1579,14 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
         const QMailMessagePart part(partContainer.partAt(i));
         const QMailMessageContentDisposition disposition(part.contentDisposition());
 
-        if (part.partCount() > 0) {
-            metaDataAnalysis(context, part, attachmentLocations,
+        if (part.location() == signedPartLocation) {
+            completionSectionList.append(qMakePair(part.location(),
+                                                   SectionProperties::HeadersOnly));
+            if (part.location() != preferredBody) {
+                sectionList.append(qMakePair(part.location(), 0));
+            }
+        } else if (part.partCount() > 0) {
+            metaDataAnalysis(context, part, attachmentLocations, signedPartLocation,
                              sectionList, completionSectionList,
                              preferredBody, bytesLeft);
         } else if (part.partialContentAvailable()) {
@@ -1593,7 +1600,7 @@ void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase
         } else {
             // This is a regular part. Try to download it completely, if it is not the preferred body
             // that is already added to the list.
-            if (!(part.location() == preferredBody)) {
+            if (part.location() != preferredBody) {
                 sectionList.append(qMakePair(part.location(), (uint)disposition.size()));
             }
         }
@@ -1629,12 +1636,21 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
             location.setContainingMessageId(message.id());
             completionSectionList.append(qMakePair(location, int(_headerLimit)));
         } else {
+            QMailMessagePartContainer::Location signedPartLocation;
+            if (message.status() & QMailMessage::HasSignature) {
+                const QMailMessagePartContainer *signedContainer =
+                    QMailCryptographicServiceFactory::findSignedContainer(&message);
+                if (signedContainer && signedContainer->partCount() > 0) {
+                    signedPartLocation = signedContainer->partAt(0).location();
+                }
+            }
+
             uint bytesLeft = _headerLimit;
             int partsToRetrieve = 0;
             const int maxParts = 100;
             QList<QPair<QMailMessagePart::Location, uint> > sectionList;
             QMailMessagePart::Location preferredBody;
-            metaDataAnalysis(context, message, attachmentLocations,
+            metaDataAnalysis(context, message, attachmentLocations, signedPartLocation,
                              sectionList, completionSectionList,
                              preferredBody, bytesLeft);
 
@@ -1653,20 +1669,6 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
                     ++partsToRetrieve;
                 }
                 ++it;
-            }
-
-            // Add headers retrieval if undecoded data are required.
-            if (message.status() & QMailMessage::HasSignature) {
-                const QMailMessagePartContainer *signedContainer =
-                    QMailCryptographicServiceFactory::findSignedContainer(&message);
-                if (signedContainer) {
-                    const QMailMessagePart &part = signedContainer->partAt(0);
-                    completionSectionList.append(qMakePair(part.location(),
-                                                           SectionProperties::HeadersOnly));
-                    if (part.multipartType() != QMailMessagePartContainer::MultipartNone)
-                        completionSectionList.append(qMakePair(part.location(),
-                                                               SectionProperties::All));
-                }
             }
         }
     }

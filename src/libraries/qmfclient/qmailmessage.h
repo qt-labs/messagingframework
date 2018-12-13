@@ -298,6 +298,7 @@ public:
 
         const QMailMessagePartContainer::Location &operator=(const QMailMessagePartContainer::Location &other);
         bool operator==(const QMailMessagePartContainer::Location &other) const;
+        bool operator!=(const QMailMessagePartContainer::Location &other) const;
 
         bool isValid(bool extended = true) const;
 

@@ -349,6 +349,7 @@ protected:
     virtual void metaDataAnalysis(ImapStrategyContextBase *context,
                                   const QMailMessagePartContainer &partContainer,
                                   const QList<QMailMessagePartContainer::Location> &attachmentLocations,
+                                  const QMailMessagePartContainer::Location &signedPartLocation,
                                   QList<QPair<QMailMessagePart::Location, uint> > &sectionList,
                                   QList<QPair<QMailMessagePart::Location, int> > &completionSectionList,
                                   QMailMessagePart::Location &preferredBody,
