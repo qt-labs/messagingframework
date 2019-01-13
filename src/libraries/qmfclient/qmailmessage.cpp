@@ -1119,6 +1119,7 @@ namespace findAttachments
     class AttachmentFindStrategy
     {
     public:
+        virtual ~AttachmentFindStrategy() {}
         // Returns true if the strategy was applyable to this kind of container
         virtual bool findAttachmentLocations(const QMailMessagePartContainer& container,
                                              Locations* found,
