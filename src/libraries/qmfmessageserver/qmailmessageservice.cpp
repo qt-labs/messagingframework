@@ -1372,7 +1372,7 @@ bool QMailMessageService::hasSource() const
 QMailMessageSource &QMailMessageService::source() const
 {
     Q_ASSERT(0);
-    return *(reinterpret_cast<QMailMessageSource*>(0));
+    qFatal("QMailMessageSource is not implemented");
 }
 
 /*!
@@ -1391,7 +1391,7 @@ bool QMailMessageService::hasSink() const
 QMailMessageSink &QMailMessageService::sink() const
 {
     Q_ASSERT(0);
-    return *(reinterpret_cast<QMailMessageSink*>(0));
+    qFatal("QMailMessageSink is not implemented");
 }
 
 /*!
