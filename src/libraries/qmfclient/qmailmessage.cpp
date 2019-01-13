@@ -865,9 +865,9 @@ static QByteArray removeComments(const QByteArray& input, int (*classifier)(int)
 
 struct DataString
 {
-    DataString(char datum) : _datum(datum), _data(0), _length(0) {};
-    DataString(const char* data) : _datum('\0'), _data(data), _length(strlen(_data)) {};
-    DataString(const QByteArray& array) : _datum('\0'), _data(array.constData()), _length(array.length()) {};
+    DataString(char datum) : _data(Q_NULLPTR), _length(0), _datum(datum) {}
+    DataString(const char* data) : _data(data), _length(strlen(_data)), _datum('\0') {}
+    DataString(const QByteArray& array) : _data(array.constData()), _length(array.length()), _datum('\0') {}
 
     inline QDataStream& toDataStream(QDataStream& out) const
     {
@@ -883,9 +883,9 @@ struct DataString
     }
 
 private:
-    char _datum;
     const char* _data;
     int _length;
+    char _datum;
 };
 
 QDataStream& operator<<(QDataStream& out, const DataString& dataString)
