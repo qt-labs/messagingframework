@@ -245,7 +245,7 @@ QString contentUri(const QString &scheme, const QString &identifier)
         return QString();
 
     // Formulate a URI from the content scheme and identifier
-    return escape(scheme, ':') + ':' + escape(identifier, ':');
+    return escape(scheme, ':') % QStringLiteral(":") % escape(identifier, ':');
 }
 
 QString contentUri(const QMailMessageMetaData &message)
@@ -832,7 +832,7 @@ protected:
         if (!s.isEmpty()) {
             // Delimit data for sql "LIKE" operator
             if (((arg.op == Includes) || (arg.op == Excludes)) || (((arg.op == Equal) || (arg.op == NotEqual)) && valueMinimalised))
-                return QString('%' + s + '%');
+                return QStringLiteral("%") % s % QStringLiteral("%");
         } else if ((arg.op == Includes) || (arg.op == Excludes)) {
             return QString('%');
         }
@@ -4259,7 +4259,7 @@ bool QMailStorePrivate::createTable(const QString &name)
     bool result = true;
 
     // load schema.
-    QFile data(QString::fromLatin1(":/QmfSql/") + database()->driverName() + '/' + name);
+    QFile data(QStringLiteral(":/QmfSql/") % database()->driverName() % QStringLiteral("/") % name);
     if (!data.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to load table schema resource:" << name;
         result = false;

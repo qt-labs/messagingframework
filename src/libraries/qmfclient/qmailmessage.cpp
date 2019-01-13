@@ -352,12 +352,12 @@ static QString decodeWord(const QByteArray& encodedWord)
                 if (encoding == "Q")
                 {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
-                    return codec.decode(encoded, charset);
+                    return codec.decode(encoded, QString::fromUtf8(charset));
                 }
                 else if (encoding == "B")
                 {
                     QMailBase64Codec codec(QMailBase64Codec::Binary);
-                    return codec.decode(encoded, charset);
+                    return codec.decode(encoded, QString::fromUtf8(charset));
                 }
             }
         }
@@ -491,7 +491,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     else if (insensitiveIndexOf("iso-8859-", charset) == 0)
     {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047, maximumEncoded);
-        QByteArray encoded = codec.encode(text, charset);
+        QByteArray encoded = codec.encode(text, QString::fromUtf8(charset));
         return generateEncodedWord(charset, 'Q', split(encoded, "=\r\n"));
     }
 
@@ -747,7 +747,7 @@ static QString decodeParameterText(const QByteArray& text, const QByteArray& cha
 static QString decodeParameter(const QByteArray& encodedParameter)
 {
     QRegExp parameterFormat(QLatin1String("([^']*)'(?:[^']*)'(.*)"));
-    if (parameterFormat.exactMatch(encodedParameter))
+    if (parameterFormat.exactMatch(QString::fromUtf8(encodedParameter)))
         return decodeParameterText(parameterFormat.cap(2).toLatin1(), parameterFormat.cap(1).toLatin1());
 
     // Treat the whole thing as input, and deafult the charset to ascii
@@ -1637,7 +1637,7 @@ static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, b
 {
     // Extensions according to RFC 2231:
     QRegExp extensionFormat(QLatin1String("(?:\\*(\\d+))?(\\*?)"));
-    if (extensionFormat.exactMatch(trailer))
+    if (extensionFormat.exactMatch(QString::fromUtf8(trailer)))
     {
         if (number)
             *number = extensionFormat.cap(1).toInt();
@@ -1959,8 +1959,9 @@ static QByteArray protectedParameter(const QByteArray& value)
     QRegExp whitespace(QLatin1String("\\s+"));
     QRegExp tspecials = QRegExp(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=]"));
 
-    if ((whitespace.indexIn(value) != -1) ||
-        (tspecials.indexIn(value) != -1))
+    QString valueUtf8(QString::fromUtf8(value));
+    if ((whitespace.indexIn(valueUtf8) != -1) ||
+        (tspecials.indexIn(valueUtf8) != -1))
         return QMail::quoteString(value);
     else
         return value;
@@ -2057,7 +2058,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
                     preferredIndex = lastIndex;
                 }
 
-                wsIndex = whitespace.indexIn(text, wsIndex + 1);
+                wsIndex = whitespace.indexIn(QString::fromUtf8(text), wsIndex + 1);
             } while ((wsIndex != -1) && (wsIndex < remaining));
 
             if (preferredIndex != -1)
@@ -2070,7 +2071,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
                 int syntacticIn = -1;
                 do {
                     lastIndex = syntacticIn;
-                    syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
+                    syntacticIn = syntacticBreak.indexIn(QString::fromUtf8(text), syntacticIn + 1);
                 } while ((syntacticIn != -1) && (syntacticIn < remaining - 1));
 
                 if (lastIndex != -1) {
@@ -2154,7 +2155,7 @@ QString QMailMessageHeaderFieldPrivate::decodedContent() const
             if (parameterEncoded(parameter.first))
                 decoded = QMailMessageHeaderField::decodeParameter(protectedParameter(parameter.second));
             else
-                decoded = protectedParameter(parameter.second);
+                decoded = QString::fromUtf8(protectedParameter(parameter.second));
             result.append(QLatin1String("; ")).append(QLatin1String(parameter.first)).append(QChar::fromLatin1('=')).append(decoded);
         }
     }
@@ -2794,7 +2795,7 @@ void QMailMessageContentDisposition::setFilename(const QByteArray& filename)
 */
 QMailTimeStamp QMailMessageContentDisposition::creationDate() const
 {
-    return QMailTimeStamp(parameter("creation-date"));
+    return QMailTimeStamp(QString::fromUtf8(parameter("creation-date")));
 }
 
 /*!
@@ -2810,7 +2811,7 @@ void QMailMessageContentDisposition::setCreationDate(const QMailTimeStamp& timeS
 */
 QMailTimeStamp QMailMessageContentDisposition::modificationDate() const
 {
-    return QMailTimeStamp(parameter("modification-date"));
+    return QMailTimeStamp(QString::fromUtf8(parameter("modification-date")));
 }
 
 /*!
@@ -2827,7 +2828,7 @@ void QMailMessageContentDisposition::setModificationDate(const QMailTimeStamp& t
 */
 QMailTimeStamp QMailMessageContentDisposition::readDate() const
 {
-    return QMailTimeStamp(parameter("read-date"));
+    return QMailTimeStamp(QString::fromUtf8(parameter("read-date")));
 }
 
 /*!
@@ -3316,7 +3317,7 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
             QDataStream out(&encoded, QIODevice::WriteOnly);
 
             // Convert the unicode string to a byte-stream, via the nominated character set
-            QString charset = _type.charset();
+            QString charset(QString::fromUtf8(_type.charset()));
 
             // If no character set is specified - treat the data as UTF-8; since it is
             // textual data, it must have some character set...
@@ -3423,7 +3424,7 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
             else
             {
                 QDataStream* in = _bodyData.dataStream();
-                codec->decode(out, *in, charset);
+                codec->decode(out, *in, QString::fromUtf8(charset));
                 result = (in->status() == QDataStream::Ok);
                 delete in;
             }
@@ -3456,7 +3457,7 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
             // This data must be unicode in the file
             QTextStream* in = _bodyData.textStream();
             in->setCodec(charset);
-            codec->encode(out, *in, charset);
+            codec->encode(out, *in, QString::fromUtf8(charset));
             result = (in->status() == QTextStream::Ok);
             delete in;
         }
@@ -3512,7 +3513,7 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         {
             // Write the data to out, decoding if necessary
             QDataStream* in = _bodyData.dataStream();
-            codec->decode(out, *in, charset);
+            codec->decode(out, *in, QString::fromUtf8(charset));
             result = (in->status() == QDataStream::Ok);
             delete in;
         }
@@ -4049,7 +4050,7 @@ void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePart
             {
                 QMailMessageContentDisposition disposition(contentDisposition);
 
-                QString mimeType = QMail::mimeTypeFromFileName(disposition.filename());
+                QString mimeType = QMail::mimeTypeFromFileName(QString::fromUtf8(disposition.filename()));
                 if (!mimeType.isEmpty())
                 {
                     type.setContent(to7BitAscii(mimeType));
@@ -4117,10 +4118,10 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream **out, bool addMi
         QMailMessagePart& part = const_cast<QMailMessagePart&>(_messageParts[i]);
 
         if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
-            const QString &partBoundary(part.boundary());
+            const QString &partBoundary(QString::fromUtf8(part.boundary()));
 
             if (partBoundary.isEmpty()) {
-                QString subBoundary(_boundary);
+                QString subBoundary(QString::fromUtf8(_boundary));
                 int index = subBoundary.indexOf(':');
                 if (index != -1) {
                     subBoundary.insert(index, QString::number(part.partNumber()).prepend(QLatin1String("-")));
@@ -4468,8 +4469,8 @@ void QMailMessagePartContainerPrivate::parseMimeSinglePart(const QMailMessageHea
     QMailMessagePart part;
     part.setHeader(partHeader, this);
 
-    QMailMessageContentType contentType(part.headerField("Content-Type"));
-    QMailMessageBody::TransferEncoding encoding = encodingForName(part.headerFieldText(QLatin1String("Content-Transfer-Encoding")).toLatin1());
+    QMailMessageContentType contentType(part.headerField(QStringLiteral("Content-Type")));
+    QMailMessageBody::TransferEncoding encoding = encodingForName(part.headerFieldText(QStringLiteral("Content-Transfer-Encoding")).toLatin1());
     if ( encoding == QMailMessageBody::NoEncoding )
         encoding = QMailMessageBody::SevenBit;
 
@@ -4503,7 +4504,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
         // Parse the header fields, and update the part
         part.setHeader(partHeader, this);
-        contentType = QMailMessageContentType(part.headerField("Content-Type"));
+        contentType = QMailMessageContentType(part.headerField(QStringLiteral("Content-Type")));
         boundary = contentType.boundary();
     }
 
@@ -4852,7 +4853,7 @@ QString QMailMessagePartContainer::contentDescription() const
 */
 void QMailMessagePartContainer::setContentDescription(const QString &description)
 {
-    setHeaderField("Content-Description", description);
+    setHeaderField(QStringLiteral("Content-Description"), description);
 }
 
 /*!
@@ -4860,7 +4861,7 @@ void QMailMessagePartContainer::setContentDescription(const QString &description
 */
 QMailMessageContentDisposition QMailMessagePartContainer::contentDisposition() const
 {
-    return QMailMessageContentDisposition(headerField("Content-Disposition"));
+    return QMailMessageContentDisposition(headerField(QStringLiteral("Content-Disposition")));
 }
 
 /*!
@@ -4868,7 +4869,7 @@ QMailMessageContentDisposition QMailMessagePartContainer::contentDisposition() c
 */
 void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentDisposition &disposition)
 {
-    setHeaderField("Content-Disposition", disposition.toString(false, false));
+    setHeaderField(QStringLiteral("Content-Disposition"), QString::fromUtf8(disposition.toString(false, false)));
 }
 
 /*!
@@ -5862,7 +5863,7 @@ QString QMailMessagePartContainer::Location::toString(bool extended) const
 {
     QString result;
     if (extended)
-        result = QString::number(d->_messageId.toULongLong()) + '-';
+        result = QString::number(d->_messageId.toULongLong()) % QStringLiteral("-");
 
     QStringList numbers;
     foreach (uint index, d->_indices)
@@ -6107,7 +6108,7 @@ void QMailMessagePart::setContentID(const QString &id)
         }
     }
 
-    setHeaderField("Content-ID", str);
+    setHeaderField(QStringLiteral("Content-ID"), str);
 }
 
 /*!
@@ -6124,7 +6125,7 @@ QString QMailMessagePart::contentLocation() const
 */
 void QMailMessagePart::setContentLocation(const QString &location)
 {
-    setHeaderField("Content-Location", location);
+    setHeaderField(QStringLiteral("Content-Location"), location);
 }
 
 /*!
@@ -6141,7 +6142,7 @@ QString QMailMessagePart::contentLanguage() const
 */
 void QMailMessagePart::setContentLanguage(const QString &language)
 {
-    setHeaderField("Content-Language", language);
+    setHeaderField(QStringLiteral("Content-Language"), language);
 }
 
 bool QMailMessagePart::hasUndecodedData() const
@@ -6209,9 +6210,9 @@ QString QMailMessagePart::displayName() const
     if (id.isEmpty()) {
         int partNumber = impl(this)->partNumber();
         if (partNumber != -1) {
-            id = QString::number(partNumber) + ' ';
+            id = QString::number(partNumber) % QStringLiteral(" ");
         }
-        id += contentType().content();
+        id += QString::fromUtf8(contentType().content());
     }
 
     return id;
@@ -6342,7 +6343,7 @@ static QString partFileName(const QMailMessagePart &part)
         if (index != -1)
             existing = fileName.mid(index + 1);
 
-        QStringList extensions = QMail::extensionsForMimeType(part.contentType().content().toLower());
+        QStringList extensions = QMail::extensionsForMimeType(QString::fromUtf8(part.contentType().content().toLower()));
         if (!extensions.isEmpty()) {
             // See if the existing extension is a known one
             if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
@@ -6386,9 +6387,9 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
 
     QString fileName(partFileName(*this));
 
-    QString filepath = directory + '/' + fileName;
+    QString filepath = directory % QStringLiteral("/") % fileName;
     while (QFile::exists(filepath))
-        filepath = directory + '/' + randomString(5) + '.' + fileName;
+        filepath = directory % QStringLiteral("/") % randomString(5) % QStringLiteral(".") % fileName;
 
     if (!body().toFile(filepath, QMailMessageBody::Decoded)) {
         qWarning() << "Could not write part data to file " << filepath;
@@ -6521,11 +6522,11 @@ QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
       _status(0),
       _contentType(QMailMessage::UnknownContent),
       _size(0),
-      _copyServerUid(""),
-      _listId(""),
-      _rfcId(""),
+      _copyServerUid(QStringLiteral("")),
+      _listId(QStringLiteral("")),
+      _rfcId(QStringLiteral("")),
       _responseType(QMailMessage::NoResponse),
-      _preview(""),
+      _preview(QStringLiteral("")),
       _customFieldsModified(false),
       _dirty(false)
 {
@@ -6607,12 +6608,12 @@ void QMailMessageMetaDataPrivate::setRecipients(const QString& s)
 
 void QMailMessageMetaDataPrivate::setCopyServerUid(const QString &copyServerUid)
 {
-    updateMember(_copyServerUid, copyServerUid.isNull() ? QString("") : copyServerUid);
+    updateMember(_copyServerUid, copyServerUid.isNull() ? QStringLiteral("") : copyServerUid);
 }
 
 void QMailMessageMetaDataPrivate::setListId(const QString &listId)
 {
-    updateMember(_listId, listId.isNull() ? QString("") : listId);
+    updateMember(_listId, listId.isNull() ? QStringLiteral("") : listId);
 }
 
 void QMailMessageMetaDataPrivate::setRestoreFolderId(const QMailFolderId &folderId)
@@ -6622,7 +6623,7 @@ void QMailMessageMetaDataPrivate::setRestoreFolderId(const QMailFolderId &folder
 
 void QMailMessageMetaDataPrivate::setRfcId(const QString &rfcId)
 {
-    updateMember(_rfcId, rfcId.isNull() ? QString("") : rfcId);
+    updateMember(_rfcId, rfcId.isNull() ? QStringLiteral("") : rfcId);
 }
 
 void QMailMessageMetaDataPrivate::setContentScheme(const QString& scheme)
@@ -8199,7 +8200,7 @@ void QMailMessage::setHeaderField( const QString& id, const QString& value )
 /*! \reimp */
 void QMailMessage::setHeaderField( const QMailMessageHeaderField& field )
 {
-    setHeaderField(field.id(), field.toString(false, false));
+    setHeaderField(QString::fromUtf8(field.id()), QString::fromUtf8(field.toString(false, false)));
 }
 
 /*! \reimp */
@@ -8210,14 +8211,14 @@ void QMailMessage::appendHeaderField( const QString& id, const QString& value )
     QByteArray duplicatedId(duplicatedData(id));
     if (!duplicatedId.isNull()) {
         // We need to keep the value of the first item with this ID in the meta data object
-        updateMetaData(duplicatedId, headerFieldText(duplicatedId));
+        updateMetaData(duplicatedId, headerFieldText(QString::fromUtf8(duplicatedId)));
     }
 }
 
 /*! \reimp */
 void QMailMessage::appendHeaderField( const QMailMessageHeaderField& field )
 {
-    appendHeaderField(field.id(), field.toString(false, false));
+    appendHeaderField(QString::fromUtf8(field.id()), QString::fromUtf8(field.toString(false, false)));
 }
 
 /*! \reimp */
@@ -8486,7 +8487,7 @@ uint QMailMessage::indicativeSize() const
 */  
 uint QMailMessage::contentSize() const
 {
-    return customField("qtopiamail-content-size").toUInt();
+    return customField(QStringLiteral("qtopiamail-content-size")).toUInt();
 }
 
 /*!
@@ -8494,7 +8495,7 @@ uint QMailMessage::contentSize() const
 */
 void QMailMessage::setContentSize(uint size)
 {
-    setCustomField(QLatin1String("qtopiamail-content-size"), QString::number(size));
+    setCustomField(QStringLiteral("qtopiamail-content-size"), QString::number(size));
 }
 
 /*!
@@ -8502,7 +8503,7 @@ void QMailMessage::setContentSize(uint size)
 */  
 QString QMailMessage::externalLocationReference() const
 {
-    return customField("qtopiamail-external-location-reference");
+    return customField(QStringLiteral("qtopiamail-external-location-reference"));
 }
 
 /*!
@@ -8510,7 +8511,7 @@ QString QMailMessage::externalLocationReference() const
 */
 void QMailMessage::setExternalLocationReference(const QString &location)
 {
-    setCustomField(QLatin1String("qtopiamail-external-location-reference"), location);
+    setCustomField(QStringLiteral("qtopiamail-external-location-reference"), location);
 }
 
 /*! \reimp */
@@ -8608,9 +8609,9 @@ void QMailMessage::setHeader(const QMailMessageHeader& partHeader, const QMailMe
     QMailMessagePartContainer::setHeader(partHeader, parent);
     // See if any of the header fields need to be propagated to the meta data object
     foreach (const QMailMessageHeaderField& field, headerFields()) {
-        QByteArray duplicatedId(duplicatedData(field.id()));
+        QByteArray duplicatedId(duplicatedData(QString::fromUtf8(field.id())));
         if (!duplicatedId.isNull()) {
-            QMailMessageContentType ct(headerField("Content-Type"));
+            QMailMessageContentType ct(headerField(QStringLiteral("Content-Type")));
             if (!is7BitAscii(field.content()) && unicodeConvertingCharset(ct.charset())) {
                 updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset()));
             } else {
@@ -8828,7 +8829,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     }
 
     foreach (const QMailMessageHeaderField& field, mail.headerFields()) {
-        QByteArray duplicatedId(mail.duplicatedData(field.id()));
+        QByteArray duplicatedId(mail.duplicatedData(QString::fromUtf8(field.id())));
         if (!duplicatedId.isNull()) {
             if (!is7BitAscii(field.content())) {
                 mail.updateMetaData(duplicatedId, toUnicode(field.content(), ct.charset(), auxCharset));

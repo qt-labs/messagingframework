@@ -110,26 +110,25 @@ namespace QMail
     template<typename StringType>
     StringType quoteString(const StringType& src)
     {
-        StringType result("\"\"");
+        StringType result = StringType();
 
         // Return the input string surrounded by double-quotes, which are added if not present
         int length = src.length();
-        if (length)
-        {
-            result.reserve(length + 2);
+        result.reserve(length + 2);
+        result.append('"');
+        result.append('"');
 
-            typename StringType::const_iterator begin = src.constData();
-            typename StringType::const_iterator last = begin + length - 1;
+        typename StringType::const_iterator begin = src.constData();
+        typename StringType::const_iterator last = begin + length - 1;
 
-            if (*begin == '"')
-                begin += 1;
+        if (*begin == '"')
+            begin += 1;
 
-            if ((last >= begin) && (*last == '"'))
-                last -= 1;
+        if ((last >= begin) && (*last == '"'))
+            last -= 1;
 
-            if (last >= begin)
-                result.insert(1, StringType(begin, (last - begin + 1)));
-        }
+        if (last >= begin)
+            result.insert(1, StringType(begin, (last - begin + 1)));
 
         return result;
     }

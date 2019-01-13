@@ -58,7 +58,7 @@ static PluginMap initMap(QMailPluginManager& manager)
 */
 static PluginMap& pluginMap()
 {
-    static QMailPluginManager pluginManager(PLUGIN_KEY);
+    static QMailPluginManager pluginManager(QStringLiteral(PLUGIN_KEY));
     static PluginMap map(initMap(pluginManager));
 
     return map;
