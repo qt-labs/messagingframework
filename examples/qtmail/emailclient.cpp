@@ -153,10 +153,10 @@ static bool confirmDelete( QWidget *parent, const QString & caption, const QStri
 }
 
 // This is used regularly:
-static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
-                                                                                             QMailMessage::Sms |
-                                                                                             QMailMessage::Instant |
-                                                                                             QMailMessage::System);
+// static const QMailMessage::MessageType nonEmailType = static_cast<QMailMessage::MessageType>(QMailMessage::Mms |
+//                                                                                             QMailMessage::Sms |
+//                                                                                             QMailMessage::Instant |
+//                                                                                             QMailMessage::System);
 
 class AcknowledgmentBox : public QMessageBox
 {

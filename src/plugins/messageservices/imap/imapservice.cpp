@@ -1018,7 +1018,6 @@ bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
                 break;
             default:
                 return false;
-                break;
             }
         }
     }

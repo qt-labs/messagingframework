@@ -53,7 +53,7 @@ QT_END_NAMESPACE
 struct StandardFolderInfo
 {
     StandardFolderInfo(QString flagName, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag, QStringList paths)
-        :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag), _paths(paths) {};
+        :_flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag), _paths(paths) {}
 
     QString _flagName;
     quint64 _flag;

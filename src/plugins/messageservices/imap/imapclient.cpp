@@ -99,7 +99,7 @@ namespace {
     struct FlagInfo
     {
         FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
-            :_flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
+            :_flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {}
         
         QStringList _flagNames;
         quint64 _flag;
@@ -565,7 +565,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
     switch (command) {
         case IMAP_Full:
             qFatal( "Logic error, IMAP_Full" );
-            break;
+            //break;
         case IMAP_Unconnected:
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
             return;
@@ -902,13 +902,13 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setStatus(QMailMessage::Junk, true); 
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
-        mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicServiceFactory::findSignedContainer(&mail) != 0));
+        mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicServiceFactory::findSignedContainer(&mail) != Q_NULLPTR));
         
         // Disable Notification when getting older message
         QMailFolder folder(properties.id);
         bool ok1, ok2; // toUint returns 0 on error, which is an invalid IMAP uid
-        int clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok1));
-        int serverUid(ImapProtocol::uid(mail.serverUid()).toUInt(&ok2));
+        uint clientMax(folder.customField("qmf-max-serveruid").toUInt(&ok1));
+        uint serverUid(ImapProtocol::uid(mail.serverUid()).toUInt(&ok2));
         if (ok1 && ok2 && clientMax && (serverUid < clientMax)) {
             // older message
             mail.setStatus(QMailMessage::NoNotification, true); 
@@ -1359,6 +1359,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
 void ImapClient::partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int size)
 {
+    Q_UNUSED(size);
     static const QString tempDir = QMail::tempPath();
 
     QMailMessage *mail;

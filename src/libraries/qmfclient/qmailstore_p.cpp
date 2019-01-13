@@ -2373,7 +2373,7 @@ bool QMailStorePrivate::Transaction::committed() const
 
 struct QMailStorePrivate::ReadLock
 {
-    ReadLock(QMailStorePrivate *){};
+    ReadLock(QMailStorePrivate *){}
 };
 
 

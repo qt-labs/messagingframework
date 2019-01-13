@@ -52,8 +52,8 @@
 
 static const QString placeholder("(no subject)");
 
-static const int MaximumSmsSubjectLength = 40;
-static const int MaximumInstantSubjectLength = 256;
+// static const int MaximumSmsSubjectLength = 40;
+// static const int MaximumInstantSubjectLength = 256;
 
 class FromAddressComboBox : public QComboBox
 {
