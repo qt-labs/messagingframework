@@ -1021,7 +1021,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
         partDelimiter.prepend(newLine);
 
         const char *baseAddress = bodyData.constData();
-        int partIndex = 0;
+        uint partIndex = 0;
 
         int endPos = bodyData.indexOf(partTerminator, 0);
         if (endPos > 0 && bodyData[endPos - 1] == QMailMessage::CarriageReturn) {
@@ -1227,7 +1227,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             // This is the body of the message, or a part thereof
             uint existingSize = 0;
             if (mail->hasBody()) {
-                existingSize = mail->body().length();
+                existingSize = static_cast<uint>(mail->body().length());
 
                 // Write the existing data to a temporary file
                 TemporaryFile tempFile("mail-" + uid + "-body");
@@ -1248,7 +1248,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             mail->setBody(QMailMessageBody::fromFile(fileName, mail->contentType(), mail->transferEncoding(), QMailMessageBody::AlreadyEncoded));
             mail->setStatus(QMailMessage::PartialContentAvailable, true);
 
-            const uint totalSize(existingSize + size);
+            const uint totalSize(existingSize + static_cast<uint>(size));
             if (totalSize >= mail->contentSize()) {
                 // We have all the data for this message body
                 mail->setStatus(QMailMessage::ContentAvailable, true);
@@ -1620,7 +1620,7 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
     QMailMessageKey folderContent(QMailDisconnected::sourceKey(folder->id()));
     folderContent &= ~QMailMessageKey::status(QMailMessage::Removed);
 
-    uint count = QMailStore::instance()->countMessages(folderContent);
+    uint count = static_cast<uint>(QMailStore::instance()->countMessages(folderContent));
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 

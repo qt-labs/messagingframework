@@ -166,8 +166,8 @@ void RowWidget::sendCancel()
 
 
 void RowWidget::progressChanged(uint x, uint y) {
-    _progress->setMaximum(y);
-    _progress->setValue(x);
+    _progress->setMaximum(static_cast<int>(y));
+    _progress->setValue(static_cast<int>(x));
 }
 
 void RowWidget::generateDescription() {

@@ -551,7 +551,7 @@ typedef QPair<EncodingTokenType, TokenRange> Token;
 
 static Token makeToken(EncodingTokenType type, const QChar* begin, const QChar* end, bool escaped)
 {
-    return qMakePair(type, qMakePair(begin, (int)(end - begin) - (escaped ? 1 : 0)));
+    return qMakePair(type, qMakePair(begin, static_cast<int>(end - begin) - (escaped ? 1 : 0)));
 }
 
 static QList<Token> tokenSequence(const QString& input)

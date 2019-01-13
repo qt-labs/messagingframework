@@ -1098,7 +1098,7 @@ void QMailMessageSource::notImplemented()
 /*! \internal */
 void QMailMessageSource::deleteMessages()
 {
-    uint total = d->_ids.count();
+    uint total = static_cast<uint>(d->_ids.count());
     emit d->_service->progressChanged(0, total);
 
     // Just remove these locally and store a deletion record for later synchronization
@@ -1122,7 +1122,7 @@ void QMailMessageSource::copyMessages()
 {
     bool successful(true);
 
-    unsigned int size = QMailStore::instance()->sizeOfMessages(QMailMessageKey::id(d->_ids));
+    int size = QMailStore::instance()->sizeOfMessages(QMailMessageKey::id(d->_ids));
     if (!LongStream::freeSpace(QString(), size + 1024*10)) {
         qMailLog(Messaging) << "Insufficient space to copy messages to folder:" << d->_destinationId << "bytes required:" << size;
         emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFileSystemFull, tr("Insufficient space to copy messages to folder"), QMailAccountId(), d->_destinationId, QMailMessageId()));
@@ -1131,7 +1131,7 @@ void QMailMessageSource::copyMessages()
 
     if (successful) {
         uint progress = 0;
-        uint total = d->_ids.count();
+        uint total = static_cast<uint>(d->_ids.count());
         emit d->_service->progressChanged(progress, total);
 
         // Create a copy of each message
@@ -1164,7 +1164,7 @@ void QMailMessageSource::copyMessages()
 /*! \internal */
 void QMailMessageSource::moveMessages()
 {
-    uint total = d->_ids.count();
+    uint total = static_cast<uint>(d->_ids.count());
     emit d->_service->progressChanged(0, total);
 
     QMailMessageMetaData metaData;
@@ -1188,7 +1188,7 @@ void QMailMessageSource::moveMessages()
 /*! \internal */
 void QMailMessageSource::flagMessages()
 {
-    uint total = d->_ids.count();
+    uint total = static_cast<uint>(d->_ids.count());
     emit d->_service->progressChanged(0, total);
 
     if (modifyMessageFlags(d->_ids, d->_setMask, d->_unsetMask)) {
