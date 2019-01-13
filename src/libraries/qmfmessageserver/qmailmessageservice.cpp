@@ -76,7 +76,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
         return it.value();
 
     qMailLog(Messaging) << "Unable to map service for key:" << key;
-    return 0;
+    return Q_NULLPTR;
 }
 
 }
@@ -157,7 +157,7 @@ QMailMessageService *QMailMessageServiceFactory::createService(const QString &ke
     if (QMailMessageServicePlugin* plugin = mapping(key))
         return plugin->createService(accountId);
 
-    return 0;
+    return Q_NULLPTR;
 }
 
 /*!
@@ -168,7 +168,7 @@ QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfig
     if (QMailMessageServicePlugin* plugin = mapping(key))
         return plugin->createServiceConfigurator();
 
-    return 0;
+    return Q_NULLPTR;
 }
 
 
@@ -213,7 +213,7 @@ QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfig
 */
 QMailMessageServiceConfigurator *QMailMessageServicePluginInterface::createServiceConfigurator()
 {
-    return 0;
+    return Q_NULLPTR;
 }
 
 

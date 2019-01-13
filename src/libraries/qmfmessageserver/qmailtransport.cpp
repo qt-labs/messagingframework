@@ -146,8 +146,8 @@ QMailTransport::QMailTransport(const char* name)
 #ifndef QT_NO_SSL
     encryption = Encrypt_NONE;
 #endif
-    mSocket = 0;
-    mStream = 0;
+    mSocket = Q_NULLPTR;
+    mStream = Q_NULLPTR;
     connect( &connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
 }
 

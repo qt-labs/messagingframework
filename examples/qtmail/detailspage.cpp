@@ -216,7 +216,7 @@ DetailsPage::DetailsPage( QWidget *parent, const char *name )
     tabOrderList.append( m_fromField );
 
     QListIterator<QWidget*> it( tabOrderList );
-    QWidget *prev = 0;
+    QWidget *prev = Q_NULLPTR;
     QWidget *next;
     while ( it.hasNext() ) {
         next = it.next();

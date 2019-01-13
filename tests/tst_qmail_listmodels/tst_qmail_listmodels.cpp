@@ -273,5 +273,5 @@ void tst_QMail_ListModels::test_qmailmessagelistmodel()
 void tst_QMail_ListModels::test_messagethreadedmodel()
 {
     QMailMessageThreadedModel model;
-    QModelIndex idx = model.generateIndex(0, 0, 0);
+    QModelIndex idx = model.generateIndex(0, 0, Q_NULLPTR);
 }

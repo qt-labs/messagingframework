@@ -282,7 +282,7 @@ static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
             break;
     }
 
-    return 0;
+    return Q_NULLPTR;
 }
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool textualData)
@@ -320,7 +320,7 @@ static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool 
             }
     }
 
-    return 0;
+    return Q_NULLPTR;
 }
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, const QMailMessageContentType& content)
@@ -906,7 +906,7 @@ namespace findBody
 {
     struct Context
     {
-        Context() : found (0), alternateParent (0), contentType (textContentType) {}
+        Context() : found (Q_NULLPTR), alternateParent (Q_NULLPTR), contentType (textContentType) {}
         QMailMessagePartContainer *found;
         QMailMessagePartContainer *alternateParent;
         QList<QMailMessagePart::Location> htmlImageLoc;
@@ -1359,7 +1359,7 @@ namespace attachments
                 return &part;
             }
         }
-        return 0;
+        return Q_NULLPTR;
     }
 
     void removeInlineImages(QMailMessagePartContainer &container, int depth)
@@ -1675,7 +1675,7 @@ static bool matchingParameter(const QByteArray& name, const QByteArray& other, b
     {
         QByteArray trailer(other.mid(lastIndex + 1, (index - lastIndex)).trimmed());
         if (!trailer.isEmpty())
-            return validExtension(trailer, 0, encoded);
+            return validExtension(trailer, Q_NULLPTR, encoded);
     }
 
     return true;
@@ -1698,7 +1698,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
 
     const char* token = begin;
     const char* it = begin;
-    const char* separator = 0;
+    const char* separator = Q_NULLPTR;
     for (bool quoted = false; it != end; ++it)
     {
         if (*it == '"') {
@@ -1716,7 +1716,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
             }
         }
         else if (*it == '=' && !quoted && structured) {
-            if (separator == 0) {
+            if (separator == Q_NULLPTR) {
                 // This is a parameter separator
                 separator = it;
             }
@@ -1743,7 +1743,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
             }
 
             token = (it + 1);
-            separator = 0;
+            separator = Q_NULLPTR;
         }
     }
 
@@ -1965,7 +1965,7 @@ static QByteArray protectedParameter(const QByteArray& value)
         return value;
 }
 
-static bool extendedParameter(const QByteArray& name, QByteArray* truncated = 0, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
+static bool extendedParameter(const QByteArray& name, QByteArray* truncated = Q_NULLPTR, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
 {
     QByteArray param(name.trimmed());
 
@@ -2385,7 +2385,7 @@ void QMailMessageHeaderField::parse(const QByteArray& text, FieldType fieldType)
 */
 QByteArray QMailMessageHeaderField::encodeWord(const QString& input, const QByteArray& charset)
 {
-    return ::encodeWord(input, charset, 0);
+    return ::encodeWord(input, charset, Q_NULLPTR);
 }
 
 /*!
@@ -3956,7 +3956,7 @@ int QMailMessagePartContainerPrivate::partNumber() const
 
 bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0; 
+    const QMailMessagePart* part = Q_NULLPTR;
     const QList<QMailMessagePart>* partList = &_messageParts; 
 
     foreach (int index, location.d->_indices) {
@@ -3973,7 +3973,7 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
 
 const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0; 
+    const QMailMessagePart* part = Q_NULLPTR;
     const QList<QMailMessagePart>* partList = &_messageParts; 
 
     foreach (int index, location.d->_indices) {
@@ -3992,7 +3992,7 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
 
 QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location)
 {
-    QMailMessagePart* part = 0; 
+    QMailMessagePart* part = Q_NULLPTR;
     QList<QMailMessagePart>* partList = &_messageParts; 
 
     foreach (int index, location.d->_indices) {
@@ -4489,7 +4489,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     QMailMessagePart part;
     QMailMessageContentType contentType;
     QByteArray boundary;
-    QMailMessagePartContainerPrivate* multipartContainer = 0;
+    QMailMessagePartContainerPrivate* multipartContainer = Q_NULLPTR;
 
     if (insertIntoSelf) {
         // Insert the parts into ourself
@@ -5178,7 +5178,7 @@ QMailMessagePartContainer* QMailMessagePartContainer::findPlainTextContainer() c
     if (findBody::inPartContainer(*this, ctx)) {
         result = ctx.found;
     } else {
-        result = 0;
+        result = Q_NULLPTR;
     }
     return result;
 }
@@ -5195,7 +5195,7 @@ QMailMessagePartContainer* QMailMessagePartContainer::findHtmlContainer() const
     if (findBody::inPartContainer(*this, ctx)) {
         result = ctx.found;
     } else {
-        result = 0;
+        result = Q_NULLPTR;
     }
     return result;
 }
@@ -5208,7 +5208,7 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocat
     QList<QMailMessagePart::Location> found;
 
     foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
-        if (strategy->findAttachmentLocations(*this, &found, 0)) {
+        if (strategy->findAttachmentLocations(*this, &found, Q_NULLPTR)) {
             break;
         } else {
             found = QList<QMailMessagePart::Location>();
@@ -5253,7 +5253,7 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlinePartLocat
  */
 bool QMailMessagePartContainer::hasPlainTextBody() const
 {
-    return (findPlainTextContainer() != 0);
+    return (findPlainTextContainer() != Q_NULLPTR);
 }
 
 /*!
@@ -5261,7 +5261,7 @@ bool QMailMessagePartContainer::hasPlainTextBody() const
  */
 bool QMailMessagePartContainer::hasHtmlBody() const
 {
-    return (findHtmlContainer() != 0);
+    return (findHtmlContainer() != Q_NULLPTR);
 }
 
 /*!
@@ -5271,7 +5271,7 @@ bool QMailMessagePartContainer::hasAttachments() const
 {
     bool hasAttachments;
     foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
-        if (strategy->findAttachmentLocations(*this, 0, &hasAttachments)) {
+        if (strategy->findAttachmentLocations(*this, Q_NULLPTR, &hasAttachments)) {
             return hasAttachments;
         }
     }
@@ -5285,7 +5285,7 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
 {
     findBody::Context ctx;
     if (findBody::inPartContainer(*this, ctx)) {
-        if (0 == ctx.alternateParent) {
+        if (Q_NULLPTR == ctx.alternateParent) {
             ctx.found->setBody(plainTextBody);
         } else {
             ctx.alternateParent->clearParts();
@@ -5310,15 +5310,15 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
  */
 void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
 {
-    QMailMessagePartContainer *bodyContainer = 0;
+    QMailMessagePartContainer *bodyContainer = Q_NULLPTR;
     QMailMessagePart subpart;
     bool hasInlineImages = false;
 
     findBody::Context ctx;
     if (findBody::inPartContainer(*this, ctx)) {
-        Q_ASSERT (0 != ctx.found);
+        Q_ASSERT (Q_NULLPTR != ctx.found);
         hasInlineImages = !ctx.htmlImageParts.isEmpty();
-        if (0 != ctx.alternateParent) {
+        if (Q_NULLPTR != ctx.alternateParent) {
             bodyContainer = ctx.alternateParent;
         } else {
             bodyContainer = ctx.found;
@@ -5482,7 +5482,7 @@ struct DummyChunkProcessor
 void QMailMessagePartContainer::outputParts(QDataStream& out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields) const
 {
     QDataStream* ds(&out);
-    impl(this)->outputParts<DummyChunkProcessor>(&ds, addMimePreamble, includeAttachments, excludeInternalFields, 0);
+    impl(this)->outputParts<DummyChunkProcessor>(&ds, addMimePreamble, includeAttachments, excludeInternalFields, Q_NULLPTR);
 }
 
 /*! \internal */
@@ -6426,7 +6426,7 @@ bool QMailMessagePart::partialContentAvailable() const
 void QMailMessagePart::output(QDataStream& out, bool includeAttachments, bool excludeInternalFields) const
 {
     QDataStream *ds(&out);
-    return impl(this)->output<DummyChunkProcessor>(&ds, false, includeAttachments, excludeInternalFields, 0);
+    return impl(this)->output<DummyChunkProcessor>(&ds, false, includeAttachments, excludeInternalFields, Q_NULLPTR);
 }
 
 QByteArray QMailMessagePart::toRfc2822() const
@@ -7202,7 +7202,7 @@ QMailMessageMetaData::QMailMessageMetaData()
     Constructs a message meta data object from data stored in the message store with QMailMessageId \a id.
 */
 QMailMessageMetaData::QMailMessageMetaData(const QMailMessageId& id)
-    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(0)
+    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(Q_NULLPTR)
 {
     *this = QMailStore::instance()->messageMetaData(id);
 }
@@ -7212,7 +7212,7 @@ QMailMessageMetaData::QMailMessageMetaData(const QMailMessageId& id)
     identifier \a uid from the account with id \a accountId.
 */
 QMailMessageMetaData::QMailMessageMetaData(const QString& uid, const QMailAccountId& accountId)
-    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(0)
+    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(Q_NULLPTR)
 {
     *this = QMailStore::instance()->messageMetaData(uid, accountId);
 }
@@ -8250,7 +8250,7 @@ QByteArray QMailMessage::toRfc2822(EncodingFormat format) const
 void QMailMessage::toRfc2822(QDataStream& out, EncodingFormat format) const
 {
     QDataStream *ds(&out);
-    partContainerImpl()->toRfc2822<DummyChunkProcessor>(&ds, format, status(), 0);
+    partContainerImpl()->toRfc2822<DummyChunkProcessor>(&ds, format, status(), Q_NULLPTR);
 }
 
 struct ChunkStore
@@ -8273,7 +8273,7 @@ struct ChunkStore
     {
         if (ds) {
             delete ds;
-            ds = 0;
+            ds = Q_NULLPTR;
 
             if (!chunk.isEmpty()) {
                 chunks.append(qMakePair(QMailMessage::Text, chunk));
@@ -8760,7 +8760,7 @@ void QMailMessage::refreshPreview()
     QMailMessagePartContainer *plainTextPart= findPlainTextContainer();
 
     if (multipartType() == MultipartRelated && htmlPart) // force taking the html in this case
-        plainTextPart=0;
+        plainTextPart=Q_NULLPTR;
 
     if ( plainTextPart && plainTextPart->hasBody()) {
         QString plainText = plainTextPart->body().data();
@@ -8810,7 +8810,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     }
 
     // See if any of the header fields need to be propagated to the meta data object
-    QMailMessagePartContainer *textBody(0);
+    QMailMessagePartContainer *textBody(Q_NULLPTR);
     QByteArray auxCharset;
     QMailMessageContentType ct(mail.headerField(QLatin1String("Content-Type")));
     if (ct.charset().isEmpty()) {

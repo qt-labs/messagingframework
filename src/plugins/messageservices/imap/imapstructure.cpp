@@ -530,7 +530,7 @@ bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *
                 }
             } else {
                 // This is a multi-part message
-                setMultipartFromDescription(structure, message, 0, &size, &wellFormed);
+                setMultipartFromDescription(structure, message, Q_NULLPTR, &size, &wellFormed);
             }
 
             message->setContentSize(size);
