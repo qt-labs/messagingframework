@@ -280,10 +280,10 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
             if (parameters.count() % 2)
                 qWarning() << "Incorrect fromDispositionDescription parameters:" << parameters;
             QStringList::const_iterator it = parameters.begin(), end = parameters.end();
-            for ( ; (it != end) && (it + 1 != end); ++it) {
+            while ((it != end) && (it + 1 != end)) {
                 disposition.setParameter((*it).toLatin1(), (*(it + 1)).toLatin1());
-                ++it;
-            }            
+                it+=2;
+            }
         }
     } else {
         // Default to inline for no specification
