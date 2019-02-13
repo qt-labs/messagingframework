@@ -939,7 +939,9 @@ void tst_QMailMessage::fromRfc2822()
     QFETCH(QStringList, bcc);
     QMailMessageMetaData metaData = *static_cast<QMailMessageMetaData*>(&m);
     QCOMPARE(QMailAddress::toStringList(metaData.recipients()), (to + cc + bcc));
-
+    metaData.setPreview(QString());
+    QVERIFY(!metaData.preview().isNull());
+    QVERIFY(metaData.preview().isEmpty());
 
     // Test that conversion to-and-from RFC2822 yields equivalence
     QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);

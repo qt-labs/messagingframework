@@ -995,6 +995,14 @@ void tst_QMailStore::updateMessage()
     message1.setCustomField("temporary", "true");
     message1.setCustomField("tag", "Work");
 
+    // test that preview generation works, and that if the preview
+    // is overwritten with a null preview, that storage still works.
+    {
+        QCOMPARE(message1.preview(), QString("Hi"));
+        QMailMessageMetaData metaData = *static_cast<QMailMessageMetaData*>(&message1);
+        metaData.setPreview(QString());
+    }
+
     // Verify that addition is successful
     QCOMPARE(QMailStore::instance()->countMessages(), 0);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);

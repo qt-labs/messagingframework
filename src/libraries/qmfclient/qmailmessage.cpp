@@ -6646,7 +6646,7 @@ void QMailMessageMetaDataPrivate::setResponseType(QMailMessageMetaData::Response
 
 void QMailMessageMetaDataPrivate::setPreview(const QString &s)
 {
-    updateMember(_preview, s);
+    updateMember(_preview, s.isNull() ? QString("") : s);
 }
 
 uint QMailMessageMetaDataPrivate::indicativeSize() const
