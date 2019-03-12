@@ -6,6 +6,10 @@ requires(!qnx)
 requires(!android)
 requires(!integrity)
 requires(!vxworks)
+requires(!wasm)
+requires(!macos)
+
+requires(qtHaveModule(sql))
 
 !contains(DEFINES,QMF_NO_WIDGETS) {
     requires(qtHaveModule(widgets))
