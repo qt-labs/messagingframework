@@ -1401,10 +1401,17 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
         int start = 0;
         QString temp = token(line, '(', ')', &start);
         c->setPermanentFlags(temp.split(' ', QString::SkipEmptyParts));
+    } else if (line.indexOf("EXPUNGE", 0, Qt::CaseInsensitive) != -1) {
+        quint32 exists = c->exists();
+        if (exists > 0) {
+            --exists;
+            c->setExists(exists);
+        } else {
+            qWarning() << "Unexpected expunge from empty message list";
+        }
     } else {
         ImapState::untaggedResponse(c, line);
     }
-    // TODO consider unilateral EXPUNGE notifications
 }
 
 
