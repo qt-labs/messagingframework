@@ -149,17 +149,19 @@ uint QMailMessageListModelPrivate::limit() const
 void QMailMessageListModelPrivate::setLimit(uint limit)
 {
     if (_limit != limit) {
-        if (limit == 0) {
+        uint oldLimit = _limit;
+        _limit = limit;
+
+        if (!_initialised) {
+            // nothing, content will be updated when something tries to access the model and init() is triggered
+        } else if (limit == 0) {
             // Do full refresh
-            _limit = limit;
             _model.fullRefresh(false);
-        } else if (_limit > limit) {
+        } else if (oldLimit > limit) {
             // Limit decreased, remove messages in excess
-            _limit = limit;
             QMailMessageIdList idsToRemove = _idList.mid(limit);
             removeMessages(idsToRemove);
         } else {
-            _limit = limit;
             QMailMessageIdList idsToAppend;
             QMailMessageIdList newIdsList(QMailStore::instance()->queryMessages(_key, _sortKey, _limit));
 
