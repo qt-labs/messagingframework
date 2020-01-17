@@ -682,6 +682,16 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     qWarning() << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
+            // After logging in server capabilities reported may change so we need to
+            // check if IDLE is already established, when enabled
+            if (!_waitingForIdle && !_idlesEstablished
+                && _protocol.supportsCapability("IDLE")
+                && !_waitingForIdleFolderIds.isEmpty()
+                && _pushConnectionsReserved) {
+                _waitingForIdle = true;
+                monitor(_waitingForIdleFolderIds);
+                emit updateStatus( tr("Logging in idle connection" ) );
+            }
 
             bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
             if (!_protocol.encrypted() && QMFALLOWCOMPRESS && compressCapable && !_protocol.compress()) {
