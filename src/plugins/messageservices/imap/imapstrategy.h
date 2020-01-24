@@ -396,7 +396,6 @@ protected:
     virtual void processNextFolder(ImapStrategyContextBase *context);
     virtual bool nextFolder();
     virtual void processFolder(ImapStrategyContextBase *context);
-    virtual bool synchronizationEnabled(const QMailFolder &folder) const;
 
     void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
@@ -457,18 +456,22 @@ private:
 class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy 
 {
 public:
-    ImapSynchronizeBaseStrategy() {}
+    ImapSynchronizeBaseStrategy() : _ignoreSyncFlag(false) {}
     virtual ~ImapSynchronizeBaseStrategy() {}
 
     virtual void newConnection(ImapStrategyContextBase *context);
     
     virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
+    virtual void setIgnoreSyncFlag(bool ignoreSyncFlag);
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleSelect(ImapStrategyContextBase *context);
     virtual void handleUidFetch(ImapStrategyContextBase *context);
+
+    virtual bool nextFolder();
+    virtual bool synchronizationEnabled(const QMailFolder &folder) const;
 
     virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
     virtual bool selectNextPreviewFolder(ImapStrategyContextBase *context);
@@ -486,6 +489,7 @@ protected:
     int _outstandingPreviews;
 
 private:
+    bool _ignoreSyncFlag;
     uint _progress;
     uint _total;
 };

@@ -2212,15 +2212,13 @@ void ImapFolderListStrategy::processNextFolder(ImapStrategyContextBase *context)
 
 bool ImapFolderListStrategy::nextFolder()
 {
-    while (!_mailboxIds.isEmpty()) {
+    if (!_mailboxIds.isEmpty()) {
         QMailFolderId folderId(_mailboxIds.takeFirst());
 
         // Process this folder
         setCurrentMailbox(folderId);
 
-        // Bypass any folder for which synchronization is disabled
-        if (synchronizationEnabled(_currentMailbox))
-            return true;
+        return true;
     }
 
     return false;
@@ -2235,11 +2233,6 @@ void ImapFolderListStrategy::processFolder(ImapStrategyContextBase *context)
         selectFolder(context, _currentMailbox);
 
     context->progressChanged(++_processed, _processable);
-}
-
-bool ImapFolderListStrategy::synchronizationEnabled(const QMailFolder &folder) const 
-{
-    return folder.status() & QMailFolder::SynchronizationEnabled;
 }
 
 void ImapFolderListStrategy::folderListCompleted(ImapStrategyContextBase *context)
@@ -2371,6 +2364,27 @@ void ImapSynchronizeBaseStrategy::previewDiscoveredMessages(ImapStrategyContextB
         // Could be no mailbox has been selected to be stored locally
         messageListCompleted(context);
     }
+}
+
+void ImapSynchronizeBaseStrategy::setIgnoreSyncFlag(bool ignoreSyncFlag)
+{
+    _ignoreSyncFlag = ignoreSyncFlag;
+}
+
+bool ImapSynchronizeBaseStrategy::synchronizationEnabled(const QMailFolder &folder) const
+{
+    return _ignoreSyncFlag || (folder.status() & QMailFolder::SynchronizationEnabled);
+}
+
+bool ImapSynchronizeBaseStrategy::nextFolder()
+{
+    while (ImapFolderListStrategy::nextFolder()) {
+        // Bypass any folder for which synchronization is disabled
+        if (synchronizationEnabled(_currentMailbox))
+            return true;
+    }
+
+    return false;
 }
 
 bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBase *context)

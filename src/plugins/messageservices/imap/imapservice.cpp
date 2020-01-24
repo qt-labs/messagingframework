@@ -212,6 +212,7 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
     _service->_client->strategyContext()->foldersOnlyStrategy.setBase(folderId);
     _service->_client->strategyContext()->foldersOnlyStrategy.setQuickList(!folderId.isValid());
     _service->_client->strategyContext()->foldersOnlyStrategy.setDescending(descending);
+    _service->_client->strategyContext()->foldersOnlyStrategy.setIgnoreSyncFlag(true);
     appendStrategy(&_service->_client->strategyContext()->foldersOnlyStrategy);
     if(!_unavailable)
         return initiateStrategy();
@@ -303,6 +304,7 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
 
     _service->_client->strategyContext()->retrieveMessageListStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
     _service->_client->strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
+    _service->_client->strategyContext()->retrieveMessageListStrategy.setIgnoreSyncFlag(!_folderIds.isEmpty());
     appendStrategy(&_service->_client->strategyContext()->retrieveMessageListStrategy);
     if(!_unavailable)
         return initiateStrategy();
@@ -495,6 +497,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
     _service->_client->strategyContext()->retrieveAllStrategy.setQuickList(false);
     _service->_client->strategyContext()->retrieveAllStrategy.setDescending(true);
     _service->_client->strategyContext()->retrieveAllStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
+    _service->_client->strategyContext()->retrieveAllStrategy.setIgnoreSyncFlag(false);
     appendStrategy(&_service->_client->strategyContext()->retrieveAllStrategy);
     if(!_unavailable)
         return initiateStrategy();
@@ -570,6 +573,7 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
     _service->_client->strategyContext()->synchronizeAccountStrategy.setQuickList(false);
     _service->_client->strategyContext()->synchronizeAccountStrategy.setDescending(true);
     _service->_client->strategyContext()->synchronizeAccountStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
+    _service->_client->strategyContext()->synchronizeAccountStrategy.setIgnoreSyncFlag(false);
     appendStrategy(&_service->_client->strategyContext()->synchronizeAccountStrategy);
     if(!_unavailable)
         return initiateStrategy();
