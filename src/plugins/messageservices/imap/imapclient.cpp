@@ -822,8 +822,11 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             // This element needs to be created
             QMailFolder folder(mailboxPath, parentId, _config.id());
             folder.setDisplayName(QMailCodec::decodeModifiedUtf7(*it));
-            folder.setStatus(QMailFolder::SynchronizationEnabled, true);
             folder.setStatus(QMailFolder::Incoming, true);
+            // Set synchronization flag the same as parent folder, or true if there's no parent
+            bool synchronize = parentId.isValid() ?
+                        QMailFolder(parentId).status() & QMailFolder::SynchronizationEnabled : true;
+            folder.setStatus(QMailFolder::SynchronizationEnabled, synchronize);
 
             // The reported flags pertain to the listed folder only
             QString folderFlags;
