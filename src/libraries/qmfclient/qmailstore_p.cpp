@@ -4597,7 +4597,7 @@ bool QMailStorePrivate::addAccount(QMailAccount *account, QMailAccountConfigurat
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddAccount, this,
                                         account, config, 
                                         addedAccountIds),
-                                   QLatin1String("addAccount"));
+                                   QLatin1String("add account"));
 }
 
 bool QMailStorePrivate::addFolder(QMailFolder *folder,
@@ -4606,7 +4606,7 @@ bool QMailStorePrivate::addFolder(QMailFolder *folder,
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddFolder, this,
                                         folder, 
                                         addedFolderIds, modifiedAccountIds),
-                                   QLatin1String("addFolder"));
+                                   QLatin1String("add folder"));
 }
 
 bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
@@ -4637,7 +4637,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
         }
 
         if (!repeatedly<WriteAccess>(bind(func, this, message, cref(identifier), cref(references), &container),
-                                     QLatin1String("addMessages"),
+                                     QLatin1String("add messages"),
                                      &t)) {
             return false;
         }
@@ -4687,7 +4687,7 @@ bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &message
         if (!repeatedly<WriteAccess>(bind(func, this, 
                                           metaData, cref(identifier), cref(references),
                                           &out),
-                                     QLatin1String("addMessages"),
+                                     QLatin1String("add messages"),
                                      &t)) {
             return false;
         }
@@ -4706,7 +4706,7 @@ bool QMailStorePrivate::addThread(QMailThread *thread, QMailThreadIdList *addedT
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptAddThread, this,
                                         thread,
                                         addedThreadIds),
-                                   QLatin1String("addThread"));
+                                   QLatin1String("add thread"));
 }
 
 bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
@@ -4717,7 +4717,7 @@ bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveAccounts, this,
                                         cref(key),
                                         &out),
-                                   QLatin1String("removeAccounts"));
+                                   QLatin1String("remove accounts"));
 }
 
 bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
@@ -4730,7 +4730,7 @@ bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::Mes
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveFolders, this,
                                         cref(key), option, 
                                         &out),
-                                   QLatin1String("removeFolders"));
+                                   QLatin1String("remove folders"));
 }
 
 bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
@@ -4739,7 +4739,7 @@ bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::M
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveMessages, this,
                                         cref(key), option,
                                         deletedMessageIds, deletedThreadIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds),
-                                   QLatin1String("removeMessages"));
+                                   QLatin1String("remove messages"));
 }
 
 bool QMailStorePrivate::removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
@@ -4750,7 +4750,7 @@ bool QMailStorePrivate::removeThreads(const QMailThreadKey &key, QMailStore::Mes
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRemoveThreads, this,
                                         cref(key), option,
                                         &out),
-                                   QLatin1String("removeMessages"));
+                                   QLatin1String("remove messages"));
 }
 
 
@@ -4760,7 +4760,7 @@ bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfigu
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateAccount, this, 
                                         account, config, 
                                         updatedAccountIds), 
-                                   QLatin1String("updateAccount"));
+                                   QLatin1String("update account"));
 }
 
 bool QMailStorePrivate::updateAccountConfiguration(QMailAccountConfiguration *config,
@@ -4769,7 +4769,7 @@ bool QMailStorePrivate::updateAccountConfiguration(QMailAccountConfiguration *co
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateAccount, this, 
                                         reinterpret_cast<QMailAccount*>(0), config, 
                                         updatedAccountIds), 
-                                   QLatin1String("updateAccount"));
+                                   QLatin1String("update accounts"));
 }
 
 bool QMailStorePrivate::updateFolder(QMailFolder *folder,
@@ -4778,7 +4778,7 @@ bool QMailStorePrivate::updateFolder(QMailFolder *folder,
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateFolder, this, 
                                         folder, 
                                         updatedFolderIds, modifiedAccountIds), 
-                                   QLatin1String("updateFolder"));
+                                   QLatin1String("update folder"));
 }
 
 bool QMailStorePrivate::updateThread(QMailThread *t,
@@ -4787,7 +4787,7 @@ bool QMailStorePrivate::updateThread(QMailThread *t,
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateThread, this,
                                         t,
                                         updatedThreadIds),
-                                   QLatin1String("updateThread"));
+                                   QLatin1String("update thread"));
 }
 
 bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> > &messages,
@@ -4804,7 +4804,7 @@ bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, 
         if (!repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessage, this,
                                           pair.first, pair.second,
                                           updatedMessageIds, modifiedThreads, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds, &contentRemoveLater),
-                                     QLatin1String("updateMessages"),
+                                     QLatin1String("update messages"),
                                      &t)) {
             return false;
         }
@@ -4868,7 +4868,7 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, const
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessagesMetaData, this,
                                         cref(key), cref(properties), cref(data),
                                         updatedMessageIds, deletedThreads, modifiedThreads, modifiedFolderIds, modifiedAccountIds),
-                                   QLatin1String("updateMessagesMetaData"));
+                                   QLatin1String("update messages meta data"));
 }
 
 bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint64 status, bool set,
@@ -4877,13 +4877,13 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptUpdateMessagesStatus, this,
                                         cref(key), status, set,
                                         updatedMessageIds, modifiedThreads, modifiedFolderIds, modifiedAccountIds),
-                                   QLatin1String("updateMessagesMetaData")); // not 'updateMessagesStatus', due to function name exported by QMailStore
+                                   QLatin1String("update messages status")); // not 'updateMessagesStatus', due to function name exported by QMailStore
 }
 
 bool QMailStorePrivate::ensureDurability()
 {
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptEnsureDurability, this),
-                                   QLatin1String("ensureDurability"));
+                                   QLatin1String("ensure durability"));
 }
 
 void QMailStorePrivate::unloadDatabase()
@@ -4945,7 +4945,7 @@ bool QMailStorePrivate::purgeMessageRemovalRecords(const QMailAccountId &account
 {
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptPurgeMessageRemovalRecords, this, 
                                         cref(accountId), cref(serverUids)), 
-                                   QLatin1String("purgeMessageRemovalRecords"));
+                                   QLatin1String("purge message removal records"));
 }
 
 int QMailStorePrivate::countAccounts(const QMailAccountKey &key) const
@@ -4953,7 +4953,7 @@ int QMailStorePrivate::countAccounts(const QMailAccountKey &key) const
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptCountAccounts, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), &result), 
-                           QLatin1String("countAccounts"));
+                           QLatin1String("count accounts matching key"));
     return result;
 }
 
@@ -4962,7 +4962,7 @@ int QMailStorePrivate::countFolders(const QMailFolderKey &key) const
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptCountFolders, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), &result), 
-                           QLatin1String("countFolders"));
+                           QLatin1String("count folders matching key"));
     return result;
 }
 
@@ -4971,7 +4971,7 @@ int QMailStorePrivate::countMessages(const QMailMessageKey &key) const
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptCountMessages, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), &result), 
-                           QLatin1String("countMessages"));
+                           QLatin1String("count messages matching key"));
     return result;
 }
 
@@ -4980,7 +4980,7 @@ int QMailStorePrivate::countThreads(const QMailThreadKey &key) const
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptCountThreads, const_cast<QMailStorePrivate*>(this),
                                 cref(key), &result),
-                           QLatin1String("countThreads"));
+                           QLatin1String("count threads matching key"));
     return result;
 }
 
@@ -4989,7 +4989,7 @@ int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptSizeOfMessages, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), &result), 
-                           QLatin1String("sizeOfMessages"));
+                           QLatin1String("inquire size of messages"));
     return result;
 }
 
@@ -4998,7 +4998,7 @@ QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, 
     QMailAccountIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryAccounts, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), cref(sortKey), limit, offset, &ids), 
-                           QLatin1String("queryAccounts"));
+                           QLatin1String("query accounts from key"));
     return ids;
 }
 
@@ -5007,7 +5007,7 @@ QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, con
     QMailFolderIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryFolders, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), cref(sortKey), limit, offset, &ids), 
-                           QLatin1String("queryFolders"));
+                           QLatin1String("query folders from key"));
     return ids;
 }
 
@@ -5016,7 +5016,7 @@ QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, 
     QMailMessageIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryMessages, const_cast<QMailStorePrivate*>(this), 
                                 cref(key), cref(sortKey), limit, offset, &ids), 
-                           QLatin1String("queryMessages"));
+                           QLatin1String("query messages from key"));
     return ids;
 }
 
@@ -5025,7 +5025,7 @@ QMailThreadIdList QMailStorePrivate::queryThreads(const QMailThreadKey &key, con
     QMailThreadIdList ids;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptQueryThreads, const_cast<QMailStorePrivate*>(this),
                                 cref(key), cref(sortKey), limit, offset, &ids),
-                           QLatin1String("queryFolders"));
+                           QLatin1String("query threads from key"));
     return ids;
 }
 
@@ -5037,7 +5037,7 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
     QMailAccount account;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptAccount, const_cast<QMailStorePrivate*>(this), 
                                 cref(id), &account), 
-                           QLatin1String("account"));
+                           QLatin1String("inquire account from id"));
     return account;
 }
 
@@ -5046,7 +5046,7 @@ QMailAccountConfiguration QMailStorePrivate::accountConfiguration(const QMailAcc
     QMailAccountConfiguration config;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptAccountConfiguration, const_cast<QMailStorePrivate*>(this), 
                                 cref(id), &config), 
-                           QLatin1String("accountConfiguration"));
+                           QLatin1String("inquire account configuration for id"));
     return config;
 }
 
@@ -5058,7 +5058,7 @@ QMailFolder QMailStorePrivate::folder(const QMailFolderId &id) const
     QMailFolder folder;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptFolder, const_cast<QMailStorePrivate*>(this), 
                                 cref(id), &folder), 
-                           QLatin1String("folder"));
+                           QLatin1String("inquire folder from id"));
     return folder;
 }
 
@@ -5070,7 +5070,7 @@ QMailMessage QMailStorePrivate::message(const QMailMessageId &id) const
     QMailMessage msg;
     repeatedly<ReadAccess>(bind(func, const_cast<QMailStorePrivate*>(this), 
                                 cref(id), &msg), 
-                           QLatin1String("message(id)"));
+                           QLatin1String("inquire message from id"));
     return msg;
 }
 
@@ -5082,7 +5082,7 @@ QMailMessage QMailStorePrivate::message(const QString &uid, const QMailAccountId
     QMailMessage msg;
     repeatedly<ReadAccess>(bind(func, const_cast<QMailStorePrivate*>(this), 
                                 cref(uid), cref(accountId), &msg), 
-                           QLatin1String("message(uid, accountId)"));
+                           QLatin1String("inquire message from uid for account id"));
     return msg;
 }
 
@@ -5127,14 +5127,14 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
 
         success = repeatedly<ReadAccess>(bind(func, const_cast<QMailStorePrivate*>(this), 
                                               cref(id), &metaData), 
-                                         QLatin1String("messageMetaData(id)"));
+                                         QLatin1String("inquire message meta data from id"));
     } else {
         // Resolve from overloaded member functions:
         AttemptResult (QMailStorePrivate::*func)(const QString&, const QMailAccountId&, QMailMessageMetaData*, ReadLock&) = &QMailStorePrivate::attemptMessageMetaData;
 
         success = repeatedly<ReadAccess>(bind(func, const_cast<QMailStorePrivate*>(this), 
                                               cref(uid), cref(accountId), &metaData), 
-                                         QLatin1String("messageMetaData(uid/accountId)"));
+                                         QLatin1String("inquire message meta data from uid for account id"));
     }
 
     if (success) {
@@ -5150,7 +5150,7 @@ QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageK
     QList<QMailMessageMetaData> metaData;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptMessagesMetaData, const_cast<QMailStorePrivate*>(this),
                                 cref(key), cref(properties), option, &metaData),
-                           QLatin1String("messagesMetaData"));
+                           QLatin1String("inquire messages meta data for key"));
     return QMailMessageMetaDataList(metaData);
 }
 
@@ -5159,7 +5159,7 @@ QMailThreadList QMailStorePrivate::threads(const QMailThreadKey &key, QMailStore
     QList<QMailThread> result;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptThreads, const_cast<QMailStorePrivate*>(this),
                                 cref(key), option, &result),
-                           QLatin1String("threads"));
+                           QLatin1String("inquire threads for key"));
     return QMailThreadList(result);
 }
 
@@ -5168,7 +5168,7 @@ QMailMessageRemovalRecordList QMailStorePrivate::messageRemovalRecords(const QMa
     QList<QMailMessageRemovalRecord> removalRecords;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptMessageRemovalRecords, const_cast<QMailStorePrivate*>(this), 
                                 cref(accountId), cref(folderId), &removalRecords),
-                           QLatin1String("messageRemovalRecords(accountId, folderId)"));
+                           QLatin1String("inquire message removal records for account and folder"));
     return QMailMessageRemovalRecordList(removalRecords);
 }
 
@@ -5182,7 +5182,7 @@ bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
     static const QString context(QLatin1String("accountstatus"));
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
                                         cref(name), cref(context), 63, false, &num),
-                                   QLatin1String("registerAccountStatusBit"));
+                                   QLatin1String("register account status bit"));
 }
 
 quint64 QMailStorePrivate::accountStatusMask(const QString &name) const
@@ -5203,7 +5203,7 @@ bool QMailStorePrivate::registerFolderStatusFlag(const QString &name)
     static const QString context(QLatin1String("folderstatus"));
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
                                         cref(name), cref(context), 63, false, &num),
-                                   QLatin1String("registerFolderStatusBit"));
+                                   QLatin1String("register folder status bit"));
 }
 
 quint64 QMailStorePrivate::folderStatusMask(const QString &name) const
@@ -5224,7 +5224,7 @@ bool QMailStorePrivate::registerMessageStatusFlag(const QString &name)
     static const QString context(QLatin1String("messagestatus"));
     return repeatedly<WriteAccess>(bind(&QMailStorePrivate::attemptRegisterStatusBit, this,
                                         cref(name), cref(context), 63, false, &num),
-                                   QLatin1String("registerMessageStatusBit"));
+                                   QLatin1String("register message status bit"));
 }
 
 quint64 QMailStorePrivate::messageStatusMask(const QString &name) const
@@ -5244,7 +5244,7 @@ quint64 QMailStorePrivate::queryStatusMap(const QString &name, const QString &co
     int result(0);
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptStatusBit, const_cast<QMailStorePrivate*>(this), 
                                 cref(name), cref(context), &result), 
-                           QLatin1String("folderStatusMask"));
+                           QLatin1String("inquire folder status mask"));
     if (result == 0)
         return 0;
 
@@ -5265,7 +5265,7 @@ QMailFolderIdList QMailStorePrivate::folderAncestorIds(const QMailFolderIdList& 
     } else {
         bool ok = repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptFolderAncestorIds, self,
                                               cref(ids), &ancestorIds), 
-                                         QLatin1String("folderAncestorIds"));
+                                         QLatin1String("inquire folder ancestor ids"));
         if (result)
             *result = ok ? Success : Failure;
     }
