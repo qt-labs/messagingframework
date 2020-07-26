@@ -333,9 +333,10 @@ static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, const
 }
 
 //  Needs an encoded word of the form =?charset?q?word?=
-static QString decodeWord(const QByteArray& encodedWord)
+//  Returns text and charset as QPair<QByteArray, QByteArray>
+static QPair<QByteArray, QByteArray> encodedText(const QByteArray& encodedWord)
 {
-    QString result;
+    QPair<QByteArray, QByteArray> result;
     int index[4];
 
     // Find the parts of the input
@@ -356,12 +357,12 @@ static QString decodeWord(const QByteArray& encodedWord)
                 if (encoding == "Q")
                 {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
-                    return codec.decode(encoded, charset);
+                    result = qMakePair(codec.decode(encoded), charset);
                 }
                 else if (encoding == "B")
                 {
                     QMailBase64Codec codec(QMailBase64Codec::Binary);
-                    return codec.decode(encoded, charset);
+                    result = qMakePair(codec.decode(encoded), charset);
                 }
             }
         }
@@ -505,42 +506,61 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     return to7BitAscii(text);
 }
 
+static void convertAndAppend(QString& str, const QByteArray& bytes, const QByteArray& charset)
+{
+    if (!bytes.isEmpty()) {
+        QTextCodec* codec = QMailCodec::codecForName(charset);
+        if (!codec) {
+            codec = QTextCodec::codecForUtfText(bytes, QMailCodec::codecForName("UTF-8"));
+        }
+        str.append(codec->toUnicode(bytes));
+    }
+}
+
 static QString decodeWordSequence(const QByteArray& str)
 {
-    QRegularExpression whitespace(QLatin1String("^\\s+$"));
-
     QString out;
+    QString latin1Str(QString::fromLatin1(str.constData(), str.length()));
+    QByteArray lastCharset;
+    QByteArray encodedBuf;
+    int pos = 0;
+    int lastPos = 0;
 
     // From RFC 2047
     // encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
     QRegularExpression encodedWord(QLatin1String("\"?=\\?[^\\s\\?]+\\?[^\\s\\?]+\\?[^\\s\\?]*\\?=\"?"));
-
-    int pos = 0;
-    int lastPos = 0;
-    QString latin1Str(QString::fromLatin1(str.constData(), str.length()));
+    QRegularExpression whitespace(QLatin1String("^\\s+$"));
     QRegularExpressionMatchIterator it = encodedWord.globalMatch(latin1Str);
-
     while (it.hasNext()) {
         QRegularExpressionMatch match = it.next();
         pos = match.capturedStart();
 
         if (pos != -1) {
-            int endPos = pos + match.capturedLength();
+            const int endPos = pos + match.capturedLength();
 
+            QPair<QByteArray, QByteArray> textAndCharset(encodedText(str.mid(pos, (endPos - pos))));
             QString preceding(QString::fromLatin1(str.mid(lastPos, (pos - lastPos))));
-            QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
 
             // If there is only whitespace between two encoded words, it should not be included
-            if (!whitespace.match(preceding).hasMatch())
-                out.append(preceding);
+            const bool precedingWhitespaceOrEmpty = (preceding.isEmpty() || whitespace.match(preceding).hasMatch());
+            if ((lastCharset.isEmpty() || lastCharset == textAndCharset.second) && precedingWhitespaceOrEmpty) {
+                encodedBuf.append(textAndCharset.first);
+            } else {
+                convertAndAppend(out, encodedBuf, textAndCharset.second);
+                if (!precedingWhitespaceOrEmpty) {
+                    out.append(preceding);
+                }
+                encodedBuf = textAndCharset.first;
+            }
 
-            out.append(decoded);
-
-            lastPos = endPos;
+            lastCharset = textAndCharset.second;
+            pos = endPos;
+            lastPos = pos;
         }
     }
 
     // Copy anything left
+    convertAndAppend(out, encodedBuf, lastCharset);
     out.append(QString::fromLatin1(str.mid(lastPos)));
     return out;
 }
