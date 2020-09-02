@@ -1964,7 +1964,8 @@ void QMailMessageHeaderFieldPrivate::setParameterEncoded(const QByteArray& name)
 static QByteArray protectedParameter(const QByteArray& value)
 {
     QRegularExpression whitespace(QLatin1String("\\s+"));
-    QRegularExpression tspecials(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=]"));
+    // See list in RFC2045: https://tools.ietf.org/html/rfc2045#page-12
+    QRegularExpression tspecials(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=/]"));
 
     if ((whitespace.match(QLatin1String(value)).hasMatch()) ||
         (tspecials.match(QLatin1String(value)).hasMatch()))

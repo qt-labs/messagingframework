@@ -574,6 +574,14 @@ void tst_QMailMessageHeaderField::setParameter()
     QVERIFY( header2.isParameterEncoded(name) == false );
     QCOMPARE( header3.parameter(name), oversize );
     QVERIFY( header3.isParameterEncoded(name) == false );
+
+    QMailMessageHeaderField header4("Content-Type: multipart/signed");
+    name = "protocol";
+    parameter = "application/pgp-signature";
+
+    header4.setParameter(name, parameter);
+    QCOMPARE( header4.toString(), QByteArray("Content-Type: multipart/signed;"
+                                             " protocol=\"application/pgp-signature\"") );
 }
 
 void tst_QMailMessageHeaderField::isParameterEncoded()
