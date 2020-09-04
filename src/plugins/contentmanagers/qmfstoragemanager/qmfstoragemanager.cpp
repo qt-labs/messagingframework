@@ -94,7 +94,7 @@ QString generateUniqueFileName(const QMailAccountId &accountId, const QString &n
 
     // Format: [name]seconds_epoch.pid.randomchars
     filename = name;
-    filename.append(QString::number(QDateTime::currentDateTime().toTime_t()));
+    filename.append(QString::number(QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000));
     filename.append('.');
     filename.append(QString::number(pid));
     filename.append('.');

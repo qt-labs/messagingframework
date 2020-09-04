@@ -4443,7 +4443,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
 
 bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void))
 {
-    QDateTime lastPerformed(QDateTime::fromTime_t(0));
+    QDateTime lastPerformed(QDateTime::fromMSecsSinceEpoch(0));
 
     {
         QString sql(QLatin1String("SELECT performed FROM maintenancerecord WHERE task=?"));
@@ -4470,7 +4470,7 @@ bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint seconds
 
         // Update the timestamp
         QString sql;
-        if (lastPerformed.toTime_t() == 0) {
+        if (lastPerformed.toMSecsSinceEpoch() == 0) {
             sql = QLatin1String("INSERT INTO maintenancerecord (performed,task) VALUES(?,?)");
         } else {
             sql = QLatin1String("UPDATE maintenancerecord SET performed=? WHERE task=?");

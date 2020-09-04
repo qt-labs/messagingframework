@@ -68,7 +68,7 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
     Q_UNUSED(rngInitialised)
 
     quint32 randomComponent(static_cast<quint32>(qrand()));
-    quint32 timeComponent(QDateTime::currentDateTime().toUTC().toTime_t());
+    quint32 timeComponent(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() / 1000);
 
     return ('<' +
             QString::number(randomComponent, 36) + 

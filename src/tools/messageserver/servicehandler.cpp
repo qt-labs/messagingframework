@@ -447,7 +447,7 @@ void markFailedMessage(QMailServerRequestType requestType, const QMailServiceAct
                     }
                 }
                 metaData.setCustomField(SendFailedTime,
-                                        QString::number(QDateTime::currentDateTimeUtc().toTime_t()));
+                                        QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() / 1000));
                 QMailStore::instance()->updateMessagesMetaData(
                             QMailMessageKey::id(status.messageId),
                             QMailMessageKey::Custom, metaData);
@@ -1142,7 +1142,7 @@ void ServiceHandler::dispatchRequest()
         ActionData data;
         data.services = request->services;
         data.completion = request->completion;
-        data.unixTimeExpiry = QDateTime::currentDateTime().toTime_t() + ExpirySeconds;
+        data.unixTimeExpiry = QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 + ExpirySeconds;
         data.reported = false;
         data.description = request->description;
         data.progressTotal = 0;
@@ -1188,13 +1188,13 @@ void ServiceHandler::updateAction(quint64 action)
         mActionExpiry.append(action);
 
         // Update the expiry time for this action
-        mActiveActions[action].unixTimeExpiry = QDateTime::currentDateTime().toTime_t() + ExpirySeconds;
+        mActiveActions[action].unixTimeExpiry = QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 + ExpirySeconds;
     }
 }
 
 void ServiceHandler::expireAction()
 {
-    uint now(QDateTime::currentDateTime().toTime_t());
+    quint64 now(QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
 
     if (!mActionExpiry.isEmpty()) {
         quint64 action = *mActionExpiry.begin();
@@ -1267,10 +1267,10 @@ void ServiceHandler::expireAction()
     QLinkedList<quint64>::iterator expiryIt(mActionExpiry.begin());
     while (expiryIt != mActionExpiry.end()) {
         if (mActiveActions.contains(*expiryIt)) {
-            uint nextExpiry(mActiveActions.value(*expiryIt).unixTimeExpiry);
+            quint64 nextExpiry(mActiveActions.value(*expiryIt).unixTimeExpiry);
 
             // miliseconds until it expires..
-            uint nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
+            quint64 nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
             QTimer::singleShot(nextShot, this, SLOT(expireAction()));
             return;
         } else {

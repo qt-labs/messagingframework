@@ -435,8 +435,7 @@ QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComp
 */
 QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
 {
-    // An invalid QDateTime does not exist-compare correctly, so use a substitute value
-    return QMailAccountKey(LastSynchronized, (value.isNull() ? QDateTime::fromTime_t(0) : value), QMailKey::comparator(cmp));
+    return QMailAccountKey(LastSynchronized, value, QMailKey::comparator(cmp));
 }
 
 /*!

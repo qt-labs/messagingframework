@@ -438,9 +438,7 @@ QMailThreadKey QMailThreadKey::countMessages(const int count, QMailDataComparato
 */
 QMailThreadKey QMailThreadKey::lastDate(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
 {
-    // An invalid QDateTime does not exist-compare correctly, so use a substitute value
-    QDateTime x(value.isNull() ? QDateTime::fromTime_t(0) : value);
-    return QMailThreadKey(LastDate, x, QMailKey::comparator(cmp));
+    return QMailThreadKey(LastDate, value, QMailKey::comparator(cmp));
 }
 
 /*!

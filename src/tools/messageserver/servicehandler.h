@@ -295,7 +295,7 @@ private:
         QMailServerRequestType description;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
-        uint unixTimeExpiry;
+        quint64 unixTimeExpiry;
         bool reported;
         // Fields for QMailActionInfo
         uint progressTotal;

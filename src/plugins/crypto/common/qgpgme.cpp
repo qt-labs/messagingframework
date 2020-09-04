@@ -413,9 +413,9 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
     while (signature) {
         gpgme_error_t sigErr = signature->status;
         QVariantMap details;
-        details.insert("creation date", QVariant(QDateTime::fromTime_t(signature->timestamp)));
+        details.insert("creation date", QVariant(QDateTime::fromMSecsSinceEpoch(qint64(signature->timestamp) * 1000)));
         if (signature->exp_timestamp)
-            details.insert("expiration date", QVariant(QDateTime::fromTime_t(signature->exp_timestamp)));
+            details.insert("expiration date", QVariant(QDateTime::fromMSecsSinceEpoch(qint64(signature->exp_timestamp) * 1000)));
         keyResults.append(QMailCryptoFwd::KeyResult(signature->fpr,
                                                     toSignatureResult(sigErr),
                                                     details));

@@ -583,7 +583,7 @@ QMailMessageKey QMailMessageKey::preview(const QStringList &values, QMailDataCom
 QMailMessageKey QMailMessageKey::timeStamp(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
 {
     // An invalid QDateTime does not exist-compare correctly, so use a substitute value
-    QDateTime x(value.isNull() ? QDateTime::fromTime_t(0) : value);
+    QDateTime x(value.isNull() ? QDateTime::fromMSecsSinceEpoch(0) : value);
     return QMailMessageKey(TimeStamp, x, QMailKey::comparator(cmp));
 }
 
@@ -605,7 +605,7 @@ QMailMessageKey QMailMessageKey::timeStamp(const QDateTime &value, QMailDataComp
 QMailMessageKey QMailMessageKey::receptionTimeStamp(const QDateTime &value, QMailDataComparator::EqualityComparator cmp)
 {
     // An invalid QDateTime does not exist-compare correctly, so use a substitute value
-    QDateTime x(value.isNull() ? QDateTime::fromTime_t(0) : value);
+    QDateTime x(value.isNull() ? QDateTime::fromMSecsSinceEpoch(0) : value);
     return QMailMessageKey(ReceptionTimeStamp, x, QMailKey::comparator(cmp));
 }
 
