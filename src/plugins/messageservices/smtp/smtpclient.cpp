@@ -43,6 +43,7 @@
 #include <QDir>
 #include <QHostInfo>
 #include <QNetworkInterface>
+#include <QRandomGenerator>
 #ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
@@ -56,18 +57,9 @@
 // Only this many bytes is queued to be sent at a time.
 #define SENDING_BUFFER_SIZE 5000
 
-static bool initialiseRng()
-{
-    qsrand(QDateTime::currentDateTime().toUTC().toTime_t());
-    return true;
-}
-
 static QByteArray messageId(const QByteArray& domainName, quint32 addressComponent)
 {
-    static bool rngInitialised(initialiseRng());
-    Q_UNUSED(rngInitialised)
-
-    quint32 randomComponent(static_cast<quint32>(qrand()));
+    quint32 randomComponent(QRandomGenerator::global()->generate());
     quint32 timeComponent(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() / 1000);
 
     return ('<' +

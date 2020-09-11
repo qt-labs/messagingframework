@@ -52,6 +52,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qregexp.h>
+#include <QRandomGenerator>
 #include <qtextstream.h>
 #include <qtextcodec.h>
 #include <QTextCodec>
@@ -6301,6 +6302,11 @@ void QMailMessagePart::setReferenceResolution(const QString &uri)
     impl(this)->setReferenceResolution(uri);
 }
 
+static int randomNumber()
+{
+    return QRandomGenerator::global()->generate();
+}
+
 static QString randomString(int length)
 {
     if (length <= 0) 
@@ -6311,7 +6317,7 @@ static QString randomString(int length)
 
     int i = 0;
     while (length--){
-        int r=qrand() % 62;
+        int r=randomNumber() % 62;
         r+=48;
         if (r>57) r+=7;
         if (r>90) r+=6;
@@ -7933,25 +7939,6 @@ uint QMailMessagePrivate::indicativeSize() const
 
     // Count the message header as one size unit
     return (size + 1);
-}
-
-static uint currentTimeValue()
-{
-    return QDateTime::currentDateTime().toTime_t();
-}
-
-static bool seedRng()
-{
-    qsrand(currentTimeValue());
-    return true;
-}
-
-static int randomNumber()
-{
-    static bool initialised = seedRng();
-    Q_UNUSED(initialised)
-
-    return qrand();
 }
 
 static QByteArray gBoundaryString;
