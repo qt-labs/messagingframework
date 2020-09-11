@@ -86,7 +86,7 @@ IntegerRegion::IntegerRegion(const QString &uidString)
 {
     // Performance note currently O(n^2), n = uids.count()
     // TODO: sort uids in uidString if they are not already sorted
-    QStringList rangeList = uidString.split(",", QString::SkipEmptyParts);
+    QStringList rangeList = uidString.split(",", Qt::SkipEmptyParts);
     foreach(const QString &s, rangeList) {
         bool ok = false;
         int index = s.indexOf(":");

@@ -408,10 +408,10 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QStringList capabilities = temp.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
+        QStringList capabilities = temp.mid(12).trimmed().split(' ', Qt::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     } else if (line.indexOf("* CAPABILITY ", 0) != -1) {
-        QStringList capabilities = line.mid(13).trimmed().split(' ', QString::SkipEmptyParts);
+        QStringList capabilities = line.mid(13).trimmed().split(' ', Qt::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     }
 
@@ -517,7 +517,7 @@ void CapabilityState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QStringList capabilities;
     if (line.startsWith(QLatin1String("* CAPABILITY"))) {
-        capabilities = line.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
+        capabilities = line.mid(12).trimmed().split(' ', Qt::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     } else {
         ImapState::untaggedResponse(c, line);
@@ -607,7 +607,7 @@ void LoginState::taggedResponse(ImapContext *c, const QString &line)
     if (line.indexOf("[CAPABILITY", Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QStringList capabilities = temp.mid(12).trimmed().split(' ', QString::SkipEmptyParts);
+        QStringList capabilities = temp.mid(12).trimmed().split(' ', Qt::SkipEmptyParts);
         c->protocol()->setCapabilities(capabilities);
     }
 
@@ -1400,7 +1400,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("PERMANENTFLAGS", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '(', ')', &start);
-        c->setPermanentFlags(temp.split(' ', QString::SkipEmptyParts));
+        c->setPermanentFlags(temp.split(' ', Qt::SkipEmptyParts));
     } else if (line.indexOf("EXPUNGE", 0, Qt::CaseInsensitive) != -1) {
         quint32 exists = c->exists();
         if (exists > 0) {

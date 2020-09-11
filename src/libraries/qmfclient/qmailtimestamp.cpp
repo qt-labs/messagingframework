@@ -120,7 +120,7 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
 
     // Extract the date/time elements
     uncommented = uncommented.trimmed();
-    QStringList tokens = uncommented.split(QChar::Space, QString::SkipEmptyParts);
+    QStringList tokens = uncommented.split(QChar::Space, Qt::SkipEmptyParts);
 
     int tokenCount = tokens.count();
     if ( tokenCount > 0 ) {

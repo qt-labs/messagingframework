@@ -112,7 +112,7 @@ QString ImapConfiguration::baseFolder() const
 
 QStringList ImapConfiguration::pushFolders() const
 {
-    return value("pushFolders").split(QChar('\x0A'), QString::SkipEmptyParts);
+    return value("pushFolders").split(QChar('\x0A'), Qt::SkipEmptyParts);
 }
 
 int ImapConfiguration::checkInterval() const
@@ -127,7 +127,7 @@ bool ImapConfiguration::intervalCheckRoamingEnabled() const
 
 QStringList ImapConfiguration::capabilities() const
 {
-    return value("capabilities").split(QChar(' '), QString::SkipEmptyParts);
+    return value("capabilities").split(QChar(' '), Qt::SkipEmptyParts);
 }
 
 void ImapConfiguration::setCapabilities(const QStringList &s)
