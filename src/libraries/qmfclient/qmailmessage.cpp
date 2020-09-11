@@ -51,7 +51,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
-#include <qregexp.h>
+#include <QRegularExpression>
 #include <QRandomGenerator>
 #include <qtextstream.h>
 #include <qtextcodec.h>
@@ -504,34 +504,36 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
 
 static QString decodeWordSequence(const QByteArray& str)
 {
-    QRegExp whitespace(QLatin1String("^\\s+$"));
+    QRegularExpression whitespace(QLatin1String("^\\s+$"));
 
     QString out;
 
     // From RFC 2047
     // encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
-    QRegExp encodedWord(QLatin1String("\"?=\\?[^\\s\\?]+\\?[^\\s\\?]+\\?[^\\s\\?]*\\?=\"?"));
+    QRegularExpression encodedWord(QLatin1String("\"?=\\?[^\\s\\?]+\\?[^\\s\\?]+\\?[^\\s\\?]*\\?=\"?"));
 
     int pos = 0;
     int lastPos = 0;
     QString latin1Str(QString::fromLatin1(str.constData(), str.length()));
+    QRegularExpressionMatchIterator it = encodedWord.globalMatch(latin1Str);
 
-    while (pos != -1) {
-        pos = encodedWord.indexIn(latin1Str, pos);
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        pos = match.capturedStart();
+
         if (pos != -1) {
-            int endPos = pos + encodedWord.matchedLength();
+            int endPos = pos + match.capturedLength();
 
             QString preceding(QString::fromLatin1(str.mid(lastPos, (pos - lastPos))));
             QString decoded = decodeWord(str.mid(pos, (endPos - pos)));
 
             // If there is only whitespace between two encoded words, it should not be included
-            if (!whitespace.exactMatch(preceding))
+            if (!whitespace.match(preceding).hasMatch())
                 out.append(preceding);
 
             out.append(decoded);
 
-            pos = endPos;
-            lastPos = pos;
+            lastPos = endPos;
         }
     }
 
@@ -747,9 +749,10 @@ static QString decodeParameterText(const QByteArray& text, const QByteArray& cha
 //  Needs an encoded parameter of the form charset'language'text
 static QString decodeParameter(const QByteArray& encodedParameter)
 {
-    QRegExp parameterFormat(QLatin1String("([^']*)'(?:[^']*)'(.*)"));
-    if (parameterFormat.exactMatch(encodedParameter))
-        return decodeParameterText(parameterFormat.cap(2).toLatin1(), parameterFormat.cap(1).toLatin1());
+    QRegularExpressionMatch parameterFormat =
+        QRegularExpression(QLatin1String("^([^']*)'(?:[^']*)'(.*)$")).match(QLatin1String(encodedParameter));
+    if (parameterFormat.hasMatch())
+        return decodeParameterText(parameterFormat.captured(2).toLatin1(), parameterFormat.captured(1).toLatin1());
 
     // Treat the whole thing as input, and deafult the charset to ascii
     // This is not required by the RFC, since the input is illegal.  But, it 
@@ -1636,13 +1639,14 @@ QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray&
 static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
 {
     // Extensions according to RFC 2231:
-    QRegExp extensionFormat(QLatin1String("(?:\\*(\\d+))?(\\*?)"));
-    if (extensionFormat.exactMatch(trailer))
+    QRegularExpressionMatch extensionFormat =
+        QRegularExpression(QLatin1String("^(?:\\*(\\d+))?(\\*?)$")).match(QLatin1String(trailer));
+    if (extensionFormat.hasMatch())
     {
         if (number)
-            *number = extensionFormat.cap(1).toInt();
+            *number = extensionFormat.captured(1).toInt();
         if (encoded)
-            *encoded = !extensionFormat.cap(2).isEmpty();
+            *encoded = !extensionFormat.captured(2).isEmpty();
 
         return true;
     }
@@ -1956,11 +1960,11 @@ void QMailMessageHeaderFieldPrivate::setParameterEncoded(const QByteArray& name)
 
 static QByteArray protectedParameter(const QByteArray& value)
 {
-    QRegExp whitespace(QLatin1String("\\s+"));
-    QRegExp tspecials = QRegExp(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=]"));
+    QRegularExpression whitespace(QLatin1String("\\s+"));
+    QRegularExpression tspecials(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=]"));
 
-    if ((whitespace.indexIn(value) != -1) ||
-        (tspecials.indexIn(value) != -1))
+    if ((whitespace.match(QLatin1String(value)).hasMatch()) ||
+        (tspecials.match(QLatin1String(value)).hasMatch()))
         return QMail::quoteString(value);
     else
         return value;
@@ -2029,8 +2033,8 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
 {
     const int maxHeaderLength(10000);
     QByteArray text(inText);
-    QRegExp whitespace(QLatin1String("\\s"));
-    QRegExp syntacticBreak(QLatin1String(";|,"));
+    QRegularExpression whitespace(QLatin1String("\\s"));
+    QRegularExpression syntacticBreak(QLatin1String(";|,"));
 
     if (text.length() > maxHeaderLength) {
         qWarning() << "Maximum header length exceeded, truncating mail header";
@@ -2049,6 +2053,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
             int lastIndex = -1;
             int preferredIndex = -1;
             bool syntacticBreakUsed = false;
+            QRegularExpressionMatchIterator it = whitespace.globalMatch(QLatin1String(text));
             do {
                 lastIndex = wsIndex;
                 if ((lastIndex > 0) 
@@ -2057,7 +2062,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
                     preferredIndex = lastIndex;
                 }
 
-                wsIndex = whitespace.indexIn(text, wsIndex + 1);
+                wsIndex = it.hasNext() ? it.next().capturedStart() : -1;
             } while ((wsIndex != -1) && (wsIndex < remaining));
 
             if (preferredIndex != -1)
@@ -2068,9 +2073,10 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
                 // allow a maximum of 998 characters excl CRLF on a line without white space
                 remaining = 997 - *lineLength;
                 int syntacticIn = -1;
+                it = syntacticBreak.globalMatch(QLatin1String(text));
                 do {
                     lastIndex = syntacticIn;
-                    syntacticIn = syntacticBreak.indexIn(text, syntacticIn + 1);
+                    syntacticIn = it.hasNext() ? it.next().capturedStart() : -1;
                 } while ((syntacticIn != -1) && (syntacticIn < remaining - 1));
 
                 if (lastIndex != -1) {
@@ -8703,8 +8709,8 @@ static QString htmlToPlainText(const QString &html)
     return doc.toPlainText();
 #else
     QString plainText = html;
-    plainText.remove(QRegExp(QLatin1String("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>"), Qt::CaseInsensitive));
-    plainText.remove(QRegExp(QLatin1String("<(.)[^>]*>")));
+    plainText.remove(QRegularExpression(QLatin1String("<\\s*(style|head|form|script)[^<]*<\\s*/\\s*\\1\\s*>"), QRegularExpression::CaseInsensitiveOption));
+    plainText.remove(QRegularExpression(QLatin1String("<(.)[^>]*>")));
     plainText.replace(QLatin1String("&quot;"), QLatin1String("\""), Qt::CaseInsensitive);
     plainText.replace(QLatin1String("&nbsp;"), QLatin1String(" "), Qt::CaseInsensitive);
     plainText.replace(QLatin1String("&amp;"), QLatin1String("&"), Qt::CaseInsensitive);

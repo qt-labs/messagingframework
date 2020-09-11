@@ -38,6 +38,7 @@
 #include <QtTest>
 #include <QObject>
 #include <QFile>
+#include <QRegularExpression>
 
 #ifndef _FILE_OFFSET_BITS
 #define _FILE_OFFSET_BITS 64
@@ -387,7 +388,7 @@ void tst_Crypto::sign()
 
     // Check signed message output.
     // Replace the random boundary strings with a fixed one for comparison.
-    QRegExp rx("qmf:[^=]+==");
+    QRegularExpression rx("qmf:[^=]+==");
     QString signedMsg = QString(msg.toRfc2822());
     signedMsg.replace(rx, "testingtestingtesting");
     QFile f2(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),

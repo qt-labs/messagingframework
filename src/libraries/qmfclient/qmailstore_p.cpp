@@ -46,6 +46,7 @@
 #include <QSqlRecord>
 #include <QTextCodec>
 #include <QThread>
+#include <QRegularExpression>
 
 #if defined(Q_OS_LINUX)
 #include <malloc.h>
@@ -1683,9 +1684,10 @@ QMap<int, QMap<QString, int> > MessageRemovalRecord::_fieldIndex;
 
 static QString incrementAlias(const QString &alias)
 {
-    QRegExp aliasPattern(QLatin1String("([a-z]+)([0-9]+)"));
-    if (aliasPattern.exactMatch(alias)) {
-        return aliasPattern.cap(1) + QString::number(aliasPattern.cap(2).toInt() + 1);
+    QRegularExpressionMatch aliasPattern =
+      QRegularExpression(QLatin1String("^([a-z]+)([0-9]+)$")).match(alias);
+    if (aliasPattern.hasMatch()) {
+        return aliasPattern.captured(1) + QString::number(aliasPattern.captured(2).toInt() + 1);
     }
 
     return QString();

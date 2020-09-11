@@ -36,6 +36,7 @@
 #include <private/longstream_p.h>
 #include <ctype.h>
 #include <QDir>
+#include <QRegularExpression>
 
 /*
     This class primarily tests that LongStream class correctly stores messages.
@@ -68,7 +69,7 @@ void tst_LongStream::test_new_stream()
 
     QString filename = ls.fileName();
     QVERIFY(filename.indexOf("longstream") != -1);
-    QVERIFY(filename.indexOf(QRegExp("longstream\\.\\S{6,6}$")) != -1);
+    QVERIFY(filename.indexOf(QRegularExpression("longstream\\.\\S{6,6}$")) != -1);
 
     // new data
     QString data("This is a new message to be stored in LongStream for testing purpose."

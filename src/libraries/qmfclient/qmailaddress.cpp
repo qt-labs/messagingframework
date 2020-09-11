@@ -36,11 +36,13 @@
 #include "qmailmessage.h"
 #include "qmailnamespace.h"
 
+#include <QRegularExpression>
+
 namespace {
 
 static bool needsQuotes(const QString& src)
 {
-    QRegExp specials(QLatin1String("[<>\\[\\]:;@\\\\,.]"));
+    QRegularExpression specials(QLatin1String("[<>\\[\\]:;@\\\\,.]"));
 
     QString characters(src);
 
@@ -49,7 +51,7 @@ static bool needsQuotes(const QString& src)
     while ((index = characters.indexOf(QChar::fromLatin1('\\'), index)) != -1)
         characters.remove(index, 2);
 
-    if ( specials.indexIn( characters ) != -1 )
+    if ( specials.match( characters ).hasMatch() )
         return true;
 
     // '(' and ')' also need quoting, if they don't conform to nested comments
@@ -303,14 +305,14 @@ void AddressListGenerator::complete(TokenType type, bool hardSeparator)
             // We need to know what type of token this is
 
             // Test whether the token is a suffix
-            QRegExp suffixPattern(QLatin1String("\\s*/TYPE=.*"));
-            if (suffixPattern.exactMatch(_partial)) {
+            QRegularExpression suffixPattern(QLatin1String("^\\s*/TYPE=.*$"));
+            if (suffixPattern.match(_partial).hasMatch()) {
                 type = Suffix;
             } 
             else {
                 // See if the token is a bare email address; otherwise it must be a name element
-                QRegExp emailPattern(QMailAddress::emailAddressPattern());
-                type = (emailPattern.exactMatch(_partial.trimmed()) ? Address : Name);
+                QRegularExpression emailPattern(QLatin1String("^") + QMailAddress::emailAddressPattern() + QLatin1String("$"));
+                type = (emailPattern.match(_partial.trimmed()).hasMatch() ? Address : Name);
             }
         }
 
@@ -712,11 +714,11 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
         // See whether this address is a group
         if (containsGroupSpecifier(input))
         {
-            QRegExp groupFormat(QLatin1String("(.*):(.*);"));
-            if (groupFormat.indexIn(input) != -1)
+            QRegularExpressionMatch match = QRegularExpression(QLatin1String("(.*):(.*);")).match(input);
+            if (match.hasMatch())
             {
-                _name = groupFormat.cap(1).trimmed();
-                _address = groupFormat.cap(2).trimmed();
+                _name = match.captured(1).trimmed();
+                _address = match.captured(2).trimmed();
                 _group = true;
             }
         }
@@ -810,26 +812,26 @@ QString QMailAddressPrivate::name() const
 
 bool QMailAddressPrivate::isPhoneNumber() const
 {
-    QRegExp pattern(QMailAddress::phoneNumberPattern());
-    return pattern.exactMatch(_address);
+    QRegularExpression pattern(QLatin1String("^") + QMailAddress::phoneNumberPattern() + QLatin1String("$"));
+    return pattern.match(_address).hasMatch();
 }
 
 bool QMailAddressPrivate::isEmailAddress() const
 {
-    QRegExp pattern(QMailAddress::emailAddressPattern());
-    return pattern.exactMatch(QMailAddress::removeWhitespace(QMailAddress::removeComments(_address)));
+    QRegularExpression pattern(QLatin1String("^") + QMailAddress::emailAddressPattern() + QLatin1String("$"));
+    return pattern.match(QMailAddress::removeWhitespace(QMailAddress::removeComments(_address))).hasMatch();
 }
 
 QString QMailAddressPrivate::minimalPhoneNumber() const
 {
-    QRegExp nondiallingChars(QLatin1String("[^\\d,xpwXPW\\+\\*#]"));
+    QRegularExpression nondiallingChars(QLatin1String("[^\\d,xpwXPW\\+\\*#]"));
 
     // Remove any characters which don't affect dialing
     QString minimal(_address);
     minimal.remove(nondiallingChars);
 
     // Convert any 'p' or 'x' to comma
-    minimal.replace(QRegExp(QLatin1String("[xpXP]")), QLatin1String(","));
+    minimal.replace(QRegularExpression(QLatin1String("[xpXP]")), QLatin1String(","));
 
     // Ensure any permitted alphabetical chars are lower-case
     return minimal.toLower();

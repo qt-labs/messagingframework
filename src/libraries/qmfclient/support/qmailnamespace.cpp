@@ -38,7 +38,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QMutex>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QThreadStorage>
 #include <stdio.h>
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
@@ -464,32 +464,36 @@ QStringList QMail::extensionsForMimeType(const QString& mimeType)
 QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
 {
     // Implements the conversion from subject to 'base subject' defined by RFC 5256
-    int pos = 0;
     QString result(subject);
 
     bool repeat = false;
     do {
-        repeat = false;
-
         // Remove any subj-trailer
-        QRegExp subjTrailer(QLatin1String("(?:"
+        QRegularExpression subjTrailer(QLatin1String("(?:"
                                 "[ \\t]+"               // WSP
                             "|"
                                 "(\\([Ff][Ww][Dd]\\))"    // "(fwd)"
                             ")$"));
-        while ((pos = subjTrailer.indexIn(result)) != -1) {
-            if (!subjTrailer.cap(1).isEmpty()) {
-                *replyOrForward = true;
+        repeat = false;
+        do {
+            QRegularExpressionMatch match = subjTrailer.match(result);
+            if (match.hasMatch()) {
+                if (!match.captured(1).isEmpty()) {
+                    *replyOrForward = true;
+                }
+                result = result.left(match.capturedStart());
+                repeat = true;
+            } else {
+                repeat = false;
             }
-            result = result.left(pos);
-        }
+        } while (repeat);
 
         bool modified = false;
         do {
             modified = false;
 
             // Remove any subj-leader
-            QRegExp subjLeader(QLatin1String("^(?:"
+            QRegularExpression subjLeader(QLatin1String("^(?:"
                                     "[ \\t]+"       // WSP
                                "|"
                                     "(?:\\[[^\\[\\]]*\\][ \\t]*)*"        // ( '[' 'blobchar'* ']' WSP* )*
@@ -497,28 +501,39 @@ QString QMail::baseSubject(const QString& subject, bool *replyOrForward)
                                     "(?:\\[[^\\[\\]]*\\][ \\t]*)?"        // optional: ( '[' 'blobchar'* ']' WSP* )
                                     ":"                                 // ':'
                                ")"));
-            while ((pos = subjLeader.indexIn(result)) == 0) {
-                if (!subjLeader.cap(1).isEmpty()) {
-                    *replyOrForward = true;
+            repeat = false;
+            do {
+                QRegularExpressionMatch match = subjLeader.match(result);
+                if (match.hasMatch()) {
+                    if (!match.captured(1).isEmpty()) {
+                        *replyOrForward = true;
+                    }
+                    result = result.mid(match.capturedLength());
+                    modified = true;
+                    repeat = true;
+                } else {
+                    repeat = false;
                 }
-                result = result.mid(subjLeader.cap(0).length());
-                modified = true;
-            }
+            } while (repeat);
 
             // Remove subj-blob, if there would be a remainder
-            QRegExp subjBlob(QLatin1String("^(\\[[^\\[\\]]*\\][ \\t]*)"));  // '[' 'blobchar'* ']' WSP*
-            if ((subjBlob.indexIn(result) == 0) && (subjBlob.cap(0).length() < result.length())) {
-                result = result.mid(subjBlob.cap(0).length());
+            QRegularExpression subjBlob(QLatin1String("^(\\[[^\\[\\]]*\\][ \\t]*)"));  // '[' 'blobchar'* ']' WSP*
+            QRegularExpressionMatch match = subjBlob.match(result);
+            if (match.hasMatch() && (match.captured().length() < result.length())) {
+                result = result.mid(match.captured().length());
                 modified = true;
             }
         } while (modified);
 
         // Remove subj-fwd-hdr and subj-fwd-trl if both are present
-        QRegExp subjFwdHdr(QLatin1String("^\\[[Ff][Ww][Dd]:"));
-        QRegExp subjFwdTrl(QLatin1String("\\]$"));
-        if ((subjFwdHdr.indexIn(result) == 0) && (subjFwdTrl.indexIn(result) != -1)) {
+        QRegularExpressionMatch subjFwdHdr =
+            QRegularExpression(QLatin1String("^\\[[Ff][Ww][Dd]:")).match(result);
+        QRegularExpressionMatch subjFwdTrl =
+            QRegularExpression(QLatin1String("\\]$")).match(result);
+        repeat = false;
+        if (subjFwdHdr.hasMatch() && subjFwdTrl.hasMatch()) {
             *replyOrForward = true;
-            result = result.mid(subjFwdHdr.cap(0).length(), result.length() - (subjFwdHdr.cap(0).length() + subjFwdTrl.cap(0).length()));
+            result = result.mid(subjFwdHdr.captured().length(), result.length() - (subjFwdHdr.captured().length() + subjFwdTrl.captured().length()));
             repeat = true;
         }
     } while (repeat);
@@ -554,7 +569,7 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
     QStringList result;
     QString str(aStr.left(1000)); // Handle long strings quickly
 
-    QRegExp identifierPattern(QLatin1String("("
+    QRegularExpression identifierPattern(QLatin1String("("
                                 "(?:[ \\t]*)"           // Optional leading whitespace
                                 "[^ \\t\\<\\>@]+"       // Leading part
                                 "(?:[ \\t]*)"           // Optional whitespace allowed before '@'?
@@ -569,9 +584,10 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
         // This may contain other information besides the IDs delimited by < and >
         do {
             // Extract only the delimited content
-            if (str.indexOf(identifierPattern, index + 1) == (index + 1)) {
-                result.append(normaliseIdentifier(identifierPattern.cap(1)));
-                index += identifierPattern.cap(0).length();
+            QRegularExpressionMatch match = identifierPattern.match(str, index + 1);
+            if (match.hasMatch()) {
+                result.append(normaliseIdentifier(match.captured(1)));
+                index += match.capturedLength();
             } else {
                 index += 1;
             }
@@ -580,8 +596,9 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
         } while (index != -1);
     } else {
         // No delimiters - consider the entirety as an identifier
-        if (str.indexOf(identifierPattern) != -1) {
-            result.append(normaliseIdentifier(identifierPattern.cap(1)));
+        QRegularExpressionMatch match = identifierPattern.match(str);
+        if (match.hasMatch()) {
+            result.append(normaliseIdentifier(match.captured(1)));
         }
     }
 

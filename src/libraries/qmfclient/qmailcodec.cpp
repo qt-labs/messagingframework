@@ -39,6 +39,7 @@
 #endif
 
 #include <QIODevice>
+#include <QRegularExpression>
 #include <QTextCodec>
 #include <QtDebug>
 #include <ctype.h>
@@ -1387,31 +1388,25 @@ QString QMailCodec::encodeModifiedUtf7(const QString &text)
 */
 QString QMailCodec::decodeModifiedUtf7(const QString &text)
 {
-    QString in = text;
-    QRegExp reg(QLatin1String("&[^&-]*-"));
+    QString out;
+    QRegularExpression reg(QLatin1String("&[^&-]*-"));
+    QRegularExpressionMatchIterator it = reg.globalMatch(text);
 
     int startIndex = 0;
     int endIndex = 0;
 
-    startIndex = in.indexOf(reg,endIndex);
-    while (startIndex != -1) {
-        endIndex = startIndex;
-        while (endIndex < in.length() && in[endIndex] != '-')
-            endIndex++;
-        endIndex++;
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        startIndex = match.capturedStart();
+        out.append(text.mid(endIndex, startIndex - endIndex));
 
         //extract the base64 string from the input string
-        QString mbase64 = in.mid(startIndex,(endIndex - startIndex));
-        QString unicodeString = decodeModifiedBase64(mbase64);
+        out.append(decodeModifiedBase64(match.captured()));
 
-        //remove encoding
-        in.remove(startIndex,(endIndex-startIndex));
-        in.insert(startIndex,unicodeString);
-
-        endIndex = startIndex + unicodeString.length();
-        startIndex = in.indexOf(reg,endIndex);
+        endIndex = match.capturedEnd();
     }
+    out.append(text.mid(endIndex));
 
-    return in;
+    return out;
 }
 
