@@ -110,6 +110,7 @@ public:
                const QMailMessageId &messageId);
 
         Status(const Status &other);
+        Status& operator=(const Status& other);
 
         template <typename Stream> void serialize(Stream &stream) const;
         template <typename Stream> void deserialize(Stream &stream);

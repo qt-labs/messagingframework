@@ -485,6 +485,16 @@ QMailServiceAction::Status::Status(const QMailServiceAction::Status &other)
 {
 }
 
+QMailServiceAction::Status& QMailServiceAction::Status::operator=(const QMailServiceAction::Status &other)
+{
+    errorCode = other.errorCode;
+    text = other.text;
+    accountId = other.accountId;
+    folderId = other.folderId;
+    messageId = other.messageId;
+    return *this;
+}
+
 /*! 
     \fn QMailServiceAction::Status::serialize(Stream&) const
     \internal 
