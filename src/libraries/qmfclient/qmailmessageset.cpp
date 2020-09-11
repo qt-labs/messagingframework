@@ -958,7 +958,7 @@ void QMailFilterMessageSet::messagesAdded(const QMailMessageIdList &ids)
         QMailMessageIdList matchingIds = QMailStore::instance()->queryMessages(key & idFilter);
         if (!matchingIds.isEmpty()) {
             // Our filtered message set has changed
-            impl(this)->_messageIds.unite(QSet<QMailMessageId>::fromList(matchingIds));
+            impl(this)->_messageIds.unite(QSet<QMailMessageId>(matchingIds.constBegin(), matchingIds.constEnd()));
             update(this);
         }
     }
@@ -969,7 +969,7 @@ void QMailFilterMessageSet::messagesRemoved(const QMailMessageIdList &ids)
 {
     QSet<QMailMessageId>& _messageIds = impl(this)->_messageIds;
     if (!_messageIds.isEmpty()) {
-        QSet<QMailMessageId> removedIds = QSet<QMailMessageId>::fromList(ids);
+        QSet<QMailMessageId> removedIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
         // See if any of these messages are in our set
         removedIds.intersect(_messageIds);
@@ -986,11 +986,12 @@ void QMailFilterMessageSet::messagesUpdated(const QMailMessageIdList &ids)
     QMailMessageKey key(messageKey());
     if (!key.isNonMatching()) {
         QSet<QMailMessageId>& _messageIds = impl(this)->_messageIds;
-        QSet<QMailMessageId> updatedIds = QSet<QMailMessageId>::fromList(ids);
+        QSet<QMailMessageId> updatedIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
         // Find which of the updated messages should be in our set
         QMailMessageKey idFilter(QMailMessageKey::id(ids));
-        QSet<QMailMessageId> matchingIds = QSet<QMailMessageId>::fromList(QMailStore::instance()->queryMessages(key & idFilter));
+        const QMailMessageIdList filteredIds = QMailStore::instance()->queryMessages(key & idFilter);
+        QSet<QMailMessageId> matchingIds = QSet<QMailMessageId>(filteredIds.constBegin(), filteredIds.constEnd());
 
         QSet<QMailMessageId> presentIds = updatedIds;
         QSet<QMailMessageId> absentIds = updatedIds;
@@ -1037,7 +1038,8 @@ void QMailFilterMessageSet::folderContentsModified(const QMailFolderIdList &)
 void QMailFilterMessageSet::resyncState()
 {
     if (impl(this)->_minimized) {
-        impl(this)->_messageIds = QSet<QMailMessageId>::fromList(QMailStore::instance()->queryMessages(messageKey()));
+        const QMailMessageIdList ids = QMailStore::instance()->queryMessages(messageKey());
+        impl(this)->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
     } else {
         impl(this)->_messageIds.clear();
     }
@@ -1057,7 +1059,8 @@ void QMailFilterMessageSet::reset()
     if (impl(this)->_minimized) {
         disconnect(model(), SIGNAL(folderContentsModified(QMailFolderIdList)), this, SLOT(folderContentsModified(QMailFolderIdList)));
 
-        impl(this)->_messageIds = QSet<QMailMessageId>::fromList(QMailStore::instance()->queryMessages(messageKey()));
+        const QMailMessageIdList ids = QMailStore::instance()->queryMessages(messageKey());
+        impl(this)->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
         connect(model(), SIGNAL(messagesAdded(QMailMessageIdList)), this, SLOT(messagesAdded(QMailMessageIdList)));
         connect(model(), SIGNAL(messagesRemoved(QMailMessageIdList)), this, SLOT(messagesRemoved(QMailMessageIdList)));

@@ -528,12 +528,13 @@ bool QMailMessageThreadedModelPrivate::processMessagesUpdated(const QMailMessage
 
 bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &ids)
 {
-    QSet<QMailMessageId> existingIds(_currentIds.toSet());
+    QSet<QMailMessageId> existingIds(_currentIds.constBegin(), _currentIds.constEnd());
+    existingIds.unite(QSet<QMailMessageId>(ids.constBegin(), ids.constEnd()));
 
-    QMailMessageKey idKey(QMailMessageKey::id((existingIds + ids.toSet()).toList()));
+    QMailMessageKey idKey(QMailMessageKey::id(existingIds.values()));
     QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
 
-    QSet<QMailMessageId> currentIds(newIds.toSet());
+    QSet<QMailMessageId> currentIds(newIds.constBegin(), newIds.constEnd());
 
     // Find which of the messages we must add and remove
     QMailMessageIdList additionIds;
@@ -633,7 +634,10 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
     removeMessages(temporaryRemovalIds, &readditionIds);
 
     // Find the locations for the added and reinserted messages
-    addMessages((additionIds.toSet() + temporaryRemovalIds.toSet() + readditionIds.toSet()).toList());
+    QSet<QMailMessageId> uniqueIds(additionIds.constBegin(), additionIds.constEnd());
+    uniqueIds.unite(QSet<QMailMessageId>(temporaryRemovalIds.constBegin(), temporaryRemovalIds.constEnd()));
+    uniqueIds.unite(QSet<QMailMessageId>(readditionIds.constBegin(), readditionIds.constEnd()));
+    addMessages(uniqueIds.values());
 
     return true;
 }
@@ -705,7 +709,7 @@ bool QMailMessageThreadedModelPrivate::removeMessages(const QMailMessageIdList &
     }
     
     if (readditions) {
-        *readditions = childIds.toList();
+        *readditions = childIds.values();
     }
 
     return true;

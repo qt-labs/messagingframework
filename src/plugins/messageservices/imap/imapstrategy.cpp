@@ -347,13 +347,15 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
                     if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
                         Q_ASSERT(arg.valueList.count() == 1);
                         Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
-                        included.unite(QMailStore::instance()->queryFolders(
-                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>())).toSet());
+                        const auto ancestorFolders = QMailStore::instance()->queryFolders(
+                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>()));
+                        included.unite(QSet<QMailFolderId>(ancestorFolders.constBegin(), ancestorFolders.constEnd()));
                     } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
                         Q_ASSERT(arg.valueList.count() == 1);
                         Q_ASSERT(arg.valueList[0].canConvert<QMailFolderId>());
-                        excluded.unite(QMailStore::instance()->queryFolders(
-                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>())).toSet());
+                        const auto ancestorFolders = QMailStore::instance()->queryFolders(
+                                QMailFolderKey::ancestorFolderIds(arg.valueList[0].value<QMailFolderId>()));
+                        excluded.unite(QSet<QMailFolderId>(ancestorFolders.constBegin(), ancestorFolders.constEnd()));
                     } else {
                         Q_ASSERT(false);
                     }
@@ -363,13 +365,15 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
                     if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
                         Q_ASSERT(arg.valueList.count() == 1);
                         Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
-                        included.unite(QMailStore::instance()->queryFolders(
-                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>())).toSet());
+                        const auto parentAccountFolders = QMailStore::instance()->queryFolders(
+                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>()));
+                        included.unite(QSet<QMailFolderId>(parentAccountFolders.constBegin(), parentAccountFolders.constEnd()));
                     } else if (arg.op == QMailKey::NotEqual || arg.op == QMailKey::Excludes) {
                         Q_ASSERT(arg.valueList.count() == 1);
                         Q_ASSERT(arg.valueList[0].canConvert<QMailAccountId>());
-                        excluded.unite(QMailStore::instance()->queryFolders(
-                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>())).toSet());
+                        const auto parentAccountFolders = QMailStore::instance()->queryFolders(
+                                QMailFolderKey::parentAccountId(arg.valueList[0].value<QMailAccountId>()));
+                        excluded.unite(QSet<QMailFolderId>(parentAccountFolders.constBegin(), parentAccountFolders.constEnd()));
                     } else {
                         Q_ASSERT(false);
                     }
@@ -1954,9 +1958,9 @@ void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *con
         _limit = -1;
         _count = false;
     } else {
-        QSet<QMailFolderId> accountFolders(_mailboxList.toSet());
+        QSet<QMailFolderId> accountFolders(_mailboxList.constBegin(), _mailboxList.constEnd());
 
-        QMailFolderIdList foldersToSearch(foldersApplicableTo(_searches.first().criteria, accountFolders).toList());
+        QMailFolderIdList foldersToSearch(foldersApplicableTo(_searches.first().criteria, accountFolders).values());
 
         if (foldersToSearch.isEmpty()) {
             ImapRetrieveFolderListStrategy::folderListCompleted(context);

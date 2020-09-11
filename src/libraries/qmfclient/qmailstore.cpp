@@ -1232,7 +1232,8 @@ void QMailStore::emitAccountNotification(ChangeType type, const QMailAccountIdLi
     Q_ASSERT(!ids.contains(QMailAccountId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
-        QMailAccountIdList idList(ids.toSet().toList());
+        const QSet<QMailAccountId> uids(ids.constBegin(), ids.constEnd());
+        QMailAccountIdList idList(uids.constBegin(), uids.constEnd());
 
         d->notifyAccountsChange(type, idList);
 
@@ -1262,7 +1263,8 @@ void QMailStore::emitFolderNotification(ChangeType type, const QMailFolderIdList
     Q_ASSERT(!ids.contains(QMailFolderId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
-        QMailFolderIdList idList(ids.toSet().toList());
+        const QSet<QMailFolderId> uids(ids.constBegin(), ids.constEnd());
+        QMailFolderIdList idList(uids.constBegin(), uids.constEnd());
 
         d->notifyFoldersChange(type, idList);
 
@@ -1292,7 +1294,8 @@ void QMailStore::emitThreadNotification(ChangeType type, const QMailThreadIdList
     Q_ASSERT(!ids.contains(QMailThreadId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
-        QMailThreadIdList idList(ids.toSet().toList());
+        const QSet<QMailThreadId> uids(ids.constBegin(), ids.constEnd());
+        QMailThreadIdList idList(uids.constBegin(), uids.constEnd());
 
         d->notifyThreadsChange(type, idList);
 
@@ -1322,7 +1325,8 @@ void QMailStore::emitMessageNotification(ChangeType type, const QMailMessageIdLi
     Q_ASSERT(!ids.contains(QMailMessageId()));
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
-        QMailMessageIdList idList(ids.toSet().toList());
+        const QSet<QMailMessageId> uids(ids.constBegin(), ids.constEnd());
+        QMailMessageIdList idList(uids.constBegin(), uids.constEnd());
 
         d->notifyMessagesChange(type, idList);
 
@@ -1393,7 +1397,8 @@ void QMailStore::emitRemovalRecordNotification(ChangeType type, const QMailAccou
 {
     if (!ids.isEmpty()) {
         // Ensure there are no duplicates in the list
-        QMailAccountIdList idList(ids.toSet().toList());
+        const QSet<QMailAccountId> uids(ids.constBegin(), ids.constEnd());
+        QMailAccountIdList idList(uids.constBegin(), uids.constEnd());
 
         d->notifyMessageRemovalRecordsChange(type, idList);
 

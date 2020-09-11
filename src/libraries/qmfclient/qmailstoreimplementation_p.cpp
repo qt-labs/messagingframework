@@ -143,11 +143,11 @@ void emitIpcUpdates(const QMailMessageIdList& ids,  quint64 status, bool set, co
     }
 }
 
-template<typename IDSetType>
-void dispatchNotifications(IDSetType &ids, const QString &sig)
+template<typename IDType>
+void dispatchNotifications(QSet<IDType> &ids, const QString &sig)
 {
     if (!ids.isEmpty()) {
-        emitIpcUpdates(ids.toList(), sig);
+        emitIpcUpdates(ids.values(), sig);
         ids.clear();
     }
 } 
@@ -167,7 +167,7 @@ void dispatchNotifications(MessagesPropertiesBuffer& data, const QString &sig)
 {
     if (!data.isEmpty()) {
         foreach (const MessagesProperties& props, data) {
-            emitIpcUpdates(props.second.toList(), props.first.first, props.first.second, sig);
+            emitIpcUpdates(props.second.values(), props.first.first, props.first.second, sig);
         }
         data.clear();
     }
@@ -180,7 +180,8 @@ void dispatchNotifications(MessagesStatusBuffer& data, const QString &sig)
 {
     if (!data.isEmpty()) {
         foreach (const MessagesStatus& status, data.keys()) {
-            emitIpcUpdates(data[status].toList(), status.first, status.second, sig);
+            const QSet<QMailMessageId> ids = data[status];
+            emitIpcUpdates(ids.values(), status.first, status.second, sig);
         }
         data.clear();
     }
@@ -396,7 +397,7 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
             flushTimer.start(flushTimeout);
         }
 
-        QSet<QMailAccountId> idsSet = QSet<QMailAccountId>::fromList(ids);
+        QSet<QMailAccountId> idsSet = QSet<QMailAccountId>(ids.constBegin(), ids.constEnd());
         switch (changeType)
         {
         case QMailStore::Added:
@@ -433,7 +434,7 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
             flushTimer.start(flushTimeout);
         }
 
-        QSet<QMailMessageId> idsSet = QSet<QMailMessageId>::fromList(ids);
+        QSet<QMailMessageId> idsSet = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
         switch (changeType)
         {
         case QMailStore::Added:
@@ -499,7 +500,7 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageId
             flushTimer.start(flushTimeout);
         }
 
-        MessagesProperties props(QPair<QMailMessageKey::Properties, QMailMessageMetaData>(properties, data), ids.toSet());
+        MessagesProperties props(QPair<QMailMessageKey::Properties, QMailMessageMetaData>(properties, data), QSet<QMailMessageId>(ids.constBegin(), ids.constEnd()));
         messagesPropertiesBuffer.append(props);;
 
     } else {
@@ -519,7 +520,7 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageId
         }
 
         MessagesStatus messageStatus(status, set);
-        messagesStatusBuffer[messageStatus] += ids.toSet();
+        messagesStatusBuffer[messageStatus] += QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
     } else {
         emitIpcUpdates(ids, status, set, messageStatusUpdatedSig());
@@ -539,7 +540,7 @@ void QMailStoreImplementationBase::notifyThreadsChange(QMailStore::ChangeType ch
             flushTimer.start(flushTimeout);
         }
 
-        QSet<QMailThreadId> idsSet = QSet<QMailThreadId>::fromList(ids);
+        QSet<QMailThreadId> idsSet = QSet<QMailThreadId>(ids.constBegin(), ids.constEnd());
         switch (changeType)
         {
         case QMailStore::Added:
@@ -577,7 +578,7 @@ void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType ch
             flushTimer.start(flushTimeout);
         }
 
-        QSet<QMailFolderId> idsSet = QSet<QMailFolderId>::fromList(ids);
+        QSet<QMailFolderId> idsSet = QSet<QMailFolderId>(ids.constBegin(), ids.constEnd());
         switch (changeType)
         {
         case QMailStore::Added:
@@ -614,7 +615,7 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
             flushTimer.start(flushTimeout);
         }
 
-        QSet<QMailAccountId> idsSet = QSet<QMailAccountId>::fromList(ids);
+        QSet<QMailAccountId> idsSet = QSet<QMailAccountId>(ids.constBegin(), ids.constEnd());
         switch (changeType)
         {
         case QMailStore::Added:
@@ -652,7 +653,7 @@ void QMailStoreImplementationBase::notifyTransmissionInProgress(const QMailAccou
 
 bool QMailStoreImplementationBase::setRetrievalInProgress(const QMailAccountIdList& ids)
 {
-    QSet<QMailAccountId> idSet(ids.toSet());
+    QSet<QMailAccountId> idSet(ids.constBegin(), ids.constEnd());
     if ((idSet != retrievalInProgressIds) || !retrievalSetInitialized) {
         retrievalInProgressIds = idSet;
         retrievalSetInitialized = true;
@@ -664,7 +665,7 @@ bool QMailStoreImplementationBase::setRetrievalInProgress(const QMailAccountIdLi
 
 bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountIdList& ids)
 {
-    QSet<QMailAccountId> idSet(ids.toSet());
+    QSet<QMailAccountId> idSet(ids.constBegin(), ids.constEnd());
     if ((idSet != transmissionInProgressIds) || !transmissionSetInitialized) {
         transmissionInProgressIds = idSet;
         transmissionSetInitialized = true;

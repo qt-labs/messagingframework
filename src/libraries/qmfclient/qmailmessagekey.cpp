@@ -390,7 +390,8 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageIdList &ids, QMailDataComp
     if (ids.count() >= IdLookupThreshold) {
         // If there are a large number of IDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
-        return QMailMessageKey(ids.toSet().toList(), Id, QMailKey::comparator(cmp));
+        const QSet<QMailMessageId> uniqueIds(ids.constBegin(), ids.constEnd());
+        return QMailMessageKey(uniqueIds.values(), Id, QMailKey::comparator(cmp));
     }
 #endif
 
@@ -670,7 +671,8 @@ QMailMessageKey QMailMessageKey::serverUid(const QStringList &uids, QMailDataCom
     if (uids.count() >= IdLookupThreshold) {
         // If there are a large number of UIDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
-        return QMailMessageKey(uids.toSet().toList(), ServerUid, QMailKey::comparator(cmp));
+        const QSet<QString> uniqueIds(uids.constBegin(), uids.constEnd());
+        return QMailMessageKey(uniqueIds.values(), ServerUid, QMailKey::comparator(cmp));
     }
 #endif
 
@@ -1001,7 +1003,8 @@ QMailMessageKey QMailMessageKey::copyServerUid(const QStringList &uids, QMailDat
     if (uids.count() >= IdLookupThreshold) {
         // If there are a large number of UIDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
-        return QMailMessageKey(uids.toSet().toList(), CopyServerUid, QMailKey::comparator(cmp));
+        const QSet<QString> uniqueIds(uids.constBegin(), uids.constEnd());
+        return QMailMessageKey(uniqueIds.values(), CopyServerUid, QMailKey::comparator(cmp));
     }
 #endif
 

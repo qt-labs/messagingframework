@@ -412,7 +412,7 @@ void tst_QMailServiceAction::test_retrievalaction()
     uint min = 10240u;
     action.retrieveFolderList(accountId1, inboxId1);
     action.retrieveMessageList(accountId2, inboxId2);
-    action.retrieveMessages(allMessages.toList());
+    action.retrieveMessages(allMessages.values());
     action.retrieveMessageRange(inboxMessage1, min);
 
     action.exportUpdates(accountId1);

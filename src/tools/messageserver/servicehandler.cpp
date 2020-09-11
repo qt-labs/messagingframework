@@ -987,6 +987,11 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QSet<QMailAcco
     return services;
 }
 
+QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QMailAccountIdList &ids) const
+{
+    return sourceServiceSet(QSet<QMailAccountId>(ids.constBegin(), ids.constEnd()));
+}
+
 QSet<QMailMessageService*> ServiceHandler::sinkServiceSet(const QMailAccountId &id) const
 {
     QSet<QMailMessageService*> services;
@@ -1242,10 +1247,10 @@ void ServiceHandler::expireAction()
                     }
 
                     if (retrievalSetModified) {
-                        QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+                        QMailStore::instance()->setRetrievalInProgress(QMailAccountIdList(_retrievalAccountIds.constBegin(), _retrievalAccountIds.constEnd()));
                     }
                     if (transmissionSetModified) {
-                        QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
+                        QMailStore::instance()->setTransmissionInProgress(QMailAccountIdList(_transmissionAccountIds.constBegin(), _transmissionAccountIds.constEnd()));
                     }
 
                     mActiveActions.erase(it);
@@ -1254,7 +1259,7 @@ void ServiceHandler::expireAction()
                 mActionExpiry.removeFirst();
 
                 // Restart the service(s) for each of these accounts
-                QMailAccountIdList ids(serviceAccounts.toList());
+                QMailAccountIdList ids(serviceAccounts.constBegin(), serviceAccounts.constEnd());
                 deregisterAccountServices(ids, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
                 registerAccountServices(ids);
 
@@ -1319,10 +1324,10 @@ void ServiceHandler::cancelTransfer(quint64 action)
         }
 
         if (retrievalSetModified) {
-            QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+            QMailStore::instance()->setRetrievalInProgress(QMailAccountIdList(_retrievalAccountIds.constBegin(), _retrievalAccountIds.constEnd()));
         }
         if (transmissionSetModified) {
-            QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
+            QMailStore::instance()->setTransmissionInProgress(QMailAccountIdList(_transmissionAccountIds.constBegin(), _transmissionAccountIds.constEnd()));
         }
 
         //The ActionData might have already been deleted by actionCompleted, triggered by cancelOperation
@@ -1370,7 +1375,7 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
             // Find the accounts that own these messages
             QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists(messageResolvers(unresolvedMessages));
 
-            sources = sourceServiceSet(unresolvedLists.keys().toSet());
+            sources = sourceServiceSet(unresolvedLists.keys());
 
             // Emit no signal after completing preparation
             enqueueRequest(action, serialize(unresolvedLists), sources, &ServiceHandler::dispatchPrepareMessages, 0, TransmitMessagesRequestType);
@@ -1406,7 +1411,7 @@ void ServiceHandler::transmitMessage(quint64 action, const QMailMessageId &messa
             // Find the accounts that own these messages
             QMap<QMailAccountId, QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > > unresolvedLists(messageResolvers(unresolvedMessages));
 
-            sources = sourceServiceSet(unresolvedLists.keys().toSet());
+            sources = sourceServiceSet(unresolvedLists.keys());
 
             // Emit no signal after completing preparation
             enqueueRequest(action, serialize(unresolvedLists), sources, &ServiceHandler::dispatchPrepareMessages, 0, TransmitMessagesRequestType);
@@ -1703,7 +1708,7 @@ void ServiceHandler::retrieveMessages(quint64 action, const QMailMessageIdList &
 {
     QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
 
-    QSet<QMailMessageService*> sources(sourceServiceSet(messageLists.keys().toSet()));
+    QSet<QMailMessageService*> sources(sourceServiceSet(messageLists.keys()));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve messages for unconfigured account"));
     } else {
@@ -1740,7 +1745,7 @@ bool ServiceHandler::dispatchRetrieveMessages(quint64 action, const QByteArray &
         }
     }
 
-    QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+    QMailStore::instance()->setRetrievalInProgress(QMailAccountIdList(_retrievalAccountIds.constBegin(), _retrievalAccountIds.constEnd()));
     return true;
 }
 
@@ -1976,7 +1981,7 @@ void ServiceHandler::onlineDeleteMessages(quint64 action, const QMailMessageIdLi
         discardMessages(action, messageIds);
     } else {
         QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
-        sources = sourceServiceSet(messageLists.keys().toSet());
+        sources = sourceServiceSet(messageLists.keys());
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to delete messages for unconfigured account"));
         } else {
@@ -2132,7 +2137,7 @@ void ServiceHandler::onlineMoveMessages(quint64 action, const QMailMessageIdList
     QSet<QMailMessageService*> sources;
 
     QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
-    sources = sourceServiceSet(messageLists.keys().toSet());
+    sources = sourceServiceSet(messageLists.keys());
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to move messages for unconfigured account"));
     } else {
@@ -2173,7 +2178,7 @@ void ServiceHandler::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, c
     QSet<QMailMessageService*> sources;
 
     QMap<QMailAccountId, QMailMessageIdList> messageLists(accountMessages(messageIds));
-    sources = sourceServiceSet(messageLists.keys().toSet());
+    sources = sourceServiceSet(messageLists.keys());
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to flag messages for unconfigured account"));
     } else {
@@ -2615,7 +2620,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filte
 {
     if (spec == QMailSearchAction::Remote) {
         // Find the accounts that we need to search within from the criteria
-        QSet<QMailAccountId> searchAccountIds(accountsApplicableTo(filter, sourceMap.keys().toSet()));
+        QSet<QMailAccountId> searchAccountIds(accountsApplicableTo(filter, QSet<QMailAccountId>(sourceMap.keyBegin(), sourceMap.keyEnd())));
 
         QSet<QMailMessageService*> sources(sourceServiceSet(searchAccountIds));
         if (sources.isEmpty()) {
@@ -3198,7 +3203,7 @@ void ServiceHandler::setRetrievalInProgress(const QMailAccountId &accountId, boo
     }
 
     if (modified) {
-        QMailStore::instance()->setRetrievalInProgress(_retrievalAccountIds.toList());
+        QMailStore::instance()->setRetrievalInProgress(QMailAccountIdList(_retrievalAccountIds.constBegin(), _retrievalAccountIds.constEnd()));
     }
 }
 
@@ -3215,7 +3220,7 @@ void ServiceHandler::setTransmissionInProgress(const QMailAccountId &accountId, 
     }
 
     if (modified) {
-        QMailStore::instance()->setTransmissionInProgress(_transmissionAccountIds.toList());
+        QMailStore::instance()->setTransmissionInProgress(QMailAccountIdList(_transmissionAccountIds.constBegin(), _transmissionAccountIds.constEnd()));
     }
 }
 

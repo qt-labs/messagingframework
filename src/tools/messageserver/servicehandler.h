@@ -229,6 +229,7 @@ private:
 
     QSet<QMailMessageService*> sourceServiceSet(const QMailAccountId &id) const;
     QSet<QMailMessageService*> sourceServiceSet(const QSet<QMailAccountId> &ids) const;
+    QSet<QMailMessageService*> sourceServiceSet(const QMailAccountIdList &ids) const;
 
     QSet<QMailMessageService*> sinkServiceSet(const QMailAccountId &id) const;
     QSet<QMailMessageService*> sinkServiceSet(const QSet<QMailAccountId> &ids) const;

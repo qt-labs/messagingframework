@@ -297,7 +297,7 @@ void MessageServer::retrievalCompleted(quint64 action)
         if (!completionAttempted) {
             // Complete the messages that we selected for immediate completion
             completionAttempted = true;
-            handler->retrieveMessages(action, completionList.toList(), QMailRetrievalAction::Content);
+            handler->retrieveMessages(action, completionList.values(), QMailRetrievalAction::Content);
             return;
         } else {
             completionList.clear();

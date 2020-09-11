@@ -411,7 +411,7 @@ void tst_QMailDisconnected::test_qmaildisconnected()
     QMailMessage dstMsg;
     QMailDisconnected::copyPreviousFolder(QMailMessage(savedMessage2), &dstMsg);
 
-    QMap<QMailFolderId, QMailMessageIdList> map = QMailDisconnected::restoreMap(allMessages.toList());
+    QMap<QMailFolderId, QMailMessageIdList> map = QMailDisconnected::restoreMap(allMessages.values());
 
     QMailDisconnected::copyToFolder(QMailMessageIdList() << inboxMessage1, archivedId1);
     QMailDisconnected::copyToStandardFolder(QMailMessageIdList() << inboxMessage1, QMailFolder::JunkFolder);

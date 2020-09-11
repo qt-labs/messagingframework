@@ -97,7 +97,8 @@ private:
     // We only want to compare sets, disregarding ordering
     const QSet<QMailAccountId> accountSet(const QMailAccountKey &key) const
     {
-        return QMailStore::instance()->queryAccounts(key).toSet();
+        const QMailAccountIdList &accounts(QMailStore::instance()->queryAccounts(key));
+        return QSet<QMailAccountId>(accounts.constBegin(), accounts.constEnd());
     }
 
     QSet<QMailAccountId> accountSet() const 
@@ -107,7 +108,8 @@ private:
 
     const QSet<QMailFolderId> folderSet(const QMailFolderKey &key) const
     {
-        return QMailStore::instance()->queryFolders(key).toSet();
+        const QMailFolderIdList &folders(QMailStore::instance()->queryFolders(key));
+        return QSet<QMailFolderId>(folders.constBegin(), folders.constEnd());
     }
 
     QSet<QMailFolderId> folderSet() const 
@@ -117,7 +119,8 @@ private:
 
     const QSet<QMailMessageId> messageSet(const QMailMessageKey &key) const
     {
-        return QMailStore::instance()->queryMessages(key).toSet();
+        const QMailMessageIdList &messages(QMailStore::instance()->queryMessages(key));
+        return QSet<QMailMessageId>(messages.constBegin(), messages.constEnd());
     }
 
     QSet<QMailMessageId> messageSet() const 
@@ -570,8 +573,9 @@ void tst_QMailStoreKeys::accountId()
     QCOMPARE(accountSet(~QMailAccountKey::id(QMailAccountId(), NotEqual)), noAccounts);
 
     // List inclusion
-    QCOMPARE(accountSet(QMailAccountKey::id(allAccounts.toList())), allAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::id(allAccounts.toList())), noAccounts);
+    const QMailAccountIdList accounts(allAccounts.constBegin(), allAccounts.constEnd());
+    QCOMPARE(accountSet(QMailAccountKey::id(accounts)), allAccounts);
+    QCOMPARE(accountSet(~QMailAccountKey::id(accounts)), noAccounts);
     QCOMPARE(accountSet(QMailAccountKey::id(QMailAccountIdList() << accountId1)), accountSet() << accountId1);
     QCOMPARE(accountSet(~QMailAccountKey::id(QMailAccountIdList() << accountId1)), accountSet() << accountId2 << accountId3 << accountId4);
     QCOMPARE(accountSet(QMailAccountKey::id(QMailAccountIdList() << accountId2)), accountSet() << accountId2);
@@ -580,8 +584,8 @@ void tst_QMailStoreKeys::accountId()
     QCOMPARE(accountSet(~QMailAccountKey::id(QMailAccountIdList() << accountId1 << accountId2)), accountSet() << accountId3 << accountId4);
 
     // List exclusion
-    QCOMPARE(accountSet(QMailAccountKey::id(allAccounts.toList(), Excludes)), noAccounts);
-    QCOMPARE(accountSet(~QMailAccountKey::id(allAccounts.toList(), Excludes)), allAccounts);
+    QCOMPARE(accountSet(QMailAccountKey::id(accounts, Excludes)), noAccounts);
+    QCOMPARE(accountSet(~QMailAccountKey::id(accounts, Excludes)), allAccounts);
     QCOMPARE(accountSet(QMailAccountKey::id(QMailAccountIdList() << accountId1, Excludes)), accountSet() << accountId2 << accountId3 << accountId4);
     QCOMPARE(accountSet(~QMailAccountKey::id(QMailAccountIdList() << accountId1, Excludes)), accountSet() << accountId1);
     QCOMPARE(accountSet(QMailAccountKey::id(QMailAccountIdList() << accountId2, Excludes)), accountSet() << accountId1 << accountId3 << accountId4);
@@ -841,8 +845,9 @@ void tst_QMailStoreKeys::folderId()
     QCOMPARE(folderSet(~QMailFolderKey::id(QMailFolderId(), NotEqual)), noFolders);
 
     // List inclusion
-    QCOMPARE(folderSet(QMailFolderKey::id(allFolders.toList())), allFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::id(allFolders.toList())), standardFolders);
+    const QMailFolderIdList folders(allFolders.constBegin(), allFolders.constEnd());
+    QCOMPARE(folderSet(QMailFolderKey::id(folders)), allFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::id(folders)), standardFolders);
     QCOMPARE(folderSet(QMailFolderKey::id(QMailFolderIdList() << inboxId1)), folderSet() << inboxId1);
     QCOMPARE(folderSet(~QMailFolderKey::id(QMailFolderIdList() << inboxId1)), standardFolders + folderSet() << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::id(QMailFolderIdList() << archivedId2)), folderSet() << archivedId2);
@@ -851,8 +856,8 @@ void tst_QMailStoreKeys::folderId()
     QCOMPARE(folderSet(~QMailFolderKey::id(QMailFolderIdList() << inboxId1 << archivedId2)), standardFolders + folderSet() << savedId1 << archivedId1 << inboxId2 << savedId2);
 
     // List exclusion
-    QCOMPARE(folderSet(QMailFolderKey::id(allFolders.toList(), Excludes)), standardFolders);
-    QCOMPARE(folderSet(~QMailFolderKey::id(allFolders.toList(), Excludes)), allFolders);
+    QCOMPARE(folderSet(QMailFolderKey::id(folders, Excludes)), standardFolders);
+    QCOMPARE(folderSet(~QMailFolderKey::id(folders, Excludes)), allFolders);
     QCOMPARE(folderSet(QMailFolderKey::id(QMailFolderIdList() << inboxId1, Excludes)), standardFolders + folderSet() << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::id(QMailFolderIdList() << inboxId1, Excludes)), folderSet() << inboxId1);
     QCOMPARE(folderSet(QMailFolderKey::id(QMailFolderIdList() << archivedId2, Excludes)), standardFolders + folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2);
@@ -1322,8 +1327,9 @@ void tst_QMailStoreKeys::messageId()
     QCOMPARE(messageSet(~QMailMessageKey::id(QMailMessageId(), NotEqual)), noMessages);
 
     // List inclusion
-    QCOMPARE(messageSet(QMailMessageKey::id(allMessages.toList())), allMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::id(allMessages.toList())), noMessages);
+    const QMailMessageIdList messages(allMessages.constBegin(), allMessages.constEnd());
+    QCOMPARE(messageSet(QMailMessageKey::id(messages)), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::id(messages)), noMessages);
     QCOMPARE(messageSet(QMailMessageKey::id(QMailMessageIdList() << smsMessage)), messageSet() << smsMessage);
     QCOMPARE(messageSet(~QMailMessageKey::id(QMailMessageIdList() << smsMessage)), allEmailMessages);
     QCOMPARE(messageSet(QMailMessageKey::id(QMailMessageIdList() << inboxMessage1)), messageSet() << inboxMessage1);
@@ -1332,8 +1338,8 @@ void tst_QMailStoreKeys::messageId()
     QCOMPARE(messageSet(~QMailMessageKey::id(QMailMessageIdList() << smsMessage << inboxMessage1)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
 
     // List Exclusion
-    QCOMPARE(messageSet(QMailMessageKey::id(allMessages.toList(), Excludes)), noMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::id(allMessages.toList(), Excludes)), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::id(messages, Excludes)), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::id(messages, Excludes)), allMessages);
     QCOMPARE(messageSet(QMailMessageKey::id(QMailMessageIdList() << smsMessage, Excludes)), allEmailMessages);
     QCOMPARE(messageSet(~QMailMessageKey::id(QMailMessageIdList() << smsMessage, Excludes)), messageSet() << smsMessage);
     QCOMPARE(messageSet(QMailMessageKey::id(QMailMessageIdList() << inboxMessage1, Excludes)), messageSet() << smsMessage << archivedMessage1 << inboxMessage2 << savedMessage2);

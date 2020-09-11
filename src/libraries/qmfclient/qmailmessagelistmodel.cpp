@@ -402,7 +402,9 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
     QList<int> updateIndices;
 
     // Find the updated positions for our messages
-    QMailMessageKey idKey(QMailMessageKey::id((_idList.toSet() + ids.toSet()).toList()));
+    QSet<QMailMessageId> uniqueIds(_idList.constBegin(), _idList.constEnd());
+    uniqueIds.unite(QSet<QMailMessageId>(ids.constBegin(), ids.constEnd()));
+    QMailMessageKey idKey(QMailMessageKey::id(uniqueIds.values()));
     QMailMessageIdList newIds(QMailStore::instance()->queryMessages(_key & idKey, _sortKey, _limit));
     QMap<QMailMessageId, int> newPositions;
 

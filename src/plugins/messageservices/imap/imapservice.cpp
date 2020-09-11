@@ -1205,7 +1205,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         bool external(false);
 
         // Are these messages being resolved for internal or external references?
-        QMailMessageKey key(QMailMessageKey::id(referringIds.toList()));
+        QMailMessageKey key(QMailMessageKey::id(referringIds.values()));
         QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentAccountId | QMailMessageKey::Status);
 
         foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
