@@ -55,7 +55,7 @@ public:
         return ids;
     }
 
-    bool operator== (const QMailMessageThreadedModelItem& other) { return (_id == other._id); }
+    bool operator== (const QMailMessageThreadedModelItem& other) const { return (_id == other._id); }
 
     QMailMessageId _id;
     QMailMessageThreadedModelItem *_parent;
