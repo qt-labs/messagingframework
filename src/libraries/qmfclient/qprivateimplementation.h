@@ -99,7 +99,7 @@ public:
 
     inline int count() const
     {
-        return ref_count.load();
+        return ref_count.loadRelaxed();
     }
 
     inline void ref()
