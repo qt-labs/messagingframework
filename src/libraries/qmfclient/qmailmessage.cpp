@@ -1133,7 +1133,7 @@ namespace findAttachments
         DefaultAttachmentFindStrategy() { }
         bool findAttachmentLocations(const QMailMessagePartContainer& container,
                                      Locations* found,
-                                     bool* hasAttachments) const
+                                     bool* hasAttachments) const override
         {
             if (hasAttachments) {
                 *hasAttachments = false;
@@ -1244,7 +1244,7 @@ namespace findAttachments
         TnefAttachmentFindStrategy() { }
         bool findAttachmentLocations(const QMailMessagePartContainer& container,
                                      Locations* found,
-                                     bool* hasAttachments) const
+                                     bool* hasAttachments) const override
         {
             if (hasAttachments) {
                 *hasAttachments = false;

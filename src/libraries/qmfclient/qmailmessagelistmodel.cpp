@@ -46,35 +46,35 @@ public:
                                  bool sychronizeEnabled);
     ~QMailMessageListModelPrivate();
 
-    QMailMessageKey key() const;
-    void setKey(const QMailMessageKey& key);
+    QMailMessageKey key() const override;
+    void setKey(const QMailMessageKey& key) override;
 
-    QMailMessageSortKey sortKey() const;
-    void setSortKey(const QMailMessageSortKey& sortKey);
+    QMailMessageSortKey sortKey() const override;
+    void setSortKey(const QMailMessageSortKey& sortKey) override;
 
-    uint limit() const;
-    void setLimit(uint limit);
-    int totalCount() const;
+    uint limit() const override;
+    void setLimit(uint limit) override;
+    int totalCount() const override;
 
-    bool isEmpty() const;
+    bool isEmpty() const override;
 
-    int rowCount(const QModelIndex& idx) const;
-    int columnCount(const QModelIndex& idx) const;
+    int rowCount(const QModelIndex& idx) const override;
+    int columnCount(const QModelIndex& idx) const override;
 
-    QMailMessageId idFromIndex(const QModelIndex& index) const;
-    QModelIndex indexFromId(const QMailMessageId& id) const;
+    QMailMessageId idFromIndex(const QModelIndex& index) const override;
+    QModelIndex indexFromId(const QMailMessageId& id) const override;
 
-    Qt::CheckState checkState(const QModelIndex &idx) const;
-    void setCheckState(const QModelIndex &idx, Qt::CheckState state);
+    Qt::CheckState checkState(const QModelIndex &idx) const override;
+    void setCheckState(const QModelIndex &idx, Qt::CheckState state) override;
 
-    void reset();
+    void reset() override;
 
-    bool ignoreMailStoreUpdates() const;
-    bool setIgnoreMailStoreUpdates(bool ignore);
+    bool ignoreMailStoreUpdates() const override;
+    bool setIgnoreMailStoreUpdates(bool ignore) override;
 
-    bool processMessagesAdded(const QMailMessageIdList &ids);
-    bool processMessagesUpdated(const QMailMessageIdList &ids);
-    bool processMessagesRemoved(const QMailMessageIdList &ids);
+    bool processMessagesAdded(const QMailMessageIdList &ids) override;
+    bool processMessagesUpdated(const QMailMessageIdList &ids) override;
+    bool processMessagesRemoved(const QMailMessageIdList &ids) override;
 
 private:
     void init() const;

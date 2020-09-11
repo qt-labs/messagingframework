@@ -82,7 +82,7 @@ Q_SIGNALS:
     void connectionDown();
 
 protected:
-    void connectNotify(const QMetaMethod &);
+    void connectNotify(const QMetaMethod &) override;
 
 protected Q_SLOTS:
     void connectClientSignals();

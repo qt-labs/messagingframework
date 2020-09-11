@@ -286,7 +286,7 @@ public Q_SLOTS:
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void countMessages(const QMailMessageKey &filter, const QString& bodyText);
-    void cancelOperation();
+    void cancelOperation() override;
 };
 
 class QMailActionInfoPrivate;

@@ -474,8 +474,8 @@ public:
 
     virtual uint indicativeSize() const;
 
-    virtual bool contentAvailable() const;
-    virtual bool partialContentAvailable() const;
+    virtual bool contentAvailable() const override;
+    virtual bool partialContentAvailable() const override;
 
     QString writeBodyTo(const QString &path) const;
 
@@ -743,29 +743,29 @@ public:
 
     // Overrides of QMMPC functions where the data needs to be stored to the meta data also:
 
-    virtual void setHeaderField( const QString &id, const QString& content );
-    virtual void setHeaderField( const QMailMessageHeaderField &field );
+    virtual void setHeaderField( const QString &id, const QString& content ) override;
+    virtual void setHeaderField( const QMailMessageHeaderField &field ) override;
 
-    virtual void appendHeaderField( const QString &id, const QString& content );
-    virtual void appendHeaderField( const QMailMessageHeaderField &field );
+    virtual void appendHeaderField( const QString &id, const QString& content ) override;
+    virtual void appendHeaderField( const QMailMessageHeaderField &field ) override;
 
-    virtual void removeHeaderField( const QString &id );
+    virtual void removeHeaderField( const QString &id ) override;
 
     // Overrides of QMMMD functions where the data needs to be stored to the part container also:
 
-    virtual void setId(const QMailMessageId &id);
+    virtual void setId(const QMailMessageId &id) override;
 
-    virtual void setFrom(const QMailAddress &s);
+    virtual void setFrom(const QMailAddress &s) override;
 
-    virtual void setSubject(const QString &s);
+    virtual void setSubject(const QString &s) override;
     
-    virtual void setDate(const QMailTimeStamp &s);
+    virtual void setDate(const QMailTimeStamp &s) override;
 
     virtual QList<QMailAddress> to() const;
     virtual void setTo(const QList<QMailAddress>& s);
     virtual void setTo(const QMailAddress& s);
 
-    virtual uint indicativeSize() const;
+    virtual uint indicativeSize() const override;
 
     // Convenience functions:
 
@@ -774,7 +774,7 @@ public:
     virtual QList<QMailAddress> bcc() const;
     virtual void setBcc(const QList<QMailAddress>& s);
 
-    virtual QList<QMailAddress> recipients() const;
+    virtual QList<QMailAddress> recipients() const override;
     virtual bool hasRecipients() const;
 
     virtual QMailAddress replyTo() const;
@@ -789,8 +789,8 @@ public:
     virtual QString externalLocationReference() const;
     virtual void setExternalLocationReference(const QString &s);
 
-    virtual bool contentAvailable() const;
-    virtual bool partialContentAvailable() const;
+    virtual bool contentAvailable() const override;
+    virtual bool partialContentAvailable() const override;
 
     virtual bool hasCalendarInvitation() const;
 
@@ -800,7 +800,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 protected:
-    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
+    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR) override;
 
 private:
     friend class QMailStore;
@@ -812,7 +812,7 @@ private:
     QMailMessagePrivate* partContainerImpl();
     const QMailMessagePrivate* partContainerImpl() const;
     
-    virtual void setUnmodified();
+    virtual void setUnmodified() override;
 
     QByteArray duplicatedData(const QString&) const;
     void updateMetaData(const QByteArray& id, const QString& value);
@@ -822,7 +822,7 @@ private:
     void refreshPreview();
 
 public:
-    virtual QString preview() const;
+    virtual QString preview() const override;
 };
 
 typedef QList<QMailMessage> QMailMessageList;

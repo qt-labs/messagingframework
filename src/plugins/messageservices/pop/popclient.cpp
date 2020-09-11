@@ -58,7 +58,7 @@ public:
     {
     }
 
-    void messageFlushed(QMailMessage *message)
+    void messageFlushed(QMailMessage *message) override
     {
         context->messageFlushed(*message, isComplete);
         context->removeAllFromBuffer(message);

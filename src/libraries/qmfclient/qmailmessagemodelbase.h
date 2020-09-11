@@ -100,13 +100,13 @@ public:
     QMailMessageModelBase(QObject* parent = Q_NULLPTR);
     virtual ~QMailMessageModelBase();
 
-    int rowCount(const QModelIndex& index = QModelIndex()) const;
-    int columnCount(const QModelIndex& index = QModelIndex()) const;
+    int rowCount(const QModelIndex& index = QModelIndex()) const override;
+    int columnCount(const QModelIndex& index = QModelIndex()) const override;
 
     bool isEmpty() const;
 
-    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
     QMailMessageKey key() const;
     void setKey(const QMailMessageKey& key);

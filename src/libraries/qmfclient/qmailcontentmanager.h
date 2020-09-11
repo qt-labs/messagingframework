@@ -83,7 +83,7 @@ public:
     QMailContentManagerPlugin();
     ~QMailContentManagerPlugin();
 
-    virtual QStringList keys() const;
+    virtual QStringList keys() const override;
 };
 
 

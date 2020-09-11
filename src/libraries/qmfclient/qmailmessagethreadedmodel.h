@@ -49,14 +49,14 @@ public:
 
     int rootRow(const QModelIndex& index) const;
 
-    QModelIndex index(int row, int column = 0, const QModelIndex &idx = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &idx) const;
+    QModelIndex index(int row, int column = 0, const QModelIndex &idx = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &idx) const override;
 
-    QModelIndex generateIndex(int row, int column, void *ptr);
+    QModelIndex generateIndex(int row, int column, void *ptr) override;
 
 protected:
-    QMailMessageModelImplementation *impl();
-    const QMailMessageModelImplementation *impl() const;
+    QMailMessageModelImplementation *impl() override;
+    const QMailMessageModelImplementation *impl() const override;
 
 private:
     QMailMessageThreadedModelPrivate* d;

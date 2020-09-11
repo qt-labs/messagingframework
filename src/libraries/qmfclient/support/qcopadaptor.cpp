@@ -95,7 +95,7 @@ public:
         : QCopChannel(channel, adapt), adaptor(adapt) {}
     ~QCopAdaptorChannel() {}
 
-    void receive(const QString& msg, const QByteArray &data);
+    void receive(const QString& msg, const QByteArray &data) override;
 
 private:
     QCopAdaptor *adaptor;
@@ -154,7 +154,7 @@ public:
     static int typeFromName(const QByteArray& name);
 
 protected:
-    int qt_metacall(QMetaObject::Call c, int id, void **a);
+    int qt_metacall(QMetaObject::Call c, int id, void **a) override;
 };
 
 QCopAdaptorPrivate::QCopAdaptorPrivate(QCopAdaptor *obj, const QString& chan)

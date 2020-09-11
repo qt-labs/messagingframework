@@ -110,7 +110,7 @@ class QMF_EXPORT QCopClient : public QObject
         MemberInvoker(T* inst, void (T::*func)())
             : instance(inst), function(func) {}
 
-        virtual void operator()() { (instance->*function)(); }
+        virtual void operator()() override { (instance->*function)(); }
     };
 
 public:
@@ -216,17 +216,17 @@ public:
     QCopLoopbackDevice(QObject *parent = Q_NULLPTR);
     explicit QCopLoopbackDevice(QCopLoopbackDevice *otherEnd, QObject *parent = Q_NULLPTR);
 
-    bool open(OpenMode mode);
-    void close();
-    qint64 bytesAvailable() const;
-    bool isSequential() const;
+    bool open(OpenMode mode) override;
+    void close() override;
+    qint64 bytesAvailable() const override;
+    bool isSequential() const override;
 
     char *reserve(int len);
 
 protected:
-    qint64 readData(char *data, qint64 maxlen);
-    qint64 writeData(const char *data, qint64 len);
-    bool event(QEvent *e);
+    qint64 readData(char *data, qint64 maxlen) override;
+    qint64 writeData(const char *data, qint64 len) override;
+    bool event(QEvent *e) override;
 
 private:
     QCopLoopbackDevice *otherEnd;
@@ -246,9 +246,9 @@ public:
 
 protected:
 #ifndef QT_NO_QCOP_LOCAL_SOCKET
-    void incomingConnection(quintptr socketDescriptor);
+    void incomingConnection(quintptr socketDescriptor) override;
 #else
-    void incomingConnection(int socketDescriptor);
+    void incomingConnection(int socketDescriptor) override;
 #endif
 
 public:

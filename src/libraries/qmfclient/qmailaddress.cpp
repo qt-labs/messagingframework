@@ -133,7 +133,7 @@ struct Decommentor : public CharacterProcessor
     bool (QChar::*_classifier)() const;
     bool _accepted;
 
-    virtual void process(QChar, bool, bool, int);
+    virtual void process(QChar, bool, bool, int) override;
 };
 
 Decommentor::Decommentor(bool (QChar::*classifier)() const, bool accepted)
@@ -166,8 +166,8 @@ struct AddressSeparator : public CharacterProcessor
 
     AddressSeparator();
 
-    virtual void process(QChar, bool, bool, int);
-    virtual void finished();
+    virtual void process(QChar, bool, bool, int) override;
+    virtual void finished() override;
 
     virtual void accept(QChar) = 0;
     virtual QString progress() const = 0;
@@ -267,9 +267,9 @@ void AddressSeparator::finished()
 
 struct AddressListGenerator : public AddressSeparator
 {
-    virtual void accept(QChar);
-    virtual QString progress() const;
-    virtual void complete(TokenType, bool);
+    virtual void accept(QChar) override;
+    virtual QString progress() const override;
+    virtual void complete(TokenType, bool) override;
 
     QStringList result();
 
@@ -425,7 +425,7 @@ struct GroupDetector : public CharacterProcessor
 {
     GroupDetector();
 
-    virtual void process(QChar, bool, bool, int);
+    virtual void process(QChar, bool, bool, int) override;
 
     bool result() const;
 
@@ -463,7 +463,7 @@ static bool containsGroupSpecifier(const QString& input)
 
 struct WhitespaceRemover : public CharacterProcessor
 {
-    virtual void process(QChar, bool, bool, int);
+    virtual void process(QChar, bool, bool, int) override;
 
     QString _result;
 };
@@ -485,8 +485,8 @@ struct QuoteDisplayName : public CharacterProcessor
 {
     QuoteDisplayName();
 
-    virtual void process(QChar, bool, bool, int);
-    virtual void finished();
+    virtual void process(QChar, bool, bool, int) override;
+    virtual void finished() override;
 
     QString _result;
 

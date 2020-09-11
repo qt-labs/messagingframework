@@ -175,7 +175,7 @@ class QMailExportUpdatesCommand : public QMailServiceActionCommand
 {
 public:
     QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
-    void execute() { _action->exportUpdatesHelper(_accountId); }
+    void execute() override { _action->exportUpdatesHelper(_accountId); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -185,7 +185,7 @@ class QMailSynchronizeCommand : public QMailServiceActionCommand
 {
 public:
     QMailSynchronizeCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
-    void execute() { _action->synchronizeAllHelper(_accountId); }
+    void execute() override { _action->synchronizeAllHelper(_accountId); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -195,7 +195,7 @@ class QMailRetrieveFolderListCommand : public QMailServiceActionCommand
 {
 public:
     QMailRetrieveFolderListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId) :_action(action), _accountId(accountId) {};
-    void execute() { _action->retrieveFolderListHelper(_accountId, QMailFolderId()); }
+    void execute() override { _action->retrieveFolderListHelper(_accountId, QMailFolderId()); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -208,7 +208,7 @@ public:
      :_action(action), 
       _accountId(accountId),
       _minimum(minimum) {};
-    void execute() { _action->retrieveMessageListHelper(_accountId, QMailFolderId(), _minimum, QMailMessageSortKey()); }
+    void execute() override { _action->retrieveMessageListHelper(_accountId, QMailFolderId(), _minimum, QMailMessageSortKey()); }
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -230,7 +230,7 @@ signals:
     void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
 
 protected:
-    virtual void init();
+    virtual void init() override;
 
 protected slots:
     void messagesTransmitted(quint64, const QMailMessageIdList &id);
@@ -273,7 +273,7 @@ public:
     void onlineMoveFolder(const QMailFolderId &id, const QMailFolderId &newParentId);
 
 protected:
-    virtual void init();
+    virtual void init() override;
 
 protected slots:
     void messagesEffected(quint64, const QMailMessageIdList &id);
@@ -292,7 +292,7 @@ class QMailDeleteFolderCommand : public QMailServiceActionCommand
 {
 public:
     QMailDeleteFolderCommand(QMailStorageActionPrivate *action, const QMailFolderId &folderId) :_action(action), _folderId(folderId) {};
-    void execute() { _action->onlineDeleteFolderHelper(_folderId); }
+    void execute() override { _action->onlineDeleteFolderHelper(_folderId); }
 private:
     QMailStorageActionPrivate *_action;
     QMailFolderId _folderId;
@@ -303,7 +303,7 @@ class QMailMoveCommand : public QMailServiceActionCommand
 public:
     QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId) 
         :_action(action), _ids(ids), _folderId(destinationId) {};
-    void execute() { _action->onlineMoveMessages(_ids, _folderId); }
+    void execute() override { _action->onlineMoveMessages(_ids, _folderId); }
 private:
     QMailStorageActionPrivate *_action;
     QMailMessageIdList _ids;
@@ -314,7 +314,7 @@ class QMailDeleteMessagesCommand : public QMailServiceActionCommand
 {
 public:
     QMailDeleteMessagesCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids) :_action(action), _ids(ids) {};
-    void execute() { _action->onlineDeleteMessagesHelper(_ids); }
+    void execute() override { _action->onlineDeleteMessagesHelper(_ids); }
 private:
     QMailStorageActionPrivate *_action;
     QMailMessageIdList _ids;
@@ -334,7 +334,7 @@ public:
     void cancelOperation();
 
 protected:
-    virtual void init();
+    virtual void init() override;
 
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);

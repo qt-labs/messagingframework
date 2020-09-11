@@ -62,9 +62,9 @@ public:
     QMailThreadListModel(QObject *parent = Q_NULLPTR);
     virtual ~QMailThreadListModel();
 
-    int rowCount(const QModelIndex& index = QModelIndex()) const;
+    int rowCount(const QModelIndex& index = QModelIndex()) const override;
 
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     QMailThreadKey key() const;
     void setKey(const QMailThreadKey& key);

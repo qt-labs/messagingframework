@@ -47,14 +47,14 @@ public:
     QMailMessageListModel(QObject* parent = Q_NULLPTR);
     virtual ~QMailMessageListModel();
 
-    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &idx) const;
+    QModelIndex index(int row, int column = 0, const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &idx) const override;
 
-    QModelIndex generateIndex(int row, int column, void *ptr);
+    QModelIndex generateIndex(int row, int column, void *ptr) override;
 
 protected:
-    QMailMessageModelImplementation *impl();
-    const QMailMessageModelImplementation *impl() const;
+    QMailMessageModelImplementation *impl() override;
+    const QMailMessageModelImplementation *impl() const override;
 
 private:
     QMailMessageListModelPrivate* d;

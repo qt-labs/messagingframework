@@ -149,7 +149,7 @@ public:
           \param fmt  Format of log string.  See (v)printf manual for details.
           \param args Arguments related to format.  See vprintf manual for additional information.
         */
-        void log(const LogLevel lvl, const char* fmt, va_list args);
+        void log(const LogLevel lvl, const char* fmt, va_list args) override;
 
 private:
         /// Reference to host object

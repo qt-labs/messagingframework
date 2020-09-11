@@ -1056,7 +1056,7 @@ public:
     QMailThreadId parentThreadId() const { return QMailThreadId(value<quint64>(QMailMessageKey::ParentThreadId)); }
 
 private:
-    int fieldIndex(const QString &field, QMailMessageKey::Properties props) const
+    int fieldIndex(const QString &field, QMailMessageKey::Properties props) const override
     {
         return mappedFieldIndex(field, props, _fieldIndex);
     }
@@ -1306,7 +1306,7 @@ public:
 
     QString iconPath() const { return value<QString>(QMailAccountKey::IconPath); }
 private:
-    int fieldIndex(const QString &field, int props) const
+    int fieldIndex(const QString &field, int props) const override
     {
         return mappedFieldIndex(field, props, _fieldIndex);
     }
@@ -1420,7 +1420,7 @@ public:
     uint serverUndiscoveredCount() const { return value<uint>(QMailFolderKey::ServerUndiscoveredCount); }
 
 private:
-    int fieldIndex(const QString &field, int props) const
+    int fieldIndex(const QString &field, int props) const override
     {
         return mappedFieldIndex(field, props, _fieldIndex);
     }
@@ -1552,7 +1552,7 @@ public:
     quint64 status() const { return value<quint64>(QMailThreadKey::Status); }
 
 private:
-    int fieldIndex(const QString &field, int props) const
+    int fieldIndex(const QString &field, int props) const override
     {
         return mappedFieldIndex(field, props, _fieldIndex);
     }
@@ -1670,7 +1670,7 @@ public:
     QMailFolderId parentFolderId() const { return QMailFolderId(value<quint64>(QLatin1String("parentfolderid"))); }
 
 private:
-    int fieldIndex(const QString &field, int props) const
+    int fieldIndex(const QString &field, int props) const override
     {
         return mappedFieldIndex(field, props, _fieldIndex);
     }

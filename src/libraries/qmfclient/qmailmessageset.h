@@ -107,8 +107,8 @@ public:
 
     QModelIndex modelIndex(int column = 0);
 
-    virtual QObject *qObject();
-    virtual QMailMessageSetModel *model();
+    virtual QObject *qObject() override;
+    virtual QMailMessageSetModel *model() override;
 
 protected:
     friend class QMailMessageSetContainer;
@@ -134,10 +134,10 @@ public:
     QMailFolderId folderId() const;
     bool hierarchical() const;
 
-    virtual QMailMessageKey messageKey() const;
-    virtual QMailMessageKey descendantsMessageKey() const;
+    virtual QMailMessageKey messageKey() const override;
+    virtual QMailMessageKey descendantsMessageKey() const override;
 
-    virtual QString displayName() const;
+    virtual QString displayName() const override;
 
     static QMailMessageKey contentKey(const QMailFolderId &id, bool descendants);
 
@@ -148,10 +148,10 @@ protected Q_SLOTS:
     virtual void folderContentsModified(const QMailFolderIdList &ids);
 
 protected:
-    virtual void init();
+    virtual void init() override;
     virtual void synchronizeChildren();
     virtual void createChild(const QMailFolderId &childId);
-    virtual void resyncState();
+    virtual void resyncState() override;
 
     QMailFolderKey folderKey() const;
 };
@@ -171,10 +171,10 @@ public:
     QMailAccountId accountId() const;
     bool hierarchical() const;
 
-    virtual QMailMessageKey messageKey() const;
-    virtual QMailMessageKey descendantsMessageKey() const;
+    virtual QMailMessageKey messageKey() const override;
+    virtual QMailMessageKey descendantsMessageKey() const override;
 
-    virtual QString displayName() const;
+    virtual QString displayName() const override;
 
     static QMailMessageKey contentKey(const QMailAccountId &id, bool descendants);
 
@@ -186,10 +186,10 @@ protected Q_SLOTS:
     virtual void accountContentsModified(const QMailAccountIdList &ids);
 
 protected:
-    virtual void init();
+    virtual void init() override;
     virtual void synchronizeChildren();
     virtual void createChild(const QMailFolderId &childId);
-    virtual void resyncState();
+    virtual void resyncState() override;
 
     QMailFolderKey rootFolderKey() const;
 };
@@ -206,10 +206,10 @@ public:
 
     QMailFilterMessageSet(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimalUpdates = true);
 
-    virtual QMailMessageKey messageKey() const;
+    virtual QMailMessageKey messageKey() const override;
     virtual void setMessageKey(const QMailMessageKey &key);
 
-    virtual QString displayName() const;
+    virtual QString displayName() const override;
     virtual void setDisplayName(const QString &name);
 
     virtual bool updatesMinimized() const;
@@ -222,9 +222,9 @@ protected Q_SLOTS:
     virtual void folderContentsModified(const QMailFolderIdList &ids);
 
 protected:
-    virtual void init();
+    virtual void init() override;
     virtual void reset();
-    virtual void resyncState();
+    virtual void resyncState() override;
 };
 
 
@@ -248,13 +248,13 @@ public:
     virtual ~QMailMessageSetModel();
 
 
-    virtual int rowCount(const QModelIndex &parentIndex) const;
-    virtual int columnCount(const QModelIndex &) const;
+    virtual int rowCount(const QModelIndex &parentIndex) const override;
+    virtual int columnCount(const QModelIndex &) const override;
 
     bool isEmpty() const;
 
-    QModelIndex index(int row, int column, const QModelIndex &parentIndex) const;
-    QModelIndex parent(const QModelIndex &index) const;
+    QModelIndex index(int row, int column, const QModelIndex &parentIndex) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
 
     QModelIndex indexFromAccountId(const QMailAccountId &id) const;
     QModelIndex indexFromFolderId(const QMailFolderId &id) const;
@@ -265,11 +265,11 @@ public:
     QMailMessageSet *itemFromIndex(const QModelIndex &index) const;
     QModelIndex indexFromItem(QMailMessageSet *item) const;
 
-    QVariant data(const QModelIndex &index, int role) const;
+    QVariant data(const QModelIndex &index, int role) const override;
 
     virtual QVariant data(QMailMessageSet *item, int role, int column) const;
 
-    virtual QMailMessageSetModel *model();
+    virtual QMailMessageSetModel *model() override;
 
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
@@ -321,7 +321,7 @@ private:
     friend class QMailMessageSetContainer;
     friend class QMailMessageSet;
 
-    virtual QObject *qObject();
+    virtual QObject *qObject() override;
 
     void beginAppend(QMailMessageSet *child);
     void endAppend(QMailMessageSet *child);
