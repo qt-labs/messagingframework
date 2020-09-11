@@ -1739,7 +1739,7 @@ void ImapClient::messageBufferFlushed()
 void ImapClient::removeAllFromBuffer(QMailMessage *message)
 {
     if (message) {
-        QMap<QMailMessageId, QString>::const_iterator i = detachedTempFiles.find(message->id());
+        QMultiMap<QMailMessageId, QString>::const_iterator i = detachedTempFiles.find(message->id());
         while (i != detachedTempFiles.end() && i.key() == message->id()) {
             if (!(*i).isEmpty() && QFile::exists(*i)) {
                 QFile::remove(*i);
