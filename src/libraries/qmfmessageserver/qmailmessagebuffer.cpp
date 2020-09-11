@@ -35,6 +35,7 @@
 #include "qmailstore.h"
 #include <qmaillog.h>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include <QSettings>
 #include <QFile>
@@ -54,7 +55,7 @@ class QMailMessageBufferPrivate
 
     // Flush the buffer periodically
     QTimer messageTimer;
-    QTime secondaryTimer;
+    QElapsedTimer secondaryTimer;
     int lastFlushTimePerMessage;
 
 };
@@ -151,7 +152,7 @@ void QMailMessageBuffer::messageFlush()
 {
     QMailStore *store = QMailStore::instance();
     QList<QMailMessage*> work;
-    QTime commitTimer;
+    QElapsedTimer commitTimer;
     int processed = messagePending();
     commitTimer.start();
 

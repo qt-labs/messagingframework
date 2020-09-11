@@ -39,6 +39,7 @@
 #include <qobject.h>
 #include <qlist.h>
 #include <qtimer.h>
+#include <qelapsedtimer.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageclassifier.h>
@@ -177,7 +178,7 @@ private:
 
     QStringList capabilities;
     QList<QByteArray> authCommands;
-    QTime lastStatusTimer;
+    QElapsedTimer lastStatusTimer;
     QVector<QMailMessage*> _bufferedMessages;
     QVector<QMailMessageBufferFlushCallback*> callbacks;
     bool testing;
