@@ -3353,7 +3353,7 @@ QMailMessageMetaData QMailStorePrivate::extractMessageMetaData(const QSqlRecord&
     QMailMessageMetaData metaData;
 
     // Load the meta data items (note 'SELECT *' does not give the same result as 'SELECT expand(allMessageProperties())')
-    extractMessageMetaData(r, QMailMessageKey::Properties(0), properties, &metaData);
+    extractMessageMetaData(r, QMailMessageKey::Properties(), properties, &metaData);
 
     metaData.setCustomFields(customFields);
     metaData.setCustomFieldsModified(false);
@@ -3366,7 +3366,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
     QMailMessage newMessage;
 
     // Load the meta data items (note 'SELECT *' does not give the same result as 'SELECT expand(allMessageProperties())')
-    extractMessageMetaData(r, QMailMessageKey::Properties(0), properties, &newMessage);
+    extractMessageMetaData(r, QMailMessageKey::Properties(), properties, &newMessage);
 
     newMessage.setCustomFields(customFields);
     newMessage.setCustomFieldsModified(false);
@@ -3393,7 +3393,7 @@ QMailMessage QMailStorePrivate::extractMessage(const QSqlRecord& r, const QMap<Q
         }
 
         // Re-load the meta data items so that they take precedence over the loaded content
-        extractMessageMetaData(r, QMailMessageKey::Properties(0), properties, &newMessage);
+        extractMessageMetaData(r, QMailMessageKey::Properties(), properties, &newMessage);
 
         newMessage.setCustomFields(customFields);
         newMessage.setCustomFieldsModified(false);
