@@ -47,6 +47,7 @@
 
 #include "qmaildatacomparator.h"
 #include <QDataStream>
+#include <QIODevice>
 #include <QVariantList>
 
 namespace QMailKey {

@@ -40,6 +40,7 @@
 #include "qmaillog.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QIODevice>
 #include <stdlib.h>
 
 /* ! - documentation comments in this file are diasabled:
