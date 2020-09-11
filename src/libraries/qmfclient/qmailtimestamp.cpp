@@ -260,11 +260,11 @@ QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) con
         result = QLocale::c().toString(originalTime, QLatin1String("%1, d %2 yyyy hh:mm:ss %3"));
         result = result.arg( QString::fromLatin1( Days + ( originalDate.dayOfWeek() - 1 ) * 3, 3 ) );
         result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
-        result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
+        result = result.arg( QString().asprintf( "%+.2d%.2d", hOffset, mOffset ) );
     } else if (format == QMailTimeStamp::Rfc3501) {
         result = QLocale::c().toString(originalTime, QLatin1String("dd-%1-yyyy hh:mm:ss %2"));
         result = result.arg( QString::fromLatin1( Months + ( originalDate.month() - 1 ) * 3, 3 ) );
-        result = result.arg( QString().sprintf( "%+.2d%.2d", hOffset, mOffset ) );
+        result = result.arg( QString().asprintf( "%+.2d%.2d", hOffset, mOffset ) );
 
         // The day number should be space-padded
         if (result[0] == QChar::fromLatin1('0')) {
@@ -272,7 +272,7 @@ QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) con
         }
     } else if (format == QMailTimeStamp::Rfc3339) {
         result = QLocale::c().toString(originalTime, QLatin1String("yyyy-MM-ddThh:mm:ss%1"));
-        result = result.arg(utcOffset == 0 ? QLatin1String("Z") : QString().sprintf("%+.2d:%.2d", hOffset, mOffset));
+        result = result.arg(utcOffset == 0 ? QLatin1String("Z") : QString().asprintf("%+.2d:%.2d", hOffset, mOffset));
     }
 
     return result;
