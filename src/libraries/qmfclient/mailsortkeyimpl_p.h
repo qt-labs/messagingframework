@@ -49,6 +49,7 @@ public:
     typedef typename Key::ArgumentType Argument;
 
     MailSortKeyImpl();
+    MailSortKeyImpl(const MailSortKeyImpl& other);
     MailSortKeyImpl(Property p, Qt::SortOrder order, quint64 mask);
     MailSortKeyImpl(const QList<Argument> &args);
 
@@ -71,6 +72,12 @@ public:
 template<typename Key>
 MailSortKeyImpl<Key>::MailSortKeyImpl()
     : QSharedData()
+{
+}
+
+template<typename Key>
+MailSortKeyImpl<Key>::MailSortKeyImpl(const MailSortKeyImpl& other)
+    : QSharedData(other), _arguments(other._arguments)
 {
 }
 
