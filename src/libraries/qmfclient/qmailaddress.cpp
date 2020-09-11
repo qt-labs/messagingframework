@@ -46,7 +46,7 @@ static bool needsQuotes(const QString& src)
 
     // Remove any quoted-pair characters, since they don't require quoting
     int index = 0;
-    while ((index = characters.indexOf('\\', index)) != -1)
+    while ((index = characters.indexOf(QChar::fromLatin1('\\'), index)) != -1)
         characters.remove(index, 2);
 
     if ( specials.indexIn( characters ) != -1 )
@@ -58,10 +58,10 @@ static bool needsQuotes(const QString& src)
 
     int commentDepth = 0;
     for (; it != end; ++it)
-        if (*it == '(') {
+        if (*it == QChar::fromLatin1('(')) {
             ++commentDepth;
         }
-        else if (*it == ')') {
+        else if (*it == QChar::fromLatin1(')')) {
             if (--commentDepth < 0)
                 return true;
         }
@@ -92,26 +92,26 @@ void CharacterProcessor::processCharacters(const QString& input)
     const QChar* it = input.constData();
     const QChar* const end = it + input.length();
     for ( ; it != end; ++it ) {
-        if ( !escaped && ( *it == '\\' ) ) {
+        if ( !escaped && ( *it == QChar::fromLatin1('\\' )) ) {
             escaped = true;
             continue;
         }
 
         bool quoteProcessed = false;
-        if ( *it == '(' && !escaped && !quoted ) {
+        if ( *it == QChar::fromLatin1('(') && !escaped && !quoted ) {
             commentDepth += 1;
         }
-        else if ( !quoted && *it == '"' && !escaped ) {
+        else if ( !quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = true;
             quoteProcessed = true;
         }
 
         process((*it), quoted, escaped, commentDepth);
 
-        if ( *it == ')' && !escaped && !quoted && ( commentDepth > 0 ) ) {
+        if ( *it == QChar::fromLatin1(')') && !escaped && !quoted && ( commentDepth > 0 ) ) {
             commentDepth -= 1;
         }
-        else if ( quoted && *it == '"' && !quoteProcessed && !escaped ) {
+        else if ( quoted && *it == QChar::fromLatin1('"') && !quoteProcessed && !escaped ) {
             quoted = false;
         }
 
@@ -199,7 +199,9 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
     }
 
     // RFC 2822 requires comma as the separator, but we'll allow the semi-colon as well.
-    if ( ( character == ',' || character == ';' || character.isSpace()) && 
+    if ( ( character == QChar::fromLatin1(',')
+           || character == QChar::fromLatin1(';')
+           || character.isSpace()) &&
          !_inGroup && !quoted && !escaped && commentDepth == 0 ) {
         if (character.isSpace()) {
             // We'll also attempt to separate on whitespace, but we need to append it to 
@@ -223,15 +225,15 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
         accept(character);
         _tokenStarted = true;
 
-        if ( character == '<' && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        if ( character == QChar::fromLatin1('<') && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
             _inAddress = true;
 
             if (_type == Unknown || _type == Comment)
                 _type = Address;
-        } else if ( character == '>' && _inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        } else if ( character == QChar::fromLatin1('>') && _inAddress && !quoted && !escaped && commentDepth == 0 ) {
             _inAddress = false;
         }
-        else if ( character == ':' && !_inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        else if ( character == QChar::fromLatin1(':') && !_inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
             static const QString collectiveTag;
 
             // Don't parse as a group if we match the IM format
@@ -241,7 +243,7 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
                 _type = Group;
             }
         }
-        else if ( character == ';' && _inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        else if ( character == QChar::fromLatin1(';') && _inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
             _inGroup = false;
 
             // This is a soft separator, because the group construct could have a trailing comment
@@ -442,9 +444,9 @@ GroupDetector::GroupDetector()
 
 void GroupDetector::process(QChar character, bool quoted, bool escaped, int commentDepth)
 {
-    if ( character == ':' && !_nameDelimiter && !quoted && !escaped && commentDepth == 0 )
+    if ( character == QChar::fromLatin1(':') && !_nameDelimiter && !quoted && !escaped && commentDepth == 0 )
         _nameDelimiter = true;
-    else if ( character == ';' && !_listTerminator && _nameDelimiter && !quoted && !escaped && commentDepth == 0 )
+    else if ( character == QChar::fromLatin1(';') && !_listTerminator && _nameDelimiter && !quoted && !escaped && commentDepth == 0 )
         _listTerminator = true;
 }
 
@@ -554,7 +556,7 @@ void QuoteDisplayName::finished()
     // check if our processed word is a comment or not
     if (!_processedWord.isEmpty()) {
         QString tempWord = _processedWord.trimmed();
-        if (!tempWord.isEmpty() && tempWord.at(0) == '(' && tempWord.at(tempWord.length() -1) == ')') {
+        if (!tempWord.isEmpty() && tempWord.at(0) == QChar::fromLatin1('(') && tempWord.at(tempWord.length() -1) == QChar::fromLatin1(')')) {
             _result.append(_processedWord);
         } else {
             processPending();
@@ -580,23 +582,23 @@ QPair<int, int> findDelimiters(const QString& text)
     const QChar* const begin = text.constData();
     const QChar* const end = begin + text.length();
     for (const QChar* it = begin; it != end; ++it ) {
-        if ( !escaped && ( *it == '\\' ) ) {
+        if ( !escaped && ( *it == QChar::fromLatin1('\\') ) ) {
             escaped = true;
             continue;
         }
 
-        if ( !quoted && *it == '"' && !escaped ) {
+        if ( !quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = true;
         }
-        else if ( quoted && *it == '"' && !escaped ) {
+        else if ( quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = false;
         }
 
         if ( !quoted ) {
-            if ( first == -1 && *it == '<' ) {
+            if ( first == -1 && *it == QChar::fromLatin1('<') ) {
                 first = (it - begin);
             }
-            else if ( second == -1 && *it == '>' ) {
+            else if ( second == -1 && *it == QChar::fromLatin1('>') ) {
                 second = (it - begin);
                 break;
             }
@@ -754,9 +756,9 @@ void QMailAddressPrivate::setComponents(const QString& nameText, const QString& 
         _address = _address.left( charIndex ).trimmed();
     }
 
-    if ( ( charIndex = _address.indexOf( '<' ) ) != -1 )
+    if ( ( charIndex = _address.indexOf(QChar::fromLatin1('<')) ) != -1 )
         _address.remove( charIndex, 1 );
-    if ( ( charIndex = _address.lastIndexOf( '>' ) ) != -1 )
+    if ( ( charIndex = _address.lastIndexOf(QChar::fromLatin1('>')) ) != -1 )
         _address.remove( charIndex, 1 );
 }
 
@@ -841,7 +843,7 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
         return _name;
 
     if ( _group ) {
-        result.append( _name ).append( QLatin1String(": ") ).append( _address ).append( ';' );
+        result.append( _name ).append( QLatin1String(": ") ).append( _address ).append( QChar::fromLatin1(';') );
     } else {
         // If there are any 'special' characters in the name it needs to be quoted
         if ( !_name.isEmpty() ) {
@@ -852,8 +854,8 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
                 result = _address;
             } else {
                 if ( !result.isEmpty() )
-                    result.append( ' ' );
-                result.append( '<' ).append( _address ).append( '>' );
+                    result.append( QChar::fromLatin1(' ') );
+                result.append( QChar::fromLatin1('<') ).append( _address ).append( QChar::fromLatin1('>') );
             }
         }
 

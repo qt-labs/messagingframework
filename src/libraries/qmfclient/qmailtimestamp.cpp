@@ -98,18 +98,20 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
     const QChar* it = timeText.constData();
     const QChar* end = it + timeText.length();
     for ( ; it != end; ++it ) {
-        if ( !escaped && ( *it == '\\' ) ) {
+        if ( !escaped && ( *it == QChar::fromLatin1('\\') ) ) {
             escaped = true;
             continue;
         }
 
-        if ( *it == '(' && !escaped )
+        if ( *it == QChar::fromLatin1('(') && !escaped )
             commentDepth += 1;
-        else if ( *it == ')' && !escaped && ( commentDepth > 0 ) )
+        else if ( *it == QChar::fromLatin1(')') && !escaped && ( commentDepth > 0 ) )
             commentDepth -= 1;
         else if ( commentDepth == 0 ) {
             // Remove characters we don't want
-            if ( *it != ',' && *it != '\n' && *it != '\r' )
+            if ( *it != QChar::fromLatin1(',')
+                 && *it != QChar::LineFeed
+                 && *it != QChar::CarriageReturn )
                 uncommented.append( *it );
         }
 
@@ -118,7 +120,7 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
 
     // Extract the date/time elements
     uncommented = uncommented.trimmed();
-    QStringList tokens = uncommented.split(' ', QString::SkipEmptyParts);
+    QStringList tokens = uncommented.split(QChar::Space, QString::SkipEmptyParts);
 
     int tokenCount = tokens.count();
     if ( tokenCount > 0 ) {
@@ -266,7 +268,7 @@ QString QMailTimeStampPrivate::toString(QMailTimeStamp::OutputFormat format) con
 
         // The day number should be space-padded
         if (result[0] == QChar::fromLatin1('0')) {
-            result[0] = QChar::fromLatin1(' ');
+            result[0] = QChar::Space;
         }
     } else if (format == QMailTimeStamp::Rfc3339) {
         result = QLocale::c().toString(originalTime, QLatin1String("yyyy-MM-ddThh:mm:ss%1"));

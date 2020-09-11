@@ -1352,9 +1352,9 @@ QString QMailCodec::encodeModifiedUtf7(const QString &text)
 
     while (startIndex < in.length()) {
         // insert '-' after '&'
-        if (in[startIndex] == '&') {
+        if (in[startIndex] == QChar::fromLatin1('&')) {
             startIndex++;
-            in.insert(startIndex, '-');
+            in.insert(startIndex, QChar::fromLatin1('-'));
             continue;
         }
 

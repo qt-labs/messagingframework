@@ -458,6 +458,17 @@ public:
         }
     }
 
+    void updateMember(QString& value, const QString& newValue)
+    {
+        if (newValue.isNull() && !value.isEmpty()) {
+            value = QString::fromLatin1("");
+            _dirty = true;
+        } else if (value != newValue) {
+            value = newValue;
+            _dirty = true;
+        }
+    }
+
     bool _dirty;
     void ensureCustomFieldsLoaded() const;
 

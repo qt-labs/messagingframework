@@ -227,13 +227,13 @@ public:
 typedef Guard<ProcessMutex> MutexGuard;
 
 
-QString escape(const QString &original, const QChar &escapee, const QChar &escaper = '\\')
+QString escape(const QString &original, const QChar &escapee, const QChar &escaper = QChar::fromLatin1('\\'))
 {
     QString result(original);
     return result.replace(escapee, QString(escaper) + escapee);
 }
 
-QString unescape(const QString &original, const QChar &escapee, const QChar &escaper = '\\')
+QString unescape(const QString &original, const QChar &escapee, const QChar &escaper = QChar::fromLatin1('\\'))
 {
     QString result(original);
     return result.replace(QString(escaper) + escapee, escapee);
@@ -245,7 +245,7 @@ QString contentUri(const QString &scheme, const QString &identifier)
         return QString();
 
     // Formulate a URI from the content scheme and identifier
-    return escape(scheme, ':') + ':' + escape(identifier, ':');
+    return escape(scheme, QChar::fromLatin1(':')) + QChar::fromLatin1(':') + escape(identifier, QChar::fromLatin1(':'));
 }
 
 QString contentUri(const QMailMessageMetaData &message)
@@ -255,11 +255,11 @@ QString contentUri(const QMailMessageMetaData &message)
 
 QPair<QString, QString> extractUriElements(const QString &uri)
 {
-    int index = uri.indexOf(':');
-    while ((index != -1) && (uri.at(index - 1) == '\\'))
-        index = uri.indexOf(':', index + 1);
+    int index = uri.indexOf(QChar::fromLatin1(':'));
+    while ((index != -1) && (uri.at(index - 1) == QChar::fromLatin1('\\')))
+        index = uri.indexOf(QChar::fromLatin1(':'), index + 1);
 
-    return qMakePair(unescape(uri.mid(0, index), ':'), unescape(uri.mid(index + 1), ':'));
+    return qMakePair(unescape(uri.mid(0, index), QChar::fromLatin1(':')), unescape(uri.mid(index + 1), QChar::fromLatin1(':')));
 }
 
 QString identifierValue(const QString &str)
@@ -832,9 +832,9 @@ protected:
         if (!s.isEmpty()) {
             // Delimit data for sql "LIKE" operator
             if (((arg.op == Includes) || (arg.op == Excludes)) || (((arg.op == Equal) || (arg.op == NotEqual)) && valueMinimalised))
-                return QString('%' + s + '%');
+                return QString(QChar::fromLatin1('%') + s + QChar::fromLatin1('%'));
         } else if ((arg.op == Includes) || (arg.op == Excludes)) {
-            return QString('%');
+            return QString(QChar::fromLatin1('%'));
         }
 
         return s;
@@ -1113,7 +1113,7 @@ public:
     QVariant contentScheme() const 
     { 
         // Any colons in the field will be stored in escaped format
-        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
+        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), QChar::fromLatin1(':')));
 
         if ((arg.op == Includes) || (arg.op == Excludes)) {
             value.prepend(QChar::fromLatin1('%')).append(QChar::fromLatin1('%'));
@@ -1126,7 +1126,7 @@ public:
     QVariant contentIdentifier() const 
     { 
         // Any colons in the field will be stored in escaped format
-        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), ':')); 
+        QString value(escape(QMailStorePrivate::extractValue<QString>(arg.valueList.first()), QChar::fromLatin1(':')));
 
         if ((arg.op == Includes) || (arg.op == Excludes)) {
             value.prepend(QChar::fromLatin1('%')).append(QChar::fromLatin1('%'));
@@ -1337,10 +1337,10 @@ public:
         // This test will be converted to a LIKE test, for all comparators
         if (arg.op == Equal || arg.op == NotEqual) {
             // Ensure exact match by testing for address delimiters
-            value.prepend('<').append('>');
+            value.prepend(QChar::fromLatin1('<')).append(QChar::fromLatin1('>'));
         }
 
-        return value.prepend('%').append('%');
+        return value.prepend(QChar::fromLatin1('%')).append(QChar::fromLatin1('%'));
     }
 
     QVariant status() const { return quint64Value(); }
@@ -2254,7 +2254,7 @@ QString buildWhereClause(const KeyType &key,
     if (!key.isEmpty()) {
         QTextStream s(&whereClause);
 
-        QString op(' ');
+        QString op(QChar::Space);
         foreach (typename ArgumentListType::const_reference a, args) {
             s << op << whereClauseItem(key, a, alias, field, store);
             op = logicalOpString;
@@ -3069,7 +3069,7 @@ QString numericPtrValue(const void *ptr)
 template<>
 QString numericPtrValue<false>(const void *ptr)
 {
-    return QString::number(reinterpret_cast<unsigned long>(ptr), 16).rightJustified(8, '0');;
+    return QString::number(reinterpret_cast<unsigned long>(ptr), 16).rightJustified(8, QChar::fromLatin1('0'));;
 }
 
 QString QMailStorePrivate::temporaryTableName(const QMailMessageKey::ArgumentType& arg)
@@ -4261,7 +4261,7 @@ bool QMailStorePrivate::createTable(const QString &name)
     bool result = true;
 
     // load schema.
-    QFile data(QString::fromLatin1(":/QmfSql/") + database()->driverName() + '/' + name);
+    QFile data(QString::fromLatin1(":/QmfSql/") + database()->driverName() + QChar::fromLatin1('/') + name);
     if (!data.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to load table schema resource:" << name;
         result = false;

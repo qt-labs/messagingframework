@@ -289,7 +289,7 @@ inline FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flus
     if(f == NULL)
     {
         should_close = false;
-        BaseLogger< FileLogger<Prefix>, Prefix >::setUnReady(strerror(errno));
+        BaseLogger< FileLogger<Prefix>, Prefix >::setUnReady(QLatin1String(strerror(errno)));
     }
 }
 

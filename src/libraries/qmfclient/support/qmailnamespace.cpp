@@ -152,16 +152,16 @@ QString QMail::dataPath()
     // encoding as best guess, likely just ascii
     static QString dataEnv(QString::fromUtf8(qgetenv(QMF_DATA_ENV)));
     if(!dataEnv.isEmpty())
-        return dataEnv + '/';
+        return dataEnv + QChar::fromLatin1('/');
     //default to ~/.qmf if not env set
-    return QDir::homePath() + "/.qmf/";
+    return QDir::homePath() + QLatin1String("/.qmf/");
 }
 /*!
     Returns the the time when the Messaging framework store file was las updated.
 */
 QDateTime QMail::lastDbUpdated()
 {
-    static QString database_path(dataPath() + "database");
+    static QString database_path(dataPath() + QLatin1String("database"));
     QDir dir(database_path);
 
     if (!dir.exists()) {
@@ -192,7 +192,7 @@ QDateTime QMail::lastDbUpdated()
 */
 QString QMail::tempPath()
 {
-    return (dataPath() + "tmp/");
+    return (dataPath() + QLatin1String("tmp/"));
 }
 
 /*!
@@ -202,9 +202,9 @@ QString QMail::messageServerPath()
 {
     static QString serverEnv(QString::fromUtf8(qgetenv(QMF_SERVER_ENV)));
     if(!serverEnv.isEmpty())
-        return serverEnv + '/';
+        return serverEnv + QChar::fromLatin1('/');
 
-    return QCoreApplication::applicationDirPath() + '/';
+    return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
 
 /*!
@@ -214,8 +214,8 @@ QString QMail::messageSettingsPath()
 {
     static QString settingsEnv(QString::fromUtf8(qgetenv(QMF_SETTINGS_ENV)));
     if(!settingsEnv.isEmpty())
-        return settingsEnv + '/';
-    return QCoreApplication::applicationDirPath() + '/';
+        return settingsEnv + QChar::fromLatin1('/');
+    return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
 
 /*!
@@ -286,20 +286,20 @@ QSqlDatabase QMail::createDatabase()
         qMailLog(Messaging) << "opening database";
         db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), instance->dbConnectionName());
         
-        QDir dbDir(dataPath() + "database");
+        QDir dbDir(dataPath() + QLatin1String("database"));
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
             QString path = dataPath();
-            if (path.endsWith('/'))
+            if (path.endsWith(QChar::fromLatin1('/')))
                 path = path.left(path.length() - 1);
             if (!QDir(path).exists() && ::mkdir(QFile::encodeName(path), S_IRWXU) == -1)
                 qCritical() << "Cannot create database directory: " << errno;
 #endif
-            if (!dbDir.mkpath(dataPath() + "database"))
+            if (!dbDir.mkpath(dataPath() + QLatin1String("database")))
                 qCritical() << "Cannot create database path";
         }
 
-        db.setDatabaseName(dataPath() + "database/qmailstore.db");
+        db.setDatabaseName(dataPath() + QLatin1String("database/qmailstore.db"));
 #endif
 
         if(!db.open()) {
@@ -421,11 +421,11 @@ QString QMail::mimeTypeFromFileName(const QString& filename)
 
     // either it doesn't have exactly one mime-separator, or it has
     // a path separator at the beginning
-    QString mime_sep('/');
+    QString mime_sep(QChar::fromLatin1('/'));
     bool doesntLookLikeMimeString = (filename.count(mime_sep) != 1) || (filename[0] == QDir::separator());
 
     if (doesntLookLikeMimeString || QFile::exists(filename)) {
-        int dot = filename.lastIndexOf('.');
+        int dot = filename.lastIndexOf(QChar::fromLatin1('.'));
         QString ext = dot >= 0 ? filename.mid(dot+1) : filename;
 
         QHash<QString,QString>::const_iterator it = typeFor()->find(ext.toLower());
@@ -564,7 +564,7 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
                               ")"));
 
     // Extracts message identifiers from \a str, matching the definition used in RFC 5256
-    int index = str.indexOf('<');
+    int index = str.indexOf(QChar::fromLatin1('<'));
     if (index != -1) {
         // This may contain other information besides the IDs delimited by < and >
         do {
@@ -576,7 +576,7 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
                 index += 1;
             }
 
-            index = str.indexOf('<', index);
+            index = str.indexOf(QChar::fromLatin1('<'), index);
         } while (index != -1);
     } else {
         // No delimiters - consider the entirety as an identifier

@@ -9,8 +9,6 @@ MODULE_PLUGIN_TYPES = \
 load(qt_module)
 CONFIG -= create_cmake
 
-DEFINES -= QT_NO_CAST_TO_ASCII # this is a fight for another day.
-
 DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
 DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
 
