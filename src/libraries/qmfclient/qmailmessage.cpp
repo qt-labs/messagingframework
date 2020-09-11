@@ -3098,10 +3098,11 @@ void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>
             excluded = matchingId(internalPrefix(), id, true);
 
         // Bypass any header in the list of exclusions
-        if (!excluded)
+        if (!excluded) {
             foreach (const QByteArray& exclusion, exclusions)
                 if (matchingId(exclusion, id))
                     excluded = true;
+        }
 
         if (!excluded)
             headerField.output(out);
