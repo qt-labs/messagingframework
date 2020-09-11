@@ -143,7 +143,7 @@ private:
 template<class T>
 QCopAdaptorEnvelope& QCopAdaptorEnvelope::operator<<(const T &value)
 {
-    addArgument(qVariantFromValue(value));
+    addArgument(QVariant::fromValue(value));
     return *this;
 }
 
