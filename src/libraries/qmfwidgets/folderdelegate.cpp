@@ -73,7 +73,7 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
     int tw = 0;
     if (!_statusText.isEmpty()) {
         QFontMetrics fontMetrics(option.font);
-        tw = fontMetrics.width(_statusText);
+        tw = fontMetrics.boundingRect(_statusText).width();
     }
 
     QRect textRect(rect);
