@@ -193,17 +193,13 @@ QCopAdaptorPrivate::~QCopAdaptorPrivate()
 // Get the QVariant type number for a type name.
 int QCopAdaptorPrivate::typeFromName( const QByteArray& type )
 {
-    int id;
     if (type.endsWith('*'))
         return QMetaType::VoidStar;
     else if ( type.size() == 0 || type == "void" )
         return QMetaType::Void;
     else if ( type == "QVariant" )
         return QCopAdaptorPrivate::QVariantId;
-    id = QMetaType::type( type.constData() );
-    if ( id != (int)QMetaType::Void )
-        return id;
-    return QVariant::nameToType(type);
+    return QMetaType::fromName(type).id();
 }
 
 // Returns the connection types associated with a signal or slot member.
@@ -260,7 +256,7 @@ int QCopAdaptorPrivate::qt_metacall(QMetaObject::Call c, int id, void **a)
                     QList<QVariant> args;
                     for (int i = 0; i < info->numArgs; ++i) {
                         if (info->types[i] != QCopAdaptorPrivate::QVariantId) {
-                            QVariant arg(info->types[i], a[i + 1]);
+                            QVariant arg(QMetaType(info->types[i]), a[i + 1]);
                             args.append(arg);
                         } else {
                             args.append(*((const QVariant *)(a[i + 1])));
@@ -295,12 +291,12 @@ public:
         clear();
         create(typeOrMetaType, 0);
         d.is_null = false;
-        QMetaType::load(stream, d.type, const_cast<void *>(constData()));
+        d.type().load(stream, const_cast<void *>(constData()));
     }
 
     void save(QDataStream& stream) const
     {
-        QMetaType::save(stream, d.type, constData());
+        d.type().save(stream, constData());
     }
 };
 
@@ -610,7 +606,7 @@ void QCopAdaptor::received(const QString& msg, const QByteArray& data)
         QVariant returnValue;
         QVarLengthArray<void *, 32> a(info->numArgs + 1);
         if (info->returnType != (int)QVariant::Invalid && info->returnType != (int)QMetaType::Void) {
-            returnValue = QVariant(info->returnType, (const void *)0);
+            returnValue = QVariant(QMetaType(info->returnType), (const void *)0);
             a[0] = returnValue.data();
         } else {
             a[0] = 0;

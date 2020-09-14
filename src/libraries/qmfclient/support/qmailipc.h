@@ -57,12 +57,9 @@ struct QMetaTypeRegister
     template<> \
     struct QMetaTypeRegister< TYPE > \
     { \
-        static int registerType() \
-        { \
+        static int registerType() { \
             _QATOMIC_ONCE(); \
-            int id = qMetaTypeId<TYPE>(); \
-            if ( id >= static_cast<int>(QMetaType::User) ) \
-                qRegisterMetaTypeStreamOperators< TYPE >( #TYPE ); \
+            qRegisterMetaType<TYPE>( #TYPE ); \
             return 1; \
         } \
         static int __init_variable__; \
@@ -83,7 +80,6 @@ struct QMetaTypeRegister
         static int registerType() { \
             _QATOMIC_ONCE(); \
             qRegisterMetaType< TYPE >( #TYPE ); \
-            qRegisterMetaTypeStreamOperators< TYPE >( #TYPE ); \
             return 1; \
         } \
         static int __init_variable__; \

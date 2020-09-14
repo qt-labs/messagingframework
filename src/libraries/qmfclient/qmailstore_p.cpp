@@ -2859,7 +2859,7 @@ static QString queryText(const QString &query, const QList<QVariant> &values)
     int index = result.indexOf(marker);
     while ((index != -1) && (it != end)) {
         QString substitute((*it).toString());
-        if ((*it).type() == QVariant::String)
+        if ((*it).metaType() == QMetaType::fromType<QString>())
             substitute.prepend(quote).append(quote);
 
         result.replace(index, 1, substitute);
@@ -2874,7 +2874,7 @@ static QString queryText(const QString &query, const QList<QVariant> &values)
 static QString queryText(const QSqlQuery &query)
 {
     // Note: we currently only handle positional parameters
-    return queryText(query.lastQuery().simplified(), query.boundValues().values());
+    return queryText(query.lastQuery().simplified(), query.boundValues());
 }
 
 QSqlQuery QMailStorePrivate::prepare(const QString& sql)
