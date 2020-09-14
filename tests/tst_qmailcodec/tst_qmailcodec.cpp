@@ -104,26 +104,26 @@ void tst_QMailCodec::cleanup()
 void tst_QMailCodec::encode_data()
 {
     QTest::addColumn<QString>("plaintext");
-    QTest::addColumn<QString>("charset");
+    QTest::addColumn<QByteArray>("charset");
     QTest::addColumn<QByteArray>("base64_encoded");
     QTest::addColumn<QByteArray>("qp2045_encoded");
     QTest::addColumn<QByteArray>("qp2047_encoded");
 
-    QTest::newRow("no padding") 
+    QTest::newRow("no padding")
         << "abc xyz ABC XYZ 01 89"
         << "UTF-8"
         << QByteArray("YWJjIHh5eiBBQkMgWFlaIDAxIDg5")
         << QByteArray("abc xyz ABC XYZ 01 89")
         << QByteArray("abc_xyz_ABC_XYZ_01_89");
 
-    QTest::newRow("one padding byte") 
+    QTest::newRow("one padding byte")
         << "|#abc xyz ABC XYZ 01 89"
         << "UTF-8"
         << QByteArray("fCNhYmMgeHl6IEFCQyBYWVogMDEgODk=")
         << QByteArray("|#abc xyz ABC XYZ 01 89")
         << QByteArray("=7C=23abc_xyz_ABC_XYZ_01_89");
 
-    QTest::newRow("two padding bytes") 
+    QTest::newRow("two padding bytes")
         << "#abc xyz ABC XYZ 01 89"
         << "UTF-8"
         << QByteArray("I2FiYyB4eXogQUJDIFhZWiAwMSA4OQ==")
@@ -132,7 +132,7 @@ void tst_QMailCodec::encode_data()
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
     const QChar chars[] = { 0x0636, 0x0020, 0x0669, 0x0009, 0x06a5, 0x0020, 0x06b4 };
-    QTest::newRow("unicode characters") 
+    QTest::newRow("unicode characters")
         << QString(chars, 7)
         << "UTF-8"
         << QByteArray("2LYg2akJ2qUg2rQ=")
@@ -142,8 +142,8 @@ void tst_QMailCodec::encode_data()
 
 void tst_QMailCodec::encode()
 {
-    QFETCH(QString, plaintext); 
-    QFETCH(QString, charset); 
+    QFETCH(QString, plaintext);
+    QFETCH(QByteArray, charset);
     QFETCH(QByteArray, base64_encoded);
     QFETCH(QByteArray, qp2045_encoded);
     QFETCH(QByteArray, qp2047_encoded);
@@ -151,7 +151,7 @@ void tst_QMailCodec::encode()
     QByteArray encoded;
     QString reversed;
 
-    QTextCodec* codec = QTextCodec::codecForName(charset.toLatin1());
+    QTextCodec* codec = QTextCodec::codecForName(charset);
 
     // Test that the base64 encoding is correct
     {
@@ -273,7 +273,7 @@ void tst_QMailCodec::decode_data()
     QTest::addColumn<QString>("charset");
     QTest::addColumn<QString>("plaintext");
 
-    QTest::newRow("") 
+    QTest::newRow("")
         << QByteArray("...")
         << "UTF-8"
         << QString("...");
@@ -283,9 +283,9 @@ void tst_QMailCodec::decode_data()
 void tst_QMailCodec::decode()
 {
     /*
-    QFETCH(QByteArray, base64_encoded); 
-    QFETCH(QString, charset); 
-    QFETCH(QString, plaintext); 
+    QFETCH(QByteArray, base64_encoded);
+    QFETCH(QString, charset);
+    QFETCH(QString, plaintext);
 
     QMailBase64Codec b64Codec(QMailBase64Codec::Binary);
     QString decoded = b64Codec.decode(base64_encoded, charset);
@@ -304,14 +304,14 @@ void tst_QMailCodec::line_lengths_data()
     QTest::addColumn<int>("base64_line_length");
     QTest::addColumn<int>("qp_line_length");
     QTest::addColumn<QString>("plaintext");
-    QTest::addColumn<QString>("charset");
+    QTest::addColumn<QByteArray>("charset");
     QTest::addColumn<QByteArray>("base64_encoded");
     QTest::addColumn<QByteArray>("qp2045_encoded");
     QTest::addColumn<QByteArray>("qp2047_encoded");
 
     // Base-64 lengths must be a multiple of 4...
-    QTest::newRow("default line length") 
-        << Base64MaxLineLength 
+    QTest::newRow("default line length")
+        << Base64MaxLineLength
         << QuotedPrintableMaxLineLength
         << "The quick brown fox jumps over the lazy dog"
         << "UTF-8"
@@ -319,7 +319,7 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("The quick brown fox jumps over the lazy dog")
         << QByteArray("The_quick_brown_fox_jumps_over_the_lazy_dog");
 
-    QTest::newRow("line length 32") 
+    QTest::newRow("line length 32")
         << 32
         << 32
         << "The quick brown fox jumps over the lazy dog"
@@ -328,7 +328,7 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("The quick brown fox jumps over=\r\n the lazy dog")
         << QByteArray("The_quick_brown_fox_jumps_over=\r\n_the_lazy_dog");
 
-    QTest::newRow("line length 16") 
+    QTest::newRow("line length 16")
         << 16
         << 16
         << "The quick brown fox jumps over the lazy dog"
@@ -337,7 +337,7 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("The quick brown=\r\n fox jumps over=\r\n the lazy dog")
         << QByteArray("The_quick_brown=\r\n_fox_jumps_over=\r\n_the_lazy_dog");
 
-    QTest::newRow("line length 8") 
+    QTest::newRow("line length 8")
         << 8
         << 8
         << "The quick brown fox jumps over the lazy dog"
@@ -346,7 +346,7 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("The quic=\r\nk brown=\r\n fox jum=\r\nps over=\r\n the laz=\r\ny dog")
         << QByteArray("The_quic=\r\nk_brown=\r\n_fox_jum=\r\nps_over=\r\n_the_laz=\r\ny_dog");
 
-    QTest::newRow("whitespace") 
+    QTest::newRow("whitespace")
         << 8
         << 8
         << "The    quick\t\t  brown\t     \tfox"
@@ -365,7 +365,7 @@ void tst_QMailCodec::line_lengths_data()
         << QByteArray("_=20\r\nPlop");
 
     // Restore normality
-    QTest::newRow("restore default line length") 
+    QTest::newRow("restore default line length")
         << Base64MaxLineLength
         << QuotedPrintableMaxLineLength
         << QString()
@@ -377,10 +377,10 @@ void tst_QMailCodec::line_lengths_data()
 
 void tst_QMailCodec::line_lengths()
 {
-    QFETCH(int, base64_line_length); 
-    QFETCH(int, qp_line_length); 
-    QFETCH(QString, plaintext); 
-    QFETCH(QString, charset); 
+    QFETCH(int, base64_line_length);
+    QFETCH(int, qp_line_length);
+    QFETCH(QString, plaintext);
+    QFETCH(QByteArray, charset);
     QFETCH(QByteArray, base64_encoded);
     QFETCH(QByteArray, qp2045_encoded);
     QFETCH(QByteArray, qp2047_encoded);
@@ -476,20 +476,20 @@ void tst_QMailCodec::buffer_sizes_data()
 {
     QTest::addColumn<int>("buffer_size");
 
-    QTest::newRow("default buffer size") 
+    QTest::newRow("default buffer size")
         << MaxCharacters;
-        
-    QTest::newRow("buffer size 19") 
+       
+    QTest::newRow("buffer size 19")
         << 19;
 
-    QTest::newRow("buffer size 5") 
+    QTest::newRow("buffer size 5")
         << 5;
 
-    QTest::newRow("buffer size 1") 
+    QTest::newRow("buffer size 1")
         << 1;
 
     // Restore normality
-    QTest::newRow("restore default buffer size") 
+    QTest::newRow("restore default buffer size")
         << MaxCharacters;
 }
 
@@ -506,7 +506,7 @@ void tst_QMailCodec::buffer_sizes()
     QuotedPrintableMaxLineLength = 8;
 
     QString plaintext("The    quick\t\t  brown\t     \tfox");
-    QString charset("UTF-8");
+    QByteArray charset("UTF-8");
     QByteArray base64_encoded("VGhlICAg\r\nIHF1aWNr\r\nCQkgIGJy\r\nb3duCSAg\r\nICAgCWZv\r\neA==");
     QByteArray qp2045_encoded("The  =20=\r\n quick=\r\n\t\t  brow=\r\nn\t   =20=\r\n \tfox");
     QByteArray qp2047_encoded("The__=20=\r\n_quick=\r\n=09=09=\r\n__brown=\r\n=09__=20=\r\n__=09fox");
@@ -565,7 +565,7 @@ void tst_QMailCodec::buffer_sizes()
 void tst_QMailCodec::embedded_newlines_data()
 {
     QTest::addColumn<QString>("plaintext");
-    QTest::addColumn<QString>("charset");
+    QTest::addColumn<QByteArray>("charset");
     QTest::addColumn<QByteArray>("text_encoded");
     QTest::addColumn<QString>("text_decoded");
     QTest::addColumn<QByteArray>("binary_encoded");
@@ -575,7 +575,7 @@ void tst_QMailCodec::embedded_newlines_data()
     // In these test cases we use the following sequences:
     //   CR - 0x0D - \015
     //   LF - 0x0A - \012
-    QTest::newRow("new lines") 
+    QTest::newRow("new lines")
         << "The\012quick\015\012\015brown\015fox"
         << "UTF-8"
         << QByteArray("The\015\012quick\015\012\015\012brown\015\012fox")
@@ -587,19 +587,19 @@ void tst_QMailCodec::embedded_newlines_data()
 
 void tst_QMailCodec::embedded_newlines()
 {
-    QFETCH(QString, plaintext); 
-    QFETCH(QString, charset); 
+    QFETCH(QString, plaintext);
+    QFETCH(QByteArray, charset);
     QFETCH(QByteArray, text_encoded);
     QFETCH(QString, text_decoded);
     QFETCH(QByteArray, binary_encoded);
     QFETCH(QString, binary_decoded);
     QFETCH(QByteArray, b64_encoded);
-    
+   
     // Prevent cascading failures
     int originalBase64MaxLineLength = Base64MaxLineLength;
     Base64MaxLineLength = 76;
     int originalQuotedPrintableMaxLineLength = QuotedPrintableMaxLineLength;
-    QuotedPrintableMaxLineLength = 74; 
+    QuotedPrintableMaxLineLength = 74;
 
     QByteArray encoded;
     QString reversed;
@@ -616,7 +616,7 @@ void tst_QMailCodec::embedded_newlines()
         QCOMPARE(reversed, text_decoded);
     }
 
-    // The lineEnding codec should encode CRLFs 
+    // The lineEnding codec should encode CRLFs
     {
         QMailLineEndingCodec codec;
         encoded = codec.encode(plaintext, charset);

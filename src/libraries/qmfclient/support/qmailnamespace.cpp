@@ -616,7 +616,6 @@ QMap<QByteArray, QStringList> standardFolderTranslations()
     }
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
     while (!in.atEnd()) {
         QString line = in.readLine();
         QStringList list = line.split(QLatin1Char('='), Qt::SkipEmptyParts);

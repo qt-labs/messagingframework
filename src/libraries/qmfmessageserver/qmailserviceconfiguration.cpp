@@ -188,7 +188,7 @@ QString QMailServiceConfiguration::encodeValue(const QString &value)
 {
     // TODO: Shouldn't this be UTF-8?
     QMailBase64Codec codec(QMailBase64Codec::Text);
-    QByteArray encoded(codec.encode(value, QLatin1String("ISO-8859-1")));
+    QByteArray encoded(codec.encode(value, "ISO-8859-1"));
     return QString::fromLatin1(encoded.constData(), encoded.length());
 }
 
@@ -202,7 +202,7 @@ QString QMailServiceConfiguration::decodeValue(const QString &value)
 
     QByteArray encoded(value.toLatin1());
     QMailBase64Codec codec(QMailBase64Codec::Text);
-    return codec.decode(encoded, QLatin1String("ISO-8859-1"));
+    return codec.decode(encoded, "ISO-8859-1");
 }
 
 /*!

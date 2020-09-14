@@ -3924,7 +3924,6 @@ bool QMailStorePrivate::executeFile(QFile &file)
 
     // read assuming utf8 encoding.
     QTextStream ts(&file);
-    ts.setCodec(QTextCodec::codecForName("utf8"));
     ts.setAutoDetectUnicode(true);
     
     QString sql = parseSql(ts);

@@ -135,20 +135,22 @@ static void enumerateCodecs()
 
     \sa QTextCodec::codecForName()
 */
-void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charset)
+void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& charset)
 {
-    if (QTextCodec* codec = codecForName(charset.toLatin1()))
+    if (QTextCodec* codec = codecForName(charset))
     {
+        QTextEncoder *encoder = codec->makeEncoder(QTextCodec::IgnoreHeader);
         while (!in.atEnd())
         {
             QString chunk = in.read(MaxCharacters);
-            QByteArray charsetEncoded = codec->fromUnicode(chunk);
+            QByteArray charsetEncoded = encoder->fromUnicode(chunk);
 
             encodeChunk(out, 
                         reinterpret_cast<const unsigned char*>(charsetEncoded.constData()), 
                         charsetEncoded.length(),
                         in.atEnd());
         }
+        delete encoder;
     }
 }
 
@@ -159,7 +161,7 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QString& charse
 
     \sa QTextCodec::codecForName()
 */
-void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& icharset)
+void QMailCodec::decode(QTextStream& out, QDataStream& in, const QByteArray& icharset)
 {
     QByteArray decoded;
     {
@@ -177,7 +179,7 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QString& ichars
         }
         delete [] buffer;
     }
-    QTextCodec* codec = codecForName(icharset.toLatin1());
+    QTextCodec* codec = codecForName(icharset);
     if (!codec)
         codec = QTextCodec::codecForUtfText(decoded, codecForName("UTF-8"));
 
@@ -297,15 +299,25 @@ void QMailCodec::copy(QDataStream& out, QDataStream& in)
 }
 
 /*!
-    Writes the data read from the stream \a in to the stream \a out, without conversion.
+    Writes the data read from the stream \a in to the stream \a out.
+    \a out text buffer will be in unicode, while \a in could be in \a charset.
 */
-void QMailCodec::copy(QTextStream& out, QTextStream& in)
+void QMailCodec::copy(QTextStream& out, QDataStream& in, const QByteArray& charset)
 {
+    QTextCodec* codec = codecForName(charset);
+    if (!codec)
+        codec = codecForName("UTF-8");
+    QTextDecoder *decoder = codec->makeDecoder();
+
+    char* buffer = new char[MaxCharacters];
     while (!in.atEnd())
     {
-        QString input = in.read(MaxCharacters);
-        out << input;
+        int length = in.readRawData(buffer, MaxCharacters);
+        out << decoder->toUnicode(buffer, length);
     }
+    delete [] buffer;
+
+    delete decoder;
 }
 
 /*!
@@ -314,7 +326,7 @@ void QMailCodec::copy(QTextStream& out, QTextStream& in)
 
     \sa QTextCodec::codecForName()
 */
-QByteArray QMailCodec::encode(const QString& input, const QString& charset)
+QByteArray QMailCodec::encode(const QString& input, const QByteArray& charset)
 {
     QByteArray result;
     {
@@ -336,7 +348,7 @@ QByteArray QMailCodec::encode(const QString& input, const QString& charset)
 
     \sa QTextCodec::codecForName()
 */
-QString QMailCodec::decode(const QByteArray& input, const QString& charset)
+QString QMailCodec::decode(const QByteArray& input, const QByteArray& charset)
 {
     QString result;
     {

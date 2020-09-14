@@ -40,6 +40,7 @@
 #include <QString>
 #include <QTextStream>
 
+class QTextCodec;
 class QMF_EXPORT QMailCodec
 {
 public:
@@ -50,16 +51,16 @@ public:
     virtual QString name() const = 0;
 
     // Stream conversion interface including character translation
-    virtual void encode(QDataStream& out, QTextStream& in, const QString& charset = QLatin1String("UTF-8"));
-    virtual void decode(QTextStream& out, QDataStream& in, const QString& charset);
+    virtual void encode(QDataStream& out, QTextStream& in, const QByteArray& charset = "UTF-8");
+    virtual void decode(QTextStream& out, QDataStream& in, const QByteArray& charset);
 
     // Stream conversion interface
     virtual void encode(QDataStream& out, QDataStream& in);
     virtual void decode(QDataStream& out, QDataStream& in);
 
     // Convenience functions to encapsulate stream processing
-    QByteArray encode(const QString& in, const QString& charset = QLatin1String("UTF-8"));
-    QString decode(const QByteArray& in, const QString& charset);
+    QByteArray encode(const QString& in, const QByteArray& charset = "UTF-8");
+    QString decode(const QByteArray& in, const QByteArray& charset);
 
     QByteArray encode(const QByteArray& in);
     QByteArray decode(const QByteArray& in);
@@ -68,7 +69,7 @@ public:
     static QTextCodec * codecForName(const QByteArray& charset, bool translateAscii = true);
     static QByteArray bestCompatibleCharset(const QByteArray& charset, bool translateAscii);
     static void copy(QDataStream& out, QDataStream& in);
-    static void copy(QTextStream& out, QTextStream& in);
+    static void copy(QTextStream& out, QDataStream& in, const QByteArray& charset = "UTF-8");
     static QString autoDetectEncoding(const QByteArray& text);
     static QString encodeModifiedUtf7(const QString &text);
     static QString decodeModifiedUtf7(const QString &text);

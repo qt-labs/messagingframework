@@ -109,7 +109,7 @@ static QByteArray encode(const QByteArray& input, QMailMessageBody::TransferEnco
     return input;
 }
 
-static QByteArray encode(const QString& input, const QString& charset, QMailMessageBody::TransferEncoding encoding)
+static QByteArray encode(const QString& input, const QByteArray& charset, QMailMessageBody::TransferEncoding encoding)
 {
     if (encoding == QMailMessageBody::Base64)
     {
@@ -539,7 +539,6 @@ void tst_QMailMessageBody::fromFile()
     {
         {
             QTextStream out( &file );
-            out.setCodec( contentType.charset() );
             out << string_input;
         }
         file.close();
@@ -696,7 +695,6 @@ void tst_QMailMessageBody::toFile()
     {
         // Read the string from the file and compare
         QTextStream in( &file );
-        in.setCodec( contentType.charset() );
         QString data = in.readAll();
         QCOMPARE( data, string_input );
     }

@@ -54,7 +54,6 @@
 #include <QRegularExpression>
 #include <QRandomGenerator>
 #include <qtextstream.h>
-#include <qtextcodec.h>
 #include <QTextCodec>
 #include <QtDebug>
 #ifdef USE_HTML_PARSER
@@ -353,12 +352,12 @@ static QString decodeWord(const QByteArray& encodedWord)
                 if (encoding == "Q")
                 {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
-                    return codec.decode(encoded, QLatin1String(charset));
+                    return codec.decode(encoded, charset);
                 }
                 else if (encoding == "B")
                 {
                     QMailBase64Codec codec(QMailBase64Codec::Binary);
-                    return codec.decode(encoded, QLatin1String(charset));
+                    return codec.decode(encoded, charset);
                 }
             }
         }
@@ -492,7 +491,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     else if (insensitiveIndexOf("iso-8859-", charset) == 0)
     {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047, maximumEncoded);
-        QByteArray encoded = codec.encode(text, QLatin1String(charset));
+        QByteArray encoded = codec.encode(text, charset);
         return generateEncodedWord(charset, 'Q', split(encoded, "=\r\n"));
     }
 
@@ -3323,12 +3322,12 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
             QDataStream out(&encoded, QIODevice::WriteOnly);
 
             // Convert the unicode string to a byte-stream, via the nominated character set
-            QString charset = QLatin1String(_type.charset());
+            QByteArray charset = _type.charset();
 
             // If no character set is specified - treat the data as UTF-8; since it is
             // textual data, it must have some character set...
             if (charset.isEmpty())
-                charset = QLatin1String("UTF-8");
+                charset = "UTF-8";
 
             codec->encode(out, in, charset);
         }
@@ -3385,9 +3384,6 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
 
     bool encodeOutput = (format == QMailMessageBody::Encoded);
 
-    // Find the charset for this data, if it is text data
-    QByteArray charset(extractionCharset(_type));
-
     QMailMessageBody::TransferEncoding te = _encoding;
 
     // If our data is in the required condition, we don't need to encode/decode
@@ -3399,42 +3395,33 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
     {
         bool result = false;
 
+        // Find the charset for this data, if it is text data
+        QByteArray charset(extractionCharset(_type));
+
+        QDataStream* in = _bodyData.dataStream();
         // Empty charset indicates no unicode encoding; encoded return data means binary streams
         if (charset.isEmpty() || encodeOutput)
         {
             // We are dealing with binary data
             QDataStream out(&outFile);
-            QDataStream* in = _bodyData.dataStream();
             if (encodeOutput)
                 codec->encode(out, *in);
             else
                 codec->decode(out, *in);
-            result = (in->status() == QDataStream::Ok);
-            delete in;
         }
         else // we should probably check that charset matches this->charset
         {
             // We are dealing with unicode text data, which we want in unencoded form
             QTextStream out(&outFile);
-            out.setCodec(charset);
 
             // If the content is unencoded we can pass it back via a text stream
             if (!_encoded)
-            {
-                QTextStream* in = _bodyData.textStream();
-                in->setCodec(charset);
-                QMailCodec::copy(out, *in);
-                result = (in->status() == QTextStream::Ok);
-                delete in;
-            }
+                QMailCodec::copy(out, *in, charset);
             else
-            {
-                QDataStream* in = _bodyData.dataStream();
                 codec->decode(out, *in, charset);
-                result = (in->status() == QDataStream::Ok);
-                delete in;
-            }
         }
+        result = (in->status() == QDataStream::Ok);
+        delete in;
 
         delete codec;
         return result;
@@ -3462,7 +3449,6 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
         {
             // This data must be unicode in the file
             QTextStream* in = _bodyData.textStream();
-            in->setCodec(charset);
             codec->encode(out, *in, charset);
             result = (in->status() == QTextStream::Ok);
             delete in;
@@ -3493,8 +3479,6 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         charset = "ISO-8859-1";
     }
 
-    out.setCodec(charset);
-
     QMailMessageBody::TransferEncoding te = _encoding;
 
     // If our data is not encoded, we don't need to decode
@@ -3506,23 +3490,16 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
     {
         bool result = false;
 
-        if (!_encoded && !_filename.isEmpty() && unicodeConvertingCharset(charset))
-        { 
+        QDataStream* in = _bodyData.dataStream();
+        if (!_encoded && !_filename.isEmpty() && unicodeConvertingCharset(charset)) {
             // The data is already in unicode format
-            QTextStream* in = _bodyData.textStream();
-            in->setCodec(charset);
-            QMailCodec::copy(out, *in);
-            result = (in->status() == QTextStream::Ok);
-            delete in;
-        }
-        else
-        {
+            QMailCodec::copy(out, *in, charset);
+        } else {
             // Write the data to out, decoding if necessary
-            QDataStream* in = _bodyData.dataStream();
-            codec->decode(out, *in, QLatin1String(charset));
-            result = (in->status() == QDataStream::Ok);
-            delete in;
+            codec->decode(out, *in, charset);
         }
+        result = (in->status() == QDataStream::Ok);
+        delete in;
 
         delete codec;
         return result;
