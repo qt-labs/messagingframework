@@ -3,7 +3,7 @@ TARGET = pop
 PLUGIN_TYPE = messageservices
 load(qt_plugin)
 
-QT = core network qmfclient qmfclient-private qmfmessageserver
+QT = core core5compat network qmfclient qmfclient-private qmfmessageserver
 
 HEADERS += popclient.h \
            popconfiguration.h \

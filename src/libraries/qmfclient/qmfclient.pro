@@ -1,5 +1,5 @@
 TARGET     = QmfClient
-QT         = core sql network
+QT         = core sql network core5compat
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \

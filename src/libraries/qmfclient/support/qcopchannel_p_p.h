@@ -58,7 +58,7 @@
  typedef QTcpServer QCopLocalServer;
 #endif
 #include <QtCore/qshareddata.h>
-#include <QtCore/qregexp.h>
+#include <QRegExp>
 #include <private/qringbuffer_p.h>
 #include "qmailglobal.h"
 

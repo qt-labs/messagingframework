@@ -3,7 +3,7 @@ TARGET = smtp
 PLUGIN_TYPE = messageservices
 load(qt_plugin)
 
-QT = core network qmfclient qmfmessageserver
+QT = core core5compat network qmfclient qmfmessageserver
 
 HEADERS += smtpauthenticator.h \
            smtpclient.h \

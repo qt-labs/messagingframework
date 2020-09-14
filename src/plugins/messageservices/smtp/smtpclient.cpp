@@ -44,6 +44,7 @@
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QRandomGenerator>
+#include <QRegExp>
 #ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
