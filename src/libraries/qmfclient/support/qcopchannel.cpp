@@ -968,7 +968,7 @@ void QCopClient::readyRead()
             char *ptr = inBufferPtr + sizeof(QCopPacketHeader);
             if (header->chLength > 0) {
                 channel = QString::fromUtf16
-                    ((const ushort *)ptr, header->chLength);
+                    ((const char16_t *)ptr, header->chLength);
                 ptr += header->chLength * 2;
             }
 
@@ -999,7 +999,7 @@ void QCopClient::readyRead()
                 QByteArray data;
                 if (header->msgLength > 0) {
                     msg = QString::fromUtf16
-                        ((const ushort *)ptr, header->msgLength);
+                        ((const char16_t *)ptr, header->msgLength);
                     ptr += header->msgLength * 2;
                 }
                 if (header->dataLength > 0) {
@@ -1010,7 +1010,7 @@ void QCopClient::readyRead()
                     if ((header->dataLength % 2) == 1)
                         ++ptr;
                     forwardTo = QString::fromUtf16
-                        ((const ushort *)ptr, header->forwardToLength);
+                        ((const char16_t *)ptr, header->forwardToLength);
                 }
 
                 // Processing command on client side.
