@@ -370,7 +370,7 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
 {
     PopConfiguration popCfg(config);
     if (popCfg.mailEncryption() == encryptType) {
-        qMailLog(POP) << "Connected" << flush;
+        qMailLog(POP) << "Connected";
         emit updateStatus(tr("Connected"));
     }
 

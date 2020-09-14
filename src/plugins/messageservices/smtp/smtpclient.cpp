@@ -148,7 +148,7 @@ QMailAccountId SmtpClient::account() const
 
 void SmtpClient::newConnection()
 {
-    qMailLog(SMTP) << "newConnection" << flush;
+    qMailLog(SMTP) << "newConnection";
     if (sending) {
         operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
         return;
@@ -196,7 +196,7 @@ void SmtpClient::newConnection()
                 this, SLOT(transportError(int,QString)));
     }
 
-    qMailLog(SMTP) << "Open SMTP connection" << flush;
+    qMailLog(SMTP) << "Open SMTP connection";
     transport->open(smtpCfg.smtpServer(), smtpCfg.smtpPort(), static_cast<QMailTransport::EncryptType>(smtpCfg.smtpEncryption()));
 }
 
@@ -255,7 +255,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 
     SmtpConfiguration smtpCfg(config);
     if (smtpCfg.smtpEncryption() == encryptType) {
-        qMailLog(SMTP) << "Connected" << flush;
+        qMailLog(SMTP) << "Connected";
         emit updateStatus(tr("Connected"));
     }
 
@@ -356,7 +356,7 @@ void SmtpClient::incomingData()
 
 void SmtpClient::processResponse(const QString &response)
 {
-    qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2) << flush;
+    qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2);
 
     delete authTimeout;
     authTimeout = 0;
@@ -808,7 +808,7 @@ void SmtpClient::nextAction(const QString &response)
         sending = false;
         status = Done;
         transport->close();
-        qMailLog(SMTP) << "Closed connection" << flush;
+        qMailLog(SMTP) << "Closed connection";
 
         int count = mailList.count();
         if (count) {
@@ -858,7 +858,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
     if (sending) {
         stopTransferring();
         transport->close();
-        qMailLog(SMTP) << "Closed connection:" << text << flush;
+        qMailLog(SMTP) << "Closed connection:" << text;
         
         sendingId = QMailMessageId();
         sending = false;
@@ -888,7 +888,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
     if (sending) {
         stopTransferring();
         transport->close();
-        qMailLog(SMTP) << "Closed connection:" << text << flush;
+        qMailLog(SMTP) << "Closed connection:" << text;
         
         sendingId = QMailMessageId();
         sending = false;
