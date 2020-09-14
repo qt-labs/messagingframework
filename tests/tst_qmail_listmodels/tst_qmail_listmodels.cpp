@@ -144,8 +144,8 @@ void tst_QMail_ListModels::initTestCase()
     msg1.setFrom(QMailAddress("0404404040"));
     msg1.setTo(QMailAddress("0404040404"));
     msg1.setSubject("Where are you?");
-    msg1.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg1.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg1.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg1.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg1.setStatus(QMailMessage::Incoming, true);
     msg1.setStatus(QMailMessage::New, false);
     msg1.setStatus(QMailMessage::Read, true);
@@ -163,8 +163,8 @@ void tst_QMail_ListModels::initTestCase()
     msg2.setTo(QMailAddress("old@example.org"));
     msg2.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
     msg2.setSubject("email message test");
-    msg2.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg2.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg2.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg2.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg2.setStatus(QMailMessage::Incoming, true);
     msg2.setStatus(QMailMessage::New, true);
     msg2.setStatus(QMailMessage::Read, false);

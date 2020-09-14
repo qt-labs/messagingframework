@@ -1740,8 +1740,8 @@ void tst_QMailStore::message()
     msg2.setParentAccountId(account2.id());
     msg2.setParentFolderId(QMailFolder::LocalStorageFolderId);
     msg2.setSubject("email message test");
-    msg2.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg2.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg2.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg2.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg2.setStatus(QMailMessage::Incoming, true);
     msg2.setStatus(QMailMessage::New, true);
     msg2.setStatus(QMailMessage::Read, false);

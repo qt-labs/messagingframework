@@ -157,8 +157,8 @@ void tst_StorageManager::initTestCase()
     msg1.setFrom(QMailAddress("0404404040"));
     msg1.setTo(QMailAddress("0404040404"));
     msg1.setSubject("Where are you?");
-    msg1.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg1.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg1.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg1.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg1.setStatus(QMailMessage::Incoming, true);
     msg1.setStatus(QMailMessage::New, false);
     msg1.setStatus(QMailMessage::Read, true);
@@ -176,8 +176,8 @@ void tst_StorageManager::initTestCase()
     msg2.setTo(QMailAddress("old@example.org"));
     msg2.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
     msg2.setSubject("email message test");
-    msg2.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg2.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg2.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg2.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg2.setStatus(QMailMessage::Incoming, true);
     msg2.setStatus(QMailMessage::New, true);
     msg2.setStatus(QMailMessage::Read, false);
@@ -216,8 +216,8 @@ void tst_StorageManager::test_add()
     msg3.setTo(QMailAddress("old@example.org"));
     msg3.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
     msg3.setSubject("email message test");
-    msg3.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg3.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg3.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg3.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg3.setStatus(QMailMessage::Incoming, true);
     msg3.setStatus(QMailMessage::New, true);
     msg3.setStatus(QMailMessage::Read, false);
@@ -240,8 +240,8 @@ void tst_StorageManager::test_remove()
     msg4.setTo(QMailAddress("old@example.org"));
     msg4.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
     msg4.setSubject("email message test");
-    msg4.setDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
-    msg4.setReceivedDate(QMailTimeStamp(QDateTime(QDate::currentDate())));
+    msg4.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
+    msg4.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg4.setStatus(QMailMessage::Incoming, true);
     msg4.setStatus(QMailMessage::New, true);
     msg4.setStatus(QMailMessage::Read, false);
