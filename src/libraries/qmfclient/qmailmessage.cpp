@@ -6551,7 +6551,7 @@ static quint64 lowPriorityFlag = 0;
 static quint64 calendarInvitationFlag = 0;
 static quint64 todoFlag = 0;
 static quint64 noNotificationFlag = 0;
-
+static quint64 calendarCancellationFlag = 0;
 
 /*  QMailMessageMetaData */
 
@@ -7192,6 +7192,15 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     message externalized by saving in a drafts or sent folder.
 */
 
+/*!
+    \variable QMailMessageMetaData::CalendarCancellation
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "CalendarCancellation" against the result of QMailMessage::status().
+
+    This flag indicates that the message includes a calendar invitation cancel part.
+*/
+
 const quint64 &QMailMessageMetaData::Incoming = incomingFlag;
 const quint64 &QMailMessageMetaData::Outgoing = outgoingFlag;
 const quint64 &QMailMessageMetaData::Sent = sentFlag;
@@ -7225,6 +7234,7 @@ const quint64 &QMailMessageMetaData::LowPriority = lowPriorityFlag;
 const quint64 &QMailMessageMetaData::CalendarInvitation = calendarInvitationFlag;
 const quint64 &QMailMessageMetaData::Todo = todoFlag;
 const quint64 &QMailMessageMetaData::NoNotification = noNotificationFlag;
+const quint64 &QMailMessageMetaData::CalendarCancellation = calendarCancellationFlag;
 
 /*!
     Constructs an empty message meta data object.
@@ -8594,6 +8604,21 @@ bool QMailMessage::contentModified() const
 */  
 bool QMailMessage::hasCalendarInvitation() const
 {
+    return hasCalendarMethod("request");
+}
+
+/*!
+    Returns true if the message contains a calendar cancellation;
+    otherwise returns false.
+*/
+bool QMailMessage::hasCalendarCancellation() const
+{
+    return hasCalendarMethod("cancel");
+}
+
+/*! \internal */
+bool QMailMessage::hasCalendarMethod(QByteArray const &method) const
+{
     QList<const QMailMessagePartContainer*> parts;
     parts.append(this);
 
@@ -8606,7 +8631,7 @@ bool QMailMessage::hasCalendarInvitation() const
         } else {
             const QMailMessageContentType &ct(part->contentType());
             if (ct.matches("text", "calendar") &&
-                (ct.parameter("method").toLower() == "request")) {
+                (ct.parameter("method").toLower() == method.toLower())) {
                 return true;
             }
         }

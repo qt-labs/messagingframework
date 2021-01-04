@@ -586,6 +586,7 @@ public:
     static const quint64 &CalendarInvitation;
     static const quint64 &Todo;
     static const quint64 &NoNotification;
+    static const quint64 &CalendarCancellation;
 
     QMailMessageMetaData();
 #ifndef QTOPIAMAIL_PARSING_ONLY
@@ -797,6 +798,7 @@ public:
     virtual bool partialContentAvailable() const override;
 
     virtual bool hasCalendarInvitation() const;
+    virtual bool hasCalendarCancellation() const;
 
     virtual bool contentModified() const;
 
@@ -816,6 +818,7 @@ private:
     QMailMessagePrivate* partContainerImpl();
     const QMailMessagePrivate* partContainerImpl() const;
     
+    virtual bool hasCalendarMethod(QByteArray const &method) const;
     virtual void setUnmodified() override;
 
     QByteArray duplicatedData(const QString&) const;

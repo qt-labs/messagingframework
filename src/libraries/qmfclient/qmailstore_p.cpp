@@ -2724,7 +2724,9 @@ bool QMailStorePrivate::initStore()
                 || attemptRegisterStatusBit(QLatin1String("HasEncryption"), QLatin1String("messagestatus"),
                                             63, true, const_cast<quint64 *>(&QMailMessage::HasEncryption), t, false)
                 || attemptRegisterStatusBit(QLatin1String("NoNotification"), QLatin1String("messagestatus"),
-                                            63, true, const_cast<quint64 *>(&QMailMessage::NoNotification), t, false);
+                                            63, true, const_cast<quint64 *>(&QMailMessage::NoNotification), t, false)
+                || attemptRegisterStatusBit(QLatin1String("CalendarCancellation"), QLatin1String("messagestatus"),
+                                            63, true, const_cast<quint64 *>(&QMailMessage::CalendarCancellation), t, false);
 
         if (res) {
             qWarning() << "There was an error registering flags.";

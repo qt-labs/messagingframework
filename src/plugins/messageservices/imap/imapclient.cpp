@@ -918,7 +918,8 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
         mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicServiceFactory::findSignedContainer(&mail) != 0));
-        
+        mail.setStatus(QMailMessage::CalendarCancellation, mail.hasCalendarCancellation());
+
         // Disable Notification when getting older message
         QMailFolder folder(properties.id);
         bool ok1, ok2; // toUint returns 0 on error, which is an invalid IMAP uid

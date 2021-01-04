@@ -1172,6 +1172,7 @@ void PopClient::createMail()
         }
         mail->setStatus(QMailMessage::CalendarInvitation, mail->hasCalendarInvitation());
         mail->setStatus(QMailMessage::HasAttachments, mail->hasAttachments());
+        mail->setStatus(QMailMessage::CalendarCancellation, mail->hasCalendarCancellation());
     }
 
     // Special case to handle spurious hotmail messages. Hide in UI, but do not delete from server

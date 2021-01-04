@@ -4251,6 +4251,7 @@ void ImapCopyMessagesStrategy::updateCopiedMessage(ImapStrategyContextBase *, QM
     message.setStatus(QMailMessage::Sent, source.status() & QMailMessage::Sent);
     message.setStatus(QMailMessage::Junk, source.status() & QMailMessage::Junk);
     message.setStatus(QMailMessage::CalendarInvitation, source.hasCalendarInvitation());
+    message.setStatus(QMailMessage::CalendarCancellation, source.hasCalendarCancellation());
 
     // Need to set content scheme and identifier to prevent file leaks
     message.setContentScheme(source.contentScheme());
