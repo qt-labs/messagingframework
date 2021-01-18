@@ -39,13 +39,15 @@
 #include <QObject>
 #include <QAbstractSocket>
 #include <QTimer>
+#ifndef QT_NO_SSL
+#include <QSslError>
+#endif
 
 QT_BEGIN_NAMESPACE
 
 class QString;
 #ifndef QT_NO_SSL
 class QSslSocket;
-class QSslError;
 #endif
 
 QT_END_NAMESPACE
