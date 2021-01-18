@@ -131,7 +131,10 @@ void tst_QMailCodec::encode_data()
         << QByteArray("=23abc_xyz_ABC_XYZ_01_89");
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
-    const QChar chars[] = { 0x0636, 0x0020, 0x0669, 0x0009, 0x06a5, 0x0020, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0020),
+                            static_cast<char16_t>(0x0669), static_cast<char16_t>(0x0009),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x0020),
+                            static_cast<char16_t>(0x06b4) };
     QTest::newRow("unicode characters")
         << QString(chars, 7)
         << "UTF-8"
@@ -689,7 +692,10 @@ void tst_QMailCodec::embedded_newlines()
 void tst_QMailCodec::encodeDecodeModifiedUtf7()
 {
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
-    const QChar arabicChars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4, 0x06a5, 0x0669, 0x0636};
+    const QChar arabicChars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                                  static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4),
+                                  static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x0669),
+                                  static_cast<char16_t>(0x0636) };
     QStringList arabicEncoded = QStringList()
             << QString::fromLatin1("&BjY-")
             << QString::fromLatin1("&BjYGaQ-")

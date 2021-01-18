@@ -715,7 +715,8 @@ void tst_QMailMessageHeaderField::decodedContent_data()
     QTest::addColumn<QString>("result");
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
-    const QChar arabicChars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar arabicChars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                                  static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     QString unicodeAddress(arabicChars, 4);
     unicodeAddress.append(" <address@example>");
 
@@ -735,7 +736,10 @@ void tst_QMailMessageHeaderField::decodedContent_data()
 
     input = "=?UTF-8?B?2LYg2akJ2qUg2rQ=?=; param=UTF-8'ar'%D8%B6%D9%A9%DA%A5%DA%B4%20%3Caddress%40example%3E";
 
-    const QChar whitespaceChars[] = { 0x0636, 0x0020, 0x0669, 0x0009, 0x06a5, 0x0020, 0x06b4 };
+    const QChar whitespaceChars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0020),
+                                      static_cast<char16_t>(0x0669), static_cast<char16_t>(0x0009),
+                                      static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x0020),
+                                      static_cast<char16_t>(0x06b4) };
     result = QString(whitespaceChars, 7);
     result += "; ";
     result += "param*=";
@@ -811,7 +815,8 @@ void tst_QMailMessageHeaderField::encodeWord_data()
         << QByteArray("ISO-8859-1")
         << QByteArray("=?ISO-8859-1?Q?=28t=C3=ADtulo_=C3=A1guia_Jo=C3=A3o=29?=");
 
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     QString unicodeAddress(chars, 4);
     unicodeAddress.append(" <address@example>");
 
@@ -876,7 +881,8 @@ void tst_QMailMessageHeaderField::encodeParameter_data()
     QString latin1Address(QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@machine.test>"));
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     QString unicodeAddress(chars, 4);
     unicodeAddress.append(" <address@example>");
 
@@ -1032,7 +1038,8 @@ void tst_QMailMessageHeaderField::encodeContent_data()
         << QByteArray("ISO-8859-1")
         << QByteArray("=?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= =?ISO-8859-1?Q?_=3Cjdoe=40machine=2Etest=3E?=");
 
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     QString unicodeAddress(chars, 4);
     unicodeAddress.append(" <address@example>");
 

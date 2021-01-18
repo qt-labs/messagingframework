@@ -589,7 +589,24 @@ void tst_python_email::test_long_nonstring()
 
     // Python appears to identify runs of single-byte characters within unicode strings, and 
     // output them in quoted-printable encoded-words.  We don't do that.
-    QChar chars[] = { 0x6b63, 0x78ba, 0x306b, 0x8a00, 0x3046, 0x3068, 0x7ffb, 0x8a33, 0x306f, 0x3055, 0x308c, 0x3066, 0x3044, 0x307e, 0x305b, 0x3093, 0x3002, 0x4e00, 0x90e8, 0x306f, 0x30c9, 0x30a4, 0x30c4, 0x8a9e, 0x3067, 0x3059, 0x304c, 0x3001, 0x3042, 0x3068, 0x306f, 0x3067, 0x305f, 0x3089, 0x3081, 0x3067, 0x3059, 0x3002, 0x5b9f, 0x969b, 0x306b, 0x306f, 0x300c, 'W', 'e', 'n', 'n', ' ', 'i', 's', 't', ' ', 'd', 'a', 's', ' ', 'N', 'u', 'n', 's', 't', 'u', 'c', 'k', ' ', 'g', 'i', 't', ' ', 'u', 'n', 'd', ' ', 'S', 'l', 'o', 't', 'e', 'r', 'm', 'e', 'y', 'e', 'r', '?', ' ', 'J', 'a', '!', ' ', 'B', 'e', 'i', 'h', 'e', 'r', 'h', 'u', 'n', 'd', ' ', 'd', 'a', 's', ' ', 'O', 'd', 'e', 'r', ' ', 'd', 'i', 'e', ' ', 'F', 'l', 'i', 'p', 'p', 'e', 'r', 'w', 'a', 'l', 'd', 't', ' ', 'g', 'e', 'r', 's', 'p', 'u', 't', '.', 0x300d, 0x3068, 0x8a00, 0x3063, 0x3066, 0x3044, 0x307e, 0x3059, 0x3002 };
+    QChar chars[] = { static_cast<char16_t>(0x6b63), static_cast<char16_t>(0x78ba), static_cast<char16_t>(0x306b), static_cast<char16_t>(0x8a00),
+                      static_cast<char16_t>(0x3046), static_cast<char16_t>(0x3068), static_cast<char16_t>(0x7ffb), static_cast<char16_t>(0x8a33),
+                      static_cast<char16_t>(0x306f), static_cast<char16_t>(0x3055), static_cast<char16_t>(0x308c), static_cast<char16_t>(0x3066),
+                      static_cast<char16_t>(0x3044), static_cast<char16_t>(0x307e), static_cast<char16_t>(0x305b), static_cast<char16_t>(0x3093),
+                      static_cast<char16_t>(0x3002), static_cast<char16_t>(0x4e00), static_cast<char16_t>(0x90e8), static_cast<char16_t>(0x306f),
+                      static_cast<char16_t>(0x30c9), static_cast<char16_t>(0x30a4), static_cast<char16_t>(0x30c4), static_cast<char16_t>(0x8a9e),
+                      static_cast<char16_t>(0x3067), static_cast<char16_t>(0x3059), static_cast<char16_t>(0x304c), static_cast<char16_t>(0x3001),
+                      static_cast<char16_t>(0x3042), static_cast<char16_t>(0x3068), static_cast<char16_t>(0x306f), static_cast<char16_t>(0x3067),
+                      static_cast<char16_t>(0x305f), static_cast<char16_t>(0x3089), static_cast<char16_t>(0x3081), static_cast<char16_t>(0x3067),
+                      static_cast<char16_t>(0x3059), static_cast<char16_t>(0x3002), static_cast<char16_t>(0x5b9f), static_cast<char16_t>(0x969b),
+                      static_cast<char16_t>(0x306b), static_cast<char16_t>(0x306f), static_cast<char16_t>(0x300c),
+                      'W', 'e', 'n', 'n', ' ', 'i', 's', 't', ' ', 'd', 'a', 's', ' ', 'N', 'u', 'n', 's', 't', 'u', 'c', 'k', ' ', 'g', 'i', 't',
+                      ' ', 'u', 'n', 'd', ' ', 'S', 'l', 'o', 't', 'e', 'r', 'm', 'e', 'y', 'e', 'r', '?', ' ', 'J', 'a', '!', ' ', 'B', 'e', 'i',
+                      'h', 'e', 'r', 'h', 'u', 'n', 'd', ' ', 'd', 'a', 's', ' ', 'O', 'd', 'e', 'r', ' ', 'd', 'i', 'e', ' ', 'F', 'l', 'i', 'p',
+                      'p', 'e', 'r', 'w', 'a', 'l', 'd', 't', ' ', 'g', 'e', 'r', 's', 'p', 'u', 't', '.',
+                      static_cast<char16_t>(0x300d), static_cast<char16_t>(0x3068), static_cast<char16_t>(0x8a00), static_cast<char16_t>(0x3063),
+                      static_cast<char16_t>(0x3066), static_cast<char16_t>(0x3044), static_cast<char16_t>(0x307e), static_cast<char16_t>(0x3059),
+                      static_cast<char16_t>(0x3002) };
     original = QString(chars, sizeof(chars) / sizeof(chars[0]));
     input.append(' ').append(QMailMessageHeaderField::encodeWord(original, "UTF-8"));
 

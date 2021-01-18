@@ -275,7 +275,8 @@ void tst_QMailMessage::toRfc2822_data()
     QString latin1Address(QString::fromLatin1("\"Joh\361 D\366e\" <jdoe@example.net>"));
 
     // Test with some arabic characters, as per http://en.wikipedia.org/wiki/List_of_Unicode_characters
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     QString unicodeAddress(chars, 4);
     unicodeAddress.append(" <address@test>");
 

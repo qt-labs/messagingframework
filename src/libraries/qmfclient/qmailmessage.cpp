@@ -84,6 +84,9 @@ template<typename CharType>
 inline bool asciiRepresentable(const CharType& value) { return ((value <= 127) && (value >= 0)); }
 
 template<>
+inline bool asciiRepresentable<QChar>(const QChar& value) { return value.unicode() <= 127; }
+
+template<>
 inline bool asciiRepresentable<unsigned char>(const unsigned char& value) { return (value <= 127); }
 
 template<>
@@ -3343,7 +3346,7 @@ static bool unicodeConvertingCharset(const QByteArray& charset)
     // See if this is a unicode-capable codec
     if (QTextCodec* textCodec = QMailCodec::codecForName(charset, true))
     {
-        const QChar multiByteChar = 0x1234;
+        const QChar multiByteChar = static_cast<char16_t>(0x1234);
         return textCodec->canEncode(multiByteChar);
     }
     else

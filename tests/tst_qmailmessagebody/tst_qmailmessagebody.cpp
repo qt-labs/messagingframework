@@ -275,7 +275,8 @@ void tst_QMailMessageBody::fromQString_data()
         << source;
 
     // Unicode Characters
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     source = QString(chars, 4);
     QTest::newRow("unicode - base64")
         << source
@@ -482,7 +483,8 @@ void tst_QMailMessageBody::fromFile_data()
         << ( QStringList() << "text" << "plain" << "ISO-8859-1" );
 
     // Unicode Characters
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     string_source = QString(chars, 4);
     QTest::newRow("unicode - string - base64") 
         << string_source
@@ -645,7 +647,8 @@ void tst_QMailMessageBody::toFile_data()
         << encode(bytearray_source, QMailMessageBody::Base64);
 
     // Unicode Characters
-    const QChar chars[] = { 0x0636, 0x0669, 0x06a5, 0x06b4 };
+    const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
+                            static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     string_source = QString(chars, 4);
 
     QTest::newRow("unicode - string - decoded") 
